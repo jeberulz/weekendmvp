@@ -1,0 +1,8 @@
+# Beehiiv Integration Rules
+When implementing or modifying email subscriptions, always follow the standards in `BEEHIIV_CURSOR_RULES.md`.
+
+- Endpoint: Always use `https://api.beehiiv.com/v2/publications/{publication_id}/subscriptions`.
+- Body: Always include `form_id` and `automation_ids`.
+- Runtime: Prefer Vercel Edge for speed.
+- Error Handling: Always read response as text before parsing JSON.
+

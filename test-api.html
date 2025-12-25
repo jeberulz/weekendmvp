@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beehiiv API Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e5e5e5;
+        }
+        .test-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background: #e0e0e0; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { background: #1a3a1a; border: 1px solid #2a5a2a; }
+        .error { background: #3a1a1a; border: 1px solid #5a2a2a; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Beehiiv API Test Tool</h1>
+    
+    <div class="test-box">
+        <h2>Test Form Submission</h2>
+        <input type="email" id="test-email" placeholder="test@example.com" value="test@example.com">
+        <input type="text" id="test-name" placeholder="Test Name" value="Test User">
+        <button onclick="testSubmit()">Test Submit</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Check API Endpoint</h2>
+        <button onclick="checkEndpoint()">Check if /api/subscribe exists</button>
+        <div id="endpoint-result"></div>
+    </div>
+
+    <script>
+        async function testSubmit() {
+            const email = document.getElementById('test-email').value;
+            const name = document.getElementById('test-name').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '⏳ Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, first_name: name })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ SUCCESS!\n\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ ERROR (${response.status}):\n\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ NETWORK ERROR:\n\n${error.message}\n\nThis usually means:\n1. API endpoint not deployed\n2. Wrong URL\n3. CORS issue`;
+            }
+        }
+
+        async function checkEndpoint() {
+            const resultDiv = document.getElementById('endpoint-result');
+            resultDiv.innerHTML = '⏳ Checking...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.status === 405 || response.status === 200) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ Endpoint exists! Status: ' + response.status;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `⚠️ Endpoint returned: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Endpoint not found:\n\n${error.message}\n\nDeploy your site to Vercel/Netlify first!`;
+            }
+        }
+    </script>
+</body>
+</html>
+

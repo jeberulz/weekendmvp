@@ -1,0 +1,100 @@
+body {
+    background-color: #050505;
+    color: #e5e5e5;
+    font-family: 'Geist', 'Inter', sans-serif;
+}
+
+/* Grid Background */
+.grid-lines {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+}
+
+/* Gradient Border Utility */
+.gradient-border-button {
+    position: relative;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0));
+}
+.gradient-border-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* Logo */
+.logo {
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+    mask-image: url('/image/weekendmvp-logo.svg');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Animation Classes */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.animate-enter {
+    animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Beam Animation Logic */
+.beam-path {
+    stroke-dasharray: 100, 2000; /* Length of beam, Length of gap */
+    stroke-dashoffset: 2100; /* Start hidden */
+    animation: dash 5s linear infinite;
+    opacity: 0.6;
+}
+
+/* Different speeds/delays for natural feel */
+.beam-1 { animation-duration: 7s; animation-delay: 0s; }
+.beam-2 { animation-duration: 9s; animation-delay: 2s; }
+.beam-3 { animation-duration: 6s; animation-delay: 1.5s; }
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Subtle glow filter for the beams */
+.glow-filter {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* Flashlight effect */
+.flashlight-bg {
+    background: radial-gradient(600px circle at var(--x, 0px) var(--y, 0px), rgba(255, 255, 255, 0.06), transparent 40%);
+}
+
+.flashlight-border {
+    background: radial-gradient(400px circle at var(--x, 0px) var(--y, 0px), rgba(255, 255, 255, 0.4), transparent 40%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
