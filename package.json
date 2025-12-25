@@ -1,0 +1,12 @@
+{
+  "name": "weekendmvp",
+  "version": "1.0.0",
+  "description": "Weekend MVP Starter Kit Landing Page",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+
