@@ -709,9 +709,92 @@
         </div>
     </div>
 
+    <!-- Inbox Check Modal -->
+    <div id="inbox-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-500">
+        <div class="modal-container relative w-full max-w-md bg-white border border-neutral-200 rounded-[2.5rem] p-10 shadow-2xl transform scale-95 transition-transform duration-500">
+            <button id="close-inbox-modal" class="absolute top-8 right-8 text-neutral-400 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+            </button>
+            
+            <div class="flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-8">
+                    <iconify-icon icon="lucide:mail-check" width="40"></iconify-icon>
+                </div>
+                
+                <h3 class="text-2xl font-medium tracking-tight mb-4">Check your inbox!</h3>
+                <p class="text-neutral-500 text-sm leading-relaxed mb-8">
+                    The Weekend MVP Starter Kit is on its way. Please check your <span class="text-black font-semibold">Inbox</span>, <span class="text-black font-semibold">Spam</span>, or <span class="text-black font-semibold">Promotions</span> folder.
+                </p>
+
+                <div class="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-6 mb-8 text-left">
+                    <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Search for this subject:</p>
+                    <p class="text-sm font-medium text-black select-all">Your Weekend MVP Starter Kit is here</p>
+                </div>
+
+                <div class="flex items-start gap-3 text-left bg-blue-50/50 rounded-2xl p-4 mb-8">
+                    <iconify-icon icon="lucide:info" class="text-blue-500 mt-0.5" width="18"></iconify-icon>
+                    <p class="text-xs text-blue-800 leading-relaxed">
+                        If it landed in <span class="font-bold">SPAM</span>, please drag it to your <span class="font-bold">primary inbox</span> so you don't miss future guides.
+                    </p>
+                </div>
+
+                <button id="inbox-modal-close-btn" class="w-full py-4 bg-black text-white rounded-full text-sm font-semibold hover:bg-neutral-800 transition-all shadow-lg">
+                    Got it, I'll check now
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Set dynamic year
         document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for subscription success
+        const checkSubscription = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('subscribed') === 'true') {
+                // Small delay to ensure DOM is fully ready and animations can trigger
+                setTimeout(() => {
+                    const modal = document.getElementById('inbox-modal');
+                    if (modal) {
+                        modal.classList.remove('opacity-0', 'pointer-events-none');
+                        const container = modal.querySelector('.modal-container');
+                        if (container) {
+                            container.classList.remove('scale-95');
+                            container.classList.add('scale-100');
+                        }
+                        document.body.style.overflow = 'hidden';
+                    }
+                }, 100);
+                
+                // Clean up URL
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkSubscription);
+        } else {
+            checkSubscription();
+        }
+
+        // Close modal logic
+        const inboxModal = document.getElementById('inbox-modal');
+        const closeInboxModal = () => {
+            if (inboxModal) {
+                inboxModal.classList.add('opacity-0', 'pointer-events-none');
+                inboxModal.querySelector('.modal-container').classList.remove('scale-100');
+                inboxModal.querySelector('.modal-container').classList.add('scale-95');
+                document.body.style.overflow = '';
+            }
+        };
+
+        document.getElementById('close-inbox-modal')?.addEventListener('click', closeInboxModal);
+        document.getElementById('inbox-modal-close-btn')?.addEventListener('click', closeInboxModal);
+        inboxModal?.addEventListener('click', (e) => {
+            if (e.target === inboxModal) closeInboxModal();
+        });
 
         // Mobile menu toggle
         const sidebar = document.getElementById('sidebar');
