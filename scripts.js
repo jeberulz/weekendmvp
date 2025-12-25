@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 console.log('API submission successful');
-                window.location.href = 'starter-kit.html';
+                window.location.href = 'starter-kit.html?subscribed=true';
                 return;
             } else {
                 console.warn('API returned non-ok status');
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 console.log('Fallback submission initiated, redirecting...');
                 setTimeout(() => {
-                    window.location.href = 'starter-kit.html';
+                    window.location.href = 'starter-kit.html?subscribed=true';
                 }, 1000);
             } catch (fallbackError) {
                 console.error('Both methods failed:', fallbackError);
