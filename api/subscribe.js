@@ -87,7 +87,7 @@ export default async function handler(req) {
     // Use the base subscriptions endpoint and pass form_id in the body
     const apiEndpoint = `https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions`;
     
-    console.log(`Attempting subscription for ${email} with form ${FORM_ID} at ${apiEndpoint}`);
+    console.log(`Attempting subscription with form ${FORM_ID} at ${apiEndpoint}`);
 
     const beehiivResponse = await fetch(apiEndpoint, {
       method: 'POST',
@@ -140,7 +140,7 @@ export default async function handler(req) {
   } catch (error) {
     console.error('Internal server error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: error.message }),
+      JSON.stringify({ error: 'Internal server error', message: 'An unexpected error occurred. Please try again later.' }),
       { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
