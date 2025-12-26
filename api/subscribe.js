@@ -5,9 +5,10 @@ export const config = {
 
 export default async function handler(req) {
   const origin = req.headers.get('origin');
-  const isAllowed = (origin && origin.endsWith('.vercel.app')) ||
-                    (origin && (origin.startsWith('http://localhost:'))) ||
-                    !origin;
+  const isAllowed = origin && (
+    origin.endsWith('.vercel.app') ||
+    origin.startsWith('http://localhost:')
+  );
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': isAllowed ? origin : 'https://weekendmvp.vercel.app',
@@ -40,7 +41,7 @@ export default async function handler(req) {
       console.error('Error parsing request body:', e);
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
@@ -125,7 +126,7 @@ export default async function handler(req) {
       });
       // Do not return raw upstream error details to the client to avoid leaking implementation details
       return new Response(
-        JSON.stringify({ error: 'Subscription failed', message: data.message || 'Beehiiv API error' }),
+        JSON.stringify({ error: 'Subscription failed', message: 'Unable to process subscription. Please try again later.' }),
         { status: beehiivResponse.status, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
