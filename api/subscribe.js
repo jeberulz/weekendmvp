@@ -45,6 +45,15 @@ export default async function handler(req) {
       );
     }
 
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      );
+    }
+
     const BEEHIIV_API_KEY = process.env.BEEHIIV_API_KEY;
     const PUBLICATION_ID = 'pub_5fbc631f-7950-4bac-80fe-80ba70dae2da';
     const FORM_ID = '7346f13f-9331-48d7-97f8-88c38da780b1';
@@ -96,8 +105,9 @@ export default async function handler(req) {
         status: beehiivResponse.status,
         data: data
       });
+      // Do not return raw upstream error details to the client to avoid leaking implementation details
       return new Response(
-        JSON.stringify({ error: data.message || 'Beehiiv API error', details: data }),
+        JSON.stringify({ error: 'Subscription failed', message: data.message || 'Beehiiv API error' }),
         { status: beehiivResponse.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       );
     }
