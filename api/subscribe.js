@@ -4,15 +4,24 @@ export const config = {
 };
 
 export default async function handler(req) {
+  const origin = req.headers.get('origin');
+  const isAllowed = origin && (
+    origin.endsWith('.vercel.app') ||
+    origin.startsWith('http://localhost:')
+  );
+
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': isAllowed ? origin : 'https://weekendmvp.vercel.app',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin'
+  };
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders,
     });
   }
 
@@ -20,7 +29,7 @@ export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      { status: 405, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 
@@ -32,7 +41,7 @@ export default async function handler(req) {
       console.error('Error parsing request body:', e);
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
@@ -41,7 +50,26 @@ export default async function handler(req) {
     if (!email) {
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Validate first_name (allow unicode letters, spaces, hyphens, apostrophes, and dots)
+    // Note: Vercel Edge Runtime supports standard JS RegExp.
+    // We use a broader check to avoid blocking valid international names.
+    if (first_name && first_name.length > 50) {
+       return new Response(
+        JSON.stringify({ error: 'Name too long' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
@@ -53,14 +81,14 @@ export default async function handler(req) {
     if (!BEEHIIV_API_KEY) {
       return new Response(
         JSON.stringify({ error: 'BEEHIIV_API_KEY not configured in environment variables' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
     // Use the base subscriptions endpoint and pass form_id in the body
     const apiEndpoint = `https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions`;
     
-    console.log(`Attempting subscription for ${email} with form ${FORM_ID} at ${apiEndpoint}`);
+    console.log(`Attempting subscription with form ${FORM_ID} at ${apiEndpoint}`);
 
     const beehiivResponse = await fetch(apiEndpoint, {
       method: 'POST',
@@ -96,9 +124,10 @@ export default async function handler(req) {
         status: beehiivResponse.status,
         data: data
       });
+      // Do not return raw upstream error details to the client to avoid leaking implementation details
       return new Response(
-        JSON.stringify({ error: data.message || 'Beehiiv API error', details: data }),
-        { status: beehiivResponse.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+        JSON.stringify({ error: 'Subscription failed', message: 'Unable to process subscription. Please try again later.' }),
+        { status: beehiivResponse.status, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
@@ -106,14 +135,14 @@ export default async function handler(req) {
 
     return new Response(
       JSON.stringify({ success: true, data: data }),
-      { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
 
   } catch (error) {
     console.error('Internal server error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', message: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      JSON.stringify({ error: 'Internal server error', message: 'An unexpected error occurred. Please try again later.' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 }
