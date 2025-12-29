@@ -25,14 +25,52 @@
 
     <link rel="canonical" href="https://weekendmvp.app/">
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS"></script>
+    <!-- Google Analytics - Loaded conditionally after consent -->
     <script>
+      // Initialize dataLayer but don't load gtag.js until consent
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-Z1NYERTKRS');
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
     </script>
     
     <!-- Favicon -->
@@ -543,9 +581,69 @@
                 </a>
                 <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi</a></p>
             </div>
-            <div class="text-[10px] text-neutral-600 font-mono">© <span id="year">2025</span> WEEKEND MVP. BUILT TO SHIP.</div>
+            <div class="flex items-center gap-4">
+                <a href="privacy-policy.html" id="privacy-policy-link" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                <div class="text-[10px] text-neutral-600 font-mono">© <span id="year">2025</span> WEEKEND MVP. BUILT TO SHIP.</div>
+            </div>
         </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="fixed bottom-0 left-0 right-0 z-[200] bg-neutral-950/95 backdrop-blur-xl border-t border-white/10 p-6 transform translate-y-full transition-transform duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <h3 class="text-white font-medium mb-2 text-sm">We use cookies</h3>
+                <p class="text-neutral-400 text-xs leading-relaxed mb-2">
+                    We use analytics to understand how you use our site. You can accept, reject, or customize your preferences.
+                </p>
+                <a href="privacy-policy.html" id="privacy-link-banner" class="text-xs text-neutral-500 hover:text-neutral-400 underline underline-offset-2 transition-colors">Learn more in our Privacy Policy</a>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <button id="reject-analytics" class="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+                    Reject
+                </button>
+                <button id="customize-analytics" class="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+                    Customize
+                </button>
+                <button id="accept-analytics" class="px-6 py-2.5 bg-white text-black rounded-xl text-xs font-semibold hover:bg-neutral-200 transition-colors">
+                    Accept All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Customize Modal -->
+    <div id="cookie-customize-modal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300">
+            <button id="close-customize-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
+                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+            </button>
+            
+            <div class="mb-6">
+                <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Cookie Preferences</h3>
+                <p class="text-neutral-400 text-sm">Choose which cookies you want to allow.</p>
+            </div>
+
+            <div class="space-y-4 mb-6">
+                <div class="flex items-start justify-between gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                    <div class="flex-1">
+                        <h4 class="text-white font-medium text-sm mb-1">Analytics</h4>
+                        <p class="text-neutral-500 text-xs">Help us understand how visitors interact with our site.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="analytics-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button id="save-preferences" class="flex-1 px-6 py-3 bg-white text-black rounded-xl text-sm font-semibold hover:bg-neutral-200 transition-colors">
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="scripts.js"></script>
 

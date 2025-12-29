@@ -1,6 +1,160 @@
+// Cookie Consent Management
+const CONSENT_KEY = 'analytics_consent';
+const CONSENT_EXPIRY_DAYS = 365;
+
+function getConsent() {
+    try {
+        const stored = localStorage.getItem(CONSENT_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Check if consent has expired (older than 1 year)
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+                return parsed.value;
+            }
+        }
+    } catch (e) {
+        console.error('Error reading consent:', e);
+    }
+    return null;
+}
+
+function setConsent(value) {
+    try {
+        const consentData = {
+            value: value,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CONSENT_KEY, JSON.stringify(consentData));
+        // Also set cookie for server-side access if needed
+        document.cookie = `${CONSENT_KEY}=${value}; max-age=${CONSENT_EXPIRY_DAYS * 24 * 60 * 60}; path=/; SameSite=Lax`;
+    } catch (e) {
+        console.error('Error saving consent:', e);
+    }
+}
+
+function loadGoogleAnalytics() {
+    if (window.analyticsConsent !== true) return;
+    
+    // Check if already loaded
+    if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) {
+        // Already loaded, just ensure gtag is properly set
+        if (typeof window.gtag !== 'function' || window.gtag.toString().includes('analyticsConsent')) {
+            window.gtag = function() {
+                dataLayer.push(arguments);
+            };
+        }
+        return;
+    }
+    
+    // Load gtag.js script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+    document.head.appendChild(script);
+    
+    // Initialize gtag after script loads
+    script.onload = () => {
+        // Restore real gtag function
+        window.gtag = function() {
+            dataLayer.push(arguments);
+        };
+        
+        gtag('js', new Date());
+        gtag('config', 'G-Z1NYERTKRS');
+    };
+}
+
+function initCookieConsent() {
+    const banner = document.getElementById('cookie-consent-banner');
+    const customizeModal = document.getElementById('cookie-customize-modal');
+    const analyticsToggle = document.getElementById('analytics-toggle');
+    
+    if (!banner) return;
+    
+    const consent = getConsent();
+    
+    if (consent === null) {
+        // Show banner on first visit
+        setTimeout(() => {
+            banner.classList.remove('translate-y-full');
+        }, 1000);
+    } else {
+        // Apply stored consent (GA may already be loaded from head script)
+        window.analyticsConsent = consent === true;
+        if (window.analyticsConsent) {
+            // Only load if not already loaded
+            loadGoogleAnalytics();
+        }
+    }
+    
+    // Accept button
+    document.getElementById('accept-analytics')?.addEventListener('click', () => {
+        window.analyticsConsent = true;
+        setConsent(true);
+        loadGoogleAnalytics();
+        banner.classList.add('translate-y-full');
+    });
+    
+    // Reject button
+    document.getElementById('reject-analytics')?.addEventListener('click', () => {
+        window.analyticsConsent = false;
+        setConsent(false);
+        banner.classList.add('translate-y-full');
+    });
+    
+    // Customize button
+    document.getElementById('customize-analytics')?.addEventListener('click', () => {
+        const modalContent = customizeModal.querySelector('.relative');
+        customizeModal.classList.remove('opacity-0', 'pointer-events-none');
+        if (modalContent) {
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+        
+        // Set toggle state based on current consent
+        if (analyticsToggle) {
+            analyticsToggle.checked = window.analyticsConsent === true;
+        }
+    });
+    
+    // Close customize modal
+    document.getElementById('close-customize-modal')?.addEventListener('click', () => {
+        const modalContent = customizeModal.querySelector('.relative');
+        customizeModal.classList.add('opacity-0', 'pointer-events-none');
+        if (modalContent) {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        }
+    });
+    
+    // Save preferences
+    document.getElementById('save-preferences')?.addEventListener('click', () => {
+        const analyticsEnabled = analyticsToggle?.checked || false;
+        window.analyticsConsent = analyticsEnabled;
+        setConsent(analyticsEnabled);
+        
+        if (analyticsEnabled) {
+            loadGoogleAnalytics();
+        }
+        
+        const modalContent = customizeModal.querySelector('.relative');
+        customizeModal.classList.add('opacity-0', 'pointer-events-none');
+        if (modalContent) {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        }
+        banner.classList.add('translate-y-full');
+    });
+    
+    // Privacy policy links - no special handling needed, they link to privacy-policy.html
+}
+
+// Initialize consent on page load
+initCookieConsent();
+
 // Google Analytics Event Helper
 function trackEvent(eventName, eventParams = {}) {
-    if (typeof gtag !== 'undefined') {
+    if (window.analyticsConsent === true && typeof gtag !== 'undefined') {
         gtag('event', eventName, eventParams);
     }
 }

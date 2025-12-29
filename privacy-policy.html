@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | Weekend MVP</title>
+    <meta name="description" content="Privacy Policy for Weekend MVP. Learn about how we handle cookies, analytics, and your data.">
+    <meta name="author" content="John Iseghohi">
+    
+    <link rel="canonical" href="https://weekendmvp.app/privacy-policy.html">
+    
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      // Initialize dataLayer but don't load gtag.js until consent
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="image/favicon.png">
+    <link rel="apple-touch-icon" href="image/webclip.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white pt-24">
+
+    <!-- Background (component) added by Aura -->
+    <div class="aura-background-component top-0 w-full h-screen -z-10 absolute" data-alpha-mask="80" style="mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 0%, black 80%, transparent)">
+        <div class="aura-background-component top-0 w-full -z-10 absolute h-full">
+            <div data-us-project="ILgOO23w4wEyPQOKyLO4" class="absolute w-full h-full left-0 top-0 -z-10"></div>
+            <script type="text/javascript">
+                !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+            </script>
+        </div>
+    </div>
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+    
+    <!-- Top Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen"></div>
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+                <a href="index.html#process" class="hover:text-white transition-colors">Process</a>
+                <a href="index.html#what-you-get" class="hover:text-white transition-colors">The Kit</a>
+                <a href="index.html#faq" class="hover:text-white transition-colors">FAQ</a>
+            </div>
+
+            <a href="index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Back to Home
+                </span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Privacy Policy Content -->
+    <main class="relative z-10 max-w-4xl mx-auto px-6 py-32">
+        <div class="mb-12">
+            <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">Privacy Policy</h1>
+            <p class="text-neutral-400 text-sm">Last updated: January 2025</p>
+        </div>
+
+        <div class="space-y-8 text-sm text-neutral-400 leading-relaxed">
+            <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
+                <h2 class="text-white font-medium mb-3 text-lg">Cookies and Analytics</h2>
+                <p>We use Google Analytics to understand how visitors interact with our site. This helps us improve the user experience. Analytics cookies are only loaded after you provide explicit consent.</p>
+            </div>
+
+            <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
+                <h2 class="text-white font-medium mb-3 text-lg">Your Choices</h2>
+                <p>You can accept, reject, or customize your cookie preferences at any time using the cookie consent banner. Your preferences are saved in your browser's localStorage and will persist for 1 year.</p>
+            </div>
+
+            <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
+                <h2 class="text-white font-medium mb-3 text-lg">Data Collection</h2>
+                <p>When you consent to analytics, we collect anonymized usage data including page views, time on site, and interaction events. This data is processed by Google Analytics and is subject to Google's privacy policy.</p>
+            </div>
+
+            <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
+                <h2 class="text-white font-medium mb-3 text-lg">Email Collection</h2>
+                <p>When you sign up for the Weekend MVP Starter Kit, we collect your email address and first name through Beehiiv. This information is used solely to deliver the kit and occasional updates. You can unsubscribe at any time.</p>
+            </div>
+
+            <div class="bg-white/[0.02] border border-white/5 rounded-2xl p-8">
+                <h2 class="text-white font-medium mb-3 text-lg">Contact</h2>
+                <p>If you have questions about this privacy policy, please contact us at <a href="https://cal.com/switchtoux" target="_blank" class="text-neutral-300 hover:text-white underline underline-offset-2">cal.com/switchtoux</a>.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 bg-[#050505] mt-32">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <a href="index.html">
+                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white"></div>
+                </a>
+                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi</a></p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="privacy-policy.html" id="privacy-policy-link" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                <div class="text-[10px] text-neutral-600 font-mono">© <span id="year">2025</span> WEEKEND MVP. BUILT TO SHIP.</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="fixed bottom-0 left-0 right-0 z-[200] bg-neutral-950/95 backdrop-blur-xl border-t border-white/10 p-6 transform translate-y-full transition-transform duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <h3 class="text-white font-medium mb-2 text-sm">We use cookies</h3>
+                <p class="text-neutral-400 text-xs leading-relaxed mb-2">
+                    We use analytics to understand how you use our site. You can accept, reject, or customize your preferences.
+                </p>
+                <a href="privacy-policy.html" id="privacy-link-banner" class="text-xs text-neutral-500 hover:text-neutral-400 underline underline-offset-2 transition-colors">Learn more in our Privacy Policy</a>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <button id="reject-analytics" class="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+                    Reject
+                </button>
+                <button id="customize-analytics" class="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-semibold hover:bg-white/10 transition-colors">
+                    Customize
+                </button>
+                <button id="accept-analytics" class="px-6 py-2.5 bg-white text-black rounded-xl text-xs font-semibold hover:bg-neutral-200 transition-colors">
+                    Accept All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Customize Modal -->
+    <div id="cookie-customize-modal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300">
+            <button id="close-customize-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
+                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+            </button>
+            
+            <div class="mb-6">
+                <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Cookie Preferences</h3>
+                <p class="text-neutral-400 text-sm">Choose which cookies you want to allow.</p>
+            </div>
+
+            <div class="space-y-4 mb-6">
+                <div class="flex items-start justify-between gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                    <div class="flex-1">
+                        <h4 class="text-white font-medium text-sm mb-1">Analytics</h4>
+                        <p class="text-neutral-500 text-xs">Help us understand how visitors interact with our site.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="analytics-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button id="save-preferences" class="flex-1 px-6 py-3 bg-white text-black rounded-xl text-sm font-semibold hover:bg-neutral-200 transition-colors">
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
+
