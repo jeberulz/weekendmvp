@@ -64,6 +64,36 @@ function loadGoogleAnalytics() {
     };
 }
 
+function loadMetaPixel() {
+    if (window.analyticsConsent !== true) return;
+    
+    // Check if already initialized
+    if (typeof window.fbq === 'function' && window.fbq.loaded) {
+        // Process any queued events
+        if (window.fbqQueue && window.fbqQueue.length > 0) {
+            window.fbqQueue.forEach(args => {
+                window.fbq.apply(window, args);
+            });
+            window.fbqQueue = [];
+        }
+        return;
+    }
+    
+    // Initialize Meta Pixel if fbq exists
+    if (typeof window.fbq === 'function') {
+        window.fbq('init', '1602726847528813');
+        window.fbq('track', 'PageView');
+        
+        // Process any queued events
+        if (window.fbqQueue && window.fbqQueue.length > 0) {
+            window.fbqQueue.forEach(args => {
+                window.fbq.apply(window, args);
+            });
+            window.fbqQueue = [];
+        }
+    }
+}
+
 function initCookieConsent() {
     const banner = document.getElementById('cookie-consent-banner');
     const customizeModal = document.getElementById('cookie-customize-modal');
@@ -84,6 +114,7 @@ function initCookieConsent() {
         if (window.analyticsConsent) {
             // Only load if not already loaded
             loadGoogleAnalytics();
+            loadMetaPixel();
         }
     }
     
@@ -92,6 +123,7 @@ function initCookieConsent() {
         window.analyticsConsent = true;
         setConsent(true);
         loadGoogleAnalytics();
+        loadMetaPixel();
         banner.classList.add('translate-y-full');
     });
     
@@ -135,6 +167,7 @@ function initCookieConsent() {
         
         if (analyticsEnabled) {
             loadGoogleAnalytics();
+            loadMetaPixel();
         }
         
         const modalContent = customizeModal.querySelector('.relative');
@@ -152,10 +185,52 @@ function initCookieConsent() {
 // Initialize consent on page load
 initCookieConsent();
 
-// Google Analytics Event Helper
+// Analytics Event Helper - Tracks to both Google Analytics and Meta Pixel
 function trackEvent(eventName, eventParams = {}) {
-    if (window.analyticsConsent === true && typeof gtag !== 'undefined') {
+    if (window.analyticsConsent !== true) return;
+    
+    // Google Analytics
+    if (typeof gtag !== 'undefined') {
         gtag('event', eventName, eventParams);
+    }
+    
+    // Meta Pixel - Map custom events to Meta Pixel standard events
+    if (typeof window.fbq === 'function' && window.fbq.loaded) {
+        // Map custom events to Meta Pixel events
+        const metaPixelEventMap = {
+            'signup_form_submitted': 'Lead',
+            'signup_form_success': 'CompleteRegistration',
+            'cta_button_clicked': 'ViewContent',
+            'modal_opened': 'ViewContent',
+            'section_viewed': 'ViewContent'
+        };
+        
+        const metaEventName = metaPixelEventMap[eventName] || 'CustomEvent';
+        
+        if (metaEventName === 'CustomEvent') {
+            // For custom events, send as CustomEvent with event name as parameter
+            window.fbq('trackCustom', eventName, eventParams);
+        } else {
+            // For standard events, send as standard event
+            window.fbq('track', metaEventName, eventParams);
+        }
+    } else if (window.fbqQueue) {
+        // Queue events if Meta Pixel isn't loaded yet
+        const metaPixelEventMap = {
+            'signup_form_submitted': 'Lead',
+            'signup_form_success': 'CompleteRegistration',
+            'cta_button_clicked': 'ViewContent',
+            'modal_opened': 'ViewContent',
+            'section_viewed': 'ViewContent'
+        };
+        
+        const metaEventName = metaPixelEventMap[eventName] || 'CustomEvent';
+        
+        if (metaEventName === 'CustomEvent') {
+            window.fbqQueue.push(['trackCustom', eventName, eventParams]);
+        } else {
+            window.fbqQueue.push(['track', metaEventName, eventParams]);
+        }
     }
 }
 

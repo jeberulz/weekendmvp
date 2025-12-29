@@ -51,6 +51,11 @@
                   gtag('js', new Date());
                   gtag('config', 'G-Z1NYERTKRS');
                 };
+                // Initialize Meta Pixel immediately if consent exists
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
                 return;
               }
             }
@@ -70,6 +75,30 @@
         };
       } else {
         window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      // Initialize fbq queue but don't load until consent
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Only initialize if consent exists
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        // Queue the init call for when consent is given
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
       }
     </script>
     
@@ -691,6 +720,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Meta Pixel Noscript Fallback -->
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1602726847528813&ev=PageView&noscript=1"
+    /></noscript>
 </body>
 </html>
 
