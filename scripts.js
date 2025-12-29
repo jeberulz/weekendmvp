@@ -1,3 +1,10 @@
+// Google Analytics Event Helper
+function trackEvent(eventName, eventParams = {}) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, eventParams);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // Set dynamic year
     const yearElement = document.getElementById('year');
@@ -37,6 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
+            const sectionName = this.getAttribute('href').replace('#', '') || 'unknown';
+            
+            trackEvent('nav_link_clicked', {
+                section: sectionName,
+                link_text: this.textContent.trim()
+            });
+            
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth'
@@ -59,6 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.classList.remove('scale-95');
         modalContent.classList.add('scale-100');
         document.body.style.overflow = 'hidden';
+        
+        trackEvent('modal_opened');
     };
 
     const closeModal = () => {
@@ -66,6 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
         modalContent.classList.remove('scale-100');
         modalContent.classList.add('scale-95');
         document.body.style.overflow = '';
+        
+        trackEvent('modal_closed');
         
         // Reset state after transition
         setTimeout(() => {
@@ -75,7 +93,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 300);
     };
 
-    openModalBtns.forEach(btn => btn.addEventListener('click', openModal));
+    openModalBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const buttonLocation = btn.closest('section')?.id || 
+                                  btn.closest('main') ? 'hero' : 
+                                  btn.closest('nav') ? 'navigation' : 'unknown';
+            
+            trackEvent('cta_button_clicked', {
+                button_location: buttonLocation,
+                button_text: btn.textContent.trim()
+            });
+            
+            openModal();
+        });
+    });
     closeModalBtn?.addEventListener('click', closeModal);
     successCloseBtn?.addEventListener('click', closeModal);
     modal?.addEventListener('click', (e) => {
@@ -111,6 +142,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (response.ok) {
                 console.log('API submission successful');
+                
+                trackEvent('signup_form_submitted', {
+                    method: 'api',
+                    email_domain: email.split('@')[1] || 'unknown'
+                });
+                
+                trackEvent('signup_form_success', {
+                    method: 'api'
+                });
+                
                 window.location.href = 'starter-kit.html?subscribed=true';
                 return;
             } else {
@@ -127,11 +168,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 submitViaBeehiivEmbed(email, firstName);
                 
                 console.log('Fallback submission initiated, redirecting...');
+                
+                trackEvent('signup_form_submitted', {
+                    method: 'embed_fallback',
+                    email_domain: email.split('@')[1] || 'unknown'
+                });
+                
+                trackEvent('signup_form_success', {
+                    method: 'embed_fallback'
+                });
+                
                 setTimeout(() => {
                     window.location.href = 'starter-kit.html?subscribed=true';
                 }, 1000);
             } catch (fallbackError) {
                 console.error('Both methods failed:', fallbackError);
+                
+                trackEvent('signup_form_error', {
+                    error: fallbackError.message || 'unknown_error'
+                });
+                
                 submitBtn.innerHTML = '<span>Error. Try again?</span>';
                 submitBtn.disabled = false;
             }
@@ -204,5 +260,63 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 3000);
         });
     }
+
+    // Track section views on scroll
+    const sections = ['what-you-get', 'process', 'faq'];
+    const viewedSections = new Set();
+    
+    const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !viewedSections.has(entry.target.id)) {
+                viewedSections.add(entry.target.id);
+                trackEvent('section_viewed', {
+                    section_id: entry.target.id,
+                    section_name: entry.target.querySelector('h2')?.textContent?.trim() || entry.target.id
+                });
+            }
+        });
+    }, { threshold: 0.3 });
+    
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            sectionObserver.observe(section);
+        }
+    });
+
+    // Track scroll depth
+    let scrollDepthTracked = {
+        50: false,
+        75: false,
+        100: false
+    };
+    
+    const trackScrollDepth = () => {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollPercent = Math.round((scrollTop / (documentHeight - windowHeight)) * 100);
+        
+        if (scrollPercent >= 50 && !scrollDepthTracked[50]) {
+            scrollDepthTracked[50] = true;
+            trackEvent('scroll_depth_50');
+        }
+        if (scrollPercent >= 75 && !scrollDepthTracked[75]) {
+            scrollDepthTracked[75] = true;
+            trackEvent('scroll_depth_75');
+        }
+        if (scrollPercent >= 100 && !scrollDepthTracked[100]) {
+            scrollDepthTracked[100] = true;
+            trackEvent('scroll_depth_100');
+        }
+    };
+    
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(trackScrollDepth, 150);
+    }, { passive: true });
 });
 
