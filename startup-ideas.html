@@ -79,9 +79,24 @@
                     <span class="text-neutral-400">you can build this weekend.</span>
                 </h1>
 
-                <p class="text-lg md:text-xl text-neutral-400 font-light tracking-tight max-w-2xl mx-auto leading-relaxed">
+                <p class="text-lg md:text-xl text-neutral-400 font-light tracking-tight max-w-2xl mx-auto leading-relaxed mb-10">
                     Research-backed ideas for busy professionals who want to ship something real without quitting their day job.
                 </p>
+
+                <!-- Hero Email Form -->
+                <div class="max-w-md mx-auto">
+                    <form id="hero-email-form" class="email-form space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" name="email" required placeholder="Your email address"
+                                class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                            <button type="submit" class="gate-submit-btn group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
+                                <span>Unlock Ideas</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
+                            </button>
+                        </div>
+                        <p class="text-xs text-neutral-600">Free access. No spam. Unsubscribe anytime.</p>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -177,11 +192,11 @@
 
                 <!-- Email Form -->
                 <div class="max-w-md mx-auto">
-                    <form id="ideas-email-form" class="space-y-4">
+                    <form id="bottom-email-form" class="email-form space-y-4">
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
-                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
-                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
+                            <input type="email" name="email" required placeholder="Your email address"
+                                class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                            <button type="submit" class="gate-submit-btn group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
                                 <span>Unlock Ideas</span>
                                 <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
                             </button>
@@ -284,54 +299,57 @@
             ideasContent.classList.remove('hidden');
         }
 
-        // Handle form submission
-        const form = document.getElementById('ideas-email-form');
-        const submitBtn = document.getElementById('gate-submit-btn');
+        // Handle form submissions (both hero and bottom forms)
+        const forms = document.querySelectorAll('.email-form');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        forms.forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const email = document.getElementById('gate-email').value;
+                const emailInput = form.querySelector('.gate-email');
+                const submitBtn = form.querySelector('.gate-submit-btn');
+                const email = emailInput.value;
 
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+                // Disable button and show loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
 
-            try {
-                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                try {
+                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-                if (!isLocalhost) {
-                    // Production: Submit to Beehiiv via our API
-                    const response = await fetch('/api/ideas-subscribe', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, first_name: 'Friend' })
-                    });
+                    if (!isLocalhost) {
+                        // Production: Submit to Beehiiv via our API
+                        const response = await fetch('/api/ideas-subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, first_name: 'Friend' })
+                        });
 
-                    const data = await response.json();
+                        const data = await response.json();
 
-                    if (!response.ok && !data.success) {
-                        throw new Error(data.error || 'Failed to subscribe');
+                        if (!response.ok && !data.success) {
+                            throw new Error(data.error || 'Failed to subscribe');
+                        }
                     }
+
+                    // Save to localStorage
+                    localStorage.setItem('ideas_email', email);
+
+                    // Show content
+                    emailGate.classList.add('hidden');
+                    ideasContent.classList.remove('hidden');
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (error) {
+                    console.error('Subscription error:', error);
+                    alert('Something went wrong. Please try again.');
+
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Unlock Ideas</span><iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>';
                 }
-
-                // Save to localStorage
-                localStorage.setItem('ideas_email', email);
-
-                // Show content
-                emailGate.classList.add('hidden');
-                ideasContent.classList.remove('hidden');
-
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (error) {
-                console.error('Subscription error:', error);
-                alert('Something went wrong. Please try again.');
-
-                // Reset button
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Unlock Ideas</span><iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>';
-            }
+            });
         });
     </script>
 </body>
