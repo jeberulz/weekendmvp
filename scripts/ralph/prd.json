@@ -1,0 +1,55 @@
+{
+  "project": "WeekendMVP",
+  "branchName": "ralph/ideas-today-redirect",
+  "description": "Create a dynamic /ideas/today page that redirects to the most recently posted startup idea for use in welcome emails",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create Ideas Manifest File",
+      "description": "As the system, I need a manifest.json file that tracks all ideas with their publish dates so the redirect can determine which idea is most recent",
+      "acceptanceCriteria": [
+        "Create ideas/manifest.json file",
+        "Manifest contains an 'ideas' array with objects having: slug, title, publishedAt (ISO date)",
+        "Include existing idea: ai-meeting-notes-cleaner with publishedAt date of 2025-01-20",
+        "Ideas array is sorted by publishedAt descending (newest first)",
+        "npm run lint passes",
+        "npm run build passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Create Ideas Today API Endpoint",
+      "description": "As a subscriber clicking the welcome email link, I want /ideas/today to redirect me to the most recent idea so I always see fresh content",
+      "acceptanceCriteria": [
+        "Create api/ideas-today.js as a Vercel edge function",
+        "Function reads ideas/manifest.json to get the ideas array",
+        "Function extracts the first idea's slug (most recent due to sort order)",
+        "Function returns a 302 redirect to /ideas/[slug].html",
+        "If manifest is empty or missing, redirect to /startup-ideas.html as fallback",
+        "npm run lint passes",
+        "npm run build passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Configure Vercel Routing for /ideas/today",
+      "description": "As a subscriber, I want to visit /ideas/today (clean URL) and be routed to the API endpoint so the redirect works seamlessly",
+      "acceptanceCriteria": [
+        "Add rewrite rule to vercel.json: source '/ideas/today' -> destination '/api/ideas-today'",
+        "Existing rewrites in vercel.json are preserved",
+        "npm run lint passes",
+        "npm run build passes",
+        "Verify in browser manually: visiting /ideas/today redirects to the most recent idea page"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Manual browser verification required - Vercel rewrite configured"
+    }
+  ]
+}

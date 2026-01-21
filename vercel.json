@@ -1,3 +1,9 @@
 {
-  "devCommand": "python3 -m http.server 5174"
+  "devCommand": "python3 -m http.server 5174",
+  "rewrites": [
+    {
+      "source": "/ideas/today",
+      "destination": "/api/ideas-today"
+    }
+  ]
 }
