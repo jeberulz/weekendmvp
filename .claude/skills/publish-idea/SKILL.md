@@ -24,10 +24,12 @@ Example: `/publish-idea nutrition-planner`
 1. **Reads** all markdown files from `ideas/drafts/{folder-name}/`
 2. **Analyzes** content to determine which sections have sufficient data
 3. **Extracts/generates** content for each section
-4. **Generates** HTML using the dynamic template
+4. **Generates** HTML using the dynamic template (with SEO schema markup)
 5. **Updates** `ideas/manifest.json` with the new idea
 6. **Adds** a card to `startup-ideas.html`
-7. **Reports** what was created
+7. **Updates** `sitemap.xml` for search engine discovery (SEO)
+8. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines (AEO)
+9. **Reports** what was created
 
 ---
 
@@ -243,6 +245,54 @@ Find the `<div id="ideas-grid">` section and add a new card BEFORE the placehold
 </a>
 ```
 
+### Step 8: Update sitemap.xml (SEO)
+
+Add a new `<url>` entry to `sitemap.xml` in the "Startup Ideas" section:
+
+```xml
+<url>
+  <loc>https://weekendmvp.app/ideas/{slug}.html</loc>
+  <lastmod>{YYYY-MM-DD}</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+</url>
+```
+
+Use today's date for `lastmod`. Insert before the `<!-- Legal Pages -->` comment.
+
+### Step 9: Update ItemList Schema in startup-ideas.html (AEO)
+
+Find the `"@type": "ItemList"` section in the JSON-LD script block and:
+
+1. **Increment** `numberOfItems` by 1
+2. **Add** a new ListItem at the next position:
+
+```json
+{
+  "@type": "ListItem",
+  "position": {NEXT_POSITION},
+  "item": {
+    "@type": "SoftwareApplication",
+    "name": "{TITLE}",
+    "applicationCategory": "{SCHEMA_CATEGORY}",
+    "description": "{SHORT_DESCRIPTION}",
+    "url": "https://weekendmvp.app/ideas/{slug}.html"
+  }
+}
+```
+
+**Category mapping for schema:**
+| Idea Category | Schema applicationCategory |
+|---------------|---------------------------|
+| SaaS | BusinessApplication |
+| Productivity | ProductivityApplication |
+| Health | HealthApplication |
+| Fintech | FinanceApplication |
+| Education | EducationalApplication |
+| Developer | DeveloperApplication |
+| Creator | MultimediaApplication |
+| E-commerce | ShoppingApplication |
+
 ---
 
 ## Output Report
@@ -255,7 +305,8 @@ After completion, report:
 **Files created/modified:**
 - ideas/{slug}.html (new)
 - ideas/manifest.json (updated)
-- startup-ideas.html (card added)
+- startup-ideas.html (card added + ItemList schema updated)
+- sitemap.xml (new URL added)
 
 **Sections included:**
 - The Problem
@@ -267,8 +318,115 @@ After completion, report:
 - Tech Stack (if included)
 - AI Build Prompts (4 prompts)
 
+**SEO/AEO:**
+- sitemap.xml: New idea page added
+- ItemList schema: Updated with {POSITION} items total
+- JSON-LD: Article + SoftwareApplication + HowTo + BreadcrumbList
+
 **Preview:** Open ideas/{slug}.html in browser to verify.
 ```
+
+---
+
+## SEO/AEO Requirements
+
+**IMPORTANT:** All generated idea pages MUST include proper SEO and AEO (Answer Engine Optimization) markup for search engines and AI assistants (ChatGPT, Perplexity, Claude).
+
+### Required Meta Tags
+
+Every idea page must include:
+
+```html
+<!-- Twitter Card (with image) -->
+<meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+```
+
+### Required JSON-LD Schema
+
+Every idea page must include this structured data in a `<script type="application/ld+json">` block:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "{TITLE}",
+      "description": "{DESCRIPTION}",
+      "author": { "@id": "https://weekendmvp.app/#person" },
+      "publisher": { "@id": "https://weekendmvp.app/#person" },
+      "datePublished": "{YYYY-MM-DD}",
+      "url": "https://weekendmvp.app/ideas/{slug}.html"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "{TITLE}",
+      "applicationCategory": "{SCHEMA_CATEGORY}",
+      "description": "{TAGLINE}",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "HowTo",
+      "name": "How to Build {TITLE}",
+      "description": "Step-by-step guide to building {TITLE}",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "{STEP_1_TITLE}",
+          "text": "{STEP_1_DESCRIPTION}"
+        }
+        // ... additional steps
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+        { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+        { "@type": "ListItem", "position": 3, "name": "{TITLE}", "item": "https://weekendmvp.app/ideas/{slug}.html" }
+      ]
+    }
+  ]
+}
+```
+
+### Email Gate Pattern (Critical for Crawlers)
+
+Content MUST be visible by default for search engine and AI crawlers. Use this pattern:
+
+```html
+<!-- Email gate - visible by default, JS shows for non-subscribers -->
+<div id="email-gate" class="hidden">
+    <!-- Email capture form -->
+</div>
+
+<!-- Main content - visible by default for crawlers -->
+<div id="gated-content">
+    <!-- All idea content here -->
+</div>
+
+<script>
+// Check subscription and show gate only for non-subscribers
+if (!localStorage.getItem('weekendmvp_subscribed')) {
+    document.getElementById('email-gate').classList.remove('hidden');
+    document.getElementById('gated-content').classList.add('hidden');
+}
+</script>
+```
+
+**Why this matters:** AI crawlers (GPTBot, PerplexityBot, Claude-Web) cannot execute JavaScript. If content is hidden by default with CSS `class="hidden"`, crawlers see empty pages and won't index or cite your content.
+
+### SEO/AEO Checklist for Generated Pages
+
+- [ ] `twitter:image` meta tag present
+- [ ] JSON-LD script with Article, SoftwareApplication, HowTo, BreadcrumbList
+- [ ] Email gate uses correct visibility pattern (content visible by default)
+- [ ] Canonical URL set correctly
 
 ---
 
@@ -402,6 +560,8 @@ Before marking complete:
 - [ ] Created HTML file with proper formatting
 - [ ] Updated manifest.json
 - [ ] Added card to startup-ideas.html
+- [ ] Updated sitemap.xml with new idea URL
+- [ ] Updated ItemList schema in startup-ideas.html (numberOfItems + new ListItem)
 - [ ] Verified HTML renders correctly
 
 ### Accessibility Checklist (REQUIRED)
