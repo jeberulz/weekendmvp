@@ -201,28 +201,32 @@
             submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
 
             try {
-                // Submit to Beehiiv via our API
-                const response = await fetch('/api/ideas-subscribe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, first_name: 'Friend' })
-                });
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-                const data = await response.json();
+                if (!isLocalhost) {
+                    // Production: Submit to Beehiiv via our API
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: 'Friend' })
+                    });
 
-                if (response.ok || data.success) {
-                    // Save to localStorage
-                    localStorage.setItem('ideas_email', email);
+                    const data = await response.json();
 
-                    // Show content
-                    emailGate.classList.add('hidden');
-                    ideasContent.classList.remove('hidden');
-
-                    // Scroll to top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    throw new Error(data.error || 'Failed to subscribe');
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
                 }
+
+                // Save to localStorage
+                localStorage.setItem('ideas_email', email);
+
+                // Show content
+                emailGate.classList.add('hidden');
+                ideasContent.classList.remove('hidden');
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (error) {
                 console.error('Subscription error:', error);
                 alert('Something went wrong. Please try again.');
