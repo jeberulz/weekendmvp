@@ -71,11 +71,12 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         email: email,
-        reactivate_existing: false,
-        send_welcome_email: false, // Don't send welcome email for ideas page
+        reactivate_existing: true,
+        send_welcome_email: false,
         utm_source: 'startup-ideas',
         utm_medium: 'website',
         utm_campaign: 'daily-ideas',
+        automation_ids: [AUTOMATION_ID],
         custom_fields: [
           { name: 'first_name', value: first_name || 'Friend' }
         ],
@@ -94,42 +95,9 @@ export default async function handler(req) {
       }
     }
 
-    // Helper function to enroll subscriber in automation
-    const enrollInAutomation = async (subscriberEmail) => {
-      try {
-        const automationResponse = await fetch(
-          `https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/automations/${AUTOMATION_ID}/journeys`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: subscriberEmail }),
-          }
-        );
-
-        if (!automationResponse.ok) {
-          const automationError = await automationResponse.text();
-          console.error('Automation enrollment error:', {
-            status: automationResponse.status,
-            error: automationError,
-            email: subscriberEmail
-          });
-        } else {
-          console.log('Successfully enrolled in automation:', subscriberEmail);
-        }
-      } catch (automationErr) {
-        console.error('Failed to enroll in automation:', automationErr);
-      }
-    };
-
     if (!beehiivResponse.ok) {
       // Check if it's a duplicate subscriber (which is fine)
       if (beehiivResponse.status === 409 || (data.message && data.message.includes('already'))) {
-        // Still enroll in automation for returning subscribers
-        await enrollInAutomation(email);
-
         return new Response(
           JSON.stringify({ success: true, message: 'Already subscribed' }),
           {
@@ -156,9 +124,6 @@ export default async function handler(req) {
         }
       );
     }
-
-    // Enroll new subscriber in automation
-    await enrollInAutomation(email);
 
     // Success
     return new Response(
