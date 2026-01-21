@@ -75,9 +75,9 @@ export default async function handler(req) {
         utm_source: 'startup-ideas',
         utm_medium: 'website',
         utm_campaign: 'daily-ideas',
-        custom_fields: {
-          first_name: first_name || 'Friend',
-        },
+        custom_fields: [
+          { name: 'first_name', value: first_name || 'Friend' }
+        ],
       }),
     });
 
