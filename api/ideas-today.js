@@ -27,8 +27,11 @@ export default async function handler(req) {
       return Response.redirect(`${url.protocol}//${url.host}/startup-ideas.html`, 302);
     }
 
-    // Get the first idea (most recent due to sort order)
-    const mostRecentIdea = manifest.ideas[0];
+    // Sort ideas by publishedAt descending (newest first) and get the most recent
+    const sortedIdeas = manifest.ideas.sort((a, b) =>
+      new Date(b.publishedAt) - new Date(a.publishedAt)
+    );
+    const mostRecentIdea = sortedIdeas[0];
 
     // Redirect to the idea page
     return Response.redirect(`${url.protocol}//${url.host}/ideas/${mostRecentIdea.slug}.html`, 302);
