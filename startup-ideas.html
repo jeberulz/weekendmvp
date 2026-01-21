@@ -64,37 +64,134 @@
     </div>
 
     <!-- Email Gate Section -->
-    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
-        <div class="text-center max-w-2xl mx-auto">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-medium mb-8">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-                Updated regularly
-            </div>
+    <section id="email-gate" class="relative z-10">
 
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium text-white tracking-tighter leading-[1.1] mb-6">
-                Startup Ideas<br>
-                <span class="text-neutral-400">you can build this weekend.</span>
-            </h1>
+        <!-- Hero -->
+        <div class="pt-32 pb-20 px-6">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-medium mb-8">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                    New ideas added regularly
+                </div>
 
-            <p class="text-lg md:text-xl text-neutral-400 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
-                Research-backed ideas with the problem, solution, market validation, and AI prompts to help you ship.
-            </p>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium text-white tracking-tighter leading-[1.1] mb-6">
+                    Startup Ideas<br>
+                    <span class="text-neutral-400">you can build this weekend.</span>
+                </h1>
 
-            <!-- Email Form -->
-            <div class="max-w-md mx-auto">
-                <form id="ideas-email-form" class="space-y-4">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
-                            class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
-                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
-                            <span>Unlock Ideas</span>
-                            <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
-                        </button>
-                    </div>
-                    <p class="text-xs text-neutral-600">Free access. No spam. Unsubscribe anytime.</p>
-                </form>
+                <p class="text-lg md:text-xl text-neutral-400 font-light tracking-tight max-w-2xl mx-auto leading-relaxed">
+                    Research-backed ideas for busy professionals who want to ship something real without quitting their day job.
+                </p>
             </div>
         </div>
+
+        <!-- Who This Is For -->
+        <div class="py-20 px-6 border-t border-white/5">
+            <div class="max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-xl font-medium text-white mb-8 flex items-center gap-3">
+                            <iconify-icon icon="lucide:check-circle" class="text-white"></iconify-icon>
+                            This is for you if:
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You have a 9-5 but want a side project that could become something more</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You're a dev, designer, or PM with skills but no idea what to build</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You want validated ideas, not random brainstorms from ChatGPT</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You have weekends, not months, to prove an idea works</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-medium text-white mb-8 flex items-center gap-3">
+                            <iconify-icon icon="lucide:x-circle" class="text-neutral-600"></iconify-icon>
+                            Not for you if:
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:x" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You want "the next billion dollar idea" (these are small, shippable MVPs)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-neutral-400">
+                                <iconify-icon icon="lucide:x" class="text-neutral-600 mt-0.5 min-w-[16px]"></iconify-icon>
+                                <span>You're looking for ideas that require funding or a team to execute</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- What You Get -->
+        <div class="py-20 px-6 border-t border-white/5">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-medium text-white tracking-tight mb-4 text-center">What you get with each idea</h2>
+                <p class="text-neutral-400 text-center mb-12 max-w-xl mx-auto">Everything you need to go from "that sounds interesting" to "I shipped it."</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-white">
+                            <iconify-icon icon="lucide:search" width="20"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium mb-2">Research & Validation</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed">Market data, competitor landscape, and proof that real people have this problem.</p>
+                    </div>
+                    <div class="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-white">
+                            <iconify-icon icon="lucide:code" width="20"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium mb-2">Build Prompts</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed">Copy-paste AI prompts to help you build the MVP with Claude, Cursor, or any AI tool.</p>
+                    </div>
+                    <div class="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                        <div class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-white">
+                            <iconify-icon icon="lucide:rocket" width="20"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium mb-2">Done-For-You Option</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed">Don't want to build it yourself? Book a consult and I'll build it for you.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Gate CTA -->
+        <div class="py-24 px-6 border-t border-white/5 bg-gradient-to-b from-transparent to-[#0A0A0A]/50">
+            <div class="max-w-2xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Get instant access to all ideas
+                </h2>
+                <p class="text-lg text-neutral-400 font-light mb-10 max-w-xl mx-auto">
+                    Enter your email and unlock the full library of research-backed startup ideas.
+                </p>
+
+                <!-- Email Form -->
+                <div class="max-w-md mx-auto">
+                    <form id="ideas-email-form" class="space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
+                                <span>Unlock Ideas</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
+                            </button>
+                        </div>
+                        <p class="text-xs text-neutral-600">Free access. No spam. Unsubscribe anytime.</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </section>
 
     <!-- Ideas Content Section (Hidden until email submitted) -->
