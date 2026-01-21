@@ -139,6 +139,7 @@ Always include this CSS for screen-reader-only text:
 
 When creating new HTML pages, verify:
 
+**Accessibility:**
 - [ ] All icon-only buttons have `aria-label`
 - [ ] All decorative icons have `aria-hidden="true"`
 - [ ] Logo divs have `role="img"` and `aria-label="Weekend MVP"`
@@ -149,6 +150,13 @@ When creating new HTML pages, verify:
 - [ ] Color-only indicators have supplementary text
 - [ ] `lang="en"` on html element
 - [ ] Heading hierarchy is logical (h1 > h2 > h3, no skipping)
+
+**SEO/AEO:**
+- [ ] Page added to `sitemap.xml`
+- [ ] `twitter:image` meta tag present
+- [ ] Canonical URL set
+- [ ] JSON-LD schema included (if applicable)
+- [ ] Email gate content visible by default (if using gate)
 
 ---
 
@@ -218,19 +226,118 @@ When implementing email subscriptions, follow `BEEHIIV_CURSOR_RULES.md`:
 
 ---
 
+## SEO & AEO (Answer Engine Optimization)
+
+**All pages must be optimized for both search engines (Google) and AI answer engines (ChatGPT, Perplexity, Claude).**
+
+### Critical Files
+
+| File | Purpose | Update When |
+|------|---------|-------------|
+| `robots.txt` | Allows AI crawlers (GPTBot, PerplexityBot, Claude-Web) | Rarely changes |
+| `sitemap.xml` | Lists all pages for discovery | **Every new page** |
+
+### Sitemap Updates
+
+When adding a new page, add to `sitemap.xml`:
+
+```xml
+<url>
+  <loc>https://weekendmvp.app/{path}</loc>
+  <lastmod>{YYYY-MM-DD}</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.7</priority>
+</url>
+```
+
+### Email Gate Pattern (Critical for Crawlers)
+
+**Content MUST be visible by default.** AI crawlers cannot execute JavaScript.
+
+```html
+<!-- CORRECT - Content visible by default -->
+<div id="email-gate" class="hidden">
+    <!-- Gate form here -->
+</div>
+<div id="gated-content">
+    <!-- Main content visible to crawlers -->
+</div>
+<script>
+if (!localStorage.getItem('weekendmvp_subscribed')) {
+    document.getElementById('email-gate').classList.remove('hidden');
+    document.getElementById('gated-content').classList.add('hidden');
+}
+</script>
+
+<!-- INCORRECT - Content hidden from crawlers -->
+<div id="gated-content" class="hidden">
+    <!-- Crawlers see nothing! -->
+</div>
+```
+
+### Required Meta Tags
+
+Every page needs:
+
+```html
+<meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+<link rel="canonical" href="https://weekendmvp.app/{path}">
+```
+
+### JSON-LD Schema Markup
+
+Include structured data for AI understanding:
+
+**startup-ideas.html:**
+- `CollectionPage` + `ItemList` (update numberOfItems and add ListItem for each new idea)
+- `FAQPage` with common questions
+- `BreadcrumbList`
+
+**Individual idea pages (ideas/*.html):**
+- `Article` with headline, description, datePublished
+- `SoftwareApplication` with applicationCategory
+- `HowTo` with steps
+- `BreadcrumbList`
+
+### Application Categories for Schema
+
+| Idea Category | Schema applicationCategory |
+|---------------|---------------------------|
+| SaaS | BusinessApplication |
+| Productivity | ProductivityApplication |
+| Health | HealthApplication |
+| Fintech | FinanceApplication |
+| Education | EducationalApplication |
+| Developer | DeveloperApplication |
+| Creator | MultimediaApplication |
+| E-commerce | ShoppingApplication |
+
+### SEO/AEO Checklist for New Pages
+
+- [ ] Added to `sitemap.xml`
+- [ ] `twitter:image` meta tag present
+- [ ] Canonical URL set
+- [ ] JSON-LD schema included
+- [ ] Email gate uses correct visibility pattern (content visible by default)
+- [ ] If idea page: Updated `ItemList` in startup-ideas.html
+
+---
+
 ## File Structure
 
 ```
 weekendmvp/
 ├── index.html              # Main landing page
-├── startup-ideas.html      # Ideas collection page
+├── startup-ideas.html      # Ideas collection page (has ItemList schema)
 ├── starter-kit.html        # Starter kit page
 ├── privacy-policy.html     # Privacy policy
+├── sitemap.xml             # SEO: All pages for search engines
+├── robots.txt              # SEO: Crawler permissions (allows AI bots)
 ├── ideas/                  # Individual idea pages
 │   ├── manifest.json       # Ideas metadata
 │   ├── _template.html      # Static template
 │   ├── _template-dynamic.html  # Dynamic template for skill
-│   └── {slug}.html         # Individual idea pages
+│   └── {slug}.html         # Individual idea pages (with schema)
 ├── api/                    # Vercel API routes
 ├── scripts.js              # Main JavaScript
 ├── styles.css              # Custom CSS
