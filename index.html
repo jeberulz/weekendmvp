@@ -250,7 +250,7 @@
     <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
         <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
             <a href="index.html" class="flex items-center gap-2">
-                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white"></div>
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
             </a>
 
             <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
@@ -259,7 +259,7 @@
                 <a href="#faq" class="hover:text-white transition-colors">FAQ</a>
             </div>
 
-            <button class="open-modal group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+            <button class="open-modal group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
                 <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
                 <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
                     Get the Kit
@@ -272,7 +272,8 @@
     <main class="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-32">
         <div class="text-center max-w-4xl mx-auto mb-24 relative z-10">
             <div class="animate-enter inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-medium mb-8">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" aria-hidden="true"></span>
+                <span class="sr-only">Available now:</span>
                 Weekend MVP Starter Kit
             </div>
             
@@ -606,9 +607,9 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="flex flex-col items-center md:items-start gap-2">
                 <a href="index.html">
-                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white"></div>
+                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
                 </a>
-                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi</a></p>
+                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
             </div>
             <div class="flex items-center gap-4">
                 <a href="privacy-policy.html" id="privacy-policy-link" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
@@ -644,8 +645,8 @@
     <!-- Cookie Customize Modal -->
     <div id="cookie-customize-modal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
         <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300">
-            <button id="close-customize-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
-                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+            <button id="close-customize-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors" aria-label="Close cookie preferences">
+                <iconify-icon icon="lucide:x" width="20" aria-hidden="true"></iconify-icon>
             </button>
             
             <div class="mb-6">
@@ -661,7 +662,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="analytics-toggle" class="sr-only peer">
-                        <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                        <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-white/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
                     </label>
                 </div>
             </div>
@@ -679,8 +680,8 @@
     <!-- Modal for Beehiiv Signup -->
     <div id="signup-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
         <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
-            <button id="close-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors">
-                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
+            <button id="close-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors" aria-label="Close modal">
+                <iconify-icon icon="lucide:x" width="20" aria-hidden="true"></iconify-icon>
             </button>
             
             <div class="mb-8">
@@ -693,12 +694,12 @@
                 <div>
                     <label for="first-name" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">First Name</label>
                     <input type="text" id="first-name" name="first_name" required placeholder="Jane" 
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all">
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
                 </div>
                 <div>
                     <label for="email" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
                     <input type="email" id="email" name="email" required placeholder="jane@example.com" 
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all">
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
                 </div>
                 
                 <button type="submit" class="group relative w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all mt-4">
@@ -724,6 +725,7 @@
     <!-- Meta Pixel Noscript Fallback -->
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1602726847528813&ev=PageView&noscript=1"
+    alt=""
     /></noscript>
 </body>
 </html>

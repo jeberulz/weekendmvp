@@ -33,6 +33,142 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://weekendmvp.app/#website",
+          "url": "https://weekendmvp.app/",
+          "name": "Weekend MVP",
+          "publisher": { "@id": "https://weekendmvp.app/#person" }
+        },
+        {
+          "@type": "CollectionPage",
+          "name": "Startup Ideas You Can Build This Weekend",
+          "description": "Research-backed startup ideas for busy professionals who want to ship something real without quitting their day job.",
+          "url": "https://weekendmvp.app/startup-ideas.html",
+          "isPartOf": { "@id": "https://weekendmvp.app/#website" },
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "mainEntity": {
+            "@type": "ItemList",
+            "numberOfItems": 5,
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "AI Meeting Notes Cleaner",
+                  "applicationCategory": "ProductivityApplication",
+                  "description": "Paste messy meeting transcripts, get clean action items and summaries instantly.",
+                  "url": "https://weekendmvp.app/ideas/ai-meeting-notes-cleaner.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "AI Nutrition Planner for Trainers",
+                  "applicationCategory": "HealthApplication",
+                  "description": "Help NASM certified trainers deliver personalized meal plans that complement their clients' fitness goals.",
+                  "url": "https://weekendmvp.app/ideas/ai-nutrition-planner-trainers.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Invoice Reminder Bot",
+                  "applicationCategory": "BusinessApplication",
+                  "description": "Stop losing money to late-paying clients. Automated reminders that follow up on overdue invoices.",
+                  "url": "https://weekendmvp.app/ideas/invoice-reminder-bot.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 4,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Online Marketplace for NASM Trainers",
+                  "applicationCategory": "HealthApplication",
+                  "description": "Connect clients with NASM certified trainers for specialized fitness services.",
+                  "url": "https://weekendmvp.app/ideas/nasm-trainer-marketplace.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 5,
+                "item": {
+                  "@type": "SoftwareApplication",
+                  "name": "Personal Wellness Coach",
+                  "applicationCategory": "HealthApplication",
+                  "description": "An AI wellness coach that suggests micro-habits that actually fit your busy life.",
+                  "url": "https://weekendmvp.app/ideas/personal-wellness-coach.html"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What are good startup ideas for a weekend project?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Good weekend startup ideas include AI tools like meeting notes cleaners, invoice reminder bots, nutrition planners, and wellness coaches. The key is focusing on one user type, one core action, and one clear output that can be demoed in 15 seconds. Look for problems that real people face daily and can be solved with a simple 3-screen app."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How long does it take to build an MVP?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A well-scoped MVP can be built in 48 hours (one weekend). The key is following the 3-screen structure: landing page, input form, and output page. Avoid auth, payments, and complex dashboards for the first version. Focus on proving the core value proposition works."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is a Weekend MVP?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A Weekend MVP is the smallest version of a product that creates proof of concept. It includes a live demo, a landing page with waitlist capture, and typically takes 48 hours to build. The goal is momentum, feedback, and building an email list of interested users."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What makes a good micro SaaS idea?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A good micro SaaS idea solves a specific problem for a specific audience, can be built by one person, has low operational overhead, and can generate recurring revenue. The best ideas come from scratching your own itch or solving problems you see others face repeatedly."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
 
@@ -46,7 +182,7 @@
     <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
         <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
             <a href="index.html" class="flex items-center gap-2">
-                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white"></div>
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
             </a>
 
             <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
@@ -54,7 +190,7 @@
                 <a href="starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
             </div>
 
-            <a href="index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+            <a href="index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
                 <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
                 <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
                     Get the Kit
@@ -63,14 +199,15 @@
         </nav>
     </div>
 
-    <!-- Email Gate Section -->
-    <section id="email-gate" class="relative z-10">
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden relative z-10">
 
         <!-- Hero -->
         <div class="pt-32 pb-20 px-6">
             <div class="text-center max-w-4xl mx-auto">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-medium mb-8">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" aria-hidden="true"></span>
+                    <span class="sr-only">Active:</span>
                     New ideas added regularly
                 </div>
 
@@ -88,10 +225,10 @@
                     <form id="hero-email-form" class="email-form space-y-4">
                         <div class="flex flex-col gap-3">
                             <input type="text" name="first_name" required placeholder="Your first name"
-                                class="gate-first-name bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                                class="gate-first-name bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all text-sm">
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <input type="email" name="email" required placeholder="Your email address"
-                                    class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                                    class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all text-sm">
                                 <button type="submit" class="gate-submit-btn group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
                                     <span>Unlock Ideas</span>
                                     <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
@@ -199,10 +336,10 @@
                     <form id="bottom-email-form" class="email-form space-y-4">
                         <div class="flex flex-col gap-3">
                             <input type="text" name="first_name" required placeholder="Your first name"
-                                class="gate-first-name bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                                class="gate-first-name bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all text-sm">
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <input type="email" name="email" required placeholder="Your email address"
-                                    class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                                    class="gate-email flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all text-sm">
                                 <button type="submit" class="gate-submit-btn group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
                                     <span>Unlock Ideas</span>
                                     <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
@@ -217,8 +354,8 @@
 
     </section>
 
-    <!-- Ideas Content Section (Hidden until email submitted) -->
-    <section id="ideas-content" class="hidden">
+    <!-- Ideas Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="ideas-content">
         <!-- Hero for logged in users -->
         <div class="pt-32 pb-16 px-6">
             <div class="max-w-6xl mx-auto">
@@ -227,9 +364,9 @@
                         <h1 class="text-3xl md:text-5xl font-medium text-white tracking-tight mb-4">Startup Ideas</h1>
                         <p class="text-lg text-neutral-400 font-light max-w-xl">Research-backed ideas you can build this weekend. Click any idea to see the full breakdown.</p>
                     </div>
-                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors">
-                        <iconify-icon icon="lucide:calendar" width="16"></iconify-icon>
-                        Want me to build one?
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors">
+                        <iconify-icon icon="lucide:calendar" width="16" aria-hidden="true"></iconify-icon>
+                        Want me to build one?<span class="sr-only"> (opens in new tab)</span>
                     </a>
                 </div>
 
@@ -320,9 +457,9 @@
                 <p class="text-lg text-neutral-400 font-light mb-8 max-w-xl mx-auto">
                     Book a consult and let's turn one of these ideas into your MVP.
                 </p>
-                <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all">
-                    <span>Book a Consult</span>
-                    <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all">
+                    <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
                 </a>
             </div>
         </section>
@@ -332,9 +469,9 @@
             <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex flex-col items-center md:items-start gap-2">
                     <a href="index.html">
-                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-white"></div>
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
                     </a>
-                    <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi</a></p>
+                    <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="privacy-policy.html" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
@@ -349,14 +486,16 @@
         document.getElementById('year').textContent = new Date().getFullYear();
 
         // Check for existing access
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
         const hasAccess = localStorage.getItem('ideas_email');
         const emailGate = document.getElementById('email-gate');
         const ideasContent = document.getElementById('ideas-content');
 
-        if (hasAccess) {
-            // User already submitted email - show content
-            emailGate.classList.add('hidden');
-            ideasContent.classList.remove('hidden');
+        if (!hasAccess) {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideasContent.classList.add('hidden');
         }
 
         // Handle form submissions (both hero and bottom forms)

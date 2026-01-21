@@ -272,6 +272,63 @@ After completion, report:
 
 ---
 
+## Accessibility Requirements
+
+**IMPORTANT:** All generated HTML MUST follow the accessibility guidelines in `/CLAUDE.md`. Every page must pass these checks:
+
+### Required Accessibility Patterns
+
+**1. Icon-Only Buttons:**
+```html
+<!-- Mobile menu button -->
+<button id="mobile-menu-open" class="..." aria-label="Open menu">
+    <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+</button>
+
+<!-- Close button -->
+<button id="mobile-menu-close" class="..." aria-label="Close menu">
+    <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+</button>
+
+<!-- Copy button -->
+<button onclick="copyPrompt(this)" class="..." aria-label="Copy prompt to clipboard">
+    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+</button>
+```
+
+**2. Logo Divs:**
+```html
+<div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+```
+
+**3. External Links:**
+```html
+<a href="https://cal.com/..." target="_blank" rel="noopener noreferrer" class="...">
+    Book a Consult<span class="sr-only"> (opens in new tab)</span>
+</a>
+```
+
+**4. Focus Rings:**
+- Light backgrounds: Use `focus:ring-black/30` (NOT /10)
+- Dark backgrounds: Use `focus:ring-white/40` (NOT /20)
+
+**5. Form Inputs:**
+All inputs must have visible or aria-labels.
+
+### Accessibility Checklist for Generated Pages
+
+Before saving HTML, verify:
+- [ ] Mobile menu open button has `aria-label="Open menu"`
+- [ ] Mobile menu close button has `aria-label="Close menu"`
+- [ ] All copy buttons have `aria-label="Copy prompt to clipboard"`
+- [ ] Both logo instances have `role="img" aria-label="Weekend MVP"`
+- [ ] CTA external link has `rel="noopener noreferrer"` and sr-only text
+- [ ] Footer creator link has `rel="noopener noreferrer"` and sr-only text
+- [ ] All decorative icons have `aria-hidden="true"`
+- [ ] Focus rings use `/30` or `/40` opacity (not /10 or /20)
+
+---
+
 ## Error Handling
 
 - If `ideas/drafts/{folder-name}/` doesn't exist: Report error with instructions
@@ -346,3 +403,15 @@ Before marking complete:
 - [ ] Updated manifest.json
 - [ ] Added card to startup-ideas.html
 - [ ] Verified HTML renders correctly
+
+### Accessibility Checklist (REQUIRED)
+
+- [ ] Mobile menu open button: `aria-label="Open menu"` + icon `aria-hidden="true"`
+- [ ] Mobile menu close button: `aria-label="Close menu"` + icon `aria-hidden="true"`
+- [ ] All copy buttons: `aria-label="Copy prompt to clipboard"` + icon `aria-hidden="true"`
+- [ ] Nav logo: `role="img" aria-label="Weekend MVP"`
+- [ ] Footer logo: `role="img" aria-label="Weekend MVP"`
+- [ ] CTA link: `rel="noopener noreferrer"` + `<span class="sr-only"> (opens in new tab)</span>`
+- [ ] Creator link: `rel="noopener noreferrer"` + `<span class="sr-only"> (opens in new tab)</span>`
+- [ ] Form inputs: `focus:ring-black/30` (not /10)
+- [ ] All decorative iconify-icons: `aria-hidden="true"`
