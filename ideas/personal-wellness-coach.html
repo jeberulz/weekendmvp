@@ -18,6 +18,7 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="Personal Wellness Coach | Startup Ideas">
     <meta property="twitter:description" content="Build an AI-powered wellness coach that adapts to your schedule, learns your habits, and suggests micro-habits that fit your busy life.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
 
     <link rel="canonical" href="https://weekendmvp.app/ideas/personal-wellness-coach">
 
@@ -69,11 +70,11 @@
     <!-- Navigation -->
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <div class="flex items-center gap-4">
-            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1">
-                <iconify-icon icon="lucide:menu" width="24"></iconify-icon>
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
             <a href="../index.html">
-                <div class="logo h-4 w-32 text-black"></div>
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
             </a>
         </div>
         <div class="flex items-center gap-6">
@@ -82,8 +83,8 @@
         </div>
     </div>
 
-    <!-- Email Gate Section -->
-    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
@@ -103,10 +104,10 @@
                 <form id="ideas-email-form" class="space-y-4">
                     <div class="flex flex-col gap-3">
                         <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
-                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                         <div class="flex flex-col sm:flex-row gap-3">
                             <input type="email" id="gate-email" name="email" required placeholder="Your email address"
-                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                             <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
                                 <span>Unlock Idea</span>
                                 <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
@@ -122,8 +123,8 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <!-- Idea Content Section (Hidden until email submitted) -->
-    <section id="idea-content" class="hidden">
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
 
@@ -134,8 +135,8 @@
                             <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                             All Ideas
                         </a>
-                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors">
-                            <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
                         </button>
                     </div>
 
@@ -472,14 +473,19 @@
         document.getElementById('year').textContent = new Date().getFullYear();
 
         // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
         const hasAccess = localStorage.getItem('ideas_email');
         const emailGate = document.getElementById('email-gate');
         const ideaContent = document.getElementById('idea-content');
 
         if (hasAccess) {
-            emailGate.classList.add('hidden');
-            ideaContent.classList.remove('hidden');
+            // User has access - ensure content is visible
             initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
         }
 
         // Handle form submission

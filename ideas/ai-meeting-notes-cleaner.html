@@ -18,6 +18,7 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="AI Meeting Notes Cleaner | Startup Ideas">
     <meta property="twitter:description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
 
     <link rel="canonical" href="https://weekendmvp.app/ideas/ai-meeting-notes-cleaner">
 
@@ -63,17 +64,84 @@
             display: none;
         }
     </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "AI Meeting Notes Cleaner",
+          "description": "Build an AI tool that transforms messy meeting transcripts into clean action items and summaries. Full breakdown with prompts to build it this weekend.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2025-01-20",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-meeting-notes-cleaner.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI Meeting Notes Cleaner",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web",
+          "description": "A simple web app where users paste their raw meeting transcript and instantly get back a clean summary, extracted action items with owners, key decisions made, and follow-up questions."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build an AI Meeting Notes Cleaner MVP",
+          "description": "Step-by-step guide to building a meeting notes cleanup tool in a weekend using AI.",
+          "totalTime": "PT8H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Create a Next.js app with Tailwind CSS. Set up a single page with a large text input for pasting transcripts, a Clean Notes button, and an output section showing Summary, Action Items, Decisions, and Follow-ups."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Add an API route that takes a meeting transcript and uses OpenAI or Anthropic to extract a 2-3 sentence summary, action items with owners, key decisions made, and open questions/follow-ups."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Create a landing page with a headline, before/after example, email capture form for waitlist, and 3 benefit bullets with modern minimal styling."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI Meeting Notes Cleaner", "item": "https://weekendmvp.app/ideas/ai-meeting-notes-cleaner.html" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
     <!-- Navigation -->
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <div class="flex items-center gap-4">
-            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1">
-                <iconify-icon icon="lucide:menu" width="24"></iconify-icon>
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
             <a href="../index.html">
-                <div class="logo h-4 w-32 text-black"></div>
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
             </a>
         </div>
         <div class="flex items-center gap-6">
@@ -82,8 +150,8 @@
         </div>
     </div>
 
-    <!-- Email Gate Section -->
-    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
@@ -103,10 +171,10 @@
                 <form id="ideas-email-form" class="space-y-4">
                     <div class="flex flex-col gap-3">
                         <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
-                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                         <div class="flex flex-col sm:flex-row gap-3">
                             <input type="email" id="gate-email" name="email" required placeholder="Your email address"
-                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                             <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
                                 <span>Unlock Idea</span>
                                 <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
@@ -122,8 +190,8 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <!-- Idea Content Section (Hidden until email submitted) -->
-    <section id="idea-content" class="hidden">
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
 
@@ -134,8 +202,8 @@
                             <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                             All Ideas
                         </a>
-                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors">
-                            <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
                         </button>
                     </div>
 
@@ -228,7 +296,7 @@
                         <div class="space-y-6">
                             <!-- Prompt 1 -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
-                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
@@ -248,7 +316,7 @@ Use the App Router and keep it simple - no auth needed for MVP.
 
                             <!-- Prompt 2 -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
-                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
@@ -266,7 +334,7 @@ Return as structured JSON. Include error handling for empty or too-short transcr
 
                             <!-- Prompt 3 -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
-                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
@@ -288,8 +356,8 @@ The tool should be visible below (or unlocked after email).
                     <div class="p-12 bg-black rounded-[3rem] text-center">
                         <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
                         <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
-                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
-                            <span>Book a Consult</span>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
                         </a>
                     </div>
 
@@ -310,9 +378,9 @@ The tool should be visible below (or unlocked after email).
             <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex flex-col items-center md:items-start gap-2">
                     <a href="../index.html">
-                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black"></div>
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black" role="img" aria-label="Weekend MVP"></div>
                     </a>
-                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline">John Iseghohi</a></p>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
@@ -327,14 +395,19 @@ The tool should be visible below (or unlocked after email).
         document.getElementById('year').textContent = new Date().getFullYear();
 
         // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
         const hasAccess = localStorage.getItem('ideas_email');
         const emailGate = document.getElementById('email-gate');
         const ideaContent = document.getElementById('idea-content');
 
         if (hasAccess) {
-            emailGate.classList.add('hidden');
-            ideaContent.classList.remove('hidden');
+            // User has access - ensure content is visible
             initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
         }
 
         // Handle form submission
