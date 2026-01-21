@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Meeting Notes Cleaner | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries. Full breakdown with prompts to build it this weekend.">
+    <!-- DYNAMIC: Update for each idea -->
+    <title>{{IDEA_TITLE}} | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="{{IDEA_DESCRIPTION}}">
     <meta name="author" content="John Iseghohi">
 
     <!-- Open Graph -->
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-meeting-notes-cleaner">
-    <meta property="og:title" content="AI Meeting Notes Cleaner | Startup Ideas">
-    <meta property="og:description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries.">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/{{IDEA_SLUG}}">
+    <meta property="og:title" content="{{IDEA_TITLE}} | Startup Ideas">
+    <meta property="og:description" content="{{IDEA_DESCRIPTION}}">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="AI Meeting Notes Cleaner | Startup Ideas">
-    <meta property="twitter:description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries.">
+    <meta property="twitter:title" content="{{IDEA_TITLE}} | Startup Ideas">
+    <meta property="twitter:description" content="{{IDEA_DESCRIPTION}}">
 
-    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-meeting-notes-cleaner">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/{{IDEA_SLUG}}">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="../image/favicon.png">
@@ -91,11 +92,11 @@
             </a>
 
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
-                AI Meeting Notes Cleaner
+                {{IDEA_TITLE}}
             </h1>
 
             <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
-                Turn messy meeting transcripts into clean action items and summaries in seconds.
+                {{IDEA_SHORT_DESCRIPTION}}
             </p>
 
             <!-- Email Form -->
@@ -139,9 +140,20 @@
                         <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
                         <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
                         <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        {{#SECTION_MARKET_RESEARCH}}
                         <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        {{/SECTION_MARKET_RESEARCH}}
+                        {{#SECTION_COMPETITIVE_LANDSCAPE}}
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+                        {{/SECTION_COMPETITIVE_LANDSCAPE}}
 
                         <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        {{#SECTION_BUSINESS_MODEL}}
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        {{/SECTION_BUSINESS_MODEL}}
+                        {{#SECTION_TECH_STACK}}
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        {{/SECTION_TECH_STACK}}
                         <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
                     </nav>
                 </aside>
@@ -152,18 +164,20 @@
                     <!-- Header -->
                     <div class="mb-12">
                         <div class="flex items-center gap-3 mb-4">
-                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span>
-                            <span class="text-neutral-400 text-xs">~8 hours to build</span>
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">{{CATEGORY}}</span>
+                            <span class="text-neutral-400 text-xs">~{{BUILD_TIME}} hours to build</span>
                         </div>
-                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Meeting Notes Cleaner</h1>
-                        <p class="text-xl text-neutral-500 font-light">Paste messy transcripts. Get clean action items.</p>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">{{IDEA_TITLE}}</h1>
+                        <p class="text-xl text-neutral-500 font-light">{{IDEA_TAGLINE}}</p>
                     </div>
+
+                    <!-- ===== ALWAYS INCLUDED SECTIONS ===== -->
 
                     <!-- The Problem -->
                     <div id="section-problem" class="mb-12 scroll-mt-24">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">
-                            Meeting transcripts from Zoom, Google Meet, or Otter.ai are messy. They're full of filler words ("um", "like", "you know"), off-topic tangents, and unclear speaker attributions. Busy professionals spend 15-30 minutes manually cleaning up notes after every meeting just to extract the 3-5 action items that actually matter. That's hours lost every week.
+                            {{PROBLEM_DESCRIPTION}}
                         </p>
                     </div>
 
@@ -171,112 +185,146 @@
                     <div id="section-solution" class="mb-12 scroll-mt-24">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-8">
-                            A simple web app where users paste their raw meeting transcript and instantly get back: a clean summary, extracted action items with owners, key decisions made, and follow-up questions. One click to copy or export.
+                            {{SOLUTION_DESCRIPTION}}
                         </p>
 
                         <div class="p-8 bg-neutral-100 rounded-3xl">
                             <h4 class="text-sm font-semibold mb-6">How it works:</h4>
                             <div class="flex flex-col md:flex-row gap-4">
-                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
-                                    <span class="text-xs font-bold text-neutral-400">1</span>
-                                    <p class="text-sm font-medium mt-1">Paste transcript</p>
-                                    <p class="text-xs text-neutral-500 mt-1">User pastes raw meeting notes</p>
-                                </div>
-                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
-                                    <span class="text-xs font-bold text-neutral-400">2</span>
-                                    <p class="text-sm font-medium mt-1">AI processes</p>
-                                    <p class="text-xs text-neutral-500 mt-1">Extract summary, actions, decisions</p>
-                                </div>
-                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
-                                    <span class="text-xs font-bold text-neutral-400">3</span>
-                                    <p class="text-sm font-medium mt-1">Copy output</p>
-                                    <p class="text-xs text-neutral-500 mt-1">One-click copy or export</p>
-                                </div>
+                                {{HOW_IT_WORKS_STEPS}}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Market Research -->
+                    <!-- ===== CONDITIONAL SECTIONS ===== -->
+
+                    <!-- Market Research (included when market data present) -->
+                    {{#SECTION_MARKET_RESEARCH}}
                     <div id="section-market" class="mb-12 scroll-mt-24">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                        <p class="text-neutral-600 leading-relaxed mb-6">The meeting productivity space is massive. Otter.ai raised $50M+, Fireflies.ai has millions of users, and Notion AI is adding meeting features. But most tools focus on transcription, not cleanup. There's a gap for a simple, single-purpose tool that just cleans notes.</p>
+                        <p class="text-neutral-600 leading-relaxed mb-6">{{MARKET_OVERVIEW}}</p>
                         <ul class="space-y-3">
-                            <li class="flex items-start gap-3 text-sm">
-                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span>Professionals average 11-15 meetings per week (Microsoft Work Trend Index)</span>
-                            </li>
-                            <li class="flex items-start gap-3 text-sm">
-                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span>AI transcription tools have normalized transcript exports - raw material is abundant</span>
-                            </li>
-                            <li class="flex items-start gap-3 text-sm">
-                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span>Reddit threads show frustration with "cleaning up" Otter/Zoom notes</span>
-                            </li>
+                            {{MARKET_VALIDATION_POINTS}}
                         </ul>
                     </div>
+                    {{/SECTION_MARKET_RESEARCH}}
 
-                    <!-- Build Prompts -->
+                    <!-- Competitive Landscape (included when competitors mentioned) -->
+                    {{#SECTION_COMPETITIVE_LANDSCAPE}}
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">{{COMPETITIVE_OVERVIEW}}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{COMPETITORS_LIST}}
+                        </div>
+                        {{#COMPETITIVE_GAPS}}
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">{{COMPETITIVE_GAPS}}</p>
+                        </div>
+                        {{/COMPETITIVE_GAPS}}
+                    </div>
+                    {{/SECTION_COMPETITIVE_LANDSCAPE}}
+
+                    <!-- Business Model (included when revenue details present) -->
+                    {{#SECTION_BUSINESS_MODEL}}
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">{{BUSINESS_MODEL_OVERVIEW}}</p>
+
+                        <!-- Pricing Tiers -->
+                        {{#PRICING_TIERS}}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            {{PRICING_TIERS}}
+                        </div>
+                        {{/PRICING_TIERS}}
+
+                        <!-- Unit Economics -->
+                        {{#UNIT_ECONOMICS}}
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                {{UNIT_ECONOMICS}}
+                            </div>
+                        </div>
+                        {{/UNIT_ECONOMICS}}
+                    </div>
+                    {{/SECTION_BUSINESS_MODEL}}
+
+                    <!-- Tech Stack (included when tech mentioned) -->
+                    {{#SECTION_TECH_STACK}}
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">{{TECH_STACK_OVERVIEW}}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{TECH_STACK_ITEMS}}
+                        </div>
+                    </div>
+                    {{/SECTION_TECH_STACK}}
+
+                    <!-- ===== AI BUILD PROMPTS (ALWAYS INCLUDED) ===== -->
+
                     <div id="section-prompts" class="mb-12 scroll-mt-24">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
 
                         <div class="space-y-6">
-                            <!-- Prompt 1 -->
+                            <!-- Prompt 1: Project Setup -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
                                 <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-Create a Next.js app with Tailwind CSS for an AI Meeting Notes Cleaner.
-
-The app needs:
-- A single page with a large text input for pasting transcripts
-- A "Clean Notes" button
-- An output section showing: Summary, Action Items, Decisions, Follow-ups
-- Copy to clipboard buttons for each section
-- Dark mode styling
-
-Use the App Router and keep it simple - no auth needed for MVP.
+                                    {{PROMPT_PROJECT_SETUP}}
                                 </p>
                             </div>
 
-                            <!-- Prompt 2 -->
+                            <!-- Prompt 2: Core Feature -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
                                 <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-Add an API route that takes a meeting transcript and uses OpenAI (or Anthropic) to extract:
-
-1. A 2-3 sentence summary
-2. Action items with owners (if mentioned)
-3. Key decisions made
-4. Open questions/follow-ups
-
-Return as structured JSON. Include error handling for empty or too-short transcripts.
+                                    {{PROMPT_CORE_FEATURE}}
                                 </p>
                             </div>
 
-                            <!-- Prompt 3 -->
+                            <!-- Prompt 3: Landing Page -->
                             <div class="prompt-box rounded-3xl p-6 relative group">
                                 <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
                                     <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-Create a landing page above the main tool that:
-- Has a headline: "Clean your meeting notes in seconds"
-- Shows a before/after example
-- Has an email capture form for the waitlist
-- Includes 3 benefit bullets
-- Uses modern, minimal dark styling
-
-The tool should be visible below (or unlocked after email).
+                                    {{PROMPT_LANDING_PAGE}}
                                 </p>
                             </div>
+
+                            <!-- Prompt 4: Branding Package -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    {{PROMPT_BRANDING_PACKAGE}}
+                                </p>
+                            </div>
+
+                            <!-- Prompt 5: Additional (optional) -->
+                            {{#PROMPT_ADDITIONAL}}
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">5. {{PROMPT_ADDITIONAL_TITLE}}</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    {{PROMPT_ADDITIONAL}}
+                                </p>
+                            </div>
+                            {{/PROMPT_ADDITIONAL}}
                         </div>
                     </div>
 
@@ -312,7 +360,7 @@ The tool should be visible below (or unlocked after email).
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
-                    <div class="text-[10px] text-neutral-400 font-mono">© <span id="year"></span> WEEKEND MVP</div>
+                    <div class="text-[10px] text-neutral-400 font-mono">&copy; <span id="year"></span> WEEKEND MVP</div>
                 </div>
             </div>
         </footer>
