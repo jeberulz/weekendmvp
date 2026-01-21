@@ -80,9 +80,9 @@ export default async function handler(req) {
           utm_source: 'weekend-mvp-landing',
           utm_medium: 'website',
           utm_campaign: 'starter-kit',
-          custom_fields: {
-            first_name: first_name,
-          },
+          custom_fields: [
+            { name: 'first_name', value: first_name }
+          ],
         }),
       });
     } catch (formError) {
@@ -102,9 +102,9 @@ export default async function handler(req) {
           utm_source: 'weekend-mvp-landing',
           utm_medium: 'website',
           utm_campaign: 'starter-kit',
-          custom_fields: {
-            first_name: first_name,
-          },
+          custom_fields: [
+            { name: 'first_name', value: first_name }
+          ],
         }),
       });
     }
