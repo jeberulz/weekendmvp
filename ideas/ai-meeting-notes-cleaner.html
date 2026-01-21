@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Meeting Notes Cleaner | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries. Full breakdown with prompts to build it this weekend.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-meeting-notes-cleaner">
+    <meta property="og:title" content="AI Meeting Notes Cleaner | Startup Ideas">
+    <meta property="og:description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI Meeting Notes Cleaner | Startup Ideas">
+    <meta property="twitter:description" content="Build an AI tool that transforms messy meeting transcripts into clean action items and summaries.">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-meeting-notes-cleaner">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <!-- Top Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen"></div>
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">All Ideas</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+
+            <a href="../index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl">
+                    Get the Kit
+                </span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-white transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-white tracking-tighter leading-[1.1] mb-4">
+                AI Meeting Notes Cleaner
+            </h1>
+
+            <p class="text-lg text-neutral-400 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Turn messy meeting transcripts into clean action items and summaries in seconds.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                            class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold hover:bg-neutral-200 transition-all whitespace-nowrap">
+                            <span>Unlock Idea</span>
+                            <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                        </button>
+                    </div>
+                    <p class="text-xs text-neutral-600">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Idea Content Section (Hidden until email submitted) -->
+    <section id="idea-content" class="hidden">
+        <div class="pt-32 pb-16 px-6">
+            <div class="max-w-3xl mx-auto">
+
+                <!-- Back Link -->
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-white transition-colors">
+                    <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                    All Startup Ideas
+                </a>
+
+                <!-- Header -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-white/5 rounded-md text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~8 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">AI Meeting Notes Cleaner</h1>
+                    <p class="text-xl text-neutral-400 font-light">Paste messy transcripts. Get clean action items.</p>
+                </div>
+
+                <!-- The Problem -->
+                <div class="mb-12 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <iconify-icon icon="lucide:alert-circle" width="20" class="text-red-400"></iconify-icon>
+                        <h2 class="text-lg font-medium text-white">The Problem</h2>
+                    </div>
+                    <p class="text-neutral-400 leading-relaxed">
+                        Meeting transcripts from Zoom, Google Meet, or Otter.ai are messy. They're full of filler words ("um", "like", "you know"), off-topic tangents, and unclear speaker attributions. Busy professionals spend 15-30 minutes manually cleaning up notes after every meeting just to extract the 3-5 action items that actually matter. That's hours lost every week.
+                    </p>
+                </div>
+
+                <!-- The Solution -->
+                <div class="mb-12 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <iconify-icon icon="lucide:lightbulb" width="20" class="text-yellow-400"></iconify-icon>
+                        <h2 class="text-lg font-medium text-white">The Solution</h2>
+                    </div>
+                    <p class="text-neutral-400 leading-relaxed mb-6">
+                        A simple web app where users paste their raw meeting transcript and instantly get back: a clean summary, extracted action items with owners, key decisions made, and follow-up questions. One click to copy or export.
+                    </p>
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-medium text-white">How it works:</h3>
+                        <ol class="space-y-2 text-sm text-neutral-400">
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5">1</span>
+                                <span>User pastes their raw meeting transcript into a text box</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5">2</span>
+                                <span>AI processes and extracts: summary, action items, decisions, and follow-ups</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5">3</span>
+                                <span>User copies the clean output or exports to Notion/Slack</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Market Research -->
+                <div class="mb-12 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <iconify-icon icon="lucide:bar-chart-2" width="20" class="text-blue-400"></iconify-icon>
+                        <h2 class="text-lg font-medium text-white">Market Research</h2>
+                    </div>
+                    <div class="space-y-4 text-neutral-400">
+                        <p class="leading-relaxed">The meeting productivity space is massive. Otter.ai raised $50M+, Fireflies.ai has millions of users, and Notion AI is adding meeting features. But most tools focus on transcription, not cleanup. There's a gap for a simple, single-purpose tool that just cleans notes.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2">
+                                <iconify-icon icon="lucide:check" width="16" class="text-green-400 mt-0.5 shrink-0"></iconify-icon>
+                                <span>Professionals average 11-15 meetings per week (Microsoft Work Trend Index)</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <iconify-icon icon="lucide:check" width="16" class="text-green-400 mt-0.5 shrink-0"></iconify-icon>
+                                <span>AI transcription tools have normalized transcript exports - raw material is abundant</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <iconify-icon icon="lucide:check" width="16" class="text-green-400 mt-0.5 shrink-0"></iconify-icon>
+                                <span>Reddit threads show frustration with "cleaning up" Otter/Zoom notes</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Build Prompts -->
+                <div class="mb-12 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <iconify-icon icon="lucide:sparkles" width="20" class="text-purple-400"></iconify-icon>
+                        <h2 class="text-lg font-medium text-white">AI Prompts to Build This</h2>
+                    </div>
+                    <p class="text-neutral-500 text-sm mb-6">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                    <div class="space-y-4">
+                        <!-- Prompt 1 -->
+                        <div class="relative">
+                            <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Prompt 1: Project Setup</div>
+                            <div class="bg-neutral-900 border border-white/10 rounded-xl p-4 font-mono text-sm text-neutral-300 leading-relaxed">
+Create a Next.js app with Tailwind CSS for an AI Meeting Notes Cleaner.
+
+The app needs:
+- A single page with a large text input for pasting transcripts
+- A "Clean Notes" button
+- An output section showing: Summary, Action Items, Decisions, Follow-ups
+- Copy to clipboard buttons for each section
+- Dark mode styling
+
+Use the App Router and keep it simple - no auth needed for MVP.
+                            </div>
+                            <button onclick="copyPrompt(this)" class="absolute top-8 right-2 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <iconify-icon icon="lucide:copy" width="14" class="text-neutral-400"></iconify-icon>
+                            </button>
+                        </div>
+
+                        <!-- Prompt 2 -->
+                        <div class="relative">
+                            <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Prompt 2: AI Processing</div>
+                            <div class="bg-neutral-900 border border-white/10 rounded-xl p-4 font-mono text-sm text-neutral-300 leading-relaxed">
+Add an API route that takes a meeting transcript and uses OpenAI (or Anthropic) to extract:
+
+1. A 2-3 sentence summary
+2. Action items with owners (if mentioned)
+3. Key decisions made
+4. Open questions/follow-ups
+
+Return as structured JSON. Include error handling for empty or too-short transcripts.
+                            </div>
+                            <button onclick="copyPrompt(this)" class="absolute top-8 right-2 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <iconify-icon icon="lucide:copy" width="14" class="text-neutral-400"></iconify-icon>
+                            </button>
+                        </div>
+
+                        <!-- Prompt 3 -->
+                        <div class="relative">
+                            <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Prompt 3: Landing Page with Waitlist</div>
+                            <div class="bg-neutral-900 border border-white/10 rounded-xl p-4 font-mono text-sm text-neutral-300 leading-relaxed">
+Create a landing page above the main tool that:
+- Has a headline: "Clean your meeting notes in seconds"
+- Shows a before/after example
+- Has an email capture form for the waitlist
+- Includes 3 benefit bullets
+- Uses modern, minimal dark styling
+
+The tool should be visible below (or unlocked after email).
+                            </div>
+                            <button onclick="copyPrompt(this)" class="absolute top-8 right-2 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                                <iconify-icon icon="lucide:copy" width="14" class="text-neutral-400"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-3">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-6">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://calendly.com/YOUR-LINK" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-xl text-sm font-semibold hover:bg-neutral-200 transition-all">
+                        <iconify-icon icon="lucide:calendar" width="16"></iconify-icon>
+                        <span>Book a Consult</span>
+                    </a>
+                </div>
+
+                <!-- Back to all ideas -->
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-white transition-colors">
+                        <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                        See all startup ideas
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-12 bg-[#050505] mt-16">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-white"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline">John Iseghohi</a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-600 font-mono">© <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            emailGate.classList.add('hidden');
+            ideaContent.classList.remove('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const response = await fetch('/api/ideas-subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, first_name: 'Friend' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok || data.success) {
+                    localStorage.setItem('ideas_email', email);
+                    emailGate.classList.add('hidden');
+                    ideaContent.classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(data.error || 'Failed to subscribe');
+                }
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.previousElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
