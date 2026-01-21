@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "Weekend MVP Starter Kit Landing Page",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "python3 -m http.server 5173",
+    "vercel:dev": "vercel dev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC"
 }
+
+
 
 
 

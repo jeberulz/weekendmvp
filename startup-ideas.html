@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Research-backed startup ideas you can build this weekend. Get the breakdown, prompts, and everything you need to ship.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/startup-ideas">
+    <meta property="og:title" content="Startup Ideas | Weekend MVP">
+    <meta property="og:description" content="Research-backed startup ideas you can build this weekend. Get the breakdown, prompts, and everything you need to ship.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/startup-ideas">
+    <meta property="twitter:title" content="Startup Ideas | Weekend MVP">
+    <meta property="twitter:description" content="Research-backed startup ideas you can build this weekend. Get the breakdown, prompts, and everything you need to ship.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/startup-ideas">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="image/favicon.png">
+    <link rel="apple-touch-icon" href="image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <!-- Top Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-96 bg-white/5 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen"></div>
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+                <a href="index.html" class="hover:text-white transition-colors">Home</a>
+                <a href="starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+
+            <a href="index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Get the Kit
+                </span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-medium mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                Updated regularly
+            </div>
+
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-medium text-white tracking-tighter leading-[1.1] mb-6">
+                Startup Ideas<br>
+                <span class="text-neutral-400">you can build this weekend.</span>
+            </h1>
+
+            <p class="text-lg md:text-xl text-neutral-400 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Research-backed ideas with the problem, solution, market validation, and AI prompts to help you ship.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                            class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all text-sm">
+                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all whitespace-nowrap">
+                            <span>Unlock Ideas</span>
+                            <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>
+                        </button>
+                    </div>
+                    <p class="text-xs text-neutral-600">Free access. No spam. Unsubscribe anytime.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ideas Content Section (Hidden until email submitted) -->
+    <section id="ideas-content" class="hidden">
+        <!-- Hero for logged in users -->
+        <div class="pt-32 pb-16 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+                    <div>
+                        <h1 class="text-3xl md:text-5xl font-medium text-white tracking-tight mb-4">Startup Ideas</h1>
+                        <p class="text-lg text-neutral-400 font-light max-w-xl">Research-backed ideas you can build this weekend. Click any idea to see the full breakdown.</p>
+                    </div>
+                    <a href="https://calendly.com/YOUR-LINK" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors">
+                        <iconify-icon icon="lucide:calendar" width="16"></iconify-icon>
+                        Want me to build one?
+                    </a>
+                </div>
+
+                <!-- Ideas Grid -->
+                <div id="ideas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Example Idea Card 1 -->
+                    <a href="ideas/ai-meeting-notes-cleaner.html" class="group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="px-2 py-1 bg-white/5 rounded-md text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Productivity</span>
+                        </div>
+                        <h3 class="text-lg font-medium text-white mb-2 group-hover:text-neutral-200 transition-colors">AI Meeting Notes Cleaner</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Paste messy meeting transcripts, get clean action items and summaries instantly.</p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+
+                    <!-- Placeholder for more ideas -->
+                    <div class="p-6 bg-[#0A0A0A]/50 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center min-h-[200px]">
+                        <iconify-icon icon="lucide:plus" width="24" class="text-neutral-700 mb-3"></iconify-icon>
+                        <p class="text-sm text-neutral-600">More ideas coming soon</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <section class="py-24 border-t border-white/5 mt-16">
+            <div class="max-w-4xl mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Want me to build one of these for you?
+                </h2>
+                <p class="text-lg text-neutral-400 font-light mb-8 max-w-xl mx-auto">
+                    Book a consult and let's turn one of these ideas into your MVP.
+                </p>
+                <a href="https://calendly.com/YOUR-LINK" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all">
+                    <span>Book a Consult</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-12 bg-[#050505]">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-white"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi</a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="privacy-policy.html" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-600 font-mono">© <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideasContent = document.getElementById('ideas-content');
+
+        if (hasAccess) {
+            // User already submitted email - show content
+            emailGate.classList.add('hidden');
+            ideasContent.classList.remove('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                // Submit to Beehiiv via our API
+                const response = await fetch('/api/ideas-subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, first_name: 'Friend' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok || data.success) {
+                    // Save to localStorage
+                    localStorage.setItem('ideas_email', email);
+
+                    // Show content
+                    emailGate.classList.add('hidden');
+                    ideasContent.classList.remove('hidden');
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(data.error || 'Failed to subscribe');
+                }
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Ideas</span><iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>';
+            }
+        });
+    </script>
+</body>
+</html>

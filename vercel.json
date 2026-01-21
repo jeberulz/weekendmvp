@@ -1,2 +1,5 @@
-{}
+{
+  "devCommand": "python3 -m http.server 5174",
+  "devPort": 5174
+}
 
