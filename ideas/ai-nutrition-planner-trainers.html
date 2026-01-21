@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nutrition Planner for Trainers | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered nutrition planning tool that helps NASM certified trainers deliver personalized meal plans to their clients. Full breakdown with prompts to build it this weekend.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-nutrition-planner-trainers">
+    <meta property="og:title" content="AI Nutrition Planner for Trainers | Startup Ideas">
+    <meta property="og:description" content="Build an AI-powered nutrition planning tool that helps NASM certified trainers deliver personalized meal plans to their clients.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI Nutrition Planner for Trainers | Startup Ideas">
+    <meta property="twitter:description" content="Build an AI-powered nutrition planning tool that helps NASM certified trainers deliver personalized meal plans to their clients.">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-nutrition-planner-trainers">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+    </style>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                AI Nutrition Planner for Trainers
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Help NASM certified trainers deliver personalized meal plans that complement their clients' fitness goals.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                            class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                            <span>Unlock Idea</span>
+                            <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                        </button>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Idea Content Section (Hidden until email submitted) -->
+    <section id="idea-content" class="hidden">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+
+                <!-- Back Link -->
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                    <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                    All Startup Ideas
+                </a>
+
+                <!-- Header -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~8 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Nutrition Planner for Trainers</h1>
+                    <p class="text-xl text-neutral-500 font-light">Help NASM certified trainers deliver personalized meal plans that complement their clients' fitness goals.</p>
+                </div>
+
+                <!-- The Problem -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">
+                        Personal trainers know that nutrition is 80% of the battle, but most lack the tools to deliver comprehensive meal plans. Clients struggle to connect their diet with their workout routines, leading to slower results and frustration. NASM certified trainers especially need to provide holistic guidance that links exercise and nutrition, but existing solutions either focus solely on workouts or require expensive dietitian partnerships.
+                    </p>
+                </div>
+
+                <!-- The Solution -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">
+                        An AI-powered nutrition planning tool that lets trainers generate personalized meal plans based on each client's fitness goals, dietary preferences, and restrictions. The platform syncs nutrition recommendations with workout schedules and tracks both dietary intake and fitness progress in one unified dashboard.
+                    </p>
+
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Onboard Client</p>
+                                <p class="text-xs text-neutral-500 mt-1">Trainer inputs client's goals, dietary preferences, allergies, and current fitness level</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI Generates Plans</p>
+                                <p class="text-xs text-neutral-500 mt-1">AI creates weekly meal plans synced to workout schedule with macro targets</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Track & Adjust</p>
+                                <p class="text-xs text-neutral-500 mt-1">Clients log meals, trainers monitor progress and AI adapts recommendations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Research -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The personal training industry is growing rapidly, with trainers increasingly seeking tools to differentiate their services and improve client outcomes.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>NASM has 100,000+ certified trainers in the US alone, with thousands more certified annually</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>"Meal planning for clients" is a top pain point in trainer communities on Reddit and Facebook groups</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>Existing platforms like Trainerize and TrueCoach focus on workouts but lack integrated AI-powered nutrition features</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Build Prompts -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                    <div class="space-y-6">
+                        <!-- Prompt 1 -->
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                Build a Next.js app for personal trainers to manage client nutrition. Set up authentication with email/password, a PostgreSQL database with tables for trainers, clients, meal_plans, and food_logs. Include a clean dashboard layout with sidebar navigation. Use Tailwind CSS for styling with a professional fitness-focused design.
+                            </p>
+                        </div>
+
+                        <!-- Prompt 2 -->
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. AI Meal Plan Generator</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                Create an AI-powered meal plan generator using OpenAI. The trainer inputs: client's goal (lose fat, build muscle, maintain), daily calorie target, dietary restrictions (vegan, gluten-free, allergies), and workout schedule. Generate a 7-day meal plan with breakfast, lunch, dinner, and snacks. Include macros for each meal and a grocery list. Save generated plans to the database and allow trainers to edit before sharing with clients.
+                            </p>
+                        </div>
+
+                        <!-- Prompt 3 -->
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Client Portal & Tracking</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                Build a client-facing portal where clients can view their assigned meal plans, log daily food intake, and see their progress. Include a simple food logging interface with search (integrate with a nutrition API like Nutritionix or use a basic food database). Show a weekly summary with calories and macros vs targets. Add a progress chart showing weight and measurements over time. Trainers should see all client logs in their dashboard.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux" target="_blank" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                        <span>Book a Consult</span>
+                    </a>
+                </div>
+
+                <!-- Back to all ideas -->
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                        <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                        See all startup ideas
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-32 pt-12 border-t border-neutral-200">
+            <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline">John Iseghohi</a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-400 font-mono">© <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            emailGate.classList.add('hidden');
+            ideaContent.classList.remove('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: 'Friend' })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
