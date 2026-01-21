@@ -1,3 +1,39 @@
 # Ralph Progress Log
-Started: Initial setup
+
+## Codebase Patterns
+- No lint/build scripts exist - this is a static HTML site with Vercel serverless functions
+- Ideas are stored as individual HTML files in /ideas/ directory
+- Idea slugs match their HTML filenames (e.g., ai-meeting-notes-cleaner.html)
+- Vercel edge functions use `export const config = { runtime: 'edge' }` pattern
+- For redirects in edge functions, use `Response.redirect(absoluteUrl, 302)`
+
+---
+
+## 2026-01-21 - US-001
+- **What was implemented:** Created ideas/manifest.json to track all ideas with their publish dates
+- **Files changed:** ideas/manifest.json (created)
+- **Learnings for future iterations:**
+  - The manifest must be kept in sync when adding new ideas - update both the HTML file and manifest.json
+  - Ideas array should always be sorted by publishedAt descending (newest first)
+  - Use ISO date format (YYYY-MM-DD) for publishedAt field
+---
+
+## 2026-01-21 - US-002
+- **What was implemented:** Created api/ideas-today.js Vercel edge function that redirects to the most recent idea
+- **Files changed:** api/ideas-today.js (created)
+- **Learnings for future iterations:**
+  - Edge functions use `export const config = { runtime: 'edge' }` pattern
+  - Use `Response.redirect(url, 302)` for redirects in edge functions
+  - Must construct absolute URLs using `req.url` to get protocol and host
+  - Fetch manifest from deployed URL within edge function: `${url.protocol}//${url.host}/ideas/manifest.json`
+  - Always include fallback redirects for error cases
+---
+
+## 2026-01-21 - US-003
+- **What was implemented:** Added Vercel rewrite rule to route /ideas/today to the API endpoint
+- **Files changed:** vercel.json (modified)
+- **Learnings for future iterations:**
+  - Vercel rewrites use `source` and `destination` keys in a `rewrites` array
+  - Rewrites are different from redirects - they serve content from a different path without changing the URL
+  - Manual browser verification is needed after deploying to Vercel to confirm the full redirect chain works
 ---
