@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Wellness Coach | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered wellness coach that adapts to your schedule, learns your habits, and suggests micro-habits that fit your busy life.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/personal-wellness-coach">
+    <meta property="og:title" content="Personal Wellness Coach | Startup Ideas">
+    <meta property="og:description" content="Build an AI-powered wellness coach that adapts to your schedule, learns your habits, and suggests micro-habits that fit your busy life.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Personal Wellness Coach | Startup Ideas">
+    <meta property="twitter:description" content="Build an AI-powered wellness coach that adapts to your schedule, learns your habits, and suggests micro-habits that fit your busy life.">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/personal-wellness-coach">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1">
+                <iconify-icon icon="lucide:menu" width="24"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                Personal Wellness Coach
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                An AI wellness coach that learns your schedule, habits, and patterns to suggest micro-habits that actually fit your busy life.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                            class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                            <span>Unlock Idea</span>
+                            <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                        </button>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (Hidden until email submitted) -->
+    <section id="idea-content" class="hidden">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Health</span>
+                            <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Personal Wellness Coach</h1>
+                        <p class="text-xl text-neutral-500 font-light">AI wellness that adapts to your life, not the other way around.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Most wellness apps treat everyone the same way. Track your water. Log your sleep. Do 10,000 steps. But your life isn't generic, and your wellness shouldn't be either. Busy professionals have tried everything—habit trackers, fitness apps, meditation programs—but 70% abandon these tools within weeks because they don't adapt to real life. You're slammed on Tuesdays, skip breakfast when stressed, and need different motivation at 6 AM versus 10 PM. Current solutions offer rigid programs that break the moment your schedule changes, leaving you feeling like a failure for not fitting into their mold.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            Build a personal wellness coach that learns how you actually live and creates habits that stick. The app integrates with your calendar, fitness trackers, and daily patterns to suggest micro-habits that fit your actual schedule. Stressed before a big meeting? It suggests a 2-minute breathing exercise. Free 15 minutes between calls? Perfect time for that walk. It's like having a wellness coach who knows your life inside out and never judges you for being human.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Connect Your Life</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Link your calendar, fitness tracker, and daily apps</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">AI Learns Patterns</p>
+                                    <p class="text-xs text-neutral-500 mt-1">System analyzes your schedule, stress points, and free time</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Get Smart Nudges</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Receive contextual micro-habit suggestions at the right moments</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Build Lasting Habits</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Track progress as habits stick without disrupting your life</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The habit tracking market is experiencing explosive growth, driven by rising consumer interest in preventive health and digital wellness tools. Remote work has normalized digital health adoption, and companies are investing more in employee well-being programs.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Market projected to grow from $1.7B (2024) to $5.5B (2033) at 14.2% CAGR</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>90,500+ monthly searches for "habit tracker" with low competition for specialized terms</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Strong community signals: Reddit (r/productivity 2M+ members), Facebook groups, YouTube wellness channels</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>70% of users abandon health programs lacking personalization—huge opportunity for adaptive solutions</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Corporate wellness programs expanding—$10/employee/month is an accessible price point for HR budgets</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The market has 1,000+ habit tracking apps, but few address personalization and schedule integration effectively. Most treat habit building as a one-size-fits-all experience, leaving a clear gap for AI-driven adaptive solutions.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Habitica</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Gamified habit tracker with RPG elements. Fun but not adaptive to schedules or real-life context.</p>
+                                <p class="text-xs text-neutral-400">Free with premium $5-$10/mo</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Streaks</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Simple, Apple-focused habit tracker. Clean design but no AI personalization or calendar awareness.</p>
+                                <p class="text-xs text-neutral-400">$4.99 one-time purchase</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Fabulous</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Science-based habit building with coaching. Beautiful but follows rigid programs, not your life.</p>
+                                <p class="text-xs text-neutral-400">$12.99/mo or $64.99/year</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Noom / Headspace</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Established wellness apps with large user bases. Expensive and focused on specific niches (weight, meditation).</p>
+                                <p class="text-xs text-neutral-400">$59-$70/mo subscription</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">None of these competitors integrate with your calendar to understand your actual availability, or use AI to adapt suggestions based on your stress levels and patterns. The first truly adaptive wellness coach has a clear path to differentiation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Start with a B2C subscription for busy professionals, then expand into B2B corporate wellness programs. The lead magnet (free wellness quiz) captures emails and demonstrates AI personalization before asking for payment.</p>
+
+                        <!-- Pricing Tiers -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Starter</h4>
+                                <p class="text-2xl font-bold mb-2">$9/mo</p>
+                                <p class="text-xs text-neutral-500">Calendar sync, basic habit suggestions, progress tracking</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Pro</h4>
+                                <p class="text-2xl font-bold mb-2">$29/mo</p>
+                                <p class="text-xs text-neutral-500">Wearable integrations, advanced AI coaching, mental health check-ins</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Corporate</h4>
+                                <p class="text-2xl font-bold mb-2">$10/emp</p>
+                                <p class="text-xs text-neutral-500">Team dashboards, admin controls, wellness analytics, SSO</p>
+                            </div>
+                        </div>
+
+                        <!-- Unit Economics -->
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Growth Channels</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-2xl font-bold">$5M</p>
+                                    <p class="text-xs text-neutral-500">ARR Potential</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">YouTube</p>
+                                    <p class="text-xs text-neutral-500">Productivity influencers</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">Reddit</p>
+                                    <p class="text-xs text-neutral-500">AMAs & community</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">HR</p>
+                                    <p class="text-xs text-neutral-500">Corporate partnerships</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">This app requires calendar integrations, wearable data sync, and AI-powered personalization. The stack prioritizes mobile-first experience with robust API integrations.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:expo" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Expo / React Native</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Cross-platform mobile app with native performance, push notifications, and app store deployment</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Postgres database with auth, real-time sync for habit updates, and row-level security</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">GPT-4 for personalized habit suggestions, contextual coaching messages, and pattern analysis</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:googlecalendar" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Google Calendar API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Calendar sync to understand schedule, find free time, and detect high-stress periods</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:apple" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Apple Health / Google Fit</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Wearable data integration for sleep, steps, heart rate, and activity patterns</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Stripe / RevenueCat</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Subscription billing with mobile app store integration and B2B invoicing</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <!-- Prompt 1: Project Setup -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Expo React Native project for a personal wellness coach app. Set up: Project structure with TypeScript, Expo Router for navigation, and NativeWind for styling. Supabase for database with tables for users (profile, preferences, timezone), habits (user_id, name, frequency, time_preference), habit_logs (habit_id, completed_at, context), and calendar_events (user_id, event_data, stress_level). Supabase Auth for email/social login. Basic API routes for habit CRUD, log tracking, and user preferences. Include environment variables setup, proper error handling, and folder structure with /app, /components, /lib, /hooks, and /types directories.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 2: Core Feature -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the AI-powered habit suggestion engine for the wellness coach app. Requirements: Google Calendar OAuth integration that syncs events and identifies free time slots. Algorithm that analyzes: calendar density to detect high-stress days, gaps between meetings for micro-habit opportunities, recurring patterns (e.g., "always free at 7am"). OpenAI API integration that generates contextual suggestions like "You have 15 minutes before your next meeting - perfect for a quick walk" or "Busy day ahead - start with 2-minute breathing exercise". Push notification system that sends suggestions at optimal times. User feedback loop to learn preferences (thumbs up/down on suggestions). The flow: Calendar syncs → AI analyzes patterns → Generates personalized suggestions → User receives timely notifications → Feedback improves future suggestions.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 3: Landing Page -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a landing page for WellnessWise (personal wellness coach) using Next.js and Tailwind CSS. Include: Hero section with headline "Wellness That Fits Your Life" and subheadline about AI that adapts to your schedule. Animated demo showing calendar integration and contextual suggestions. Problem/solution section contrasting "Generic Apps" vs "WellnessWise". How it works with 4 steps (Connect, Learn, Suggest, Build). Social proof section with testimonial placeholders. Interactive wellness quiz CTA that captures email (lead magnet). Pricing section with Individual ($9/mo) and Corporate tiers. FAQ addressing privacy concerns. Clean, calming design with soft greens and blues. Mobile-first responsive layout.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 4: Branding Package -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a branding package for WellnessWise, an AI-powered personal wellness coach that adapts to busy professionals' schedules: Logo concept - Simple mark combining wellness (leaf/growth) with personalization (adaptive/flowing element). Should feel calm yet modern, work at small sizes for app icon. Color palette - Primary: Calming teal/sage green (wellness), Secondary: Warm neutral (approachable), Accent: Soft coral or gold (energy/action). Typography - Heading font that feels friendly yet professional (not clinical), body font that's highly readable on mobile. Provide hex codes, Google Fonts recommendations, and usage guidelines. Include light and dark mode variations suitable for mobile app UI.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 5: Wellness Quiz -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors">
+                                    <iconify-icon icon="lucide:copy" width="18"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">5. Lead Magnet Quiz</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build an interactive wellness quiz for WellnessWise that captures leads and demonstrates AI personalization. Requirements: 8-10 questions covering: work schedule type (9-5, shift, flexible), biggest wellness challenges (sleep, stress, exercise, nutrition), past app experiences, preferred habit timing, stress triggers. Animated progress bar and smooth transitions between questions. Email capture at 70% completion with promise of personalized report. AI-generated results page showing: Wellness profile type, Top 3 recommended micro-habits, Personalized daily schedule preview, CTA to download app. Store responses in Supabase for future personalization. Track conversion from quiz start to email capture to app download.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span>
+                        </a>
+                    </div>
+
+                    <!-- Back to all ideas -->
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-32 pt-12 border-t border-neutral-200">
+            <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline">John Iseghohi</a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-400 font-mono">&copy; <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            emailGate.classList.add('hidden');
+            ideaContent.classList.remove('hidden');
+            initSidebar();
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: 'Friend' })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initSidebar();
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Sidebar initialization function
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+
+            if (!sidebar) return;
+
+            // Mobile menu toggle
+            const toggleMenu = (show) => {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            // Smooth scroll for sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const target = document.querySelector(targetId);
+
+                    if (target) {
+                        const offset = window.innerWidth < 1024 ? 80 : 24;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Update active state
+                        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+
+                        // Close mobile menu
+                        if (window.innerWidth < 1024) {
+                            toggleMenu(false);
+                        }
+                    }
+                });
+            });
+
+            // Intersection Observer for active sidebar link
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.sidebar-link').forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections with IDs that start with 'section-'
+            document.querySelectorAll('[id^="section-"]').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

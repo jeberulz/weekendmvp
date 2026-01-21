@@ -9,6 +9,21 @@
       "slug": "ai-nutrition-planner-trainers",
       "title": "AI Nutrition Planner for Trainers",
       "publishedAt": "2026-01-21"
+    },
+    {
+      "slug": "invoice-reminder-bot",
+      "title": "Invoice Reminder Bot",
+      "publishedAt": "2026-01-21"
+    },
+    {
+      "slug": "nasm-trainer-marketplace",
+      "title": "Online Marketplace for NASM Trainers",
+      "publishedAt": "2026-01-21"
+    },
+    {
+      "slug": "personal-wellness-coach",
+      "title": "Personal Wellness Coach",
+      "publishedAt": "2026-01-21"
     }
   ]
 }
