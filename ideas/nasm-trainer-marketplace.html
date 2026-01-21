@@ -64,6 +64,73 @@
             display: none;
         }
     </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "Online Marketplace for NASM Trainers",
+          "description": "Build a marketplace connecting clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-21",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/nasm-trainer-marketplace.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "NASM Trainer Marketplace",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "description": "A specialized marketplace that connects clients with specific fitness needs to NASM certified trainers with verified credentials."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build a NASM Trainer Marketplace MVP",
+          "description": "Step-by-step guide to building a fitness trainer marketplace in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Create a Next.js 14 project with Supabase for database with tables for trainers, clients, bookings, and reviews."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Build trainer search and discovery with filters for specialty, location, price range, availability, and rating."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Payments",
+              "text": "Implement Stripe Connect for marketplace payments with automatic commission splits and trainer payouts."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Online Marketplace for NASM Trainers", "item": "https://weekendmvp.app/ideas/nasm-trainer-marketplace.html" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
