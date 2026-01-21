@@ -27,10 +27,14 @@ export default async function handler(req) {
       return Response.redirect(`${url.protocol}//${url.host}/startup-ideas.html`, 302);
     }
 
-    // Sort ideas by publishedAt descending (newest first) and get the most recent
-    const sortedIdeas = manifest.ideas.sort((a, b) =>
-      new Date(b.publishedAt) - new Date(a.publishedAt)
-    );
+    // Sort ideas by publishedAt descending (newest first)
+    // Use array index as tiebreaker - later items in manifest are more recent
+    const ideasWithIndex = manifest.ideas.map((idea, index) => ({ ...idea, _index: index }));
+    const sortedIdeas = ideasWithIndex.sort((a, b) => {
+      const dateComparison = new Date(b.publishedAt) - new Date(a.publishedAt);
+      if (dateComparison !== 0) return dateComparison;
+      return b._index - a._index;
+    });
     const mostRecentIdea = sortedIdeas[0];
 
     // Redirect to the idea page
