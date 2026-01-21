@@ -101,13 +101,17 @@
             <!-- Email Form -->
             <div class="max-w-md mx-auto">
                 <form id="ideas-email-form" class="space-y-4">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="email" id="gate-email" name="email" required placeholder="Your email address"
-                            class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
-                        <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
-                            <span>Unlock Idea</span>
-                            <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
-                        </button>
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/10 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                            </button>
+                        </div>
                     </div>
                     <p class="text-xs text-neutral-400">Free access. No spam.</p>
                 </form>
@@ -467,6 +471,7 @@
             e.preventDefault();
 
             const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
@@ -478,7 +483,7 @@
                     const response = await fetch('/api/ideas-subscribe', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, first_name: 'Friend' })
+                        body: JSON.stringify({ email, first_name: firstName })
                     });
 
                     const data = await response.json();
