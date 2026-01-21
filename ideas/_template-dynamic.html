@@ -19,6 +19,7 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="{{IDEA_TITLE}} | Startup Ideas">
     <meta property="twitter:description" content="{{IDEA_DESCRIPTION}}">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
 
     <link rel="canonical" href="https://weekendmvp.app/ideas/{{IDEA_SLUG}}">
 
@@ -64,6 +65,73 @@
             display: none;
         }
     </style>
+
+    <!-- Structured Data for SEO/AEO - DYNAMIC: Update for each idea -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "{{IDEA_TITLE}}",
+          "description": "{{IDEA_DESCRIPTION}}",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "{{PUBLISH_DATE}}",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/{{IDEA_SLUG}}.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "{{IDEA_TITLE}}",
+          "applicationCategory": "{{APPLICATION_CATEGORY}}",
+          "operatingSystem": "Web",
+          "description": "{{SOLUTION_DESCRIPTION}}"
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build {{IDEA_TITLE}} MVP",
+          "description": "Step-by-step guide to building {{IDEA_TITLE}} in a weekend.",
+          "totalTime": "PT{{BUILD_HOURS}}H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "{{STEP_1_DESCRIPTION}}"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "{{STEP_2_DESCRIPTION}}"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "{{STEP_3_DESCRIPTION}}"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "{{IDEA_TITLE}}", "item": "https://weekendmvp.app/ideas/{{IDEA_SLUG}}.html" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
@@ -83,8 +151,8 @@
         </div>
     </div>
 
-    <!-- Email Gate Section -->
-    <section id="email-gate" class="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
@@ -123,8 +191,8 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <!-- Idea Content Section (Hidden until email submitted) -->
-    <section id="idea-content" class="hidden">
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
 
@@ -375,14 +443,19 @@
         document.getElementById('year').textContent = new Date().getFullYear();
 
         // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
         const hasAccess = localStorage.getItem('ideas_email');
         const emailGate = document.getElementById('email-gate');
         const ideaContent = document.getElementById('idea-content');
 
         if (hasAccess) {
-            emailGate.classList.add('hidden');
-            ideaContent.classList.remove('hidden');
+            // User has access - ensure content is visible
             initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
         }
 
         // Handle form submission

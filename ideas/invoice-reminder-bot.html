@@ -64,6 +64,73 @@
             display: none;
         }
     </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "Invoice Reminder Bot",
+          "description": "Invoice Reminder Bot helps freelancers and agencies get paid faster with automated, escalating payment reminders. Connect Stripe or upload invoices, and let the bot handle the awkward follow-ups.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-21",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/invoice-reminder-bot.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Invoice Reminder Bot",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "An automated invoice reminder system that connects to your invoicing tool, sends polite escalating reminder emails automatically, and tracks payment status."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build an Invoice Reminder Bot MVP",
+          "description": "Step-by-step guide to building an automated payment reminder system in a weekend.",
+          "totalTime": "PT8H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Create a Next.js 14 project with Supabase for database, Clerk for authentication, and API routes for invoices, reminders, and Stripe webhooks."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Build automated reminder system with Vercel cron jobs that check for overdue invoices daily and send templated reminder emails via Resend."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Create a landing page with headline, problem section, solution flow, feature highlights, and email capture form."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Invoice Reminder Bot", "item": "https://weekendmvp.app/ideas/invoice-reminder-bot.html" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 

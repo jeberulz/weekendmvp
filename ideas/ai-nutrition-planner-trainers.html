@@ -64,6 +64,73 @@
             display: none;
         }
     </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "AI Nutrition Planner for Trainers",
+          "description": "Build an AI-powered nutrition planning tool that helps NASM certified trainers deliver personalized meal plans to their clients.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-21",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-nutrition-planner-trainers.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI Nutrition Planner for Trainers",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "description": "An AI-powered nutrition planning tool that lets trainers generate personalized meal plans based on each client's fitness goals, dietary preferences, and restrictions."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build an AI Nutrition Planner MVP",
+          "description": "Step-by-step guide to building an AI nutrition planning tool for personal trainers in a weekend.",
+          "totalTime": "PT8H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Build a Next.js app with authentication, PostgreSQL database with tables for trainers, clients, meal_plans, and food_logs."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "AI Meal Plan Generator",
+              "text": "Create an AI-powered meal plan generator using OpenAI that generates 7-day meal plans based on client goals, restrictions, and workout schedule."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Client Portal",
+              "text": "Build a client-facing portal where clients can view meal plans, log food intake, and track progress."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI Nutrition Planner for Trainers", "item": "https://weekendmvp.app/ideas/ai-nutrition-planner-trainers.html" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
