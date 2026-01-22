@@ -20,6 +20,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Articles -->
+  <url>
+    <loc>https://weekendmvp.app/articles/stop-overthinking-start-building.html</loc>
+    <lastmod>2026-01-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Startup Ideas -->
   <url>
     <loc>https://weekendmvp.app/ideas/ai-meeting-notes-cleaner.html</loc>
