@@ -47,6 +47,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://weekendmvp.app/articles/validate-startup-idea-48-hours.html</loc>
+    <lastmod>2026-01-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
   <!-- Startup Ideas -->
   <url>
@@ -81,6 +87,12 @@
   </url>
   <url>
     <loc>https://weekendmvp.app/ideas/ai-knowledge-transfer-platform.html</loc>
+    <lastmod>2026-01-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/ideas/corporate-knowledge-ai-assistant.html</loc>
     <lastmod>2026-01-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
