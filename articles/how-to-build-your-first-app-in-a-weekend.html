@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Build Your First App in a Weekend (Even If You Can't Code) | Weekend MVP</title>
+    <meta name="description" content="You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend. Here's the step-by-step framework.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/articles/how-to-build-your-first-app-in-a-weekend.html">
+    <meta property="og:title" content="How to Build Your First App in a Weekend (Even If You Can't Code)">
+    <meta property="og:description" content="You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend. Here's the step-by-step framework.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/articles/how-to-build-your-first-app-in-a-weekend.html">
+    <meta property="twitter:title" content="How to Build Your First App in a Weekend (Even If You Can't Code)">
+    <meta property="twitter:description" content="You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/articles/how-to-build-your-first-app-in-a-weekend.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "How to Build Your First App in a Weekend (Even If You Can't Code)",
+      "description": "You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend. Here's the step-by-step framework.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-01-22",
+      "dateModified": "2026-01-22",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/articles/how-to-build-your-first-app-in-a-weekend.html"
+      },
+      "image": "https://weekendmvp.app/image/og-image.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">Startup Ideas</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../index.html#process" class="hover:text-white transition-colors">Process</a>
+            </div>
+
+            <a href="../startup-ideas.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Browse Ideas
+                </span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Article Content -->
+    <article class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <!-- Breadcrumb -->
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">Article</span>
+            </nav>
+
+            <!-- Header -->
+            <header class="mb-16">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+                    How to Build Your First App in a Weekend
+                </h1>
+                <p class="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
+                    Even If You Can't Code
+                </p>
+            </header>
+
+            <!-- Pain Point Questions -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Can You Answer "Yes" To Any of These?</h2>
+
+                <div class="space-y-4 text-neutral-300 leading-relaxed">
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span>You have an app idea but don't know how to code</span>
+                    </p>
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span>You've looked at "learn to code" courses and got overwhelmed by the 6-month timelines</span>
+                    </p>
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span>You want to build something but think you need to hire a developer</span>
+                    </p>
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span>You have a weekend free but no idea where to start</span>
+                    </p>
+                </div>
+
+                <p class="mt-8 text-neutral-400 leading-relaxed">
+                    If any of those hit home, this article is for you.
+                </p>
+            </section>
+
+            <!-- The Old Way is Dead -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">The Old Way Is Dead</h2>
+
+                <p class="text-neutral-300 leading-relaxed mb-6">
+                    <span class="text-white font-medium">In 2015:</span> You needed a computer science degree or $50,000 to hire a developer. Building an app was a privilege reserved for the technical elite.
+                </p>
+
+                <p class="text-neutral-300 leading-relaxed mb-6">
+                    <span class="text-white font-medium">In 2020:</span> No-code tools emerged. Bubble, Webflow, Glide. Better, but still a steep learning curve. Still weeks of tutorials before you could build anything real.
+                </p>
+
+                <p class="text-neutral-300 leading-relaxed mb-6">
+                    <span class="text-white font-medium">In 2026:</span> AI changed everything. The barrier to building collapsed overnight.
+                </p>
+
+                <p class="text-neutral-300 leading-relaxed">
+                    Yet most people still think they "can't" build an app. They're operating on outdated assumptions.
+                </p>
+            </section>
+
+            <!-- The Lies -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">3 Lies You've Been Told</h2>
+
+                <div class="space-y-8">
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3">Lie #1: "You need to learn to code first"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed">
+                            <span class="text-white">Reality:</span> AI tools write code for you now. You describe what you want in plain English. The AI handles the technical implementation. You don't need to understand JavaScript to build with JavaScript.
+                        </p>
+                    </div>
+
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3">Lie #2: "Building an app takes months"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed">
+                            <span class="text-white">Reality:</span> People are building full apps in 2 hours with tools like Cursor and Bolt. The traditional "6-month development cycle" is a relic. You can have a working demo by Sunday night.
+                        </p>
+                    </div>
+
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3">Lie #3: "You need technical knowledge to use AI tools"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed">
+                            <span class="text-white">Reality:</span> You need clear thinking. That's it. If you can describe a problem and explain how you want it solved, you can build an app. The AI handles the technical parts you don't understand.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Just Imagine -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Just Imagine...</h2>
+
+                <div class="space-y-4 text-neutral-300 leading-relaxed">
+                    <p><span class="text-white">Friday night:</span> You pick an idea from a curated list. The problem, solution, and scope are already defined. No brainstorming required.</p>
+                    <p><span class="text-white">Saturday morning:</span> You open Cursor or Bolt, paste the first AI prompt, and watch your project scaffold itself.</p>
+                    <p><span class="text-white">Saturday afternoon:</span> Your basic UI is working. You can click through the screens.</p>
+                    <p><span class="text-white">Sunday:</span> You add the core feature, polish the rough edges, and deploy.</p>
+                    <p><span class="text-white">Sunday night:</span> You have a working demo you can share with real people.</p>
+                </div>
+
+                <p class="mt-8 text-neutral-400 leading-relaxed">
+                    That's not a fantasy. That's what "vibe coding" enables in 2026.
+                </p>
+            </section>
+
+            <!-- First CTA -->
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Want ideas that are pre-scoped for a weekend build?</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- The Tools -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">The Tools That Make This Possible</h2>
+
+                <p class="text-neutral-300 leading-relaxed mb-8">
+                    You don't need to know all of these. Pick one and start. Here's the 2026 AI building stack:
+                </p>
+
+                <div class="grid gap-4">
+                    <div class="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-neutral-900 border border-white/10 flex items-center justify-center text-white flex-shrink-0">
+                            <iconify-icon icon="lucide:code" width="16" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium mb-1">Cursor</h3>
+                            <p class="text-neutral-500 text-sm">AI-powered code editor. Describe what you want, it writes the code. Best for slightly technical users who want control.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-neutral-900 border border-white/10 flex items-center justify-center text-white flex-shrink-0">
+                            <iconify-icon icon="lucide:zap" width="16" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium mb-1">Bolt.new</h3>
+                            <p class="text-neutral-500 text-sm">Build full-stack apps in your browser from a single prompt. No local setup. Best for complete beginners.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-neutral-900 border border-white/10 flex items-center justify-center text-white flex-shrink-0">
+                            <iconify-icon icon="lucide:sparkles" width="16" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium mb-1">Claude</h3>
+                            <p class="text-neutral-500 text-sm">AI assistant that helps you think through problems, debug errors, and refine your prompts. Your building partner.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-neutral-900 border border-white/10 flex items-center justify-center text-white flex-shrink-0">
+                            <iconify-icon icon="lucide:layout" width="16" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium mb-1">v0 by Vercel</h3>
+                            <p class="text-neutral-500 text-sm">Generate UI components from descriptions. Describe a "pricing page with 3 tiers" and get production-ready code.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="mt-8 text-neutral-500 text-sm">
+                    Key stat: Startups using AI tools launch MVPs in 2-6 weeks vs 6 months with traditional development. Some people are shipping in days.
+                </p>
+            </section>
+
+            <!-- The Weekend Framework -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">The Weekend Framework</h2>
+
+                <p class="text-neutral-300 leading-relaxed mb-8">
+                    Here's how to go from zero to working demo in one weekend. Three phases, roughly 8-10 hours total.
+                </p>
+
+                <!-- Phase 1 -->
+                <div class="mb-8 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-sm font-bold text-white">1</div>
+                        <div>
+                            <h3 class="text-white font-medium">Friday Night: Pick & Prep</h3>
+                            <p class="text-neutral-500 text-xs">~30 minutes</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Choose an idea</span> from a pre-scoped list. Don't brainstorm. Just pick.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Read the scope:</span> problem, solution, 3-screen flow.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Set up your tool:</span> Create a Cursor or Bolt.new account. Free tiers work fine.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="mb-8 p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-sm font-bold text-white">2</div>
+                        <div>
+                            <h3 class="text-white font-medium">Saturday: Build</h3>
+                            <p class="text-neutral-500 text-xs">4-5 hours</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hour 1:</span> Project setup with AI Prompt #1. Get the basic structure running.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hours 2-3:</span> Core feature with AI Prompt #2. This is the main functionality.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hours 4-5:</span> Polish and fix bugs. Things will break. That's normal. Ask the AI to fix them.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-sm font-bold text-white">3</div>
+                        <div>
+                            <h3 class="text-white font-medium">Sunday: Ship</h3>
+                            <p class="text-neutral-500 text-xs">3-4 hours</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hour 1:</span> Landing page with AI Prompt #3. Simple: headline, description, email capture.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hour 2:</span> Deploy. Vercel or Netlify. Both free. One-click deployment.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                            <span><span class="text-white">Hours 3-4:</span> Test and share with 10 people. Get real feedback. Learn.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Real Example -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Real Example: Building a Meeting Notes Cleaner</h2>
+
+                <p class="text-neutral-300 leading-relaxed mb-6">
+                    Let me walk you through one idea from our library so you can see how this actually works.
+                </p>
+
+                <div class="p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl mb-6">
+                    <h3 class="text-lg text-white font-medium mb-4">AI Meeting Notes Cleaner</h3>
+
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <p class="text-neutral-500 uppercase text-xs font-semibold tracking-wider mb-1">The Problem</p>
+                            <p class="text-neutral-300">After every meeting, you spend 15-30 minutes cleaning up messy transcripts. Action items are buried. Key decisions are scattered. It's tedious and time-consuming.</p>
+                        </div>
+
+                        <div>
+                            <p class="text-neutral-500 uppercase text-xs font-semibold tracking-wider mb-1">The Solution</p>
+                            <p class="text-neutral-300">A simple web app. Paste your messy transcript. Click a button. Get back a clean summary with extracted action items, key decisions, and attendee notes.</p>
+                        </div>
+
+                        <div>
+                            <p class="text-neutral-500 uppercase text-xs font-semibold tracking-wider mb-1">The Build</p>
+                            <p class="text-neutral-300">3 screens total: (1) Paste input, (2) Processing state, (3) Show cleaned output. That's it.</p>
+                        </div>
+
+                        <div>
+                            <p class="text-neutral-500 uppercase text-xs font-semibold tracking-wider mb-1">The Result</p>
+                            <p class="text-neutral-300">A working demo in ~8 hours. Something you can share, get feedback on, and iterate.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-neutral-400 text-sm">
+                    This idea comes with 3 copy-paste AI prompts: one for project setup, one for the core feature (AI processing), and one for the landing page. You don't have to figure out how to prompt the AI. We've done that part.
+                </p>
+            </section>
+
+            <!-- Second CTA -->
+            <div class="my-16 p-8 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-2xl text-center">
+                <h3 class="text-xl text-white font-medium mb-3">Not sure what to build?</h3>
+                <p class="text-neutral-400 text-sm mb-6">We've done the hard part. Each idea comes with research, scope, and AI prompts ready to go.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse All Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- What If I Get Stuck -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">What If I Get Stuck?</h2>
+
+                <p class="text-neutral-300 leading-relaxed mb-6">
+                    You will get stuck. Everyone does. Here's the good news: AI tools have incredible error recovery.
+                </p>
+
+                <div class="space-y-4 text-neutral-300 leading-relaxed">
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span><span class="text-white">Error messages:</span> Copy the error, paste it back to the AI, ask "how do I fix this?" It usually knows.</span>
+                    </p>
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span><span class="text-white">Weird behavior:</span> Describe what's happening vs what you expected. The AI can debug.</span>
+                    </p>
+                    <p class="flex items-start gap-3">
+                        <span class="text-neutral-500 mt-1">&#10132;</span>
+                        <span><span class="text-white">Completely lost:</span> Start a new chat, describe the problem fresh. Sometimes a reset helps.</span>
+                    </p>
+                </div>
+
+                <p class="mt-6 text-neutral-400 text-sm">
+                    And if you want hands-on help, you can always book a Weekend MVP Sprint and build alongside an expert.
+                </p>
+            </section>
+
+            <!-- FAQ -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Quick Questions</h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-white font-medium mb-2 text-sm">Do I really not need to code?</h3>
+                        <p class="text-neutral-500 text-sm leading-relaxed">Correct. You describe, AI writes. You might need to understand basic concepts (what a "button" or "form" is), but you don't need to write code yourself.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-white font-medium mb-2 text-sm">What if the AI makes mistakes?</h3>
+                        <p class="text-neutral-500 text-sm leading-relaxed">It will. That's part of the process. You iterate. It's fast. One broken thing might take 5 minutes to fix instead of 5 hours of learning.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-white font-medium mb-2 text-sm">How much does this cost?</h3>
+                        <p class="text-neutral-500 text-sm leading-relaxed">Free tiers exist for all tools mentioned. Cursor has a free tier. Bolt.new has a free tier. Claude has a free tier. Vercel/Netlify deploy for free. You can build your first app for $0.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-white font-medium mb-2 text-sm">What's the catch with the ideas?</h3>
+                        <p class="text-neutral-500 text-sm leading-relaxed">Free to browse. Enter your email to unlock the full library with prompts. That's it.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TL;DR -->
+            <section class="mb-16 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                <h2 class="text-lg font-medium text-white mb-4">TL;DR</h2>
+                <ul class="space-y-2 text-neutral-400 text-sm">
+                    <li class="flex items-start gap-2">
+                        <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                        <span>You don't need to code. AI tools write code for you.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                        <span>You can build a working app in one weekend (8-10 hours).</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                        <span>The hardest part is picking what to build. We've solved that for you.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon>
+                        <span>Each idea includes AI prompts. Copy, paste, build.</span>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Final CTA -->
+            <section class="text-center py-12">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Your weekend is waiting.
+                </h2>
+                <p class="text-neutral-400 mb-8">Pick an idea. Build something real. Ship by Sunday.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </section>
+
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <a href="../index.html">
+                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
+                </a>
+                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="../privacy-policy.html" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                <div class="text-[10px] text-neutral-600 font-mono">© <span id="year">2026</span> WEEKEND MVP. BUILT TO SHIP.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../scripts.js"></script>
+    <script>
+        // Update year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

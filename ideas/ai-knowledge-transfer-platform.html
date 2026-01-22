@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Driven Knowledge Transfer Platform | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered platform that captures and transfers institutional knowledge during employee transitions. Reduce onboarding time and prevent costly knowledge loss in enterprises.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-knowledge-transfer-platform.html">
+    <meta property="og:title" content="AI-Driven Knowledge Transfer Platform | Startup Ideas">
+    <meta property="og:description" content="Build an AI-powered platform that captures and transfers institutional knowledge during employee transitions. Reduce onboarding time and prevent costly knowledge loss in enterprises.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI-Driven Knowledge Transfer Platform | Startup Ideas">
+    <meta property="twitter:description" content="Build an AI-powered platform that captures and transfers institutional knowledge during employee transitions. Reduce onboarding time and prevent costly knowledge loss in enterprises.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-knowledge-transfer-platform.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "AI-Driven Knowledge Transfer Platform",
+          "description": "Build an AI-powered platform that captures and transfers institutional knowledge during employee transitions. Reduce onboarding time and prevent costly knowledge loss in enterprises.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-knowledge-transfer-platform.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI-Driven Knowledge Transfer Platform",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Capture institutional knowledge before employees leave. Transfer expertise to new hires automatically."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build AI-Driven Knowledge Transfer Platform MVP",
+          "description": "Step-by-step guide to building an AI-Driven Knowledge Transfer Platform in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Set up Next.js project with TypeScript, PostgreSQL database, and authentication using Clerk."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Build the AI-powered knowledge extraction system that conducts structured interviews and creates searchable documentation."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Create a landing page with email capture to validate demand and collect early users."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI-Driven Knowledge Transfer Platform", "item": "https://weekendmvp.app/ideas/ai-knowledge-transfer-platform.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                AI-Driven Knowledge Transfer Platform
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Capture institutional knowledge before employees leave. Transfer expertise to new hires automatically.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                            <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI-Driven Knowledge Transfer Platform</h1>
+                        <p class="text-xl text-neutral-500 font-light">Capture institutional knowledge before employees leave. Transfer expertise to new hires automatically.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Employee turnover is silently bankrupting enterprises. According to Gallup, U.S. businesses lose approximately $1 trillion annually to employee turnover. But the hidden cost is far worse: when experienced employees leave, they take irreplaceable institutional knowledge with them. The average enterprise loses an estimated $4.5 million per year simply by failing to capture and share information effectively during transitions. With global turnover rates hitting 20% in 2024 and positions taking an average of 44 days to fill, organizations face prolonged periods where critical knowledge gaps impact decision-making, extend onboarding times, and force new hires to reinvent solutions that already existed. Two-thirds of all turnover costs are intangible losses from undocumented expertise, client relationships, and process knowledge that walks out the door.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            An AI-powered knowledge transfer platform that automatically captures, documents, and transfers institutional knowledge during employee transitions. The system conducts structured AI interviews with departing employees to extract tacit knowledge that rarely makes it into documentation. It creates searchable, AI-enhanced knowledge repositories organized by role, project, and expertise area. The platform also facilitates intelligent mentorship pairing between outgoing and incoming employees, ensuring a warm handoff of critical relationships and context.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Knowledge Extraction</p>
+                                    <p class="text-xs text-neutral-500 mt-1">AI conducts structured interviews with departing employees to capture tacit knowledge, processes, and key relationships</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Smart Documentation</p>
+                                    <p class="text-xs text-neutral-500 mt-1">System automatically organizes and indexes knowledge by role, project, and topic for instant searchability</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Mentorship Matching</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Platform pairs new hires with relevant knowledge sources and facilitates structured handoff sessions</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Continuous Learning</p>
+                                    <p class="text-xs text-neutral-500 mt-1">New hires ask questions and the AI surfaces relevant knowledge, getting smarter with each interaction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The knowledge management software market is experiencing significant growth driven by digital transformation, remote work adoption, and AI integration. Large enterprises are investing heavily to address operational knowledge gaps.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Global knowledge management software market valued at $20-35 billion in 2024, projected to reach $60-90 billion by 2033 at 11-14% CAGR (Grand View Research, Straits Research)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Large enterprises account for 66.61% of market share, driven by complex multi-geography operations requiring sophisticated knowledge governance (Grand View Research)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Employee onboarding software market growing from $2.12B in 2025 to $4.36B by 2029 at 20.1% CAGR (Business Research Company)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Cloud deployment captures 62.66% of market share; AI and ML integration is the leading trend revolutionizing content management and search</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>North America leads with 37.3% market share; BFSI, Healthcare, IT, and Manufacturing sectors are highest adopters</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The market has established knowledge management players, but most focus on general documentation rather than the specific employee transition workflow.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Guru</h4>
+                                <p class="text-xs text-neutral-500 mb-2">AI-powered knowledge platform with browser extension and Slack integration. Strong for team wikis and real-time knowledge surfacing.</p>
+                                <p class="text-xs text-neutral-400">$18/user/mo (All-in-One), Enterprise custom</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Bloomfire</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise knowledge engagement platform. Strong for centralized knowledge bases with Q&A features.</p>
+                                <p class="text-xs text-neutral-400">~$25-49/user/mo, multi-year contracts required</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Confluence</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Atlassian's wiki and collaboration platform. Ubiquitous but generalist, not optimized for employee transitions.</p>
+                                <p class="text-xs text-neutral-400">Free (10 users), $5.16-9.73/user/mo, Enterprise custom</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Trainual</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Training and onboarding focused. Good for process documentation but lacks AI-powered knowledge extraction.</p>
+                                <p class="text-xs text-neutral-400">$249-499+/mo flat rate by team size</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Loom</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Video-first knowledge sharing. Great for async communication but videos are hard to search and update.</p>
+                                <p class="text-xs text-neutral-400">$15-20/user/mo (Business), ~$45/user/mo Enterprise</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Notion</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Flexible workspace for docs and wikis. Popular but requires significant setup and maintenance overhead.</p>
+                                <p class="text-xs text-neutral-400">$10-20/user/mo, Enterprise custom</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Existing tools are either general-purpose (Confluence, Notion) or expensive enterprise solutions. None focus specifically on the structured offboarding-to-onboarding knowledge transfer flow with AI-powered extraction of tacit knowledge. The gap is a purpose-built tool that proactively captures knowledge before employees leave, not just stores it after the fact.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Subscription-based SaaS model with per-user pricing, targeting mid-market companies and enterprises with high turnover or critical knowledge roles. Pricing positioned below enterprise solutions but above general documentation tools.</p>
+
+                        <!-- Pricing Tiers -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Starter</h4>
+                                <p class="text-2xl font-bold mb-2">Free</p>
+                                <p class="text-xs text-neutral-500">Up to 5 users, basic knowledge capture, limited AI queries</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Pro</h4>
+                                <p class="text-2xl font-bold mb-2">$15<span class="text-sm font-normal">/user/mo</span></p>
+                                <p class="text-xs text-neutral-500">Unlimited AI extraction, analytics, integrations, priority support</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Enterprise</h4>
+                                <p class="text-2xl font-bold mb-2">$25<span class="text-sm font-normal">/user/mo</span></p>
+                                <p class="text-xs text-neutral-500">SSO, SCIM, custom retention policies, dedicated success manager</p>
+                            </div>
+                        </div>
+
+                        <!-- Unit Economics -->
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-lg font-bold">$180</p>
+                                    <p class="text-xs text-neutral-500">Annual Revenue per User (Pro)</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">~$3</p>
+                                    <p class="text-xs text-neutral-500">Est. AI API Cost per User/Mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">80%</p>
+                                    <p class="text-xs text-neutral-500">Gross Margin Target</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">$50K</p>
+                                    <p class="text-xs text-neutral-500">Target Enterprise ACV</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">A modern AI-first stack optimized for rapid development, scalability, and excellent AI integration capabilities.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:nextjs-icon" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Full-stack React framework with type safety. Perfect for building the dashboard, API routes, and AI integrations in one codebase.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:postgresql" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">PostgreSQL + Prisma</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Robust relational database with type-safe ORM. Supports pgvector extension for semantic search on knowledge content.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI API / Claude API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">LLM APIs for knowledge extraction interviews, content summarization, and conversational Q&A on the knowledge base.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Drop-in authentication with SSO support, organization management, and role-based access control for enterprise needs.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:vercel-icon" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Vercel</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Serverless deployment with edge functions, automatic scaling, and excellent Next.js integration. Fast global CDN.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:pinecone" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Pinecone / pgvector</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Vector database for semantic search. Enables "ask your knowledge base" feature by finding relevant content based on meaning.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <!-- Prompt 1: Project Setup -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Next.js 14 project with TypeScript for an AI Knowledge Transfer Platform. Set up: Project structure with app router, PostgreSQL database with Prisma ORM including models for Users, Organizations, KnowledgeEntries, Interviews, and MentorshipPairs. Configure Clerk authentication with organization support. Create basic API routes for CRUD operations on knowledge entries. Include environment variables setup, proper error handling, and TypeScript strict mode.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 2: Core Feature -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the AI-powered knowledge extraction system for the Knowledge Transfer Platform. Requirements: Create an interactive interview flow where AI asks structured questions to extract tacit knowledge from departing employees. Questions should cover: daily responsibilities, key processes, important contacts, common problems and solutions, undocumented workarounds, and critical deadlines/events. Store responses and generate a searchable knowledge document. The user flow should be: Employee starts interview session, AI asks contextual questions based on their role, employee responds via text or voice, AI summarizes and creates structured documentation, manager reviews and approves for the knowledge base.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 3: Landing Page -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a landing page for the AI Knowledge Transfer Platform using Next.js and Tailwind CSS. Include: Hero section with headline "Stop losing institutional knowledge when employees leave" and subheadline about AI-powered knowledge capture. Problem/solution sections highlighting the $1 trillion annual cost of turnover and knowledge loss. Feature highlights: AI interviews, smart documentation, mentorship matching, searchable knowledge base. Email capture form for early access waitlist. Social proof section with placeholder testimonials. Clean, professional design with a navy/white color scheme conveying enterprise trust.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 4: Branding Package -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a branding package for "TransferIQ", an AI-powered knowledge transfer platform for enterprises. Requirements: Logo should be a simple, modern mark that works at small sizes - consider incorporating abstract symbols representing knowledge flow, connection, or transfer. Color palette should convey trust and professionalism - suggest navy blue primary, teal accent, light gray backgrounds. Typography should pair a clean sans-serif heading font (like Inter or Satoshi) with a readable body font. Provide hex codes, font names, and usage guidelines for web and print applications.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <!-- Back to all ideas -->
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-32 pt-12 border-t border-neutral-200">
+            <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-400 font-mono">&copy; <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            // User has access - ensure content is visible
+            initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: firstName })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initSidebar();
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Sidebar initialization function
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+
+            if (!sidebar) return;
+
+            // Mobile menu toggle
+            const toggleMenu = (show) => {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            // Smooth scroll for sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const target = document.querySelector(targetId);
+
+                    if (target) {
+                        const offset = window.innerWidth < 1024 ? 80 : 24;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Update active state
+                        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+
+                        // Close mobile menu
+                        if (window.innerWidth < 1024) {
+                            toggleMenu(false);
+                        }
+                    }
+                });
+            });
+
+            // Intersection Observer for active sidebar link
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.sidebar-link').forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections with IDs that start with 'section-'
+            document.querySelectorAll('[id^="section-"]').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles | Weekend MVP</title>
+    <meta name="description" content="Guides, frameworks, and ideas for shipping your weekend MVP. Learn to build and launch products in 48 hours.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/articles.html">
+    <meta property="og:title" content="Articles | Weekend MVP">
+    <meta property="og:description" content="Guides, frameworks, and ideas for shipping your weekend MVP. Learn to build and launch products in 48 hours.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/articles.html">
+    <meta property="twitter:title" content="Articles | Weekend MVP">
+    <meta property="twitter:description" content="Guides, frameworks, and ideas for shipping your weekend MVP. Learn to build and launch products in 48 hours.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/articles.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="image/favicon.png">
+    <link rel="apple-touch-icon" href="image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CollectionPage",
+          "name": "Weekend MVP Articles",
+          "description": "Guides, frameworks, and ideas for shipping your weekend MVP.",
+          "url": "https://weekendmvp.app/articles.html",
+          "mainEntity": {
+            "@type": "ItemList",
+            "numberOfItems": 3,
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "item": {
+                  "@type": "Article",
+                  "name": "Stop Overthinking, Start Building",
+                  "url": "https://weekendmvp.app/articles/stop-overthinking-start-building.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "item": {
+                  "@type": "Article",
+                  "name": "How to Build Your First App in a Weekend",
+                  "url": "https://weekendmvp.app/articles/how-to-build-your-first-app-in-a-weekend.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                  "@type": "Article",
+                  "name": "7 Micro-SaaS Ideas You Can Build Solo in 2026",
+                  "url": "https://weekendmvp.app/articles/7-micro-saas-ideas-solo-2026.html"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Articles", "item": "https://weekendmvp.app/articles.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <style>
+        :root {
+            --accent: #CC5500;
+            --accent-glow: rgba(204, 85, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Hero Search Animation */
+        .search-cursor {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Floating search placeholder text */
+        .search-placeholder {
+            animation: float-text 8s ease-in-out infinite;
+        }
+        @keyframes float-text {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 0.5; transform: translateY(-4px); }
+        }
+
+        /* Category Card Styles */
+        .category-card {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 0;
+            background: var(--accent);
+            transition: height 0.3s ease;
+        }
+
+        .category-card:hover::before {
+            height: 100%;
+        }
+
+        .category-card:hover {
+            transform: translateX(8px);
+            border-color: rgba(204, 85, 0, 0.3);
+        }
+
+        /* Article Link Styles */
+        .article-link {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .article-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .article-link:hover::after {
+            width: 100%;
+        }
+
+        .article-link:hover {
+            color: var(--accent);
+        }
+
+        /* Staggered animations */
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        /* Search input styling */
+        .search-input {
+            background: transparent;
+            caret-color: var(--accent);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .search-input:focus {
+            outline: none;
+        }
+
+        /* Grain overlay */
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Horizontal rule accent */
+        .accent-line {
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+        }
+
+        /* Badge pulse */
+        .badge-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(204, 85, 0, 0); }
+            50% { box-shadow: 0 0 20px 4px rgba(204, 85, 0, 0.2); }
+        }
+
+        /* Search results highlight */
+        .search-highlight {
+            background: linear-gradient(120deg, rgba(204, 85, 0, 0.2) 0%, rgba(204, 85, 0, 0.1) 100%);
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        /* Article number */
+        .article-number {
+            font-size: 0.625rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(255, 255, 255, 0.15);
+            position: absolute;
+            top: 0;
+            left: -2rem;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-[#CC5500]/30 selection:text-white bg-[#050505]">
+
+    <!-- Grain Overlay -->
+    <div class="grain-overlay"></div>
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+                <a href="startup-ideas.html" class="hover:text-white transition-colors">Startup Ideas</a>
+                <a href="index.html#process" class="hover:text-white transition-colors">Process</a>
+                <a href="index.html#what-you-get" class="hover:text-white transition-colors">The Kit</a>
+            </div>
+
+            <a href="index.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Get the Kit
+                </span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[50vh] flex items-center justify-center pt-32 pb-16 px-6 overflow-hidden">
+        <!-- Background accent glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#CC5500]/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-4xl mx-auto w-full">
+            <!-- Terminal-style header -->
+            <div class="animate-enter mb-8">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] font-mono text-xs text-neutral-500">
+                    <span class="w-2 h-2 rounded-full bg-[#CC5500]/60 badge-pulse" aria-hidden="true"></span>
+                    <span class="sr-only">Section:</span>
+                    <span>~/articles</span>
+                </div>
+            </div>
+
+            <!-- Main heading with search integrated -->
+            <div class="animate-enter stagger-1">
+                <div class="relative">
+                    <div class="flex items-center gap-4 mb-4">
+                        <iconify-icon icon="lucide:search" width="32" class="text-white/20" aria-hidden="true"></iconify-icon>
+                        <h1 class="text-4xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-none">
+                            Search for an article<span class="search-cursor text-[#CC5500]">_</span>
+                        </h1>
+                    </div>
+
+                    <!-- Search input -->
+                    <div class="relative mt-8">
+                        <input
+                            type="text"
+                            id="article-search"
+                            class="search-input w-full text-2xl md:text-3xl text-white/90 border-b border-white/10 pb-4 focus:border-[#CC5500]/50 transition-colors"
+                            placeholder="Start typing to filter..."
+                            aria-label="Search articles"
+                        >
+                        <div class="absolute right-0 bottom-4 flex items-center gap-2">
+                            <kbd class="hidden md:inline-flex px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-neutral-500">/</kbd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats bar -->
+            <div class="animate-enter stagger-2 mt-8 flex items-center gap-6 text-xs font-mono text-neutral-500">
+                <span><span class="text-white" id="article-count">3</span> articles</span>
+                <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
+                <span><span class="text-white" id="category-count">3</span> categories</span>
+                <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
+                <span>Updated <span class="text-white">Jan 2026</span></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accent Line -->
+    <div class="accent-line max-w-4xl mx-auto"></div>
+
+    <!-- Articles by Category -->
+    <section class="py-16 px-6">
+        <div class="max-w-4xl mx-auto">
+
+            <!-- Category Grid -->
+            <div id="categories-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Building & Shipping Category -->
+                <article class="category-card animate-enter stagger-1 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl p-8" data-category="building">
+                    <header class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#CC5500]/10 border border-[#CC5500]/20 flex items-center justify-center">
+                                <iconify-icon icon="lucide:hammer" width="18" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white">Building & Shipping</h2>
+                        </div>
+                        <iconify-icon icon="lucide:chevron-right" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                    </header>
+
+                    <nav aria-label="Building & Shipping articles">
+                        <ul class="space-y-4">
+                            <li class="relative pl-8">
+                                <span class="article-number">01</span>
+                                <a href="articles/how-to-build-your-first-app-in-a-weekend.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">How to Build Your First App in a Weekend</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <footer class="mt-8 pt-6 border-t border-white/5">
+                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                    </footer>
+                </article>
+
+                <!-- Mindset & Strategy Category -->
+                <article class="category-card animate-enter stagger-2 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl p-8" data-category="mindset">
+                    <header class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#CC5500]/10 border border-[#CC5500]/20 flex items-center justify-center">
+                                <iconify-icon icon="lucide:brain" width="18" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white">Mindset & Strategy</h2>
+                        </div>
+                        <iconify-icon icon="lucide:chevron-right" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                    </header>
+
+                    <nav aria-label="Mindset & Strategy articles">
+                        <ul class="space-y-4">
+                            <li class="relative pl-8">
+                                <span class="article-number">01</span>
+                                <a href="articles/stop-overthinking-start-building.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">Stop Overthinking, Start Building</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <footer class="mt-8 pt-6 border-t border-white/5">
+                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                    </footer>
+                </article>
+
+                <!-- Ideas & Inspiration Category -->
+                <article class="category-card animate-enter stagger-3 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl p-8 lg:col-span-2" data-category="ideas">
+                    <header class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#CC5500]/10 border border-[#CC5500]/20 flex items-center justify-center">
+                                <iconify-icon icon="lucide:lightbulb" width="18" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white">Ideas & Inspiration</h2>
+                        </div>
+                        <iconify-icon icon="lucide:chevron-right" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                    </header>
+
+                    <nav aria-label="Ideas & Inspiration articles">
+                        <ul class="space-y-4">
+                            <li class="relative pl-8">
+                                <span class="article-number">01</span>
+                                <a href="articles/7-micro-saas-ideas-solo-2026.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">7 Micro-SaaS Ideas You Can Build Solo in 2026</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <footer class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                        <a href="startup-ideas.html" class="inline-flex items-center gap-2 text-xs font-medium text-[#CC5500] hover:text-[#CC5500]/80 transition-colors">
+                            <span>Browse all startup ideas</span>
+                            <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                        </a>
+                    </footer>
+                </article>
+
+            </div>
+
+            <!-- No Results State (hidden by default) -->
+            <div id="no-results" class="hidden py-24 text-center">
+                <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+                    <iconify-icon icon="lucide:search-x" width="24" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                </div>
+                <h3 class="text-lg font-medium text-white mb-2">No articles found</h3>
+                <p class="text-sm text-neutral-500 mb-6">Try a different search term or browse all categories.</p>
+                <button id="clear-search" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-colors">
+                    <iconify-icon icon="lucide:x" width="14" aria-hidden="true"></iconify-icon>
+                    Clear search
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- All Articles List -->
+    <section class="py-16 px-6 border-t border-white/5">
+        <div class="max-w-4xl mx-auto">
+            <header class="flex items-center justify-between mb-12">
+                <h2 class="text-2xl font-semibold text-white">All Articles</h2>
+                <span class="text-xs font-mono text-neutral-500">Sorted by date</span>
+            </header>
+
+            <div id="all-articles" class="space-y-6">
+
+                <!-- Article Item 1 -->
+                <a href="articles/7-micro-saas-ideas-solo-2026.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Ideas</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 22, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">7 Micro-SaaS Ideas You Can Build Solo in 2026</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">Profitable micro-SaaS ideas you can build alone with AI tools. No co-founder needed.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+
+                <!-- Article Item 2 -->
+                <a href="articles/how-to-build-your-first-app-in-a-weekend.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Building</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 22, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">How to Build Your First App in a Weekend</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+
+                <!-- Article Item 3 -->
+                <a href="articles/stop-overthinking-start-building.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Mindset</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 22, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">Stop Overthinking, Start Building</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">You don't need a better idea. You need a smaller one. Pick a research-backed startup idea and ship it this weekend.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 border-t border-white/5 bg-gradient-to-b from-[#050505] to-[#0A0A0A]">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#CC5500]/10 border border-[#CC5500]/20 font-mono text-xs text-[#CC5500] mb-8">
+                <iconify-icon icon="lucide:rocket" width="14" aria-hidden="true"></iconify-icon>
+                Ready to ship?
+            </div>
+            <h2 class="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
+                Stop reading. Start building.
+            </h2>
+            <p class="text-lg text-neutral-400 font-light mb-10 max-w-xl mx-auto">
+                Get the Weekend MVP Starter Kit and turn your idea into something real this weekend.
+            </p>
+            <a href="index.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                <span>Get the Starter Kit</span>
+                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <a href="index.html">
+                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
+                </a>
+                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="privacy-policy.html" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
+                <div class="text-[10px] text-neutral-600 font-mono">© <span id="year"></span> WEEKEND MVP</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Search functionality
+        const searchInput = document.getElementById('article-search');
+        const categoriesContainer = document.getElementById('categories-container');
+        const allArticles = document.getElementById('all-articles');
+        const noResults = document.getElementById('no-results');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const articleCount = document.getElementById('article-count');
+
+        const articles = [
+            {
+                title: 'How to Build Your First App in a Weekend',
+                category: 'building',
+                element: document.querySelector('[data-category="building"]')
+            },
+            {
+                title: 'Stop Overthinking, Start Building',
+                category: 'mindset',
+                element: document.querySelector('[data-category="mindset"]')
+            },
+            {
+                title: '7 Micro-SaaS Ideas You Can Build Solo in 2026',
+                category: 'ideas',
+                element: document.querySelector('[data-category="ideas"]')
+            }
+        ];
+
+        const allArticleItems = document.querySelectorAll('[data-article-item]');
+
+        function filterArticles(query) {
+            const normalizedQuery = query.toLowerCase().trim();
+            let visibleCount = 0;
+
+            // Filter category cards
+            articles.forEach(article => {
+                const matches = article.title.toLowerCase().includes(normalizedQuery);
+                if (article.element) {
+                    article.element.style.display = matches || !normalizedQuery ? '' : 'none';
+                    if (matches || !normalizedQuery) visibleCount++;
+                }
+            });
+
+            // Filter all articles list
+            allArticleItems.forEach(item => {
+                const title = item.querySelector('h3').textContent.toLowerCase();
+                const matches = title.includes(normalizedQuery);
+                item.style.display = matches || !normalizedQuery ? '' : 'none';
+            });
+
+            // Show/hide no results
+            const hasResults = visibleCount > 0 || !normalizedQuery;
+            categoriesContainer.style.display = hasResults ? '' : 'none';
+            noResults.classList.toggle('hidden', hasResults);
+
+            // Update article count
+            articleCount.textContent = normalizedQuery ? visibleCount : '3';
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            filterArticles(e.target.value);
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            filterArticles('');
+            searchInput.focus();
+        });
+
+        // Keyboard shortcut for search
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.blur();
+            }
+        });
+    </script>
+</body>
+</html>
