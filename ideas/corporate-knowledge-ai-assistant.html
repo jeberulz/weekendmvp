@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Knowledge Base AI Assistant | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered chatbot that integrates with corporate intranets to provide instant answers to employee questions. Reduce onboarding time and free up HR and IT support teams.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/corporate-knowledge-ai-assistant.html">
+    <meta property="og:title" content="Corporate Knowledge Base AI Assistant | Startup Ideas">
+    <meta property="og:description" content="Build an AI-powered chatbot that integrates with corporate intranets to provide instant answers to employee questions. Reduce onboarding time and free up HR and IT support teams.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Corporate Knowledge Base AI Assistant | Startup Ideas">
+    <meta property="twitter:description" content="Build an AI-powered chatbot that integrates with corporate intranets to provide instant answers to employee questions. Reduce onboarding time and free up HR and IT support teams.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/corporate-knowledge-ai-assistant.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "Corporate Knowledge Base AI Assistant",
+          "description": "Build an AI-powered chatbot that integrates with corporate intranets to provide instant answers to employee questions. Reduce onboarding time and free up HR and IT support teams.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/corporate-knowledge-ai-assistant.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Corporate Knowledge Base AI Assistant",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Instant answers for new employees. AI-powered onboarding assistant that learns from your company docs."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build Corporate Knowledge Base AI Assistant MVP",
+          "description": "Step-by-step guide to building a Corporate Knowledge Base AI Assistant in a weekend.",
+          "totalTime": "PT12H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Set up Next.js project with TypeScript, PostgreSQL with pgvector, and Clerk authentication."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Build the RAG-powered chatbot that ingests company documents and answers employee questions with source citations."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Create a landing page with email capture to validate demand and collect early users."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Corporate Knowledge Base AI Assistant", "item": "https://weekendmvp.app/ideas/corporate-knowledge-ai-assistant.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                Corporate Knowledge Base AI Assistant
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Instant answers for new employees. AI-powered onboarding assistant that learns from your company docs.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                            <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Corporate Knowledge Base AI Assistant</h1>
+                        <p class="text-xl text-neutral-500 font-light">Instant answers for new employees. AI-powered onboarding assistant that learns from your company docs.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            New employees are drowning in information overload while simultaneously being unable to find what they need. A 2024 Gallup report found that 43% of hybrid workers in the U.S. struggle to locate basic internal resources. Meanwhile, HR and IT teams are buried under repetitive questions: password resets, benefits inquiries, policy clarifications, and tool access requests. The average support ticket takes 7 hours just to get an initial response, and 82 hours to fully resolve. Enterprise organizations spend $3,000+ per employee on onboarding, with companies like Salesforce losing an estimated $35 million in productivity from just 5-day onboarding programs. Yet only 26% of companies have fully automated their onboarding processes, leaving massive efficiency gains on the table. The result: frustrated new hires who take longer to become productive, overworked support teams drowning in tickets, and institutional knowledge locked away in scattered documents nobody can find.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            An AI-powered chatbot that integrates with your corporate intranet, knowledge base, and documentation systems to provide instant, accurate answers to employee questions. Using retrieval-augmented generation (RAG), the assistant searches your company's actual documents, policies, and training materials to deliver contextual responses with source citations. New hires can ask anything from "How do I request time off?" to "What's our expense policy for client dinners?" and get instant answers, 24/7, in their preferred language.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Connect Knowledge Sources</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Admin uploads company docs, connects to Notion, Confluence, SharePoint, or Google Drive</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">AI Indexes Content</p>
+                                    <p class="text-xs text-neutral-500 mt-1">System chunks, embeds, and indexes all content for fast semantic search</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Employee Asks Question</p>
+                                    <p class="text-xs text-neutral-500 mt-1">New hire types natural language question via chat widget or Slack integration</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Instant Answer + Sources</p>
+                                    <p class="text-xs text-neutral-500 mt-1">AI retrieves relevant docs, generates answer, and cites sources for verification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The convergence of AI chatbots, knowledge management, and employee experience software creates a massive market opportunity with strong growth trajectories.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Global AI chatbot market valued at $7.76 billion in 2024, projected to reach $27.29 billion by 2030 at 23.3% CAGR (Grand View Research)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>AI assistant market growing from $3.35B (2025) to $21.11B (2030) at 44.5% CAGR, driven by enterprise LLM adoption (Markets and Markets)</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Customer support commands 42.4% of chatbot market share, with 95% of interactions expected to be AI-powered by 2025</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Effective onboarding improves new hire retention by 82% and productivity by 70%+ (SHRM), yet 42% of companies lack dedicated onboarding technology</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Gartner predicts 40% of enterprise apps will feature AI agents by 2026, up from less than 5% in 2025</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The market includes large enterprise players with complex implementations and horizontal tools that require significant customization.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Moveworks</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise AI assistant for IT and HR support. Recently acquired by ServiceNow for $2.85B. Primarily serves Fortune 500.</p>
+                                <p class="text-xs text-neutral-400">Custom enterprise pricing (6-figure annual contracts)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Leena AI</h4>
+                                <p class="text-xs text-neutral-500 mb-2">HR chatbot platform with integrations to SAP, Oracle, Workday. Claims 40-60% automated resolution rate.</p>
+                                <p class="text-xs text-neutral-400">Starting ~$1/user/mo, enterprise custom pricing</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Espressive Barista</h4>
+                                <p class="text-xs text-neutral-500 mb-2">2024 Forrester Leader. Supports 15 departments, 130+ languages. 80-85% adoption rates reported.</p>
+                                <p class="text-xs text-neutral-400">Enterprise custom pricing (recently acquired by Resolve)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Microsoft Copilot</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Deeply integrated with M365 ecosystem. Requires existing Microsoft licensing. Best for Microsoft-centric orgs.</p>
+                                <p class="text-xs text-neutral-400">$30/user/mo (enterprise), $21/user/mo (SMB)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Intercom Fin</h4>
+                                <p class="text-xs text-neutral-500 mb-2">AI agent focused on customer support. Can be adapted for internal use. Pay-per-resolution model.</p>
+                                <p class="text-xs text-neutral-400">$0.99/resolution + $29-132/seat platform fee</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Notion AI + Slack</h4>
+                                <p class="text-xs text-neutral-500 mb-2">DIY approach using existing tools. Requires manual setup and integration work. No unified experience.</p>
+                                <p class="text-xs text-neutral-400">$10-20/user/mo combined</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Enterprise solutions like Moveworks and Espressive require 6-figure contracts and lengthy implementations. Microsoft Copilot locks you into their ecosystem. The gap is a focused, affordable solution for mid-market companies (100-1000 employees) that can be deployed in days, integrates with multiple knowledge sources, and provides transparent per-user pricing without resolution-based gotchas.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Subscription SaaS with per-user pricing, targeting mid-market companies who need enterprise-grade AI without enterprise-grade complexity. Pricing positioned below Microsoft Copilot but with faster time-to-value.</p>
+
+                        <!-- Pricing Tiers -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Starter</h4>
+                                <p class="text-2xl font-bold mb-2">Free</p>
+                                <p class="text-xs text-neutral-500">Up to 10 users, 1 knowledge source, 100 queries/month</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Pro</h4>
+                                <p class="text-2xl font-bold mb-2">$12<span class="text-sm font-normal">/user/mo</span></p>
+                                <p class="text-xs text-neutral-500">Unlimited queries, 5 integrations, Slack/Teams, analytics</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Enterprise</h4>
+                                <p class="text-2xl font-bold mb-2">$20<span class="text-sm font-normal">/user/mo</span></p>
+                                <p class="text-xs text-neutral-500">SSO, SCIM, unlimited integrations, custom training, SLA</p>
+                            </div>
+                        </div>
+
+                        <!-- Unit Economics -->
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-lg font-bold">$144</p>
+                                    <p class="text-xs text-neutral-500">Annual Revenue per User (Pro)</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">~$2</p>
+                                    <p class="text-xs text-neutral-500">Est. AI API Cost per User/Mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">83%</p>
+                                    <p class="text-xs text-neutral-500">Gross Margin Target</p>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-bold">$24K</p>
+                                    <p class="text-xs text-neutral-500">Target Avg Contract (200 users)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">A modern RAG-based architecture optimized for fast iteration, low latency responses, and easy integration with enterprise knowledge sources.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:nextjs-icon" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Full-stack framework for the dashboard, chat interface, and API routes. Edge functions for low-latency responses.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:postgresql" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">PostgreSQL + pgvector</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Relational database with native vector search extension. Single database for both structured data and embeddings.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:langchain" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">LangChain / LlamaIndex</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">RAG framework for document ingestion, chunking, retrieval pipelines, and LLM orchestration with built-in integrations.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI GPT-4 / Claude</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">LLM APIs for generating responses. Use GPT-4-turbo for speed or Claude for longer context and reasoning.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Authentication with built-in SSO support, organization management, and RBAC. Enterprise-ready from day one.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="logos:vercel-icon" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Vercel + Neon</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Serverless deployment with global edge network. Neon for serverless Postgres with autoscaling and branching.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <!-- Prompt 1: Project Setup -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Next.js 14 project with TypeScript for a Corporate Knowledge Base AI Assistant. Set up: Project structure with app router and server actions. PostgreSQL database with Prisma ORM, including pgvector extension for embeddings. Models for Organizations, Users, Documents, DocumentChunks (with vector field), and ConversationHistory. Clerk authentication with organization support. API routes for document upload, chat completions, and admin settings. Include proper error handling, rate limiting middleware, and environment variables for OpenAI API key and database URL.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 2: Core Feature -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the RAG-powered chat system for the Corporate Knowledge Base AI Assistant. Requirements: Document ingestion pipeline that accepts PDF, DOCX, and markdown files. Text chunking with overlap using LangChain's RecursiveCharacterTextSplitter. Generate embeddings using OpenAI's text-embedding-3-small model. Store chunks and embeddings in PostgreSQL with pgvector. Chat endpoint that: takes user question, generates query embedding, performs similarity search to retrieve top 5 relevant chunks, constructs prompt with retrieved context, calls GPT-4-turbo for response, includes source citations in response. The user flow: Admin uploads company docs, system processes and indexes, employee asks question in chat, AI returns answer with clickable source references.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 3: Landing Page -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a landing page for the Corporate Knowledge Base AI Assistant using Next.js and Tailwind CSS. Include: Hero section with headline "Stop answering the same questions over and over" and subheadline about AI-powered instant answers for employees. Interactive demo showing a chat interface with sample Q&A. Problem section highlighting $3,000+ onboarding costs and 7-hour ticket response times. Feature highlights: instant answers, source citations, multi-language support, integrations (Slack, Teams, Notion). Pricing section with three tiers. Email capture for waitlist. Social proof placeholder. Clean, professional design with blue/white enterprise color scheme conveying trust and reliability.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 4: Branding Package -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a branding package for "AskBase", an AI-powered corporate knowledge assistant for employee onboarding and support. Requirements: Logo should be simple and modern, incorporating a chat bubble or knowledge/search concept. Works well at favicon size. Color palette should convey trust and professionalism: primary blue (enterprise trust), accent teal or green (success/growth), neutral grays for UI. Typography should pair a geometric sans-serif for headings (like Satoshi or Plus Jakarta Sans) with a highly readable body font (Inter or SF Pro). Provide hex codes, font names, and usage guidelines. Include variations for light and dark modes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <!-- Back to all ideas -->
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-32 pt-12 border-t border-neutral-200">
+            <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-400 font-mono">&copy; <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            // User has access - ensure content is visible
+            initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: firstName })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initSidebar();
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Sidebar initialization function
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+
+            if (!sidebar) return;
+
+            // Mobile menu toggle
+            const toggleMenu = (show) => {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            // Smooth scroll for sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const target = document.querySelector(targetId);
+
+                    if (target) {
+                        const offset = window.innerWidth < 1024 ? 80 : 24;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Update active state
+                        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+
+                        // Close mobile menu
+                        if (window.innerWidth < 1024) {
+                            toggleMenu(false);
+                        }
+                    }
+                });
+            });
+
+            // Intersection Observer for active sidebar link
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.sidebar-link').forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections with IDs that start with 'section-'
+            document.querySelectorAll('[id^="section-"]').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
