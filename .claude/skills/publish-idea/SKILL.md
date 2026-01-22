@@ -1,11 +1,11 @@
 ---
 name: publish-idea
-description: "Publish a startup idea from raw research dumps. Reads unstructured content from ideas/drafts/{name}/, analyzes it, generates a polished idea page, and updates the manifest. Usage: /publish-idea {folder-name}"
+description: "Publish a startup idea from raw research dumps. Reads unstructured content from ideas/drafts/{name}/, performs deep web research, generates a polished idea page with original expanded content, and updates the manifest. Usage: /publish-idea {folder-name}"
 ---
 
 # Publish Idea Skill
 
-Transform raw research dumps into polished startup idea pages.
+Transform raw research dumps into polished, research-backed startup idea pages.
 
 ---
 
@@ -22,14 +22,45 @@ Example: `/publish-idea nutrition-planner`
 ## What This Skill Does
 
 1. **Reads** all markdown files from `ideas/drafts/{folder-name}/`
-2. **Analyzes** content to determine which sections have sufficient data
-3. **Extracts/generates** content for each section
-4. **Generates** HTML using the dynamic template (with SEO schema markup)
-5. **Updates** `ideas/manifest.json` with the new idea
-6. **Adds** a card to `startup-ideas.html`
-7. **Updates** `sitemap.xml` for search engine discovery (SEO)
-8. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines (AEO)
-9. **Reports** what was created
+2. **Extracts** the idea title (ONLY the title is used verbatim from raw.md)
+3. **Performs deep web research** using WebSearch to gather:
+   - Market size and growth statistics
+   - Competitor analysis and pricing
+   - Industry trends and validation signals
+   - Target audience insights
+   - Technology landscape
+4. **Writes original expanded content** based on research findings (NOT copying raw.md)
+5. **Generates** HTML using the dynamic template (with SEO schema markup)
+6. **Updates** `ideas/manifest.json` with the new idea
+7. **Adds** a card to `startup-ideas.html`
+8. **Updates** `sitemap.xml` for search engine discovery (SEO)
+9. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines (AEO)
+10. **Reports** what was created with research sources
+
+---
+
+## CRITICAL: Content Guidelines
+
+**THE RAW.MD FILE IS A STARTING POINT, NOT A SOURCE TO COPY.**
+
+### What to Use from raw.md:
+- **Title**: Use the idea title EXACTLY as written (this is the only verbatim content)
+- **Concept**: Understand the core concept to guide research
+- **Keywords**: Extract keywords for research queries
+
+### What NOT to Do:
+- ❌ Do NOT copy problem descriptions word-for-word
+- ❌ Do NOT copy solution descriptions word-for-word
+- ❌ Do NOT use market stats from raw.md without verification
+- ❌ Do NOT copy competitor information without research
+- ❌ Do NOT use any prose from raw.md directly
+
+### What to Do Instead:
+- ✅ Research the problem space independently using WebSearch
+- ✅ Find current market statistics and cite sources
+- ✅ Research actual competitors and their current pricing
+- ✅ Write original, expanded content based on research findings
+- ✅ Create fresh perspectives informed by real data
 
 ---
 
@@ -39,30 +70,36 @@ The skill expects this folder structure:
 
 ```
 ideas/drafts/{folder-name}/
-  raw.md              <- main research dump (REQUIRED)
-  competitors.md      <- optional: deep competitor analysis
-  notes.md            <- optional: additional notes
+  raw.md              <- idea seed/concept (REQUIRED) - used for title + research direction
+  competitors.md      <- optional: competitor names to research
+  notes.md            <- optional: additional context
   assets/             <- optional: screenshots, images
 ```
 
-At minimum, `raw.md` must exist with the core idea research.
+At minimum, `raw.md` must exist with the idea title and core concept.
 
 ---
 
-## Section Analysis
+## Section Analysis (Research-Driven)
 
-The skill dynamically includes sections based on content richness:
+The skill dynamically includes sections based on **research findings** (not raw.md content):
 
-| Section | Included When | What to Look For |
-|---------|---------------|------------------|
-| The Problem | Always | Pain points, frustrations, user quotes |
-| The Solution | Always | Features, how it works, value prop |
-| How It Works | Always | 3-5 steps extracted from user flow |
-| Market Research | Market data present | Stats, trends, TAM/SAM, Reddit/Twitter mentions |
-| Competitive Landscape | Competitors mentioned | Names, pricing, features, gaps |
-| Business Model | Revenue details present | Pricing tiers, subscription models, unit economics |
-| Tech Stack | Tech mentioned | APIs, frameworks, tools, integrations |
-| AI Prompts | Always | Generated based on idea |
+| Section | Included When | Research Required |
+|---------|---------------|-------------------|
+| The Problem | Always | Search for pain points, user complaints, industry challenges |
+| The Solution | Always | Research current solutions and gaps to inform value prop |
+| How It Works | Always | Design user flow based on competitor analysis |
+| Market Research | Market data found | **Must find 3+ stats** from web research |
+| Competitive Landscape | Competitors researched | **Must research 3+ competitors** with current pricing |
+| Business Model | Competitor pricing found | Base tiers on competitor pricing research |
+| Tech Stack | Tech research done | Research best tools for this type of app |
+| AI Prompts | Always | Generate based on researched tech stack |
+
+**Sidebar sections are determined by research success:**
+- If market research finds good data → include Market Research section
+- If competitor research is thorough → include Competitive Landscape section
+- If pricing data is available → include Business Model section
+- If tech recommendations are researched → include Tech Stack section
 
 ---
 
@@ -79,31 +116,70 @@ Read all `.md` files from `ideas/drafts/{folder-name}/`:
 - Any other .md files present
 ```
 
-Combine all content for analysis.
+**Extract from raw.md:**
+- The idea **title** (use verbatim)
+- Core concept keywords for research
+- Target audience hints
+- Competitor names mentioned (for research)
 
-### Step 2: Extract Core Information
+### Step 2: Deep Web Research (REQUIRED)
 
-From the combined content, extract:
+**You MUST perform web research before writing any content.** Use the WebSearch tool to research:
 
-**Required (always present):**
-- `title`: The idea name (e.g., "AI Nutrition Planner for Trainers")
+#### 2a. Market Research Queries
+Run searches like:
+- `"{industry} market size 2024 2025"`
+- `"{target audience} pain points {problem area}"`
+- `"{problem area} industry trends statistics"`
+- `"{target audience} software spending habits"`
+
+**Goal:** Find 3-5 market statistics with sources for the Market Research section.
+
+#### 2b. Competitor Research Queries
+For each competitor mentioned in raw.md (or discovered):
+- `"{competitor name} pricing plans 2024"`
+- `"{competitor name} reviews features"`
+- `"{competitor name} vs alternatives"`
+- `"{industry} software tools comparison"`
+
+**Goal:** Document 3-5 competitors with current pricing and feature gaps.
+
+#### 2c. Solution Validation Queries
+- `"{problem} solutions software"`
+- `"how {target audience} currently solve {problem}"`
+- `"{industry} workflow automation tools"`
+
+**Goal:** Understand current solutions and identify gaps for the "Your Opportunity" section.
+
+#### 2d. Tech Stack Research (if needed)
+- `"best tech stack for {type of app} 2024"`
+- `"{specific feature} API integration options"`
+
+**Goal:** Recommend modern, appropriate technologies.
+
+### Step 3: Write Original Content
+
+Based on research findings, write ORIGINAL content for each section. **Do NOT copy from raw.md.**
+
+**Required fields (always generate):**
+- `title`: The idea name (ONLY this comes from raw.md verbatim)
 - `slug`: URL-safe version (e.g., "ai-nutrition-planner-trainers")
 - `category`: One of: SaaS, Productivity, Creator, E-commerce, Fintech, Health, Education, Developer
-- `tagline`: One-liner value proposition
-- `short_description`: 1-2 sentence summary for cards
-- `description`: Full meta description for SEO
+- `tagline`: One-liner value proposition (write fresh based on research)
+- `short_description`: 1-2 sentence summary for cards (write fresh)
+- `description`: Full meta description for SEO (write fresh)
 - `build_time`: Estimated hours (usually 6-12)
-- `problem`: Pain points and frustrations
-- `solution`: How the product solves it
-- `how_it_works`: 3-5 step user flow
+- `problem`: Pain points and frustrations (write based on research, cite stats)
+- `solution`: How the product solves it (write original description)
+- `how_it_works`: 3-5 step user flow (design based on research)
 
-**Conditional (include if data present):**
-- `market_research`: Stats, trends, validation data
-- `competitors`: Names, pricing, features, gaps
-- `business_model`: Pricing strategy, tiers, unit economics
-- `tech_stack`: Recommended technologies
+**Conditional fields (include based on research findings):**
+- `market_research`: Stats, trends, validation data (from Step 2a research)
+- `competitors`: Names, pricing, features, gaps (from Step 2b research)
+- `business_model`: Pricing strategy, tiers, unit economics (informed by competitor pricing)
+- `tech_stack`: Recommended technologies (from Step 2d research)
 
-### Step 3: Generate AI Build Prompts
+### Step 4: Generate AI Build Prompts
 
 Always generate these 4 prompts tailored to the specific idea:
 
@@ -149,7 +225,7 @@ Create a branding package for {IDEA_NAME}, a {ONE_LINER}:
 - Provide hex codes, font names, and usage guidelines
 ```
 
-### Step 4: Generate HTML
+### Step 5: Generate HTML
 
 Use the template at `ideas/_template-dynamic.html`:
 
@@ -205,14 +281,14 @@ Use the template at `ideas/_template-dynamic.html`:
 </div>
 ```
 
-### Step 5: Save HTML File
+### Step 6: Save HTML File
 
 Save the generated HTML to:
 ```
 ideas/{slug}.html
 ```
 
-### Step 6: Update Manifest
+### Step 7: Update Manifest
 
 Add entry to `ideas/manifest.json`:
 
@@ -226,7 +302,7 @@ Add entry to `ideas/manifest.json`:
 
 Use today's date for `publishedAt`.
 
-### Step 7: Add Card to startup-ideas.html
+### Step 8: Add Card to startup-ideas.html
 
 Find the `<div id="ideas-grid">` section and add a new card BEFORE the placeholder card:
 
@@ -245,7 +321,7 @@ Find the `<div id="ideas-grid">` section and add a new card BEFORE the placehold
 </a>
 ```
 
-### Step 8: Update sitemap.xml (SEO)
+### Step 9: Update sitemap.xml (SEO)
 
 Add a new `<url>` entry to `sitemap.xml` in the "Startup Ideas" section:
 
@@ -260,7 +336,7 @@ Add a new `<url>` entry to `sitemap.xml` in the "Startup Ideas" section:
 
 Use today's date for `lastmod`. Insert before the `<!-- Legal Pages -->` comment.
 
-### Step 9: Update ItemList Schema in startup-ideas.html (AEO)
+### Step 10: Update ItemList Schema in startup-ideas.html (AEO)
 
 Find the `"@type": "ItemList"` section in the JSON-LD script block and:
 
@@ -317,6 +393,12 @@ After completion, report:
 - Business Model (if included)
 - Tech Stack (if included)
 - AI Build Prompts (4 prompts)
+
+**Research Sources Used:**
+- [List the key sources found during research]
+- Market data: {source}
+- Competitor info: {sources}
+- Industry trends: {source}
 
 **SEO/AEO:**
 - sitemap.xml: New idea page added
@@ -545,7 +627,29 @@ AI-powered nutrition planning that:
 - Postgres for storage
 ```
 
-This raw content would generate a complete idea page with all sections populated.
+### How This raw.md Gets Processed:
+
+**Used directly:**
+- Title: "AI Nutrition Planner for Trainers" ✅ (used verbatim)
+
+**Used as research seeds (NOT copied):**
+- Keywords: "NASM trainers", "nutrition planning", "meal plans"
+- Competitors to research: MyFitnessPal, Trainerize, EatThisMuch
+- Target audience: personal trainers, fitness coaches
+
+**Research triggered:**
+1. Search "personal trainer software market size 2024"
+2. Search "MyFitnessPal pricing 2024"
+3. Search "Trainerize pricing plans features"
+4. Search "nutrition planning tools for trainers"
+5. Search "fitness industry technology trends"
+
+**Content written fresh based on research:**
+- Problem section: Written with current stats from research
+- Solution section: Original description highlighting gaps found
+- Market Research: Real statistics with recent data
+- Competitors: Current pricing (may differ from raw.md!)
+- Business Model: Informed by competitor pricing research
 
 ---
 
@@ -553,16 +657,31 @@ This raw content would generate a complete idea page with all sections populated
 
 Before marking complete:
 
-- [ ] Read all markdown files from drafts folder
-- [ ] Extracted all required fields
-- [ ] Determined which conditional sections to include
+### Research Checklist (REQUIRED)
+- [ ] Read raw.md and extract title + research keywords
+- [ ] **Performed WebSearch for market data** (3+ statistics found)
+- [ ] **Performed WebSearch for competitors** (3+ competitors with current pricing)
+- [ ] **Performed WebSearch for industry trends**
+- [ ] **Performed WebSearch for tech stack** (if applicable)
+
+### Content Checklist (REQUIRED - NO COPYING)
+- [ ] Problem section: Written fresh with research stats (NOT from raw.md)
+- [ ] Solution section: Original description (NOT from raw.md)
+- [ ] How it works: Designed based on research (NOT from raw.md)
+- [ ] Market research: Verified statistics with sources
+- [ ] Competitive landscape: Current pricing from research
+- [ ] Business model: Informed by competitor pricing
+- [ ] Tech stack: Researched recommendations
 - [ ] Generated 4 AI build prompts
+
+### Publishing Checklist
 - [ ] Created HTML file with proper formatting
 - [ ] Updated manifest.json
 - [ ] Added card to startup-ideas.html
 - [ ] Updated sitemap.xml with new idea URL
-- [ ] Updated ItemList schema in startup-ideas.html (numberOfItems + new ListItem)
+- [ ] Updated ItemList schema (numberOfItems + new ListItem)
 - [ ] Verified HTML renders correctly
+- [ ] Listed research sources in output report
 
 ### Accessibility Checklist (REQUIRED)
 
