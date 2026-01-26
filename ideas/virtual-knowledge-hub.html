@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/virtual-knowledge-hub.html">
+    <meta property="og:title" content="Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas">
+    <meta property="og:description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas">
+    <meta property="twitter:description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/virtual-knowledge-hub.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "Virtual Knowledge Sharing Hub for Business Leaders to Mentor Emerging Professionals",
+          "description": "Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-01-23",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/virtual-knowledge-hub.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Virtual Knowledge Sharing Hub for Business Leaders",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "A digital platform connecting experienced business leaders with emerging professionals through structured virtual mentoring sessions featuring goal tracking and measurable outcomes."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build Virtual Knowledge Sharing Hub MVP",
+          "description": "Step-by-step guide to building Virtual Knowledge Sharing Hub in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Create Profile",
+              "text": "Mentees and mentors create profiles with goals, expertise, and availability"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Get Matched",
+              "text": "AI-powered matching connects professionals based on career goals and mentor expertise"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Book Sessions",
+              "text": "Schedule virtual mentoring sessions with integrated video conferencing"
+            },
+            {
+              "@type": "HowToStep",
+              "position": 4,
+              "name": "Track Progress",
+              "text": "Document learnings, set milestones, and measure professional growth over time"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Virtual Knowledge Sharing Hub", "item": "https://weekendmvp.app/ideas/virtual-knowledge-hub.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                Virtual Knowledge Sharing Hub for Business Leaders
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Connect emerging professionals with experienced business leaders through structured virtual mentoring.
+            </p>
+
+            <!-- Email Form -->
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                            <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Virtual Knowledge Sharing Hub for Business Leaders</h1>
+                        <p class="text-xl text-neutral-500 font-light">Bridge the mentorship gap between experienced executives and ambitious professionals through structured virtual sessions.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Young professionals entering today's workforce face a significant mentorship gap. While 94% of employees say they would stay longer at a company that invests in their learning and development, most struggle to find quality mentorship outside their immediate network. Geographic constraints, industry silos, and the time pressures on senior executives create barriers that prevent meaningful knowledge transfer between generations of professionals. The result? Emerging talent lacks the guidance needed to navigate career decisions, while experienced leaders miss opportunities to share hard-won wisdom and stay connected to fresh perspectives.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            A digital platform that connects experienced business leaders with emerging professionals through structured virtual mentoring sessions. Unlike casual networking apps, this platform focuses on measurable outcomes: goal setting, session agendas, progress tracking, and follow-up accountability. Mentors can share their expertise in focused 30-60 minute sessions, while mentees get actionable guidance tailored to their specific career challenges. The platform handles scheduling, video calls, and progress documentation so both parties can focus on what matters: meaningful knowledge transfer.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Create Profile</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Mentees define career goals; mentors list expertise areas and availability</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Get Matched</p>
+                                    <p class="text-xs text-neutral-500 mt-1">AI-powered matching based on goals, industry, and mentoring style preferences</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Book Sessions</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Schedule virtual sessions with integrated video and calendar sync</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Track Progress</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Document learnings, set milestones, and measure growth over time</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The mentoring software market is experiencing rapid growth as organizations recognize the value of structured mentorship programs. Remote and hybrid work has accelerated demand for virtual mentoring solutions that can connect professionals across geographic boundaries.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>The mentoring software market grew from $658M in 2023 to $777M in 2024, projected to reach $2.3B by 2030 at 19.61% CAGR</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>78% of Fortune 500 companies now implement mentoring initiatives, with 49% deploying digital platforms to scale programs</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Adoption of mentoring software rose 62% between 2020-2024, driven by remote work acceleration</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>Retention rates are 72% for mentees vs 49% for non-participants, making mentoring a key talent strategy</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span>MentorcliQ raised $80M in Q1 2024, and Mentessa raised $5.4M in Q1 2025, validating investor interest</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The mentoring platform space ranges from free community-based solutions to expensive enterprise coaching platforms. Most existing players target either specific niches (engineering, marketing) or charge enterprise-level pricing that excludes individual professionals.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">MentorCruise</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Long-term mentorship marketplace with vetted mentors (5% acceptance rate). Strong for tech careers.</p>
+                                <p class="text-xs text-neutral-400">$150-$400/month per mentee + 16% platform fee</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">ADPList</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Free mentorship platform for design and tech. Large community but minimal mentor vetting.</p>
+                                <p class="text-xs text-neutral-400">Free (minimal quality control)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">GrowthMentor</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Strictly vetted mentors focused on marketing and startup growth. Unlimited calls model.</p>
+                                <p class="text-xs text-neutral-400">Up to $199/month for unlimited calls</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">BetterUp</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise coaching platform with professional coaches. Used by Fortune 500 but expensive.</p>
+                                <p class="text-xs text-neutral-400">~$499/user/month for enterprise</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Plato</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Narrowly focused on engineering leaders. Credit-based system for sessions.</p>
+                                <p class="text-xs text-neutral-400">$300 for 2 calls minimum</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Together Platform</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise mentoring software for internal programs. B2B focused, requires org deployment.</p>
+                                <p class="text-xs text-neutral-400">Enterprise pricing (custom quotes)</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">There's a gap between expensive enterprise solutions (BetterUp) and free-but-unvetted communities (ADPList). A platform offering quality-controlled business mentorship at accessible pricing ($25-50/month) with structured outcomes could capture professionals who want more than casual advice but can't justify enterprise costs. Focus on cross-generational business leadership transfer rather than narrow technical niches.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">A freemium model that provides basic access for mentees while monetizing premium features for power users and mentor tools. This aligns with successful patterns from GrowthMentor and MentorCruise while targeting a more accessible price point.</p>
+
+                        <!-- Pricing Tiers -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Free</h4>
+                                <p class="text-2xl font-bold mb-2">$0</p>
+                                <p class="text-xs text-neutral-500">1 session/month, browse mentors, basic profile</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Pro Mentee</h4>
+                                <p class="text-2xl font-bold mb-2">$29/mo</p>
+                                <p class="text-xs text-neutral-500">Unlimited sessions, priority matching, progress tracking</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Mentor Pro</h4>
+                                <p class="text-2xl font-bold mb-2">$49/mo</p>
+                                <p class="text-xs text-neutral-500">Session scheduling, analytics, branded profile, payouts</p>
+                            </div>
+                        </div>
+
+                        <!-- Unit Economics -->
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-2xl font-bold">$29</p>
+                                    <p class="text-xs text-neutral-500">Avg Revenue/User</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">~$5</p>
+                                    <p class="text-xs text-neutral-500">CAC (content-led)</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">6mo+</p>
+                                    <p class="text-xs text-neutral-500">Avg Retention</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">$200k</p>
+                                    <p class="text-xs text-neutral-500">ARR at 600 paid</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Build with modern tools that handle the key complexity: video calls, scheduling, and real-time communication. Keep infrastructure simple and leverage third-party integrations where possible.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Full-stack framework with excellent DX for building the web app and API routes</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Postgres database with built-in auth, real-time subscriptions, and row-level security</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:dailydotco" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Daily.co or Twilio Video</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Embeddable video conferencing API for seamless in-app mentoring sessions</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:cal-dot-com" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Cal.com or Calendly API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Handle scheduling complexity with proven calendar integrations</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Stripe Connect</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Handle subscription billing and mentor payouts with built-in marketplace support</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Power the AI matching algorithm and session summary generation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <!-- Prompt 1: Project Setup -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Next.js 14 project with TypeScript for a mentoring platform called "MentorBridge". Set up: (1) Project structure with App Router, (2) Supabase integration for database and auth, (3) Database schema for users (with mentor/mentee roles), profiles, sessions, and availability slots, (4) Basic API routes for user registration, profile management, and session booking. Include Tailwind CSS, proper error handling, and environment variables for Supabase credentials.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 2: Core Feature -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the mentor matching and session booking system for MentorBridge. Requirements: (1) AI-powered matching algorithm using OpenAI that analyzes mentee goals and mentor expertise to suggest top 5 matches with compatibility scores, (2) Mentor profile cards showing expertise, availability, rating, and session count, (3) Session booking flow with calendar integration (use Cal.com embed or build custom availability picker), (4) Pre-session goal setting form for mentees, (5) Post-session feedback and progress logging. The user flow: mentee describes goals → sees matched mentors → selects mentor → books available slot → sets agenda → completes session → logs progress.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 3: Landing Page -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a landing page for MentorBridge using Next.js and Tailwind CSS. Include: (1) Hero section with headline "Bridge the gap between ambition and experience" and subtext about connecting emerging professionals with business leaders, (2) How it works section with 4 steps: Create Profile, Get Matched, Book Sessions, Track Progress, (3) Mentor spotlight section showing 3-4 featured mentor cards, (4) Stats section: "500+ mentors, 2000+ sessions, 92% satisfaction", (5) Pricing section with Free, Pro Mentee ($29/mo), and Mentor Pro ($49/mo) tiers, (6) Email capture form with Beehiiv integration, (7) Clean, professional design with warm neutral colors and subtle gradients.
+                                </p>
+                            </div>
+
+                            <!-- Prompt 4: Branding Package -->
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a branding package for MentorBridge, a virtual mentorship platform connecting business leaders with emerging professionals: (1) Logo: Modern, approachable mark suggesting connection/bridge between two entities, works at small sizes, (2) Color palette: Primary (warm professional blue like #2563EB), Secondary (confident orange/amber like #F59E0B), Neutral (warm grays), Success green for progress indicators, (3) Typography: Inter or similar clean sans-serif for UI, slightly warmer serif for marketing headlines, (4) Iconography style: Rounded, friendly Lucide-style icons. Provide hex codes, font names, and usage guidelines for light/dark contexts.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <!-- Back to all ideas -->
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-32 pt-12 border-t border-neutral-200">
+            <div class="max-w-7xl mx-auto px-6 pb-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <a href="../index.html">
+                        <div class="logo h-3 w-24 md:h-4 md:w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../privacy-policy.html" class="text-[10px] text-neutral-400 font-mono hover:text-black transition-colors">Privacy Policy</a>
+                    <div class="text-[10px] text-neutral-400 font-mono">&copy; <span id="year"></span> WEEKEND MVP</div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Check for existing access (shared with collection page)
+        // Content is visible by default (for SEO crawlers)
+        // For human users without access, we hide content and show the gate
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            // User has access - ensure content is visible
+            initSidebar();
+        } else {
+            // User hasn't submitted email - show gate, hide content
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
+        }
+
+        // Handle form submission
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: firstName })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initSidebar();
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        // Sidebar initialization function
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+
+            if (!sidebar) return;
+
+            // Mobile menu toggle
+            const toggleMenu = (show) => {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            // Smooth scroll for sidebar links
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const target = document.querySelector(targetId);
+
+                    if (target) {
+                        const offset = window.innerWidth < 1024 ? 80 : 24;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Update active state
+                        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+
+                        // Close mobile menu
+                        if (window.innerWidth < 1024) {
+                            toggleMenu(false);
+                        }
+                    }
+                });
+            });
+
+            // Intersection Observer for active sidebar link
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.sidebar-link').forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections with IDs that start with 'section-'
+            document.querySelectorAll('[id^="section-"]').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

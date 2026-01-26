@@ -45,7 +45,7 @@
           "url": "https://weekendmvp.app/articles.html",
           "mainEntity": {
             "@type": "ItemList",
-            "numberOfItems": 3,
+            "numberOfItems": 4,
             "itemListElement": [
               {
                 "@type": "ListItem",
@@ -72,6 +72,15 @@
                   "@type": "Article",
                   "name": "7 Micro-SaaS Ideas You Can Build Solo in 2026",
                   "url": "https://weekendmvp.app/articles/7-micro-saas-ideas-solo-2026.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 4,
+                "item": {
+                  "@type": "Article",
+                  "name": "The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup",
+                  "url": "https://weekendmvp.app/articles/the-1k-month-idea.html"
                 }
               }
             ]
@@ -305,7 +314,7 @@
 
             <!-- Stats bar -->
             <div class="animate-enter stagger-2 mt-8 flex items-center gap-6 text-xs font-mono text-neutral-500">
-                <span><span class="text-white" id="article-count">3</span> articles</span>
+                <span><span class="text-white" id="article-count">4</span> articles</span>
                 <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
                 <span><span class="text-white" id="category-count">3</span> categories</span>
                 <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
@@ -374,11 +383,18 @@
                                     <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
                                 </a>
                             </li>
+                            <li class="relative pl-8">
+                                <span class="article-number">02</span>
+                                <a href="articles/the-1k-month-idea.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
                     <footer class="mt-8 pt-6 border-t border-white/5">
-                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                        <span class="text-xs font-mono text-neutral-600">2 articles</span>
                     </footer>
                 </article>
 
@@ -442,6 +458,21 @@
             </header>
 
             <div id="all-articles" class="space-y-6">
+
+                <!-- Article Item - The $1K/Month Idea -->
+                <a href="articles/the-1k-month-idea.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Mindset</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 23, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">75% of VC-backed startups fail. 90% of profitable startups are bootstrapped. Here's why chasing $1K/month beats chasing unicorns.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
 
                 <!-- Article Item 1 -->
                 <a href="articles/7-micro-saas-ideas-solo-2026.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
@@ -552,6 +583,11 @@
                 element: document.querySelector('[data-category="mindset"]')
             },
             {
+                title: 'The $1K/Month Idea: Why You Don\'t Need a Billion-Dollar Startup',
+                category: 'mindset',
+                element: document.querySelector('[data-category="mindset"]')
+            },
+            {
                 title: '7 Micro-SaaS Ideas You Can Build Solo in 2026',
                 category: 'ideas',
                 element: document.querySelector('[data-category="ideas"]')
@@ -586,7 +622,7 @@
             noResults.classList.toggle('hidden', hasResults);
 
             // Update article count
-            articleCount.textContent = normalizedQuery ? visibleCount : '3';
+            articleCount.textContent = normalizedQuery ? visibleCount : '4';
         }
 
         searchInput.addEventListener('input', (e) => {
