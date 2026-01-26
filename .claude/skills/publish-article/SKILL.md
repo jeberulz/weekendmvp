@@ -53,10 +53,11 @@ This file contains:
 6. **Selects the best framework** based on article goal (7 frameworks available)
 7. **Writes original, researched content** following the chosen framework
 8. **Generates HTML** matching site design (dark theme)
-9. **Generates Markdown** for newsletter reuse (saved in `articles/markdown/`)
-10. **Updates sitemap.xml** for SEO
-11. **Marks topic as PUBLISHED** in research.md
-12. **Reports** what was created with sources
+9. **Updates sitemap.xml** for SEO
+10. **Updates articles.html** index page (schema, category, all articles, search)
+11. **Generates Markdown** for newsletter reuse (saved in `articles/markdown/`)
+12. **Marks topic as PUBLISHED** in research.md
+13. **Reports** what was created with sources
 
 ---
 
@@ -377,7 +378,72 @@ Use the article template structure:
 </url>
 ```
 
-### Step 10.5: Generate Markdown File (for Newsletter)
+### Step 10.5: Update Articles Index Page (REQUIRED)
+
+**Update `articles.html` to include the new article in 5 places:**
+
+1. **Update JSON-LD Schema** - Increment `numberOfItems` and add new ListItem:
+```json
+{
+  "@type": "ListItem",
+  "position": {NEXT_NUMBER},
+  "item": {
+    "@type": "Article",
+    "name": "{TITLE}",
+    "url": "https://weekendmvp.app/articles/{slug}.html"
+  }
+}
+```
+
+2. **Add to Category Card** - Add to the appropriate category (Building, Mindset, or Ideas):
+```html
+<li class="relative pl-8">
+    <span class="article-number">{NN}</span>
+    <a href="articles/{slug}.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+        <span class="group-hover:text-[#CC5500] transition-colors">{TITLE}</span>
+        <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+    </a>
+</li>
+```
+Also update the category footer article count.
+
+3. **Add to "All Articles" Section** - Add at top (newest first):
+```html
+<a href="articles/{slug}.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">{CATEGORY}</span>
+                <span class="text-xs font-mono text-neutral-600">{DATE}</span>
+            </div>
+            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">{TITLE}</h3>
+            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">{DESCRIPTION}</p>
+        </div>
+        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+    </div>
+</a>
+```
+
+4. **Update Stats Bar** - Change `id="article-count"` value
+
+5. **Update JavaScript Array** - Add to the `articles` array for search:
+```javascript
+{
+    title: '{TITLE}',
+    category: '{building|mindset|ideas}',
+    element: document.querySelector('[data-category="{category}"]')
+}
+```
+Also update the fallback count in `articleCount.textContent`.
+
+**Category Mapping:**
+| Article Type | Category |
+|--------------|----------|
+| Tutorials, How-To | building |
+| Mindset, Strategy, Myths | mindset |
+| Ideas, Listicles | ideas |
+
+### Step 11: Generate Markdown File (for Newsletter)
 
 Save a markdown version for newsletter reuse in `articles/markdown/{slug}.md`.
 
@@ -411,7 +477,7 @@ slug: "{slug}"
 - Frontmatter enables easy parsing for Beehiiv newsletters
 - No HTML elements or Tailwind classes in the markdown
 
-### Step 11: Mark Topic as Published (REQUIRED)
+### Step 12: Mark Topic as Published (REQUIRED)
 
 **Update the topics queue in `.claude/skills/publish-article/topics/research.md`:**
 
@@ -512,6 +578,7 @@ After completion, report:
 - articles/{slug}.html (new)
 - articles/markdown/{slug}.md (new - for newsletter)
 - sitemap.xml (updated)
+- articles.html (updated - added to index)
 - .claude/skills/publish-article/topics/research.md (topic marked as published)
 
 **Framework used:** {FRAMEWORK_NAME}
@@ -554,6 +621,7 @@ Before marking complete:
 - [ ] HTML follows site design patterns
 - [ ] Meta tags and JSON-LD schema added
 - [ ] sitemap.xml updated
+- [ ] **articles.html updated** (schema, category card, all articles, JS search array)
 - [ ] Markdown version saved in articles/markdown/
 - [ ] **Topic marked as PUBLISHED in research.md** (REQUIRED)
 - [ ] Accessibility requirements met

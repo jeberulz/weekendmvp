@@ -90,15 +90,18 @@ Last updated: 2026-01-22
   - https://martian.ventures/mantra/insights/innovative-idea-validation-methods-in-product-design-from-fake-doors-to/
 
 #### Topic 5
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup
+- **Slug:** the-1k-month-idea
+- **Framework:** Myth-Busting
+- **Published:** 2026-01-23
+- **File:** articles/the-1k-month-idea.html
 - **Keywords:** "small startup ideas", "micro saas revenue", "$1000 month business"
-- **Framework:** Myth-Busting or BAB
-- **Search Volume:** Medium-High
-- **Notes:** Successful Micro-SaaS makes $5,000-$30,000 MRR. Counter the "go big or go home" narrative. Focus on lifestyle business angle.
 - **Research Sources:**
   - https://elementor.com/blog/profitable-saas-micro-saas-ideas/
   - https://firstsiteguide.com/micro-saas-ideas/
+  - https://www.demandsage.com/startup-statistics/
+  - https://abhyashsuchi.in/startup-playbook-2026-bootstrap/
 
 ---
 

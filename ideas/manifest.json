@@ -34,6 +34,21 @@
       "slug": "corporate-knowledge-ai-assistant",
       "title": "Corporate Knowledge Base AI Assistant",
       "publishedAt": "2026-01-22"
+    },
+    {
+      "slug": "expert-mentorship-marketplace",
+      "title": "Expert Mentorship Marketplace",
+      "publishedAt": "2026-01-23"
+    },
+    {
+      "slug": "virtual-knowledge-hub",
+      "title": "Virtual Knowledge Sharing Hub for Business Leaders to Mentor Emerging Professionals",
+      "publishedAt": "2026-01-23"
+    },
+    {
+      "slug": "remote-team-documentation-tool",
+      "title": "Automated Documentation Tool for Remote Teams",
+      "publishedAt": "2026-01-23"
     }
   ]
 }
