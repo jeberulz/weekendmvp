@@ -49,6 +49,26 @@
       "slug": "remote-team-documentation-tool",
       "title": "Automated Documentation Tool for Remote Teams",
       "publishedAt": "2026-01-23"
+    },
+    {
+      "slug": "mobile-brake-repair-marketplace",
+      "title": "Marketplace for Mobile Brake Repair Services",
+      "publishedAt": "2026-01-27"
+    },
+    {
+      "slug": "brake-repair-cost-estimator",
+      "title": "Automated Brake Repair Cost Estimator",
+      "publishedAt": "2026-01-27"
+    },
+    {
+      "slug": "brake-safety-education-platform",
+      "title": "Brake Safety Education Platform",
+      "publishedAt": "2026-01-27"
+    },
+    {
+      "slug": "ai-brake-inspection-analyser",
+      "title": "AI-Powered Brake Inspection Analyser",
+      "publishedAt": "2026-01-27"
     }
   ]
 }

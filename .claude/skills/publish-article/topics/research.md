@@ -1,6 +1,6 @@
 # Article Topics Research Bank
 
-Last updated: 2026-01-22
+Last updated: 2026-01-27
 
 ---
 
@@ -108,40 +108,46 @@ Last updated: 2026-01-22
 ### Tier 2: Medium Volume, Lower Competition
 
 #### Topic 6
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt
-- **Keywords:** "vibe coding", "cursor claude bolt tutorial", "AI coding tools 2026"
+- **Slug:** vibe-coding-101
 - **Framework:** How-To Tutorial
-- **Search Volume:** Medium (trending up)
-- **Notes:** "Vibe coding" is the hot new term. Cover tool comparison: Cursor (4.9/5 rating), Claude Code (handles 50k+ LOC), Bolt.new (browser-based). Include: getting started steps, when to use which tool.
+- **Published:** 2026-01-27
+- **File:** articles/vibe-coding-101.html
+- **Keywords:** "vibe coding", "cursor claude bolt tutorial", "AI coding tools 2026"
 - **Research Sources:**
-  - https://www.humai.blog/i-built-a-full-app-with-cursor-in-2-hours-heres-my-step-by-step-guide-to-vibe-coding-in-2026/
   - https://www.nucamp.co/blog/top-10-vibe-coding-tools-in-2026-cursor-copilot-claude-code-more
-  - https://dev.to/jimmyshoe85/my-real-vibe-coding-workflow-claude-projects-bolt-vs-code-no-cursor-required
+  - https://appwrite.io/blog/post/comparing-vibe-coding-tools
+  - https://claude.com/product/claude-code
+  - https://bolt.new/
 
 #### Topic 7
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** 5 Side Projects That Actually Make Money (From People Who Built Them)
-- **Keywords:** "side projects that make money", "profitable side hustle ideas"
+- **Slug:** 5-side-projects-that-make-money
 - **Framework:** Listicle with case study elements
-- **Search Volume:** Medium
-- **Notes:** Include real examples. Digital products ($500-$5k/mo), faceless YouTube, UGC creation ($50-$150/video), AI automation services ($60-$150/hr), online courses.
+- **Published:** 2026-01-27
+- **File:** articles/5-side-projects-that-make-money.html
+- **Keywords:** "side projects that make money", "profitable side hustle ideas"
 - **Research Sources:**
-  - https://www.meriwest.com/our-story/blog/8-side-hustles-build-passive-income-2026
   - https://www.entrepreneur.com/starting-a-business/8-creative-side-hustles-from-2025-to-make-you-money-in-2026/500886
   - https://jobright.ai/blog/best-side-hustles-2026/
+  - https://www.glassdoor.com/Salaries/ugc-creator-salary-SRCH_KO0,11.htm
+  - https://sidequesthustle.com/guides/ai-side-hustles-ultimate-guide-2026
 
 #### Topic 8
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** When to Quit Your Job for Your Side Project (5 Signs You're Ready)
+- **Slug:** when-to-quit-your-job
+- **Framework:** Listicle
+- **Published:** 2026-01-27
+- **File:** articles/when-to-quit-your-job.html
 - **Keywords:** "quit job start business", "side hustle to full time"
-- **Framework:** Listicle or BAB
-- **Search Volume:** Medium
-- **Notes:** Signs: 12-18 months expenses saved, revenue exceeds job income, validated business model, time constraints hurting both, strong support network. Include realistic caveats.
 - **Research Sources:**
   - https://www.zenbusiness.com/blog/7-signs-that-you-should-quit-your-job-and-start-a-business/
   - https://foundr.com/articles/building-a-business/when-to-quit-your-job
-  - https://www.liveplan.com/blog/starting/questions-before-quitting-job-to-start-business
+  - https://www.bankrate.com/loans/small-business/side-hustles-survey/
+  - https://www.hostinger.com/tutorials/side-hustle-statistics
 
 #### Topic 9
 - [ ] **QUEUED**
