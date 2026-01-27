@@ -185,6 +185,47 @@ function initCookieConsent() {
 // Initialize consent on page load
 initCookieConsent();
 
+// Mobile Menu
+function initMobileMenu() {
+    const openBtn = document.getElementById('mobile-menu-open');
+    const closeBtn = document.getElementById('mobile-menu-close');
+    const menu = document.getElementById('mobile-menu');
+    const backdrop = document.getElementById('mobile-menu-backdrop');
+
+    if (!menu) return;
+
+    const toggleMenu = (show) => {
+        if (show) {
+            menu.classList.remove('translate-x-full');
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+        } else {
+            menu.classList.add('translate-x-full');
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+    };
+
+    openBtn?.addEventListener('click', () => toggleMenu(true));
+    closeBtn?.addEventListener('click', () => toggleMenu(false));
+    backdrop?.addEventListener('click', () => toggleMenu(false));
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+            toggleMenu(false);
+        }
+    });
+
+    // Close when clicking a nav link
+    menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => toggleMenu(false));
+    });
+}
+
+// Initialize mobile menu on page load
+initMobileMenu();
+
 // Analytics Event Helper - Tracks to both Google Analytics and Meta Pixel
 function trackEvent(eventName, eventParams = {}) {
     if (window.analyticsConsent !== true) return;

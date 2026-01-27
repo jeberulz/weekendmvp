@@ -86,6 +86,29 @@
                     Browse Ideas
                 </span>
             </a>
+
+            <button id="mobile-menu-open" class="md:hidden ml-2 p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../startup-ideas.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Startup Ideas</a>
+            <a href="../articles.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
         </nav>
     </div>
 
