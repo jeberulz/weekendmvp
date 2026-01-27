@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en" class="antialiased">
-<head>
+<!DOCTYPE html><html lang="en" class="antialiased"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Content Repurposing Tool | Startup Ideas | Weekend MVP</title>
@@ -16,16 +14,79 @@
     <link rel="canonical" href="https://weekendmvp.app/ideas/content-repurposing-tool">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <style>
         body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
         .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
         .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
     </style>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"AI Content Repurposing Tool","description":"Turn one piece of content into 10+. Blog to threads, video to posts.","datePublished":"2026-01-27"},{"@type":"SoftwareApplication","name":"AI Content Repurposing Tool","applicationCategory":"MultimediaApplication","operatingSystem":"Web"}]}
-    </script>
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "AI Content Repurposing Tool",
+      "description": "Turn one piece of content into 10+. Blog to threads, video to posts.",
+      "datePublished": "2026-01-27"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AI Content Repurposing Tool",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Web"
+    },
+    {
+      "@type": "HowTo",
+      "name": "Build AI Content Repurposing Tool MVP",
+      "description": "Step-by-step guide to building AI Content Repurposing Tool in a weekend.",
+      "totalTime": "PT10H",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Project Setup",
+          "text": "Set up your development environment and project structure."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Core Feature",
+          "text": "Build the main feature of your MVP."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Landing Page",
+          "text": "Create a landing page to showcase your MVP."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://weekendmvp.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Startup Ideas",
+          "item": "https://weekendmvp.app/startup-ideas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "AI Content Repurposing Tool",
+          "item": "https://weekendmvp.app/ideas/content-repurposing-tool.html"
+        }
+      ]
+    }
+  ]
+}</script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
@@ -43,9 +104,9 @@
             <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">One piece of content. Ten platforms. Zero extra work.</p>
             <div class="max-w-md mx-auto">
                 <form id="ideas-email-form" class="space-y-4">
-                    <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <input type="text" id="gate-first-name" name="first_name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="email" id="gate-email" name="email" required placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <input type="email" id="gate-email" name="email" required="" placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
                         <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
                     </div>
                 </form>
@@ -199,5 +260,6 @@ Handle edge cases: paywalled content (show error), very long content (summarize 
         });
         function copyPrompt(button) { navigator.clipboard.writeText(button.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { button.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => button.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
     </script>
-</body>
-</html>
+
+
+</body></html>
