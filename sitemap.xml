@@ -445,6 +445,30 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://weekendmvp.app/build-with/replit/</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/build-with/v0/</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/build-with/windsurf/</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/build-with/lovable/</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
   <!-- Problem/Solution Pages -->
   <url>
