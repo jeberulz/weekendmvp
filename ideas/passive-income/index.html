@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passive Income App Ideas | Weekend MVP</title>
+    <meta name="description" content="Discover startup ideas that generate revenue with minimal ongoing effort. Build once, earn repeatedly with these low-maintenance business ideas.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/passive-income/">
+    <meta property="og:title" content="Passive Income App Ideas | Weekend MVP">
+    <meta property="og:description" content="Discover startup ideas that generate revenue with minimal ongoing effort. Build once, earn repeatedly with these low-maintenance business ideas.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Passive Income App Ideas | Weekend MVP">
+    <meta property="twitter:description" content="Discover startup ideas that generate revenue with minimal ongoing effort. Build once, earn repeatedly with these low-maintenance business ideas.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/passive-income/">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                  gtag('event', 'view_revenue_page', {
+                    'revenue_goal': 'Passive Income',
+                    'idea_count': 5
+                  });
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../image/favicon.png">
+    <link rel="apple-touch-icon" href="../../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://weekendmvp.app/#website",
+          "url": "https://weekendmvp.app/",
+          "name": "Weekend MVP",
+          "publisher": { "@id": "https://weekendmvp.app/#person" }
+        },
+        {
+          "@type": "CollectionPage",
+          "name": "Passive Income App Ideas",
+          "description": "Startup ideas that generate revenue with minimal ongoing effort",
+          "url": "https://weekendmvp.app/ideas/passive-income/",
+          "isPartOf": { "@id": "https://weekendmvp.app/#website" },
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "mainEntity": {
+            "@type": "ItemList",
+            "numberOfItems": 5,
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "url": "https://weekendmvp.app/ideas/invoice-reminder-bot.html", "name": "Invoice Reminder Bot" },
+              { "@type": "ListItem", "position": 2, "url": "https://weekendmvp.app/ideas/ai-meeting-notes-cleaner.html", "name": "AI Meeting Notes Cleaner" },
+              { "@type": "ListItem", "position": 3, "url": "https://weekendmvp.app/ideas/brake-repair-cost-estimator.html", "name": "Automated Brake Repair Cost Estimator" },
+              { "@type": "ListItem", "position": 4, "url": "https://weekendmvp.app/ideas/ai-brake-inspection-analyser.html", "name": "AI-Powered Brake Inspection Analyser" },
+              { "@type": "ListItem", "position": 5, "url": "https://weekendmvp.app/ideas/remote-team-documentation-tool.html", "name": "Automated Documentation Tool for Remote Teams" }
+            ]
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Passive Income", "item": "https://weekendmvp.app/ideas/passive-income/" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-2.5 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full">
+            <a href="../../index.html">
+                <div class="logo h-4 w-24 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-1">
+                <a href="../../startup-ideas.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Startup Ideas</a>
+                <a href="../../articles.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Articles</a>
+                <a href="../../starter-kit.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Starter Kit</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="../../starter-kit.html" class="hidden md:inline-flex gradient-border-button px-5 py-2 text-xs font-semibold text-white rounded-full hover:bg-white/10 transition-colors">
+                    Get the Kit
+                </a>
+                <button id="mobile-menu-open" class="md:hidden p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                    <iconify-icon icon="lucide:menu" width="20" aria-hidden="true"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../../startup-ideas.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Startup Ideas</a>
+            <a href="../../articles.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
+        
+        <!-- Breadcrumb -->
+        <nav class="mb-8" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-2 text-sm">
+                <li><a href="../../index.html" class="text-neutral-500 hover:text-white transition-colors">Home</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><a href="../../startup-ideas.html" class="text-neutral-500 hover:text-white transition-colors">Startup Ideas</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><span class="text-white">Passive Income</span></li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center">
+                    <iconify-icon icon="lucide:zap" class="text-purple-400" width="28" aria-hidden="true"></iconify-icon>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight">Passive Income App Ideas</h1>
+                </div>
+            </div>
+            <p class="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
+                Products that generate revenue with minimal ongoing effort. Set it up once and let it run. These ideas are designed for low-maintenance operation with high automation potential.
+            </p>
+            <div class="flex flex-wrap items-center gap-3 mt-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                    <span class="sr-only">Total:</span>5 ideas
+                </span>
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full text-sm text-purple-400">
+                    <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                    &lt; 5 hours/week maintenance
+                </span>
+            </div>
+        </header>
+
+        <!-- Passive Income Reality Check -->
+        <section class="mb-16" aria-labelledby="methodology-heading">
+            <h2 id="methodology-heading" class="text-2xl font-medium text-white mb-6">What Makes an Idea "Passive"?</h2>
+            <div class="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                <p class="text-neutral-300 leading-relaxed mb-8">Truly passive products are rare, but low-maintenance is achievable. Look for: one-time purchases, subscription products with low churn, and automated delivery. The key is building systems that run without constant attention—automated onboarding, self-service support, and minimal feature updates.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Characteristic 1 -->
+                    <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                                <iconify-icon icon="lucide:bot" class="text-purple-400" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <span class="text-white font-medium">High Automation</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm mb-3">The product runs itself</p>
+                        <p class="text-neutral-500 text-xs">Automated billing, delivery, and basic support. No manual intervention for standard operations.</p>
+                    </div>
+                    <!-- Characteristic 2 -->
+                    <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
+                                <iconify-icon icon="lucide:clock" class="text-green-400" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <span class="text-white font-medium">Low Maintenance</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm mb-3">&lt; 5 hours per week</p>
+                        <p class="text-neutral-500 text-xs">Occasional updates, minimal customer support needs, stable infrastructure.</p>
+                    </div>
+                    <!-- Characteristic 3 -->
+                    <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                                <iconify-icon icon="lucide:help-circle" class="text-blue-400" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <span class="text-white font-medium">Minimal Support</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm mb-3">Self-service first</p>
+                        <p class="text-neutral-500 text-xs">Clear documentation, FAQ, in-app guidance. Users solve most issues themselves.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ideas Grid -->
+        <section aria-labelledby="ideas-heading">
+            <h2 id="ideas-heading" class="text-2xl font-medium text-white mb-8">Passive Income Ideas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Idea 1: Invoice Reminder Bot -->
+                <a href="../invoice-reminder-bot.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">SaaS</span>
+                        <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] font-bold uppercase rounded-full">Automation</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Invoice Reminder Bot</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2 mb-4">Automated follow-ups for unpaid invoices. Set up once, runs automatically.</p>
+                    <div class="flex items-center gap-2 text-xs text-neutral-500">
+                        <iconify-icon icon="lucide:clock" width="12" aria-hidden="true"></iconify-icon>
+                        <span>~1 hour/week maintenance</span>
+                    </div>
+                </a>
+
+                <!-- Idea 2: AI Meeting Notes Cleaner -->
+                <a href="../ai-meeting-notes-cleaner.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase rounded-full">AI</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Meeting Notes Cleaner</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2 mb-4">Upload messy notes, get clean action items. Fully automated AI processing.</p>
+                    <div class="flex items-center gap-2 text-xs text-neutral-500">
+                        <iconify-icon icon="lucide:clock" width="12" aria-hidden="true"></iconify-icon>
+                        <span>~2 hours/week maintenance</span>
+                    </div>
+                </a>
+
+                <!-- Idea 3: Brake Repair Cost Estimator -->
+                <a href="../brake-repair-cost-estimator.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase rounded-full">Automation</span>
+                        <span class="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase rounded-full">Tool</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Automated Brake Repair Cost Estimator</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2 mb-4">Calculator tool with referral revenue. One-time build, ongoing affiliate income.</p>
+                    <div class="flex items-center gap-2 text-xs text-neutral-500">
+                        <iconify-icon icon="lucide:clock" width="12" aria-hidden="true"></iconify-icon>
+                        <span>~1 hour/week maintenance</span>
+                    </div>
+                </a>
+
+                <!-- Idea 4: AI Brake Inspection Analyser -->
+                <a href="../ai-brake-inspection-analyser.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase rounded-full">AI Tools</span>
+                        <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] font-bold uppercase rounded-full">B2B</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI-Powered Brake Inspection Analyser</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2 mb-4">Upload photo, get wear analysis. AI does the work automatically.</p>
+                    <div class="flex items-center gap-2 text-xs text-neutral-500">
+                        <iconify-icon icon="lucide:clock" width="12" aria-hidden="true"></iconify-icon>
+                        <span>~3 hours/week maintenance</span>
+                    </div>
+                </a>
+
+                <!-- Idea 5: Remote Team Documentation Tool -->
+                <a href="../remote-team-documentation-tool.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">SaaS</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Automated Documentation Tool</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2 mb-4">Auto-captures team knowledge from Slack and meetings. Set and forget.</p>
+                    <div class="flex items-center gap-2 text-xs text-neutral-500">
+                        <iconify-icon icon="lucide:clock" width="12" aria-hidden="true"></iconify-icon>
+                        <span>~2 hours/week maintenance</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- Passive Income Strategies -->
+        <section class="mt-24" aria-labelledby="strategies-heading">
+            <h2 id="strategies-heading" class="text-2xl font-medium text-white mb-8">Strategies for Passive Revenue</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Strategy 1 -->
+                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:repeat" class="text-green-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium">Subscription Model</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm mb-4">Recurring revenue with low churn. Once customers are onboarded, they pay monthly without action.</p>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Predictable monthly revenue
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Automatic billing with Stripe
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Focus on reducing churn, not sales
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy 2 -->
+                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:link" class="text-blue-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium">Affiliate Revenue</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm mb-4">Build free tools that recommend paid products. Earn commissions on referrals.</p>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            No customer support needed
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Scales with traffic (SEO)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Partner handles fulfillment
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy 3 -->
+                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:cpu" class="text-purple-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium">Usage-Based Pricing</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm mb-4">Charge per API call, document processed, or action taken. Revenue scales with usage.</p>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            No manual invoicing
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Aligns cost with value
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Built-in usage caps prevent abuse
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy 4 -->
+                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:book-open" class="text-orange-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <h3 class="text-white font-medium">Digital Products</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm mb-4">Templates, courses, or ebooks. Create once, sell forever. Zero marginal cost.</p>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            One-time creation effort
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            Automated delivery (Gumroad, Lemon)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                            100% profit margin
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Automation Checklist -->
+        <section class="mt-24" aria-labelledby="checklist-heading">
+            <h2 id="checklist-heading" class="text-2xl font-medium text-white mb-8">Automation Checklist</h2>
+            <div class="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                <p class="text-neutral-400 mb-6">Before launching, make sure these systems are automated:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">Billing & Payments</h4>
+                            <p class="text-neutral-500 text-xs mt-1">Stripe handles subscriptions, invoices, and failed payments automatically</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">User Onboarding</h4>
+                            <p class="text-neutral-500 text-xs mt-1">Self-service signup, email verification, and in-app tutorials</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">Support Documentation</h4>
+                            <p class="text-neutral-500 text-xs mt-1">FAQ, help docs, and common issue guides reduce support tickets</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">Error Monitoring</h4>
+                            <p class="text-neutral-500 text-xs mt-1">Sentry or similar to catch issues before users report them</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">Email Sequences</h4>
+                            <p class="text-neutral-500 text-xs mt-1">Welcome emails, tips, and re-engagement sent automatically</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <iconify-icon icon="lucide:check" class="text-green-400" width="14" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <div>
+                            <h4 class="text-white text-sm font-medium">Infrastructure</h4>
+                            <p class="text-neutral-500 text-xs mt-1">Vercel/Railway auto-scales, no server management needed</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Other Revenue Goals -->
+        <section class="mt-24" aria-labelledby="other-goals-heading">
+            <h2 id="other-goals-heading" class="text-2xl font-medium text-white mb-8">Other Revenue Goals</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                
+                <a href="../1k-month/" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all text-center">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-green-500/10 rounded-xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:dollar-sign" class="text-green-400" width="24" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium text-sm">$1K/Month</h3>
+                    <p class="text-neutral-500 text-xs mt-1">First milestone</p>
+                </a>
+
+                <a href="../5k-month/" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all text-center">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:trending-up" class="text-blue-400" width="24" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium text-sm">$5K/Month</h3>
+                    <p class="text-neutral-500 text-xs mt-1">Replace your salary</p>
+                </a>
+
+                <a href="../10k-month/" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all text-center">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:rocket" class="text-purple-400" width="24" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium text-sm">$10K/Month</h3>
+                    <p class="text-neutral-500 text-xs mt-1">Full-time business</p>
+                </a>
+
+                <a href="../quick-wins/" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all text-center">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-orange-500/10 rounded-xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:timer" class="text-orange-400" width="24" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium text-sm">Quick Wins</h3>
+                    <p class="text-neutral-500 text-xs mt-1">Fast revenue</p>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="mt-24">
+            <div class="p-12 bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-[3rem] text-center">
+                <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Ready to build passive income?</h2>
+                <p class="text-neutral-400 mb-8 max-w-xl mx-auto">Get the Weekend MVP Starter Kit with automation templates and passive income blueprints.</p>
+                <a href="../../starter-kit.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Get the Starter Kit</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 mt-32 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../../index.html">
+                        <div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">By Revenue</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../1k-month/" class="text-neutral-500 hover:text-white transition-colors">$1K/Month Ideas</a></li>
+                        <li><a href="../5k-month/" class="text-neutral-500 hover:text-white transition-colors">$5K/Month Ideas</a></li>
+                        <li><a href="../10k-month/" class="text-neutral-500 hover:text-white transition-colors">$10K/Month Ideas</a></li>
+                        <li><a href="../passive-income/" class="text-white transition-colors">Passive Income</a></li>
+                        <li><a href="../../startup-ideas.html" class="text-neutral-400 hover:text-white transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Build With</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../build-with/cursor/" class="text-neutral-500 hover:text-white transition-colors">Cursor</a></li>
+                        <li><a href="../../build-with/claude/" class="text-neutral-500 hover:text-white transition-colors">Claude</a></li>
+                        <li><a href="../../build-with/bolt/" class="text-neutral-500 hover:text-white transition-colors">Bolt.new</a></li>
+                        <li><a href="../../build-with/no-code/" class="text-neutral-500 hover:text-white transition-colors">No-Code</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Ideas For</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../ideas-for/developers/" class="text-neutral-500 hover:text-white transition-colors">Developers</a></li>
+                        <li><a href="../../ideas-for/non-technical/" class="text-neutral-500 hover:text-white transition-colors">Non-Technical</a></li>
+                        <li><a href="../../ideas-for/solo-founders/" class="text-neutral-500 hover:text-white transition-colors">Solo Founders</a></li>
+                        <li><a href="../../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-white transition-colors">Side Hustlers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                        <li><a href="../../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu
+        (function initMobileMenu() {
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const menu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+
+            if (!menu) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    menu.classList.remove('translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.classList.add('translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+                    toggleMenu(false);
+                }
+            });
+
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+        })();
+    </script>
+</body>
+</html>

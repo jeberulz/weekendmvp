@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Competitor Tracker | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a tool that monitors competitors and alerts you to changes. Track pricing, features, and messaging automatically. Full build guide included.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-competitor-tracker">
+    <meta property="og:title" content="AI Competitor Tracker | Startup Ideas">
+    <meta property="og:description" content="Monitor competitors automatically with AI-powered alerts.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-competitor-tracker">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+    </div>
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Competitor Tracker</h1>
+            <p class="text-lg text-neutral-500 mb-10">Know what your competitors are doing before your customers do.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+            </form>
+        </div>
+    </section>
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">AI Tools</span><span class="text-neutral-400 text-xs">~12 hours to build</span></div>
+                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Competitor Tracker</h1>
+                <p class="text-xl text-neutral-500 font-light">Competitive intelligence on autopilot.</p>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Founders know they should watch competitors but rarely have time. Checking competitor websites weekly, monitoring their changelogs, tracking pricing changes—it's a manual grind. By the time you notice a competitor launched your planned feature, your customers are already asking about it.</p></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">Add competitor URLs, and AI monitors them daily. Get alerts when pricing changes, new features launch, or messaging shifts. Weekly digest summarizes what competitors are up to. Never be blindsided by competitive moves again.</p>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Add competitors</p><p class="text-xs text-neutral-500 mt-1">URLs to monitor</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI monitors</p><p class="text-xs text-neutral-500 mt-1">Daily checks for changes</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Get alerts</p><p class="text-xs text-neutral-500 mt-1">Instant or weekly digest</p></div></div></div>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Crayon, Klue raised $100M+ for enterprise competitive intel</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>No affordable solution for startups and small teams</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Every SaaS founder obsesses over competitors—built-in demand</span></li></ul></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for competitor monitoring.
+
+Features:
+- Dashboard: competitors list, recent changes, alerts
+- Add competitor: name, website URL, pages to monitor
+- Change timeline: history of detected changes
+- Alerts: email notifications, Slack integration
+- Weekly digest: AI-summarized competitive update
+
+Use Supabase for auth and storage. Set up cron job for daily checks.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Change Detection</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the monitoring system:
+
+1. Daily cron fetches competitor pages
+2. Extract key content: pricing tables, feature lists, hero text, navigation
+3. Compare to previous snapshot
+4. AI analysis: "What changed and why does it matter?"
+5. Classify change type: pricing, feature, messaging, design
+6. Store snapshots for historical comparison
+
+Use Puppeteer for JavaScript-rendered pages.
+Filter out noise: timestamps, cookie banners, minor style changes.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Intelligence Reports</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create AI-powered intelligence:
+
+1. Weekly email digest: "Here's what your competitors did this week"
+2. Pricing comparison: table of all competitors' plans
+3. Feature matrix: what each competitor offers
+4. Trend analysis: "Competitor X has mentioned AI 5x more this month"
+5. Strategic insights: AI suggests how to respond to changes
+
+Generate battle cards: one-pagers on how to position against each competitor.</p></div>
+            </div></div>
+            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
+            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
+        </div></div>
+        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+    </section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (!localStorage.getItem('ideas_email')) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
+        function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

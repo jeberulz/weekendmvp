@@ -317,8 +317,45 @@ Use the article template structure:
     <!-- Google Analytics will be auto-injected after canonical -->
 </head>
 <body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
-    <!-- Navigation -->
-    <!-- Article content -->
+    <!-- Navigation with "Browse Ideas" CTA -->
+
+    <article class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <!-- Breadcrumb -->
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">{ARTICLE_TITLE}</span>
+            </nav>
+
+            <!-- Header -->
+            <header class="mb-16">
+                <!-- METADATA LINE WITH AUTHOR BYLINE -->
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">{CATEGORY}</span>
+                    <span class="text-neutral-600 text-xs">•</span>
+                    <span class="text-neutral-600 text-xs">
+                        By <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a>
+                    </span>
+                    <span class="text-neutral-600 text-xs">•</span>
+                    <span class="text-neutral-600 text-xs">{DATE}</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+                    {ARTICLE_TITLE}
+                </h1>
+                <p class="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
+                    {SUBHEADLINE}
+                </p>
+            </header>
+
+            <!-- Article content sections -->
+
+        </div>
+    </article>
+
     <!-- Footer -->
 </body>
 </html>
@@ -328,6 +365,7 @@ Use the article template structure:
 - Dark theme (#050505 background)
 - Navigation with "Browse Ideas" CTA
 - Breadcrumb navigation
+- **Author byline with external link pattern** (NEW)
 - Proper heading hierarchy (h1 > h2 > h3)
 - Multiple CTAs linking to startup-ideas.html
 - Footer matching site design
@@ -521,6 +559,7 @@ To:
 - [ ] All icon-only buttons have `aria-label`
 - [ ] All decorative icons have `aria-hidden="true"`
 - [ ] Logo divs have `role="img"` and `aria-label="Weekend MVP"`
+- [ ] **Author byline link has `rel="noopener noreferrer"` and sr-only text**
 - [ ] External links have `rel="noopener noreferrer"` + sr-only text
 - [ ] Focus rings use `focus:ring-white/40` (not /20)
 - [ ] Proper heading hierarchy (no skipped levels)
@@ -634,6 +673,7 @@ Before marking complete:
 - [ ] All statistics sourced from WebSearch
 - [ ] 3+ CTAs to startup-ideas.html included
 - [ ] HTML follows site design patterns
+- [ ] **Author byline included in header with proper accessibility**
 - [ ] Meta tags and JSON-LD schema added
 - [ ] sitemap.xml updated
 - [ ] **articles.html updated** (schema, category card, all articles, JS search array)

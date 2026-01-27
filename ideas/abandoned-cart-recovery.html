@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abandoned Cart Recovery Tool | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/abandoned-cart-recovery">
+    <meta property="og:title" content="Abandoned Cart Recovery Tool | Startup Ideas">
+    <meta property="og:description" content="Automated abandoned cart recovery with AI-personalized emails.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/abandoned-cart-recovery">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Abandoned Cart Recovery Tool","description":"Automated abandoned cart recovery with AI-personalized emails.","datePublished":"2026-01-27"},{"@type":"SoftwareApplication","name":"Abandoned Cart Recovery Tool","applicationCategory":"ShoppingApplication","operatingSystem":"Web"}]}
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">Abandoned Cart Recovery Tool</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">Recover lost sales on autopilot.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">E-commerce</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Abandoned Cart Recovery Tool</h1>
+                    <p class="text-xl text-neutral-500 font-light">Turn abandoned carts into completed orders.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">70% of online shopping carts are abandoned—that's trillions of dollars left on the table every year. Store owners know they should send recovery emails, but Klaviyo is expensive ($45+/mo), Shopify's built-in is basic, and setting up effective sequences requires marketing expertise most store owners don't have.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">A focused abandoned cart recovery tool that integrates with Shopify/WooCommerce, uses AI to write personalized recovery emails based on the products in cart, and optimizes send times automatically. Simple pricing, fast setup, measurable ROI.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Connect store</p>
+                                <p class="text-xs text-neutral-500 mt-1">Shopify or WooCommerce app</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI writes emails</p>
+                                <p class="text-xs text-neutral-500 mt-1">Personalized to cart contents</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Auto-recover sales</p>
+                                <p class="text-xs text-neutral-500 mt-1">3-email sequence on autopilot</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">E-commerce is a $6T+ market with millions of stores. Cart abandonment is a universal problem, and recovery emails are proven to work—they have 3x higher conversion than regular marketing emails.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Average abandoned cart email recovers 5-10% of lost sales (Klaviyo data)</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>4.8M+ Shopify stores, most without sophisticated recovery</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Klaviyo valued at $9B—proves market size</span></li>
+                    </ul>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create a Next.js app for Abandoned Cart Recovery.
+
+Features:
+- Shopify OAuth app installation flow
+- Dashboard: recovered revenue, emails sent, recovery rate
+- Email template editor with variables (customer name, products, cart link)
+- Settings: email timing (1hr, 24hr, 72hr), sender name/email
+- Preview of email sequence
+
+Use Supabase for auth/data. Set up Shopify webhook for cart abandonment events.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Implement the email generation and sending:
+
+1. When Shopify webhook fires for abandoned cart:
+   - Store cart data: customer email, name, products, total, cart URL
+   - Schedule 3 emails: 1 hour, 24 hours, 72 hours after abandonment
+2. Before sending each email, use AI to personalize:
+   - Email 1: Gentle reminder with product images
+   - Email 2: Create urgency ("still available")
+   - Email 3: Offer small discount (configurable)
+3. Use Resend or SendGrid for email delivery
+4. Track opens, clicks, and conversions (add UTM to cart link)
+5. Cancel sequence if cart is recovered
+
+Stop sequence immediately when purchase is made.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Analytics Dashboard</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build analytics dashboard showing:
+
+- Total recovered revenue (attributed to email clicks)
+- Recovery rate (carts recovered / carts abandoned)
+- Email performance: open rate, click rate by email in sequence
+- Best performing products (which items get recovered most)
+- Time series chart of recoveries over time
+
+Calculate ROI: "This month you recovered $X from Y abandoned carts"
+Show comparison to previous month.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const hasAccess = localStorage.getItem('ideas_email');
+        if (!hasAccess) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+            const submitBtn = document.getElementById('gate-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+            try {
+                if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
+                localStorage.setItem('ideas_email', email);
+                document.getElementById('email-gate').classList.add('hidden');
+                document.getElementById('idea-content').classList.remove('hidden');
+            } catch (error) { alert('Something went wrong.'); submitBtn.disabled = false; submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>'; }
+        });
+        function copyPrompt(button) { navigator.clipboard.writeText(button.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { button.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => button.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

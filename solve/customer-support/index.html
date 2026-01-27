@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Automate Customer Support | Weekend MVP</title>
+    <meta name="description" content="Discover startup ideas that solve customer support challenges. Build AI-powered tools to handle support tickets, reduce response times, and scale without hiring.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/solve/customer-support/">
+    <meta property:og:title" content="How to Automate Customer Support | Weekend MVP">
+    <meta property="og:description" content="Discover startup ideas that solve customer support challenges. Build AI-powered tools to handle support tickets, reduce response times, and scale without hiring.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="How to Automate Customer Support | Weekend MVP">
+    <meta property="twitter:description" content="Discover startup ideas that solve customer support challenges. Build AI-powered tools to handle support tickets, reduce response times, and scale without hiring.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/solve/customer-support/">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                  gtag('event', 'view_problem_page', {
+                    'problem_name': 'Customer Support',
+                    'solution_count': 3
+                  });
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../image/favicon.png">
+    <link rel="apple-touch-icon" href="../../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://weekendmvp.app/#website",
+          "url": "https://weekendmvp.app/",
+          "name": "Weekend MVP",
+          "publisher": { "@id": "https://weekendmvp.app/#person" }
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Automate Customer Support",
+          "description": "Handle more support tickets without hiring more people. Build AI-powered tools that answer common questions, triage issues, and escalate when needed.",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Build a knowledge base",
+              "text": "Collect and organize your FAQs, documentation, and common support solutions."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Train an AI chatbot",
+              "text": "Use your knowledge base to power an AI assistant that answers common questions."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Add smart routing",
+              "text": "Build logic to escalate complex issues to humans while AI handles routine questions."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 4,
+              "name": "Monitor and improve",
+              "text": "Track resolution rates and customer satisfaction to continuously improve responses."
+            }
+          ]
+        },
+        {
+          "@type": "ItemList",
+          "name": "Solutions for Customer Support",
+          "numberOfItems": 3,
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "AI Support Chatbot",
+              "description": "A chatbot trained on your docs that handles tier-1 support questions automatically."
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Support Ticket Classifier",
+              "description": "AI that categorizes, prioritizes, and routes incoming support tickets."
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Response Suggestion Engine",
+              "description": "AI that drafts responses for support agents to review and send."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Solve", "item": "https://weekendmvp.app/solve/" },
+            { "@type": "ListItem", "position": 3, "name": "Customer Support", "item": "https://weekendmvp.app/solve/customer-support/" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Browse Ideas
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[480px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Category</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../ideas/saas/" class="text-neutral-400 hover:text-white transition-colors text-sm">SaaS</a></li>
+                                        <li><a href="../../ideas/ai-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">AI Tools</a></li>
+                                        <li><a href="../../ideas/productivity/" class="text-neutral-400 hover:text-white transition-colors text-sm">Productivity</a></li>
+                                        <li><a href="../../ideas/automation/" class="text-neutral-400 hover:text-white transition-colors text-sm">Automation</a></li>
+                                        <li><a href="../../ideas/developer-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developer Tools</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Revenue</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../ideas/1k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$1K/month</a></li>
+                                        <li><a href="../../ideas/5k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$5K/month</a></li>
+                                        <li><a href="../../ideas/passive-income/" class="text-neutral-400 hover:text-white transition-colors text-sm">Passive Income</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Time</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../ideas/build-in-8-hours/" class="text-neutral-400 hover:text-white transition-colors text-sm">8 Hours</a></li>
+                                        <li><a href="../../ideas/build-in-weekend/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend</a></li>
+                                        <li><a href="../../ideas/build-in-1-week/" class="text-neutral-400 hover:text-white transition-colors text-sm">1 Week</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../../startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    View All Ideas
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Build With
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[400px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">AI Code Editors</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../build-with/cursor/" class="text-neutral-400 hover:text-white transition-colors text-sm">Cursor</a></li>
+                                        <li><a href="../../build-with/windsurf/" class="text-neutral-400 hover:text-white transition-colors text-sm">Windsurf</a></li>
+                                        <li><a href="../../build-with/claude/" class="text-neutral-400 hover:text-white transition-colors text-sm">Claude</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">No-Code</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../build-with/bolt/" class="text-neutral-400 hover:text-white transition-colors text-sm">Bolt.new</a></li>
+                                        <li><a href="../../build-with/lovable/" class="text-neutral-400 hover:text-white transition-colors text-sm">Lovable</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Other</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../build-with/replit/" class="text-neutral-400 hover:text-white transition-colors text-sm">Replit</a></li>
+                                        <li><a href="../../build-with/v0/" class="text-neutral-400 hover:text-white transition-colors text-sm">v0</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../../build-with/no-code/" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    All Tools
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Ideas For
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[320px]">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Skill Level</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../ideas-for/developers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developers</a></li>
+                                        <li><a href="../../ideas-for/designers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Designers</a></li>
+                                        <li><a href="../../ideas-for/non-technical/" class="text-neutral-400 hover:text-white transition-colors text-sm">Non-Technical</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Situation</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../../ideas-for/solo-founders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Solo Founders</a></li>
+                                        <li><a href="../../ideas-for/side-hustlers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Side Hustlers</a></li>
+                                        <li><a href="../../ideas-for/weekend-builders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend Builders</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../../startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    Browse All
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="../../articles.html" class="hover:text-white transition-colors">Articles</a>
+            </div>
+
+            <button class="open-modal group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Get the Kit
+                </span>
+            </button>
+
+            <button id="mobile-menu-open" class="md:hidden ml-2 p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-80 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Browse Ideas</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Category</p>
+                    <a href="../../ideas/saas/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">SaaS</a>
+                    <a href="../../ideas/ai-tools/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">AI Tools</a>
+                    <a href="../../ideas/productivity/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Productivity</a>
+                    <a href="../../ideas/automation/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Automation</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Revenue</p>
+                    <a href="../../ideas/1k-month/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">$1K/month</a>
+                    <a href="../../ideas/passive-income/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Passive Income</a>
+                    <a href="../../startup-ideas.html" class="block px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">View All →</a>
+                </div>
+            </div>
+            
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Build With</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">AI Code Editors</p>
+                    <a href="../../build-with/cursor/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Cursor</a>
+                    <a href="../../build-with/claude/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Claude</a>
+                    <a href="../../build-with/windsurf/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Windsurf</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">No-Code</p>
+                    <a href="../../build-with/bolt/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Bolt.new</a>
+                    <a href="../../build-with/lovable/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Lovable</a>
+                </div>
+            </div>
+            
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Ideas For</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <a href="../../ideas-for/developers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Developers</a>
+                    <a href="../../ideas-for/designers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Designers</a>
+                    <a href="../../ideas-for/non-technical/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Non-Technical</a>
+                    <a href="../../ideas-for/solo-founders/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Solo Founders</a>
+                    <a href="../../ideas-for/side-hustlers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Side Hustlers</a>
+                </div>
+            </div>
+            
+            <a href="../../articles.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
+        
+        <!-- Breadcrumb -->
+        <nav class="mb-8" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-2 text-sm">
+                <li><a href="../../index.html" class="text-neutral-500 hover:text-white transition-colors">Home</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><span class="text-white">Automate Customer Support</span></li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center">
+                    <iconify-icon icon="lucide:headphones" class="text-cyan-400" width="28" aria-hidden="true"></iconify-icon>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight">Automate Customer Support</h1>
+                </div>
+            </div>
+            <p class="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
+                Handle more support tickets without hiring more people. Build AI-powered tools that answer common questions, triage issues, and escalate when needed.
+            </p>
+            <div class="flex flex-wrap items-center gap-3 mt-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400">
+                    <iconify-icon icon="lucide:lightbulb" width="14" aria-hidden="true"></iconify-icon>
+                    3 solution concepts
+                </span>
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-sm text-cyan-400">
+                    <iconify-icon icon="lucide:bar-chart-2" width="14" aria-hidden="true"></iconify-icon>
+                    70% of queries are repetitive
+                </span>
+            </div>
+        </header>
+
+        <!-- Problem Overview -->
+        <section class="mb-16" aria-labelledby="overview-heading">
+            <h2 id="overview-heading" class="text-2xl font-medium text-white mb-6">The Problem</h2>
+            <div class="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                <p class="text-neutral-300 leading-relaxed mb-8">Customer support doesn't scale linearly. As your product grows, so does the volume of support requests—but most of them are asking the same 20 questions. Small teams get overwhelmed, response times suffer, and founder time gets eaten up answering "how do I reset my password?" for the hundredth time. Meanwhile, customers expect instant responses, 24/7.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-5 bg-white/5 border border-white/10 rounded-2xl">
+                        <iconify-icon icon="lucide:repeat" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                        <h4 class="text-white font-medium mb-2">Repetitive Questions</h4>
+                        <p class="text-sm text-neutral-400">70%+ of support tickets ask the same questions that have documented answers.</p>
+                    </div>
+                    <div class="p-5 bg-white/5 border border-white/10 rounded-2xl">
+                        <iconify-icon icon="lucide:clock" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                        <h4 class="text-white font-medium mb-2">Response Time Pressure</h4>
+                        <p class="text-sm text-neutral-400">Customers expect sub-hour responses but teams can't staff 24/7.</p>
+                    </div>
+                    <div class="p-5 bg-white/5 border border-white/10 rounded-2xl">
+                        <iconify-icon icon="lucide:trending-up" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                        <h4 class="text-white font-medium mb-2">Scaling Challenges</h4>
+                        <p class="text-sm text-neutral-400">Hiring support agents is expensive and doesn't solve the root problem.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Ideas -->
+        <section aria-labelledby="solutions-heading">
+            <h2 id="solutions-heading" class="text-2xl font-medium text-white mb-8">Solution Ideas</h2>
+            <div class="space-y-8">
+                <!-- Solution 1 -->
+                <div class="block p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase tracking-wider rounded-full">AI Tools</span>
+                                <span class="text-neutral-500 text-xs">~10-12 hours to build</span>
+                            </div>
+                            <h3 class="text-xl font-medium text-white">AI Support Chatbot</h3>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">A chatbot trained on your documentation, FAQ, and past support tickets that handles tier-1 support questions automatically. When it can't answer confidently, it creates a ticket and routes to a human.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">RAG-Powered</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Smart Escalation</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">24/7 Coverage</span>
+                    </div>
+                </div>
+
+                <!-- Solution 2 -->
+                <div class="block p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-1 bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase tracking-wider rounded-full">Automation</span>
+                                <span class="text-neutral-500 text-xs">~8-10 hours to build</span>
+                            </div>
+                            <h3 class="text-xl font-medium text-white">Support Ticket Classifier</h3>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">AI that automatically categorizes, prioritizes, and routes incoming support tickets. Identifies urgent issues, assigns to the right team member, and suggests relevant documentation.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Auto-Tagging</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Priority Detection</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Smart Routing</span>
+                    </div>
+                </div>
+
+                <!-- Solution 3 -->
+                <div class="block p-8 bg-white/5 border border-white/10 rounded-3xl">
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase tracking-wider rounded-full">Productivity</span>
+                                <span class="text-neutral-500 text-xs">~6-8 hours to build</span>
+                            </div>
+                            <h3 class="text-xl font-medium text-white">Response Suggestion Engine</h3>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">AI that drafts responses for support agents based on the ticket content and your knowledge base. Agents review, edit if needed, and send—cutting response time by 60%+.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Draft Generation</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Human in Loop</span>
+                        <span class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-neutral-400">Tone Matching</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Guide -->
+        <section class="mt-24" aria-labelledby="quickstart-heading">
+            <h2 id="quickstart-heading" class="text-2xl font-medium text-white mb-8">Quick Start Guide</h2>
+            <div class="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                <ol class="space-y-6">
+                    <li class="flex gap-4">
+                        <span class="flex-shrink-0 w-8 h-8 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center justify-center text-sm font-bold">1</span>
+                        <div>
+                            <h4 class="text-white font-medium mb-1">Collect your knowledge sources</h4>
+                            <p class="text-neutral-400 text-sm">Gather FAQs, documentation, help articles, and past support conversations.</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="flex-shrink-0 w-8 h-8 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center justify-center text-sm font-bold">2</span>
+                        <div>
+                            <h4 class="text-white font-medium mb-1">Build a vector store</h4>
+                            <p class="text-neutral-400 text-sm">Chunk and embed your content using OpenAI embeddings + Pinecone/Supabase pgvector.</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="flex-shrink-0 w-8 h-8 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center justify-center text-sm font-bold">3</span>
+                        <div>
+                            <h4 class="text-white font-medium mb-1">Create the chat interface</h4>
+                            <p class="text-neutral-400 text-sm">Build a simple chat widget that queries your knowledge base and generates responses.</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="flex-shrink-0 w-8 h-8 bg-cyan-500/20 text-cyan-400 rounded-lg flex items-center justify-center text-sm font-bold">4</span>
+                        <div>
+                            <h4 class="text-white font-medium mb-1">Add escalation logic</h4>
+                            <p class="text-neutral-400 text-sm">Detect when the AI is uncertain and seamlessly hand off to a human agent.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Related Problems -->
+        <section class="mt-24" aria-labelledby="related-heading">
+            <h2 id="related-heading" class="text-2xl font-medium text-white mb-8">Related Problems to Solve</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="../knowledge-transfer/" class="group p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.07] hover:border-white/20 transition-all">
+                    <iconify-icon icon="lucide:book-open" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                    <h4 class="text-white font-medium text-sm group-hover:text-neutral-200 transition-colors">Knowledge Transfer</h4>
+                    <p class="text-neutral-500 text-xs mt-1">Capture and share team knowledge</p>
+                </a>
+                <a href="../meeting-notes/" class="group p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.07] hover:border-white/20 transition-all">
+                    <iconify-icon icon="lucide:file-text" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                    <h4 class="text-white font-medium text-sm group-hover:text-neutral-200 transition-colors">Meeting Notes</h4>
+                    <p class="text-neutral-500 text-xs mt-1">Clean up messy transcripts</p>
+                </a>
+                <a href="../invoicing/" class="group p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.07] hover:border-white/20 transition-all">
+                    <iconify-icon icon="lucide:receipt" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                    <h4 class="text-white font-medium text-sm group-hover:text-neutral-200 transition-colors">Invoicing</h4>
+                    <p class="text-neutral-500 text-xs mt-1">Automated payment reminders</p>
+                </a>
+                <a href="../scheduling/" class="group p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.07] hover:border-white/20 transition-all">
+                    <iconify-icon icon="lucide:calendar" class="text-cyan-400 mb-3" width="24" aria-hidden="true"></iconify-icon>
+                    <h4 class="text-white font-medium text-sm group-hover:text-neutral-200 transition-colors">Scheduling</h4>
+                    <p class="text-neutral-500 text-xs mt-1">Automate meeting coordination</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="mt-24">
+            <div class="p-12 bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-[3rem] text-center">
+                <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Ready to solve customer support?</h2>
+                <p class="text-neutral-400 mb-8 max-w-xl mx-auto">Get the Weekend MVP Starter Kit with problem-solving templates and build prompts.</p>
+                <a href="../../starter-kit.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Get the Starter Kit</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 mt-32 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../../index.html">
+                        <div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Solve Problems</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../invoicing/" class="text-neutral-500 hover:text-white transition-colors">Invoicing</a></li>
+                        <li><a href="../meeting-notes/" class="text-neutral-500 hover:text-white transition-colors">Meeting Notes</a></li>
+                        <li><a href="../scheduling/" class="text-neutral-500 hover:text-white transition-colors">Scheduling</a></li>
+                        <li><a href="../customer-support/" class="text-neutral-500 hover:text-white transition-colors">Customer Support</a></li>
+                        <li><a href="../../startup-ideas.html" class="text-neutral-400 hover:text-white transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Build With</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../build-with/cursor/" class="text-neutral-500 hover:text-white transition-colors">Cursor</a></li>
+                        <li><a href="../../build-with/claude/" class="text-neutral-500 hover:text-white transition-colors">Claude</a></li>
+                        <li><a href="../../build-with/bolt/" class="text-neutral-500 hover:text-white transition-colors">Bolt.new</a></li>
+                        <li><a href="../../build-with/no-code/" class="text-neutral-500 hover:text-white transition-colors">No-Code</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Ideas For</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../ideas-for/developers/" class="text-neutral-500 hover:text-white transition-colors">Developers</a></li>
+                        <li><a href="../../ideas-for/non-technical/" class="text-neutral-500 hover:text-white transition-colors">Non-Technical</a></li>
+                        <li><a href="../../ideas-for/solo-founders/" class="text-neutral-500 hover:text-white transition-colors">Solo Founders</a></li>
+                        <li><a href="../../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-white transition-colors">Side Hustlers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                        <li><a href="../../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu
+        (function initMobileMenu() {
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const menu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+
+            if (!menu) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    menu.classList.remove('translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.classList.add('translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+                    toggleMenu(false);
+                }
+            });
+
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+        })();
+    </script>
+</body>
+</html>

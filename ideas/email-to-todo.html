@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email to Todo Converter | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI tool that extracts actionable tasks from your emails. Forward any email, get back a clean to-do list. Full build guide with AI prompts.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/email-to-todo">
+    <meta property="og:title" content="Email to Todo Converter | Startup Ideas">
+    <meta property="og:description" content="Turn emails into actionable tasks automatically.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/email-to-todo">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+    </div>
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Email to Todo Converter</h1>
+            <p class="text-lg text-neutral-500 mb-10">Never miss an action item buried in email again.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+            </form>
+        </div>
+    </section>
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span><span class="text-neutral-400 text-xs">~8 hours to build</span></div>
+                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Email to Todo Converter</h1>
+                <p class="text-xl text-neutral-500 font-light">Forward an email. Get back a task list.</p>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Action items get buried in long email threads. "Can you send me that file?" hidden in paragraph 5. Meeting notes with 8 different follow-ups scattered throughout. People read emails, think "I'll handle that later," and then forget. Critical tasks slip through the cracks.</p></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A tool with a magic email address. Forward any email to tasks@yourapp.com, and AI extracts every action item, who's responsible, and any deadlines mentioned. Returns a clean checklist you can add to your task manager or just tackle directly.</p>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Forward email</p><p class="text-xs text-neutral-500 mt-1">To your unique address</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI extracts tasks</p><p class="text-xs text-neutral-500 mt-1">Action items, owners, due dates</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Get task list</p><p class="text-xs text-neutral-500 mt-1">Reply email with checklist</p></div></div></div>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Average worker receives 121 emails/day—task extraction is a real need</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Task management is $4B+ market with Todoist, Asana, etc.</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Email-to-X services have proven viral potential (like Instapaper)</span></li></ul></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for email-to-task conversion.
+
+Features:
+- User gets unique email address: user123@tasks.yourapp.com
+- Dashboard showing all extracted tasks
+- Task list with checkbox, description, owner, due date
+- Export to Todoist, Notion, or copy as text
+- History of processed emails
+
+Use Supabase for auth. Set up email receiving with Postmark or SendGrid inbound.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Task Extraction</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement AI task extraction:
+
+1. Receive email via webhook from email service
+2. Parse email body (handle HTML and plain text)
+3. Send to Claude with prompt:
+   "Extract all action items from this email. For each task identify: task description, who is responsible (if mentioned), due date (if mentioned). Return as JSON array."
+4. Store tasks in database linked to user
+5. Send reply email with formatted task list
+
+Handle email threads: extract from latest message only, avoid duplicates.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Integrations</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Add task manager integrations:
+
+1. Todoist: Use their API to create tasks directly
+2. Notion: Add to a specified database
+3. Linear: Create issues (for dev teams)
+4. Slack: Post tasks to a channel
+
+User configures default integration in settings.
+Include option to auto-send tasks to integration (vs manual review first).</p></div>
+            </div></div>
+            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
+            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
+        </div></div>
+        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+    </section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (!localStorage.getItem('ideas_email')) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
+        function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

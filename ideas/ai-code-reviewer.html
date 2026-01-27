@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Reviewer Bot | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-code-reviewer">
+    <meta property="og:title" content="AI Code Reviewer Bot | Startup Ideas">
+    <meta property="og:description" content="Build an AI-powered GitHub bot that automatically reviews pull requests.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-code-reviewer">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"AI Code Reviewer Bot","description":"Build an AI-powered GitHub bot that automatically reviews pull requests.","datePublished":"2026-01-27"},{"@type":"SoftwareApplication","name":"AI Code Reviewer Bot","applicationCategory":"DeveloperApplication","operatingSystem":"Web"}]}
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">AI Code Reviewer Bot</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">Automated PR reviews that actually catch bugs.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">AI Tools</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Code Reviewer Bot</h1>
+                    <p class="text-xl text-neutral-500 font-light">Your tireless code reviewer that never misses a bug.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">Code reviews are a bottleneck. Senior developers spend hours reviewing PRs, often catching the same issues repeatedly: missing error handling, security vulnerabilities, style inconsistencies. Meanwhile, junior devs wait days for feedback, and bugs slip through when reviewers are rushed or tired.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">A GitHub bot that automatically reviews every PR using AI. It catches common bugs, security issues, and code smells instantly—before human reviewers even look at the code. Humans focus on architecture and logic; the bot handles the tedious stuff.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Install GitHub App</p>
+                                <p class="text-xs text-neutral-500 mt-1">One-click install on your repos</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Open a PR</p>
+                                <p class="text-xs text-neutral-500 mt-1">Bot reviews automatically</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Get inline comments</p>
+                                <p class="text-xs text-neutral-500 mt-1">Suggestions right on the diff</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">AI code review is hot. GitHub Copilot proved developers will pay for AI tools. Existing players like CodeRabbit and Sourcery show market demand, but there's room for simpler, more affordable alternatives.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GitHub has 100M+ developers—massive potential market</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Code review is 2nd most time-consuming dev activity after coding</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>CodeRabbit raised $2M—validates market demand</span></li>
+                    </ul>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create a Next.js app for an AI Code Reviewer GitHub App.
+
+The app needs:
+- GitHub App OAuth flow for installation
+- Webhook endpoint to receive PR events
+- Dashboard showing: installed repos, recent reviews, settings
+- Landing page explaining the product with "Install" CTA
+
+Use Probot library to simplify GitHub App development.
+Set up webhook handling for pull_request.opened and pull_request.synchronize events.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+When a PR webhook is received:
+
+1. Fetch the PR diff using GitHub API
+2. For each changed file, send to Claude/GPT-4 with this prompt:
+   "Review this code diff. Identify: bugs, security issues, performance problems, and style issues. For each issue, specify the line number and provide a suggested fix."
+3. Parse the AI response and create GitHub review comments on specific lines
+4. Post a summary comment with overall assessment
+
+Handle rate limits and large PRs by chunking files.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Configuration</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Add per-repo configuration via .ai-reviewer.yml file:
+
+- review_focus: ["security", "performance", "style"] - what to check
+- ignore_patterns: ["*.test.js", "vendor/*"] - files to skip
+- severity_threshold: "warning" - minimum severity to comment
+- auto_approve: false - whether to approve clean PRs
+
+Parse this config on each review and adjust AI prompt accordingly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explore More Section -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                    
+                    <!-- Category & Revenue Links -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <a href="developer-tools/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:code-2" class="text-emerald-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More Developer Tools</span>
+                                <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                            </div>
+                        </a>
+                        <a href="passive-income/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$5K/Month Ideas</span>
+                                <p class="text-xs text-neutral-500">By revenue potential</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Build With Tools -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                Cursor
+                            </a>
+                            <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                Claude
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ideas For Audiences -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../ideas-for/developers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:terminal" class="text-emerald-500" width="14" aria-hidden="true"></iconify-icon>
+                                Developers
+                            </a>
+                            <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                Solo Founders
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Related Ideas -->
+                    <div>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a href="api-documentation-generator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI API Documentation Generator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="changelog-generator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Changelog Generator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~8 hours</p>
+                            </a>
+                            <a href="code-snippet-manager.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Code Snippet Manager</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~8 hours</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const hasAccess = localStorage.getItem('ideas_email');
+        if (!hasAccess) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+            const submitBtn = document.getElementById('gate-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+            try {
+                if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
+                localStorage.setItem('ideas_email', email);
+                document.getElementById('email-gate').classList.add('hidden');
+                document.getElementById('idea-content').classList.remove('hidden');
+            } catch (error) { alert('Something went wrong.'); submitBtn.disabled = false; submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>'; }
+        });
+        function copyPrompt(button) { navigator.clipboard.writeText(button.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { button.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => button.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

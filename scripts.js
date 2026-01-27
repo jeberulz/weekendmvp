@@ -217,14 +217,142 @@ function initMobileMenu() {
         }
     });
 
-    // Close when clicking a nav link
+    // Close when clicking a nav link (but not toggle buttons)
     menu.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => toggleMenu(false));
+    });
+
+    // Mobile nav collapsible sections
+    const mobileToggles = menu.querySelectorAll('.mobile-nav-toggle');
+    mobileToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const submenu = toggle.nextElementSibling;
+            const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+            
+            // Close all other submenus
+            mobileToggles.forEach(otherToggle => {
+                if (otherToggle !== toggle) {
+                    otherToggle.setAttribute('aria-expanded', 'false');
+                    const otherSubmenu = otherToggle.nextElementSibling;
+                    if (otherSubmenu) {
+                        otherSubmenu.classList.add('hidden');
+                        otherSubmenu.classList.remove('expanded');
+                    }
+                }
+            });
+            
+            // Toggle current submenu
+            toggle.setAttribute('aria-expanded', !isExpanded);
+            if (submenu) {
+                if (isExpanded) {
+                    submenu.classList.add('hidden');
+                    submenu.classList.remove('expanded');
+                } else {
+                    submenu.classList.remove('hidden');
+                    submenu.classList.add('expanded');
+                }
+            }
+        });
     });
 }
 
 // Initialize mobile menu on page load
 initMobileMenu();
+
+// Desktop Navigation Dropdowns
+function initNavDropdowns() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+    let closeTimeout = null;
+    
+    dropdowns.forEach(dropdown => {
+        const trigger = dropdown.querySelector('.nav-dropdown-trigger');
+        const menu = dropdown.querySelector('.nav-dropdown-menu');
+        
+        if (!trigger || !menu) return;
+        
+        const showDropdown = () => {
+            if (closeTimeout) {
+                clearTimeout(closeTimeout);
+                closeTimeout = null;
+            }
+            // Close all other dropdowns
+            dropdowns.forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('active');
+                    d.querySelector('.nav-dropdown-trigger')?.setAttribute('aria-expanded', 'false');
+                }
+            });
+            dropdown.classList.add('active');
+            trigger.setAttribute('aria-expanded', 'true');
+        };
+        
+        const hideDropdown = () => {
+            closeTimeout = setTimeout(() => {
+                dropdown.classList.remove('active');
+                trigger.setAttribute('aria-expanded', 'false');
+            }, 100);
+        };
+        
+        // Mouse events
+        dropdown.addEventListener('mouseenter', showDropdown);
+        dropdown.addEventListener('mouseleave', hideDropdown);
+        
+        // Keyboard support
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+                trigger.setAttribute('aria-expanded', 'false');
+            } else {
+                showDropdown();
+            }
+        });
+        
+        trigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showDropdown();
+            }
+            if (e.key === 'Escape') {
+                hideDropdown();
+                trigger.focus();
+            }
+        });
+        
+        // Keep dropdown open when hovering menu
+        menu.addEventListener('mouseenter', () => {
+            if (closeTimeout) {
+                clearTimeout(closeTimeout);
+                closeTimeout = null;
+            }
+        });
+        
+        menu.addEventListener('mouseleave', hideDropdown);
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.nav-dropdown')) {
+            dropdowns.forEach(d => {
+                d.classList.remove('active');
+                d.querySelector('.nav-dropdown-trigger')?.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+    
+    // Close dropdowns on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dropdowns.forEach(d => {
+                d.classList.remove('active');
+                d.querySelector('.nav-dropdown-trigger')?.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+}
+
+// Initialize nav dropdowns on page load
+initNavDropdowns();
 
 // Analytics Event Helper - Tracks to both Google Analytics and Meta Pixel
 function trackEvent(eventName, eventParams = {}) {

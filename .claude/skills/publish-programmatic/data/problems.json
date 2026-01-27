@@ -1,0 +1,455 @@
+{
+  "problems": [
+    {
+      "slug": "invoicing",
+      "name": "Invoicing",
+      "icon": "lucide:file-text",
+      "description": "Manual invoicing wastes hours every week. Automate invoice creation, sending, and follow-ups to save time and get paid faster.",
+      "overview": "Small businesses spend 5+ hours per week on invoicing tasks: creating invoices, sending reminders, tracking payments, and following up on overdue accounts. This manual process is error-prone and delays cash flow.",
+      "stats": "$5B+ market opportunity",
+      "painPoints": [
+        {
+          "title": "Time-consuming",
+          "description": "Creating and sending invoices manually takes hours each week"
+        },
+        {
+          "title": "Payment delays",
+          "description": "Clients forget to pay without automated reminders"
+        },
+        {
+          "title": "Tracking overhead",
+          "description": "Managing payment status across spreadsheets is error-prone"
+        }
+      ],
+      "ideaSlugs": ["invoice-reminder-bot", "expense-report-generator"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose your approach",
+          "description": "Build a simple reminder bot or full invoicing platform. Start with reminders to validate demand."
+        },
+        {
+          "step": 2,
+          "title": "Integrate payment tracking",
+          "description": "Connect to accounting software (QuickBooks, Xero) or build a simple status tracker."
+        },
+        {
+          "step": 3,
+          "title": "Add automation",
+          "description": "Set up scheduled reminders, auto-generate invoices from templates, and track payment status."
+        }
+      ],
+      "relatedProblems": ["expense-tracking", "payment-processing", "accounting"]
+    },
+    {
+      "slug": "meeting-notes",
+      "name": "Meeting Notes",
+      "icon": "lucide:clipboard-list",
+      "description": "Transform messy meeting notes into structured action items. AI can extract key decisions, tasks, and follow-ups automatically.",
+      "overview": "Professionals waste 2-3 hours per week organizing meeting notes. AI can parse transcripts, extract action items, assign owners, and create follow-up tasks automatically.",
+      "stats": "2.3 hours/week average time spent on notes",
+      "painPoints": [
+        {
+          "title": "Disorganized notes",
+          "description": "Raw meeting transcripts are hard to scan and find action items"
+        },
+        {
+          "title": "Missing context",
+          "description": "Important decisions and next steps get buried in long notes"
+        },
+        {
+          "title": "No follow-up",
+          "description": "Action items aren't tracked, leading to missed deadlines"
+        }
+      ],
+      "ideaSlugs": ["ai-meeting-notes-cleaner", "daily-standup-bot"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose input method",
+          "description": "Support audio transcription (via API) or text paste. Start with text for faster MVP."
+        },
+        {
+          "step": 2,
+          "title": "Build AI parser",
+          "description": "Use GPT-4 or Claude to extract: action items, decisions, key points, and assignees."
+        },
+        {
+          "step": 3,
+          "title": "Create output format",
+          "description": "Generate structured markdown, send to task managers (Todoist, Notion), or create follow-up emails."
+        }
+      ],
+      "relatedProblems": ["scheduling", "task-management", "documentation"]
+    },
+    {
+      "slug": "email-management",
+      "name": "Email Management",
+      "icon": "lucide:mail",
+      "description": "Automate email triage, responses, and follow-ups. Reduce inbox overwhelm with AI-powered email workflows.",
+      "overview": "The average professional receives 120+ emails per day. Managing, responding, and following up manually consumes 2.5 hours daily. AI can triage, draft responses, and automate workflows.",
+      "stats": "2.5 hours/day spent on email",
+      "painPoints": [
+        {
+          "title": "Inbox overload",
+          "description": "Too many emails to process manually, important messages get missed"
+        },
+        {
+          "title": "Repetitive responses",
+          "description": "Same questions require similar answers, wasting time"
+        },
+        {
+          "title": "Follow-up tracking",
+          "description": "No system to track which emails need responses or follow-ups"
+        }
+      ],
+      "ideaSlugs": ["ai-email-responder", "email-to-todo"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Connect email API",
+          "description": "Use Gmail API or IMAP to read emails. Start with Gmail for easier OAuth."
+        },
+        {
+          "step": 2,
+          "title": "Build AI classifier",
+          "description": "Categorize emails (urgent, spam, needs response) and draft replies using GPT-4."
+        },
+        {
+          "step": 3,
+          "title": "Add automation",
+          "description": "Auto-respond to common queries, create tasks from emails, and schedule follow-ups."
+        }
+      ],
+      "relatedProblems": ["task-management", "customer-support", "scheduling"]
+    },
+    {
+      "slug": "social-media",
+      "name": "Social Media",
+      "icon": "lucide:share-2",
+      "description": "Automate social media posting, content repurposing, and engagement. Save hours on social media management.",
+      "overview": "Content creators and businesses spend 5+ hours per week on social media: creating posts, scheduling, repurposing content, and engaging with followers. Automation can handle most of this.",
+      "stats": "5+ hours/week on social media",
+      "painPoints": [
+        {
+          "title": "Content creation",
+          "description": "Creating original posts for multiple platforms is time-consuming"
+        },
+        {
+          "title": "Scheduling overhead",
+          "description": "Manually posting across platforms wastes time"
+        },
+        {
+          "title": "Content repurposing",
+          "description": "Adapting one piece of content for different formats and platforms"
+        }
+      ],
+      "ideaSlugs": ["social-media-scheduler", "content-repurposing-tool"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose platforms",
+          "description": "Start with Twitter/X and LinkedIn APIs. Add Instagram/Facebook later."
+        },
+        {
+          "step": 2,
+          "title": "Build scheduler",
+          "description": "Create a queue system to schedule posts at optimal times for each platform."
+        },
+        {
+          "step": 3,
+          "title": "Add AI repurposing",
+          "description": "Use AI to adapt long-form content (blog posts, videos) into platform-specific formats."
+        }
+      ],
+      "relatedProblems": ["content-creation", "analytics", "engagement"]
+    },
+    {
+      "slug": "customer-support",
+      "name": "Customer Support",
+      "icon": "lucide:headphones",
+      "description": "Automate customer support with AI chatbots, ticket routing, and knowledge base integration. Reduce support costs while improving response times.",
+      "overview": "Businesses spend $1.3T annually on customer support. AI can handle 60-80% of common queries, freeing human agents for complex issues. Response times drop from hours to seconds.",
+      "stats": "$1.3T annual support spend",
+      "painPoints": [
+        {
+          "title": "High costs",
+          "description": "Human support agents are expensive and can't scale efficiently"
+        },
+        {
+          "title": "Slow response times",
+          "description": "Customers wait hours or days for responses to simple questions"
+        },
+        {
+          "title": "Repetitive queries",
+          "description": "Same questions asked repeatedly, wasting agent time"
+        }
+      ],
+      "ideaSlugs": ["customer-feedback-aggregator"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Build knowledge base",
+          "description": "Import FAQ, documentation, and support articles. Use embeddings for semantic search."
+        },
+        {
+          "step": 2,
+          "title": "Create AI chatbot",
+          "description": "Use GPT-4 or Claude with RAG to answer questions from knowledge base. Add fallback to human agents."
+        },
+        {
+          "step": 3,
+          "title": "Add ticket routing",
+          "description": "Automatically categorize and route complex issues to the right team or agent."
+        }
+      ],
+      "relatedProblems": ["documentation", "knowledge-transfer", "analytics"]
+    },
+    {
+      "slug": "content-creation",
+      "name": "Content Creation",
+      "icon": "lucide:pen-tool",
+      "description": "Automate content generation, repurposing, and optimization. Create more content in less time with AI assistance.",
+      "overview": "Content creators spend 10+ hours per week creating content. AI can help with ideation, writing, editing, repurposing, and SEO optimization—cutting creation time by 50-70%.",
+      "stats": "10+ hours/week on content creation",
+      "painPoints": [
+        {
+          "title": "Writer's block",
+          "description": "Struggling to come up with ideas and write consistently"
+        },
+        {
+          "title": "Repurposing overhead",
+          "description": "Adapting one piece of content for multiple formats takes time"
+        },
+        {
+          "title": "SEO optimization",
+          "description": "Optimizing content for search requires research and keyword integration"
+        }
+      ],
+      "ideaSlugs": ["content-repurposing-tool", "ai-seo-optimizer"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose content type",
+          "description": "Start with blog posts, social media, or email. Focus on one format first."
+        },
+        {
+          "step": 2,
+          "title": "Build AI writer",
+          "description": "Use GPT-4 or Claude to generate drafts, outlines, and variations. Add your voice/style."
+        },
+        {
+          "step": 3,
+          "title": "Add optimization",
+          "description": "Integrate SEO keyword research, readability scoring, and repurposing workflows."
+        }
+      ],
+      "relatedProblems": ["social-media", "seo", "analytics"]
+    },
+    {
+      "slug": "data-entry",
+      "name": "Data Entry",
+      "icon": "lucide:database",
+      "description": "Automate manual data entry with OCR, form parsing, and API integrations. Eliminate repetitive typing and reduce errors.",
+      "overview": "Businesses waste 20+ hours per week on manual data entry. OCR, form parsing, and API integrations can automate 80% of data entry tasks, reducing errors and freeing time.",
+      "stats": "20+ hours/week on data entry",
+      "painPoints": [
+        {
+          "title": "Repetitive work",
+          "description": "Typing the same data into multiple systems is tedious and error-prone"
+        },
+        {
+          "title": "Time consumption",
+          "description": "Manual entry takes hours that could be spent on higher-value work"
+        },
+        {
+          "title": "Human error",
+          "description": "Typos and mistakes require time-consuming corrections"
+        }
+      ],
+      "ideaSlugs": ["expense-report-generator"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Identify data sources",
+          "description": "Choose input formats: PDFs, images, forms, emails, or spreadsheets."
+        },
+        {
+          "step": 2,
+          "title": "Build parser",
+          "description": "Use OCR (Tesseract, AWS Textract) or form parsing to extract structured data."
+        },
+        {
+          "step": 3,
+          "title": "Add validation",
+          "description": "Validate extracted data, flag errors, and integrate with destination systems (CRM, database, API)."
+        }
+      ],
+      "relatedProblems": ["expense-tracking", "reporting", "documentation"]
+    },
+    {
+      "slug": "scheduling",
+      "name": "Scheduling",
+      "icon": "lucide:calendar",
+      "description": "Automate meeting scheduling, calendar management, and availability coordination. Eliminate back-and-forth emails.",
+      "overview": "Professionals spend 2+ hours per week coordinating meetings. Automated scheduling tools eliminate email chains, reduce no-shows, and optimize calendar usage.",
+      "stats": "2+ hours/week on scheduling",
+      "painPoints": [
+        {
+          "title": "Email back-and-forth",
+          "description": "Coordinating meeting times via email wastes time"
+        },
+        {
+          "title": "Double bookings",
+          "description": "Manual calendar management leads to conflicts"
+        },
+        {
+          "title": "No-shows",
+          "description": "Missing reminders and confirmations result in wasted time"
+        }
+      ],
+      "ideaSlugs": ["meeting-scheduler"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Connect calendar APIs",
+          "description": "Integrate Google Calendar or Outlook to read availability and create events."
+        },
+        {
+          "step": 2,
+          "title": "Build booking system",
+          "description": "Create a booking page where others can see your availability and book slots."
+        },
+        {
+          "step": 3,
+          "title": "Add automation",
+          "description": "Send confirmations, reminders, and handle rescheduling automatically."
+        }
+      ],
+      "relatedProblems": ["meeting-notes", "email-management", "task-management"]
+    },
+    {
+      "slug": "reporting",
+      "name": "Reporting",
+      "icon": "lucide:file-bar-chart",
+      "description": "Automate report generation, data aggregation, and dashboard updates. Turn hours of manual work into automated insights.",
+      "overview": "Teams spend 5+ hours per week creating reports: gathering data, formatting, and distributing. Automation can generate reports on schedule, pull from multiple sources, and deliver insights automatically.",
+      "stats": "5+ hours/week on reporting",
+      "painPoints": [
+        {
+          "title": "Manual aggregation",
+          "description": "Collecting data from multiple sources is time-consuming"
+        },
+        {
+          "title": "Formatting overhead",
+          "description": "Creating visually appealing reports takes hours"
+        },
+        {
+          "title": "Stale data",
+          "description": "Reports become outdated quickly without automation"
+        }
+      ],
+      "ideaSlugs": ["report-automation-tool", "startup-financial-dashboard"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Identify data sources",
+          "description": "Connect to APIs, databases, or spreadsheets that contain report data."
+        },
+        {
+          "step": 2,
+          "title": "Build aggregator",
+          "description": "Pull data from sources, transform it, and calculate metrics automatically."
+        },
+        {
+          "step": 3,
+          "title": "Create templates",
+          "description": "Design report templates (PDF, HTML, or dashboard) and schedule automatic generation."
+        }
+      ],
+      "relatedProblems": ["analytics", "data-entry", "documentation"]
+    },
+    {
+      "slug": "lead-generation",
+      "name": "Lead Generation",
+      "icon": "lucide:users",
+      "description": "Automate lead discovery, qualification, and outreach. Find prospects, enrich data, and start conversations at scale.",
+      "overview": "Sales teams spend 40% of their time on lead generation. Automation can discover prospects, enrich contact data, qualify leads, and initiate personalized outreach—multiplying output.",
+      "stats": "40% of sales time on lead gen",
+      "painPoints": [
+        {
+          "title": "Manual research",
+          "description": "Finding and researching prospects takes hours per lead"
+        },
+        {
+          "title": "Low response rates",
+          "description": "Generic outreach gets ignored, requiring personalization at scale"
+        },
+        {
+          "title": "Data quality",
+          "description": "Outdated contact information wastes outreach efforts"
+        }
+      ],
+      "ideaSlugs": ["ai-competitor-tracker"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose lead sources",
+          "description": "Integrate with LinkedIn, company databases, or web scraping for prospect discovery."
+        },
+        {
+          "step": 2,
+          "title": "Build enrichment",
+          "description": "Use APIs (Clearbit, Hunter.io) to enrich leads with contact info and company data."
+        },
+        {
+          "step": 3,
+          "title": "Add personalization",
+          "description": "Use AI to generate personalized outreach messages based on prospect data and research."
+        }
+      ],
+      "relatedProblems": ["email-management", "analytics", "customer-support"]
+    },
+    {
+      "slug": "knowledge-transfer",
+      "name": "Knowledge Transfer",
+      "icon": "lucide:book-open",
+      "description": "Automate knowledge capture, documentation, and sharing. Preserve institutional knowledge and make it searchable.",
+      "overview": "Organizations lose knowledge when employees leave. Manual documentation is incomplete and hard to search. AI can capture knowledge from conversations, documents, and workflows, making it accessible.",
+      "stats": "$47B lost annually to knowledge gaps",
+      "painPoints": [
+        {
+          "title": "Knowledge loss",
+          "description": "When employees leave, their knowledge leaves with them"
+        },
+        {
+          "title": "Poor documentation",
+          "description": "Manual documentation is incomplete, outdated, and hard to find"
+        },
+        {
+          "title": "Search difficulty",
+          "description": "Finding answers in existing docs takes too long"
+        }
+      ],
+      "ideaSlugs": ["ai-knowledge-transfer-platform", "corporate-knowledge-ai-assistant", "remote-team-documentation-tool", "virtual-knowledge-hub"],
+      "quickStart": [
+        {
+          "step": 1,
+          "title": "Choose capture method",
+          "description": "Capture from Slack, emails, meetings, or documents. Start with one source."
+        },
+        {
+          "step": 2,
+          "title": "Build AI processor",
+          "description": "Use embeddings and LLMs to extract, structure, and index knowledge automatically."
+        },
+        {
+          "step": 3,
+          "title": "Create search interface",
+          "description": "Build a searchable knowledge base with semantic search and Q&A interface."
+        }
+      ],
+      "relatedProblems": ["documentation", "meeting-notes", "customer-support"]
+    }
+  ]
+}

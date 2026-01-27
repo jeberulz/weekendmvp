@@ -1,8 +1,43 @@
 <!-- 
-  GOOGLE ANALYTICS & META PIXEL SNIPPET
-  Copy this snippet and paste it right after the <link rel="canonical"> tag in any new page.
+  GOOGLE ANALYTICS & META PIXEL SNIPPET - Weekend MVP
+  ===================================================
   
+  Copy this snippet and paste it right after the <link rel="canonical"> tag in any new page.
   Or use the auto-injection script: node scripts/inject-analytics.js <file.html>
+  
+  This snippet provides:
+  1. GDPR-compliant consent-based GA4 loading
+  2. Meta Pixel integration with consent
+  3. wmvpAnalytics utility for custom event tracking
+  
+  USAGE - After including this snippet, track events with:
+  
+  // Track category page view (for /ideas/{category}/ pages)
+  wmvpAnalytics.trackCategory('saas', 12);
+  
+  // Track tool page view (for /build-with/{tool}/ pages)
+  wmvpAnalytics.trackTool('cursor', 15);
+  
+  // Track audience page view (for /ideas-for/{audience}/ pages)
+  wmvpAnalytics.trackAudience('developers', 8);
+  
+  // Track revenue goal page view (for /ideas/{revenue}/ pages)
+  wmvpAnalytics.trackRevenueGoal('1k-month', 10);
+  
+  // Track problem/solution page view (for /solve/{problem}/ pages)
+  wmvpAnalytics.trackProblem('invoicing', 5);
+  
+  // Track idea page view
+  wmvpAnalytics.trackIdea('ai-meeting-notes-cleaner', 'SaaS');
+  
+  // Track internal link clicks
+  wmvpAnalytics.trackInternalLink('category_to_idea', 'ai-meeting-notes-cleaner');
+  
+  // Track CTA clicks
+  wmvpAnalytics.trackCTA('get_starter_kit', 'hero_section');
+  
+  // Track email signup
+  wmvpAnalytics.trackEmailSignup('ideas_page', 'newsletter');
 -->
 
 <!-- Google Analytics - Loaded conditionally after consent -->
@@ -79,5 +114,326 @@
     window.fbqQueue = window.fbqQueue || [];
     window.fbqQueue.push(['init', '1602726847528813']);
     window.fbqQueue.push(['track', 'PageView']);
+  }
+</script>
+
+<!-- Weekend MVP Analytics Utility -->
+<script>
+  /**
+   * wmvpAnalytics - Custom event tracking for Weekend MVP programmatic SEO pages
+   * All methods are safe to call before consent (events are queued)
+   */
+  window.wmvpAnalytics = (function() {
+    // Queue for events fired before GA is ready
+    const eventQueue = [];
+    let gaReady = false;
+    
+    // Check if GA is loaded and ready
+    function checkGAReady() {
+      if (window.analyticsConsent === true && typeof window.gtag === 'function') {
+        gaReady = true;
+        // Flush queued events
+        while (eventQueue.length > 0) {
+          const { eventName, params } = eventQueue.shift();
+          window.gtag('event', eventName, params);
+        }
+      }
+    }
+    
+    // Safe event tracking that queues if GA not ready
+    function trackEvent(eventName, params) {
+      checkGAReady();
+      if (gaReady) {
+        window.gtag('event', eventName, params);
+      } else {
+        eventQueue.push({ eventName, params });
+      }
+    }
+    
+    // Auto-detect page type from URL and fire appropriate event
+    function autoTrack() {
+      const path = window.location.pathname;
+      
+      // Category pages: /ideas/{category}/
+      const categoryMatch = path.match(/^\/ideas\/([a-z-]+)\/$/);
+      if (categoryMatch && !['1k-month', '5k-month', '10k-month', 'passive-income', 'quick-wins', 'build-in-8-hours', 'build-in-weekend', 'build-in-1-week', 'build-in-24-hours'].includes(categoryMatch[1])) {
+        const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+        trackEvent('view_category', {
+          category_name: categoryMatch[1],
+          idea_count: ideaCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Revenue goal pages: /ideas/{revenue}/
+      const revenueMatch = path.match(/^\/ideas\/(1k-month|5k-month|10k-month|passive-income|quick-wins)\/$/);
+      if (revenueMatch) {
+        const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+        trackEvent('view_revenue_goal', {
+          revenue_goal: revenueMatch[1],
+          idea_count: ideaCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Build time pages: /ideas/build-in-{time}/
+      const buildTimeMatch = path.match(/^\/ideas\/(build-in-[a-z0-9-]+)\/$/);
+      if (buildTimeMatch) {
+        const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+        trackEvent('view_build_time', {
+          build_time: buildTimeMatch[1],
+          idea_count: ideaCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Tool pages: /build-with/{tool}/
+      const toolMatch = path.match(/^\/build-with\/([a-z-]+)\/$/);
+      if (toolMatch) {
+        const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+        trackEvent('view_tool_page', {
+          tool_name: toolMatch[1],
+          idea_count: ideaCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Audience pages: /ideas-for/{audience}/
+      const audienceMatch = path.match(/^\/ideas-for\/([a-z-]+)\/$/);
+      if (audienceMatch) {
+        const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+        trackEvent('view_audience_page', {
+          audience_name: audienceMatch[1],
+          idea_count: ideaCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Problem pages: /solve/{problem}/
+      const problemMatch = path.match(/^\/solve\/([a-z-]+)\/$/);
+      if (problemMatch) {
+        const solutionCount = document.querySelectorAll('[data-solution-card]').length || 0;
+        trackEvent('view_problem_page', {
+          problem_name: problemMatch[1],
+          solution_count: solutionCount,
+          page_path: path
+        });
+        return;
+      }
+      
+      // Individual idea pages: /ideas/{slug}.html
+      const ideaMatch = path.match(/^\/ideas\/([a-z0-9-]+)\.html$/);
+      if (ideaMatch) {
+        const category = document.querySelector('[data-idea-category]')?.dataset?.ideaCategory || 'unknown';
+        trackEvent('view_idea', {
+          idea_slug: ideaMatch[1],
+          idea_category: category,
+          page_path: path
+        });
+        return;
+      }
+    }
+    
+    return {
+      /**
+       * Track category page view
+       * @param {string} categoryName - Category slug (e.g., 'saas', 'ai-tools')
+       * @param {number} ideaCount - Number of ideas on the page
+       */
+      trackCategory: function(categoryName, ideaCount) {
+        trackEvent('view_category', {
+          category_name: categoryName,
+          idea_count: ideaCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track tool page view
+       * @param {string} toolName - Tool slug (e.g., 'cursor', 'claude')
+       * @param {number} ideaCount - Number of ideas suited for this tool
+       */
+      trackTool: function(toolName, ideaCount) {
+        trackEvent('view_tool_page', {
+          tool_name: toolName,
+          idea_count: ideaCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track audience page view
+       * @param {string} audienceName - Audience slug (e.g., 'developers', 'non-technical')
+       * @param {number} ideaCount - Number of ideas for this audience
+       */
+      trackAudience: function(audienceName, ideaCount) {
+        trackEvent('view_audience_page', {
+          audience_name: audienceName,
+          idea_count: ideaCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track revenue goal page view
+       * @param {string} revenueGoal - Revenue goal slug (e.g., '1k-month', 'passive-income')
+       * @param {number} ideaCount - Number of ideas for this revenue goal
+       */
+      trackRevenueGoal: function(revenueGoal, ideaCount) {
+        trackEvent('view_revenue_goal', {
+          revenue_goal: revenueGoal,
+          idea_count: ideaCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track problem/solution page view
+       * @param {string} problemName - Problem slug (e.g., 'invoicing', 'meeting-notes')
+       * @param {number} solutionCount - Number of solution ideas
+       */
+      trackProblem: function(problemName, solutionCount) {
+        trackEvent('view_problem_page', {
+          problem_name: problemName,
+          solution_count: solutionCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track build time page view
+       * @param {string} buildTime - Build time slug (e.g., 'build-in-weekend', 'build-in-8-hours')
+       * @param {number} ideaCount - Number of ideas for this build time
+       */
+      trackBuildTime: function(buildTime, ideaCount) {
+        trackEvent('view_build_time', {
+          build_time: buildTime,
+          idea_count: ideaCount || 0,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track individual idea page view
+       * @param {string} ideaSlug - Idea slug (e.g., 'ai-meeting-notes-cleaner')
+       * @param {string} category - Idea category
+       */
+      trackIdea: function(ideaSlug, category) {
+        trackEvent('view_idea', {
+          idea_slug: ideaSlug,
+          idea_category: category || 'unknown',
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track internal link clicks for navigation analysis
+       * @param {string} linkType - Type of link (e.g., 'category_to_idea', 'tool_to_idea', 'related_idea')
+       * @param {string} destination - Destination slug or URL
+       */
+      trackInternalLink: function(linkType, destination) {
+        trackEvent('internal_link_click', {
+          link_type: linkType,
+          destination: destination,
+          source_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track CTA button clicks
+       * @param {string} ctaName - CTA identifier (e.g., 'get_starter_kit', 'book_consult')
+       * @param {string} location - Where on the page (e.g., 'hero', 'footer', 'sidebar')
+       */
+      trackCTA: function(ctaName, location) {
+        trackEvent('cta_click', {
+          cta_name: ctaName,
+          cta_location: location || 'unknown',
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track email signup events
+       * @param {string} source - Page or section where signup occurred
+       * @param {string} formType - Type of form (e.g., 'newsletter', 'gated_content', 'ideas_daily')
+       */
+      trackEmailSignup: function(source, formType) {
+        trackEvent('email_signup', {
+          signup_source: source,
+          form_type: formType || 'newsletter',
+          page_path: window.location.pathname
+        });
+        // Also track in Meta Pixel if available
+        if (window.analyticsConsent === true && typeof window.fbq === 'function') {
+          window.fbq('track', 'Lead', { content_name: formType || 'newsletter' });
+        }
+      },
+      
+      /**
+       * Track copy-to-clipboard events (for AI prompts)
+       * @param {string} contentType - What was copied (e.g., 'ai_prompt', 'code_snippet')
+       * @param {string} ideaSlug - Related idea if applicable
+       */
+      trackCopy: function(contentType, ideaSlug) {
+        trackEvent('copy_content', {
+          content_type: contentType,
+          idea_slug: ideaSlug || 'unknown',
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Track search/filter interactions on collection pages
+       * @param {string} filterType - Type of filter (e.g., 'category', 'build_time', 'revenue')
+       * @param {string} filterValue - Selected filter value
+       */
+      trackFilter: function(filterType, filterValue) {
+        trackEvent('filter_applied', {
+          filter_type: filterType,
+          filter_value: filterValue,
+          page_path: window.location.pathname
+        });
+      },
+      
+      /**
+       * Manually trigger page type detection and auto-tracking
+       * Call this on DOMContentLoaded for programmatic pages
+       */
+      autoTrack: autoTrack,
+      
+      /**
+       * Check GA ready state and flush queue
+       */
+      flushQueue: checkGAReady,
+      
+      /**
+       * Raw event tracking (for custom events)
+       * @param {string} eventName - GA4 event name
+       * @param {object} params - Event parameters
+       */
+      track: trackEvent
+    };
+  })();
+  
+  // Auto-track on DOMContentLoaded for programmatic pages
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Small delay to ensure GA has loaded
+      setTimeout(function() {
+        wmvpAnalytics.flushQueue();
+        wmvpAnalytics.autoTrack();
+      }, 100);
+    });
+  } else {
+    // DOM already loaded
+    setTimeout(function() {
+      wmvpAnalytics.flushQueue();
+      wmvpAnalytics.autoTrack();
+    }, 100);
   }
 </script>

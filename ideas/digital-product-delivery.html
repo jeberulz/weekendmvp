@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Product Delivery System | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a simple platform to sell and deliver digital products. Upload your files, set a price, and get a checkout link. Gumroad alternative.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/digital-product-delivery">
+    <meta property="og:title" content="Digital Product Delivery System | Startup Ideas">
+    <meta property="og:description" content="Sell and deliver digital products with a simple checkout link.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/digital-product-delivery">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+    </div>
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Digital Product Delivery System</h1>
+            <p class="text-lg text-neutral-500 mb-10">Upload, price, sell. That simple.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+            </form>
+        </div>
+    </section>
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Creator Tools</span><span class="text-neutral-400 text-xs">~10 hours to build</span></div>
+                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Digital Product Delivery System</h1>
+                <p class="text-xl text-neutral-500 font-light">Sell anything digital with a single link.</p>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Creators want to sell digital products—ebooks, templates, courses, assets—but setting up an e-commerce store feels like overkill. Gumroad takes 10%+ fees, and alternatives require too much setup. They just want to upload a file, set a price, and share a link.</p></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A dead-simple platform: upload your file, add title and price, get a shareable checkout link. Customers pay via Stripe, get instant download. No storefront to build, no inventory to manage. Just sell.</p>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Upload product</p><p class="text-xs text-neutral-500 mt-1">PDF, ZIP, video, anything</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Set price</p><p class="text-xs text-neutral-500 mt-1">One-time or pay-what-you-want</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Share link</p><p class="text-xs text-neutral-500 mt-1">Customer pays, downloads instantly</p></div></div></div>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><p class="text-neutral-600 leading-relaxed mb-6">Digital product sales are booming. Gumroad processes $500M+/year, and creators hate the high fees. There's room for a simpler, lower-fee alternative focused on individual products rather than storefronts.</p><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Gumroad takes 10%+ fees—creators actively seeking alternatives</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Digital product market growing 20%+ annually</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Lemon Squeezy raised $15M for similar positioning</span></li></ul></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for selling digital products.
+
+Features:
+- Creator dashboard: list of products with sales stats
+- Add product: file upload (Supabase Storage), title, description, price, cover image
+- Public product page: beautiful checkout page per product
+- Sales list with customer emails
+- Payout settings (Stripe Connect)
+
+Use Supabase for auth, storage, database. Stripe for payments.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Checkout Flow</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the purchase flow:
+
+1. Product page shows: cover image, title, description, price, buy button
+2. Buy button: Stripe Checkout session with product details
+3. After payment: webhook confirms, generate unique download link
+4. Show download page with file and thank you message
+5. Email customer with download link (expires after X days/downloads)
+6. Track download count, expire link after limit
+
+Support both one-time purchase and pay-what-you-want (minimum price).</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Extras</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Add premium features:
+
+1. Discount codes: percentage or fixed amount off
+2. Bundle products: sell multiple files together
+3. License keys: for software products, generate unique keys
+4. Custom thank you page: redirect to creator's URL after purchase
+5. Email list export: download customer emails as CSV
+6. Embeddable buy button: JavaScript widget for creator's website
+
+Analytics: sales over time, top products, conversion rate by traffic source.</p></div>
+            </div></div>
+            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
+            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
+        </div></div>
+        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+    </section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (!localStorage.getItem('ideas_email')) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
+        function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

@@ -3,72 +3,1340 @@
     {
       "slug": "ai-meeting-notes-cleaner",
       "title": "AI Meeting Notes Cleaner",
-      "publishedAt": "2025-01-20"
+      "publishedAt": "2025-01-20",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
     },
     {
       "slug": "ai-nutrition-planner-trainers",
       "title": "AI Nutrition Planner for Trainers",
-      "publishedAt": "2026-01-21"
+      "publishedAt": "2026-01-21",
+      "category": "health",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["non-technical", "solo-founders"]
     },
     {
       "slug": "invoice-reminder-bot",
       "title": "Invoice Reminder Bot",
-      "publishedAt": "2026-01-21"
+      "publishedAt": "2026-01-21",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
     },
     {
       "slug": "nasm-trainer-marketplace",
       "title": "Online Marketplace for NASM Trainers",
-      "publishedAt": "2026-01-21"
+      "publishedAt": "2026-01-21",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["non-technical", "solo-founders"]
     },
     {
       "slug": "personal-wellness-coach",
       "title": "Personal Wellness Coach",
-      "publishedAt": "2026-01-21"
+      "publishedAt": "2026-01-21",
+      "category": "health",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["non-technical", "solo-founders", "weekend-builders"]
     },
     {
       "slug": "ai-knowledge-transfer-platform",
       "title": "AI-Driven Knowledge Transfer Platform",
-      "publishedAt": "2026-01-22"
+      "publishedAt": "2026-01-22",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
     },
     {
       "slug": "corporate-knowledge-ai-assistant",
       "title": "Corporate Knowledge Base AI Assistant",
-      "publishedAt": "2026-01-22"
+      "publishedAt": "2026-01-22",
+      "category": "b2b",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
     },
     {
       "slug": "expert-mentorship-marketplace",
       "title": "Expert Mentorship Marketplace",
-      "publishedAt": "2026-01-23"
+      "publishedAt": "2026-01-23",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["non-technical", "solo-founders"]
     },
     {
       "slug": "virtual-knowledge-hub",
       "title": "Virtual Knowledge Sharing Hub for Business Leaders to Mentor Emerging Professionals",
-      "publishedAt": "2026-01-23"
+      "publishedAt": "2026-01-23",
+      "category": "education",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
     },
     {
       "slug": "remote-team-documentation-tool",
       "title": "Automated Documentation Tool for Remote Teams",
-      "publishedAt": "2026-01-23"
+      "publishedAt": "2026-01-23",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
     },
     {
       "slug": "mobile-brake-repair-marketplace",
       "title": "Marketplace for Mobile Brake Repair Services",
-      "publishedAt": "2026-01-27"
+      "publishedAt": "2026-01-27",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["non-technical", "solo-founders"]
     },
     {
       "slug": "brake-repair-cost-estimator",
       "title": "Automated Brake Repair Cost Estimator",
-      "publishedAt": "2026-01-27"
+      "publishedAt": "2026-01-27",
+      "category": "automation",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "non-technical", "weekend-builders"]
     },
     {
       "slug": "brake-safety-education-platform",
       "title": "Brake Safety Education Platform",
-      "publishedAt": "2026-01-27"
+      "publishedAt": "2026-01-27",
+      "category": "education",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": ["cursor", "bolt", "no-code"],
+      "audiences": ["non-technical", "solo-founders", "weekend-builders"]
     },
     {
       "slug": "ai-brake-inspection-analyser",
       "title": "AI-Powered Brake Inspection Analyser",
-      "publishedAt": "2026-01-27"
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "subscription-analytics-dashboard",
+      "title": "Subscription Analytics Dashboard",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "customer-feedback-aggregator",
+      "title": "Customer Feedback Aggregator",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
+    },
+    {
+      "slug": "waitlist-manager",
+      "title": "Waitlist & Launch Manager",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "ai-code-reviewer",
+      "title": "AI Code Reviewer",
+      "publishedAt": "2026-01-27",
+      "category": "developer-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "ai-resume-tailorer",
+      "title": "AI Resume Tailorer",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
+    },
+    {
+      "slug": "social-media-scheduler",
+      "title": "Social Media Scheduler",
+      "publishedAt": "2026-01-27",
+      "category": "creator-tools",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "api-documentation-generator",
+      "title": "AI API Documentation Generator",
+      "publishedAt": "2026-01-27",
+      "category": "developer-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "expense-splitter-app",
+      "title": "Expense Splitter App",
+      "publishedAt": "2026-01-27",
+      "category": "fintech",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "content-repurposing-tool",
+      "title": "AI Content Repurposing Tool",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
+    },
+    {
+      "slug": "abandoned-cart-recovery",
+      "title": "Abandoned Cart Recovery Tool",
+      "publishedAt": "2026-01-27",
+      "category": "ecommerce",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "focus-session-timer",
+      "title": "Focus Session Timer",
+      "publishedAt": "2026-01-27",
+      "category": "productivity",
+      "buildTime": "6",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "changelog-generator",
+      "title": "Changelog Generator",
+      "publishedAt": "2026-01-27",
+      "category": "developer-tools",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "client-portal",
+      "title": "Client Portal Builder",
+      "publishedAt": "2026-01-27",
+      "category": "b2b",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "subscription-tracker",
+      "title": "Personal Subscription Tracker",
+      "publishedAt": "2026-01-27",
+      "category": "fintech",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "proposal-generator",
+      "title": "AI Proposal Generator",
+      "publishedAt": "2026-01-27",
+      "category": "b2b",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "non-technical"]
+    },
+    {
+      "slug": "ai-seo-optimizer",
+      "title": "AI SEO Content Optimizer",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "daily-standup-bot",
+      "title": "Async Standup Bot",
+      "publishedAt": "2026-01-27",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "code-snippet-manager",
+      "title": "Code Snippet Manager",
+      "publishedAt": "2026-01-27",
+      "category": "developer-tools",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "digital-product-delivery",
+      "title": "Digital Product Delivery System",
+      "publishedAt": "2026-01-27",
+      "category": "creator-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "non-technical"]
+    },
+    {
+      "slug": "feature-voting-board",
+      "title": "Feature Voting Board",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "expense-report-generator",
+      "title": "AI Expense Report Generator",
+      "publishedAt": "2026-01-27",
+      "category": "automation",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "non-technical"]
+    },
+    {
+      "slug": "email-to-todo",
+      "title": "Email to Todo Converter",
+      "publishedAt": "2026-01-27",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"]
+    },
+    {
+      "slug": "user-onboarding-builder",
+      "title": "User Onboarding Flow Builder",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "ai-email-responder",
+      "title": "AI Email Reply Drafter",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "6",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "product-review-collector",
+      "title": "Automated Review Collector",
+      "publishedAt": "2026-01-27",
+      "category": "ecommerce",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "testimonial-video-collector",
+      "title": "Video Testimonial Collector",
+      "publishedAt": "2026-01-27",
+      "category": "b2b",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "habit-tracker",
+      "title": "Minimalist Habit Tracker",
+      "publishedAt": "2026-01-27",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "ai-competitor-tracker",
+      "title": "AI Competitor Tracker",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "link-in-bio-builder",
+      "title": "Link in Bio Builder",
+      "publishedAt": "2026-01-27",
+      "category": "creator-tools",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": ["cursor", "bolt"],
+      "audiences": ["developers", "solo-founders", "non-technical"]
+    },
+    {
+      "slug": "meeting-scheduler",
+      "title": "Smart Meeting Scheduler",
+      "publishedAt": "2026-01-27",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "startup-financial-dashboard",
+      "title": "Startup Financial Dashboard",
+      "publishedAt": "2026-01-27",
+      "category": "fintech",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "ai-podcast-clipper",
+      "title": "AI Podcast Clip Generator",
+      "publishedAt": "2026-01-27",
+      "category": "creator-tools",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    },
+    {
+      "slug": "domain-name-generator",
+      "title": "AI Domain Name Generator",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "6",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "weekend-builders"]
+    },
+    {
+      "slug": "contract-analyzer",
+      "title": "AI Contract Analyzer",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders", "non-technical"]
+    },
+    {
+      "slug": "notion-backup-tool",
+      "title": "Notion Backup Tool",
+      "publishedAt": "2026-01-27",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"]
+    }
+  ],
+  "categories": [
+    {
+      "slug": "saas",
+      "name": "SaaS",
+      "displayName": "SaaS Startup Ideas",
+      "description": "Software-as-a-service ideas you can build and launch this weekend. Recurring revenue, scalable, and perfect for solo founders.",
+      "icon": "lucide:cloud",
+      "color": "blue",
+      "keywords": {
+        "primary": "saas ideas 2026",
+        "secondary": ["micro saas ideas", "saas startup ideas", "b2b saas ideas", "saas business ideas"],
+        "volume": "8.1K/mo"
+      },
+      "faqs": [
+        {
+          "question": "What is a SaaS startup?",
+          "answer": "SaaS (Software as a Service) is a software distribution model where applications are hosted in the cloud and provided to customers over the internet on a subscription basis. Instead of buying and installing software, users pay a monthly or annual fee for access."
+        },
+        {
+          "question": "How much can a micro-SaaS make?",
+          "answer": "Micro-SaaS products typically target $1K-$10K monthly recurring revenue (MRR). Many solo founders achieve $5K-$20K/month with focused niche products. The key is solving a specific problem extremely well."
+        },
+        {
+          "question": "What tech stack is best for SaaS in 2026?",
+          "answer": "Popular stacks include Next.js + Supabase for rapid development, or traditional choices like Rails or Django. The best stack is one you can ship quickly with. AI coding tools like Cursor have made full-stack development accessible to more founders."
+        },
+        {
+          "question": "How long does it take to build a SaaS MVP?",
+          "answer": "With modern tools and AI assistance, a focused MVP can be built in a weekend (8-16 hours). The key is scoping aggressively—launch with one core feature that delivers clear value, then iterate based on user feedback."
+        }
+      ]
+    },
+    {
+      "slug": "productivity",
+      "name": "Productivity",
+      "displayName": "Productivity App Ideas",
+      "description": "Tools that help people work smarter, not harder. From meeting management to task automation, these ideas save users time.",
+      "icon": "lucide:zap",
+      "color": "yellow",
+      "keywords": {
+        "primary": "productivity app ideas",
+        "secondary": ["productivity startup ideas", "productivity tool ideas", "time management app ideas"],
+        "volume": "2.4K/mo"
+      },
+      "faqs": [
+        {
+          "question": "What makes a productivity app successful?",
+          "answer": "The best productivity apps do one thing exceptionally well. They integrate into existing workflows rather than requiring users to change habits. Focus on reducing friction and saving measurable time."
+        },
+        {
+          "question": "How do productivity apps make money?",
+          "answer": "Common models include freemium (free basic tier, paid pro features), subscription pricing ($5-$20/month for individuals, $10-$50/seat for teams), and one-time purchases for simpler tools."
+        }
+      ]
+    },
+    {
+      "slug": "health",
+      "name": "Health & Wellness",
+      "displayName": "Health Tech Startup Ideas",
+      "description": "Digital health and wellness solutions. From fitness apps to nutrition planners, help people live healthier lives.",
+      "icon": "lucide:heart-pulse",
+      "color": "green",
+      "keywords": {
+        "primary": "health tech startup ideas",
+        "secondary": ["wellness app ideas", "fitness startup ideas", "health app ideas", "digital health startup"],
+        "volume": "1.8K/mo"
+      },
+      "faqs": [
+        {
+          "question": "Do health apps need FDA approval?",
+          "answer": "Most wellness and fitness apps don't require FDA approval. However, if your app diagnoses, treats, or prevents disease, or connects to medical devices, you may need regulatory clearance. When in doubt, consult a healthcare regulatory attorney."
+        },
+        {
+          "question": "What's the best niche in health tech?",
+          "answer": "Underserved niches with passionate users include mental health for specific demographics, nutrition for specialized diets, fitness for niche sports, and chronic condition management tools."
+        }
+      ]
+    },
+    {
+      "slug": "marketplace",
+      "name": "Marketplace",
+      "displayName": "Marketplace Startup Ideas",
+      "description": "Two-sided marketplace ideas connecting buyers and sellers. Higher complexity but massive potential with network effects.",
+      "icon": "lucide:store",
+      "color": "purple",
+      "keywords": {
+        "primary": "marketplace ideas",
+        "secondary": ["marketplace startup ideas", "two-sided marketplace ideas", "platform business ideas"],
+        "volume": "560/mo"
+      },
+      "faqs": [
+        {
+          "question": "How do you solve the chicken-and-egg problem?",
+          "answer": "Start with supply—recruit providers first with a compelling value proposition. Use manual effort ('do things that don't scale') to match early supply with demand. Many successful marketplaces started by focusing on a single geography or niche."
+        },
+        {
+          "question": "What's the typical take rate for marketplaces?",
+          "answer": "Take rates vary by industry: 5-15% for services, 15-30% for digital products, and up to 30-50% for high-touch services. Lower take rates work when transaction volumes are high."
+        }
+      ]
+    },
+    {
+      "slug": "ai-tools",
+      "name": "AI Tools",
+      "displayName": "AI Tool Ideas",
+      "description": "Leverage AI APIs to build powerful tools. The AI wrapper opportunity is real—add UI, workflow, and domain expertise on top of foundation models.",
+      "icon": "lucide:sparkles",
+      "color": "violet",
+      "keywords": {
+        "primary": "ai tool ideas",
+        "secondary": ["ai startup ideas", "ai wrapper ideas", "what to build with ai", "ai saas ideas"],
+        "volume": "2.1K/mo"
+      },
+      "faqs": [
+        {
+          "question": "Are AI wrappers a viable business?",
+          "answer": "Yes, when you add genuine value beyond raw API access. Successful AI wrappers offer better UX, domain-specific prompts, workflow integration, and cost optimization. The key is solving a specific problem, not just providing generic AI access."
+        },
+        {
+          "question": "Which AI API should I use?",
+          "answer": "OpenAI (GPT-4) and Anthropic (Claude) are leaders for text. For specific tasks, consider specialized models. Start with one provider, and add fallbacks later. Cost matters—Claude and GPT-4 are similar in capability but pricing varies by use case."
+        }
+      ]
+    },
+    {
+      "slug": "automation",
+      "name": "Automation",
+      "displayName": "Automation Business Ideas",
+      "description": "Tools that automate repetitive tasks. From invoice reminders to data entry, save businesses hours every week.",
+      "icon": "lucide:bot",
+      "color": "orange",
+      "keywords": {
+        "primary": "automation business ideas",
+        "secondary": ["automation startup ideas", "workflow automation ideas", "business automation tools"],
+        "volume": "890/mo"
+      },
+      "faqs": [
+        {
+          "question": "What tasks are best to automate?",
+          "answer": "Look for tasks that are: repetitive (done frequently), rule-based (clear logic), time-consuming, and error-prone when done manually. Common examples include data entry, report generation, follow-ups, and status updates."
+        },
+        {
+          "question": "Build vs integrate with Zapier/Make?",
+          "answer": "Start with existing automation platforms to validate demand. Build custom when: you need better UX, higher reliability, lower per-action costs, or features the platforms don't support. Many successful automation businesses started as Zapier alternatives for specific niches."
+        }
+      ]
+    },
+    {
+      "slug": "education",
+      "name": "Education",
+      "displayName": "EdTech Startup Ideas",
+      "description": "Educational technology ideas. From course platforms to learning tools, help people acquire new skills.",
+      "icon": "lucide:graduation-cap",
+      "color": "teal",
+      "keywords": {
+        "primary": "edtech startup ideas",
+        "secondary": ["education startup ideas", "online learning ideas", "course platform ideas"],
+        "volume": "1.2K/mo"
+      },
+      "faqs": [
+        {
+          "question": "Is the online education market saturated?",
+          "answer": "The generic market is crowded, but niches are underserved. Focus on specific skills, industries, or learning styles. Cohort-based courses, community-driven learning, and AI-personalized education are growing areas."
+        },
+        {
+          "question": "How do edtech products monetize?",
+          "answer": "Common models include course sales (one-time or subscription), certification fees, enterprise licensing, and freemium with premium content. B2B (selling to employers) often has higher price points than B2C."
+        }
+      ]
+    },
+    {
+      "slug": "b2b",
+      "name": "B2B",
+      "displayName": "B2B SaaS Ideas",
+      "description": "Business-to-business software ideas. Higher price points, longer sales cycles, but more predictable revenue.",
+      "icon": "lucide:building-2",
+      "color": "slate",
+      "keywords": {
+        "primary": "b2b saas ideas",
+        "secondary": ["b2b startup ideas", "enterprise software ideas", "b2b software ideas"],
+        "volume": "720/mo"
+      },
+      "faqs": [
+        {
+          "question": "How is B2B different from B2C?",
+          "answer": "B2B typically has: higher price points ($50-$500+/month vs $5-$20), longer sales cycles, multiple stakeholders in decisions, need for security/compliance features, and focus on ROI over consumer delight."
+        },
+        {
+          "question": "Can solo founders build B2B products?",
+          "answer": "Yes. Many successful B2B products started as solo projects. Focus on SMB (small-medium business) initially—they have simpler buying processes than enterprises. Expand upmarket as you grow."
+        }
+      ]
+    },
+    {
+      "slug": "developer-tools",
+      "name": "Developer Tools",
+      "displayName": "Developer Tools Ideas",
+      "description": "Tools for developers, by developers. APIs, CLIs, and platforms that make coding faster and easier.",
+      "icon": "lucide:code-2",
+      "color": "emerald",
+      "keywords": {
+        "primary": "developer tools ideas",
+        "secondary": ["dev tools startup ideas", "developer startup ideas", "api business ideas"],
+        "volume": "480/mo"
+      },
+      "faqs": [
+        {
+          "question": "How do developer tools acquire users?",
+          "answer": "Developers discover tools through: technical content (blogs, tutorials), GitHub presence, Hacker News/Reddit, word of mouth, and integrations with popular tools. Build in public and share your learnings."
+        },
+        {
+          "question": "What's the best pricing model for dev tools?",
+          "answer": "Freemium with generous free tiers works well—developers try before buying. Usage-based pricing aligns with value delivered. Per-seat pricing works for team tools. Avoid gating basic functionality too aggressively."
+        }
+      ]
+    },
+    {
+      "slug": "ecommerce",
+      "name": "E-commerce",
+      "displayName": "E-commerce Startup Ideas",
+      "description": "Tools and platforms for online sellers. From inventory management to marketing automation.",
+      "icon": "lucide:shopping-cart",
+      "color": "pink",
+      "keywords": {
+        "primary": "ecommerce startup ideas",
+        "secondary": ["ecommerce tools ideas", "shopify app ideas", "online store ideas"],
+        "volume": "1.5K/mo"
+      },
+      "faqs": [
+        {
+          "question": "What e-commerce niches are underserved?",
+          "answer": "Look for niches with: passionate buyers (hobbies, collectibles), high AOV (luxury, B2B supplies), or underserved demographics. Also consider tools for sellers—there are always pain points in the e-commerce stack."
+        }
+      ]
+    },
+    {
+      "slug": "creator-tools",
+      "name": "Creator Tools",
+      "displayName": "Creator Economy Ideas",
+      "description": "Tools for content creators, influencers, and digital entrepreneurs. Help creators monetize and manage their businesses.",
+      "icon": "lucide:video",
+      "color": "rose",
+      "keywords": {
+        "primary": "creator economy ideas",
+        "secondary": ["creator tools ideas", "influencer tools", "content creator startup ideas"],
+        "volume": "680/mo"
+      },
+      "faqs": [
+        {
+          "question": "What do creators need most?",
+          "answer": "Creators struggle with: monetization beyond ads, audience management, content repurposing, sponsorship management, and business operations (invoicing, contracts). Tools that save time or increase revenue win."
+        }
+      ]
+    },
+    {
+      "slug": "fintech",
+      "name": "Fintech",
+      "displayName": "Fintech Startup Ideas",
+      "description": "Financial technology ideas. From payment processing to personal finance, help people manage money better.",
+      "icon": "lucide:wallet",
+      "color": "cyan",
+      "keywords": {
+        "primary": "fintech startup ideas",
+        "secondary": ["fintech ideas", "finance app ideas", "payment startup ideas"],
+        "volume": "1.3K/mo"
+      },
+      "faqs": [
+        {
+          "question": "Is fintech heavily regulated?",
+          "answer": "Yes, but not all fintech is equally regulated. Tools that help with budgeting or financial education have minimal regulation. Anything touching payments, lending, or investments requires compliance. Consider starting with less regulated adjacent problems."
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "slug": "cursor",
+      "name": "Cursor",
+      "tagline": "AI-powered code editor",
+      "description": "Build full-stack applications with AI pair programming. Cursor understands your codebase and helps you write, refactor, and debug code faster.",
+      "logo": "/image/tools/cursor.svg",
+      "url": "https://cursor.sh",
+      "strengths": [
+        "Full-stack applications",
+        "Complex business logic",
+        "Code refactoring",
+        "Database integration",
+        "API development"
+      ],
+      "bestFor": ["SaaS", "Developer tools", "B2B applications", "Complex backends"],
+      "keywords": {
+        "primary": "what to build with cursor",
+        "secondary": ["cursor ai projects", "cursor ide ideas", "cursor ai project ideas"],
+        "volume": "280/mo"
+      },
+      "gettingStarted": [
+        "Download Cursor from cursor.sh",
+        "Open your project folder or create a new one",
+        "Press Cmd+K (Mac) or Ctrl+K (Windows) to start AI chat",
+        "Describe what you want to build in natural language",
+        "Use Cmd+L to chat about your entire codebase"
+      ]
+    },
+    {
+      "slug": "claude",
+      "name": "Claude",
+      "tagline": "Anthropic's AI assistant",
+      "description": "Claude excels at understanding complex requirements, writing clean code, and explaining technical concepts. Great for planning, debugging, and code review.",
+      "logo": "/image/tools/claude.svg",
+      "url": "https://claude.ai",
+      "strengths": [
+        "Code explanation and review",
+        "Complex problem solving",
+        "Technical writing",
+        "System design",
+        "Debugging assistance"
+      ],
+      "bestFor": ["Planning architecture", "Code review", "Documentation", "Learning new concepts"],
+      "keywords": {
+        "primary": "claude project ideas",
+        "secondary": ["what to build with claude", "claude coding projects"],
+        "volume": "190/mo"
+      },
+      "gettingStarted": [
+        "Go to claude.ai and create an account",
+        "Start a new conversation with your project idea",
+        "Ask Claude to help plan your architecture",
+        "Use Claude to generate code snippets",
+        "Copy code to your IDE and iterate"
+      ]
+    },
+    {
+      "slug": "bolt",
+      "name": "Bolt.new",
+      "tagline": "AI-powered full-stack builder",
+      "description": "Build and deploy full-stack web applications directly in your browser. Great for rapid prototyping and simple applications.",
+      "logo": "/image/tools/bolt.svg",
+      "url": "https://bolt.new",
+      "strengths": [
+        "Rapid prototyping",
+        "Simple web apps",
+        "Landing pages",
+        "Form-based applications",
+        "Quick deployments"
+      ],
+      "bestFor": ["MVPs", "Landing pages", "Simple tools", "Prototypes"],
+      "keywords": {
+        "primary": "bolt.new ideas",
+        "secondary": ["bolt app ideas", "bolt.new projects", "bolt new project ideas"],
+        "volume": "150/mo"
+      },
+      "gettingStarted": [
+        "Go to bolt.new in your browser",
+        "Describe your application idea",
+        "Watch Bolt generate the code",
+        "Iterate by describing changes",
+        "Deploy directly from Bolt"
+      ]
+    },
+    {
+      "slug": "v0",
+      "name": "v0 by Vercel",
+      "tagline": "AI-powered UI generation",
+      "description": "Generate React components and UI designs from text descriptions. Perfect for quickly building beautiful interfaces.",
+      "logo": "/image/tools/v0.svg",
+      "url": "https://v0.dev",
+      "strengths": [
+        "UI component generation",
+        "React/Next.js code",
+        "Tailwind CSS styling",
+        "Responsive design",
+        "Component variations"
+      ],
+      "bestFor": ["UI components", "Landing page design", "Dashboard interfaces", "Form design"],
+      "keywords": {
+        "primary": "v0 dev projects",
+        "secondary": ["v0 component ideas", "v0 dev examples", "v0 ui ideas"],
+        "volume": "140/mo"
+      },
+      "gettingStarted": [
+        "Go to v0.dev",
+        "Describe the UI component you need",
+        "Select from generated variations",
+        "Copy the React/Tailwind code",
+        "Integrate into your project"
+      ]
+    },
+    {
+      "slug": "lovable",
+      "name": "Lovable",
+      "tagline": "AI software engineer",
+      "description": "Build full applications with natural language. Lovable handles the entire stack and deploys your app automatically.",
+      "logo": "/image/tools/lovable.svg",
+      "url": "https://lovable.dev",
+      "strengths": [
+        "Full application building",
+        "Automatic deployment",
+        "Database setup",
+        "Authentication",
+        "No coding required"
+      ],
+      "bestFor": ["Non-technical founders", "Quick MVPs", "Simple SaaS apps", "Internal tools"],
+      "keywords": {
+        "primary": "lovable dev ideas",
+        "secondary": ["lovable ai projects", "lovable app ideas"],
+        "volume": "120/mo"
+      },
+      "gettingStarted": [
+        "Sign up at lovable.dev",
+        "Describe your application",
+        "Let Lovable build the app",
+        "Test and iterate with feedback",
+        "Deploy when ready"
+      ]
+    },
+    {
+      "slug": "replit",
+      "name": "Replit",
+      "tagline": "Collaborative browser IDE",
+      "description": "Code, create, and learn together with a powerful, simple, and collaborative IDE, compiler, and interpreter.",
+      "logo": "/image/tools/replit.svg",
+      "url": "https://replit.com",
+      "strengths": [
+        "Collaborative coding",
+        "Multiple language support",
+        "Instant deployment",
+        "AI assistance",
+        "Learning environment"
+      ],
+      "bestFor": ["Learning to code", "Collaboration", "Quick experiments", "Hackathons"],
+      "keywords": {
+        "primary": "replit project ideas",
+        "secondary": ["replit projects", "replit app ideas"],
+        "volume": "320/mo"
+      },
+      "gettingStarted": [
+        "Create account at replit.com",
+        "Start a new Repl in your language",
+        "Use Replit AI for assistance",
+        "Code directly in browser",
+        "Deploy with one click"
+      ]
+    },
+    {
+      "slug": "windsurf",
+      "name": "Windsurf",
+      "tagline": "Codeium's AI IDE",
+      "description": "The first agentic IDE. Windsurf combines AI assistance with deep codebase understanding for faster development.",
+      "logo": "/image/tools/windsurf.svg",
+      "url": "https://codeium.com/windsurf",
+      "strengths": [
+        "Agentic coding",
+        "Codebase understanding",
+        "Multi-file editing",
+        "Code completion",
+        "Refactoring"
+      ],
+      "bestFor": ["Complex codebases", "Refactoring", "Large projects", "Team collaboration"],
+      "keywords": {
+        "primary": "windsurf ide projects",
+        "secondary": ["windsurf coding", "windsurf ai ide"],
+        "volume": "90/mo"
+      },
+      "gettingStarted": [
+        "Download Windsurf from Codeium",
+        "Open your project",
+        "Use Cascade for AI assistance",
+        "Let Windsurf understand your codebase",
+        "Code with AI pair programming"
+      ]
+    },
+    {
+      "slug": "no-code",
+      "name": "No-Code Tools",
+      "tagline": "Build without coding",
+      "description": "A collection of no-code tools including Bubble, Webflow, Softr, and Glide that let you build apps without writing code.",
+      "logo": "/image/tools/no-code.svg",
+      "url": "https://bubble.io",
+      "strengths": [
+        "No coding required",
+        "Visual builders",
+        "Quick prototyping",
+        "Template libraries",
+        "Integrations"
+      ],
+      "bestFor": ["Non-technical founders", "MVPs", "Landing pages", "Simple apps"],
+      "keywords": {
+        "primary": "no code app ideas",
+        "secondary": ["no code startup", "no code business ideas", "bubble app ideas"],
+        "volume": "1.8K/mo"
+      },
+      "gettingStarted": [
+        "Choose a no-code platform (Bubble, Webflow, Softr)",
+        "Start with a template if available",
+        "Use drag-and-drop builders",
+        "Connect data sources",
+        "Launch and iterate"
+      ]
+    }
+  ],
+  "audiences": [
+    {
+      "slug": "developers",
+      "name": "Developers",
+      "displayName": "Startup Ideas for Developers",
+      "description": "Ideas that leverage your coding skills. Build technical products, developer tools, and complex applications that non-technical founders can't easily replicate.",
+      "icon": "lucide:terminal",
+      "filters": {
+        "techLevel": "advanced",
+        "hasTools": ["cursor", "claude"]
+      },
+      "keywords": {
+        "primary": "startup ideas for developers",
+        "secondary": ["side project ideas for developers", "weekend projects for developers", "developer startup ideas"],
+        "volume": "1.9K/mo"
+      },
+      "traits": [
+        "Can build complex backends and APIs",
+        "Comfortable with databases and infrastructure",
+        "Can iterate quickly on technical products",
+        "Understand developer pain points"
+      ],
+      "resources": [
+        {"title": "Indie Hackers", "url": "https://indiehackers.com", "description": "Community of developers building profitable products"},
+        {"title": "Hacker News", "url": "https://news.ycombinator.com", "description": "Tech community for product discovery and feedback"}
+      ]
+    },
+    {
+      "slug": "designers",
+      "name": "Designers",
+      "displayName": "Startup Ideas for Designers",
+      "description": "Ideas that leverage your design skills. Build beautiful products where UX is the differentiator, or create tools for other designers.",
+      "icon": "lucide:palette",
+      "filters": {
+        "techLevel": "intermediate",
+        "categories": ["productivity", "creator-tools"]
+      },
+      "keywords": {
+        "primary": "startup ideas for designers",
+        "secondary": ["side hustles for designers", "design startup ideas"],
+        "volume": "420/mo"
+      },
+      "traits": [
+        "Strong visual and UX skills",
+        "Understand user psychology",
+        "Can create compelling landing pages",
+        "Eye for product details"
+      ],
+      "resources": [
+        {"title": "Dribbble", "url": "https://dribbble.com", "description": "Design community for inspiration and networking"},
+        {"title": "Designer Fund", "url": "https://designerfund.com", "description": "Resources for designer-founders"}
+      ]
+    },
+    {
+      "slug": "non-technical",
+      "name": "Non-Technical Founders",
+      "displayName": "Startup Ideas for Non-Technical Founders",
+      "description": "Ideas you can build without coding. Use no-code tools, AI builders, or hire developers for specific components.",
+      "icon": "lucide:lightbulb",
+      "filters": {
+        "techLevel": "beginner",
+        "hasTools": ["bolt", "no-code", "lovable"]
+      },
+      "keywords": {
+        "primary": "startup ideas for non-technical founders",
+        "secondary": ["no code startup ideas", "business ideas without coding"],
+        "volume": "260/mo"
+      },
+      "traits": [
+        "Business and domain expertise",
+        "Strong communication skills",
+        "Can validate ideas through sales",
+        "Focus on customer relationships"
+      ],
+      "resources": [
+        {"title": "MakerPad", "url": "https://makerpad.co", "description": "No-code education and community"},
+        {"title": "No Code MBA", "url": "https://nocode.mba", "description": "Courses for building without code"}
+      ]
+    },
+    {
+      "slug": "solo-founders",
+      "name": "Solo Founders",
+      "displayName": "Startup Ideas for Solo Founders",
+      "description": "Ideas optimized for one person to build and run. Low operational complexity, scalable, and manageable without a team.",
+      "icon": "lucide:user",
+      "filters": {
+        "buildTime": ["8", "10", "12"],
+        "revenueGoal": ["1k-month", "5k-month"]
+      },
+      "keywords": {
+        "primary": "solo founder startup ideas",
+        "secondary": ["one person startup ideas", "bootstrap startup ideas"],
+        "volume": "340/mo"
+      },
+      "traits": [
+        "Self-motivated and disciplined",
+        "Comfortable wearing multiple hats",
+        "Can make decisions quickly",
+        "Prefer independence over scale"
+      ],
+      "resources": [
+        {"title": "Indie Hackers", "url": "https://indiehackers.com", "description": "Community of solo and indie founders"},
+        {"title": "MicroConf", "url": "https://microconf.com", "description": "Conference for bootstrapped founders"}
+      ]
+    },
+    {
+      "slug": "weekend-builders",
+      "name": "Weekend Builders",
+      "displayName": "Ideas for Weekend Builders",
+      "description": "Ideas you can ship in a weekend. Focused scope, clear value proposition, and achievable in 8-16 hours of building.",
+      "icon": "lucide:calendar",
+      "filters": {
+        "buildTime": ["8", "10"]
+      },
+      "keywords": {
+        "primary": "weekend project ideas",
+        "secondary": ["build in a weekend", "24 hour hackathon ideas", "quick startup ideas"],
+        "volume": "340/mo"
+      },
+      "traits": [
+        "Limited time availability",
+        "Value shipping over perfection",
+        "Comfortable with MVPs",
+        "Enjoy rapid experimentation"
+      ],
+      "resources": [
+        {"title": "Ship 30 for 30", "url": "https://ship30for30.com", "description": "Community for shipping consistently"},
+        {"title": "Weekend MVP", "url": "https://weekendmvp.app", "description": "Ideas and resources for weekend builders"}
+      ]
+    },
+    {
+      "slug": "side-hustlers",
+      "name": "Side Hustlers",
+      "displayName": "Startup Ideas for People with Full-Time Jobs",
+      "description": "Ideas you can build and run alongside a full-time job. Low maintenance, automated, and don't require constant attention.",
+      "icon": "lucide:briefcase",
+      "filters": {
+        "categories": ["automation", "saas"],
+        "revenueGoal": ["1k-month"]
+      },
+      "keywords": {
+        "primary": "side hustle ideas with full time job",
+        "secondary": ["passive income ideas for programmers", "side business ideas", "evening project ideas"],
+        "volume": "380/mo"
+      },
+      "traits": [
+        "Time-constrained but consistent",
+        "Looking for supplemental income",
+        "Risk-averse, keeping job security",
+        "Long-term thinking"
+      ],
+      "resources": [
+        {"title": "Side Project Stack", "url": "https://sideprojectstack.com", "description": "Tools and resources for side projects"},
+        {"title": "r/SideProject", "url": "https://reddit.com/r/SideProject", "description": "Reddit community for side project builders"}
+      ]
+    }
+  ],
+  "revenueGoals": [
+    {
+      "slug": "1k-month",
+      "name": "$1K/Month",
+      "displayName": "Ideas That Can Make $1K/Month",
+      "description": "Achievable with a small customer base. Perfect for validating demand and building your first profitable product.",
+      "amount": 1000,
+      "keywords": {
+        "primary": "$1000 month saas",
+        "secondary": ["1k mrr ideas", "first $1000 online"],
+        "volume": "890/mo"
+      },
+      "methodology": "At $1K/month, you need: 100 customers at $10/month, 50 customers at $20/month, or 20 customers at $50/month. The key is finding a niche where you can reach and convert 20-100 paying customers.",
+      "unitEconomics": {
+        "customersNeeded": "20-100",
+        "priceRange": "$10-50/month",
+        "churnTarget": "< 10% monthly"
+      }
+    },
+    {
+      "slug": "5k-month",
+      "name": "$5K/Month",
+      "displayName": "Ideas That Can Make $5K/Month",
+      "description": "Enough to replace most salaries or build significant side income. Requires a more established customer base.",
+      "amount": 5000,
+      "keywords": {
+        "primary": "$5000 month business ideas",
+        "secondary": ["5k mrr", "replace salary side project"],
+        "volume": "420/mo"
+      },
+      "methodology": "At $5K/month, you need: 250 customers at $20/month, 100 customers at $50/month, or 50 customers at $100/month. Focus on higher-value customers or add premium tiers.",
+      "unitEconomics": {
+        "customersNeeded": "50-250",
+        "priceRange": "$20-100/month",
+        "churnTarget": "< 5% monthly"
+      }
+    },
+    {
+      "slug": "10k-month",
+      "name": "$10K/Month",
+      "displayName": "Ideas That Can Make $10K/Month",
+      "description": "A full business that can support a founder and potentially a small team. Significant but achievable.",
+      "amount": 10000,
+      "keywords": {
+        "primary": "$10k mrr ideas",
+        "secondary": ["10k month business", "ramen profitable startup"],
+        "volume": "280/mo"
+      },
+      "methodology": "At $10K/month, you need: 200 customers at $50/month, 100 customers at $100/month, or 20 enterprise customers at $500/month. Consider moving upmarket or adding annual plans.",
+      "unitEconomics": {
+        "customersNeeded": "20-200",
+        "priceRange": "$50-500/month",
+        "churnTarget": "< 3% monthly"
+      }
+    },
+    {
+      "slug": "passive-income",
+      "name": "Passive Income",
+      "displayName": "Passive Income App Ideas",
+      "description": "Products that generate revenue with minimal ongoing effort. Set it up once and let it run.",
+      "amount": null,
+      "keywords": {
+        "primary": "passive income app ideas",
+        "secondary": ["passive income for programmers", "automated business ideas"],
+        "volume": "1.2K/mo"
+      },
+      "methodology": "Truly passive products are rare, but low-maintenance is achievable. Look for: one-time purchases, subscription products with low churn, and automated delivery.",
+      "unitEconomics": {
+        "maintenanceHours": "< 5 hours/week",
+        "automationLevel": "High",
+        "supportLoad": "Minimal"
+      }
+    },
+    {
+      "slug": "quick-wins",
+      "name": "Quick Wins",
+      "displayName": "MVPs That Make Money Fast",
+      "description": "Ideas with short time-to-revenue. Get your first paying customer within weeks, not months.",
+      "amount": null,
+      "keywords": {
+        "primary": "mvp ideas that make money fast",
+        "secondary": ["quick revenue ideas", "fast startup ideas"],
+        "volume": "180/mo"
+      },
+      "methodology": "Quick wins come from: solving urgent problems, targeting buyers with budget authority, and having a clear value proposition. Pre-sell before building when possible.",
+      "unitEconomics": {
+        "timeToFirstSale": "< 4 weeks",
+        "buildTime": "1-2 weekends",
+        "validationMethod": "Pre-sales or waitlist"
+      }
+    }
+  ],
+  "buildTimes": [
+    {
+      "slug": "8-hours",
+      "name": "8 Hours",
+      "displayName": "Apps You Can Build in 8 Hours",
+      "description": "Single-day builds for focused MVPs. Ship something real in one intense coding session.",
+      "hours": 8,
+      "keywords": {
+        "primary": "apps to build in a day",
+        "secondary": ["8 hour project ideas", "one day builds"],
+        "volume": "320/mo"
+      }
+    },
+    {
+      "slug": "weekend",
+      "name": "Weekend",
+      "displayName": "Apps You Can Build in a Weekend",
+      "description": "The classic weekend project. 16-20 hours of focused building across Saturday and Sunday.",
+      "hours": 16,
+      "keywords": {
+        "primary": "weekend project ideas",
+        "secondary": ["build in a weekend", "weekend coding projects"],
+        "volume": "680/mo"
+      }
+    },
+    {
+      "slug": "1-week",
+      "name": "1 Week",
+      "displayName": "Apps You Can Build in One Week",
+      "description": "A bit more polished than a weekend build. Good for ideas that need more features or complexity.",
+      "hours": 40,
+      "keywords": {
+        "primary": "week long coding projects",
+        "secondary": ["one week project ideas", "5 day build"],
+        "volume": "180/mo"
+      }
+    },
+    {
+      "slug": "24-hours",
+      "name": "24 Hours",
+      "displayName": "24 Hour Hackathon Ideas",
+      "description": "Hackathon-style builds. Ultra-focused scope, launch in a single day.",
+      "hours": 24,
+      "keywords": {
+        "primary": "24 hour hackathon ideas",
+        "secondary": ["hackathon project ideas", "one day startup"],
+        "volume": "240/mo"
+      }
     }
   ]
 }

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Feedback Aggregator | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/customer-feedback-aggregator">
+    <meta property="og:title" content="Customer Feedback Aggregator | Startup Ideas">
+    <meta property="og:description" content="Aggregate customer reviews from G2, Capterra, Trustpilot into one dashboard.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/customer-feedback-aggregator">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Customer Feedback Aggregator","description":"Aggregate customer reviews from multiple platforms into one dashboard.","datePublished":"2026-01-27"},{"@type":"SoftwareApplication","name":"Customer Feedback Aggregator","applicationCategory":"BusinessApplication","operatingSystem":"Web"}]}
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">Customer Feedback Aggregator</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">All your customer reviews in one place. Finally.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Customer Feedback Aggregator</h1>
+                    <p class="text-xl text-neutral-500 font-light">Stop checking 5 different review sites every morning.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">Product teams are drowning in feedback scattered across G2, Capterra, Trustpilot, app stores, and social media. They either miss critical reviews, respond too late, or waste hours manually compiling insights. Negative reviews slip through, damaging reputation before anyone notices.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">A unified dashboard that pulls reviews from all major platforms, uses AI to identify sentiment and themes, and alerts you when something needs attention. Track your reputation score across platforms and respond without switching tabs.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Connect platforms</p>
+                                <p class="text-xs text-neutral-500 mt-1">G2, Capterra, app stores, etc.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI analysis</p>
+                                <p class="text-xs text-neutral-500 mt-1">Sentiment, themes, urgency scoring</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Get alerts</p>
+                                <p class="text-xs text-neutral-500 mt-1">Slack/email when reviews need response</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Review management is a growing market as online reputation becomes critical for B2B buying decisions. Existing tools are either enterprise-priced or too basic.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>95% of customers read online reviews before making a purchase (PowerReviews)</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>G2 alone has 2M+ reviews—B2B decision makers rely heavily on peer reviews</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Competitors like ReviewTrackers charge $99+/month—room for affordable alternative</span></li>
+                    </ul>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create a Next.js app for a Customer Feedback Aggregator.
+
+Features needed:
+- Dashboard showing reviews from multiple sources in a unified feed
+- Filter by platform, sentiment (positive/neutral/negative), date
+- Each review card shows: source platform, rating, date, text, sentiment badge
+- Sidebar with aggregated stats: average rating by platform, total reviews, sentiment breakdown
+- Settings page to add API keys/connections for different platforms
+
+Use Tailwind CSS and shadcn/ui components.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create API integrations for:
+1. G2 reviews via their API (requires partner access) or web scraping
+2. App Store reviews using Apple's RSS feed
+3. Google Play reviews using their scraping library
+
+For each review, use OpenAI to:
+- Analyze sentiment (positive/neutral/negative with score 0-100)
+- Extract key themes/topics mentioned
+- Flag reviews that need urgent response (complaints, bugs mentioned)
+
+Store reviews in a database with polling for new reviews every hour.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Notifications</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Add notification system:
+- Slack webhook integration to post new reviews to a channel
+- Email digest option (daily/weekly summary)
+- Instant alerts for negative reviews (1-2 stars)
+- Weekly report showing: review count, avg rating change, common themes
+
+Include a settings page to configure notification preferences per user.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200 flex items-center justify-between">
+                    <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const hasAccess = localStorage.getItem('ideas_email');
+        if (!hasAccess) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+            const submitBtn = document.getElementById('gate-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+            try {
+                if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
+                localStorage.setItem('ideas_email', email);
+                document.getElementById('email-gate').classList.add('hidden');
+                document.getElementById('idea-content').classList.remove('hidden');
+            } catch (error) { alert('Something went wrong.'); submitBtn.disabled = false; submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>'; }
+        });
+        function copyPrompt(button) { navigator.clipboard.writeText(button.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { button.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => button.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>
