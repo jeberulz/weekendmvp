@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- DYNAMIC: Update for each tool -->
+    <title>What to Build with {{TOOL_NAME}}: {{IDEA_COUNT}} Project Ideas | Weekend MVP</title>
+    <meta name="description" content="Find the best projects to build with {{TOOL_NAME}}. {{IDEA_COUNT}} ideas with ready-to-use prompts, from MVPs to full products.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/build-with/{{TOOL_SLUG}}/">
+    <meta property="og:title" content="What to Build with {{TOOL_NAME}}: {{IDEA_COUNT}} Project Ideas | Weekend MVP">
+    <meta property="og:description" content="Find the best projects to build with {{TOOL_NAME}}. {{IDEA_COUNT}} ideas with ready-to-use prompts, from MVPs to full products.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="What to Build with {{TOOL_NAME}}: {{IDEA_COUNT}} Project Ideas | Weekend MVP">
+    <meta property="twitter:description" content="Find the best projects to build with {{TOOL_NAME}}. {{IDEA_COUNT}} ideas with ready-to-use prompts, from MVPs to full products.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/build-with/{{TOOL_SLUG}}/">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                  // Track tool page view
+                  gtag('event', 'view_tool_page', {
+                    'tool_name': '{{TOOL_NAME}}'
+                  });
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../image/favicon.png">
+    <link rel="apple-touch-icon" href="../../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://weekendmvp.app/#website",
+          "url": "https://weekendmvp.app/",
+          "name": "Weekend MVP",
+          "publisher": { "@id": "https://weekendmvp.app/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "{{TOOL_NAME}}",
+          "applicationCategory": "DeveloperApplication",
+          "description": "{{TOOL_DESCRIPTION}}",
+          "operatingSystem": "{{TOOL_OS}}"
+        },
+        {
+          "@type": "HowTo",
+          "name": "How to Get Started with {{TOOL_NAME}}",
+          "description": "Quick guide to start building projects with {{TOOL_NAME}}",
+          "step": [
+            {{GETTING_STARTED_SCHEMA}}
+          ]
+        },
+        {
+          "@type": "ItemList",
+          "name": "Project Ideas for {{TOOL_NAME}}",
+          "numberOfItems": {{IDEA_COUNT}},
+          "itemListElement": [
+            {{ITEM_LIST_ELEMENTS}}
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Build With", "item": "https://weekendmvp.app/build-with/" },
+            { "@type": "ListItem", "position": 3, "name": "{{TOOL_NAME}}", "item": "https://weekendmvp.app/build-with/{{TOOL_SLUG}}/" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-2.5 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full">
+            <a href="../../index.html">
+                <div class="logo h-4 w-24 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-1">
+                <a href="../../startup-ideas.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Startup Ideas</a>
+                <a href="../../articles.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Articles</a>
+                <a href="../../starter-kit.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Starter Kit</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="../../starter-kit.html" class="hidden md:inline-flex gradient-border-button px-5 py-2 text-xs font-semibold text-white rounded-full hover:bg-white/10 transition-colors">
+                    Get the Kit
+                </a>
+                <button id="mobile-menu-open" class="md:hidden p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                    <iconify-icon icon="lucide:menu" width="20" aria-hidden="true"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../../startup-ideas.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Startup Ideas</a>
+            <a href="../../articles.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
+        
+        <!-- Breadcrumb -->
+        <nav class="mb-8" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-2 text-sm">
+                <li><a href="../../index.html" class="text-neutral-500 hover:text-white transition-colors">Home</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><span class="text-white">Build With {{TOOL_NAME}}</span></li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="mb-16">
+            <div class="flex flex-col md:flex-row md:items-start gap-8 mb-8">
+                <div class="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <img src="{{TOOL_LOGO}}" alt="{{TOOL_NAME}}" class="w-12 h-12">
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">What to Build with {{TOOL_NAME}}</h1>
+                    <p class="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
+                        {{TOOL_TAGLINE}}
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400">
+                    <iconify-icon icon="lucide:lightbulb" width="14" aria-hidden="true"></iconify-icon>
+                    {{IDEA_COUNT}} project ideas
+                </span>
+                {{#TOOL_WEBSITE}}
+                <a href="{{TOOL_WEBSITE}}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white hover:border-white/20 transition-colors">
+                    <iconify-icon icon="lucide:external-link" width="14" aria-hidden="true"></iconify-icon>
+                    Visit {{TOOL_NAME}}<span class="sr-only"> (opens in new tab)</span>
+                </a>
+                {{/TOOL_WEBSITE}}
+            </div>
+        </header>
+
+        <!-- Tool Strengths -->
+        <section class="mb-16" aria-labelledby="strengths-heading">
+            <h2 id="strengths-heading" class="text-2xl font-medium text-white mb-6">What {{TOOL_NAME}} is Best For</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {{TOOL_STRENGTHS}}
+            </div>
+        </section>
+
+        <!-- Project Ideas -->
+        <section aria-labelledby="ideas-heading">
+            <h2 id="ideas-heading" class="text-2xl font-medium text-white mb-8">Project Ideas for {{TOOL_NAME}}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {{IDEAS_GRID}}
+            </div>
+        </section>
+
+        <!-- Getting Started Guide -->
+        <section class="mt-24" aria-labelledby="getting-started-heading">
+            <h2 id="getting-started-heading" class="text-2xl font-medium text-white mb-8">Getting Started with {{TOOL_NAME}}</h2>
+            <div class="p-8 bg-white/5 border border-white/10 rounded-3xl">
+                <ol class="space-y-6">
+                    {{GETTING_STARTED_STEPS}}
+                </ol>
+            </div>
+        </section>
+
+        <!-- Tool-Specific Prompts -->
+        <section class="mt-24" aria-labelledby="prompts-heading">
+            <h2 id="prompts-heading" class="text-2xl font-medium text-white mb-4">{{TOOL_NAME}} Starter Prompts</h2>
+            <p class="text-neutral-400 mb-8">Copy and paste these prompts to kickstart your project.</p>
+            <div class="space-y-4">
+                {{TOOL_PROMPTS}}
+            </div>
+        </section>
+
+        <!-- Other Tools -->
+        <section class="mt-24" aria-labelledby="other-tools-heading">
+            <h2 id="other-tools-heading" class="text-2xl font-medium text-white mb-8">Explore Other Tools</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {{OTHER_TOOLS}}
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="mt-24">
+            <div class="p-12 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-[3rem] text-center">
+                <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Ready to build with {{TOOL_NAME}}?</h2>
+                <p class="text-neutral-400 mb-8 max-w-xl mx-auto">Get the Weekend MVP Starter Kit with prompts optimized for {{TOOL_NAME}} and other AI tools.</p>
+                <a href="../../starter-kit.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Get the Starter Kit</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 mt-32 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../../index.html">
+                        <div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Browse Ideas</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../ideas/saas/" class="text-neutral-500 hover:text-white transition-colors">SaaS Ideas</a></li>
+                        <li><a href="../../ideas/ai-tools/" class="text-neutral-500 hover:text-white transition-colors">AI Tool Ideas</a></li>
+                        <li><a href="../../ideas/productivity/" class="text-neutral-500 hover:text-white transition-colors">Productivity</a></li>
+                        <li><a href="../../ideas/automation/" class="text-neutral-500 hover:text-white transition-colors">Automation</a></li>
+                        <li><a href="../../startup-ideas.html" class="text-neutral-400 hover:text-white transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Build With</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../cursor/" class="text-neutral-500 hover:text-white transition-colors">Cursor</a></li>
+                        <li><a href="../claude/" class="text-neutral-500 hover:text-white transition-colors">Claude</a></li>
+                        <li><a href="../bolt/" class="text-neutral-500 hover:text-white transition-colors">Bolt.new</a></li>
+                        <li><a href="../no-code/" class="text-neutral-500 hover:text-white transition-colors">No-Code</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Ideas For</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../ideas-for/developers/" class="text-neutral-500 hover:text-white transition-colors">Developers</a></li>
+                        <li><a href="../../ideas-for/non-technical/" class="text-neutral-500 hover:text-white transition-colors">Non-Technical</a></li>
+                        <li><a href="../../ideas-for/solo-founders/" class="text-neutral-500 hover:text-white transition-colors">Solo Founders</a></li>
+                        <li><a href="../../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-white transition-colors">Side Hustlers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                        <li><a href="../../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu
+        (function initMobileMenu() {
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const menu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+
+            if (!menu) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    menu.classList.remove('translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.classList.add('translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+                    toggleMenu(false);
+                }
+            });
+
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+        })();
+
+        // Copy prompt function
+        function copyPrompt(button) {
+            const promptText = button.closest('.prompt-box').querySelector('.prompt-text').textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

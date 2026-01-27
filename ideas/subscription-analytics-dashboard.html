@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Analytics Dashboard | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/subscription-analytics-dashboard">
+    <meta property="og:title" content="Subscription Analytics Dashboard | Startup Ideas">
+    <meta property="og:description" content="Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Subscription Analytics Dashboard | Startup Ideas">
+    <meta property="twitter:description" content="Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/subscription-analytics-dashboard">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', 'Inter', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Subscription Analytics Dashboard",
+          "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics.",
+          "datePublished": "2026-01-27",
+          "author": { "@type": "Person", "name": "John Iseghohi" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Subscription Analytics Dashboard",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web"
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                All Startup Ideas
+            </a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">Subscription Analytics Dashboard</h1>
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">Track MRR, churn, and LTV for your subscription business in one beautiful dashboard.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Idea Content Section -->
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                    <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                    All Startup Ideas
+                </a>
+
+                <!-- Header -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Subscription Analytics Dashboard</h1>
+                    <p class="text-xl text-neutral-500 font-light">Know your numbers. Grow your MRR.</p>
+                </div>
+
+                <!-- The Problem -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">
+                        SaaS founders often fly blind when it comes to their metrics. Stripe gives you raw data, but calculating MRR, churn rate, and customer lifetime value requires spreadsheet gymnastics. Most founders either ignore these metrics entirely or spend hours each month manually calculating them. By the time they realize churn is killing their business, it's often too late to course-correct.
+                    </p>
+                </div>
+
+                <!-- The Solution -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">
+                        A clean, focused dashboard that connects to Stripe and automatically calculates the metrics that matter: MRR, ARR, churn rate, LTV, and revenue growth. No complex setup, no learning curve—just connect Stripe and see your numbers in real-time.
+                    </p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Connect Stripe</p>
+                                <p class="text-xs text-neutral-500 mt-1">OAuth integration in one click</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Auto-calculate</p>
+                                <p class="text-xs text-neutral-500 mt-1">MRR, churn, LTV computed instantly</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Track trends</p>
+                                <p class="text-xs text-neutral-500 mt-1">See growth and churn over time</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Research -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The SaaS analytics market is dominated by expensive enterprise tools like ChartMogul and Baremetrics. There's a clear gap for a simpler, more affordable option for indie hackers and early-stage founders.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>Baremetrics charges $108/month minimum—overkill for early-stage startups</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>Over 1M businesses use Stripe, most without proper analytics</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>Indie Hackers forum shows constant demand for affordable alternatives</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Build Prompts -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create a Next.js app with Tailwind CSS for a Subscription Analytics Dashboard.
+
+The app needs:
+- A landing page with "Connect Stripe" OAuth button
+- A dashboard page showing: MRR, ARR, Churn Rate, LTV, Customer Count
+- Charts showing MRR trend over the last 12 months
+- Dark/light mode toggle
+- Use shadcn/ui components for a polished look
+
+Use the App Router and set up Stripe OAuth with the Connect flow.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Add API routes that:
+1. Connect to Stripe API using the connected account's access token
+2. Fetch all subscriptions and calculate MRR (sum of active subscription amounts)
+3. Calculate churn rate (canceled / total subscriptions in a period)
+4. Calculate LTV (average revenue per customer / churn rate)
+5. Return all metrics as JSON for the dashboard
+
+Include caching to avoid hitting Stripe API limits.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative group">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                            </button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Create a landing page with:
+- Headline: "Finally understand your SaaS metrics"
+- Subheadline explaining the problem
+- Screenshot/mockup of the dashboard
+- 3 benefit cards: Real-time MRR, Churn alerts, LTV tracking
+- Pricing: Free tier (1 product) and Pro ($19/mo for unlimited)
+- FAQ section about security and Stripe integration
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                        <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                        <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
+                        See all startup ideas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                    <div class="col-span-2 md:col-span-1">
+                        <a href="../index.html"><div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                            <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                            <li><a href="../build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                            <li><a href="../articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+        if (!hasAccess) { emailGate.classList.remove('hidden'); ideaContent.classList.add('hidden'); }
+
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+            const submitBtn = document.getElementById('gate-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
+            try {
+                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
+                }
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+            } catch (error) {
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
+            }
+        });
+
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => icon.setAttribute('icon', 'lucide:copy'), 2000);
+            });
+        }
+    </script>
+</body>
+</html>

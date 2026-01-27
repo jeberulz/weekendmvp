@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Review Collector | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a tool that automatically requests and collects product reviews. Send post-purchase emails, gather testimonials, display on your site.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/product-review-collector">
+    <meta property="og:title" content="Automated Review Collector | Startup Ideas">
+    <meta property="og:description" content="Automatically collect product reviews after purchase.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/product-review-collector">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+    </div>
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Automated Review Collector</h1>
+            <p class="text-lg text-neutral-500 mb-10">Turn happy customers into testimonials.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+            </form>
+        </div>
+    </section>
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">E-commerce</span><span class="text-neutral-400 text-xs">~10 hours to build</span></div>
+                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Automated Review Collector</h1>
+                <p class="text-xl text-neutral-500 font-light">Collect reviews while you sleep.</p>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Social proof drives sales, but most businesses have few reviews. Manually asking customers is awkward and time-consuming. Happy customers forget to leave reviews, while unhappy ones don't forget. Without a system, you're leaving testimonials—and sales—on the table.</p></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">An automated system that sends review requests at the perfect time post-purchase. Beautiful, mobile-friendly review forms that take seconds to complete. Collect star ratings, written reviews, and even video testimonials. Display them on your site with an embeddable widget.</p>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Connect store</p><p class="text-xs text-neutral-500 mt-1">Shopify, WooCommerce, API</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Auto-send requests</p><p class="text-xs text-neutral-500 mt-1">X days after delivery</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Display reviews</p><p class="text-xs text-neutral-500 mt-1">Widget for your site</p></div></div></div>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Reviews increase conversion by 270% (Spiegel Research)</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Judge.me, Yotpo process millions of reviews—huge market</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>4.8M Shopify stores need review solutions</span></li></ul></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for review collection.
+
+Features:
+- Dashboard: reviews list, average rating, response rate
+- Review form: public link or embedded form
+- Widget: embeddable testimonial display for websites
+- Email templates: customizable review request emails
+- Integrations: Shopify, WooCommerce webhooks
+
+Use Supabase for auth/storage. Resend for emails.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Review Flow</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the review collection system:
+
+1. Shopify webhook triggers on order fulfilled
+2. Schedule email for X days later (user configurable)
+3. Email contains unique link to review form
+4. Form: star rating (1-5), written review, optional photo upload
+5. If rating < 4: route to private feedback (not public)
+6. If rating >= 4: ask for public testimonial permission
+7. Thank you page with social share options
+
+Handle unsubscribes and don't spam repeat customers.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Display Widget</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create embeddable review widget:
+
+- JS script tag that customer adds to their site
+- Display options: carousel, grid, single testimonial
+- Filter by: rating, recency, featured
+- Customizable styling to match their brand
+- Show aggregate: "4.8/5 from 150 reviews"
+- Rich snippets: output structured data for SEO
+- Responsive: works on mobile
+
+Widget fetches reviews from API, caches for performance.</p></div>
+            </div></div>
+            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
+            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
+        </div></div>
+        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+    </section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (!localStorage.getItem('ideas_email')) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
+        function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

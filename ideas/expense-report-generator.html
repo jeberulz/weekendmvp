@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Expense Report Generator | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a tool that auto-categorizes expenses and generates reports. Take photos of receipts, AI extracts data. Full build guide with prompts.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/expense-report-generator">
+    <meta property="og:title" content="AI Expense Report Generator | Startup Ideas">
+    <meta property="og:description" content="Auto-categorize expenses and generate reports from receipts.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/expense-report-generator">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+    </div>
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
+            <p class="text-lg text-neutral-500 mb-10">Snap receipts. Generate reports. Done.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+            </form>
+        </div>
+    </section>
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Automation</span><span class="text-neutral-400 text-xs">~10 hours to build</span></div>
+                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
+                <p class="text-xl text-neutral-500 font-light">End-of-month expense reports in minutes, not hours.</p>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Freelancers and small business owners dread expense tracking. Receipts pile up in shoeboxes, categorization takes hours, and come tax time, it's a nightmare. Expensify is overkill for individuals, and spreadsheets are tedious. Most people just don't track expenses properly.</p></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">Take a photo of any receipt, AI extracts vendor, amount, date, and category. Build up your expenses throughout the month, then generate a clean PDF report for your accountant or tax records. Simple, mobile-first, and actually pleasant to use.</p>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Snap receipt</p><p class="text-xs text-neutral-500 mt-1">Photo or forward email</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI extracts</p><p class="text-xs text-neutral-500 mt-1">Vendor, amount, date, category</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Generate report</p><p class="text-xs text-neutral-500 mt-1">PDF with all expenses</p></div></div></div>
+            </div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Expensify valued at $2B+—expense management is big business</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>60M+ freelancers in US alone need simple expense tracking</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GPT-4 Vision enables receipt scanning without complex OCR</span></li></ul></div>
+            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js PWA for expense tracking.
+
+Features:
+- Dashboard: monthly total, category breakdown chart, recent expenses
+- Add expense: camera capture or file upload
+- Expense list: filterable by date range, category
+- Categories: Travel, Meals, Software, Office, etc. (customizable)
+- Report generator: select date range, export PDF
+
+Make it mobile-first with PWA for camera access.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Receipt Scanning</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement AI receipt extraction:
+
+1. User uploads receipt image
+2. Send to GPT-4 Vision with prompt:
+   "Extract from this receipt: vendor name, total amount, date (YYYY-MM-DD format), and suggest category from: Travel, Meals, Software, Office, Utilities, Other. Return JSON."
+3. Show extracted data for user to confirm/edit
+4. Store expense with original image attached
+5. Learn from user edits to improve future suggestions
+
+Handle edge cases: blurry images, partial receipts, foreign currency.</p></div>
+                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Report Generation</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build PDF report generation:
+
+- Cover page: date range, total expenses, your name/business
+- Summary: totals by category with pie chart
+- Detail pages: list all expenses with date, vendor, amount, category
+- Include thumbnail images of receipts
+- Tax-ready format matching common accounting needs
+
+Use react-pdf for generation. Allow customization of report branding.</p></div>
+            </div></div>
+            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
+            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
+        </div></div>
+        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+    </section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        if (!localStorage.getItem('ideas_email')) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
+        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
+        function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
+    </script>
+</body>
+</html>

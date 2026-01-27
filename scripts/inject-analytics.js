@@ -1,106 +1,81 @@
 #!/usr/bin/env node
 
 /**
- * Auto-inject Google Analytics and Meta Pixel into HTML files
+ * Auto-inject Google Analytics, Meta Pixel, and wmvpAnalytics into HTML files
  * 
  * Usage:
  *   node scripts/inject-analytics.js <file.html>
  *   node scripts/inject-analytics.js "articles/*.html"
  *   node scripts/inject-analytics.js "ideas/*.html"
+ *   node scripts/inject-analytics.js --update "**/*.html"  # Force update existing
+ * 
+ * The snippet is loaded from .analytics-snippet.html in the project root.
+ * This file contains:
+ *   - Google Analytics (G-Z1NYERTKRS) with GDPR consent
+ *   - Meta Pixel (1602726847528813) with GDPR consent  
+ *   - wmvpAnalytics utility for custom event tracking
  */
 
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
 
-// GA snippet to inject (must be in <head> after canonical link)
-const GA_SNIPPET = `    
-    <!-- Google Analytics - Loaded conditionally after consent -->
-    <script>
-      // Initialize dataLayer but don't load gtag.js until consent
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      
-      // Check for existing consent
-      (function() {
-        try {
-          const stored = localStorage.getItem('analytics_consent');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            const CONSENT_EXPIRY_DAYS = 365;
-            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
-              window.analyticsConsent = parsed.value === true;
-              if (window.analyticsConsent) {
-                // Load GA immediately if consent exists
-                const script = document.createElement('script');
-                script.async = true;
-                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
-                document.head.appendChild(script);
-                script.onload = function() {
-                  window.gtag = function() { dataLayer.push(arguments); };
-                  gtag('js', new Date());
-                  gtag('config', 'G-Z1NYERTKRS');
-                };
-                // Initialize Meta Pixel immediately if consent exists
-                if (typeof window.fbq === 'function') {
-                  window.fbq('init', '1602726847528813');
-                  window.fbq('track', 'PageView');
-                }
-                return;
-              }
-            }
-          }
-        } catch(e) {
-          console.error('Error checking consent:', e);
-        }
-        window.analyticsConsent = false;
-      })();
-      
-      // Wrapper to prevent gtag calls before consent
-      if (!window.analyticsConsent) {
-        window.gtag = function() {
-          if (window.analyticsConsent === true) {
-            dataLayer.push(arguments);
-          }
-        };
-      } else {
-        window.gtag = function() { dataLayer.push(arguments); };
-      }
-    </script>
-    
-    <!-- Meta Pixel - Loaded conditionally after consent -->
-    <script>
-      // Initialize fbq queue but don't load until consent
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      
-      // Only initialize if consent exists
-      if (window.analyticsConsent === true) {
-        fbq('init', '1602726847528813');
-        fbq('track', 'PageView');
-      } else {
-        // Queue the init call for when consent is given
-        window.fbqQueue = window.fbqQueue || [];
-        window.fbqQueue.push(['init', '1602726847528813']);
-        window.fbqQueue.push(['track', 'PageView']);
-      }
-    </script>
-`;
+// Load the analytics snippet from the source file
+function loadAnalyticsSnippet() {
+  const snippetPath = path.join(__dirname, '..', '.analytics-snippet.html');
+  
+  if (!fs.existsSync(snippetPath)) {
+    console.error('❌ Error: .analytics-snippet.html not found in project root');
+    process.exit(1);
+  }
+  
+  let content = fs.readFileSync(snippetPath, 'utf8');
+  
+  // Remove the documentation comment block at the top (everything before first <script> or <!-- Google)
+  content = content.replace(/^<!--[\s\S]*?-->\s*\n\n/m, '');
+  
+  // Indent properly for injection into <head>
+  const lines = content.split('\n');
+  const indentedLines = lines.map(line => line ? '    ' + line : line);
+  
+  return '\n' + indentedLines.join('\n');
+}
 
-function injectAnalytics(filePath) {
+// Get the GA snippet (cached)
+let GA_SNIPPET = null;
+function getSnippet() {
+  if (!GA_SNIPPET) {
+    GA_SNIPPET = loadAnalyticsSnippet();
+  }
+  return GA_SNIPPET;
+}
+
+function injectAnalytics(filePath, forceUpdate = false) {
   try {
     let content = fs.readFileSync(filePath, 'utf8');
     
     // Check if GA is already present
-    if (content.includes('G-Z1NYERTKRS') || content.includes('googletagmanager.com/gtag/js')) {
-      console.log(`⏭️  Skipping ${filePath} - GA already present`);
+    const hasGA = content.includes('G-Z1NYERTKRS') || content.includes('googletagmanager.com/gtag/js');
+    const hasWmvpAnalytics = content.includes('wmvpAnalytics');
+    
+    if (hasGA && !forceUpdate) {
+      // Check if it needs the wmvpAnalytics utility added
+      if (!hasWmvpAnalytics) {
+        console.log(`🔄 ${filePath} - Has GA but missing wmvpAnalytics, use --update to upgrade`);
+      } else {
+        console.log(`⏭️  Skipping ${filePath} - Analytics already present`);
+      }
       return false;
+    }
+    
+    // If forcing update, remove existing analytics
+    if (forceUpdate && hasGA) {
+      // Remove existing GA snippet (from <!-- Google Analytics to end of Meta Pixel script)
+      content = content.replace(
+        /\s*<!-- Google Analytics[\s\S]*?<\/script>\s*\n\s*<!-- Meta Pixel[\s\S]*?<\/script>(\s*\n\s*<!-- Weekend MVP Analytics[\s\S]*?<\/script>)?/g,
+        ''
+      );
+      console.log(`🔄 Updating analytics in ${filePath}`);
     }
     
     // Find canonical link and inject after it
@@ -112,17 +87,17 @@ function injectAnalytics(filePath) {
       return false;
     }
     
-    // Check if there's already something after canonical (like favicon)
-    const afterCanonical = content.substring(content.indexOf(match[0]) + match[0].length);
+    // Get the snippet
+    const snippet = getSnippet();
     
     // Inject GA snippet right after canonical link
     const newContent = content.replace(
       canonicalPattern,
-      `$1${GA_SNIPPET}`
+      `$1${snippet}`
     );
     
     fs.writeFileSync(filePath, newContent, 'utf8');
-    console.log(`✅ Injected GA into ${filePath}`);
+    console.log(`✅ ${forceUpdate ? 'Updated' : 'Injected'} analytics in ${filePath}`);
     return true;
   } catch (error) {
     console.error(`❌ Error processing ${filePath}:`, error.message);
@@ -133,35 +108,56 @@ function injectAnalytics(filePath) {
 async function main() {
   const args = process.argv.slice(2);
   
-  if (args.length === 0) {
-    console.log('Usage: node scripts/inject-analytics.js <file.html> [file2.html ...]');
-    console.log('   or: node scripts/inject-analytics.js "**/*.html" (all HTML files)');
+  // Check for --update flag
+  const forceUpdate = args.includes('--update');
+  const fileArgs = args.filter(arg => arg !== '--update');
+  
+  if (fileArgs.length === 0) {
+    console.log('Weekend MVP Analytics Injection Script');
+    console.log('======================================\n');
+    console.log('Usage:');
+    console.log('  node scripts/inject-analytics.js <file.html>');
+    console.log('  node scripts/inject-analytics.js "articles/*.html"');
+    console.log('  node scripts/inject-analytics.js "**/*.html"');
+    console.log('  node scripts/inject-analytics.js --update "**/*.html"  # Force update existing\n');
+    console.log('Options:');
+    console.log('  --update    Replace existing analytics with latest snippet');
+    console.log('              (includes wmvpAnalytics utility for programmatic pages)\n');
+    console.log('The snippet is loaded from .analytics-snippet.html in the project root.');
     process.exit(1);
   }
   
   let files = [];
   
   // Handle glob patterns
-  for (const pattern of args) {
+  for (const pattern of fileArgs) {
     if (pattern.includes('*')) {
-      const matched = await glob(pattern, { ignore: ['node_modules/**', '.git/**'] });
+      const matched = await glob(pattern, { ignore: ['node_modules/**', '.git/**', '_template*.html'] });
       files.push(...matched);
     } else {
       files.push(pattern);
     }
   }
   
-  // Remove duplicates and filter to HTML files
-  files = [...new Set(files)].filter(f => f.endsWith('.html'));
+  // Remove duplicates and filter to HTML files (exclude templates and snippet)
+  files = [...new Set(files)]
+    .filter(f => f.endsWith('.html'))
+    .filter(f => !f.includes('.analytics-snippet'));
   
   if (files.length === 0) {
     console.log('No HTML files found');
     process.exit(1);
   }
   
-  console.log(`\n📊 Processing ${files.length} HTML file(s)...\n`);
+  console.log(`\n📊 Processing ${files.length} HTML file(s)...`);
+  if (forceUpdate) {
+    console.log('   Mode: Force update (replacing existing analytics)\n');
+  } else {
+    console.log('   Mode: Inject only (skip files with existing analytics)\n');
+  }
   
   let injected = 0;
+  let updated = 0;
   let skipped = 0;
   
   for (const file of files) {
@@ -170,15 +166,25 @@ async function main() {
       continue;
     }
     
-    const result = injectAnalytics(file);
+    const hadGA = fs.readFileSync(file, 'utf8').includes('G-Z1NYERTKRS');
+    const result = injectAnalytics(file, forceUpdate);
+    
     if (result) {
-      injected++;
+      if (hadGA && forceUpdate) {
+        updated++;
+      } else {
+        injected++;
+      }
     } else {
       skipped++;
     }
   }
   
-  console.log(`\n✨ Done! Injected: ${injected}, Skipped: ${skipped}\n`);
+  console.log('\n✨ Done!');
+  if (injected > 0) console.log(`   New injections: ${injected}`);
+  if (updated > 0) console.log(`   Updated: ${updated}`);
+  if (skipped > 0) console.log(`   Skipped: ${skipped}`);
+  console.log('');
 }
 
 main().catch(console.error);

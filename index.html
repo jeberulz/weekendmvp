@@ -266,11 +266,140 @@
                 <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
             </a>
 
-            <div class="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
-                <a href="startup-ideas.html" class="hover:text-white transition-colors">Startup Ideas</a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <!-- Browse Ideas Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Browse Ideas
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[480px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <!-- By Category -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Category</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="ideas/saas/" class="text-neutral-400 hover:text-white transition-colors text-sm">SaaS</a></li>
+                                        <li><a href="ideas/ai-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">AI Tools</a></li>
+                                        <li><a href="ideas/productivity/" class="text-neutral-400 hover:text-white transition-colors text-sm">Productivity</a></li>
+                                        <li><a href="ideas/automation/" class="text-neutral-400 hover:text-white transition-colors text-sm">Automation</a></li>
+                                        <li><a href="ideas/developer-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developer Tools</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Revenue -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Revenue</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="ideas/1k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$1K/month</a></li>
+                                        <li><a href="ideas/5k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$5K/month</a></li>
+                                        <li><a href="ideas/passive-income/" class="text-neutral-400 hover:text-white transition-colors text-sm">Passive Income</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Time -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Time</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="ideas/build-in-8-hours/" class="text-neutral-400 hover:text-white transition-colors text-sm">8 Hours</a></li>
+                                        <li><a href="ideas/build-in-weekend/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend</a></li>
+                                        <li><a href="ideas/build-in-1-week/" class="text-neutral-400 hover:text-white transition-colors text-sm">1 Week</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    View All Ideas
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Build With Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Build With
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[400px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <!-- AI Code Editors -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">AI Code Editors</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="build-with/cursor/" class="text-neutral-400 hover:text-white transition-colors text-sm">Cursor</a></li>
+                                        <li><a href="build-with/windsurf/" class="text-neutral-400 hover:text-white transition-colors text-sm">Windsurf</a></li>
+                                        <li><a href="build-with/claude/" class="text-neutral-400 hover:text-white transition-colors text-sm">Claude</a></li>
+                                    </ul>
+                                </div>
+                                <!-- No-Code -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">No-Code</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="build-with/bolt/" class="text-neutral-400 hover:text-white transition-colors text-sm">Bolt.new</a></li>
+                                        <li><a href="build-with/lovable/" class="text-neutral-400 hover:text-white transition-colors text-sm">Lovable</a></li>
+                                    </ul>
+                                </div>
+                                <!-- Other -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Other</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="build-with/replit/" class="text-neutral-400 hover:text-white transition-colors text-sm">Replit</a></li>
+                                        <li><a href="build-with/v0/" class="text-neutral-400 hover:text-white transition-colors text-sm">v0</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="build-with/no-code/" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    All Tools
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ideas For Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Ideas For
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[320px]">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- By Skill Level -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Skill Level</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="ideas-for/developers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developers</a></li>
+                                        <li><a href="ideas-for/designers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Designers</a></li>
+                                        <li><a href="ideas-for/non-technical/" class="text-neutral-400 hover:text-white transition-colors text-sm">Non-Technical</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Situation -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Situation</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="ideas-for/solo-founders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Solo Founders</a></li>
+                                        <li><a href="ideas-for/side-hustlers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Side Hustlers</a></li>
+                                        <li><a href="ideas-for/weekend-builders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend Builders</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    Browse All
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="articles.html" class="hover:text-white transition-colors">Articles</a>
-                <a href="#process" class="hover:text-white transition-colors">Process</a>
-                <a href="#what-you-get" class="hover:text-white transition-colors">The Kit</a>
             </div>
 
             <button class="open-modal group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
@@ -290,7 +419,7 @@
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
 
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-80 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
         <div class="flex items-center justify-between p-6 border-b border-white/10">
             <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
             <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
@@ -299,7 +428,58 @@
         </div>
         <nav class="p-6 space-y-1">
             <a href="index.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Home</a>
-            <a href="startup-ideas.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Startup Ideas</a>
+            
+            <!-- Browse Ideas Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Browse Ideas</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Category</p>
+                    <a href="ideas/saas/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">SaaS</a>
+                    <a href="ideas/ai-tools/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">AI Tools</a>
+                    <a href="ideas/productivity/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Productivity</a>
+                    <a href="ideas/automation/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Automation</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Revenue</p>
+                    <a href="ideas/1k-month/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">$1K/month</a>
+                    <a href="ideas/passive-income/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Passive Income</a>
+                    <a href="startup-ideas.html" class="block px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">View All →</a>
+                </div>
+            </div>
+            
+            <!-- Build With Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Build With</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">AI Code Editors</p>
+                    <a href="build-with/cursor/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Cursor</a>
+                    <a href="build-with/claude/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Claude</a>
+                    <a href="build-with/windsurf/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Windsurf</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">No-Code</p>
+                    <a href="build-with/bolt/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Bolt.new</a>
+                    <a href="build-with/lovable/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Lovable</a>
+                </div>
+            </div>
+            
+            <!-- Ideas For Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Ideas For</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <a href="ideas-for/developers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Developers</a>
+                    <a href="ideas-for/designers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Designers</a>
+                    <a href="ideas-for/non-technical/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Non-Technical</a>
+                    <a href="ideas-for/solo-founders/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Solo Founders</a>
+                    <a href="ideas-for/side-hustlers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Side Hustlers</a>
+                </div>
+            </div>
+            
             <a href="articles.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Articles</a>
             <a href="starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
         </nav>
@@ -589,6 +769,225 @@
         </div>
     </section>
 
+    <!-- Browse by Category Section -->
+    <section id="browse-categories" class="relative z-10 py-24 border-t border-white/5 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="animate-enter text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Browse Startup Ideas by Category
+                </h2>
+                <p class="animate-enter delay-100 text-neutral-400 text-lg max-w-2xl mx-auto font-light">
+                    Research-backed ideas organized by industry. Each includes AI prompts, market validation, and a build guide.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- SaaS Category -->
+                <a href="startup-ideas.html#saas" class="animate-enter delay-200 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:cloud" class="text-blue-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">SaaS</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Subscription software</p>
+                </a>
+
+                <!-- AI Tools Category -->
+                <a href="startup-ideas.html#ai" class="animate-enter delay-200 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:sparkles" class="text-purple-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">AI Tools</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">AI-powered products</p>
+                </a>
+
+                <!-- Productivity Category -->
+                <a href="startup-ideas.html#productivity" class="animate-enter delay-300 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:zap" class="text-green-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">Productivity</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Work smarter tools</p>
+                </a>
+
+                <!-- Automation Category -->
+                <a href="startup-ideas.html#automation" class="animate-enter delay-300 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:bot" class="text-orange-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">Automation</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Automate workflows</p>
+                </a>
+
+                <!-- Health Category -->
+                <a href="startup-ideas.html#health" class="animate-enter delay-400 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:heart-pulse" class="text-red-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">Health</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Wellness & fitness</p>
+                </a>
+
+                <!-- Marketplace Category -->
+                <a href="startup-ideas.html#marketplace" class="animate-enter delay-400 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-cyan-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:store" class="text-cyan-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">Marketplace</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Connect buyers & sellers</p>
+                </a>
+
+                <!-- Education Category -->
+                <a href="startup-ideas.html#education" class="animate-enter delay-500 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center">
+                            <iconify-icon icon="lucide:graduation-cap" class="text-yellow-400" width="20" aria-hidden="true"></iconify-icon>
+                        </div>
+                        <span class="text-white font-medium">Education</span>
+                    </div>
+                    <p class="text-neutral-500 text-sm">Learning platforms</p>
+                </a>
+
+                <!-- View All Link -->
+                <a href="startup-ideas.html" class="animate-enter delay-500 group p-6 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-2xl hover:border-white/20 transition-all flex flex-col justify-center items-center text-center">
+                    <iconify-icon icon="lucide:arrow-right" class="text-neutral-400 group-hover:text-white transition-colors mb-2" width="24" aria-hidden="true"></iconify-icon>
+                    <span class="text-neutral-400 group-hover:text-white font-medium text-sm transition-colors">View All Ideas</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Build With Tools Section -->
+    <section id="build-with-tools" class="relative z-10 py-24 border-t border-white/5 bg-[#080808]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="animate-enter text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Build With Your Favorite AI Tools
+                </h2>
+                <p class="animate-enter delay-100 text-neutral-400 text-lg max-w-2xl mx-auto font-light">
+                    Find ideas optimized for your preferred development environment.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Cursor -->
+                <a href="startup-ideas.html" class="animate-enter delay-200 group relative p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl hover:border-white/20 transition-all text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-2xl flex items-center justify-center">
+                        <iconify-icon icon="simple-icons:cursor" class="text-white" width="32" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium mb-1">Cursor</h3>
+                    <p class="text-neutral-500 text-sm">AI Code Editor</p>
+                    <span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Full-stack projects →
+                    </span>
+                </a>
+
+                <!-- Claude -->
+                <a href="startup-ideas.html" class="animate-enter delay-300 group relative p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl hover:border-white/20 transition-all text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-2xl flex items-center justify-center">
+                        <iconify-icon icon="simple-icons:anthropic" class="text-[#D4A574]" width="32" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium mb-1">Claude</h3>
+                    <p class="text-neutral-500 text-sm">AI Assistant</p>
+                    <span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Complex logic →
+                    </span>
+                </a>
+
+                <!-- Bolt.new -->
+                <a href="startup-ideas.html" class="animate-enter delay-400 group relative p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl hover:border-white/20 transition-all text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-2xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:zap" class="text-yellow-400" width="32" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium mb-1">Bolt.new</h3>
+                    <p class="text-neutral-500 text-sm">Instant Apps</p>
+                    <span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Quick MVPs →
+                    </span>
+                </a>
+
+                <!-- No-Code -->
+                <a href="startup-ideas.html" class="animate-enter delay-500 group relative p-8 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl hover:border-white/20 transition-all text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-white/5 rounded-2xl flex items-center justify-center">
+                        <iconify-icon icon="lucide:mouse-pointer-click" class="text-emerald-400" width="32" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <h3 class="text-white font-medium mb-1">No-Code</h3>
+                    <p class="text-neutral-500 text-sm">Visual Builders</p>
+                    <span class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Non-technical →
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Ideas Section -->
+    <section id="featured-ideas" class="relative z-10 py-24 border-t border-white/5 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between mb-12">
+                <div>
+                    <h2 class="animate-enter text-3xl md:text-4xl font-medium text-white tracking-tight mb-2">
+                        Latest Startup Ideas
+                    </h2>
+                    <p class="animate-enter delay-100 text-neutral-400 font-light">Fresh ideas added weekly</p>
+                </div>
+                <a href="startup-ideas.html" class="animate-enter delay-100 hidden md:flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors">
+                    View all <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Idea Card 1: AI Brake Inspection Analyser -->
+                <a href="ideas/ai-brake-inspection-analyser.html" class="animate-enter delay-200 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-purple-500/10 text-purple-400 text-[10px] font-bold uppercase rounded-full">AI</span>
+                        <span class="text-neutral-600 text-xs">~12 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI-Powered Brake Inspection Analyser</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Use AI to analyze brake pad photos and provide instant wear assessment and replacement recommendations.</p>
+                </a>
+
+                <!-- Idea Card 2: Mobile Brake Repair Marketplace -->
+                <a href="ideas/mobile-brake-repair-marketplace.html" class="animate-enter delay-300 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase rounded-full">Marketplace</span>
+                        <span class="text-neutral-600 text-xs">~Weekend</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Marketplace for Mobile Brake Repair</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Connect car owners with mobile mechanics who come to their location for brake repairs.</p>
+                </a>
+
+                <!-- Idea Card 3: AI Meeting Notes Cleaner -->
+                <a href="ideas/ai-meeting-notes-cleaner.html" class="animate-enter delay-400 group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">SaaS</span>
+                        <span class="text-neutral-600 text-xs">~12 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Meeting Notes Cleaner</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Transform messy meeting notes into structured action items, summaries, and follow-up tasks automatically.</p>
+                </a>
+            </div>
+
+            <!-- Mobile View All Link -->
+            <div class="mt-8 text-center md:hidden">
+                <a href="startup-ideas.html" class="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors">
+                    View all ideas <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- FAQ Section -->
     <section id="faq" class="py-32 border-t border-white/5">
         <div class="max-w-3xl mx-auto px-6">
@@ -640,18 +1039,80 @@
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-white/5 py-12 bg-[#050505]">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex flex-col items-center md:items-start gap-2">
-                <a href="index.html">
-                    <div class="logo h-3 w-24 md:h-4 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
-                </a>
-                <p class="text-[10px] text-neutral-500 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:underline decoration-neutral-500 underline-offset-2">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            
+            <!-- Main Footer Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                
+                <!-- Brand Column -->
+                <div class="col-span-2 md:col-span-1">
+                    <a href="index.html">
+                        <div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                
+                <!-- Browse Ideas Column -->
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Browse Ideas</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="ideas/saas/" class="text-neutral-500 hover:text-white transition-colors">SaaS Ideas</a></li>
+                        <li><a href="ideas/ai-tools/" class="text-neutral-500 hover:text-white transition-colors">AI Tool Ideas</a></li>
+                        <li><a href="ideas/productivity/" class="text-neutral-500 hover:text-white transition-colors">Productivity</a></li>
+                        <li><a href="ideas/automation/" class="text-neutral-500 hover:text-white transition-colors">Automation</a></li>
+                        <li><a href="ideas/1k-month/" class="text-neutral-500 hover:text-white transition-colors">$1K/Month Ideas</a></li>
+                        <li><a href="startup-ideas.html" class="text-neutral-400 hover:text-white transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Build With Column -->
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Build With</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="build-with/cursor/" class="text-neutral-500 hover:text-white transition-colors">Cursor</a></li>
+                        <li><a href="build-with/claude/" class="text-neutral-500 hover:text-white transition-colors">Claude</a></li>
+                        <li><a href="build-with/bolt/" class="text-neutral-500 hover:text-white transition-colors">Bolt.new</a></li>
+                        <li><a href="build-with/no-code/" class="text-neutral-500 hover:text-white transition-colors">No-Code</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Ideas For Column -->
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Ideas For</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="ideas-for/developers/" class="text-neutral-500 hover:text-white transition-colors">Developers</a></li>
+                        <li><a href="ideas-for/non-technical/" class="text-neutral-500 hover:text-white transition-colors">Non-Technical</a></li>
+                        <li><a href="ideas-for/solo-founders/" class="text-neutral-500 hover:text-white transition-colors">Solo Founders</a></li>
+                        <li><a href="ideas-for/side-hustlers/" class="text-neutral-500 hover:text-white transition-colors">Side Hustlers</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources Column -->
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                        <li><a href="articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
             </div>
-            <div class="flex items-center gap-4">
-                <a href="privacy-policy.html" id="privacy-policy-link" class="text-[10px] text-neutral-600 font-mono hover:text-neutral-400 transition-colors">Privacy Policy</a>
-                <div class="text-[10px] text-neutral-600 font-mono">© <span id="year">2025</span> WEEKEND MVP. BUILT TO SHIP.</div>
+            
+            <!-- Bottom Bar -->
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
             </div>
+            
         </div>
     </footer>
 

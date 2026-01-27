@@ -772,14 +772,81 @@
                 </section>
 
                 <!-- Footer -->
-                <footer class="mt-32 pt-12 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div class="flex flex-col items-center md:items-start gap-2">
-                        <a href="index.html">
-                            <div class="logo h-3 w-24 md:h-4 md:w-32 text-black"></div>
-                        </a>
-                        <p class="text-[10px] text-neutral-400 font-mono mt-2">Created by <a href="https://cal.com/switchtoux" target="_blank" class="hover:underline decoration-neutral-400 underline-offset-2">John Iseghohi</a></p>
+                <footer class="relative z-10 mt-32 border-t border-neutral-200">
+                    <div class="py-16">
+                        
+                        <!-- Main Footer Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                            
+                            <!-- Brand Column -->
+                            <div class="col-span-2 md:col-span-1">
+                                <a href="index.html">
+                                    <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
+                                </a>
+                                <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                                <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                            </div>
+                            
+                            <!-- Browse Ideas Column -->
+                            <div>
+                                <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><a href="ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                                    <li><a href="ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                                    <li><a href="ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
+                                    <li><a href="ideas/automation/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Automation</a></li>
+                                    <li><a href="ideas/1k-month/" class="text-neutral-500 hover:text-neutral-900 transition-colors">$1K/Month Ideas</a></li>
+                                    <li><a href="startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Build With Column -->
+                            <div>
+                                <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><a href="build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                                    <li><a href="build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                                    <li><a href="build-with/bolt/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Bolt.new</a></li>
+                                    <li><a href="build-with/no-code/" class="text-neutral-500 hover:text-neutral-900 transition-colors">No-Code</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Ideas For Column -->
+                            <div>
+                                <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><a href="ideas-for/developers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Developers</a></li>
+                                    <li><a href="ideas-for/non-technical/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Non-Technical</a></li>
+                                    <li><a href="ideas-for/solo-founders/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Solo Founders</a></li>
+                                    <li><a href="ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Resources Column -->
+                            <div>
+                                <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li><a href="starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                                    <li><a href="articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                                    <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-neutral-900 transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                                    <li><a href="privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                                </ul>
+                            </div>
+                            
+                        </div>
+                        
+                        <!-- Bottom Bar -->
+                        <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                            <div class="flex items-center gap-6">
+                                <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                                    <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                                    <span class="sr-only"> (opens in new tab)</span>
+                                </a>
+                            </div>
+                        </div>
+                        
                     </div>
-                    <div class="text-[10px] text-neutral-400 font-mono">© <span id="year">2025</span> WEEKEND MVP. BUILT TO SHIP.</div>
                 </footer>
 
             </main>
