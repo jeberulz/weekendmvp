@@ -30,8 +30,9 @@ Example: `/publish-idea nutrition-planner`
    - Target audience insights
    - Technology landscape
 4. **Writes original expanded content** based on research findings (NOT copying raw.md)
-5. **Generates** HTML using the dynamic template (with SEO schema markup)
-6. **Updates** `ideas/manifest.json` with the new idea
+5. **Generates** HTML using the dynamic template (with SEO schema markup and GA tracking)
+6. **Auto-injects Google Analytics** if not already present (via template or script)
+7. **Updates** `ideas/manifest.json` with the new idea
 7. **Adds** a card to `startup-ideas.html`
 8. **Updates** `sitemap.xml` for search engine discovery (SEO)
 9. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines (AEO)
@@ -235,6 +236,13 @@ Use the template at `ideas/_template-dynamic.html`:
    - Remove the entire block (including markers) if no data
 3. Generate proper HTML for lists and grids
 
+**Note:** The template already includes Google Analytics code. If you're generating HTML manually or the template doesn't have GA, run:
+```bash
+node scripts/inject-analytics.js ideas/{slug}.html
+```
+
+This automatically adds GA tracking code after the canonical link. The script is idempotent (safe to run multiple times).
+
 **How It Works Steps Format:**
 ```html
 <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
@@ -374,6 +382,22 @@ Find the `"@type": "ItemList"` section in the JSON-LD script block and:
 ## Output Report
 
 After completion, report:
+
+```
+## Published: {IDEA_TITLE}
+
+**Files created/modified:**
+- ideas/{slug}.html (new - with GA tracking from template)
+- ideas/manifest.json (updated)
+- startup-ideas.html (card added + ItemList schema updated)
+- sitemap.xml (new URL added)
+
+**Analytics:**
+- Google Analytics included via template (or auto-injected via script)
+- GA tracking ID: G-Z1NYERTKRS
+- Meta Pixel ID: 1602726847528813
+
+**Sections included:**
 
 ```
 ## Published: {IDEA_TITLE}

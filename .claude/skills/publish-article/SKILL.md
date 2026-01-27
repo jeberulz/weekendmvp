@@ -313,6 +313,8 @@ Use the article template structure:
 <html lang="en" class="antialiased dark">
 <head>
     <!-- Meta tags, schema, etc. -->
+    <link rel="canonical" href="https://weekendmvp.app/articles/{slug}.html">
+    <!-- Google Analytics will be auto-injected after canonical -->
 </head>
 <body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
     <!-- Navigation -->
@@ -329,6 +331,14 @@ Use the article template structure:
 - Proper heading hierarchy (h1 > h2 > h3)
 - Multiple CTAs linking to startup-ideas.html
 - Footer matching site design
+- **Canonical link** (required for GA auto-injection)
+
+**After generating HTML, auto-inject Google Analytics:**
+```bash
+node scripts/inject-analytics.js articles/{slug}.html
+```
+
+This automatically adds GA tracking code after the canonical link. The script is idempotent (safe to run multiple times).
 
 ### Step 9: Add Meta Tags & Schema
 
@@ -575,11 +585,16 @@ After completion, report:
 ## Published: {ARTICLE_TITLE}
 
 **Files created/modified:**
-- articles/{slug}.html (new)
+- articles/{slug}.html (new - with GA tracking auto-injected)
 - articles/markdown/{slug}.md (new - for newsletter)
 - sitemap.xml (updated)
 - articles.html (updated - added to index)
 - .claude/skills/publish-article/topics/research.md (topic marked as published)
+
+**Analytics:**
+- Google Analytics automatically injected via `scripts/inject-analytics.js`
+- GA tracking ID: G-Z1NYERTKRS
+- Meta Pixel ID: 1602726847528813
 
 **Framework used:** {FRAMEWORK_NAME}
 
