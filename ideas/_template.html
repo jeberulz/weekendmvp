@@ -129,9 +129,31 @@
             <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
         </a>
         <div class="flex items-center gap-6">
-            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
-            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+            <button id="mobile-menu-open" class="md:hidden p-2 text-black hover:text-neutral-600 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
         </div>
+    </div>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-[#fcfaf7] border-l border-neutral-200 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex items-center justify-between p-6 border-b border-neutral-200">
+            <div class="logo h-4 w-24 text-black" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../index.html" class="block px-4 py-3 text-neutral-600 hover:text-black hover:bg-black/5 rounded-lg transition-colors">Home</a>
+            <a href="../startup-ideas.html" class="block px-4 py-3 text-black bg-black/5 rounded-lg transition-colors">Startup Ideas</a>
+            <a href="../articles.html" class="block px-4 py-3 text-neutral-600 hover:text-black hover:bg-black/5 rounded-lg transition-colors">Articles</a>
+            <a href="../starter-kit.html" class="block px-4 py-3 text-neutral-600 hover:text-black hover:bg-black/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
     </div>
 
     <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
@@ -397,6 +419,42 @@
                 }, 2000);
             });
         }
+
+        // Mobile Menu
+        (function initMobileMenu() {
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const menu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+
+            if (!menu) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    menu.classList.remove('translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.classList.add('translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+                    toggleMenu(false);
+                }
+            });
+
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+        })();
     </script>
 </body>
 </html>
