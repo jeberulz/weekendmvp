@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en" class="antialiased">
-<head>
+<!DOCTYPE html><html lang="en" class="antialiased"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Contract Analyzer | Startup Ideas | Weekend MVP</title>
@@ -14,10 +12,86 @@
     <link rel="canonical" href="https://weekendmvp.app/ideas/contract-analyzer">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
-</head>
+
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "HowTo",
+      "name": "Build AI Contract Analyzer MVP",
+      "description": "Step-by-step guide to building AI Contract Analyzer in a weekend.",
+      "totalTime": "PT10H",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Project Setup",
+          "text": "Set up your development environment and project structure."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Core Feature",
+          "text": "Build the main feature of your MVP."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Landing Page",
+          "text": "Create a landing page to showcase your MVP."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://weekendmvp.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Startup Ideas",
+          "item": "https://weekendmvp.app/startup-ideas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "AI Contract Analyzer",
+          "item": "https://weekendmvp.app/ideas/contract-analyzer.html"
+        }
+      ]
+    },
+    {
+      "@type": "Article",
+      "headline": "AI Contract Analyzer",
+      "description": "",
+      "author": {
+        "@id": "https://weekendmvp.app/#person"
+      },
+      "publisher": {
+        "@id": "https://weekendmvp.app/#website"
+      },
+      "datePublished": "2026-01-27",
+      "mainEntityOfPage": "https://weekendmvp.app/ideas/contract-analyzer.html",
+      "image": "https://weekendmvp.app/image/og-image.png"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AI Contract Analyzer",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": ""
+    }
+  ]
+}</script>
+    </head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
@@ -28,8 +102,8 @@
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Contract Analyzer</h1>
             <p class="text-lg text-neutral-500 mb-10">Know what you're signing before you sign it.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
+                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
             </form>
         </div>
     </section>
@@ -43,7 +117,7 @@
             </div>
             <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Nobody reads contracts, but everyone should. Freelancers sign NDAs with crazy non-competes. Founders accept investor terms they don't understand. Employees miss concerning clauses in employment agreements. Lawyers cost $500/hour, so most people just sign and hope for the best.</p></div>
             <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">Upload any contract PDF, and AI analyzes it instantly. Get a summary of key terms, warnings about concerning clauses, and plain-English explanations of what you're agreeing to. Know what to negotiate before signing.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Upload contract</p><p class="text-xs text-neutral-500 mt-1">PDF or paste text</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI analyzes</p><p class="text-xs text-neutral-500 mt-1">Finds key terms & red flags</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Get report</p><p class="text-xs text-neutral-500 mt-1">Plain-English summary</p></div></div></div>
+                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Upload contract</p><p class="text-xs text-neutral-500 mt-1">PDF or paste text</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI analyzes</p><p class="text-xs text-neutral-500 mt-1">Finds key terms &amp; red flags</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Get report</p><p class="text-xs text-neutral-500 mt-1">Plain-English summary</p></div></div></div>
             </div>
             <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Legal tech is $28B market growing 6% annually</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>DoNotPay, Spellbook prove AI legal tools work</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>60M+ freelancers need contract help but can't afford lawyers</span></li></ul></div>
             <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
@@ -97,5 +171,6 @@ Show which sections are typical vs unusual for this contract type.</p></div>
         document.getElementById('ideas-email-form').addEventListener('submit', async (e) => { e.preventDefault(); try { if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('gate-email').value, first_name: document.getElementById('gate-first-name').value }) }); localStorage.setItem('ideas_email', document.getElementById('gate-email').value); document.getElementById('email-gate').classList.add('hidden'); document.getElementById('idea-content').classList.remove('hidden'); } catch (e) { alert('Error'); } });
         function copyPrompt(btn) { navigator.clipboard.writeText(btn.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => btn.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
     </script>
-</body>
-</html>
+
+
+</body></html>
