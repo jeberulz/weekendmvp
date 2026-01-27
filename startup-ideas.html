@@ -1136,199 +1136,957 @@
                     </a>
                 </div>
 
+                <!-- Search and Filters -->
+                <div class="mb-8 space-y-4">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <iconify-icon icon="lucide:search" width="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" aria-hidden="true"></iconify-icon>
+                        <input 
+                            type="text" 
+                            id="idea-search" 
+                            placeholder="Search ideas..." 
+                            class="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+                            aria-label="Search startup ideas"
+                        >
+                    </div>
+                    
+                    <!-- Category Filters -->
+                    <div class="flex flex-wrap gap-2" id="category-filters" role="group" aria-label="Filter by category">
+                        <button class="filter-btn active px-4 py-2 bg-white text-black rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-white/40" data-category="all" aria-pressed="true">
+                            All Ideas
+                        </button>
+                                                <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="saas" aria-pressed="false">
+                            SaaS (8)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="productivity" aria-pressed="false">
+                            Productivity (7)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="health" aria-pressed="false">
+                            Health &amp; Wellness (2)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="marketplace" aria-pressed="false">
+                            Marketplace (3)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="ai-tools" aria-pressed="false">
+                            AI Tools (8)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="automation" aria-pressed="false">
+                            Automation (2)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="education" aria-pressed="false">
+                            Education (2)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="b2b" aria-pressed="false">
+                            B2B (4)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="developer-tools" aria-pressed="false">
+                            Developer Tools (4)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="ecommerce" aria-pressed="false">
+                            E-commerce (2)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="creator-tools" aria-pressed="false">
+                            Creator Tools (4)
+                        </button>
+                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="fintech" aria-pressed="false">
+                            Fintech (3)
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Ideas Grid -->
                 <div id="ideas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     <!-- Idea Card: AI Meeting Notes Cleaner -->
-                    <a href="ideas/ai-meeting-notes-cleaner.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
+                    <a href="ideas/ai-meeting-notes-cleaner.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="deep"
+                       data-title="ai meeting notes cleaner"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
                             <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Meeting Notes Cleaner</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Paste messy meeting transcripts, get clean action items and summaries instantly.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~8 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: AI Nutrition Planner for Trainers -->
-                    <a href="ideas/ai-nutrition-planner-trainers.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/ai-nutrition-planner-trainers.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="health"
+                       data-research-level="deep"
+                       data-title="ai nutrition planner for trainers"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Health</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Nutrition Planner for Trainers</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Help NASM certified trainers deliver personalized meal plans that complement their clients' fitness goals.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~8 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Invoice Reminder Bot -->
-                    <a href="ideas/invoice-reminder-bot.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/invoice-reminder-bot.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="deep"
+                       data-title="invoice reminder bot"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Invoice Reminder Bot</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Stop losing money to late-paying clients. Automated reminders that follow up on overdue invoices so you can focus on your work.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~8 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Online Marketplace for NASM Trainers -->
-                    <a href="ideas/nasm-trainer-marketplace.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">E-commerce</span>
+                    <a href="ideas/nasm-trainer-marketplace.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="marketplace"
+                       data-research-level="deep"
+                       data-title="online marketplace for nasm trainers"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Marketplace</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Online Marketplace for NASM Trainers</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Connect clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
-                            <span>~10 hours to build</span>
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Personal Wellness Coach -->
-                    <a href="ideas/personal-wellness-coach.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
+                    <a href="ideas/personal-wellness-coach.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="health"
+                       data-research-level="deep"
+                       data-title="personal wellness coach"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
                             <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Health</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Personal Wellness Coach</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">An AI wellness coach that learns your schedule, habits, and patterns to suggest micro-habits that actually fit your busy life.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14"></iconify-icon>
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~10 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: AI-Driven Knowledge Transfer Platform -->
-                    <a href="ideas/ai-knowledge-transfer-platform.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/ai-knowledge-transfer-platform.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="deep"
+                       data-title="ai-driven knowledge transfer platform"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI-Driven Knowledge Transfer Platform</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Capture institutional knowledge before employees leave. Transfer expertise to new hires automatically with AI-powered extraction.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~10 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Corporate Knowledge Base AI Assistant -->
-                    <a href="ideas/corporate-knowledge-ai-assistant.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/corporate-knowledge-ai-assistant.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="b2b"
+                       data-research-level="deep"
+                       data-title="corporate knowledge base ai assistant"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">B2b</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Corporate Knowledge Base AI Assistant</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">AI-powered chatbot that answers employee questions instantly by searching your company docs, policies, and training materials.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~12 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Expert Mentorship Marketplace -->
-                    <a href="ideas/expert-mentorship-marketplace.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
+                    <a href="ideas/expert-mentorship-marketplace.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="marketplace"
+                       data-research-level="deep"
+                       data-title="expert mentorship marketplace"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
                             <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Marketplace</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Expert Mentorship Marketplace</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Connect organizations with industry experts for remote knowledge transfer, mentorship sessions, and corporate training.</p>
-                        <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
-                            <span>~20 hours to build</span>
-                        </div>
-                    </a>
-
-                    <!-- Idea Card: Virtual Knowledge Sharing Hub -->
-                    <a href="ideas/virtual-knowledge-hub.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
-                        </div>
-                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Virtual Knowledge Sharing Hub</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions.</p>
-                        <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
-                            <span>~10 hours to build</span>
-                        </div>
-                    </a>
-
-                    <!-- Idea Card: Automated Documentation Tool for Remote Teams -->
-                    <a href="ideas/remote-team-documentation-tool.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
-                        </div>
-                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Automated Documentation Tool for Remote Teams</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">AI documentation tool that automatically captures meeting notes, project updates, and team knowledge—making remote collaboration seamless.</p>
-                        <div class="flex items-center gap-2 text-xs text-neutral-600">
-                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
-                            <span>~10 hours to build</span>
-                        </div>
-                    </a>
-
-                    <!-- Idea Card: Marketplace for Mobile Brake Repair Services -->
-                    <a href="ideas/mobile-brake-repair-marketplace.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">E-commerce</span>
-                        </div>
-                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Marketplace for Mobile Brake Repair Services</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Connect vehicle owners with certified mobile brake technicians for convenient at-location service.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~12 hours to build</span>
                         </div>
                     </a>
-
+                    <!-- Idea Card: Virtual Knowledge Sharing Hub for Business Leaders to Mentor Emerging Professionals -->
+                    <a href="ideas/virtual-knowledge-hub.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="education"
+                       data-research-level="deep"
+                       data-title="virtual knowledge sharing hub for business leaders to mentor emerging professionals"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Education</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Virtual Knowledge Sharing Hub for Business Leaders to Mentor Emerging Professionals</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Automated Documentation Tool for Remote Teams -->
+                    <a href="ideas/remote-team-documentation-tool.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="deep"
+                       data-title="automated documentation tool for remote teams"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Automated Documentation Tool for Remote Teams</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Marketplace for Mobile Brake Repair Services -->
+                    <a href="ideas/mobile-brake-repair-marketplace.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="marketplace"
+                       data-research-level="quick"
+                       data-title="marketplace for mobile brake repair services"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Marketplace</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Marketplace for Mobile Brake Repair Services</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
                     <!-- Idea Card: Automated Brake Repair Cost Estimator -->
-                    <a href="ideas/brake-repair-cost-estimator.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/brake-repair-cost-estimator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="automation"
+                       data-research-level="quick"
+                       data-title="automated brake repair cost estimator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Automation</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Automated Brake Repair Cost Estimator</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Help car owners stop overpaying for brake repairs with instant, transparent cost estimates and local shop reviews.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
-                            <span>~10 hours to build</span>
+                            <span>~8 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: Brake Safety Education Platform -->
-                    <a href="ideas/brake-safety-education-platform.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
+                    <a href="ideas/brake-safety-education-platform.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="education"
+                       data-research-level="quick"
+                       data-title="brake safety education platform"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
                             <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Education</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Brake Safety Education Platform</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Online courses and certifications for mechanics specializing in modern brake systems, from traditional to EV regenerative braking.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~10 hours to build</span>
                         </div>
                     </a>
-
                     <!-- Idea Card: AI-Powered Brake Inspection Analyser -->
-                    <a href="ideas/ai-brake-inspection-analyser.html" class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                    <a href="ideas/ai-brake-inspection-analyser.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai-powered brake inspection analyser"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
                         </div>
                         <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI-Powered Brake Inspection Analyser</h3>
-                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Help mechanics diagnose brake issues faster with AI-powered image analysis that detects wear, damage, and provides repair recommendations.</p>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
                         <div class="flex items-center gap-2 text-xs text-neutral-600">
                             <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
                             <span>~10 hours to build</span>
                         </div>
                     </a>
-
-                    <!-- Placeholder for more ideas -->
-                    <div class="p-6 bg-[#0A0A0A]/50 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center min-h-[200px]">
-                        <iconify-icon icon="lucide:plus" width="24" class="text-neutral-700 mb-3" aria-hidden="true"></iconify-icon>
-                        <p class="text-sm text-neutral-600">More ideas coming soon</p>
-                    </div>
-
+                    <!-- Idea Card: Subscription Analytics Dashboard -->
+                    <a href="ideas/subscription-analytics-dashboard.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="subscription analytics dashboard"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Subscription Analytics Dashboard</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Customer Feedback Aggregator -->
+                    <a href="ideas/customer-feedback-aggregator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="customer feedback aggregator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Customer Feedback Aggregator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Waitlist & Launch Manager -->
+                    <a href="ideas/waitlist-manager.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="waitlist &amp; launch manager"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Waitlist & Launch Manager</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Code Reviewer -->
+                    <a href="ideas/ai-code-reviewer.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="developer-tools"
+                       data-research-level="quick"
+                       data-title="ai code reviewer"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Developer Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Code Reviewer</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Resume Tailorer -->
+                    <a href="ideas/ai-resume-tailorer.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai resume tailorer"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Resume Tailorer</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Social Media Scheduler -->
+                    <a href="ideas/social-media-scheduler.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="creator-tools"
+                       data-research-level="quick"
+                       data-title="social media scheduler"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Creator Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Social Media Scheduler</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI API Documentation Generator -->
+                    <a href="ideas/api-documentation-generator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="developer-tools"
+                       data-research-level="quick"
+                       data-title="ai api documentation generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Developer Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI API Documentation Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Expense Splitter App -->
+                    <a href="ideas/expense-splitter-app.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="fintech"
+                       data-research-level="quick"
+                       data-title="expense splitter app"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Fintech</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Expense Splitter App</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Content Repurposing Tool -->
+                    <a href="ideas/content-repurposing-tool.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai content repurposing tool"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Content Repurposing Tool</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Abandoned Cart Recovery Tool -->
+                    <a href="ideas/abandoned-cart-recovery.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ecommerce"
+                       data-research-level="quick"
+                       data-title="abandoned cart recovery tool"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ecommerce</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Abandoned Cart Recovery Tool</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Focus Session Timer -->
+                    <a href="ideas/focus-session-timer.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="quick"
+                       data-title="focus session timer"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Focus Session Timer</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~6 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Changelog Generator -->
+                    <a href="ideas/changelog-generator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="developer-tools"
+                       data-research-level="quick"
+                       data-title="changelog generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Developer Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Changelog Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Client Portal Builder -->
+                    <a href="ideas/client-portal.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="b2b"
+                       data-research-level="quick"
+                       data-title="client portal builder"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">B2b</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Client Portal Builder</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Personal Subscription Tracker -->
+                    <a href="ideas/subscription-tracker.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="fintech"
+                       data-research-level="quick"
+                       data-title="personal subscription tracker"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Fintech</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Personal Subscription Tracker</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Proposal Generator -->
+                    <a href="ideas/proposal-generator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="b2b"
+                       data-research-level="quick"
+                       data-title="ai proposal generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">B2b</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Proposal Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI SEO Content Optimizer -->
+                    <a href="ideas/ai-seo-optimizer.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai seo content optimizer"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI SEO Content Optimizer</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Async Standup Bot -->
+                    <a href="ideas/daily-standup-bot.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="quick"
+                       data-title="async standup bot"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Async Standup Bot</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Code Snippet Manager -->
+                    <a href="ideas/code-snippet-manager.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="developer-tools"
+                       data-research-level="quick"
+                       data-title="code snippet manager"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Developer Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Code Snippet Manager</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Digital Product Delivery System -->
+                    <a href="ideas/digital-product-delivery.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="creator-tools"
+                       data-research-level="quick"
+                       data-title="digital product delivery system"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Creator Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Digital Product Delivery System</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Feature Voting Board -->
+                    <a href="ideas/feature-voting-board.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="feature voting board"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Feature Voting Board</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Expense Report Generator -->
+                    <a href="ideas/expense-report-generator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="automation"
+                       data-research-level="quick"
+                       data-title="ai expense report generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Automation</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Expense Report Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Email to Todo Converter -->
+                    <a href="ideas/email-to-todo.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="quick"
+                       data-title="email to todo converter"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Email to Todo Converter</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: User Onboarding Flow Builder -->
+                    <a href="ideas/user-onboarding-builder.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="user onboarding flow builder"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">User Onboarding Flow Builder</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Email Reply Drafter -->
+                    <a href="ideas/ai-email-responder.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai email reply drafter"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Email Reply Drafter</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~6 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Automated Review Collector -->
+                    <a href="ideas/product-review-collector.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ecommerce"
+                       data-research-level="quick"
+                       data-title="automated review collector"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ecommerce</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Automated Review Collector</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Video Testimonial Collector -->
+                    <a href="ideas/testimonial-video-collector.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="b2b"
+                       data-research-level="quick"
+                       data-title="video testimonial collector"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">B2b</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Video Testimonial Collector</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Minimalist Habit Tracker -->
+                    <a href="ideas/habit-tracker.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="quick"
+                       data-title="minimalist habit tracker"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Minimalist Habit Tracker</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Competitor Tracker -->
+                    <a href="ideas/ai-competitor-tracker.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai competitor tracker"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Competitor Tracker</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Link in Bio Builder -->
+                    <a href="ideas/link-in-bio-builder.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="creator-tools"
+                       data-research-level="quick"
+                       data-title="link in bio builder"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Creator Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Link in Bio Builder</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Smart Meeting Scheduler -->
+                    <a href="ideas/meeting-scheduler.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="productivity"
+                       data-research-level="quick"
+                       data-title="smart meeting scheduler"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Productivity</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Smart Meeting Scheduler</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Startup Financial Dashboard -->
+                    <a href="ideas/startup-financial-dashboard.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="fintech"
+                       data-research-level="quick"
+                       data-title="startup financial dashboard"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Fintech</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Startup Financial Dashboard</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Podcast Clip Generator -->
+                    <a href="ideas/ai-podcast-clipper.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="creator-tools"
+                       data-research-level="quick"
+                       data-title="ai podcast clip generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Creator Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Podcast Clip Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~12 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Domain Name Generator -->
+                    <a href="ideas/domain-name-generator.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai domain name generator"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Domain Name Generator</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~6 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: AI Contract Analyzer -->
+                    <a href="ideas/contract-analyzer.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="ai-tools"
+                       data-research-level="quick"
+                       data-title="ai contract analyzer"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Ai Tools</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Contract Analyzer</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
+                    <!-- Idea Card: Notion Backup Tool -->
+                    <a href="ideas/notion-backup-tool.html" 
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="quick"
+                       data-title="notion backup tool"
+                       data-description="">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">Saas</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-neutral-500/20 text-neutral-400 border border-neutral-500/30">Quick Idea</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Notion Backup Tool</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4"></p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~8 hours to build</span>
+                        </div>
+                    </a>
                 </div>
-            </div>
+
+                <!-- Load More Button -->
+                <div class="flex justify-center mt-8">
+                    <button id="load-more" class="px-8 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" aria-label="Load more ideas">
+                        Load More Ideas
+                    </button>
+                </div>
         </div>
 
         <!-- CTA Section -->
@@ -1497,6 +2255,126 @@
                 }
             });
         });
+    </script>
+
+    <!-- Client-side filtering JavaScript -->
+    <script>
+    (function() {
+        const IDEAS_PER_PAGE = 12;
+        let currentPage = 1;
+        let activeCategory = 'all';
+        let searchQuery = '';
+        
+        // Wait for DOM to be ready
+        function initFiltering() {
+            const ideaCards = Array.from(document.querySelectorAll('.idea-card'));
+            const searchInput = document.getElementById('idea-search');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const loadMoreBtn = document.getElementById('load-more');
+            
+            // Exit if no idea cards found
+            if (ideaCards.length === 0) {
+                return;
+            }
+            
+            // Filter function
+            function filterIdeas() {
+                const filtered = ideaCards.filter(card => {
+                    const matchesCategory = activeCategory === 'all' || 
+                        card.dataset.category === activeCategory;
+                    const matchesSearch = !searchQuery || 
+                        (card.dataset.title && card.dataset.title.includes(searchQuery.toLowerCase())) ||
+                        (card.dataset.description && card.dataset.description.includes(searchQuery.toLowerCase()));
+                    return matchesCategory && matchesSearch;
+                });
+                
+                // Hide all, show filtered up to current page
+                ideaCards.forEach(card => {
+                    card.style.display = 'none';
+                });
+                
+                const toShow = filtered.slice(0, currentPage * IDEAS_PER_PAGE);
+                toShow.forEach(card => {
+                    card.style.display = 'block';
+                });
+                
+                // Show/hide load more button
+                if (loadMoreBtn) {
+                    if (filtered.length > currentPage * IDEAS_PER_PAGE) {
+                        loadMoreBtn.style.display = 'block';
+                    } else {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                }
+                
+                // Show "no results" message if needed
+                const noResults = document.getElementById('no-results');
+                if (filtered.length === 0) {
+                    if (!noResults) {
+                        const grid = document.getElementById('ideas-grid');
+                        if (grid) {
+                            const msg = document.createElement('div');
+                            msg.id = 'no-results';
+                            msg.className = 'col-span-full text-center py-12';
+                            msg.innerHTML = '<p class="text-neutral-500">No ideas found. Try a different search or filter.</p>';
+                            grid.appendChild(msg);
+                        }
+                    }
+                } else if (noResults) {
+                    noResults.remove();
+                }
+            }
+            
+            // Search handler
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchQuery = e.target.value;
+                    currentPage = 1; // Reset to first page
+                    filterIdeas();
+                });
+            }
+            
+            // Category filter handler
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeCategory = btn.dataset.category;
+                    currentPage = 1; // Reset to first page
+                    
+                    // Update active state
+                    filterButtons.forEach(b => {
+                        b.classList.remove('active', 'bg-white', 'text-black');
+                        b.classList.add('bg-white/5', 'border', 'border-white/10', 'text-neutral-400');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('active', 'bg-white', 'text-black');
+                    btn.classList.remove('bg-white/5', 'border', 'border-white/10', 'text-neutral-400');
+                    btn.setAttribute('aria-pressed', 'true');
+                    
+                    filterIdeas();
+                });
+            });
+            
+            // Load more handler
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    currentPage++;
+                    filterIdeas();
+                    // Scroll to load more button
+                    loadMoreBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            }
+            
+            // Initial filter
+            filterIdeas();
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFiltering);
+        } else {
+            initFiltering();
+        }
+    })();
     </script>
 </body>
 </html>
