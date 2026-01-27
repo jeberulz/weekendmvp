@@ -45,7 +45,7 @@
           "url": "https://weekendmvp.app/articles.html",
           "mainEntity": {
             "@type": "ItemList",
-            "numberOfItems": 4,
+            "numberOfItems": 7,
             "itemListElement": [
               {
                 "@type": "ListItem",
@@ -81,6 +81,33 @@
                   "@type": "Article",
                   "name": "The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup",
                   "url": "https://weekendmvp.app/articles/the-1k-month-idea.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 5,
+                "item": {
+                  "@type": "Article",
+                  "name": "Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt",
+                  "url": "https://weekendmvp.app/articles/vibe-coding-101.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 6,
+                "item": {
+                  "@type": "Article",
+                  "name": "5 Side Projects That Actually Make Money (From People Who Built Them)",
+                  "url": "https://weekendmvp.app/articles/5-side-projects-that-make-money.html"
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 7,
+                "item": {
+                  "@type": "Article",
+                  "name": "When to Quit Your Job for Your Side Project (5 Signs You're Ready)",
+                  "url": "https://weekendmvp.app/articles/when-to-quit-your-job.html"
                 }
               }
             ]
@@ -314,7 +341,7 @@
 
             <!-- Stats bar -->
             <div class="animate-enter stagger-2 mt-8 flex items-center gap-6 text-xs font-mono text-neutral-500">
-                <span><span class="text-white" id="article-count">4</span> articles</span>
+                <span><span class="text-white" id="article-count">7</span> articles</span>
                 <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
                 <span><span class="text-white" id="category-count">3</span> categories</span>
                 <span class="w-1 h-1 rounded-full bg-neutral-700" aria-hidden="true"></span>
@@ -354,11 +381,18 @@
                                     <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
                                 </a>
                             </li>
+                            <li class="relative pl-8">
+                                <span class="article-number">02</span>
+                                <a href="articles/vibe-coding-101.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
                     <footer class="mt-8 pt-6 border-t border-white/5">
-                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                        <span class="text-xs font-mono text-neutral-600">2 articles</span>
                     </footer>
                 </article>
 
@@ -390,11 +424,18 @@
                                     <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
                                 </a>
                             </li>
+                            <li class="relative pl-8">
+                                <span class="article-number">03</span>
+                                <a href="articles/when-to-quit-your-job.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">When to Quit Your Job for Your Side Project</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
                     <footer class="mt-8 pt-6 border-t border-white/5">
-                        <span class="text-xs font-mono text-neutral-600">2 articles</span>
+                        <span class="text-xs font-mono text-neutral-600">3 articles</span>
                     </footer>
                 </article>
 
@@ -419,11 +460,18 @@
                                     <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
                                 </a>
                             </li>
+                            <li class="relative pl-8">
+                                <span class="article-number">02</span>
+                                <a href="articles/5-side-projects-that-make-money.html" class="article-link group flex items-start justify-between gap-4 text-neutral-300" data-article>
+                                    <span class="group-hover:text-[#CC5500] transition-colors">5 Side Projects That Actually Make Money</span>
+                                    <iconify-icon icon="lucide:arrow-up-right" width="16" class="text-neutral-600 group-hover:text-[#CC5500] transition-colors shrink-0 mt-1" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
                     <footer class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                        <span class="text-xs font-mono text-neutral-600">1 article</span>
+                        <span class="text-xs font-mono text-neutral-600">2 articles</span>
                         <a href="startup-ideas.html" class="inline-flex items-center gap-2 text-xs font-medium text-[#CC5500] hover:text-[#CC5500]/80 transition-colors">
                             <span>Browse all startup ideas</span>
                             <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
@@ -458,6 +506,51 @@
             </header>
 
             <div id="all-articles" class="space-y-6">
+
+                <!-- Article Item - When to Quit Your Job -->
+                <a href="articles/when-to-quit-your-job.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Mindset</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 27, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">When to Quit Your Job for Your Side Project (5 Signs You're Ready)</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">Not sure if it's time to go full-time on your side project? Here are 5 concrete signs you're ready.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+
+                <!-- Article Item - 5 Side Projects That Make Money -->
+                <a href="articles/5-side-projects-that-make-money.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Ideas</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 27, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">5 Side Projects That Actually Make Money (From People Who Built Them)</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">Real side projects making $500-$10K/month in 2026. No generic advice—just proven models with actual revenue numbers.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+
+                <!-- Article Item - Vibe Coding 101 -->
+                <a href="articles/vibe-coding-101.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#CC5500]/10 text-[#CC5500] border border-[#CC5500]/20">Building</span>
+                                <span class="text-xs font-mono text-neutral-600">Jan 27, 2026</span>
+                            </div>
+                            <h3 class="text-lg font-medium text-white group-hover:text-[#CC5500] transition-colors">Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt</h3>
+                            <p class="mt-2 text-sm text-neutral-500 line-clamp-2">Learn vibe coding in 2026. A step-by-step guide to building real apps with Claude Code, Cursor, and Bolt.new—even if you've never written a line of code.</p>
+                        </div>
+                        <iconify-icon icon="lucide:arrow-right" width="20" class="text-neutral-600 group-hover:text-[#CC5500] group-hover:translate-x-1 transition-all" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
 
                 <!-- Article Item - The $1K/Month Idea -->
                 <a href="articles/the-1k-month-idea.html" class="group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-xl hover:border-[#CC5500]/30 transition-all" data-article-item>
@@ -578,6 +671,11 @@
                 element: document.querySelector('[data-category="building"]')
             },
             {
+                title: 'Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt',
+                category: 'building',
+                element: document.querySelector('[data-category="building"]')
+            },
+            {
                 title: 'Stop Overthinking, Start Building',
                 category: 'mindset',
                 element: document.querySelector('[data-category="mindset"]')
@@ -588,7 +686,17 @@
                 element: document.querySelector('[data-category="mindset"]')
             },
             {
+                title: 'When to Quit Your Job for Your Side Project (5 Signs You\'re Ready)',
+                category: 'mindset',
+                element: document.querySelector('[data-category="mindset"]')
+            },
+            {
                 title: '7 Micro-SaaS Ideas You Can Build Solo in 2026',
+                category: 'ideas',
+                element: document.querySelector('[data-category="ideas"]')
+            },
+            {
+                title: '5 Side Projects That Actually Make Money (From People Who Built Them)',
                 category: 'ideas',
                 element: document.querySelector('[data-category="ideas"]')
             }
@@ -622,7 +730,7 @@
             noResults.classList.toggle('hidden', hasResults);
 
             // Update article count
-            articleCount.textContent = normalizedQuery ? visibleCount : '4';
+            articleCount.textContent = normalizedQuery ? visibleCount : '7';
         }
 
         searchInput.addEventListener('input', (e) => {
