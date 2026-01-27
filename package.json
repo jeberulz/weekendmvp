@@ -4,15 +4,13 @@
   "description": "Weekend MVP Starter Kit Landing Page",
   "scripts": {
     "dev": "python3 -m http.server 5173",
-    "vercel:dev": "vercel dev"
+    "vercel:dev": "vercel dev",
+    "inject-analytics": "node scripts/inject-analytics.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "glob": "^13.0.0"
+  }
 }
-
-
-
-
-
-
