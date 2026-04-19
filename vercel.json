@@ -1,6 +1,8 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "devCommand": "vercel dev --listen 5173",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/ideas/today",
