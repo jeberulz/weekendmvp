@@ -1,6 +1,19 @@
 {
   "ideas": [
     {
+      "slug": "ai-landing-page-generator-ecommerce",
+      "title": "AI Landing Page Generator for E-commerce",
+      "publishedAt": "2026-04-19",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude"],
+      "audiences": ["developers", "solo-founders"],
+      "source": "ideabrowser:20",
+      "scores": { "opportunity": 9, "pain": 8, "timing": 9, "builder_confidence": 7 }
+    },
+    {
       "slug": "ai-meeting-notes-cleaner",
       "title": "AI Meeting Notes Cleaner",
       "publishedAt": "2025-01-20",

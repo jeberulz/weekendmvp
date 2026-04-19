@@ -9,5 +9,10 @@ node_modules/
 .env.*
 !.env.example
 
+# Newsletter drafts (keep README + METRICS, hide per-send markdown)
+content/newsletter/*.md
+!content/newsletter/README.md
+!content/newsletter/METRICS.md
+
 # OS
 .DS_Store
