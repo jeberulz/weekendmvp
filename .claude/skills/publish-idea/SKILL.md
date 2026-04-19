@@ -1,15 +1,27 @@
 ---
 name: publish-idea
-description: "Publish a startup idea from raw research dumps. Reads unstructured content from ideas/drafts/{name}/, performs deep web research, generates a polished idea page with original expanded content, and updates the manifest. Usage: /publish-idea {folder-name}"
+description: "Publish a startup idea page. DEFAULT: pulls a pre-validated, deeply-researched idea from the Ideabrowser MCP (1,474+ scored ideas with citations, competitor pricing, community signals). FALLBACK: reads raw drafts from ideas/drafts/{name}/. Generates research-backed HTML, updates manifest/sitemap/ItemList schema. Usage: /publish-idea <idea_id> (MCP, default) OR /publish-idea {folder-name} (drafts)."
 ---
 
 # Publish Idea Skill
 
-Transform raw research dumps into polished, research-backed startup idea pages.
+Transform validated startup ideas into polished, research-backed pages.
 
 ---
 
-## Usage
+## Two Modes
+
+### 🟢 Mode A — Ideabrowser MCP (DEFAULT, use this first)
+
+```
+/publish-idea <idea_id>
+```
+
+Example: `/publish-idea 20`
+
+Pulls a pre-validated idea from the Ideabrowser database (1,474+ scored ideas). Each idea ships with cited market research, competitor pricing, community signals from Reddit/YouTube/Facebook, value-ladder pricing tiers, and a Hormozi-style offer breakdown. **No WebSearch needed** — the MCP returns superior, citation-backed data faster.
+
+### 🟡 Mode B — Draft Folder (fallback for custom ideas)
 
 ```
 /publish-idea {folder-name}
@@ -17,28 +29,138 @@ Transform raw research dumps into polished, research-backed startup idea pages.
 
 Example: `/publish-idea nutrition-planner`
 
----
+Reads `ideas/drafts/{folder-name}/raw.md`, then performs deep WebSearch research. Use this only when an idea has NO match in the MCP database (e.g., your own original concept, niche local idea).
 
-## What This Skill Does
+### Which mode to pick?
 
-1. **Reads** all markdown files from `ideas/drafts/{folder-name}/`
-2. **Extracts** the idea title (ONLY the title is used verbatim from raw.md)
-3. **Performs deep web research** using WebSearch to gather:
-   - Market size and growth statistics
-   - Competitor analysis and pricing
-   - Industry trends and validation signals
-   - Target audience insights
-   - Technology landscape
-4. **Writes original expanded content** based on research findings (NOT copying raw.md)
-5. **Generates** HTML using the dynamic template (with SEO schema markup and GA tracking)
-6. **Auto-injects Google Analytics** if not already present (via template or script)
-7. **Updates** `ideas/manifest.json` with the new idea
-7. **Adds** a card to `startup-ideas.html`
-8. **Updates** `sitemap.xml` for search engine discovery (SEO)
-9. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines (AEO)
-10. **Reports** what was created with research sources
+| Situation | Mode |
+|---|---|
+| User says "publish idea X" or gives a numeric ID | **A (MCP)** |
+| User says "find a new idea to publish" | **A (MCP)** — call `browse_ideas` first, then publish chosen result |
+| User points to a folder in `ideas/drafts/` | **B (folder)** |
+| Folder exists AND has matching MCP idea | **A (MCP)** preferred — richer data |
+
+If unsure, default to Mode A and ask the user to confirm the idea_id.
 
 ---
+
+## What This Skill Does (both modes)
+
+1. **Sources content** — Mode A: MCP `get_idea_research` calls. Mode B: WebSearch on raw.md keywords.
+2. **Writes original expanded content** based on research findings (NEVER copies raw text verbatim except the title)
+3. **Generates** HTML using `ideas/_template-dynamic.html` (with SEO schema + GA tracking)
+4. **Updates** `ideas/manifest.json` with the new idea
+5. **Adds** a card to `startup-ideas.html`
+6. **Updates** `sitemap.xml` for search engines
+7. **Updates** ItemList schema in `startup-ideas.html` for AI answer engines
+8. **Reports** what was created with research sources/citations
+
+---
+
+## ═══════════════════════════════════════════
+## MODE A: Ideabrowser MCP Workflow (DEFAULT)
+## ═══════════════════════════════════════════
+
+### A.1 — Source the idea
+
+If the user supplies an `idea_id`, skip to A.2. Otherwise, call `mcp__ideabrowser__browse_ideas` to pick one. **Filter for weekend-MVP fit:**
+
+```
+mcp__ideabrowser__browse_ideas({
+  sort: "highest_opportunity",
+  build_difficulty: "easy",   // or "moderate" — never "hard"
+  limit: 15
+})
+```
+
+Then narrow to ideas where `scores.builder_confidence >= 7` AND `scores.opportunity >= 8`. Skip ideas with `founder_fit_tags` containing "domain_expertise_required" if it's deeply specialized (e.g., medical, legal).
+
+Present the user a numbered shortlist (3–5 picks) with title, scores, and 1-line summary, then ask which to publish.
+
+### A.2 — Pull deep research
+
+Run these MCP calls **in parallel** (they're independent):
+
+```
+mcp__ideabrowser__get_idea_research({ idea_id })                              // base data
+mcp__ideabrowser__get_idea_research({ idea_id, section: "competitive_analysis" })
+mcp__ideabrowser__get_idea_research({ idea_id, section: "go_to_market" })
+mcp__ideabrowser__get_idea_research({ idea_id, section: "keyword_list" })     // for SEO
+```
+
+Optional but recommended for higher-quality pages:
+- `community_analysis` — Reddit/YT/FB demand signals (use as social-proof copy)
+- `why_now_analysis` — timing drivers
+- `product_offerings` — feature ideas to inform tech stack
+
+### A.3 — Map MCP data → page sections
+
+Use this mapping (the MCP gives you most fields directly — don't re-research):
+
+| Page section | MCP source field |
+|---|---|
+| Title | `title` (clean it: strip "($XM ARR)" suffixes) |
+| Tagline | `categorization.byline` OR `scores.opportunity.byline` |
+| Short description | `summary` (first 1-2 sentences, rewritten) |
+| Meta description | `summary` (rewritten as 155-char SEO blurb) |
+| Category | Map `categorization.type` + content domain → site category (saas/ai-tools/productivity/etc.) |
+| Build time | If `builder_confidence >= 7` → 8-10 hrs. If 5-6 → 10-12 hrs. |
+| **Problem section** | `detailed_idea.pain_points_addressed` + `scores.pain.key_pain_points` + `scores.pain.market_evidence` |
+| **Solution section** | `detailed_idea.detailed_summary` + `research_summaries.analysis.core_proposition.solution` |
+| **How It Works (4 steps)** | Synthesize from `detailed_idea.detailed_summary` + `product_offerings` |
+| **Market Research stats** | `scores.opportunity.market_potential.reason` + `tags.highlight_justification` (real numbers + CAGR — already cited!) |
+| **Competitive Landscape** | `competitive_analysis.data.content` (parse the HTML — competitor names, pricing, gaps are right there) |
+| **"Your Opportunity" callout** | `research_summaries.market_gap` |
+| **Business Model / Pricing tiers** | `value_ladder.offers` (use Frontend / Middle / Backend tiers — already priced) |
+| **Unit Economics** | Derive from `revenue_potential.examples` + value_ladder |
+| **Tech Stack** | Derive from `detailed_idea.detailed_summary` (look for AI/API mentions) — fall back to standard Next.js + Supabase + Clerk + relevant AI API |
+| **AI Build Prompts (4)** | Generate using same template as Mode B, but seed with MCP-sourced features |
+| **Citations footer** (NEW) | `competitive_analysis.data.citations` array — list as "Sources" |
+
+### A.4 — Generate slug
+
+From the cleaned title:
+- Strip parentheticals: `"X ($2M ARR)"` → `"X"`
+- Strip "AI-Powered", "Automated" prefixes if it makes the slug too long
+- Lowercase, kebab-case: `"AI Landing Page Generator E-commerce"` → `"ai-landing-page-generator-ecommerce"`
+- Verify uniqueness against `ideas/manifest.json`
+
+### A.5 — Generate HTML, update artifacts
+
+Same as Mode B Steps 5–10 below. Use `ideas/_template-dynamic.html` and follow the section/SEO/accessibility requirements documented in the rest of this skill.
+
+### A.6 — Output report (Mode A)
+
+```
+## Published: {IDEA_TITLE}
+
+**Source:** Ideabrowser MCP (idea_id: {idea_id}) — opportunity {opportunity_score}/10, pain {pain_score}/10, timing {timing_score}/10
+
+**Files created/modified:**
+- ideas/{slug}.html (new)
+- ideas/manifest.json (updated)
+- startup-ideas.html (card + ItemList schema)
+- sitemap.xml (URL added)
+
+**Sections included:** Problem, Solution, How It Works, Market Research, Competitive Landscape, Business Model, Tech Stack, AI Build Prompts
+
+**Citations (from MCP):**
+- {citation_1}
+- {citation_2}
+- ... (list all from competitive_analysis.data.citations)
+
+**SEO keywords (from MCP):** {keywords[].keyword}
+
+**Preview:** Open ideas/{slug}.html in browser to verify.
+```
+
+---
+
+## ═══════════════════════════════════════════
+## MODE B: Draft Folder Workflow (fallback)
+## ═══════════════════════════════════════════
+
+Use only when no MCP idea matches. Process below.
 
 ## CRITICAL: Content Guidelines
 
@@ -681,7 +803,16 @@ AI-powered nutrition planning that:
 
 Before marking complete:
 
-### Research Checklist (REQUIRED)
+### Research Checklist — Mode A (MCP, default)
+- [ ] Resolved `idea_id` (either supplied by user or chosen via `browse_ideas` shortlist)
+- [ ] Called `get_idea_research(idea_id)` for base data
+- [ ] Called `get_idea_research(idea_id, "competitive_analysis")` — got competitors with pricing
+- [ ] Called `get_idea_research(idea_id, "go_to_market")` — got positioning angles
+- [ ] Called `get_idea_research(idea_id, "keyword_list")` — got SEO keywords
+- [ ] Captured citations from `competitive_analysis.data.citations`
+- [ ] Skipped WebSearch unless MCP data was insufficient
+
+### Research Checklist — Mode B (folder, fallback only)
 - [ ] Read raw.md and extract title + research keywords
 - [ ] **Performed WebSearch for market data** (3+ statistics found)
 - [ ] **Performed WebSearch for competitors** (3+ competitors with current pricing)

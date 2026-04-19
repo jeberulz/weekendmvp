@@ -28,6 +28,17 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- Newsletter Feed -->
+  <url>
+    <loc>https://weekendmvp.app/newsletter.html</loc>
+    <lastmod>2026-04-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- newsletter-sitemap-start -->
+  <!-- Individual newsletter pages are appended by /newsletter today (web-publish step). Do not hand-edit between markers. -->
+  <!-- newsletter-sitemap-end -->
+
   <!-- Articles -->
   <url>
     <loc>https://weekendmvp.app/articles/stop-overthinking-start-building.html</loc>
@@ -186,6 +197,12 @@
   <url>
     <loc>https://weekendmvp.app/ideas/ai-brake-inspection-analyser.html</loc>
     <lastmod>2026-01-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/ideas/ai-landing-page-generator-ecommerce.html</loc>
+    <lastmod>2026-04-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
