@@ -1,1 +1,13 @@
 .vercel
+.gstack/
+
+# Dependencies
+node_modules/
+
+# Local env (Vercel holds production secrets)
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
