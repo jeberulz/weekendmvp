@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 
-/**
- * Auto-inject Google Analytics, Meta Pixel, and wmvpAnalytics into HTML files
- * 
- * Usage:
- *   node scripts/inject-analytics.js <file.html>
- *   node scripts/inject-analytics.js "articles/*.html"
- *   node scripts/inject-analytics.js "ideas/*.html"
- *   node scripts/inject-analytics.js --update "**/*.html"  # Force update existing
- * 
- * The snippet is loaded from .analytics-snippet.html in the project root.
- * This file contains:
- *   - Google Analytics (G-Z1NYERTKRS) with GDPR consent
- *   - Meta Pixel (1602726847528813) with GDPR consent  
- *   - wmvpAnalytics utility for custom event tracking
- */
+// Auto-inject Google Analytics, Meta Pixel, and wmvpAnalytics into HTML files.
+//
+// Usage:
+//   node scripts/inject-analytics.js <file.html>
+//   node scripts/inject-analytics.js "articles/*.html"
+//   node scripts/inject-analytics.js "ideas/*.html"
+//   node scripts/inject-analytics.js --update "**/*.html"   (force update existing)
+//
+// The snippet is loaded from .analytics-snippet.html in the project root.
+// This file contains:
+//   - Google Analytics (G-Z1NYERTKRS) with GDPR consent
+//   - Meta Pixel (1602726847528813) with GDPR consent
+//   - wmvpAnalytics utility for custom event tracking
 
 const fs = require('fs');
 const path = require('path');
