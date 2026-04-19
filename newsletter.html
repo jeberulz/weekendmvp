@@ -45,16 +45,29 @@
           "url": "https://weekendmvp.app/newsletter.html",
           "mainEntity": {
             "@type": "ItemList",
-            "numberOfItems": 0,
-            "itemListElement": []
-          }
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
-            { "@type": "ListItem", "position": 2, "name": "Newsletter", "item": "https://weekendmvp.app/newsletter.html" }
-          ]
+            "numberOfItems": 2,
+            "itemListElement": [
+                        {
+                                  "@type": "ListItem",
+                                  "position": 1,
+                                  "item": {
+                                            "@type": "Article",
+                                            "name": "Builder Brief: 7 Micro-SaaS Ideas Solo Founders Can Ship in 2026",
+                                            "url": "https://weekendmvp.app/newsletter/2026-04-20-pm.html",
+                                            "datePublished": "2026-04-20"
+                                  }
+                        },
+                        {
+                                  "@type": "ListItem",
+                                  "position": 2,
+                                  "item": {
+                                            "@type": "Article",
+                                            "name": "Idea of the Day: AI Resume Tailorer",
+                                            "url": "https://weekendmvp.app/newsletter/2026-04-20-am.html",
+                                            "datePublished": "2026-04-20"
+                                  }
+                        }
+              ]
         }
       ]
     }
@@ -231,9 +244,38 @@
             <div id="newsletter-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <!-- newsletter-cards-start -->
                 <!-- Cards are injected by scripts/update-newsletter-archive.js. Do not hand-edit. -->
-                <div data-nl-empty class="md:col-span-2 p-8 bg-white/[0.02] border border-white/[0.06] rounded-2xl text-center text-sm text-neutral-500">
-                    No sends yet. The first newsletter goes out soon — subscribe above to get it in your inbox.
-                </div>
+                <a href="/newsletter/2026-04-20-pm.html"
+                   data-nl-card
+                   data-nl-slot="pm"
+                   data-nl-date="2026-04-20"
+                   class="nl-card group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider border bg-white/5 border-white/10 text-neutral-300">PM · Builder Brief</span>
+                        <time class="text-[11px] font-mono text-neutral-500" datetime="2026-04-20">Apr 20, 2026</time>
+                    </div>
+                    <h3 class="text-lg font-medium text-white mb-2 leading-snug group-hover:text-[#CC5500] transition-colors">Builder Brief: 7 Micro-SaaS Ideas Solo Founders Can Ship in 2026</h3>
+                    <p class="text-sm text-neutral-500 leading-relaxed line-clamp-2">Micro-SaaS is heading from $15.7B to $59.6B by 2030. Seven focused ideas you can start this weekend.</p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-neutral-600 group-hover:text-[#CC5500] transition-colors">
+                        <span>Read</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
+                <a href="/newsletter/2026-04-20-am.html"
+                   data-nl-card
+                   data-nl-slot="am"
+                   data-nl-date="2026-04-20"
+                   class="nl-card group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl hover:border-white/20 transition-all">
+                    <div class="flex items-center justify-between gap-3 mb-4">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider border bg-[#CC5500]/10 border-[#CC5500]/30 text-[#CC5500]">AM · Idea of the Day</span>
+                        <time class="text-[11px] font-mono text-neutral-500" datetime="2026-04-20">Apr 20, 2026</time>
+                    </div>
+                    <h3 class="text-lg font-medium text-white mb-2 leading-snug group-hover:text-[#CC5500] transition-colors">Idea of the Day: AI Resume Tailorer</h3>
+                    <p class="text-sm text-neutral-500 leading-relaxed line-clamp-2">'Recruit me' searches jumped 10,178% this month — here's the $1K/mo weekend build that rides the wave.</p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-neutral-600 group-hover:text-[#CC5500] transition-colors">
+                        <span>Read</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </div>
+                </a>
                 <!-- newsletter-cards-end -->
             </div>
         </div>
