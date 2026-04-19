@@ -1,5 +1,6 @@
 {
-  "devCommand": "python3 -m http.server 5174",
+  "buildCommand": "npm run build",
+  "devCommand": "vercel dev --listen 5173",
   "rewrites": [
     {
       "source": "/ideas/today",

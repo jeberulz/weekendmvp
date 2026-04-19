@@ -4,6 +4,19 @@
 
 Weekend MVP is a static HTML/CSS/JS website for startup idea validation and the Weekend MVP Starter Kit. All pages must be accessible, performant, and follow consistent patterns.
 
+### Local development
+
+| Goal | Command |
+|------|---------|
+| Static HTML only (fastest) | `npm run dev` — Python HTTP server on port **5173** |
+| Edge/API routes + rewrites (`/api/*`, `/ideas/today` → `ideas-today`) | `npm run vercel:dev` — Vercel dev on port **5173** (see [`vercel.json`](vercel.json)) |
+
+**CSS:** Source file is [`src/input.css`](src/input.css). Production output is [`styles.css`](styles.css) (do not edit by hand). Run `npm run build:css` before deploy or after changing styles; use `npm run watch:css` in a second terminal while iterating. The site `build` script runs `build:css` so Vercel generates CSS on every deploy.
+
+**After clone:** `npm ci` then `npm run build` to verify Tailwind output.
+
+**QA (optional):** `npm run check:stylesheets` and `npm run check:links` print reports (exit 0). Set `STRICT=1` to fail the process when issues exist (e.g. CI gates).
+
 ---
 
 ## Accessibility Requirements (WCAG 2.1 AA)
