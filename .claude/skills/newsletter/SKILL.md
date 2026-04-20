@@ -1,6 +1,6 @@
 ---
 name: newsletter
-description: "Drafts and dual-publishes the Weekend MVP twice-daily newsletter. AM = Idea of the Day, PM = Builder Brief. Pairs fresh Ideabrowser MCP signals with owned ideas/articles, emits paste-ready markdown for the Beehiiv web editor, AND publishes a public archive page at weekendmvp.app/newsletter/{date}-{slot}.html with a subscribe funnel. Usage: /newsletter today (drafts both slots + publishes web). API sending to Beehiiv is disabled because POST /posts is Enterprise-only."
+description: "Drafts and dual-publishes the Weekend MVP twice-daily newsletter, with optional AM cross-posts (X thread, LinkedIn) and a full YouTube production pack (10-15 min script, titles, thumbnails, chapters, B-roll cues, description, tags, pinned comment) in Ali Abdaal voice. AM = Idea of the Day, PM = Builder Brief. Pairs fresh Ideabrowser MCP signals with owned ideas/articles, emits paste-ready markdown for the Beehiiv web editor, AND publishes a public archive page at weekendmvp.app/newsletter/{date}-{slot}.html with a subscribe funnel. Usage: /newsletter today (drafts both slots + publishes web). Opt in with --with-social and/or --with-video for AM downstream content. API sending to Beehiiv is disabled because POST /posts is Enterprise-only."
 ---
 
 # Newsletter Skill
@@ -16,13 +16,29 @@ Author-in-the-loop workflow for the Weekend MVP twice-daily newsletter. One morn
 ## Usage
 
 ```
-/newsletter today                 # draft AM + PM, open both for paste
-/newsletter today --slot am       # draft AM only
-/newsletter today --slot pm       # draft PM only
-/newsletter stats 2026-04-20      # pull Beehiiv stats for posts sent that day
+/newsletter today                                  # draft AM + PM, open both for paste
+/newsletter today --slot am                        # draft AM only
+/newsletter today --slot pm                        # draft PM only
+/newsletter today --with-social                    # + AM X thread + LinkedIn post
+/newsletter today --with-video                     # + AM YouTube script + production pack
+/newsletter today --with-social --with-video       # all downstream AM content
+/newsletter today --no-web --with-social           # flags compose (skip web, make social)
+
+# Regeneration (on an existing AM draft; no re-picking):
+/newsletter social 2026-04-20                      # regen both X + LinkedIn
+/newsletter social 2026-04-20 --platform x         # regen X only
+/newsletter social 2026-04-20 --platform linkedin  # regen LinkedIn only
+/newsletter video 2026-04-20                       # regen video pack only
+
+/newsletter stats 2026-04-20                       # pull Beehiiv stats for posts sent that day
 ```
 
 No arguments → treat as `today`.
+
+**Flag rules:**
+- `--with-social` and `--with-video` are AM-only. Passing them with `--slot pm` is an error.
+- Both flags require Gate 1 to reach `draft` (the AM pick must be approved). They add a second approval step (Gate 2) for the downstream angle.
+- Regen commands (`/newsletter social`, `/newsletter video`) require an existing AM draft at `content/newsletter/{date}-am.md`. They prompt on overwrite.
 
 ---
 
@@ -128,9 +144,54 @@ Hard rules:
 - Web HTML has no Beehiiv ad block and no BEEHIIV CHECKLIST — those are email-/operator-only.
 - Email markdown and web HTML share the same BODY content — the web page is the email, rendered.
 
+### 5c. Gate 2 — downstream angle approval (only if `--with-social` or `--with-video`)
+
+After step 5b completes (email markdown + web HTML written), if either downstream flag is set, the skill presents the AM idea's angle for cross-post + video. This is a second, narrower approval gate.
+
+```
+AM picked: "<idea title>"
+
+Downstream angle for social + video:
+  Hook:          <one-line hook — MCP-derived>
+  Primary pain:  <one-line pain — manifest summary-derived>
+  Build hook:    <buildTime>h MVP, <formatRevenue(revenueGoal)>, stack: <formatTools(tools)>
+  Video promise: <one-line "by the end of this video you'll know..." — derived from Gate 1>
+
+Reply with:  generate  |  edit hook  |  edit pain  |  edit build  |  edit promise  |  skip social  |  skip video  |  abort
+```
+
+- `generate` → emit all enabled downstream artifacts
+- `edit <field>` → inline single-pass edit (mirrors Gate 1's `edit am` pattern), then re-show the panel
+- `skip social` / `skip video` → suppress that artifact only; continue with the other
+- `abort` → stop; email + web from step 5b remain on disk
+
+### 5d. Emit downstream artifacts (only if Gate 2 reached `generate`)
+
+**If `--with-social` is enabled** (and `skip social` was not chosen):
+  - Follow `social-builders.md` step-by-step for each platform in `[x, linkedin]`.
+  - Write `content/social/{date}-am-x.md` and `content/social/{date}-am-linkedin.md`.
+  - If an output file already exists, prompt: "Overwrite `{path}`? [overwrite / backup / cancel]". `backup` renames the existing file to `{path}.bak` before writing.
+
+**If `--with-video` is enabled** (and `skip video` was not chosen):
+  - Read `voice-ali-abdaal.md` (rules) and `voice-samples.md` (anchor calibration).
+  - Follow `video-builder.md` step-by-step: chapter-by-chapter script, production pack, `[VERIFY STAT]` marker count.
+  - Write `content/video/{date}-am.md`.
+  - Same overwrite-prompt rule as social.
+
+### 5e. `/newsletter social {date}` and `/newsletter video {date}` (regeneration)
+
+These commands re-run steps 5d's social or video branch against an already-drafted AM:
+
+1. Verify `content/newsletter/{date}-am.md` exists. If not: "No AM draft found for {date}. Run `/newsletter today` first."
+2. Re-derive the Gate 2 angle from the AM draft's frontmatter + BODY (no MCP re-query). Show it and allow the same `edit <field>` loop.
+3. On `generate`: write the output file(s), prompting on overwrite.
+4. Print a one-line handoff.
+
+Regen never touches email markdown, web HTML, `sitemap.xml`, or `newsletter.html`. It only writes to `content/social/` or `content/video/`.
+
 ### 6. Hand off
 
-Print a confirmation with both the web URLs and the Beehiiv paste steps:
+Print a confirmation listing everything generated. The social and video lines only appear if those flags were set and Gate 2 reached `generate`.
 
 ```
 ✓ AM drafted → content/newsletter/2026-04-20-am.md
@@ -140,6 +201,14 @@ Print a confirmation with both the web URLs and the Beehiiv paste steps:
     - /newsletter/2026-04-20-pm.html
     - Archive feed regenerated (2 sends total)
     - Sitemap updated
+
+[conditional — only if --with-social was enabled and generated]
+✓ AM X thread  → content/social/2026-04-20-am-x.md  (6 tweets, 1,247 chars total)
+✓ AM LinkedIn  → content/social/2026-04-20-am-linkedin.md  (1,247 chars)
+
+[conditional — only if --with-video was enabled and generated]
+✓ AM video     → content/video/2026-04-20-am.md  (10 chapters, 2,087 words, ~13:55)
+  ⚠ 2 [VERIFY STAT] markers remain — search and replace before recording.
 
 Commit + push so the web archive goes live:
     git add newsletter.html newsletter/ sitemap.xml
@@ -155,6 +224,19 @@ Then paste into Beehiiv (manual, ~90s per send):
   6. Repeat for PM at 17:00 local
   7. Paste each post's ID back into the draft file's `beehiiv_post_id:`
      frontmatter so /newsletter stats can find it tomorrow.
+
+[conditional — only if social files were generated]
+Social posts (manual):
+    X:        https://x.com/compose/post
+              Paste tweets from content/social/2026-04-20-am-x.md one at a time.
+    LinkedIn: https://linkedin.com/feed/
+              Paste post from content/social/2026-04-20-am-linkedin.md.
+
+[conditional — only if video file was generated]
+Video:
+    Script:   content/video/2026-04-20-am.md
+    Record, edit, upload — full checklist inside the file.
+    Remember: verify the N [VERIFY STAT] markers before recording.
 ```
 
 ### 7. `--dry-run` mode (default-safe)
@@ -214,22 +296,29 @@ Subtitle / preview text: first sentence of the hook, ≤120 chars.
 
 ## Files this skill touches
 
-| Path                                              | Access                     |
-| ------------------------------------------------- | -------------------------- |
-| `ideas/manifest.json`                             | read                       |
-| `articles/markdown/*.md`                          | read                       |
-| `content/newsletter/*.md`                         | read + write (draft files) |
-| `content/newsletter/METRICS.md`                   | append                     |
-| `.claude/skills/newsletter/selection-rules.md`    | read (every run)           |
-| `.claude/skills/newsletter/body-builders.md`      | read (every run)           |
-| `.claude/skills/newsletter/web-publish.md`        | read (every run)           |
-| `newsletter/{date}-{slot}.html`                   | write (one per send)       |
-| `newsletter.html`                                 | regenerated via script     |
-| `sitemap.xml`                                     | append/update per send     |
-| `scripts/update-newsletter-archive.js`            | invoke                     |
-| `scripts/inject-analytics.js`                     | invoke                     |
-| Ideabrowser MCP tools (`mcp__ideabrowser__*`)     | call                       |
-| `https://api.beehiiv.com/v2/.../posts/{id}?expand=stats` | GET (stats only)     |
+| Path                                                | Access                                  |
+| --------------------------------------------------- | --------------------------------------- |
+| `ideas/manifest.json`                               | read                                    |
+| `articles/markdown/*.md`                            | read                                    |
+| `content/newsletter/*.md`                           | read + write (draft files)              |
+| `content/newsletter/METRICS.md`                     | append                                  |
+| `.claude/skills/newsletter/selection-rules.md`      | read (every run)                        |
+| `.claude/skills/newsletter/body-builders.md`        | read (every run)                        |
+| `.claude/skills/newsletter/web-publish.md`          | read (every run)                        |
+| `.claude/skills/newsletter/social-builders.md`      | read (runs with `--with-social` or regen) |
+| `.claude/skills/newsletter/video-builder.md`        | read (runs with `--with-video` or regen)  |
+| `.claude/skills/newsletter/voice-ali-abdaal.md`     | read (runs with `--with-video` or regen)  |
+| `.claude/skills/newsletter/voice-samples.md`        | read (runs with `--with-video` or regen)  |
+| `newsletter/{date}-{slot}.html`                     | write (one per send)                    |
+| `newsletter.html`                                   | regenerated via script                  |
+| `sitemap.xml`                                       | append/update per send                  |
+| `content/social/{date}-am-x.md`                     | write (on `--with-social` or regen)     |
+| `content/social/{date}-am-linkedin.md`              | write (on `--with-social` or regen)     |
+| `content/video/{date}-am.md`                        | write (on `--with-video` or regen)      |
+| `scripts/update-newsletter-archive.js`              | invoke                                  |
+| `scripts/inject-analytics.js`                       | invoke                                  |
+| Ideabrowser MCP tools (`mcp__ideabrowser__*`)       | call                                    |
+| `https://api.beehiiv.com/v2/.../posts/{id}?expand=stats` | GET (stats only)                   |
 
 ---
 
@@ -243,7 +332,13 @@ If the publication is upgraded to Enterprise, everything needed to send programm
 
 - Plan (original workflow): `/Users/jeberulz/.claude/plans/logical-stargazing-sutton.md`
 - Plan (dual-publish extension): `/Users/jeberulz/.claude/plans/dual-publish-newsletter-archive.md`
+- Plan (cross-post + video extension): `docs/superpowers/plans/2026-04-20-newsletter-crosspost-video.md`
+- Spec (cross-post + video extension): `docs/superpowers/specs/2026-04-20-newsletter-crosspost-video-design.md`
 - Beehiiv rules: `BEEHIIV_CURSOR_RULES.md` (see Section 6)
 - Selection logic: `.claude/skills/newsletter/selection-rules.md`
 - Email body templates (markdown): `.claude/skills/newsletter/body-builders.md`
 - Web page template + markdown→HTML rules: `.claude/skills/newsletter/web-publish.md`
+- Social templates + platform CTA rules: `.claude/skills/newsletter/social-builders.md`
+- Video script template + production pack: `.claude/skills/newsletter/video-builder.md`
+- Ali Abdaal voice guide (rules): `.claude/skills/newsletter/voice-ali-abdaal.md`
+- Ali Abdaal voice samples (anchors): `.claude/skills/newsletter/voice-samples.md`
