@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI RFP Response Assistant for SMB Sales Teams | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-rfp-response-assistant.html">
+    <meta property="og:title" content="AI RFP Response Assistant for SMB Sales Teams | Startup Ideas">
+    <meta property="og:description" content="Turn security questionnaires and RFPs into first-draft answers using your past wins. Vector search + LLM workflow for teams priced out of Loopio and Responsive.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI RFP Response Assistant for SMB Sales Teams | Startup Ideas">
+    <meta property="twitter:description" content="Turn security questionnaires and RFPs into first-draft answers using your past wins. Vector search + LLM workflow for teams priced out of enterprise RFP suites.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-rfp-response-assistant.html">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "AI RFP Response Assistant for SMB Sales Teams",
+          "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#person" },
+          "datePublished": "2026-04-20",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-rfp-response-assistant.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI RFP Response Assistant for SMB Sales Teams",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Ingest RFPs and security questionnaires, retrieve proof points from a vector-indexed win library, and generate section-level drafts with source citations for sales and solutions teams."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build an AI RFP Response Assistant MVP",
+          "description": "Step-by-step guide to building an AI RFP response assistant in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Ingest", "text": "Upload the RFP or questionnaire, chunk it into sections, and connect collateral from Drive, Notion, or past proposals." },
+            { "@type": "HowToStep", "position": 2, "name": "Retrieve", "text": "Embed questions and library documents; use vector search to pull the top matching proof points and policies per section." },
+            { "@type": "HowToStep", "position": 3, "name": "Draft", "text": "Call an LLM with structured outputs to write answers that cite specific source snippets and flag gaps where human review is required." },
+            { "@type": "HowToStep", "position": 4, "name": "Export", "text": "Let the rep edit in-app, then export to Word or Google Docs with a compliance checklist of unanswered or low-confidence items." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI RFP Response Assistant for SMB Sales Teams", "item": "https://weekendmvp.app/ideas/ai-rfp-response-assistant.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                AI RFP Response Assistant for SMB Sales Teams
+            </h1>
+
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                Turn security questionnaires and RFPs into first-draft answers using your past wins—without buying a $20K/year enterprise response suite.
+            </p>
+
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <label for="gate-first-name" class="sr-only">First name</label>
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <label for="gate-email" class="sr-only">Email address</label>
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                        <a href="#section-sources" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Sources</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4 flex-wrap">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                            <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI RFP Response Assistant for SMB Sales Teams</h1>
+                        <p class="text-xl text-neutral-500 font-light">Ingest the RFP, pull proof from your win library with vector search, and ship credible first drafts your team can finalize—priced for teams that will never buy Loopio.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Mid-market sales and solutions engineers live inside 200-row spreadsheets called security questionnaires, vendor RFPs, and DDQs. Each deal duplicates work: hunt through old proposals, Slack threads, and PDFs for the one paragraph that proves SOC 2 coverage or data residency. Miss a deadline and the deal stalls; copy-paste the wrong year and you erode trust. Generic ChatGPT answers sound confident but hallucinate policies your company does not have—legal and security teams will not sign off.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            Incumbent response-management platforms are built for enterprises with dedicated proposal ops. Public pricing for category leaders starts around five figures annually with annual contracts, which rules out the 10–200 person SaaS vendors winning an outsized share of new RFP volume. Spreadsheets plus manual search do not scale; enterprise suites do not fit the budget. The wedge is a focused assistant that combines retrieval over your own documents with tight human-in-the-loop review—not another bloated content library nobody maintains.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            A web app where the AE or solutions consultant uploads the RFP (PDF, Word, or portal export), maps sections to owners, and connects a &ldquo;win library&rdquo; of past proposals, security docs, and release notes. Embeddings index every chunk; each question pulls the top-k evidence spans before the model writes. Output is structured: proposed answer, bullet citations back to source files, and explicit &ldquo;needs human&rdquo; flags when similarity scores drop. Export to Word or Google Docs preserves tables procurement teams expect. You are selling speed with auditability—not fully autonomous compliance fiction.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Ingest</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Upload the RFP, split into sections, sync collateral from Drive or Notion</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Retrieve</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Vector search surfaces the best past answers, policies, and metrics</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Draft</p>
+                                    <p class="text-xs text-neutral-500 mt-1">LLM writes section replies with citations and gap warnings</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Export</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Review in-app, resolve flags, export to Docx with a compliance checklist</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Procurement and vendor security reviews are formalizing across industries, which keeps demand for faster, auditable RFP workflows structurally high. Third-party sizing varies by segment definition, but directional signals are consistent:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>High-teens CAGR</strong> appears repeatedly in analyst forecasts for RFP / proposal-automation software through the mid-2030s as teams replace spreadsheets with cloud workflows (Industry Research Biz summary of the broader RFP software market).</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>AI-augmented response workflows</strong> are called out as a distinct fast-growing sub-segment—multiple research shops size the &ldquo;RFP response automation AI&rdquo; market around low single-digit billions USD in the 2024 window with double-digit growth into the next decade (e.g., DataIntelo / Growth Market Reports style estimates—treat as directional, not gospel).</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Cloud-first adoption</strong> shows up across buyer surveys bundled with these reports—enterprises bias toward SaaS libraries, which validates a multi-tenant product you can host on Vercel + Supabase instead of shipping on-prem.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>SMB wedge</strong>: the same tailwinds lift mid-market SaaS vendors (50–500 employees) that must answer enterprise security reviews but cannot justify dedicated proposal operations—your ideal first 50 accounts.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Incumbents own the enterprise narrative; almost everything is &ldquo;contact sales&rdquo; pricing. That creates a clean undercut story for teams with &lt;50 seats:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Loopio</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Mature content library, review workflows, and AI-assisted drafting aimed at proposal teams. Strong in regulated and mid-market/enterprise accounts.</p>
+                                <p class="text-xs text-neutral-400">Public pricing lists Foundations from ~$20,000/year (10 seats) — custom tiers above that</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Responsive (ex-RFPIO)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Full response-management platform with deep integrations and enterprise SSO. Breadth is the product; complexity and price follow.</p>
+                                <p class="text-xs text-neutral-400">Quote-based; list pricing not published — plan for enterprise sales cycles</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Qvidian (Upland)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Long-standing player for large proposal shops and financial services. Heavy on governance, lighter on modern AI-native UX.</p>
+                                <p class="text-xs text-neutral-400">Enterprise contracts — typically 5-figure annual minimums</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">DIY stack</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Notion/Drive + ChatGPT. Cheap and flexible, but no retrieval citations, no section-level audit trail, and compliance teams hate it.</p>
+                                <p class="text-xs text-neutral-400">$20–60/user/mo in productivity tools + unpredictable model spend</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Sell &ldquo;credible first drafts with receipts&rdquo; to SaaS companies that outgrew DIY but will never buy Loopio. Retrieval-grounded answers, explicit citations, and export to Word beat raw ChatGPT for security questionnaires—price 10× below enterprise suites and win on speed-to-ROI.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Seat-based SaaS with usage caps on embedded pages and monthly LLM tokens keeps COGS predictable. Anchor against DIY spend (~$50–150/mo per rep in tools) while staying an order of magnitude under Loopio&rsquo;s published floor.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Team</h4>
+                                <p class="text-2xl font-bold mb-2">$79/mo</p>
+                                <p class="text-xs text-neutral-500">3 seats, 3 active RFPs, 2k library pages, Slack alerts</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Growth</h4>
+                                <p class="text-2xl font-bold mb-2">$199/mo</p>
+                                <p class="text-xs text-neutral-500">10 seats, unlimited RFPs, SSO-ready, priority vector indexing</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Scale</h4>
+                                <p class="text-2xl font-bold mb-2">$399/mo</p>
+                                <p class="text-xs text-neutral-500">25 seats, audit log export, custom data retention, shared workspaces</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-xs text-neutral-500">Target CAC</p>
+                                    <p class="font-semibold">$400</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Avg. Revenue/Account</p>
+                                    <p class="font-semibold">$180/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Est. Churn</p>
+                                    <p class="font-semibold">4%/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">LTV (18 mo)</p>
+                                    <p class="font-semibold">$2.9k</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Optimize for ingestion → chunk → embed → retrieve → generate. Supabase pgvector keeps you on one Postgres; Vercel AI SDK streams answers back to the browser while you log citations.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js 15 + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">App Router for the RFP workspace, server actions for uploads, streaming UI for section-by-section drafts.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI (embeddings + GPT-4.1 mini / 4o)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">text-embedding-3-small for vectors; structured outputs for {answer, citations[], confidence, needs_human} per section.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase + pgvector</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Store documents, chunks, embeddings, and RFP projects; RLS per workspace; edge functions for async re-index jobs.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Org + user model maps cleanly to multi-seat billing; SAML hooks when you graduate Growth → Scale.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Stripe Billing</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Metered component for token overages; customer portal for seat changes.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Vercel + Inngest (or Trigger.dev)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Background jobs for PDF parsing, OCR fallbacks, and re-embedding when the library updates.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI BUILD PROMPTS -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Next.js 15 project with TypeScript, Tailwind CSS, and the Vercel AI SDK for an &ldquo;AI RFP Response Assistant&rdquo;. Set up Supabase (Postgres + pgvector + storage buckets) with tables: workspaces, members, rfps, rfp_sections, documents, document_chunks (embedding vector(1536), metadata JSONB), generation_runs, and citations. Add Clerk for org-based auth, Stripe subscriptions for Team/Growth/Scale tiers, and environment variables for OpenAI + Supabase service role. Include PDF text extraction via pdf-parse with a TODO hook for unstructured.io if layout is messy.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the RFP drafting pipeline: (1) Upload flow that splits PDFs/DOCX into sections using heading heuristics + manual override grid, (2) Background job that chunks library docs to ~800 tokens with overlap, embeds with text-embedding-3-small, stores in pgvector, (3) For each section, run similarity search (top 8 chunks), then call GPT-4o with JSON schema {answer_markdown, citations:[{doc_id, chunk_id, quote}], confidence_0_1, needs_human_reason}, refusing to invent policies not present in citations, (4) UI with side-by-side source viewer and accept/edit/export to DOCX using a server-generated template. Stream tokens to the UI for perceived speed.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Marketing site for &ldquo;Receipt&rdquo; (placeholder name) — AI RFP assistant for SaaS sales teams. Hero: &ldquo;Answer enterprise security questionnaires with receipts, not vibes.&rdquo; Include: problem (DIY ChatGPT vs $20K suites), solution diagram (ingest → retrieve → cite → export), interactive sample showing a SOC2 question with highlighted source quotes, comparison table vs Loopio/Responsive/DIY, pricing for Team/Growth/Scale, security section (data retention, zero training on customer data), and email capture. Palette: ink navy, warm paper background, electric blue accents — credible not flashy.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Branding for Receipt: logo mark combining a checkmark with a document fold (works at 24px), colors — primary #0F172A, secondary #F8FAFC, accent #2563EB, caution #F59E0B for &ldquo;needs review&rdquo; states. Typography: Geist Sans for UI, IBM Plex Mono for citation chips. Deliverables: favicon, app sidebar wordmark, empty-library illustration, and LinkedIn banner for outbound to VP Sales Ops.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sources -->
+                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Sources</h2>
+                        <p class="text-neutral-500 text-sm mb-4">Market sizing and competitive pricing signals collated from public research summaries and vendor pages (April 2026). Triangulate before you cite in investor materials.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Industry Research Biz — RFP software market overview (CAGR context)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://dataintelo.com/report/rfp-response-automation-ai-market" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">DataIntelo — RFP response automation AI market snapshot<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://loopio.com/pricing/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Loopio — public Foundations pricing<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.responsive.io/pricing/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Responsive — plan structure (quote-based)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                        </ul>
+                        <p class="text-neutral-400 text-xs mt-4">Ideabrowser MCP was unavailable in this workspace; this page was researched via open web sources.</p>
+                    </div>
+
+                    <!-- Explore More -->
+                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <a href="saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:cloud" class="text-sky-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More SaaS Ideas</span>
+                                    <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                                </div>
+                            </a>
+                            <a href="5k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$5K/Month Ideas</span>
+                                    <p class="text-xs text-neutral-500">By revenue potential</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Cursor
+                                </a>
+                                <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Claude
+                                </a>
+                                <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="lucide:zap" class="text-amber-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Bolt.new
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../ideas-for/developers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="lucide:terminal" class="text-emerald-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Developers
+                                </a>
+                                <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Solo Founders
+                                </a>
+                                <a href="../ideas-for/side-hustlers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="lucide:briefcase" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Side Hustlers
+                                </a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <a href="proposal-generator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Proposal Generator</span>
+                                    <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                                </a>
+                                <a href="contract-analyzer.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Contract Analyzer</span>
+                                    <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                                </a>
+                                <a href="corporate-knowledge-ai-assistant.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Corporate Knowledge Base AI Assistant</span>
+                                    <p class="text-xs text-neutral-500 mt-0.5">~12 hours</p>
+                                </a>
+                                <a href="client-portal.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Client Portal Builder</span>
+                                    <p class="text-xs text-neutral-500 mt-0.5">~12 hours</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                    <div class="col-span-2 md:col-span-1">
+                        <a href="../index.html">
+                            <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
+                        </a>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                        <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                            <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                            <li><a href="../ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
+                            <li><a href="../ideas/automation/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Automation</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                            <li><a href="../build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                            <li><a href="../build-with/bolt/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Bolt.new</a></li>
+                            <li><a href="../build-with/no-code/" class="text-neutral-500 hover:text-neutral-900 transition-colors">No-Code</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas-for/developers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Developers</a></li>
+                            <li><a href="../ideas-for/non-technical/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Non-Technical</a></li>
+                            <li><a href="../ideas-for/solo-founders/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Solo Founders</a></li>
+                            <li><a href="../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                            <li><a href="../articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                            <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-neutral-900 transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                    <div class="flex items-center gap-6">
+                        <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                            <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                            <span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        const hasAccess = localStorage.getItem('ideas_email');
+        const emailGate = document.getElementById('email-gate');
+        const ideaContent = document.getElementById('idea-content');
+
+        if (hasAccess) {
+            initSidebar();
+        } else {
+            emailGate.classList.remove('hidden');
+            ideaContent.classList.add('hidden');
+        }
+
+        const form = document.getElementById('ideas-email-form');
+        const submitBtn = document.getElementById('gate-submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('gate-email').value;
+            const firstName = document.getElementById('gate-first-name').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin" aria-hidden="true"></iconify-icon> <span>Unlocking...</span>';
+
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                if (!isLocalhost) {
+                    const response = await fetch('/api/ideas-subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, first_name: firstName })
+                    });
+                    const data = await response.json();
+                    if (!response.ok && !data.success) {
+                        throw new Error(data.error || 'Failed to subscribe');
+                    }
+                }
+                localStorage.setItem('ideas_email', email);
+                emailGate.classList.add('hidden');
+                ideaContent.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                initSidebar();
+            } catch (error) {
+                console.error('Subscription error:', error);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>';
+            }
+        });
+
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+
+            if (!sidebar) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        const offset = window.innerWidth < 1024 ? 80 : 24;
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        if (window.innerWidth < 1024) {
+                            toggleMenu(false);
+                        }
+                    }
+                });
+            });
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -70% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        document.querySelectorAll('.sidebar-link').forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('[id^="section-"]').forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        function copyPrompt(button) {
+            const promptText = button.nextElementSibling.nextElementSibling.textContent;
+            navigator.clipboard.writeText(promptText.trim()).then(() => {
+                const icon = button.querySelector('iconify-icon');
+                icon.setAttribute('icon', 'lucide:check');
+                setTimeout(() => {
+                    icon.setAttribute('icon', 'lucide:copy');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

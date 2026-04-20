@@ -1,6 +1,18 @@
 {
   "ideas": [
     {
+      "slug": "ai-rfp-response-assistant",
+      "title": "AI RFP Response Assistant for SMB Sales Teams",
+      "publishedAt": "2026-04-20",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["developers", "solo-founders", "side-hustlers"],
+      "source": "web-research:mode-b"
+    },
+    {
       "slug": "ai-landing-page-generator-ecommerce",
       "title": "AI Landing Page Generator for E-commerce",
       "publishedAt": "2026-04-19",
