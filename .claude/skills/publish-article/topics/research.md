@@ -150,13 +150,16 @@ Last updated: 2026-01-27
   - https://www.hostinger.com/tutorials/side-hustle-statistics
 
 #### Topic 9
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
 - **Title:** Why ChatGPT Can't Give You Good Startup Ideas (And What Actually Works)
-- **Keywords:** "chatgpt startup ideas", "AI brainstorm ideas bad"
+- **Slug:** why-chatgpt-cant-give-good-startup-ideas
 - **Framework:** Myth-Busting
-- **Search Volume:** Medium
-- **Notes:** Contrarian angle. ChatGPT gives generic, unvalidated ideas. What works: problem-first thinking, niche focus, personal experience, market research. Position Weekend MVP library as the solution.
-- **Angle:** Challenge the "just ask AI" crowd
+- **Published:** 2026-04-19
+- **File:** articles/why-chatgpt-cant-give-good-startup-ideas.html
+- **Keywords:** "chatgpt startup ideas", "AI brainstorm ideas bad"
+- **Research Sources:**
+  - https://milandanushka.medium.com/stop-using-ai-for-brainstorming-heres-why-73-of-ideas-are-generic-and-what-to-do-instead-805ac985a42c
+  - https://andriybatutin.substack.com/p/what-llms-actually-cant-do
 
 #### Topic 10
 - [ ] **QUEUED**

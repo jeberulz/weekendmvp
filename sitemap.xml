@@ -100,6 +100,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://weekendmvp.app/articles/why-chatgpt-cant-give-good-startup-ideas.html</loc>
+    <lastmod>2026-04-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
   <!-- Category Collections -->
   <url>
@@ -215,6 +221,12 @@
   <url>
     <loc>https://weekendmvp.app/ideas/ai-landing-page-generator-ecommerce.html</loc>
     <lastmod>2026-04-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/ideas/ai-rfp-response-assistant.html</loc>
+    <lastmod>2026-04-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
