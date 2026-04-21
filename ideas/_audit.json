@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-21T20:17:49.388Z",
+  "generatedAt": "2026-04-21T20:39:47.303Z",
   "totals": {
-    "PASS": 4,
-    "THIN": 9,
+    "PASS": 5,
+    "THIN": 8,
     "total": 13,
     "passing": 13,
     "failing": 0
@@ -252,30 +252,23 @@
     },
     {
       "slug": "expense-splitter-app",
-      "status": "THIN",
-      "bytes": 22128,
-      "wordCount": 478,
-      "h2Count": 6,
+      "status": "PASS",
+      "bytes": 33982,
+      "wordCount": 1062,
+      "h2Count": 9,
       "description": "Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for trips, roommates, and dinners.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 478 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "content-repurposing-tool",

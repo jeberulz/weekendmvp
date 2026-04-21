@@ -160,12 +160,138 @@
 
                 <div class="mb-12">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                    <p class="text-neutral-600 leading-relaxed mb-6">Expense splitting is evergreen. Splitwise has 50M+ downloads but hasn't innovated in years. Younger users want modern design and faster settlement options.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Group expense tracking is an evergreen category with one dominant incumbent and a long tail of me-toos. The opportunity is not inventing a new category—it is modern UX, faster settlement, and niche modes (group travel, roommates, couples) that the incumbent has underserved for nearly a decade.</p>
                     <ul class="space-y-3">
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Splitwise valued at $1B+ with premium features at $5/month</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>70% of millennials regularly split expenses with friends</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Travel spending rebounding—group trips need expense tracking</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Splitwise reports 50M+ downloads and last raised on a $1B+ valuation; Pro tier at $4/mo is the market's price anchor.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Global outbound tourism has fully recovered past 2019 levels (UNWTO 2024)—group trips are the highest-intent use case for a splitter.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Zelle processed $1T+ in P2P payments in 2023 and Venmo passed $270B in annual TPV—settlement rails are solved; splitting UX is not.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Gen Z and Millennials split 3+ recurring expenses with housemates on average (Zillow / Pew housing surveys); roommate is a sticky, monthly use case.</span></li>
                     </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Splitwise owns the brand; Venmo owns the default. Everyone else fights for niche use cases. Your opening is modern UX plus a specific mode the incumbent neglects—group travel receipt parsing, multi-currency, or a roommate-first recurring bills layout.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Splitwise</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category king. Works, but UI is a decade old, Pro tier feels nickel-and-dimed, and the travel-specific workflow (multi-currency, receipt photos, exchange rates) still requires workarounds.</p>
+                            <p class="text-xs text-neutral-400">Free with ads → $4/mo Pro (no ads, receipts, currency conversion)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Tricount</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Euro-popular, travel-first. Slick enough on the app, but no dominant US presence and the web experience is weak—opening for a travel splitter with a tight trip-pass offer.</p>
+                            <p class="text-xs text-neutral-400">Free with ads → &euro;2.99/mo Premium</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Settle Up</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Clean, minimal, indie. Good multi-currency handling but weaker viral loops—nobody talks about Settle Up the way they talk about Splitwise. Product is fine; distribution is the gap.</p>
+                            <p class="text-xs text-neutral-400">Free → $2.99/mo or $14.99/yr Premium</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Venmo / Cash App</h4>
+                            <p class="text-xs text-neutral-500 mb-2">The &ldquo;just Venmo me&rdquo; default. Kills intent once per transaction but has no group math, no history per trip, no recurring bill logic. Co-existence play: export settled balances as a Venmo / Cash App request link.</p>
+                            <p class="text-xs text-neutral-400">Free for P2P; no splitting or group tracking UX</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Ship a modern, mobile-first PWA that nails one niche hard—group travel with OCR receipt capture and live multi-currency, or a roommate-first recurring bills home—then widen. Splitwise&rsquo;s stagnation and Venmo&rsquo;s non-answer are both the opening.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Freemium subscription priced at the category floor, plus a one-time Trip Pass that captures the high-intent travel moment without asking tourists to start a monthly subscription. Free tier seeds viral group invites; Pro monetizes housemates and repeat trip organizers.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 active group, up to 5 members, basic split math, Venmo/Cash App hand-off</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$3.99/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited groups, recurring expenses, multi-currency, receipt OCR, CSV export</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Trip Pass</h4>
+                            <p class="text-2xl font-bold mb-2">$9.99 once</p>
+                            <p class="text-xs text-neutral-500">One trip, unlimited members, full feature set for 30 days—no subscription</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$2&ndash;6</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Viral k-factor</p>
+                                <p class="font-semibold">1.8&ndash;2.4</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Pro conversion</p>
+                                <p class="font-semibold">3&ndash;5%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Trip Pass attach</p>
+                                <p class="font-semibold">8&ndash;12%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">PWA-first is the call—travelers on patchy hotel Wi-Fi need offline expense entry that syncs later. Next.js covers marketing + app + API in one deploy; Supabase handles auth, Postgres, and Realtime for live group balance updates; OCR via GPT-4o Vision keeps receipt capture a single API call.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 PWA + TypeScript</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">App Router, installable PWA with service worker for offline expense entry. IndexedDB queue drains to Postgres on reconnect.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Auth + Postgres for groups/members/expenses, Realtime for live balance updates, Storage for receipt images, RLS per group membership.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">GPT-4o Vision (receipts)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Single API call parses receipt photo into merchant, total, line items, and currency. Gate behind Pro + Trip Pass to keep margin positive.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Checkout + Billing Portal for Pro subscriptions; one-off Payment Links for Trip Pass. Webhook-driven entitlement sync.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:openexchangerates" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Open Exchange Rates</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Daily FX rates for multi-currency trips; store rate-at-entry on the expense so historical balances don&rsquo;t drift.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Trip summary emails, recurring-bill reminders, &ldquo;you owe / you&rsquo;re owed&rdquo; nudges with one-click settle links.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mb-12">

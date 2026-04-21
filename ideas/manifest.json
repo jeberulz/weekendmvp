@@ -235,7 +235,19 @@
         "weekend-builders"
       ],
       "description": "Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for trips, roommates, and dinners.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1100,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (Splitwise, Tricount, Settle Up, Venmo), Business Model (Free / $3.99 Pro / $9.99 Trip Pass one-off + unit economics), Recommended Tech Stack (Next.js PWA + Supabase + GPT-4o Vision + Stripe + Open Exchange Rates + Resend). Market stats cite UNWTO tourism recovery, Zelle/Venmo TPV public figures, Splitwise valuation; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "content-repurposing-tool",
