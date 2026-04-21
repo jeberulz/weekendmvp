@@ -251,7 +251,19 @@
         "solo-founders"
       ],
       "description": "Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, interactive docs instantly.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1100,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (Mintlify, ReadMe, Stoplight/SwaggerHub, Redoc/Scalar), Business Model (Free OSS / $29 Pro / $99 Team + LLM gross-margin economics), Recommended Tech Stack (GitHub App + swagger-parser + Claude w/ prompt caching + Next.js multi-tenant + Algolia DocSearch + Supabase/Stripe). Market stats cite Mintlify Series A (TechCrunch 2024), Postman State of the API 2024, GitHub Octoverse, Scalar GitHub stars; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "expense-splitter-app",

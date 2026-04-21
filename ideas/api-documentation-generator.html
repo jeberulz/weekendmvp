@@ -160,12 +160,138 @@
 
                 <div class="mb-12">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                    <p class="text-neutral-600 leading-relaxed mb-6">Documentation tools are a proven market. ReadMe raised $30M+, and Stoplight was acquired for $100M+. But existing tools still require manual input—there's opportunity for truly automated solutions.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-6">API documentation tooling is a mature developer category with fresh AI-native disruption. ReadMe raised on a $200M+ valuation; Stoplight was acquired by SmartBear in 2022; Mintlify raised a $20M Series A in 2024 on the AI-generated-docs thesis. The indie opening is a truly automated, OpenAPI-in-repo-to-hosted-docs pipeline for small teams who can&rsquo;t justify $200+/mo.</p>
                     <ul class="space-y-3">
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Poor documentation is the #1 reason developers abandon APIs (Survey)</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>OpenAPI/Swagger is standard but painful to write manually</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Mintlify raised $20M for docs—market is heating up</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Postman State of the API 2024: &ldquo;poor documentation&rdquo; is consistently a top-3 complaint developers raise about third-party APIs—structural, recurring pain.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Mintlify&rsquo;s $20M Series A (TechCrunch 2024) validated AI-generated docs as a standalone category, not a feature.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GitHub&rsquo;s Octoverse reports OpenAPI/Swagger specs in millions of public repos; every one is a candidate for automated publishing.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Scalar (open source) crossed 20K+ GitHub stars—signals developer appetite for modern OpenAPI renderers priced below the incumbents.</span></li>
                     </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Two clusters: the AI-native docs platforms (Mintlify, ReadMe) priced for mid-market teams, and the open-source renderers (Redoc, Scalar) with zero price but heavy DIY setup. Your wedge is a hosted, AI-assisted OpenAPI-to-docs pipeline at $29/mo—between free-but-DIY and $99+/mo-but-hosted.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Mintlify</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Current AI-docs darling. Beautiful output, auto-generated prose from OpenAPI + source. Pricing climbs fast past free tier; feels built for funded teams.</p>
+                            <p class="text-xs text-neutral-400">Free OSS &rarr; $150/mo Pro &rarr; $550/mo Growth</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ReadMe.com</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category incumbent. Rich API reference, interactive try-it UI, metrics. Mature but manual—still asks writers to touch every endpoint description.</p>
+                            <p class="text-xs text-neutral-400">Free personal &rarr; $99/mo Startup &rarr; $399/mo Business</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Stoplight / SwaggerHub</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Enterprise design-first API platforms. Heavy, governance-centric, priced for enterprise API platform teams, not indie devs shipping SDKs.</p>
+                            <p class="text-xs text-neutral-400">$39&ndash;$175/user/mo (Stoplight); $90+/user/mo (SwaggerHub)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Redoc / Scalar (open source)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Self-host renderers. Free and clean, but developers spend a weekend wiring them up, hosting them, and hand-writing prose. No AI assistance, no hosted search, no versioning UI.</p>
+                            <p class="text-xs text-neutral-400">Free — but real cost is engineer time</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Ship a GitHub App + hosted docs site that reads OpenAPI from a repo, generates missing prose with AI, and auto-publishes on merge. Price it at $29/mo—below Mintlify&rsquo;s $150 floor, above Scalar&rsquo;s &ldquo;free if you self-host&rdquo; setup cost. Own the indie SaaS tier that ships SDKs but doesn&rsquo;t have a docs team.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">SaaS freemium with an OSS-friendly free tier to seed GitHub Marketplace discovery. Pro monetizes indie SaaS teams shipping paid APIs; Team adds seats and versioning for sub-50-dev orgs. Pricing sits explicitly below Mintlify&rsquo;s floor.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">OSS / Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">Public repos, unlimited endpoints, weekly AI regeneration, subdomain hosting</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Private repos, custom domain, daily regeneration, Algolia search, branded docs</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$99/mo</p>
+                            <p class="text-xs text-neutral-500">5 seats, versioned docs, API analytics, approval workflow, SSO, SLA</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM cost per regen</p>
+                                <p class="font-semibold">$0.20&ndash;1.00</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~75%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$40&ndash;80</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Net retention</p>
+                                <p class="font-semibold">115%+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">This is a GitHub App that reads OpenAPI specs, generates prose with Claude, and publishes a Next.js docs site. The tricky bits are diffing spec changes on each push (so regeneration is cheap), caching AI prose per endpoint, and making the docs URL a first-class custom domain.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:github" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">GitHub App + Octokit</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Install-once App with push webhook. Detect openapi.yaml/json path, fetch on push, diff against last snapshot, regenerate only changed endpoints.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:openapiinitiative" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">OpenAPI parser (swagger-parser)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Validates spec on each push, resolves $ref, extracts per-endpoint shape. Feeds structured data to the prose-generation step.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude + prompt caching</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Endpoint + brand voice prompt cached; only the delta per endpoint is regenerated. Cuts token spend by 80%+ on repeat regenerations.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js docs site + MDX</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Per-customer Next.js site rendering endpoint pages from MDX. Vercel multi-tenant: one deploy, path-based routing by customer slug; custom domain via Vercel Domains API.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:algolia" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Algolia DocSearch</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Index each generated doc page on publish; Pro/Team tier feature. Free for OSS customers via DocSearch program.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase + Stripe</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Supabase for auth, installations, cached prose. Stripe Checkout + Billing Portal; webhook-driven entitlement sync for custom domain / versioning features.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mb-12">
