@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-21T20:39:47.303Z",
+  "generatedAt": "2026-04-21T20:42:39.668Z",
   "totals": {
-    "PASS": 5,
-    "THIN": 8,
+    "PASS": 6,
+    "THIN": 7,
     "total": 13,
     "passing": 13,
     "failing": 0
@@ -124,30 +124,23 @@
     },
     {
       "slug": "waitlist-manager",
-      "status": "THIN",
-      "bytes": 22118,
-      "wordCount": 508,
-      "h2Count": 6,
+      "status": "PASS",
+      "bytes": 34318,
+      "wordCount": 1123,
+      "h2Count": 9,
       "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 508 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "ai-code-reviewer",

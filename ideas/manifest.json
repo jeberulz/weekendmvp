@@ -125,7 +125,19 @@
         "weekend-builders"
       ],
       "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1123,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (Viral Loops, Prefinery, KickoffLabs, Typeform+Mailchimp), Business Model (Free / $19 Pro / $49 Growth + unit economics), Recommended Tech Stack (Next.js + Supabase + Upstash rate limiting + Resend + Vercel custom domains + Stripe/PostHog). Market stats cite Statista email marketing projection, Robinhood/Harry's public founder AMAs, Product Hunt daily launch rate; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "ai-code-reviewer",
