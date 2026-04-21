@@ -303,7 +303,19 @@
         "side-hustlers"
       ],
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1099,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (OpusClip, Castmagic, Repurpose.io, Typefully/generic AI writers), Business Model (Free 3 runs / $19 Pro / $49 Creator + LLM cost unit economics), Recommended Tech Stack (Next.js + Supabase + Claude w/ prompt caching + Whisper/AssemblyAI + ffmpeg on Modal + Stripe/Resend). Market stats cite Goldman Sachs $250B creator economy, SignalFire creator count, OpusClip Series A (TechCrunch 2024), HubSpot State of Marketing; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "abandoned-cart-recovery",
