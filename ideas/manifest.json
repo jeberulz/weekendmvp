@@ -184,7 +184,19 @@
         "solo-founders"
       ],
       "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1079,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (4 competitors), Business Model (3 tiers + unit economics), Recommended Tech Stack (6 items). Market stats cite DataReportal, Linktree/HubSpot, Buffer public numbers; verify against current pricing pages before any marketing push."
+      }
     },
     {
       "slug": "api-documentation-generator",
