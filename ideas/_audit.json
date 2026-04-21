@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-21T19:22:12.932Z",
+  "generatedAt": "2026-04-21T19:38:08.302Z",
   "totals": {
     "PASS": 3,
     "THIN": 35,
     "total": 38,
-    "passing": 38,
-    "failing": 0
+    "passing": 13,
+    "failing": 25
   },
   "ideas": [
     {

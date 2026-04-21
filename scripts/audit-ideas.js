@@ -8,6 +8,7 @@
  *   node scripts/audit-ideas.js --apply          # also rewrites manifest.json + manifest.draft.json + sitemap.xml
  *   node scripts/audit-ideas.js --strict         # exit non-zero if any idea in manifest.json fails the PASS bar
  *   node scripts/audit-ideas.js --file <slug>    # audit one page; pairs with --strict for pre-publish gating
+ *   node scripts/audit-ideas.js --retire-under <bytes> --apply  # quarantine THIN pages below <bytes> into manifest.draft.json
  */
 
 const fs = require('fs');
@@ -25,6 +26,8 @@ const apply = process.argv.includes('--apply');
 const strict = process.argv.includes('--strict');
 const fileFlagIdx = process.argv.indexOf('--file');
 const singleSlug = fileFlagIdx !== -1 ? process.argv[fileFlagIdx + 1] : null;
+const retireIdx = process.argv.indexOf('--retire-under');
+const retireUnder = retireIdx !== -1 ? Number(process.argv[retireIdx + 1]) : null;
 
 const REQUIRED_SECTIONS = [
   { key: 'problem',     match: /\bproblem\b/i },
@@ -136,8 +139,14 @@ function main() {
   for (const idea of manifest.ideas) {
     const audit = auditFile(idea.slug);
     report.ideas.push(audit);
-    if (QUARANTINE_STATUSES.has(audit.status)) {
-      failing.push({ ...idea, _auditStatus: audit.status, _auditReasons: audit.reasons });
+    const retireByThreshold = retireUnder != null && audit.status === 'THIN' && audit.bytes < retireUnder;
+    if (QUARANTINE_STATUSES.has(audit.status) || retireByThreshold) {
+      failing.push({
+        ...idea,
+        _auditStatus: audit.status,
+        _auditReasons: audit.reasons,
+        ...(retireByThreshold ? { _retiredAt: new Date().toISOString(), _retiredUnder: retireUnder } : {}),
+      });
     } else {
       const enriched = { ...idea };
       if (!enriched.description && audit.description) enriched.description = audit.description;
