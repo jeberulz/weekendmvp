@@ -9,17 +9,17 @@ node_modules/
 .env.*
 !.env.example
 
-# Newsletter drafts (keep README + METRICS, hide per-send markdown)
-content/newsletter/*.md
+# Newsletter drafts (keep README + METRICS, hide per-send markdown at any depth)
+content/newsletter/**/*.md
 !content/newsletter/README.md
 !content/newsletter/METRICS.md
 
-# Social cross-posts (AM-only; hide per-send markdown)
-content/social/*.md
+# Social cross-posts (AM-only; hide per-send markdown at any depth)
+content/social/**/*.md
 !content/social/.gitkeep
 
-# Video scripts (AM-only; hide per-send markdown)
-content/video/*.md
+# Video scripts (AM-only; hide per-send markdown at any depth)
+content/video/**/*.md
 !content/video/.gitkeep
 
 # OS
