@@ -204,21 +204,150 @@
                 <!-- Market Research -->
                 <div class="mb-12">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                    <p class="text-neutral-600 leading-relaxed mb-6">The SaaS analytics market is dominated by expensive enterprise tools like ChartMogul and Baremetrics. There's a clear gap for a simpler, more affordable option for indie hackers and early-stage founders.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Subscription analytics is a mature but consolidating category. ChartMogul and Baremetrics own the mid-market; ProfitWell (now part of Paddle) owns the free-in-exchange-for-lock-in play; Stripe&rsquo;s own Sigma and Revenue Recognition sit one layer deeper. The indie opportunity is founders on Stripe with under $50K MRR who want a clean dashboard at a price that doesn&rsquo;t feel like a tax on being small.</p>
                     <ul class="space-y-3">
                         <li class="flex items-start gap-3 text-sm">
                             <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                            <span>Baremetrics charges $108/month minimum—overkill for early-stage startups</span>
+                            <span>Stripe publicly reports processing for millions of businesses; every Stripe-native SaaS is a potential user, and most under $50K MRR use a spreadsheet.</span>
                         </li>
                         <li class="flex items-start gap-3 text-sm">
                             <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                            <span>Over 1M businesses use Stripe, most without proper analytics</span>
+                            <span>Baremetrics&rsquo; entry plan sits at $129/mo (as of 2024 public pricing), ChartMogul at $100+/mo—both price floors are well above early-stage founder comfort.</span>
                         </li>
                         <li class="flex items-start gap-3 text-sm">
                             <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                            <span>Indie Hackers forum shows constant demand for affordable alternatives</span>
+                            <span>ProfitWell was acquired by Paddle in 2022; the free plan persists but now routes users toward Paddle&rsquo;s merchant-of-record stack—opening for a neutral option.</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                            <span>Global SaaS market projected past $900B by 2030 (Gartner); every new SaaS needs MRR/churn/LTV math on day one.</span>
                         </li>
                     </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Incumbents compete on breadth (ChartMogul) or free-plus-upsell (ProfitWell/Paddle). Your opening is a Stripe-only, indie-priced dashboard that opens in under 60 seconds and doesn&rsquo;t require a migration conversation with a payments vendor.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ChartMogul</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category incumbent. Rich cohort analysis, CRM syncs, forecasting. Priced for Series A+ teams; setup is heavier than indie founders want.</p>
+                            <p class="text-xs text-neutral-400">$100/mo Launch &rarr; $500+/mo Volume (scales with MRR)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Baremetrics</h4>
+                            <p class="text-xs text-neutral-500 mb-2">The indie-hacker favorite of 2018 that drifted upmarket. Still excellent UX; $129/mo entry price prices out pre-$10K MRR founders who need it most.</p>
+                            <p class="text-xs text-neutral-400">$129/mo Metrics &rarr; $229/mo Control Center</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ProfitWell (Paddle)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Free forever core analytics, but now a funnel into Paddle&rsquo;s merchant-of-record billing. Product-led hook for Paddle&rsquo;s upsell, not a neutral analytics tool.</p>
+                            <p class="text-xs text-neutral-400">Free core &rarr; upsell to Paddle Billing/Retain</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Stripe Sigma + spreadsheets</h4>
+                            <p class="text-xs text-neutral-500 mb-2">The default. Stripe&rsquo;s own SQL analytics + a Google Sheet glued together by the founder at 11 pm. Works, but fragile and no alerts, no cohort retention curves, no churn root-causing.</p>
+                            <p class="text-xs text-neutral-400">Sigma usage-based (cents per query); spreadsheets free</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Own the &ldquo;sub-$50K MRR Stripe founder&rdquo; wedge: free up to $10K MRR, $29/mo Pro, no Paddle lock-in, alerts in Slack, and defensible cohort math out of the box. Baremetrics&rsquo; price floor and ProfitWell&rsquo;s Paddle-capture are both the opening.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Freemium with a usage-based tilt: free under $10K MRR to seed Indie Hackers and r/SaaS word-of-mouth, Pro at $29/mo through $50K MRR, Team at $79/mo for sub-50-dev teams who need seats and Slack digests. Price curve mirrors your customer&rsquo;s MRR curve so the tool is never a tax.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 Stripe account, up to $10K MRR, core dashboard, 14-day history</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited history, cohort retention, Slack/email alerts, multi-account, weekly digest</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$79/mo</p>
+                            <p class="text-xs text-neutral-500">5 seats, board-ready PDF reports, benchmarks, SSO, investor-view sharing link</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$25&ndash;60</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Pro conversion</p>
+                                <p class="font-semibold">6&ndash;10%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Blended ARPU</p>
+                                <p class="font-semibold">$34/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Net retention</p>
+                                <p class="font-semibold">110%+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The hard parts are Stripe historical backfill (pagination-heavy, rate limited) and pre-computing cohort retention cheaply at query time. Next.js covers app + marketing; Supabase handles auth, Postgres, and Edge Functions for nightly rollups; Stripe webhooks keep the dashboard live between nightly jobs.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 + TypeScript</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Marketing site, dashboard, Stripe OAuth callback, webhook endpoint. Server Components render the dashboard from pre-aggregated Postgres rows for sub-300 ms loads.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase (Postgres + Edge)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Auth, Postgres for raw Stripe events + daily_metrics rollup tables, RLS per workspace. Edge Functions run Stripe historical sync and nightly cohort computation.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe OAuth + webhooks</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">OAuth Connect for read-only access; webhook endpoint idempotent on event.id; historical backfill on first connect with resume-able paging. Signed webhook verification required.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:tailwindcss" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Tremor + Recharts</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tremor components for KPI cards and cohort tables; Recharts for time-series MRR chart. Both tree-shake cleanly and match Tailwind tokens.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend + Slack webhooks</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Weekly email digest with MRR/churn delta; Slack Incoming Webhooks for Pro/Team tier alerts on churn spikes and new-customer milestones.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Vercel Cron + Stripe Billing</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Nightly cron triggers cohort rollup Edge Function. Stripe Billing Checkout + Portal for Pro/Team subscriptions; webhook syncs plan entitlements.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Build Prompts -->

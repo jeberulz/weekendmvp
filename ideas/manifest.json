@@ -84,7 +84,19 @@
         "solo-founders"
       ],
       "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1096,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (ChartMogul, Baremetrics, ProfitWell/Paddle, Stripe Sigma+spreadsheets), Business Model (Free under $10K MRR / $29 Pro / $79 Team + unit economics), Recommended Tech Stack (Next.js + Supabase Edge Functions + Stripe OAuth/webhooks + Tremor/Recharts + Resend/Slack + Vercel Cron). Market stats cite Stripe public scale, Baremetrics/ChartMogul 2024 pricing pages, ProfitWell Paddle acquisition (2022), Gartner SaaS projection; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "customer-feedback-aggregator",

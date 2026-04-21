@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-21T20:44:42.392Z",
+  "generatedAt": "2026-04-21T20:47:58.776Z",
   "totals": {
-    "PASS": 7,
-    "THIN": 6,
+    "PASS": 8,
+    "THIN": 5,
     "total": 13,
     "passing": 13,
     "failing": 0
@@ -70,30 +70,23 @@
     },
     {
       "slug": "subscription-analytics-dashboard",
-      "status": "THIN",
-      "bytes": 20370,
-      "wordCount": 503,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 32516,
+      "wordCount": 1096,
+      "h2Count": 8,
       "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 503 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "customer-feedback-aggregator",
