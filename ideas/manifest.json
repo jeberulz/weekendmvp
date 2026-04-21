@@ -116,7 +116,19 @@
         "side-hustlers"
       ],
       "description": "Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1100,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (Birdeye, ReviewTrackers, Podium, Appbot), Business Model (Free / $29 Pro / $79 Team + unit economics), Recommended Tech Stack (Next.js + Supabase + Playwright workers on Modal/Fly for G2/Capterra + platform APIs for App Store/Google Play/Trustpilot + Claude + Slack/Resend/Stripe). Market stats cite BrightLocal 2024, G2/Trustpilot public volumes, Grand View Research ORM market size; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "waitlist-manager",
