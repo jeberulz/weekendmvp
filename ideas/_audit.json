@@ -1,8 +1,7 @@
 {
-  "generatedAt": "2026-04-21T20:47:58.776Z",
+  "generatedAt": "2026-04-21T23:12:26.945Z",
   "totals": {
-    "PASS": 8,
-    "THIN": 5,
+    "PASS": 13,
     "total": 13,
     "passing": 13,
     "failing": 0
@@ -90,30 +89,23 @@
     },
     {
       "slug": "customer-feedback-aggregator",
-      "status": "THIN",
-      "bytes": 16017,
-      "wordCount": 452,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 27880,
+      "wordCount": 988,
+      "h2Count": 8,
       "description": "Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 452 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "waitlist-manager",
@@ -157,30 +149,23 @@
     },
     {
       "slug": "ai-resume-tailorer",
-      "status": "THIN",
-      "bytes": 15817,
-      "wordCount": 478,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 27911,
+      "wordCount": 1069,
+      "h2Count": 8,
       "description": "Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full build guide included.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 478 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "social-media-scheduler",
@@ -204,30 +189,23 @@
     },
     {
       "slug": "api-documentation-generator",
-      "status": "THIN",
-      "bytes": 16039,
-      "wordCount": 487,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 28007,
+      "wordCount": 1054,
+      "h2Count": 8,
       "description": "Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, interactive docs instantly.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 487 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "expense-splitter-app",
@@ -251,57 +229,43 @@
     },
     {
       "slug": "content-repurposing-tool",
-      "status": "THIN",
-      "bytes": 16157,
-      "wordCount": 507,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 28267,
+      "wordCount": 1099,
+      "h2Count": 8,
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 507 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "abandoned-cart-recovery",
-      "status": "THIN",
-      "bytes": 15993,
-      "wordCount": 485,
-      "h2Count": 5,
+      "status": "PASS",
+      "bytes": 27996,
+      "wordCount": 1075,
+      "h2Count": 8,
       "description": "Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 485 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     }
   ]
 }

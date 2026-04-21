@@ -213,7 +213,19 @@
         "side-hustlers"
       ],
       "description": "Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full build guide included.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1100,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (Teal, Rezi, Jobscan, Resume Worded/Kickresume), Business Model (Free 3/mo / $15 Pro / $39 Career + LLM-margin unit economics), Recommended Tech Stack (Next.js + Supabase + Unstructured/LlamaParse + Claude w/ prompt caching + React-PDF + Stripe w/ pausable subscriptions + Resend). Market stats cite Glassdoor 250 resumes/job, Jobscan 75% ATS filter rate, BLS 5M monthly openings, Teal/Rezi funding; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "social-media-scheduler",
