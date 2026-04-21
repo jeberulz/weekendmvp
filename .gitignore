@@ -14,5 +14,13 @@ content/newsletter/*.md
 !content/newsletter/README.md
 !content/newsletter/METRICS.md
 
+# Social cross-posts (AM-only; hide per-send markdown)
+content/social/*.md
+!content/social/.gitkeep
+
+# Video scripts (AM-only; hide per-send markdown)
+content/video/*.md
+!content/video/.gitkeep
+
 # OS
 .DS_Store
