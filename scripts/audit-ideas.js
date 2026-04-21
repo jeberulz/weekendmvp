@@ -6,6 +6,8 @@
  * Usage:
  *   node scripts/audit-ideas.js                  # report only, writes ideas/_audit.json
  *   node scripts/audit-ideas.js --apply          # also rewrites manifest.json + manifest.draft.json + sitemap.xml
+ *   node scripts/audit-ideas.js --strict         # exit non-zero if any idea in manifest.json fails the PASS bar
+ *   node scripts/audit-ideas.js --file <slug>    # audit one page; pairs with --strict for pre-publish gating
  */
 
 const fs = require('fs');
@@ -20,6 +22,9 @@ const auditPath = path.join(ideasDir, '_audit.json');
 const sitemapPath = path.join(root, 'sitemap.xml');
 
 const apply = process.argv.includes('--apply');
+const strict = process.argv.includes('--strict');
+const fileFlagIdx = process.argv.indexOf('--file');
+const singleSlug = fileFlagIdx !== -1 ? process.argv[fileFlagIdx + 1] : null;
 
 const REQUIRED_SECTIONS = [
   { key: 'problem',     match: /\bproblem\b/i },
@@ -112,6 +117,13 @@ function rewriteSitemap(passingSlugs) {
 }
 
 function main() {
+  if (singleSlug) {
+    const audit = auditFile(singleSlug);
+    console.log(JSON.stringify(audit, null, 2));
+    if (strict && audit.status !== 'PASS') process.exit(1);
+    return;
+  }
+
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const existingDrafts = fs.existsSync(draftManifestPath)
     ? JSON.parse(fs.readFileSync(draftManifestPath, 'utf8'))
@@ -146,6 +158,16 @@ function main() {
   fs.writeFileSync(auditPath, JSON.stringify(report, null, 2));
   console.log(`Audit written: ${path.relative(root, auditPath)}`);
   console.log(`  total: ${report.totals.total}  pass: ${passing.length}  thin: ${totals.THIN || 0}  stub: ${totals.STUB || 0}`);
+
+  if (strict) {
+    const failures = report.ideas.filter(i => i.status !== 'PASS');
+    if (failures.length) {
+      console.error(`\nSTRICT: ${failures.length} linked idea(s) fail the PASS bar:`);
+      for (const f of failures) console.error(`  ${f.slug} [${f.status}] ${f.reasons.join('; ')}`);
+      process.exit(1);
+    }
+    console.log('STRICT: all linked ideas PASS the bar.');
+  }
 
   if (!apply) {
     console.log('\nDry run only. Re-run with --apply to rewrite manifest.json, manifest.draft.json, and sitemap.xml.');

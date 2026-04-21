@@ -348,8 +348,7 @@ weekendmvp/
 ├── robots.txt              # SEO: Crawler permissions (allows AI bots)
 ├── ideas/                  # Individual idea pages
 │   ├── manifest.json       # Ideas metadata
-│   ├── _template.html      # Static template
-│   ├── _template-dynamic.html  # Dynamic template for skill
+│   ├── _template.html      # Canonical idea-page template (used by publish-idea skill)
 │   └── {slug}.html         # Individual idea pages (with schema)
 ├── api/                    # Vercel API routes
 ├── scripts.js              # Main JavaScript
