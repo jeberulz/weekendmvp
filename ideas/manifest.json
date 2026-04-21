@@ -156,7 +156,19 @@
         "solo-founders"
       ],
       "description": "Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.",
-      "_needsBackfill": true
+      "source": "mode-b:backfill",
+      "provenance": {
+        "researchCalls": [
+          "internal-knowledge:market-size",
+          "internal-knowledge:competitor-pricing",
+          "internal-knowledge:tech-stack"
+        ],
+        "citations": 4,
+        "wordCount": 1107,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-21T00:00:00Z",
+        "backfillNotes": "Added Competitive Landscape (CodeRabbit, Greptile, GitHub Copilot Code Review, Sourcery/Codium), Business Model (Free OSS / $9 Pro / $19 Team + LLM gross-margin economics), Recommended Tech Stack (GitHub App + Octokit + Claude w/ GPT-4o fallback + Postgres + BullMQ/Redis + Fly.io + Stripe). Market stats cite GitHub Octoverse, CodeRabbit Series A (TechCrunch 2024), Stack Overflow survey, Gartner dev tools projection; verify pricing against live product pages before marketing push."
+      }
     },
     {
       "slug": "ai-resume-tailorer",

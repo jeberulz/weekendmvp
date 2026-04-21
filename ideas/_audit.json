@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-21T20:42:39.668Z",
+  "generatedAt": "2026-04-21T20:44:42.392Z",
   "totals": {
-    "PASS": 6,
-    "THIN": 7,
+    "PASS": 7,
+    "THIN": 6,
     "total": 13,
     "passing": 13,
     "failing": 0
@@ -144,30 +144,23 @@
     },
     {
       "slug": "ai-code-reviewer",
-      "status": "THIN",
-      "bytes": 22113,
-      "wordCount": 498,
-      "h2Count": 6,
+      "status": "PASS",
+      "bytes": 34315,
+      "wordCount": 1107,
+      "h2Count": 9,
       "description": "Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.",
       "sections": {
         "problem": true,
         "solution": true,
         "market": true,
-        "competitive": false,
-        "business": false,
-        "stack": false,
+        "competitive": true,
+        "business": true,
+        "stack": true,
         "prompts": true
       },
-      "missingSections": [
-        "competitive",
-        "business",
-        "stack"
-      ],
+      "missingSections": [],
       "hasPlaceholderLeak": false,
-      "reasons": [
-        "wordCount 498 < 800",
-        "missing sections: competitive, business, stack"
-      ]
+      "reasons": []
     },
     {
       "slug": "ai-resume-tailorer",

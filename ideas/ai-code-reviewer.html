@@ -160,12 +160,138 @@
 
                 <div class="mb-12">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                    <p class="text-neutral-600 leading-relaxed mb-6">AI code review is hot. GitHub Copilot proved developers will pay for AI tools. Existing players like CodeRabbit and Sourcery show market demand, but there's room for simpler, more affordable alternatives.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-6">AI code review is one of the fastest-growing subcategories of developer tooling. GitHub Copilot proved developers will pay for code AI; CodeRabbit, Greptile, and Codium followed with PR-review-specific products and raised venture money on the thesis. The opportunity left is indie-tier pricing for solo maintainers and sub-10 dev teams.</p>
                     <ul class="space-y-3">
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GitHub has 100M+ developers—massive potential market</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Code review is 2nd most time-consuming dev activity after coding</span></li>
-                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>CodeRabbit raised $2M—validates market demand</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GitHub passed 100M developers in 2023 (Octoverse); the PR review surface is where AI value shows up without changing developer workflow.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>CodeRabbit publicly reports 10K+ repos on the platform and closed a $16M Series A (TechCrunch, 2024) — category is validated, not invented.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Stack Overflow Developer Survey: code review is consistently the 2nd most time-consuming activity after writing code; monetizable pain is structural.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Developer tools market is projected past $13B by 2027 (Gartner); Copilot runs at ~$10/seat and normalized a $10&ndash;30/dev price band per tool.</span></li>
                     </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Two clusters: established AI-review platforms priced for mid-market engineering orgs, and GitHub&rsquo;s own bundled offerings. The gap is a polished indie-friendly tier that installs in under a minute, reviews PRs at OSS budget, and doesn&rsquo;t require a Series A founder to justify the seat cost.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">CodeRabbit</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Current category leader. Deep PR context, language coverage, learning per repo. Pricing angles toward mid-market; free tier exists but gates most value behind Pro.</p>
+                            <p class="text-xs text-neutral-400">Free tier &rarr; $15/dev/mo Pro &rarr; $30/dev/mo Enterprise</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Greptile</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Codebase-indexed AI review with strong architectural context. Fast growing but priced for funded teams; weak free tier for solos and small OSS maintainers.</p>
+                            <p class="text-xs text-neutral-400">$30/dev/mo Team &rarr; custom Enterprise (usage-based on repo size)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">GitHub Copilot Code Review</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Bundled into Copilot. Zero-install for teams already on Copilot, but lighter context, less customizable rule sets, and shares seat with the general Copilot budget.</p>
+                            <p class="text-xs text-neutral-400">$10/user/mo Individual, $19/user/mo Business (bundle)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Sourcery / Codium</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Rules-plus-AI hybrids. Strong for specific languages (Python for Sourcery); weaker cross-language coverage. Indie price band but feels like static analysis with an AI bolt-on.</p>
+                            <p class="text-xs text-neutral-400">Free OSS &rarr; $12/dev/mo Team plans</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Indie-first positioning: 60-second GitHub App install, generous OSS free tier, $9/dev pricing, and a focus on PR-level context rather than whole-repo indexing so margin holds. CodeRabbit&rsquo;s mid-market tilt and Copilot Review&rsquo;s bundle tax are both openings.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Per-developer SaaS with a generous OSS tier to seed GitHub App discovery and word-of-mouth inside engineering Slacks. Pro priced below CodeRabbit&rsquo;s $15 floor; Team tier adds governance and dashboards for sub-50-dev teams who don&rsquo;t want to evaluate enterprise suites.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">OSS / Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">Public repos, unlimited PRs, standard review depth; personal Pro trial on private repos for 14 days</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$9/dev/mo</p>
+                            <p class="text-xs text-neutral-500">Private repos, inline PR comments, custom style guide, security and secret scanning, PR summaries</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$19/dev/mo</p>
+                            <p class="text-xs text-neutral-500">Org-wide style rules, review analytics, SSO, required-review policies, Slack/Linear hooks</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM cost per PR</p>
+                                <p class="font-semibold">$0.05&ndash;0.25</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~70%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$30&ndash;60</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Net retention</p>
+                                <p class="font-semibold">115%+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">This is a GitHub App with an LLM behind it. The hard parts are webhook durability, diff context selection (keep token cost sane), and caching repo style guides. Ship Node + Octokit on Fly.io, store reviews in Postgres, use BullMQ for the review queue, and keep the frontend minimal—the product surface is GitHub, not your dashboard.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:github" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">GitHub App + Octokit</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Install-once GitHub App with pull_request and pull_request_review_comment webhooks. Octokit for scoped API calls; signed webhook validation is non-negotiable.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude + GPT-4o fallback</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Claude for primary PR review with prompt caching on style guides (huge margin win); GPT-4o fallback for rate-limit or incident failover. Model-agnostic router from day one.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:postgresql" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Postgres (Neon or Supabase)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Installations, repos, reviews, token-usage-per-review for billing. pgvector optional for repo style-guide retrieval on larger plans.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:redis" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">BullMQ + Redis</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Review queue with retry and backoff so a GitHub outage or LLM hiccup doesn&rsquo;t drop a PR. Per-install concurrency caps for fairness.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:flydotio" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Fly.io (Node + TypeScript)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Multi-region deploy for low-latency webhook acknowledgement, long-running worker processes for review generation, simple Dockerfile, cheap at small scale.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe + Next.js dashboard</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Per-seat metered billing via Stripe Billing. Minimal Next.js dashboard for install status, review history, and style-guide config—keep the product surface inside GitHub.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mb-12">
