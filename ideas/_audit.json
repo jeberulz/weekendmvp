@@ -1,0 +1,1491 @@
+{
+  "generatedAt": "2026-04-21T10:58:15.364Z",
+  "totals": {
+    "PASS": 3,
+    "STUB": 14,
+    "THIN": 35,
+    "total": 52,
+    "passing": 38,
+    "failing": 14
+  },
+  "ideas": [
+    {
+      "slug": "brakes-maintenance-tracker-app",
+      "status": "PASS",
+      "bytes": 57913,
+      "wordCount": 1428,
+      "h2Count": 10,
+      "description": "Niche vehicle app: log brake service, pad wear, and inspections with mileage- and time-based reminders—without fighting generic maintenance giants. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-rfp-response-assistant",
+      "status": "PASS",
+      "bytes": 58833,
+      "wordCount": 1545,
+      "h2Count": 10,
+      "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-landing-page-generator-ecommerce",
+      "status": "PASS",
+      "bytes": 62763,
+      "wordCount": 1713,
+      "h2Count": 11,
+      "description": "Build conversion-focused landing pages in minutes with AI. A Pagely-style tool that integrates with Shopify and WordPress, lifts conversion rates 15-30%, and cuts wasted ad spend for e-commerce brands.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-meeting-notes-cleaner",
+      "status": "STUB",
+      "bytes": 1591,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build an AI tool that transforms messy meeting transcripts into clean action items and summaries. Full breakdown with prompts to build it this weekend.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1591B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "ai-nutrition-planner-trainers",
+      "status": "STUB",
+      "bytes": 1721,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build an AI-powered nutrition planning tool that helps NASM certified trainers deliver personalized meal plans to their clients. Full breakdown with prompts to build it this weekend.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1721B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "invoice-reminder-bot",
+      "status": "STUB",
+      "bytes": 1811,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Invoice Reminder Bot helps freelancers and agencies get paid faster with automated, escalating payment reminders. Connect Stripe or upload invoices, and let the bot handle the awkward follow-ups.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1811B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "nasm-trainer-marketplace",
+      "status": "STUB",
+      "bytes": 1750,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build a marketplace connecting clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1750B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "personal-wellness-coach",
+      "status": "STUB",
+      "bytes": 1646,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build an AI-powered wellness coach that adapts to your schedule, learns your habits, and suggests micro-habits that fit your busy life.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1646B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "ai-knowledge-transfer-platform",
+      "status": "STUB",
+      "bytes": 1853,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build an AI-powered platform that captures and transfers institutional knowledge during employee transitions. Reduce onboarding time and prevent costly knowledge loss in enterprises.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1853B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "corporate-knowledge-ai-assistant",
+      "status": "STUB",
+      "bytes": 1845,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build an AI-powered chatbot that integrates with corporate intranets to provide instant answers to employee questions. Reduce onboarding time and free up HR and IT support teams.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1845B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "expert-mentorship-marketplace",
+      "status": "STUB",
+      "bytes": 1737,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build a two-sided marketplace connecting organizations with industry experts for remote knowledge transfer, mentorship sessions, and corporate training.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1737B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "virtual-knowledge-hub",
+      "status": "STUB",
+      "bytes": 1901,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1901B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "remote-team-documentation-tool",
+      "status": "STUB",
+      "bytes": 1798,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "AI-powered documentation tool that automatically captures meeting notes, project updates, and team knowledge—making remote collaboration seamless. Build it in a weekend.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1798B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "mobile-brake-repair-marketplace",
+      "status": "STUB",
+      "bytes": 1810,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build a marketplace connecting vehicle owners with mobile brake repair technicians. Tap into the $4.27B mobile vehicle repair market with on-demand convenience.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1810B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "brake-repair-cost-estimator",
+      "status": "STUB",
+      "bytes": 1826,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Build a consumer-focused web tool that provides instant brake repair cost estimates, helps users avoid overpaying, and includes local shop reviews. A $170B market opportunity.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1826B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "brake-safety-education-platform",
+      "status": "STUB",
+      "bytes": 1870,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "A SaaS education platform offering online courses and certification programs focused on brake repair, helping automotive technicians stay updated on safety protocols and modern braking systems.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1870B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "ai-brake-inspection-analyser",
+      "status": "STUB",
+      "bytes": 1749,
+      "wordCount": 0,
+      "h2Count": 0,
+      "description": "Help mechanics diagnose brake issues faster with AI-powered image analysis that detects wear, damage, and provides repair recommendations. Build this SaaS tool in a weekend.",
+      "sections": {
+        "problem": false,
+        "solution": false,
+        "market": false,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": false
+      },
+      "missingSections": [
+        "problem",
+        "solution",
+        "market",
+        "competitive",
+        "business",
+        "stack",
+        "prompts"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 1749B < 15000B",
+        "wordCount 0 < 800",
+        "missing sections: problem, solution, market, competitive, business, stack, prompts"
+      ]
+    },
+    {
+      "slug": "subscription-analytics-dashboard",
+      "status": "THIN",
+      "bytes": 20370,
+      "wordCount": 503,
+      "h2Count": 5,
+      "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 503 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "customer-feedback-aggregator",
+      "status": "THIN",
+      "bytes": 16017,
+      "wordCount": 452,
+      "h2Count": 5,
+      "description": "Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 452 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "waitlist-manager",
+      "status": "THIN",
+      "bytes": 22118,
+      "wordCount": 508,
+      "h2Count": 6,
+      "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 508 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-code-reviewer",
+      "status": "THIN",
+      "bytes": 22113,
+      "wordCount": 498,
+      "h2Count": 6,
+      "description": "Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 498 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-resume-tailorer",
+      "status": "THIN",
+      "bytes": 15817,
+      "wordCount": 478,
+      "h2Count": 5,
+      "description": "Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 478 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "social-media-scheduler",
+      "status": "THIN",
+      "bytes": 22551,
+      "wordCount": 477,
+      "h2Count": 6,
+      "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 477 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "api-documentation-generator",
+      "status": "THIN",
+      "bytes": 16039,
+      "wordCount": 487,
+      "h2Count": 5,
+      "description": "Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, interactive docs instantly.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 487 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "expense-splitter-app",
+      "status": "THIN",
+      "bytes": 22128,
+      "wordCount": 478,
+      "h2Count": 6,
+      "description": "Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for trips, roommates, and dinners.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 478 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "content-repurposing-tool",
+      "status": "THIN",
+      "bytes": 16157,
+      "wordCount": 507,
+      "h2Count": 5,
+      "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 507 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "abandoned-cart-recovery",
+      "status": "THIN",
+      "bytes": 15993,
+      "wordCount": 485,
+      "h2Count": 5,
+      "description": "Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "wordCount 485 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "focus-session-timer",
+      "status": "THIN",
+      "bytes": 12143,
+      "wordCount": 374,
+      "h2Count": 5,
+      "description": "Build a beautiful Pomodoro timer with analytics, focus music, and website blocking. Track your deep work hours and improve productivity.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12143B < 15000B",
+        "wordCount 374 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "changelog-generator",
+      "status": "THIN",
+      "bytes": 12347,
+      "wordCount": 397,
+      "h2Count": 5,
+      "description": "Build a tool that auto-generates beautiful changelogs from your Git commits. Connect GitHub, get a public changelog page. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12347B < 15000B",
+        "wordCount 397 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "client-portal",
+      "status": "THIN",
+      "bytes": 12283,
+      "wordCount": 371,
+      "h2Count": 5,
+      "description": "Build a white-label client portal for agencies and freelancers. Share files, track projects, and look professional. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12283B < 15000B",
+        "wordCount 371 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "subscription-tracker",
+      "status": "THIN",
+      "bytes": 12369,
+      "wordCount": 382,
+      "h2Count": 5,
+      "description": "Build an app that tracks all your subscriptions, alerts before renewals, and helps cancel unused services. Stop wasting money on forgotten subscriptions.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12369B < 15000B",
+        "wordCount 382 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "proposal-generator",
+      "status": "THIN",
+      "bytes": 12372,
+      "wordCount": 394,
+      "h2Count": 5,
+      "description": "Build a tool that generates professional client proposals from brief inputs. AI writes the scope, timeline, and pricing. Win more deals faster.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12372B < 15000B",
+        "wordCount 394 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-seo-optimizer",
+      "status": "THIN",
+      "bytes": 12653,
+      "wordCount": 407,
+      "h2Count": 5,
+      "description": "Build a tool that analyzes existing content and suggests SEO improvements. Optimize titles, headings, and keywords with AI. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12653B < 15000B",
+        "wordCount 407 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "daily-standup-bot",
+      "status": "THIN",
+      "bytes": 12402,
+      "wordCount": 403,
+      "h2Count": 5,
+      "description": "Build a Slack bot that collects daily standups asynchronously and summarizes them. Save 30 minutes of meeting time every day. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12402B < 15000B",
+        "wordCount 403 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "code-snippet-manager",
+      "status": "THIN",
+      "bytes": 12527,
+      "wordCount": 401,
+      "h2Count": 5,
+      "description": "Build a personal code snippet library with AI-powered search and organization. Save, find, and share code snippets instantly. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12527B < 15000B",
+        "wordCount 401 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "digital-product-delivery",
+      "status": "THIN",
+      "bytes": 12589,
+      "wordCount": 396,
+      "h2Count": 5,
+      "description": "Build a simple platform to sell and deliver digital products. Upload your files, set a price, and get a checkout link. Gumroad alternative.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12589B < 15000B",
+        "wordCount 396 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "feature-voting-board",
+      "status": "THIN",
+      "bytes": 12325,
+      "wordCount": 378,
+      "h2Count": 5,
+      "description": "Build a public roadmap and feature voting board for your SaaS. Let customers request and vote on features. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12325B < 15000B",
+        "wordCount 378 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "expense-report-generator",
+      "status": "THIN",
+      "bytes": 12315,
+      "wordCount": 368,
+      "h2Count": 5,
+      "description": "Build a tool that auto-categorizes expenses and generates reports. Take photos of receipts, AI extracts data. Full build guide with prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12315B < 15000B",
+        "wordCount 368 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "email-to-todo",
+      "status": "THIN",
+      "bytes": 12187,
+      "wordCount": 385,
+      "h2Count": 5,
+      "description": "Build an AI tool that extracts actionable tasks from your emails. Forward any email, get back a clean to-do list. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12187B < 15000B",
+        "wordCount 385 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "user-onboarding-builder",
+      "status": "THIN",
+      "bytes": 12265,
+      "wordCount": 374,
+      "h2Count": 5,
+      "description": "Build a no-code tool to create guided product tours and onboarding flows. Increase activation rates without engineering help. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12265B < 15000B",
+        "wordCount 374 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-email-responder",
+      "status": "THIN",
+      "bytes": 12112,
+      "wordCount": 369,
+      "h2Count": 5,
+      "description": "Build a tool that drafts email replies in your voice. Paste an email, get a professional response ready to send. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12112B < 15000B",
+        "wordCount 369 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "product-review-collector",
+      "status": "THIN",
+      "bytes": 12253,
+      "wordCount": 360,
+      "h2Count": 5,
+      "description": "Build a tool that automatically requests and collects product reviews. Send post-purchase emails, gather testimonials, display on your site.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12253B < 15000B",
+        "wordCount 360 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "testimonial-video-collector",
+      "status": "THIN",
+      "bytes": 12249,
+      "wordCount": 346,
+      "h2Count": 5,
+      "description": "Build a tool to collect video testimonials from customers. Send a link, they record from their browser, you get polished social proof. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12249B < 15000B",
+        "wordCount 346 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "habit-tracker",
+      "status": "THIN",
+      "bytes": 12136,
+      "wordCount": 361,
+      "h2Count": 5,
+      "description": "Build a beautiful, no-nonsense habit tracking app. Track streaks, visualize progress, get gentle reminders. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12136B < 15000B",
+        "wordCount 361 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-competitor-tracker",
+      "status": "THIN",
+      "bytes": 12244,
+      "wordCount": 362,
+      "h2Count": 5,
+      "description": "Build a tool that monitors competitors and alerts you to changes. Track pricing, features, and messaging automatically. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12244B < 15000B",
+        "wordCount 362 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "link-in-bio-builder",
+      "status": "THIN",
+      "bytes": 12076,
+      "wordCount": 343,
+      "h2Count": 5,
+      "description": "Build a customizable link-in-bio tool for creators. Beautiful themes, analytics, email capture. Linktree alternative. Full build guide with prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12076B < 15000B",
+        "wordCount 343 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "meeting-scheduler",
+      "status": "THIN",
+      "bytes": 12177,
+      "wordCount": 351,
+      "h2Count": 5,
+      "description": "Build a meeting scheduling tool that finds optimal times across time zones. Share a link, they pick a slot. Cal.com alternative. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12177B < 15000B",
+        "wordCount 351 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "startup-financial-dashboard",
+      "status": "THIN",
+      "bytes": 12286,
+      "wordCount": 370,
+      "h2Count": 5,
+      "description": "Build a financial dashboard for early-stage startups. Track MRR, runway, burn rate, and key metrics in one place. Full build guide with AI prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12286B < 15000B",
+        "wordCount 370 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "ai-podcast-clipper",
+      "status": "THIN",
+      "bytes": 12233,
+      "wordCount": 355,
+      "h2Count": 5,
+      "description": "Build a tool that finds the best moments in podcasts and creates shareable clips. AI finds highlights, auto-generates captions. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12233B < 15000B",
+        "wordCount 355 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "domain-name-generator",
+      "status": "THIN",
+      "bytes": 12289,
+      "wordCount": 372,
+      "h2Count": 5,
+      "description": "Build a tool that generates creative, available domain names for your startup. AI suggests names based on your idea, checks availability instantly.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12289B < 15000B",
+        "wordCount 372 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "contract-analyzer",
+      "status": "THIN",
+      "bytes": 12322,
+      "wordCount": 390,
+      "h2Count": 5,
+      "description": "Build a tool that reads contracts and highlights concerning clauses. Upload a PDF, get plain-English explanations of what you're signing.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12322B < 15000B",
+        "wordCount 390 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    },
+    {
+      "slug": "notion-backup-tool",
+      "status": "THIN",
+      "bytes": 12225,
+      "wordCount": 368,
+      "h2Count": 5,
+      "description": "Build an automated backup tool for Notion workspaces. Schedule exports, store safely, restore if needed. Never lose your second brain. Full build guide.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": false,
+        "business": false,
+        "stack": false,
+        "prompts": true
+      },
+      "missingSections": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "hasPlaceholderLeak": false,
+      "reasons": [
+        "size 12225B < 15000B",
+        "wordCount 368 < 800",
+        "missing sections: competitive, business, stack"
+      ]
+    }
+  ]
+}
