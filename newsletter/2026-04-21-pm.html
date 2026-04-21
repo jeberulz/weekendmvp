@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Builder Brief: Bolt.new in 10 minutes | Weekend MVP Newsletter</title>
-    <meta name="description" content="Go from idea to live URL in one browser tab. Here's the 10-minute path.">
+    <meta name="description" content="Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.">
     <meta name="author" content="John Iseghohi">
 
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/newsletter/2026-04-21-pm.html">
     <meta property="og:title" content="Builder Brief: Bolt.new in 10 minutes">
-    <meta property="og:description" content="Go from idea to live URL in one browser tab. Here's the 10-minute path.">
+    <meta property="og:description" content="Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -18,10 +18,408 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://weekendmvp.app/newsletter/2026-04-21-pm.html">
     <meta property="twitter:title" content="Builder Brief: Bolt.new in 10 minutes">
-    <meta property="twitter:description" content="Go from idea to live URL in one browser tab. Here's the 10-minute path.">
+    <meta property="twitter:description" content="Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
 
     <link rel="canonical" href="https://weekendmvp.app/newsletter/2026-04-21-pm.html">
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      // Initialize dataLayer but don't load gtag.js until consent
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                // Initialize Meta Pixel immediately if consent exists
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      // Initialize fbq queue but don't load until consent
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Only initialize if consent exists
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        // Queue the init call for when consent is given
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Weekend MVP Analytics Utility -->
+    <script>
+      /**
+       * wmvpAnalytics - Custom event tracking for Weekend MVP programmatic SEO pages
+       * All methods are safe to call before consent (events are queued)
+       */
+      window.wmvpAnalytics = (function() {
+        // Queue for events fired before GA is ready
+        const eventQueue = [];
+        let gaReady = false;
+        
+        // Check if GA is loaded and ready
+        function checkGAReady() {
+          if (window.analyticsConsent === true && typeof window.gtag === 'function') {
+            gaReady = true;
+            // Flush queued events
+            while (eventQueue.length > 0) {
+              const { eventName, params } = eventQueue.shift();
+              window.gtag('event', eventName, params);
+            }
+          }
+        }
+        
+        // Safe event tracking that queues if GA not ready
+        function trackEvent(eventName, params) {
+          checkGAReady();
+          if (gaReady) {
+            window.gtag('event', eventName, params);
+          } else {
+            eventQueue.push({ eventName, params });
+          }
+        }
+        
+        // Auto-detect page type from URL and fire appropriate event
+        function autoTrack() {
+          const path = window.location.pathname;
+          
+          // Category pages: /ideas/{category}/
+          const categoryMatch = path.match(/^\/ideas\/([a-z-]+)\/$/);
+          if (categoryMatch && !['1k-month', '5k-month', '10k-month', 'passive-income', 'quick-wins', 'build-in-8-hours', 'build-in-weekend', 'build-in-1-week', 'build-in-24-hours'].includes(categoryMatch[1])) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_category', {
+              category_name: categoryMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Revenue goal pages: /ideas/{revenue}/
+          const revenueMatch = path.match(/^\/ideas\/(1k-month|5k-month|10k-month|passive-income|quick-wins)\/$/);
+          if (revenueMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Build time pages: /ideas/build-in-{time}/
+          const buildTimeMatch = path.match(/^\/ideas\/(build-in-[a-z0-9-]+)\/$/);
+          if (buildTimeMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_build_time', {
+              build_time: buildTimeMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Tool pages: /build-with/{tool}/
+          const toolMatch = path.match(/^\/build-with\/([a-z-]+)\/$/);
+          if (toolMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_tool_page', {
+              tool_name: toolMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Audience pages: /ideas-for/{audience}/
+          const audienceMatch = path.match(/^\/ideas-for\/([a-z-]+)\/$/);
+          if (audienceMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_audience_page', {
+              audience_name: audienceMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Problem pages: /solve/{problem}/
+          const problemMatch = path.match(/^\/solve\/([a-z-]+)\/$/);
+          if (problemMatch) {
+            const solutionCount = document.querySelectorAll('[data-solution-card]').length || 0;
+            trackEvent('view_problem_page', {
+              problem_name: problemMatch[1],
+              solution_count: solutionCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Individual idea pages: /ideas/{slug}.html
+          const ideaMatch = path.match(/^\/ideas\/([a-z0-9-]+)\.html$/);
+          if (ideaMatch) {
+            const category = document.querySelector('[data-idea-category]')?.dataset?.ideaCategory || 'unknown';
+            trackEvent('view_idea', {
+              idea_slug: ideaMatch[1],
+              idea_category: category,
+              page_path: path
+            });
+            return;
+          }
+        }
+        
+        return {
+          /**
+           * Track category page view
+           * @param {string} categoryName - Category slug (e.g., 'saas', 'ai-tools')
+           * @param {number} ideaCount - Number of ideas on the page
+           */
+          trackCategory: function(categoryName, ideaCount) {
+            trackEvent('view_category', {
+              category_name: categoryName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track tool page view
+           * @param {string} toolName - Tool slug (e.g., 'cursor', 'claude')
+           * @param {number} ideaCount - Number of ideas suited for this tool
+           */
+          trackTool: function(toolName, ideaCount) {
+            trackEvent('view_tool_page', {
+              tool_name: toolName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track audience page view
+           * @param {string} audienceName - Audience slug (e.g., 'developers', 'non-technical')
+           * @param {number} ideaCount - Number of ideas for this audience
+           */
+          trackAudience: function(audienceName, ideaCount) {
+            trackEvent('view_audience_page', {
+              audience_name: audienceName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track revenue goal page view
+           * @param {string} revenueGoal - Revenue goal slug (e.g., '1k-month', 'passive-income')
+           * @param {number} ideaCount - Number of ideas for this revenue goal
+           */
+          trackRevenueGoal: function(revenueGoal, ideaCount) {
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueGoal,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track problem/solution page view
+           * @param {string} problemName - Problem slug (e.g., 'invoicing', 'meeting-notes')
+           * @param {number} solutionCount - Number of solution ideas
+           */
+          trackProblem: function(problemName, solutionCount) {
+            trackEvent('view_problem_page', {
+              problem_name: problemName,
+              solution_count: solutionCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track build time page view
+           * @param {string} buildTime - Build time slug (e.g., 'build-in-weekend', 'build-in-8-hours')
+           * @param {number} ideaCount - Number of ideas for this build time
+           */
+          trackBuildTime: function(buildTime, ideaCount) {
+            trackEvent('view_build_time', {
+              build_time: buildTime,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track individual idea page view
+           * @param {string} ideaSlug - Idea slug (e.g., 'ai-meeting-notes-cleaner')
+           * @param {string} category - Idea category
+           */
+          trackIdea: function(ideaSlug, category) {
+            trackEvent('view_idea', {
+              idea_slug: ideaSlug,
+              idea_category: category || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track internal link clicks for navigation analysis
+           * @param {string} linkType - Type of link (e.g., 'category_to_idea', 'tool_to_idea', 'related_idea')
+           * @param {string} destination - Destination slug or URL
+           */
+          trackInternalLink: function(linkType, destination) {
+            trackEvent('internal_link_click', {
+              link_type: linkType,
+              destination: destination,
+              source_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track CTA button clicks
+           * @param {string} ctaName - CTA identifier (e.g., 'get_starter_kit', 'book_consult')
+           * @param {string} location - Where on the page (e.g., 'hero', 'footer', 'sidebar')
+           */
+          trackCTA: function(ctaName, location) {
+            trackEvent('cta_click', {
+              cta_name: ctaName,
+              cta_location: location || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track email signup events
+           * @param {string} source - Page or section where signup occurred
+           * @param {string} formType - Type of form (e.g., 'newsletter', 'gated_content', 'ideas_daily')
+           */
+          trackEmailSignup: function(source, formType) {
+            trackEvent('email_signup', {
+              signup_source: source,
+              form_type: formType || 'newsletter',
+              page_path: window.location.pathname
+            });
+            // Also track in Meta Pixel if available
+            if (window.analyticsConsent === true && typeof window.fbq === 'function') {
+              window.fbq('track', 'Lead', { content_name: formType || 'newsletter' });
+            }
+          },
+          
+          /**
+           * Track copy-to-clipboard events (for AI prompts)
+           * @param {string} contentType - What was copied (e.g., 'ai_prompt', 'code_snippet')
+           * @param {string} ideaSlug - Related idea if applicable
+           */
+          trackCopy: function(contentType, ideaSlug) {
+            trackEvent('copy_content', {
+              content_type: contentType,
+              idea_slug: ideaSlug || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track search/filter interactions on collection pages
+           * @param {string} filterType - Type of filter (e.g., 'category', 'build_time', 'revenue')
+           * @param {string} filterValue - Selected filter value
+           */
+          trackFilter: function(filterType, filterValue) {
+            trackEvent('filter_applied', {
+              filter_type: filterType,
+              filter_value: filterValue,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Manually trigger page type detection and auto-tracking
+           * Call this on DOMContentLoaded for programmatic pages
+           */
+          autoTrack: autoTrack,
+          
+          /**
+           * Check GA ready state and flush queue
+           */
+          flushQueue: checkGAReady,
+          
+          /**
+           * Raw event tracking (for custom events)
+           * @param {string} eventName - GA4 event name
+           * @param {object} params - Event parameters
+           */
+          track: trackEvent
+        };
+      })();
+      
+      // Auto-track on DOMContentLoaded for programmatic pages
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Small delay to ensure GA has loaded
+          setTimeout(function() {
+            wmvpAnalytics.flushQueue();
+            wmvpAnalytics.autoTrack();
+          }, 100);
+        });
+      } else {
+        // DOM already loaded
+        setTimeout(function() {
+          wmvpAnalytics.flushQueue();
+          wmvpAnalytics.autoTrack();
+        }, 100);
+      }
+    </script>
+
 
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <link rel="apple-touch-icon" href="../image/webclip.png">
@@ -38,7 +436,7 @@
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Builder Brief: Bolt.new in 10 minutes",
-      "description": "Go from idea to live URL in one browser tab. Here's the 10-minute path.",
+      "description": "Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.",
       "author": {
         "@type": "Person",
         "name": "John Iseghohi",
@@ -99,24 +497,29 @@
                     <time class="text-neutral-600 text-xs" datetime="2026-04-21">Apr 21, 2026</time>
                 </div>
                 <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight leading-[1.1] mb-6">Builder Brief: Bolt.new in 10 minutes</h1>
-                <p class="text-xl text-neutral-400 font-light leading-relaxed">Go from idea to live URL in one browser tab. Here's the 10-minute path.</p>
+                <p class="text-xl text-neutral-400 font-light leading-relaxed">Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.</p>
             </header>
 
             <div class="prose-nl text-neutral-300 leading-relaxed space-y-6">
-                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Builder Brief</h2>
-<p class="text-neutral-300 leading-relaxed">Bolt.new is the fastest path I know from &quot;I have an idea&quot; to &quot;there&#39;s a URL I can share.&quot; No install. No boilerplate. Describe the app, watch it generate, iterate in the chat, deploy — all in the same browser tab. If you&#39;ve been stalling on side projects because setup eats a full evening, Bolt deletes that evening.</p>
-<h3 class="text-xl font-medium text-white mb-4 mt-10 tracking-tight">Bolt.new in 10 minutes</h3>
-<ol class="list-decimal list-outside pl-6 space-y-2 text-neutral-300">
-<li>Open <strong class="text-white font-medium">bolt.new</strong> in your browser.</li>
-<li>Describe the app in 2–3 sentences. Be boring on purpose — &quot;a form that takes X and returns Y.&quot;</li>
-<li>Watch Bolt scaffold the code. Don&#39;t touch it yet.</li>
-<li>Type changes in plain English: <em>&quot;add a dark mode toggle&quot;</em>, <em>&quot;save submissions to a list&quot;</em>.</li>
-<li>Hit deploy. Share the URL.</li>
-</ol>
-<p class="text-neutral-300 leading-relaxed">Try it on: <strong class="text-white font-medium">Invoice Reminder Bot</strong> — ~8h build, $1K/mo target. A service that nudges clients about overdue invoices on a schedule. Bolt handles the form, the list view, and the email trigger in one session — you just wire in the sending service.</p>
-<div class="my-8 text-center"><a href="https://weekendmvp.app/startup-ideas.html?tool=bolt&amp;utm_source=beehiiv&amp;utm_medium=newsletter&amp;utm_campaign=pm-20260421" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Browse ideas you can build with Bolt <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
-<hr class="my-8 border-0 h-px bg-white/10">
-<p class="text-neutral-300 leading-relaxed">Pick one and block off Saturday.</p>
+                <p class="text-neutral-300 leading-relaxed">Most side projects don't die on feature #3. They die on setup. Node version mismatch, the database won't seed, the deploy pipeline wants a credit card you don't want to give it, and suddenly it's Sunday night and you haven't written a line of product code. Bolt.new is the clearest answer to that problem I've used.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">BUILDER BRIEF</strong></p>
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Bolt.new in 10 minutes</h2>
+                <p class="text-neutral-300 leading-relaxed">Bolt.new is the fastest path I know from "I have an idea" to "there's a URL I can share." One browser tab. No install, no boilerplate, no local environment. You describe the app in plain English, Bolt scaffolds a full-stack project in the preview pane, you iterate by chatting, and you deploy to a live URL from the same window. The abstraction it removes isn't the code — it's the setup tax that kills 80% of weekend projects before they start.</p>
+                <p class="text-neutral-300 leading-relaxed">It's not going to replace Cursor for serious iteration. But for the first 2 hours of any weekend build — when you just need to see the idea running in a browser so you know whether it's worth another six — it's the tool I reach for first.</p>
+                <h3 class="text-xl font-medium text-white mb-4 mt-10 tracking-tight">Bolt.new in 10 minutes</h3>
+                <ol class="list-decimal list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed">Open <strong class="text-white font-medium">bolt.new</strong> in your browser. Sign in with GitHub — no other setup required.</li><li class="leading-relaxed">Describe the app in 2–3 sentences. Be boring on purpose: <em>"A form that takes X and returns Y. Store submissions in a list. Email me when someone submits."</em> Vague prompts produce vague apps.</li><li class="leading-relaxed">Watch Bolt scaffold the code in the preview pane. Don't touch the file tree yet — just click around the preview and see what it guessed wrong.</li><li class="leading-relaxed">Iterate in the chat in plain English: <em>"add a dark-mode toggle," "save submissions to a Supabase table," "send the email through Resend."</em> Each prompt is a small diff, not a rewrite.</li><li class="leading-relaxed">Hit <strong class="text-white font-medium">Deploy</strong>. Bolt pushes to Netlify and hands you a live URL. Share it with 3 friends before you write another feature.</li></ol>
+                <p class="text-neutral-300 leading-relaxed">Try it on: <strong class="text-white font-medium">Invoice Reminder Bot</strong> — ~8h build, $1K/mo target. A tool that nudges your clients about overdue invoices on a schedule so you don't have to send the awkward "just following up" email yourself. Bolt handles the form (upload invoice or paste Stripe link), the dashboard (list of outstanding invoices with next-nudge dates), and the email trigger. You wire in Resend or Postmark for sending, and you're done by Saturday night.</p>
+                <div class="my-8 text-center"><a href="https://weekendmvp.app/startup-ideas.html?tool=bolt&utm_source=beehiiv&utm_medium=newsletter&utm_campaign=pm-20260421&e={{email}}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Browse ideas you can build with Bolt <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">🛠 STEAL THIS — The 2-hour "is this worth a weekend" test</strong></p>
+                <p class="text-neutral-300 leading-relaxed">Before you commit a full weekend to any idea, spend 2 hours in Bolt proving the core loop works at all:</p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">Prompt 1 — the happy path.</strong> One sentence that describes the single action the user takes. <em>"A page where a freelancer pastes their Stripe invoice link, and the app drafts three escalating reminder emails 7/14/21 days after the due date."</em> If Bolt builds something that roughly works, the loop is buildable. If it faceplants, the idea is more complex than you thought — reconsider scope.</li><li class="leading-relaxed"><strong class="text-white font-medium">Prompt 2 — the ugliest edge case.</strong> <em>"What happens if the invoice has no due date? Handle that gracefully."</em> Real apps live or die in the edge cases. Force yourself to hit one early so you know what the Saturday work actually looks like.</li><li class="leading-relaxed"><strong class="text-white font-medium">Prompt 3 — the share test.</strong> <em>"Add a simple landing page with a headline, one paragraph, and a 'Join waitlist' email capture."</em> Deploy. Drop the URL in one Slack or Discord where your target user lives. If nobody clicks, your Saturday is free.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Two hours of Bolt tells you more than two weeks of Notion planning. Use it as a filter, not a finisher.</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed">Sneak peek at tomorrow…</p>
+                <p class="text-neutral-300 leading-relaxed"><em>An evergreen idea that turns every overdue client email into a scheduled nudge — no awkward follow-ups required.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">PS</strong> — Built anything in Bolt this month? Reply with the URL. I'll feature the best one in Friday's recap.</p>
             </div>
 
             <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">

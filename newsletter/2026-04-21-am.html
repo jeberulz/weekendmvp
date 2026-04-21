@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Idea of the Day: AI Email Reply Drafter | Weekend MVP Newsletter</title>
-    <meta name="description" content="Searches for 'automated email response examples' just jumped 238%. Here's the weekend build that rides the wave.">
+    <meta name="description" content="'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.">
     <meta name="author" content="John Iseghohi">
 
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/newsletter/2026-04-21-am.html">
     <meta property="og:title" content="Idea of the Day: AI Email Reply Drafter">
-    <meta property="og:description" content="Searches for 'automated email response examples' just jumped 238%. Here's the weekend build that rides the wave.">
+    <meta property="og:description" content="'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -18,10 +18,408 @@
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://weekendmvp.app/newsletter/2026-04-21-am.html">
     <meta property="twitter:title" content="Idea of the Day: AI Email Reply Drafter">
-    <meta property="twitter:description" content="Searches for 'automated email response examples' just jumped 238%. Here's the weekend build that rides the wave.">
+    <meta property="twitter:description" content="'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
 
     <link rel="canonical" href="https://weekendmvp.app/newsletter/2026-04-21-am.html">
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      // Initialize dataLayer but don't load gtag.js until consent
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                // Initialize Meta Pixel immediately if consent exists
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      // Initialize fbq queue but don't load until consent
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Only initialize if consent exists
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        // Queue the init call for when consent is given
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Weekend MVP Analytics Utility -->
+    <script>
+      /**
+       * wmvpAnalytics - Custom event tracking for Weekend MVP programmatic SEO pages
+       * All methods are safe to call before consent (events are queued)
+       */
+      window.wmvpAnalytics = (function() {
+        // Queue for events fired before GA is ready
+        const eventQueue = [];
+        let gaReady = false;
+        
+        // Check if GA is loaded and ready
+        function checkGAReady() {
+          if (window.analyticsConsent === true && typeof window.gtag === 'function') {
+            gaReady = true;
+            // Flush queued events
+            while (eventQueue.length > 0) {
+              const { eventName, params } = eventQueue.shift();
+              window.gtag('event', eventName, params);
+            }
+          }
+        }
+        
+        // Safe event tracking that queues if GA not ready
+        function trackEvent(eventName, params) {
+          checkGAReady();
+          if (gaReady) {
+            window.gtag('event', eventName, params);
+          } else {
+            eventQueue.push({ eventName, params });
+          }
+        }
+        
+        // Auto-detect page type from URL and fire appropriate event
+        function autoTrack() {
+          const path = window.location.pathname;
+          
+          // Category pages: /ideas/{category}/
+          const categoryMatch = path.match(/^\/ideas\/([a-z-]+)\/$/);
+          if (categoryMatch && !['1k-month', '5k-month', '10k-month', 'passive-income', 'quick-wins', 'build-in-8-hours', 'build-in-weekend', 'build-in-1-week', 'build-in-24-hours'].includes(categoryMatch[1])) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_category', {
+              category_name: categoryMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Revenue goal pages: /ideas/{revenue}/
+          const revenueMatch = path.match(/^\/ideas\/(1k-month|5k-month|10k-month|passive-income|quick-wins)\/$/);
+          if (revenueMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Build time pages: /ideas/build-in-{time}/
+          const buildTimeMatch = path.match(/^\/ideas\/(build-in-[a-z0-9-]+)\/$/);
+          if (buildTimeMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_build_time', {
+              build_time: buildTimeMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Tool pages: /build-with/{tool}/
+          const toolMatch = path.match(/^\/build-with\/([a-z-]+)\/$/);
+          if (toolMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_tool_page', {
+              tool_name: toolMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Audience pages: /ideas-for/{audience}/
+          const audienceMatch = path.match(/^\/ideas-for\/([a-z-]+)\/$/);
+          if (audienceMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_audience_page', {
+              audience_name: audienceMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Problem pages: /solve/{problem}/
+          const problemMatch = path.match(/^\/solve\/([a-z-]+)\/$/);
+          if (problemMatch) {
+            const solutionCount = document.querySelectorAll('[data-solution-card]').length || 0;
+            trackEvent('view_problem_page', {
+              problem_name: problemMatch[1],
+              solution_count: solutionCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Individual idea pages: /ideas/{slug}.html
+          const ideaMatch = path.match(/^\/ideas\/([a-z0-9-]+)\.html$/);
+          if (ideaMatch) {
+            const category = document.querySelector('[data-idea-category]')?.dataset?.ideaCategory || 'unknown';
+            trackEvent('view_idea', {
+              idea_slug: ideaMatch[1],
+              idea_category: category,
+              page_path: path
+            });
+            return;
+          }
+        }
+        
+        return {
+          /**
+           * Track category page view
+           * @param {string} categoryName - Category slug (e.g., 'saas', 'ai-tools')
+           * @param {number} ideaCount - Number of ideas on the page
+           */
+          trackCategory: function(categoryName, ideaCount) {
+            trackEvent('view_category', {
+              category_name: categoryName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track tool page view
+           * @param {string} toolName - Tool slug (e.g., 'cursor', 'claude')
+           * @param {number} ideaCount - Number of ideas suited for this tool
+           */
+          trackTool: function(toolName, ideaCount) {
+            trackEvent('view_tool_page', {
+              tool_name: toolName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track audience page view
+           * @param {string} audienceName - Audience slug (e.g., 'developers', 'non-technical')
+           * @param {number} ideaCount - Number of ideas for this audience
+           */
+          trackAudience: function(audienceName, ideaCount) {
+            trackEvent('view_audience_page', {
+              audience_name: audienceName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track revenue goal page view
+           * @param {string} revenueGoal - Revenue goal slug (e.g., '1k-month', 'passive-income')
+           * @param {number} ideaCount - Number of ideas for this revenue goal
+           */
+          trackRevenueGoal: function(revenueGoal, ideaCount) {
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueGoal,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track problem/solution page view
+           * @param {string} problemName - Problem slug (e.g., 'invoicing', 'meeting-notes')
+           * @param {number} solutionCount - Number of solution ideas
+           */
+          trackProblem: function(problemName, solutionCount) {
+            trackEvent('view_problem_page', {
+              problem_name: problemName,
+              solution_count: solutionCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track build time page view
+           * @param {string} buildTime - Build time slug (e.g., 'build-in-weekend', 'build-in-8-hours')
+           * @param {number} ideaCount - Number of ideas for this build time
+           */
+          trackBuildTime: function(buildTime, ideaCount) {
+            trackEvent('view_build_time', {
+              build_time: buildTime,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track individual idea page view
+           * @param {string} ideaSlug - Idea slug (e.g., 'ai-meeting-notes-cleaner')
+           * @param {string} category - Idea category
+           */
+          trackIdea: function(ideaSlug, category) {
+            trackEvent('view_idea', {
+              idea_slug: ideaSlug,
+              idea_category: category || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track internal link clicks for navigation analysis
+           * @param {string} linkType - Type of link (e.g., 'category_to_idea', 'tool_to_idea', 'related_idea')
+           * @param {string} destination - Destination slug or URL
+           */
+          trackInternalLink: function(linkType, destination) {
+            trackEvent('internal_link_click', {
+              link_type: linkType,
+              destination: destination,
+              source_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track CTA button clicks
+           * @param {string} ctaName - CTA identifier (e.g., 'get_starter_kit', 'book_consult')
+           * @param {string} location - Where on the page (e.g., 'hero', 'footer', 'sidebar')
+           */
+          trackCTA: function(ctaName, location) {
+            trackEvent('cta_click', {
+              cta_name: ctaName,
+              cta_location: location || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track email signup events
+           * @param {string} source - Page or section where signup occurred
+           * @param {string} formType - Type of form (e.g., 'newsletter', 'gated_content', 'ideas_daily')
+           */
+          trackEmailSignup: function(source, formType) {
+            trackEvent('email_signup', {
+              signup_source: source,
+              form_type: formType || 'newsletter',
+              page_path: window.location.pathname
+            });
+            // Also track in Meta Pixel if available
+            if (window.analyticsConsent === true && typeof window.fbq === 'function') {
+              window.fbq('track', 'Lead', { content_name: formType || 'newsletter' });
+            }
+          },
+          
+          /**
+           * Track copy-to-clipboard events (for AI prompts)
+           * @param {string} contentType - What was copied (e.g., 'ai_prompt', 'code_snippet')
+           * @param {string} ideaSlug - Related idea if applicable
+           */
+          trackCopy: function(contentType, ideaSlug) {
+            trackEvent('copy_content', {
+              content_type: contentType,
+              idea_slug: ideaSlug || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track search/filter interactions on collection pages
+           * @param {string} filterType - Type of filter (e.g., 'category', 'build_time', 'revenue')
+           * @param {string} filterValue - Selected filter value
+           */
+          trackFilter: function(filterType, filterValue) {
+            trackEvent('filter_applied', {
+              filter_type: filterType,
+              filter_value: filterValue,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Manually trigger page type detection and auto-tracking
+           * Call this on DOMContentLoaded for programmatic pages
+           */
+          autoTrack: autoTrack,
+          
+          /**
+           * Check GA ready state and flush queue
+           */
+          flushQueue: checkGAReady,
+          
+          /**
+           * Raw event tracking (for custom events)
+           * @param {string} eventName - GA4 event name
+           * @param {object} params - Event parameters
+           */
+          track: trackEvent
+        };
+      })();
+      
+      // Auto-track on DOMContentLoaded for programmatic pages
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Small delay to ensure GA has loaded
+          setTimeout(function() {
+            wmvpAnalytics.flushQueue();
+            wmvpAnalytics.autoTrack();
+          }, 100);
+        });
+      } else {
+        // DOM already loaded
+        setTimeout(function() {
+          wmvpAnalytics.flushQueue();
+          wmvpAnalytics.autoTrack();
+        }, 100);
+      }
+    </script>
+
 
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <link rel="apple-touch-icon" href="../image/webclip.png">
@@ -38,7 +436,7 @@
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Idea of the Day: AI Email Reply Drafter",
-      "description": "Searches for 'automated email response examples' just jumped 238%. Here's the weekend build that rides the wave.",
+      "description": "'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.",
       "author": {
         "@type": "Person",
         "name": "John Iseghohi",
@@ -99,18 +497,40 @@
                     <time class="text-neutral-600 text-xs" datetime="2026-04-21">Apr 21, 2026</time>
                 </div>
                 <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight leading-[1.1] mb-6">Idea of the Day: AI Email Reply Drafter</h1>
-                <p class="text-xl text-neutral-400 font-light leading-relaxed">Searches for 'automated email response examples' just jumped 238%. Here's the weekend build that rides the wave.</p>
+                <p class="text-xl text-neutral-400 font-light leading-relaxed">'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.</p>
             </header>
 
             <div class="prose-nl text-neutral-300 leading-relaxed space-y-6">
-                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Idea of the Day</h2>
-<p class="text-neutral-300 leading-relaxed">Searches for &quot;automated email response examples&quot; just broke out — up 238% to 2,900/month. Translation: knowledge workers are hunting for pre-baked replies because their inbox is winning. The template market is saturated. What&#39;s missing is a tool that writes the reply in <em>your</em> voice, not somebody else&#39;s.</p>
-<h3 class="text-xl font-medium text-white mb-4 mt-10 tracking-tight">AI Email Reply Drafter</h3>
-<p class="text-neutral-300 leading-relaxed">Email eats 28% of the average workweek. Paste in the message you got, jot the 2–3 points you want to cover, pick a tone (professional, friendly, firm, apologetic), and get a polished reply back. Ship a voice-learning layer as the paid upgrade — trained on 5–10 of your own sent emails — and the output stops sounding like every other AI tool on the market.</p>
-<p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Why it&#39;s a weekend build:</strong> ~6h to MVP, $1K/mo target. Stack: Cursor, Claude, and Bolt.</p>
-<div class="my-8 text-center"><a href="https://weekendmvp.app/ideas/ai-email-responder.html?utm_source=beehiiv&amp;utm_medium=newsletter&amp;utm_campaign=am-20260421" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Read the full teardown <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
-<hr class="my-8 border-0 h-px bg-white/10">
-<p class="text-neutral-300 leading-relaxed">Got a weekend? Try this idea.</p>
+                <p class="text-neutral-300 leading-relaxed">The inbox is winning. "Automated email response examples" just broke out — 2,900 searches a month, up 238% — which is the sound of knowledge workers quietly surrendering and Googling for pre-baked replies to paste into threads they don't have the energy to write.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">IDEA OF THE DAY</strong></p>
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">AI Email Reply Drafter</h2>
+                <p class="text-neutral-300 leading-relaxed">Email eats about 28% of the average workweek, and the bottleneck isn't reading — it's writing the reply. Most people already use ChatGPT for this, but the workflow is miserable: copy the inbound email into a chat window, write a prompt, paste the output back into Gmail, edit the tone, regret the em-dashes. The copy-paste tax erases the speed-up.</p>
+                <p class="text-neutral-300 leading-relaxed">AI Email Reply Drafter collapses that into one screen. Paste the message you got, jot 2–3 bullet points you want to cover, pick a tone (professional, friendly, firm, apologetic), and get a polished draft back in the box you already type in. The paid upgrade is the part the template market can't ship: a voice-learning layer trained on 5–10 of your own sent emails, so the output stops sounding like every other AI tool on the market and starts sounding like you on your best day.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Why it's a weekend build:</strong> ~6h to MVP, $1K/mo target. Stack: Cursor for scaffolding, Claude for the draft logic, Bolt for the UI.</p>
+                <div class="my-8 text-center"><a href="https://weekendmvp.app/ideas/ai-email-responder.html?utm_source=beehiiv&utm_medium=newsletter&utm_campaign=am-20260421&e={{email}}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Read the full teardown <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">TREND WATCH</strong></p>
+                <p class="text-neutral-300 leading-relaxed">Most people read the unemployment rate. People who notice demand before it prices in read search traffic, because search traffic moves weeks before any pundit does.</p>
+                <p class="text-neutral-300 leading-relaxed">"Automated email response examples" just went from sleepy baseline to <strong class="text-white font-medium">2,900/mo — a +238% breakout</strong> on a keyword that has existed since Hotmail. Something changed this month, and it isn't supply. It's that the average knowledge worker has given up on writing every reply and started looking for a cheat sheet — except cheat sheets are generic and obvious, and any reply that smells like "Thank you for your message, I appreciate your patience" gets ignored faster than a cold DM.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">The hidden customer isn't the person answering ten emails a day. It's the consultant, solo founder, or freelancer drowning in fifty threads, already three replies behind, who will pay $19/mo for anything that drafts the first 80% of a reply in their own voice.</strong> Whoever compresses "write this email back for me" into one button — and learns <em>my</em> voice doing it — owns the next 18 months of this trend.</p>
+                <blockquote class="border-l-2 border-white/20 pl-4 my-6 text-neutral-400 italic">📈 <strong class="text-white font-medium">"automated email response examples"</strong> — 2,900/mo volume · +238% growth · <strong class="text-white font-medium">BREAKOUT</strong></blockquote>
+                <p class="text-neutral-300 leading-relaxed">Also trending: <em>cold email agency, artificial intelligence email generator, scavenger hunt app.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">FOUNDER PLAYBOOK</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">How Superhuman turned "my inbox is a mess" into a $825M company.</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><em>Rahul Vohra didn't start with email as a market. He started with his own rage at Gmail's 500ms lag and built the thing he wished existed.</em></p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">Solve your own rejection email first.</strong> Vohra was already CEO of Rapportive (acquired by LinkedIn) when he built Superhuman as a tool for himself and 30 friends. He didn't pitch it as "the future of email." He pitched it as "I got so annoyed by Gmail that I rebuilt it." The founder-as-first-user is the only reason Superhuman's keyboard shortcuts feel like they were designed by someone who actually lives in their inbox.</li><li class="leading-relaxed"><strong class="text-white font-medium">Charge from day one, so desperation shows up in the data.</strong> Superhuman launched at $30/mo — absurd for email — because Vohra wanted to filter for people whose inbox was costing them real money. $19/mo for an AI reply drafter does the same job. Free users will tell you what's cool. Paying users will tell you what's broken.</li><li class="leading-relaxed"><strong class="text-white font-medium">The Product/Market Fit Engine is a survey, not a seance.</strong> Vohra's famous framework: ask users "how would you feel if you could no longer use this product?" — and keep iterating until 40%+ say "very disappointed." Ship the ugliest version, ask the question, fix the reasons people said "somewhat disappointed," repeat. That loop is what you run on Sunday night of your build weekend, not what you run after you've raised a seed.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Read more on Vohra's founding story → [SOURCE — add link before sending]</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">🛠 STEAL THIS — The 90-minute demand test</strong></p>
+                <p class="text-neutral-300 leading-relaxed">Before you touch Cursor, prove someone is desperate enough to pay:</p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">0–30 min:</strong> Ship a one-screen landing page. Headline: "Draft email replies in your voice in 10 seconds." One sentence of value, one email field, one "Get early access" button. Use Bolt or a free Carrd template — no backend.</li><li class="leading-relaxed"><strong class="text-white font-medium">30–60 min:</strong> Post in two places where the pain lives: r/freelance and a LinkedIn #solopreneur thread. Script: "Building a tool that drafts email replies in <em>your</em> voice — not ChatGPT's. Would you use it? Link in comments." Don't sell. Just ask.</li><li class="leading-relaxed"><strong class="text-white font-medium">60–90 min:</strong> Watch the analytics. 20+ visits with 5+ emails is a go. Under that, the next idea is already queued up.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">The cost of the wrong weekend isn't 6 hours of coding. It's the idea you would have built instead.</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed">Sneak peek at tomorrow's idea…</p>
+                <p class="text-neutral-300 leading-relaxed"><em>A tool that turns every Zoom transcript into a one-page decision doc before your team has time to argue about what was actually agreed.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">PS</strong> — Hit reply and tell me: what's the email reply you've been avoiding this week? Best one gets anonymized and drafted live in Friday's recap.</p>
             </div>
 
             <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
