@@ -2272,78 +2272,7 @@
         </footer>
     </section>
 
-    <script>
-        // Set year
-        document.getElementById('year').textContent = new Date().getFullYear();
-
-        // Check for existing access
-        // Content is visible by default (for SEO crawlers)
-        // For human users without access, we hide content and show the gate
-        const hasAccess = localStorage.getItem('ideas_email');
-        const emailGate = document.getElementById('email-gate');
-        const ideasContent = document.getElementById('ideas-content');
-
-        if (!hasAccess) {
-            // User hasn't submitted email - show gate, hide content
-            emailGate.classList.remove('hidden');
-            ideasContent.classList.add('hidden');
-        }
-
-        // Handle form submissions (both hero and bottom forms)
-        const forms = document.querySelectorAll('.email-form');
-
-        forms.forEach(form => {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const emailInput = form.querySelector('.gate-email');
-                const firstNameInput = form.querySelector('.gate-first-name');
-                const submitBtn = form.querySelector('.gate-submit-btn');
-                const email = emailInput.value;
-                const firstName = firstNameInput.value;
-
-                // Disable button and show loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
-
-                try {
-                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-                    if (!isLocalhost) {
-                        // Production: Submit to Beehiiv via our API
-                        const response = await fetch('/api/ideas-subscribe', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, first_name: firstName })
-                        });
-
-                        const data = await response.json();
-
-                        if (!response.ok && !data.success) {
-                            throw new Error(data.error || 'Failed to subscribe');
-                        }
-                    }
-
-                    // Save to localStorage
-                    localStorage.setItem('ideas_email', email);
-
-                    // Show content
-                    emailGate.classList.add('hidden');
-                    ideasContent.classList.remove('hidden');
-
-                    // Scroll to top
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } catch (error) {
-                    console.error('Subscription error:', error);
-                    alert('Something went wrong. Please try again.');
-
-                    // Reset button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<span>Unlock Ideas</span><iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5"></iconify-icon>';
-                }
-            });
-        });
-    </script>
+    <script src="/ideas/gate.js" defer></script>
 
     <!-- Client-side filtering JavaScript -->
     <script>

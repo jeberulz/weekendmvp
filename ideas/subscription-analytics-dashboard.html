@@ -334,43 +334,7 @@ Create a landing page with:
         </footer>
     </section>
 
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
-        const hasAccess = localStorage.getItem('ideas_email');
-        const emailGate = document.getElementById('email-gate');
-        const ideaContent = document.getElementById('idea-content');
-        if (!hasAccess) { emailGate.classList.remove('hidden'); ideaContent.classList.add('hidden'); }
-
-        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('gate-email').value;
-            const firstName = document.getElementById('gate-first-name').value;
-            const submitBtn = document.getElementById('gate-submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
-            try {
-                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                    await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
-                }
-                localStorage.setItem('ideas_email', email);
-                emailGate.classList.add('hidden');
-                ideaContent.classList.remove('hidden');
-            } catch (error) {
-                alert('Something went wrong. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>';
-            }
-        });
-
-        function copyPrompt(button) {
-            const promptText = button.nextElementSibling.nextElementSibling.textContent;
-            navigator.clipboard.writeText(promptText.trim()).then(() => {
-                const icon = button.querySelector('iconify-icon');
-                icon.setAttribute('icon', 'lucide:check');
-                setTimeout(() => icon.setAttribute('icon', 'lucide:copy'), 2000);
-            });
-        }
-    </script>
+    <script src="/ideas/gate.js" defer></script>
 
 
 </body></html>

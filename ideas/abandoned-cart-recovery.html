@@ -246,26 +246,7 @@ Show comparison to previous month.
         </footer>
     </section>
 
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
-        const hasAccess = localStorage.getItem('ideas_email');
-        if (!hasAccess) { document.getElementById('email-gate').classList.remove('hidden'); document.getElementById('idea-content').classList.add('hidden'); }
-        document.getElementById('ideas-email-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('gate-email').value;
-            const firstName = document.getElementById('gate-first-name').value;
-            const submitBtn = document.getElementById('gate-submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<iconify-icon icon="lucide:loader-2" width="16" class="animate-spin"></iconify-icon> <span>Unlocking...</span>';
-            try {
-                if (window.location.hostname !== 'localhost') await fetch('/api/ideas-subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, first_name: firstName }) });
-                localStorage.setItem('ideas_email', email);
-                document.getElementById('email-gate').classList.add('hidden');
-                document.getElementById('idea-content').classList.remove('hidden');
-            } catch (error) { alert('Something went wrong.'); submitBtn.disabled = false; submitBtn.innerHTML = '<span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>'; }
-        });
-        function copyPrompt(button) { navigator.clipboard.writeText(button.nextElementSibling.nextElementSibling.textContent.trim()).then(() => { button.querySelector('iconify-icon').setAttribute('icon', 'lucide:check'); setTimeout(() => button.querySelector('iconify-icon').setAttribute('icon', 'lucide:copy'), 2000); }); }
-    </script>
+    <script src="/ideas/gate.js" defer></script>
 
 
 </body></html>
