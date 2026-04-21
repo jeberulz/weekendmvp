@@ -106,6 +106,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://weekendmvp.app/articles/the-3-screen-mvp-framework.html</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
   <!-- Category Collections -->
   <url>
@@ -227,6 +233,12 @@
   <url>
     <loc>https://weekendmvp.app/ideas/ai-rfp-response-assistant.html</loc>
     <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/ideas/brakes-maintenance-tracker-app.html</loc>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

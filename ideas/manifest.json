@@ -1,6 +1,18 @@
 {
   "ideas": [
     {
+      "slug": "brakes-maintenance-tracker-app",
+      "title": "Brakes Maintenance Tracker App that Automates Reminders and Records for Vehicle Owners ([$1M+ ARR Potential])",
+      "publishedAt": "2026-04-21",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": ["cursor", "claude", "bolt"],
+      "audiences": ["non-technical", "solo-founders", "weekend-builders"],
+      "source": "web-research:draft-brakes-maintenance-app"
+    },
+    {
       "slug": "ai-rfp-response-assistant",
       "title": "AI RFP Response Assistant for SMB Sales Teams",
       "publishedAt": "2026-04-20",
