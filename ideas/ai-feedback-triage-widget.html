@@ -1,0 +1,454 @@
+<!DOCTYPE html><html lang="en" class="antialiased"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Feedback Triage Widget | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build an AI-powered feedback widget that auto-categorizes user input into bugs, features, and praise—then ranks the top 3 priorities. Perfect for solo devs drowning in feedback.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-feedback-triage-widget">
+    <meta property="og:title" content="AI Feedback Triage Widget | Startup Ideas">
+    <meta property="og:description" content="Auto-categorize user feedback into bugs, features, and praise. Ship what matters. One snippet, any site.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-feedback-triage-widget">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "AI Feedback Triage Widget",
+      "description": "Auto-categorize user feedback into bugs, features, and praise. One snippet install for solo devs.",
+      "datePublished": "2026-04-22"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AI Feedback Triage Widget",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web"
+    },
+    {
+      "@type": "HowTo",
+      "name": "Build AI Feedback Triage Widget MVP",
+      "description": "Step-by-step guide to building the feedback widget in a weekend.",
+      "totalTime": "PT10H",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Embed Snippet",
+          "text": "Ship the one-line JS snippet that customers drop into their site."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Categorization Engine",
+          "text": "Wire Claude Haiku to auto-tag each feedback item as bug / feature / praise / confusion."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Weekly Digest",
+          "text": "Email the ranked top-3 priorities each week via Resend."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://weekendmvp.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Startup Ideas",
+          "item": "https://weekendmvp.app/startup-ideas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "AI Feedback Triage Widget",
+          "item": "https://weekendmvp.app/ideas/ai-feedback-triage-widget.html"
+        }
+      ]
+    }
+  ]
+}</script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">AI Feedback Triage Widget</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">Turn scattered user feedback into a ranked priority list.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required="" placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Developer Tools</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Feedback Triage Widget</h1>
+                    <p class="text-xl text-neutral-500 font-light">Auto-categorize user feedback into bugs, features, and praise. Ship what matters.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">Solo developers gather feedback from five places: app reviews, emails, Discord pings, support tickets, and the occasional tweet. Responding to each feels productive. Sorting them into priorities does not. Feature requests pile up next to bug reports and thank-you notes, and the person who built the whole product now owns the second job of deciding what every piece of it means. Canny and UserVoice exist for this, priced and designed for teams with a dedicated PM. Solo devs bounce off them in the trial.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">A lightweight widget that embeds on any site or app with one snippet. When a user submits feedback, AI tags it as bug / feature request / confusion / praise, clusters it with similar submissions, and updates a ranked top-3 priority view. A weekly email digest summarizes what changed so the developer sees what matters without reading every message. One script tag covers Next.js, WordPress, and Framer.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Drop the snippet</p>
+                                <p class="text-xs text-neutral-500 mt-1">One line of JS, no backend required</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI auto-tags</p>
+                                <p class="text-xs text-neutral-500 mt-1">Bug / feature / praise / confusion, clustered by theme</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Get the top 3</p>
+                                <p class="text-xs text-neutral-500 mt-1">Weekly digest with what&rsquo;s urgent and what&rsquo;s repeating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The solo-developer segment is one of the fastest-growing in software. No-code tools plus AI pair programmers have made the one-person product team a default, not an exception. Existing feedback tooling hasn&rsquo;t caught up. Canny and UserVoice are the category&rsquo;s public faces, both priced for funded teams. UserJot and Fider fill a tiny middle tier. The opening is AI-native, solo-priced, one-snippet install.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Reddit&rsquo;s r/IndieDev (678K+ members) and r/Startup (873K+) surface weekly threads on feedback overload &mdash; demand is observable, not inferred.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Canny has raised $15M+; UserVoice was acquired by 3Pillar in 2021 &mdash; category validated, just not solved for the solo tier.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Keyword volume: &ldquo;product feedback&rdquo; searches up 47% YoY; &ldquo;user testing&rdquo; at 110K monthly (Ideabrowser keyword research).</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>No-code growth on Webflow, Framer, and Vercel has spawned millions of solo-published apps &mdash; every one is a feedback-widget candidate.</span></li>
+                    </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Two clusters: team-focused platforms priced for funded orgs (Canny, UserVoice) and minimal tools that require the developer to sort manually (UserJot, Fider). Nobody packages one-snippet install, AI auto-categorization, and a ranked top-3 view at under $10/mo.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Canny</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Team/enterprise incumbent. Rich roadmap, voting, changelog. Designed for PM-led teams, not solo builders; pricing and UI both assume a dedicated product operator.</p>
+                            <p class="text-xs text-neutral-400">$79/mo Starter &rarr; $399/mo Growth</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">UserVoice</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Legacy enterprise player. Robust, expensive, sales-led. Overkill for indie use and the messaging doesn&rsquo;t speak to solo devs at all.</p>
+                            <p class="text-xs text-neutral-400">Custom pricing, typically $499+/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">UserJot</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Closest direct comp. Clean UX, generous free core &mdash; but zero AI categorization. Users still have to sort manually; the ranking layer doesn&rsquo;t exist.</p>
+                            <p class="text-xs text-neutral-400">Free core &rarr; $29/mo Pro</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Fider</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Open-source, self-hostable. Zero license cost, but install requires a server, a database, and ongoing maintenance. No AI. Most solo devs bounce.</p>
+                            <p class="text-xs text-neutral-400">Free (self-host) or ~$50/mo hosted</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Embed-in-seconds widget, AI that tags and ranks automatically, weekly digest that surfaces the top 3. $9/mo undercuts UserJot by 3x; free tier lets indie devs install today without a pricing conversation. Canny&rsquo;s enterprise tilt and UserJot&rsquo;s manual-sort gap are both the opening.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Freemium SaaS priced explicitly below UserJot. Free tier seeds indie-dev word-of-mouth (Reddit, GitHub, Hacker News); Pro monetizes a solo dev after their first weekly digest demonstrates value; Agency tier covers multi-brand freelancers and small studios. LLM cost per categorization is $0.001-0.005 with Claude Haiku, so margins hold at every tier.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 project, 100 feedback items/mo, basic AI tagging, &ldquo;powered by&rdquo; badge</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$9/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited items, weekly digest, brand-voice categories, custom tags, no branding</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Agency</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Multi-project, white-label, real-time Slack alerts, API access, 2 seats</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM cost/item</p>
+                                <p class="font-semibold">$0.001&ndash;0.005</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~85%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$15&ndash;30</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Pro</p>
+                                <p class="font-semibold">6&ndash;10%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Ship the snippet on a CDN, route submissions through Cloudflare Workers, and store in Supabase. Claude Haiku does the categorization &mdash; cheap, fast, accurate. The entire install path must be under 60 seconds for a new customer: one script tag, one API key, and they&rsquo;re collecting feedback.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:cloudflare" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Cloudflare Workers + CDN</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">The widget JS lives on Cloudflare&rsquo;s CDN, loads async in &lt;15KB gzipped. Submit endpoint is a Worker: validates, rate-limits per project, queues to Supabase. Global edge = low latency install anywhere.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Auth + Postgres for projects, feedback, categories, clusters. RLS per project. Realtime subscription drives the live top-3 view without polling.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude Haiku (categorization)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Haiku at $0.25/1M input tokens classifies each item for &lt;$0.005. Prompt cached with the taxonomy so repeat classifications are near-free. Fall back to GPT-4o mini on overload.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:react" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Preact widget + Shadow DOM</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Preact keeps the snippet under 15KB. Shadow DOM isolates the widget from host-site CSS so brand colors always render clean. Zero layout shift on mount.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Weekly digest email with the ranked top-3 view. React Email templates for clean brand-voice output. Slack webhook for Agency tier real-time alerts.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe + PostHog</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Billing Checkout + Portal for Pro/Agency. PostHog instruments snippet installs, first-feedback-received, and first-digest-opened &mdash; the three events that predict conversion.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build an AI Feedback Triage Widget: a JS snippet customers embed, a Cloudflare Worker submit endpoint, and a Supabase-backed dashboard.
+
+Requirements:
+- Preact widget (&lt;15KB gzipped) with Shadow DOM isolation for host-site CSS
+- One-tag install: &lt;script src="https://cdn.siftbox.app/widget.js" data-project="PROJECT_KEY"&gt;&lt;/script&gt;
+- Submit endpoint on Cloudflare Workers: validate input, rate-limit per project (30/min), queue to Supabase
+- Supabase schema: projects, feedback (text, project_id, status, created_at), categories, clusters
+- Dashboard: Next.js 14 App Router, auth via Supabase, ranked top-3 view that updates live via Realtime
+
+Ship the snippet + worker + submit path first. The dashboard can wait a day.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Categorization Engine</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Implement the AI categorization pipeline with Claude Haiku.
+
+For each new feedback item:
+1. Call Claude Haiku with a cached system prompt that defines 4 top-level categories (bug, feature_request, confusion, praise) plus any user-defined custom tags
+2. Return: {category, confidence, theme_slug, summary}
+3. Group items with matching theme_slug into clusters; update cluster.item_count
+4. Compute the ranked top-3 for the project: clusters with highest (item_count * recency_weight) in last 14 days
+5. Cache the project's taxonomy + custom categories with Claude's prompt caching for 80%+ token cost reduction
+
+Target: classification latency &lt;500ms, cost &lt;$0.005 per item.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Weekly Digest</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build the weekly digest email that converts Free &rarr; Pro.
+
+Every Monday at 9am local time:
+1. Query each project&rsquo;s top-3 clusters for the past 7 days
+2. Pull sample verbatim feedback (2 items per cluster, most recent + most upvoted)
+3. Render a React Email template: project name, &ldquo;Top 3 this week,&rdquo; each cluster card shows category icon, theme summary, item count, sample quotes
+4. Send via Resend; track open + click to PostHog as events weekly_digest_opened and weekly_digest_cta_clicked
+5. The digest ends with a single CTA: &ldquo;See full dashboard&rdquo; &rarr; dashboard URL with utm_source=digest
+
+The digest is the product&rsquo;s aha moment. Make it land.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explore More Section -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                    
+                    <!-- Category & Revenue Links -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <a href="developer-tools/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:code-2" class="text-emerald-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More Developer Tools</span>
+                                <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                            </div>
+                        </a>
+                        <a href="1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$1K/Month Ideas</span>
+                                <p class="text-xs text-neutral-500">By revenue potential</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Build With Tools -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                Cursor
+                            </a>
+                            <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                Claude
+                            </a>
+                            <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:zap" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
+                                Bolt.new
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ideas For Audiences -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                Solo Founders
+                            </a>
+                            <a href="../ideas-for/non-technical/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:lightbulb" class="text-amber-500" width="14" aria-hidden="true"></iconify-icon>
+                                Non-Technical
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Related Ideas -->
+                    <div>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a href="customer-feedback-aggregator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Customer Feedback Aggregator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="ai-code-reviewer.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Code Reviewer</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="waitlist-manager.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Waitlist &amp; Launch Manager</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~8 hours</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
+    <script src="/ideas/gate.js" defer></script>
+
+
+</body></html>
