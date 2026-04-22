@@ -43,10 +43,9 @@ const REQUIRED_SECTIONS = [
 const MIN_PASS_BYTES = 15_000;
 const MIN_PASS_WORDS = 800;
 
-// Phase 1 policy: only STUB pages are quarantined out of the live manifest.
-// THIN pages stay visible but are flagged in ideas/_audit.json for Phase 4 backfill.
-// Tighten this to ['STUB', 'THIN'] once the THIN tier is backfilled.
-const QUARANTINE_STATUSES = new Set(['STUB']);
+// Phase 4 complete: THIN tier is cleared; any regression now fails the manifest.
+// Tightened from ['STUB'] to ['STUB', 'THIN'] to lock in the quality bar.
+const QUARANTINE_STATUSES = new Set(['STUB', 'THIN']);
 
 function auditFile(slug) {
   const filePath = path.join(ideasDir, `${slug}.html`);
