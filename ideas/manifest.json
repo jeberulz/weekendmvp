@@ -43,6 +43,43 @@
       }
     },
     {
+      "slug": "conversational-analytics-digest",
+      "title": "Conversational Analytics Digest",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:6806",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "description": "One weekly email that translates GA4, Mixpanel, and Plausible data into plain-English insights. Each insight ends with one action. Built for non-technical founders who never open their dashboard.",
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__get_idea_research:base"
+        ],
+        "citations": 4,
+        "wordCount": 1386,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T00:00:00Z",
+        "publishNotes": "Mode A Ideabrowser MCP source. Competitive: Mixpanel/Amplitude/Plausible/Fathom/Zoho Analytics/ChatGPT. Pricing $29 Starter / $79 Pro / $299 Agency. Tech: Next.js + Supabase + GA4 Data API + Mixpanel + Plausible + Claude with prompt caching + Resend/React Email + Vercel Cron + Stripe."
+      },
+      "researchLevel": "deep"
+    },
+    {
       "slug": "recall-radar-ecommerce-sellers",
       "title": "Recall Radar for E-commerce Sellers",
       "publishedAt": "2026-04-22",
