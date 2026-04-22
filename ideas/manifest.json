@@ -1,6 +1,41 @@
 {
   "ideas": [
     {
+      "slug": "nasm-trainer-marketplace",
+      "title": "Online Marketplace for NASM Trainers",
+      "publishedAt": "2026-04-22",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "researchLevel": "deep",
+      "source": "web-research+ideabrowser:1220-adjacent",
+      "description": "Credential-verified marketplace for NASM/ACE/ISSA trainers. In-person + virtual, escrow payments, certification badge. Weekend MVP guide + prompts.",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:fitness trainer marketplace",
+          "ideabrowser:browse_ideas:personal trainer booking platform",
+          "web-research:BLS fitness trainers 2024",
+          "web-research:Grand View Research online fitness market",
+          "web-research:IHRSA health club industry",
+          "web-research:Mindbody Vista Equity acquisition"
+        ],
+        "citations": 6,
+        "wordCount": 2400,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T07:53:19.812Z",
+        "backfillNotes": "STUB (1.75KB, 0 words, 0/7 sections) → PASS full 7-section build. No direct Ideabrowser match for credential-verified trainer marketplace wedge. Competitive Landscape (Thumbtack/Angi/Bark general marketplaces no verification, Mindbody/ClassPass studio-ops vs group-class consumer, Trainerize/TrueCoach/MyPTHub supply-side SaaS, FYT/Bold in-home competitors with no verification+escrow). Business Model (Client 5% service fee + Trainer Basic free with 15%/8% take + Trainer Pro $19/mo priority + $49 one-time verification badge, ~10% blended take, Mindbody precedent $1.9B). Tech Stack (Next.js 14 + Supabase PostGIS geo queries + Algolia faceted search + Stripe Connect Express manual_capture = escrow primitive + Persona ID verification + manual NASM/ACE cert cross-check + Daily.co virtual + Twilio SMS reminders). Market stats cite Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), BLS fitness trainers (340K workforce), IHRSA ($35B US, $97B global), Mindbody Vista Equity 2019 $1.9B, Stripe manual capture docs. NOTE: replaced originally-planned expert-mentorship-marketplace to avoid duplicate content with virtual-knowledge-hub (both would have been executive mentorship). Verify Mindbody acquisition figures from press before marketing use."
+      }
+    },
+    {
       "slug": "virtual-knowledge-hub",
       "title": "Virtual Knowledge Hub for Business Leaders & Emerging Professionals",
       "publishedAt": "2026-04-22",

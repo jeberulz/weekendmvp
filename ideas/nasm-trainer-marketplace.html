@@ -4,25 +4,399 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Marketplace for NASM Trainers | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a marketplace connecting clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.">
+    <meta name="description" content="Credential-verified marketplace for NASM/ACE/ISSA trainers. In-person + virtual, escrow payments, certification badge. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
-
-    <!-- Open Graph -->
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/nasm-trainer-marketplace">
     <meta property="og:title" content="Online Marketplace for NASM Trainers | Startup Ideas">
-    <meta property="og:description" content="Build a marketplace connecting clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.">
+    <meta property="og:description" content="Credential-verified fitness trainer marketplace. NASM/ACE/ISSA badges surfaced, in-person or virtual, escrow-protected bookings.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
-
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/nasm-trainer-marketplace">
     <meta property="twitter:title" content="Online Marketplace for NASM Trainers | Startup Ideas">
-    <meta property="twitter:description" content="Build a marketplace connecting clients with NASM certified trainers for specialized fitness services like weight loss, strength training, and meal planning.">
+    <meta property="twitter:description" content="Credential-verified fitness trainer marketplace. NASM/ACE/ISSA badges surfaced, in-person or virtual, escrow-protected bookings.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
-
     <link rel="canonical" href="https://weekendmvp.app/ideas/nasm-trainer-marketplace">
-    
-    <!-- Google Analytics - Loaded conditionally after consent -->
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
+
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Online Marketplace for NASM Trainers",
+          "description": "Credential-verified marketplace connecting clients with NASM, ACE, ISSA certified trainers. In-person + virtual, escrow payments, verified badges.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/nasm-trainer-marketplace.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "NASM Trainer Marketplace",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "description": "Two-sided marketplace for credential-verified personal trainers. Search by certification, specialty, location; book in-person or virtual; escrow-protected payments."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build NASM Trainer Marketplace MVP",
+          "description": "Step-by-step guide to shipping a credential-verified fitness trainer marketplace in a weekend.",
+          "totalTime": "PT12H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Project Setup", "text": "Next.js + Supabase with trainers, bookings, reviews schema; Algolia for search." },
+            { "@type": "HowToStep", "position": 2, "name": "Credential Verification", "text": "Trainer uploads certification PDF; Persona verifies ID; admin cross-checks NASM/ACE registry." },
+            { "@type": "HowToStep", "position": 3, "name": "Escrow Booking Flow", "text": "Stripe Connect + manual capture holds funds until session completion." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "NASM Trainer Marketplace", "item": "https://weekendmvp.app/ideas/nasm-trainer-marketplace.html" }
+          ]
+        }
+      ]
+    }</script>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">NASM Trainer Marketplace</h1>
+            <p class="text-lg text-neutral-500 mb-10">Verified certifications. Escrow bookings. Trainers you can trust.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Marketplace</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Online Marketplace for NASM Trainers</h1>
+                    <p class="text-xl text-neutral-500 font-light">Verified certifications. Escrow bookings. The trainer you hired is the trainer who shows up.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Someone searches "personal trainer near me" and lands on Thumbtack. Ten generalists pop up, most with no verifiable credentials, pricing that ranges from $25 to $200 per session with no explanation. The client picks one mostly on profile photo and vibes, books it, and finds out two sessions in that the trainer is self-taught from YouTube. The trainer may be good, may be terrible. The <em>buyer has no prior signal</em>. And Thumbtack's fee structure rewards whoever spams the most requests, not whoever is actually qualified.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Meanwhile, the NASM-certified trainer who spent <strong>$700 on the certification exam</strong> and $300/year on continuing education has no good place to surface that credential. Mindbody is for studios that already own the client relationship. ClassPass is for group classes at gyms, not 1:1 bookings. Trainerize is a client-management tool, not a discovery surface. There is no Houzz-for-trainers, no Upwork-for-fitness, where "I am NASM CPT certified, here is the photo of my card" is the first thing a prospective client sees.</p>
+                    <p class="text-neutral-600 leading-relaxed">The consequence is a trust vacuum. <strong>85% of personal-training bookings in the US happen through word-of-mouth or a gym membership</strong>; the independent trainer without a physical gym has almost no way to reach the next tier of serious clients. And serious clients &mdash; the ones paying $100&ndash;$250/session &mdash; know they're overpaying by trial-and-error. A credential-verified marketplace converts that trust cost into a marketplace liquidity event.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A two-sided marketplace where <em>every trainer's certification is verified before they can take a paid booking</em>. The client searches by location (in-person radius or virtual), specialty (weight loss, strength, rehab, pre/postnatal, mobility, etc.), credential (NASM, ACE, ISSA, NSCA), and budget. The trainer profile surfaces the verified badge like an eBay "Top Rated Seller" &mdash; non-gameable, explicitly priced. Payments are held in escrow; the trainer is paid out 24 hours after the session happens. If the session is canceled by trainer, automatic full refund. This is the trust layer Thumbtack never built.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Trainer verifies</p>
+                                <p class="text-xs text-neutral-500 mt-1">ID + NASM/ACE/ISSA cert upload; admin cross-check</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Client searches</p>
+                                <p class="text-xs text-neutral-500 mt-1">Specialty, location (or virtual), budget, credential filter</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Escrow-safe book</p>
+                                <p class="text-xs text-neutral-500 mt-1">Payment held; trainer paid 24h post-session</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The network effect is credentials, not volume. Airbnb's moat is "I trust the reviews." This marketplace's moat is "I trust the badge was actually verified by the platform." Once the platform has 2,000+ verified NASM trainers, NASM itself becomes an inbound partner &mdash; because the platform becomes the most reliable job board for their certification holders. That converts a B2C marketplace into an officially-endorsed one, closing the door on open competitors.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>online fitness market sits at $7.5B in 2024 and is projected to reach $24B by 2030 at 21.3% CAGR</strong> (Grand View Research). The broader <strong>US health club and personal training industry is $35B; global $97B</strong> (IHRSA 2023). Personal training specifically grew 14% in the five years pre-pandemic and re-accelerated post-2022 as hybrid models (in-person + virtual) displaced pure gym memberships. The marketplace window sits on top of the hybrid shift.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>340K+ US personal trainers</strong> (BLS 2024), projected 14% growth through 2033 &mdash; 3.5&times; the average occupation growth rate.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>NASM issues <strong>~30K new CPT certifications per year</strong>; ACE, ISSA, NSCA collectively issue another 30K. <strong>60K+ new credentialed trainers annually</strong> need a way to get found.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Mindbody, the dominant fitness business SaaS, was <strong>acquired by Vista Equity for $1.9B</strong> in 2019 &mdash; validation that the financial layer of this industry supports unicorn-scale outcomes.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>US consumer spending on personal training tops <strong>$13B annually</strong>; average 1:1 session price is $75&ndash;$100 (urban, $40&ndash;$60 suburban). A 10% take on booking flow at 100K monthly sessions would be $1M in monthly GMV, ~$100K platform revenue.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>"Find a personal trainer" search volume is <strong>74K/month</strong> US (Google Keyword Planner) with CPC $3&ndash;$9. Commercial intent is high; SEO-plus-escrow is a viable growth loop.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/personaltraining (85K), r/weightroom (1.2M), NASM Facebook group (60K+), OPEX Fitness community, industry podcasts (Jason Phillips, Mark Fisher). Trainers are actively looking for new client-acquisition channels.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Market stage is <em>fragmented but maturing</em>. The incumbents either serve the supply side (Trainerize, Mindbody, TrueCoach) or the broad services category (Thumbtack, Fiverr Pro) without verification. No one owns "verified NASM-CPT marketplace with escrow." The category is ripe for a trust-layer entrant. Partnership-first go-to-market with NASM, ACE, and ISSA is plausible; they have incentive to make their certifications more economically useful to holders.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Five classes of competitor, each with a structural gap you can exploit. Nobody is doing verified-credential + escrow + specialty + hybrid-format at the same time for the independent trainer segment.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Thumbtack / Angi / Bark</h4>
+                            <p class="text-xs text-neutral-500 mb-2">General services marketplaces. Low trust, pay-to-send-quote monetization rewards spammers not quality. Fitness is a sliver of their catalog. No credential verification.</p>
+                            <p class="text-xs text-neutral-400">Trainers pay $5&ndash;$50 per lead; clients free</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Mindbody / ClassPass</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Mindbody is studio-operations SaaS (schedule + billing for existing clients, not discovery). ClassPass is a group-class subscription, not 1:1 personal training. Neither is a discovery marketplace for independent CPTs.</p>
+                            <p class="text-xs text-neutral-400">Mindbody $129&ndash;$499/mo per studio; ClassPass $15&ndash;$99/mo consumer</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Trainerize / TrueCoach / My PT Hub</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Trainer-side client management SaaS (workouts, messaging, billing). The trainer brings the client. No discovery, no matchmaking, no verification badge visible to clients.</p>
+                            <p class="text-xs text-neutral-400">Trainerize $5&ndash;$79/mo, TrueCoach $19&ndash;$59/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">FYT (Find Your Trainer) / Bold</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Direct competitors in the in-person PT marketplace. FYT focused on in-home trainers (NYC/LA heavy). Bold targets 50+ seniors. Neither lead with credential verification or escrow; both charge trainers high take rates (25&ndash;35%).</p>
+                            <p class="text-xs text-neutral-400">FYT ~25% take rate; Bold bundled in subscription</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">"Verified NASM/ACE/ISSA credential" as the hero filter. Escrow-protected booking so clients book strangers confidently. Hybrid in-person or virtual. 15% take on first booking, 8% on repeats (encourages trainers to retain clients on-platform vs. going off-platform). Partner with NASM for an official "Find a Trainer" redirect from their certified-member portal. That one deal becomes the moat.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Marketplace take-rate model, tiered to reward retention. Client-side is free to search and book. Trainer-side has optional subscription for premium visibility. Verification badge is a one-time fee that covers the manual cross-check. The 15&rarr;8% take-rate step on repeat bookings is the key retention lever: trainers stop churning off-platform once they have 5+ repeat clients.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Client</h4>
+                            <p class="text-2xl font-bold mb-2">Free</p>
+                            <p class="text-xs text-neutral-500">Browse, filter, book. Escrow protection included. 5% booking service fee on session total.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Trainer Basic</h4>
+                            <p class="text-2xl font-bold mb-2">Free</p>
+                            <p class="text-xs text-neutral-500">Standard profile, 15% platform take on first booking, 8% on repeats. $49 one-time verification badge.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Trainer Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$19/mo</p>
+                            <p class="text-xs text-neutral-500">Priority search ranking, 30-second video intro, recurring auto-book, 10% take on first booking, 5% on repeats.</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Avg session price</p>
+                                <p class="font-semibold">$75</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Blended take</p>
+                                <p class="font-semibold">~10%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Verification CAC</p>
+                                <p class="font-semibold">$25 (covered by $49 fee)</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Trainer repeat rate</p>
+                                <p class="font-semibold">~40% in 90 days</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">GMV path: 100 trainers &times; 8 sessions/mo &times; $75 = $60K GMV/mo &rarr; $6K platform rev + verification fees. 500 trainers &times; 10 sessions/mo &times; $75 = $375K GMV/mo &rarr; $37.5K platform + $5K Pro subs. At 2K trainers + 100K monthly sessions: $750K GMV + sub revenue = ~$90K MRR (~$1.1M ARR) with long-tail upside as NASM partnership lifts supply conversion. Mindbody's $1.9B outcome shows the multiple this category can support at scale.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Marketplace basics plus a verification/escrow trust layer. The expensive piece is credential verification &mdash; outsource the ID check to Persona, keep the cert cross-check manual at first. Escrow via Stripe Connect <code class="text-xs bg-neutral-100 px-1 rounded">manual_capture</code> is the one non-obvious pattern worth highlighting.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 App Router</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">SEO-critical trainer profile pages as Server Components. <code class="text-xs bg-neutral-100 px-1 rounded">/trainers/[slug]</code> optimized for organic "personal trainer {city}" queries. Server Actions for booking flow.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase + PostGIS</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">trainers</code>, <code class="text-xs bg-neutral-100 px-1 rounded">clients</code>, <code class="text-xs bg-neutral-100 px-1 rounded">credentials</code>, <code class="text-xs bg-neutral-100 px-1 rounded">bookings</code>, <code class="text-xs bg-neutral-100 px-1 rounded">reviews</code>. PostGIS geography column on trainer home base for radius queries. RLS per-role.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:algolia" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Algolia or Meilisearch</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Faceted search on credential, specialty, location, price. Index trainer profiles with geo for "within N miles." Instant search UX is a conversion driver on marketplaces.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Connect Express + manual capture</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Trainer onboards via Express (instant). Client payment goes to PaymentIntent with <code class="text-xs bg-neutral-100 px-1 rounded">capture_method: 'manual'</code>. Capture 24h after session completion. Auto-refund if trainer cancels. Platform fee via <code class="text-xs bg-neutral-100 px-1 rounded">application_fee_amount</code>.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:badge-check" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Persona + manual cert review</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Persona (or ID.me) for government-ID verification. Trainer uploads cert PDF; admin cross-checks against NASM/ACE public registries. Batch reviews daily. $49 one-time fee covers ~$25 Persona cost + admin time.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:video" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Daily.co + Resend + Twilio</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Daily.co embedded video rooms for virtual sessions. Resend for booking confirmations + review-request emails. Twilio SMS for session reminders (reduces no-show rate the most effectively).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Marketplace Scaffold + Geo Search</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router marketplace for credential-verified personal trainers. Supabase with PostGIS, Algolia for search, Tailwind.
+
+Schema:
+- trainers(id, user_id, display_name, slug, bio, specialties TEXT[], years_experience, session_modes TEXT[] ('in_person' | 'virtual'), home_base GEOGRAPHY(POINT), service_radius_miles, price_per_session_cents, stripe_account_id, status ENUM[unverified,pending_verification,active,paused])
+- credentials(id, trainer_id, type ENUM[NASM_CPT,ACE_CPT,ISSA_CPT,NSCA_CSCS,...], cert_number, cert_pdf_url, verified_at, verified_by_admin_id)
+- clients(id, user_id, stripe_customer_id, fitness_goals TEXT[])
+- bookings(id, trainer_id, client_id, scheduled_at, duration_min, mode, location_text, stripe_payment_intent_id, status ENUM[held,captured,refunded], captured_at)
+- reviews(id, booking_id, rating_1_5, body, created_at)
+
+Enable PostGIS: CREATE EXTENSION IF NOT EXISTS postgis;
+
+Routes:
+- / (marketing, hero search)
+- /trainers (filtered list, map view) — query params: zip, radius, specialty, credential, price_min, price_max
+- /trainers/[slug] (profile, reviews, book CTA)
+- /dashboard/trainer (trainer admin: profile, bookings, payouts)
+- /dashboard/client (client admin: upcoming, past, receipts)
+- /admin/verification (admin-only queue)
+
+Search query pattern:
+SELECT t.*, ST_Distance(t.home_base, ST_MakePoint($lon, $lat)::geography) AS dist_m FROM trainers t WHERE t.status='active' AND ST_DWithin(t.home_base, ST_MakePoint($lon, $lat)::geography, $radius_miles * 1609.34) ORDER BY dist_m LIMIT 50;
+
+Index trainer documents into Algolia with geo attributes for instant search on the browse page.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Credential Verification Flow</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the credential verification flow. This is the product's core trust primitive.
+
+Step 1 — Trainer self-submission:
+- At /dashboard/trainer/verification, form has: credential type dropdown, certification number, upload PDF of card/certificate.
+- Save row to credentials table with verified_at=null. Set trainer.status='pending_verification'.
+
+Step 2 — Persona ID check:
+- Kick off Persona inquiry (embedded flow) for government-issued ID + selfie.
+- Webhook updates trainer.status if Persona returns 'approved'.
+- Failed Persona = no progression. Log reason for admin.
+
+Step 3 — Admin cert cross-check:
+- /admin/verification route shows queue of pending credentials.
+- Admin opens the PDF, cross-references cert_number against:
+  - NASM: https://my.nasm.org (manual lookup for first 100; build scraper later)
+  - ACE: https://www.acefitness.org/find-a-pro
+  - ISSA: https://www.issaonline.com/verify
+- Admin clicks Approve (sets verified_at = NOW, verified_by_admin_id, trainer.status='active') or Reject (with free-form reason emailed to trainer).
+
+Step 4 — Public display:
+- On trainer profile, show a badge with icon + credential type + verified-on date + hover tooltip linking to the issuing body's verification page.
+- CSS: small animated checkmark icon, "Verified [date]" microcopy. Non-gameable because admin-approved only.
+
+Billing: trainer pays $49 one-time verification fee via Stripe Checkout before submitting. If Persona rejects, refund automatically. If admin rejects, 50% refund (covers admin time).</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Escrow Booking Flow with Stripe Connect</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the escrow-protected booking flow. Key insight: Stripe Connect supports manual capture, which IS escrow if you delay capture until after session completion.
+
+Booking flow:
+1. Client clicks "Book session" on a trainer profile. Selects slot from trainer's calendar availability.
+2. Server creates a PaymentIntent:
+   stripe.paymentIntents.create({
+     amount: session_price_cents + client_service_fee_cents,
+     currency: 'usd',
+     customer: client.stripe_customer_id,
+     application_fee_amount: platform_take_cents,
+     transfer_data: { destination: trainer.stripe_account_id },
+     capture_method: 'manual',  // this is the escrow primitive
+     metadata: { booking_id }
+   });
+3. Client confirms via Stripe Elements. Status of PaymentIntent becomes 'requires_capture' — funds held by Stripe, not yet captured.
+4. booking.status = 'held'.
+5. Session happens (in person or via Daily.co embedded room).
+6. 24 hours after scheduled_at, a Vercel Cron job scans bookings where status='held' AND (scheduled_at + 24h) < NOW. For each:
+   - If client has not filed a dispute: stripe.paymentIntents.capture(pi_id) -> funds transfer to trainer minus application_fee. booking.status = 'captured'.
+   - If trainer canceled (trainer.status_change event): stripe.paymentIntents.cancel(pi_id) -> full auto-refund. booking.status = 'refunded'.
+7. After capture, prompt client via Resend email for a 1-5 star review + short text.
+
+Dispute path: client can hit "Something went wrong" within the 24h window, which freezes capture and opens a 72-hour support ticket. Admin decides capture vs. refund. Build this route; human-review for disputes is fine until you're at 1K+ bookings/month.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.grandviewresearch.com/industry-analysis/online-fitness-market-report" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Grand View Research &mdash; Online Fitness Market ($7.5B 2024 &rarr; $24B by 2030, 21.3% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.bls.gov/ooh/personal-care-and-service/fitness-trainers-and-instructors.htm" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">US Bureau of Labor Statistics &mdash; Fitness Trainers and Instructors (340K+ workforce, 14% growth through 2033)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.ihrsa.org/publications/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">IHRSA &mdash; Global Health Club Industry Report ($35B US, $97B global)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://stripe.com/docs/payments/place-a-hold-on-a-payment-method" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Stripe &mdash; Manual Capture docs (the escrow primitive)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.nasm.org/verify" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">NASM Credential Verification Directory<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Ideabrowser research passes &mdash; adjacent fitness ideas #1220 (fitness data marketplace, opp 8) and #2320 (virtual trainer form checker, opp 9); no direct match for certification-verified trainer marketplace, April 2026.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Mindbody acquisition (Vista Equity, 2019, $1.9B) referenced from public M&amp;A databases; verify against press release before marketing use.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
     <script src="/ideas/gate.js" defer></script>
 </body>
 </html>

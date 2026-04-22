@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T07:45:03.528Z",
+  "generatedAt": "2026-04-22T07:53:30.244Z",
   "totals": {
-    "PASS": 22,
-    "total": 22,
-    "passing": 22,
+    "PASS": 23,
+    "total": 23,
+    "passing": 23,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "nasm-trainer-marketplace",
+      "status": "PASS",
+      "bytes": 39892,
+      "wordCount": 2207,
+      "h2Count": 9,
+      "description": "Credential-verified marketplace for NASM/ACE/ISSA trainers. In-person + virtual, escrow payments, certification badge. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "virtual-knowledge-hub",
       "status": "PASS",
@@ -70,8 +90,8 @@
     {
       "slug": "expense-report-generator",
       "status": "PASS",
-      "bytes": 36705,
-      "wordCount": 1954,
+      "bytes": 42045,
+      "wordCount": 2104,
       "h2Count": 9,
       "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
       "sections": {
