@@ -31,7 +31,7 @@
   <!-- Newsletter Feed -->
   <url>
     <loc>https://weekendmvp.app/newsletter.html</loc>
-    <lastmod>2026-04-21</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -58,6 +58,18 @@
   <url>
     <loc>https://weekendmvp.app/newsletter/2026-04-21-pm.html</loc>
     <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/newsletter/2026-04-22-am.html</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://weekendmvp.app/newsletter/2026-04-22-pm.html</loc>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

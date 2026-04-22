@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Builder Brief: AI Content Repurposing Tool (deep dive) | Weekend MVP Newsletter</title>
+    <meta name="description" content="One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.">
+    <meta name="author" content="John Iseghohi">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/newsletter/2026-04-22-pm.html">
+    <meta property="og:title" content="Builder Brief: AI Content Repurposing Tool (deep dive)">
+    <meta property="og:description" content="One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/newsletter/2026-04-22-pm.html">
+    <meta property="twitter:title" content="Builder Brief: AI Content Repurposing Tool (deep dive)">
+    <meta property="twitter:description" content="One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/newsletter/2026-04-22-pm.html">
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      // Initialize dataLayer but don't load gtag.js until consent
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                // Initialize Meta Pixel immediately if consent exists
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      // Initialize fbq queue but don't load until consent
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Only initialize if consent exists
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        // Queue the init call for when consent is given
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Weekend MVP Analytics Utility -->
+    <script>
+      /**
+       * wmvpAnalytics - Custom event tracking for Weekend MVP programmatic SEO pages
+       * All methods are safe to call before consent (events are queued)
+       */
+      window.wmvpAnalytics = (function() {
+        // Queue for events fired before GA is ready
+        const eventQueue = [];
+        let gaReady = false;
+        
+        // Check if GA is loaded and ready
+        function checkGAReady() {
+          if (window.analyticsConsent === true && typeof window.gtag === 'function') {
+            gaReady = true;
+            // Flush queued events
+            while (eventQueue.length > 0) {
+              const { eventName, params } = eventQueue.shift();
+              window.gtag('event', eventName, params);
+            }
+          }
+        }
+        
+        // Safe event tracking that queues if GA not ready
+        function trackEvent(eventName, params) {
+          checkGAReady();
+          if (gaReady) {
+            window.gtag('event', eventName, params);
+          } else {
+            eventQueue.push({ eventName, params });
+          }
+        }
+        
+        // Auto-detect page type from URL and fire appropriate event
+        function autoTrack() {
+          const path = window.location.pathname;
+          
+          // Category pages: /ideas/{category}/
+          const categoryMatch = path.match(/^\/ideas\/([a-z-]+)\/$/);
+          if (categoryMatch && !['1k-month', '5k-month', '10k-month', 'passive-income', 'quick-wins', 'build-in-8-hours', 'build-in-weekend', 'build-in-1-week', 'build-in-24-hours'].includes(categoryMatch[1])) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_category', {
+              category_name: categoryMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Revenue goal pages: /ideas/{revenue}/
+          const revenueMatch = path.match(/^\/ideas\/(1k-month|5k-month|10k-month|passive-income|quick-wins)\/$/);
+          if (revenueMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Build time pages: /ideas/build-in-{time}/
+          const buildTimeMatch = path.match(/^\/ideas\/(build-in-[a-z0-9-]+)\/$/);
+          if (buildTimeMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_build_time', {
+              build_time: buildTimeMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Tool pages: /build-with/{tool}/
+          const toolMatch = path.match(/^\/build-with\/([a-z-]+)\/$/);
+          if (toolMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_tool_page', {
+              tool_name: toolMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Audience pages: /ideas-for/{audience}/
+          const audienceMatch = path.match(/^\/ideas-for\/([a-z-]+)\/$/);
+          if (audienceMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_audience_page', {
+              audience_name: audienceMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Problem pages: /solve/{problem}/
+          const problemMatch = path.match(/^\/solve\/([a-z-]+)\/$/);
+          if (problemMatch) {
+            const solutionCount = document.querySelectorAll('[data-solution-card]').length || 0;
+            trackEvent('view_problem_page', {
+              problem_name: problemMatch[1],
+              solution_count: solutionCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Individual idea pages: /ideas/{slug}.html
+          const ideaMatch = path.match(/^\/ideas\/([a-z0-9-]+)\.html$/);
+          if (ideaMatch) {
+            const category = document.querySelector('[data-idea-category]')?.dataset?.ideaCategory || 'unknown';
+            trackEvent('view_idea', {
+              idea_slug: ideaMatch[1],
+              idea_category: category,
+              page_path: path
+            });
+            return;
+          }
+        }
+        
+        return {
+          /**
+           * Track category page view
+           * @param {string} categoryName - Category slug (e.g., 'saas', 'ai-tools')
+           * @param {number} ideaCount - Number of ideas on the page
+           */
+          trackCategory: function(categoryName, ideaCount) {
+            trackEvent('view_category', {
+              category_name: categoryName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track tool page view
+           * @param {string} toolName - Tool slug (e.g., 'cursor', 'claude')
+           * @param {number} ideaCount - Number of ideas suited for this tool
+           */
+          trackTool: function(toolName, ideaCount) {
+            trackEvent('view_tool_page', {
+              tool_name: toolName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track audience page view
+           * @param {string} audienceName - Audience slug (e.g., 'developers', 'non-technical')
+           * @param {number} ideaCount - Number of ideas for this audience
+           */
+          trackAudience: function(audienceName, ideaCount) {
+            trackEvent('view_audience_page', {
+              audience_name: audienceName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track revenue goal page view
+           * @param {string} revenueGoal - Revenue goal slug (e.g., '1k-month', 'passive-income')
+           * @param {number} ideaCount - Number of ideas for this revenue goal
+           */
+          trackRevenueGoal: function(revenueGoal, ideaCount) {
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueGoal,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track problem/solution page view
+           * @param {string} problemName - Problem slug (e.g., 'invoicing', 'meeting-notes')
+           * @param {number} solutionCount - Number of solution ideas
+           */
+          trackProblem: function(problemName, solutionCount) {
+            trackEvent('view_problem_page', {
+              problem_name: problemName,
+              solution_count: solutionCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track build time page view
+           * @param {string} buildTime - Build time slug (e.g., 'build-in-weekend', 'build-in-8-hours')
+           * @param {number} ideaCount - Number of ideas for this build time
+           */
+          trackBuildTime: function(buildTime, ideaCount) {
+            trackEvent('view_build_time', {
+              build_time: buildTime,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track individual idea page view
+           * @param {string} ideaSlug - Idea slug (e.g., 'ai-meeting-notes-cleaner')
+           * @param {string} category - Idea category
+           */
+          trackIdea: function(ideaSlug, category) {
+            trackEvent('view_idea', {
+              idea_slug: ideaSlug,
+              idea_category: category || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track internal link clicks for navigation analysis
+           * @param {string} linkType - Type of link (e.g., 'category_to_idea', 'tool_to_idea', 'related_idea')
+           * @param {string} destination - Destination slug or URL
+           */
+          trackInternalLink: function(linkType, destination) {
+            trackEvent('internal_link_click', {
+              link_type: linkType,
+              destination: destination,
+              source_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track CTA button clicks
+           * @param {string} ctaName - CTA identifier (e.g., 'get_starter_kit', 'book_consult')
+           * @param {string} location - Where on the page (e.g., 'hero', 'footer', 'sidebar')
+           */
+          trackCTA: function(ctaName, location) {
+            trackEvent('cta_click', {
+              cta_name: ctaName,
+              cta_location: location || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track email signup events
+           * @param {string} source - Page or section where signup occurred
+           * @param {string} formType - Type of form (e.g., 'newsletter', 'gated_content', 'ideas_daily')
+           */
+          trackEmailSignup: function(source, formType) {
+            trackEvent('email_signup', {
+              signup_source: source,
+              form_type: formType || 'newsletter',
+              page_path: window.location.pathname
+            });
+            // Also track in Meta Pixel if available
+            if (window.analyticsConsent === true && typeof window.fbq === 'function') {
+              window.fbq('track', 'Lead', { content_name: formType || 'newsletter' });
+            }
+          },
+          
+          /**
+           * Track copy-to-clipboard events (for AI prompts)
+           * @param {string} contentType - What was copied (e.g., 'ai_prompt', 'code_snippet')
+           * @param {string} ideaSlug - Related idea if applicable
+           */
+          trackCopy: function(contentType, ideaSlug) {
+            trackEvent('copy_content', {
+              content_type: contentType,
+              idea_slug: ideaSlug || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track search/filter interactions on collection pages
+           * @param {string} filterType - Type of filter (e.g., 'category', 'build_time', 'revenue')
+           * @param {string} filterValue - Selected filter value
+           */
+          trackFilter: function(filterType, filterValue) {
+            trackEvent('filter_applied', {
+              filter_type: filterType,
+              filter_value: filterValue,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Manually trigger page type detection and auto-tracking
+           * Call this on DOMContentLoaded for programmatic pages
+           */
+          autoTrack: autoTrack,
+          
+          /**
+           * Check GA ready state and flush queue
+           */
+          flushQueue: checkGAReady,
+          
+          /**
+           * Raw event tracking (for custom events)
+           * @param {string} eventName - GA4 event name
+           * @param {object} params - Event parameters
+           */
+          track: trackEvent
+        };
+      })();
+      
+      // Auto-track on DOMContentLoaded for programmatic pages
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Small delay to ensure GA has loaded
+          setTimeout(function() {
+            wmvpAnalytics.flushQueue();
+            wmvpAnalytics.autoTrack();
+          }, 100);
+        });
+      } else {
+        // DOM already loaded
+        setTimeout(function() {
+          wmvpAnalytics.flushQueue();
+          wmvpAnalytics.autoTrack();
+        }, 100);
+      }
+    </script>
+
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Builder Brief: AI Content Repurposing Tool (deep dive)",
+      "description": "One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-04-22",
+      "dateModified": "2026-04-22",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/newsletter/2026-04-22-pm.html"
+      },
+      "image": "https://weekendmvp.app/image/og-image.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">Ideas</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../newsletter.html" class="text-white" aria-current="page">Newsletter</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+            <a href="../starter-kit.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">Get the Kit</span>
+            </a>
+        </nav>
+    </div>
+
+    <article data-nl-slot="pm" class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../newsletter.html" class="hover:text-white transition-colors">Newsletter</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">Apr 22, 2026 — PM</span>
+            </nav>
+
+            <header class="mb-16">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Builder Brief</span>
+                    <span class="text-neutral-600 text-xs">•</span>
+                    <time class="text-neutral-600 text-xs" datetime="2026-04-22">Apr 22, 2026</time>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight leading-[1.1] mb-6">Builder Brief: AI Content Repurposing Tool (deep dive)</h1>
+                <p class="text-xl text-neutral-400 font-light leading-relaxed">One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.</p>
+            </header>
+
+            <div class="prose-nl text-neutral-300 leading-relaxed space-y-6">
+                <p class="text-neutral-300 leading-relaxed">Here's the creator tax nobody warns you about: write a 1,500-word essay in the morning, then spend the afternoon rewriting it as a Twitter thread, LinkedIn post, newsletter intro, and YouTube script. Most creators either burn out trying to be everywhere or quietly give up on four of the five channels where their audience actually lives.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">BUILDER BRIEF</strong></p>
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">AI Content Repurposing Tool</h2>
+                <p class="text-neutral-300 leading-relaxed">Creators know they should be omnipresent — Twitter, LinkedIn, YouTube, newsletters, podcasts. But writing unique content for each platform is a second full-time job. Most either burn out trying to be everywhere or concede the channels where their biggest audience lives. The smartest ones repurpose manually, but doing it by hand takes three to five hours per piece.</p>
+                <p class="text-neutral-300 leading-relaxed">Paste a blog post URL and get back a Twitter thread, LinkedIn post, newsletter intro, Instagram caption, YouTube Shorts script, and podcast talking points — each tuned to that platform's voice and format. One input, five outputs, under a minute. A creator who ships one essay a week now publishes to five platforms with an hour of editing instead of five of drafting.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Why it's a weekend build:</strong> ~10h to MVP, $1K/mo target. Stack: Cursor, Claude.</p>
+                <div class="my-8 text-center"><a href="https://weekendmvp.app/ideas/content-repurposing-tool.html?utm_source=beehiiv&utm_medium=newsletter&utm_campaign=pm-20260422&e={{email}}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Read the full teardown <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">WHY NOW</strong></p>
+                <p class="text-neutral-300 leading-relaxed">The creator economy crossed $250B last year and keeps compounding. OpusClip hit 5M users and raised $30M on the video-clip angle. Castmagic owns podcast transcripts. Typefully owns X threads. But nobody owns "one long-form artifact in, every platform out" at an indie price point. HubSpot's State of Marketing flagged cross-posting as the #1 time-sink for creators publishing to three-plus platforms — and the average creator now publishes to four. The tooling is fragmented. The demand is not. That's the gap a weekend builder can walk through.</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">FOUNDER PLAYBOOK</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Gary Vee built a $200M agency on the repurposing thesis. You don't need the agency — you need the pyramid.</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><em>The playbook is public. The tools are still fragmented. Pick a lane and ship.</em></p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">Own one input type.</strong> Blog → everything, OR podcast → everything, OR YouTube → everything. Don't cover all three in v0. Typefully owns X threads. Castmagic owns audio. You pick one source and dominate the workflow from it.</li><li class="leading-relaxed"><strong class="text-white font-medium">Brand voice is the moat.</strong> Generic AI writers have been shipping since 2022 and didn't win this market because every draft sounds the same. Let users upload three past posts as style references on setup. The tone match is what keeps them pasting.</li><li class="leading-relaxed"><strong class="text-white font-medium">Ship with scheduling, not without.</strong> Creators don't want another tab with copyable text. They want "draft → schedule → done." Integrate Buffer or Hypefury from day one, even if the UI is ugly.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Read more on Gary Vee's content pyramid → [SOURCE — add link before sending]</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">🛠 STEAL THIS — The "one-page, five-posts" framework</strong></p>
+                <p class="text-neutral-300 leading-relaxed">Ship a v0 that takes one input and emits five outputs — before you add a single setting.</p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">0–30 min:</strong> Build the input form. Paste URL. Fetch the article text with a basic scraper or just a textarea fallback. Show it back on screen.</li><li class="leading-relaxed"><strong class="text-white font-medium">30–60 min:</strong> Write five prompts — one per platform — as hand-tuned templates. Call Claude once per platform in parallel. Show the drafts side-by-side in a grid.</li><li class="leading-relaxed"><strong class="text-white font-medium">60–90 min:</strong> Add "copy to clipboard" on each card and a single share URL. Skip scheduling, skip settings, skip user accounts. This is the demo.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Creators will forgive rough UI if the output is good. They will not forgive bad output inside slick UI. Nail the prompts first, everything else later.</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed">Sneak peek at tomorrow…</p>
+                <p class="text-neutral-300 leading-relaxed"><em>Behind-the-build: the exact Cursor + Claude stack I'd use to ship the AI Content Repurposing Tool this weekend, hour by hour.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">PS</strong> — What's your current repurposing workflow — manual, a single tool, or nothing yet? Hit reply with your stack. I'll compile the best answers Friday.</p>
+            </div>
+
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Want more ideas like this?</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse 45+ startup ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <section class="mt-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl">
+                <h2 class="text-xl md:text-2xl font-medium text-white tracking-tight mb-2">Get the next one in your inbox</h2>
+                <p class="text-sm text-neutral-400 mb-6">Free. 2 emails a day. Unsubscribe anytime.</p>
+                <form data-newsletter-subscribe
+                      data-utm-campaign="newsletter-web-pm"
+                      class="flex flex-col sm:flex-row gap-2"
+                      novalidate>
+                    <label for="nl-2026-04-22-pm-email" class="sr-only">Email address</label>
+                    <input
+                        type="email"
+                        id="nl-2026-04-22-pm-email"
+                        name="email"
+                        required
+                        placeholder="you@example.com"
+                        aria-label="Email address"
+                        class="flex-1 bg-white/[0.03] border border-white/10 rounded-full px-5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/30 transition-all">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span data-label-default>Subscribe</span>
+                        <span data-label-loading class="hidden">Sending…</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </button>
+                </form>
+                <p data-form-message class="mt-3 text-xs text-neutral-500" role="status" aria-live="polite">
+                    Free. 2 emails a day. Unsubscribe anytime.
+                </p>
+            </section>
+
+            <div class="mt-12 text-center">
+                <a href="../newsletter.html" class="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
+                    <iconify-icon icon="lucide:arrow-left" width="14" aria-hidden="true"></iconify-icon>
+                    <span>All newsletters</span>
+                </a>
+            </div>
+        </div>
+    </article>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505] mt-16">
+        <div class="max-w-4xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+            <div class="flex items-center gap-6 text-xs text-neutral-500">
+                <a href="../newsletter.html" class="hover:text-white transition-colors">Newsletter</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+                <a href="../privacy-policy.html" class="hover:text-white transition-colors">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        document.querySelectorAll('form[data-newsletter-subscribe]').forEach((form) => {
+            const msg = form.parentElement.querySelector('[data-form-message]');
+            const btn = form.querySelector('button[type="submit"]');
+            const labelDefault = form.querySelector('[data-label-default]');
+            const labelLoading = form.querySelector('[data-label-loading]');
+            const campaign = form.dataset.utmCampaign || 'newsletter-web';
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = form.querySelector('input[type="email"]').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#CC5500]'); }
+                    return;
+                }
+                btn.disabled = true;
+                labelDefault?.classList.add('hidden');
+                labelLoading?.classList.remove('hidden');
+                if (msg) { msg.textContent = 'Sending…'; msg.classList.remove('text-[#CC5500]'); msg.classList.add('text-neutral-500'); }
+
+                try {
+                    const res = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'newsletter-web', utm_medium: 'website' })
+                    });
+                    if (!res.ok) throw new Error('Subscribe failed');
+                    form.reset();
+                    if (msg) { msg.textContent = 'Check your inbox to confirm — you\'re in.'; msg.classList.remove('text-[#CC5500]'); msg.classList.add('text-white'); }
+                    labelDefault && (labelDefault.textContent = 'Subscribed ✓');
+                } catch (err) {
+                    if (msg) { msg.textContent = 'Something went wrong. Try again in a moment.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#CC5500]'); }
+                    btn.disabled = false;
+                    labelLoading?.classList.add('hidden');
+                    labelDefault?.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
