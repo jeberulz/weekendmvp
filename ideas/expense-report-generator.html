@@ -1,162 +1,371 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Expense Report Generator | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a tool that auto-categorizes expenses and generates reports. Take photos of receipts, AI extracts data. Full build guide with prompts.">
+    <meta name="description" content="Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/expense-report-generator">
     <meta property="og:title" content="AI Expense Report Generator | Startup Ideas">
-    <meta property="og:description" content="Auto-categorize expenses and generate reports from receipts.">
+    <meta property="og:description" content="Snap a receipt, AI extracts vendor/amount/date/category, generate PDF reports. Freelancer and micro-SMB wedge under Expensify's price ceiling.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/expense-report-generator">
+    <meta property="twitter:title" content="AI Expense Report Generator | Startup Ideas">
+    <meta property="twitter:description" content="Snap a receipt, AI extracts vendor/amount/date/category, generate PDF reports. Freelancer and micro-SMB wedge under Expensify's price ceiling.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/expense-report-generator">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build AI Expense Report Generator MVP",
-      "description": "Step-by-step guide to building AI Expense Report Generator in a weekend.",
-      "totalTime": "PT10H",
-      "step": [
+      "@context": "https://schema.org",
+      "@graph": [
         {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
+          "@type": "Article",
+          "headline": "AI Expense Report Generator",
+          "description": "Receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes vendors, amounts, dates, and categories; generates tax-ready PDF reports. Weekend build guide with prompts.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/expense-report-generator.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
         },
         {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
-      ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
+          "@type": "SoftwareApplication",
           "name": "AI Expense Report Generator",
-          "item": "https://weekendmvp.app/ideas/expense-report-generator.html"
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Snap receipt, AI extracts data, generate tax-ready PDF reports. Built for freelancers and micro-SMBs priced out of Expensify."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build AI Expense Report Generator MVP",
+          "description": "Step-by-step guide to building an AI receipt scanner and report generator in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Project Setup", "text": "Set up a Next.js PWA with Supabase auth and storage for receipt images." },
+            { "@type": "HowToStep", "position": 2, "name": "Receipt Scanning", "text": "Wire GPT-4 Vision to extract vendor, amount, date, and category from receipt photos." },
+            { "@type": "HowToStep", "position": 3, "name": "Report Generation", "text": "Generate tax-ready PDF reports with react-pdf, email delivery via Resend." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI Expense Report Generator", "item": "https://weekendmvp.app/ideas/expense-report-generator.html" }
+          ]
         }
       ]
-    },
-    {
-      "@type": "Article",
-      "headline": "AI Expense Report Generator",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/expense-report-generator.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "AI Expense Report Generator",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
             <p class="text-lg text-neutral-500 mb-10">Snap receipts. Generate reports. Done.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Automation</span><span class="text-neutral-400 text-xs">~10 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
-                <p class="text-xl text-neutral-500 font-light">End-of-month expense reports in minutes, not hours.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Automation</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
+                    <p class="text-xl text-neutral-500 font-light">End-of-month expense reports in minutes, not hours. Priced for freelancers, not Fortune 500.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Small businesses waste <strong>40+ hours a month</strong> on expense tracking, and <strong>68% miss legitimate tax deductions</strong> because receipts live in glove compartments, jacket pockets, and the junk drawer. Freelancers and micro-SMB owners are not lazy. They just lose the race between a faded thermal receipt and Tuesday night. By April, the shoebox wins.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The incumbents do not fix this for the smallest customer. Expensify is built for finance teams with approval chains and corporate card programs. SAP Concur is enterprise-priced. Dext targets accountants, not the solo contractor doing his own books. QuickBooks and Xero attach receipts to transactions but the categorization is rules-based, manual, and breaks the second a vendor name changes. None of them solve the actual freelancer workflow: photo, done.</p>
+                    <p class="text-neutral-600 leading-relaxed">Consequences compound. A plumber writes off $12K of tools and mileage instead of $18K because the Home Depot receipts are gone. A freelance designer books three meal deductions and forgets the other fourteen. The IRS standard deduction is the lazy backstop, but that is money walking out the door. Every missed receipt is taxable income you already spent. This is a cash-recovery tool disguised as an expense app, and the pain is annual, acute, and quantifiable.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A mobile-first PWA that treats the camera as the primary input. Snap any receipt, AI extracts vendor, amount, date, and category in under two seconds. End of month, one tap generates a tax-ready PDF with category totals, receipt thumbnails, and mileage. Priced at <strong>$19&ndash;$49/month flat</strong>, not per-seat-per-month like Expensify. The wedge is ruthless simplicity: no approval workflows, no corporate card integration, no finance-team plumbing. Just the four things a solo business actually needs.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Snap receipt</p>
+                                <p class="text-xs text-neutral-500 mt-1">Camera, photo library, or forward-to-email</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI extracts</p>
+                                <p class="text-xs text-neutral-500 mt-1">Vendor, amount, date, category (learns your edits)</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Generate report</p>
+                                <p class="text-xs text-neutral-500 mt-1">Tax-ready PDF with totals, thumbnails, mileage</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The behavioral edge: the AI learns from every correction. Tag one Starbucks visit as "Client Entertainment" and it auto-suggests the same for future Starbucks near the same client's zip code. Over three months the app writes 95% of categorizations without a touch. That is a data moat the incumbents cannot backfill easily because their training data is finance-team workflows, not a freelancer's actual vendors.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The cloud receipt-management market hit <strong>$1.52B in North America (2024)</strong> and is projected to reach <strong>$11.36B globally by 2034 at 10.7% CAGR</strong>. Digital receipts as a sub-segment track to $5.1B by 2033 at 11.5% CAGR. Sector funding since 2021 tops <strong>$1.3B</strong>, with Emburse's $60M round in April 2025 and MakeMyTrip's acquisition of Happay in late 2024 signaling that giants want this category locked down before AI-first challengers take it.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>33M+ small businesses</strong> in the US alone, growing 5% annually. Most cannot justify Expensify's $5&ndash;$10/user/month when they are a team of one.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>57M US freelancers</strong> (Upwork 2024). Solo 401k limits recently jumped to $69K under SECURE 2.0, making clean expense records more valuable per deduction.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Receipt capture &amp; scanning is the single largest segment at <strong>37.4% of the market</strong>. Enterprises dominate spend (62.8%), but SMB and freelancer adoption is where growth is accelerating.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GPT-4 Vision and Claude Sonnet now extract receipt data at <strong>~$0.005&ndash;$0.01 per image</strong>, a 90%+ gross margin at a $19/mo price. This was unit-economics-prohibitive 18 months ago.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Reddit signal: r/smallbusiness (3.7M), r/freelance (280K), r/tax (300K). Weekly threads asking "best cheap expense tracker"&mdash;search intent is validated and commercial.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Market stage is <em>competitive, not saturated</em>. Expensify and Dext own enterprise and accountant channels respectively; SMB and freelancer white space remains open because the incumbent pricing model (per-seat-per-month with approval workflows) is a poor fit for a single-user app. The inflection window is now. Once a conversational/mobile-first leader proves out SMB traction, one of Intuit, SAP, or a neobank acquires them and the window closes.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Every incumbent is built for a persona you are explicitly not targeting: finance teams, accountants, or enterprise procurement. Your whitespace is the 57M US freelancer and the 33M micro-SMB owner who wants <em>one</em> screen, <em>one</em> button, <em>one</em> monthly PDF.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Expensify</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader, ~65M users, strong OCR and approval workflows. Built for teams with policies. Onboarding is heavy for a solo contractor who just wants to log lunch.</p>
+                            <p class="text-xs text-neutral-400">~$5&ndash;$10/user/mo SMB &rarr; custom enterprise</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">SAP Concur</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Enterprise T&amp;E king. Deep ERP integration, compliance-grade, bundled with SAP suite. Price and complexity are a non-starter for sub-10-person businesses.</p>
+                            <p class="text-xs text-neutral-400">Custom enterprise contracts; typically $8&ndash;$15/user + setup</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Dext (ex-Receipt Bank)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Accountant-channel favorite in UK/AU. Great OCR and Xero/QuickBooks sync. Sold through bookkeepers, not direct-to-SMB. If you do not have an accountant, Dext does not find you.</p>
+                            <p class="text-xs text-neutral-400">~$15/mo single user; practice packs for firms</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Fetch / QuickBooks / Wave</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Fetch is consumer rewards-first, not business-grade. QuickBooks Self-Employed buries receipt scan inside full accounting. Wave is free but categorization is manual dropdowns, not adaptive AI.</p>
+                            <p class="text-xs text-neutral-400">Fetch freemium; QB Self-Employed $15&ndash;$25/mo; Wave free + pay-per-use payments</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Flat-rate, single-user-first, PWA with camera as the primary surface. No approval workflow, no accountant portal, no ERP adapter. Adaptive categorization that learns from edits. Annual tax-export to TurboTax and CSV. Priced at $19 flat&mdash;half of QuickBooks Self-Employed, a third of a full Expensify seat. The opening is "cheaper than Expensify, simpler than QuickBooks, smarter than a spreadsheet."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced for the freelancer and micro-SMB. Free tier captures price-sensitive users during their first tax year (high word-of-mouth for a tool that saved them real money in April). Pro is the default steady-state tier. Team unlocks small businesses with 2&ndash;5 contractors. LLM inference is the only meaningful variable cost, and GPT-4 Vision receipt extraction holds a 90%+ gross margin at the $19 price point.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">20 receipts/month, 1 PDF report/month, 6-month storage, &ldquo;Powered by&rdquo; footer on reports</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$19/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited receipts, unlimited PDF reports, custom categories, mileage tracking, TurboTax/CSV export, 7-year storage</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$49/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 5 users, per-project tagging, accountant-share link, QuickBooks/Xero sync, priority support</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">GPT-4V cost/receipt</p>
+                                <p class="font-semibold">~$0.008</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~92%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$20&ndash;$40</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Pro conv.</p>
+                                <p class="font-semibold">6&ndash;10%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 50 Pro subs = $950/mo. 500 Pro + 20 Team = $10.4K/mo. At 2,500 Pro + 150 Team = $54.9K/mo ($659K ARR), well inside the $5M ARR ceiling Ideabrowser models for this category. Tax-season seasonality (Jan&ndash;April) spikes signups 3&ndash;4x; the retention story is whether users keep scanning in May.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">This is a mobile-first PWA, not a native app. PWAs get camera access via <code class="text-xs bg-neutral-100 px-1 rounded">getUserMedia</code>, install-to-homescreen on iOS/Android, and skip app-store review. Ship on day one without waiting for Apple. Everything else is opinionated but swap-friendly.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 + PWA</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">App Router, Server Actions for receipt uploads, <code class="text-xs bg-neutral-100 px-1 rounded">next-pwa</code> for install-to-homescreen. Mobile-first Tailwind. Camera capture via HTML file input with <code class="text-xs bg-neutral-100 px-1 rounded">capture=&quot;environment&quot;</code>.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Postgres for users, receipts, categories, reports. Storage bucket for original receipt images (encrypted at rest). Row Level Security per-user. Magic-link email auth; no password flows.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">GPT-4 Vision (primary) + Claude Haiku (fallback)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Structured JSON extraction via <code class="text-xs bg-neutral-100 px-1 rounded">response_format: {type: &quot;json_schema&quot;}</code>. Claude Haiku 3.5 as fallback when GPT-4V returns low confidence. Cache user's category taxonomy per prompt to hold margin.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:file-text" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">react-pdf / @react-pdf/renderer</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Server-side PDF generation of the monthly report. Cover page with totals and category pie chart (via <code class="text-xs bg-neutral-100 px-1 rounded">victory</code> or manual SVG), detail pages with receipt thumbnails. Tax-ready format matches Schedule C categories.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Transactional email for report delivery, forward-to-email receipt ingestion (parse inbound via Resend's webhook), and monthly tax-season nudges. React Email templates for branding.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Billing + Vercel</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Checkout for Pro/Team subscriptions; Customer Portal for plan changes. Vercel hosting with Edge Functions for the receipt-ingest endpoint (low latency matters on mobile). Vercel Cron for monthly report auto-generation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router PWA for expense tracking. Use Tailwind and Supabase.
+
+Routes:
+- / (marketing + magic-link signup)
+- /app (authed: dashboard with this-month total, category pie chart, recent 10 receipts)
+- /app/add (camera capture + file upload form)
+- /app/receipts (filterable list by date range, category, search)
+- /app/reports (generate PDF for a date range, email or download)
+- /app/settings (categories, default Schedule C mapping, Stripe portal link)
+
+Add next-pwa with a manifest.json and service worker for install-to-homescreen. Mobile-first. Supabase auth with magic links, no passwords. Row Level Security on every table keyed by auth.uid().
+
+Schema: users(id, stripe_customer_id, plan), receipts(id, user_id, image_url, vendor, amount, currency, date, category, notes, confidence, raw_extraction_json), categories(id, user_id, name, schedule_c_code), reports(id, user_id, period_start, period_end, pdf_url, total).</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Receipt Scanning (AI)</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement receipt extraction using GPT-4 Vision with Claude Haiku fallback.
+
+Flow:
+1. User uploads image to Supabase Storage; server action gets signed URL
+2. POST to OpenAI Chat Completions with model gpt-4o, messages [system prompt, user message with image_url]
+3. System prompt: "You extract structured expense data from receipt images. Return JSON matching this schema: {vendor: string, amount: number, currency: ISO4217, date: YYYY-MM-DD, suggested_category: one of [user's category list], line_items: [{description, amount}], confidence: 0-1}. If you cannot read a field return null. Never hallucinate."
+4. Use response_format: {type: "json_schema", json_schema: {name: "Receipt", schema: ...}} for structured output
+5. If confidence < 0.7 OR vendor is null, retry with Claude Haiku 3.5 (anthropic SDK, same schema)
+6. Show extracted data inline for user to confirm or edit; save user corrections to receipt row
+7. After user saves, run a small background job that looks at their last 20 corrections and updates a "preferences" JSON on the user row (e.g. "Starbucks near 94110 = Client Entertainment"). Inject preferences into the system prompt on future extractions.
+
+Edge cases: blurry photos (ask for re-upload), foreign currency (convert to user's home currency via Open Exchange Rates API at receipt date), multi-page receipts (accept PDF too, extract page 1).</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. PDF Report Generation</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build monthly PDF report generation with @react-pdf/renderer.
+
+Inputs: user_id, period_start, period_end
+
+Document structure:
+- Cover page: user name/business, period, total expenses, category breakdown table (category | total | % of spend)
+- Summary page: pie chart of categories (render SVG client-side, capture as image), 12-month trend sparkline, top 10 vendors
+- Detail pages: table of every expense (date, vendor, category, amount, currency), each row has a small thumbnail of the receipt image, sorted by category then date
+- Tax-ready footer: Schedule C mapping table showing category -> IRS line number
+- Appendix: full-resolution receipt images, 4 per page, captioned with the expense details
+
+Trigger modes:
+- Manual: user clicks "Generate Report" in /app/reports
+- Auto: Vercel Cron job on the 1st of every month generates previous month's report, emails via Resend as attachment (use Resend attachments API, max 40MB per email)
+
+Store the generated PDF in Supabase Storage under reports/ bucket with RLS. Return a signed URL valid for 24h. For the free tier, stamp a "Powered by [product]" footer; for Pro, allow user-uploaded logo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://market.us/report/cloud-based-receipt-management-market/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Market.us &mdash; Cloud-Based Receipt Management Market ($11.36B by 2034, 10.7% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://market.us/report/digital-receipts-market/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Market.us &mdash; Digital Receipts Market ($5.1B by 2033, 11.5% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.mordorintelligence.com/industry-reports/expense-management-software-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Mordor Intelligence &mdash; Expense Management Software Market<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.upwork.com/research/freelance-forward-2024" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Upwork Freelance Forward 2024 &mdash; 57M US freelancers<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Ideabrowser idea #2665 (opportunity 9, pain 9, timing 9) competitive and market stage research, April 2026.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Pricing, user counts, and funding rounds shift quickly. Verify live pricing pages and latest SEC/press filings before any marketing claim.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Freelancers and small business owners dread expense tracking. Receipts pile up in shoeboxes, categorization takes hours, and come tax time, it's a nightmare. Expensify is overkill for individuals, and spreadsheets are tedious. Most people just don't track expenses properly.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">Take a photo of any receipt, AI extracts vendor, amount, date, and category. Build up your expenses throughout the month, then generate a clean PDF report for your accountant or tax records. Simple, mobile-first, and actually pleasant to use.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Snap receipt</p><p class="text-xs text-neutral-500 mt-1">Photo or forward email</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">AI extracts</p><p class="text-xs text-neutral-500 mt-1">Vendor, amount, date, category</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Generate report</p><p class="text-xs text-neutral-500 mt-1">PDF with all expenses</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Expensify valued at $2B+—expense management is big business</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>60M+ freelancers in US alone need simple expense tracking</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>GPT-4 Vision enables receipt scanning without complex OCR</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js PWA for expense tracking.
-
-Features:
-- Dashboard: monthly total, category breakdown chart, recent expenses
-- Add expense: camera capture or file upload
-- Expense list: filterable by date range, category
-- Categories: Travel, Meals, Software, Office, etc. (customizable)
-- Report generator: select date range, export PDF
-
-Make it mobile-first with PWA for camera access.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Receipt Scanning</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement AI receipt extraction:
-
-1. User uploads receipt image
-2. Send to GPT-4 Vision with prompt:
-   "Extract from this receipt: vendor name, total amount, date (YYYY-MM-DD format), and suggest category from: Travel, Meals, Software, Office, Utilities, Other. Return JSON."
-3. Show extracted data for user to confirm/edit
-4. Store expense with original image attached
-5. Learn from user edits to improve future suggestions
-
-Handle edge cases: blurry images, partial receipts, foreign currency.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Report Generation</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build PDF report generation:
-
-- Cover page: date range, total expenses, your name/business
-- Summary: totals by category with pie chart
-- Detail pages: list all expenses with date, vendor, amount, category
-- Include thumbnail images of receipts
-- Tax-ready format matching common accounting needs
-
-Use react-pdf for generation. Allow customization of report branding.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

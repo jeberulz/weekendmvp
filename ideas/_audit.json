@@ -1,12 +1,132 @@
 {
-  "generatedAt": "2026-04-22T04:42:02.673Z",
+  "generatedAt": "2026-04-22T07:22:40.001Z",
   "totals": {
-    "PASS": 13,
-    "total": 13,
-    "passing": 13,
+    "PASS": 19,
+    "total": 19,
+    "passing": 19,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "expense-report-generator",
+      "status": "PASS",
+      "bytes": 36705,
+      "wordCount": 1954,
+      "h2Count": 9,
+      "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "single-event-app-builder",
+      "status": "PASS",
+      "bytes": 36680,
+      "wordCount": 1340,
+      "h2Count": 9,
+      "description": "Build branded single-use event apps for weddings, retreats, and reunions that expire after the date and archive as keepsake pages. Replaces five fragmented tools with one link.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "vehicle-recall-alert-service",
+      "status": "PASS",
+      "bytes": 35981,
+      "wordCount": 1312,
+      "h2Count": 9,
+      "description": "Build a VIN-tracking recall alert service for used car owners. NHTSA data + real-time SMS. One VIN entry, lifetime coverage.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "conversational-analytics-digest",
+      "status": "PASS",
+      "bytes": 36871,
+      "wordCount": 1386,
+      "h2Count": 9,
+      "description": "Build an AI tool that turns GA4, Mixpanel, and Plausible data into plain-English weekly emails for non-technical founders. Skip the dashboard.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "recall-radar-ecommerce-sellers",
+      "status": "PASS",
+      "bytes": 36834,
+      "wordCount": 1335,
+      "h2Count": 9,
+      "description": "Build a SaaS tool that monitors FDA, CPSC, and Health Canada recall feeds against Amazon and Shopify catalogs—real-time alerts before listings get pulled. Built for 2025's recall surge.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-feedback-triage-widget",
+      "status": "PASS",
+      "bytes": 36261,
+      "wordCount": 1288,
+      "h2Count": 9,
+      "description": "Build an AI-powered feedback widget that auto-categorizes user input into bugs, features, and praise—then ranks the top 3 priorities. Perfect for solo devs drowning in feedback.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "brakes-maintenance-tracker-app",
       "status": "PASS",
