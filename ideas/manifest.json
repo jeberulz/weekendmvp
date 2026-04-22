@@ -1,6 +1,40 @@
 {
   "ideas": [
     {
+      "slug": "notion-backup-tool",
+      "title": "Notion Backup Tool",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Automated Notion workspace backup with version history and point-in-time restore. Indie-priced under Rewind. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:notion backup workspace export",
+          "web-research:Grand View SaaS backup market",
+          "web-research:Rewind Series A funding",
+          "web-research:Notion API rate limits",
+          "web-research:GDPR Art 32"
+        ],
+        "citations": 6,
+        "wordCount": 2400,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T11:10:38.877Z",
+        "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: Notion-only incremental diff backup at indie price. Competitors: Rewind.io bundle ($12-$99), NotionBackups.com manual-export indie ($5-$50), Notion native export (manual only), DIY scripts. Pricing: Free/$9 Solo/$29 Team, ~96% margin via R2 content-addressable dedup. Tech: Next.js + Supabase RLS + Cloudflare R2 storage + Upstash QStash workers respecting Notion 3req/sec + Merkle-tree block hashing + stable-JSON diff viewer + Stripe Billing. Market: SaaS backup $4.7B 2024 → $18.5B 2030 (25%+ CAGR), 30M+ Notion users, Rewind $65M funding at $150M valuation. Differentiator: block-level dedup across workspaces + page-level point-in-time restore + GDPR Art 32 compliance wedge for B2B upsell."
+      }
+    },
+    {
       "slug": "user-onboarding-builder",
       "title": "User Onboarding Flow Builder",
       "publishedAt": "2026-04-22",

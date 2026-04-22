@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T11:07:00.726Z",
+  "generatedAt": "2026-04-22T11:10:59.694Z",
   "totals": {
-    "PASS": 25,
-    "total": 25,
-    "passing": 25,
+    "PASS": 26,
+    "total": 26,
+    "passing": 26,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "notion-backup-tool",
+      "status": "PASS",
+      "bytes": 37632,
+      "wordCount": 2103,
+      "h2Count": 9,
+      "description": "Automated Notion workspace backup with version history and point-in-time restore. Indie-priced under Rewind. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "user-onboarding-builder",
       "status": "PASS",
