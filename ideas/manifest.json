@@ -43,6 +43,43 @@
       }
     },
     {
+      "slug": "vehicle-recall-alert-service",
+      "title": "Vehicle Recall Alert Service",
+      "publishedAt": "2026-04-22",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "MobileApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:6644",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "description": "VIN-based recall alerts for used car owners. Enter your VIN once, get lifetime SMS and email alerts the moment NHTSA publishes a recall for your specific vehicle.",
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__get_idea_research:base"
+        ],
+        "citations": 4,
+        "wordCount": 1303,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T00:00:00Z",
+        "publishNotes": "Mode A Ideabrowser MCP source. Competitive: NHTSA SaferCar/Carfax VRSS/OEM portals/BizzyCar. Pricing Free/$5 Basic/$25 Lifetime. Tech: Next.js + Supabase + NHTSA vPIC+Recalls API + Twilio SMS + Resend + Stripe + Vercel Cron."
+      },
+      "researchLevel": "deep"
+    },
+    {
       "slug": "conversational-analytics-digest",
       "title": "Conversational Analytics Digest",
       "publishedAt": "2026-04-22",

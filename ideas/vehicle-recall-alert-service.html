@@ -1,0 +1,453 @@
+<!DOCTYPE html><html lang="en" class="antialiased"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Recall Alert Service | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a VIN-tracking recall alert service for used car owners. NHTSA data + real-time SMS. One VIN entry, lifetime coverage.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/vehicle-recall-alert-service">
+    <meta property="og:title" content="Vehicle Recall Alert Service | Startup Ideas">
+    <meta property="og:description" content="VIN-based recall alerts for used car owners. Enter once, covered for life of the vehicle.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/vehicle-recall-alert-service">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Vehicle Recall Alert Service",
+      "description": "VIN-based recall alerts for used car owners. Enter once, covered for life of the vehicle.",
+      "datePublished": "2026-04-22"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Vehicle Recall Alert Service",
+      "applicationCategory": "MobileApplication",
+      "operatingSystem": "Web"
+    },
+    {
+      "@type": "HowTo",
+      "name": "Build Vehicle Recall Alert Service MVP",
+      "description": "Step-by-step guide to building the recall alert service in a weekend.",
+      "totalTime": "PT10H",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "VIN Capture + NHTSA Sync",
+          "text": "Web form for VIN entry that validates against NHTSA decoder and stores to Supabase."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Recall Monitor",
+          "text": "Daily cron polls NHTSA recalls API and matches against stored VINs."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "SMS + Email Alerts",
+          "text": "Twilio SMS + Resend email the moment a recall matches a stored VIN."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://weekendmvp.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Startup Ideas",
+          "item": "https://weekendmvp.app/startup-ideas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Vehicle Recall Alert Service",
+          "item": "https://weekendmvp.app/ideas/vehicle-recall-alert-service.html"
+        }
+      ]
+    }
+  ]
+}</script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">Vehicle Recall Alert Service</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">Enter your VIN once. Get lifetime recall alerts for your vehicle.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required="" placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Automotive</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Vehicle Recall Alert Service</h1>
+                    <p class="text-xl text-neutral-500 font-light">VIN-based recall monitoring for used car buyers and frequent movers. Enter once, covered for life.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">Buying a used car means inheriting someone else&rsquo;s paperwork mess. The previous owner moved three times, their email bounced, and now there&rsquo;s a critical airbag recall sitting in NHTSA&rsquo;s database with no way to reach you. Recalls don&rsquo;t stop when ownership changes &mdash; but the notification system still relies on mail sent to whoever owned the car two years ago. Roughly 1-in-5 recalled vehicles stay unfixed for exactly this reason. People drive around with safety defects because nobody told them.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">A dead-simple service that tracks your VIN permanently. Enter it once, get monitored forever. When a recall hits your specific vehicle, you get an SMS and email instantly &mdash; no manual NHTSA checks, no relying on outdated mail addresses. The wedge is used car buyers and people who move frequently. Long-term this becomes essential infrastructure for every car owner who wants to stop worrying.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Enter VIN once</p>
+                                <p class="text-xs text-neutral-500 mt-1">Web form validates against NHTSA decoder</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Daily monitoring</p>
+                                <p class="text-xs text-neutral-500 mt-1">Cron polls NHTSA recalls API against your VIN</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Instant alert</p>
+                                <p class="text-xs text-neutral-500 mt-1">SMS + email with repair details and dealer locator</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The automotive safety systems market was valued at $12.4B in 2025 and is projected to reach $47.7B by 2035 (Precedence Research). NHTSA publishes recall data for free via public API, but no consumer service turns that feed into real-time personal alerts. Used cars change hands millions of times per year, and each transfer breaks the notification chain. The addressable market is every car owner, but the wedge is the 40M+ used cars sold annually.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>NHTSA: 1-in-5 recalled vehicles in the US remain unfixed despite existing alerts &mdash; structural notification failure, not a marketing problem.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Used car sales exceed 40M/year in the US (Edmunds); every sale breaks the recall notification chain because NHTSA mails to the address on file.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Reddit r/cars (7.4M members) and r/MechanicAdvice (1.1M) run regular threads about missed recalls and VIN lookup frustration.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Carfax monetizes VIN data at scale but bundles it with full vehicle history; no standalone recall-alert product at sub-$10/mo exists.</span></li>
+                    </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Three clusters: free government tools (reactive, no alerts), paid vehicle history (bundled with more than you need), and manufacturer portals (only work if you bought new from that dealer). No standalone consumer service offers lifetime VIN-specific alerts at an impulse price.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">NHTSA SaferCar / SaferCar.gov</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Official government source. Free, authoritative, but reactive. Requires manual VIN lookups, no push alerts, no SMS. The source of truth, not a product.</p>
+                            <p class="text-xs text-neutral-400">Free, but DIY lookups only</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Carfax VRSS</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Carfax&rsquo;s Vehicle Recall Safety Service is bundled with their $40/report Vehicle History or dealership subscription. Not standalone, not cheap, not indie-accessible.</p>
+                            <p class="text-xs text-neutral-400">$40/report or bundled with dealer subscriptions</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Manufacturer portals (Ford, Toyota, GM)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Each OEM has its own portal tied to original purchase. Works great if you bought new from that brand; useless for used-car owners with no account history.</p>
+                            <p class="text-xs text-neutral-400">Free but single-brand, original-owner-only</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">BizzyCar</h4>
+                            <p class="text-xs text-neutral-500 mb-2">B2B SaaS for dealerships managing recall campaigns. Enterprise pricing. Wrong end of the market &mdash; serves the fixer, not the car owner.</p>
+                            <p class="text-xs text-neutral-400">Custom dealer pricing, typically $500&ndash;$5K/mo</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Standalone B2C product at $3-10/mo or $25 lifetime per VIN. Wedge is used car buyers on Reddit r/cars and used-car Facebook groups. Expansion into dealership partnerships (recommend during sale) and insurance referrals (discount on premiums) layers B2B revenue on top. Carfax&rsquo;s bundling and NHTSA&rsquo;s manual-only UX are the opening.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Freemium + lifetime one-time. Free tier gives immediate value (one VIN check) to seed trust. Basic monthly covers the &ldquo;I just bought used&rdquo; moment. Lifetime is the premium anchor at $25 &mdash; a no-brainer for anyone keeping the car 3+ years. Dealership SaaS tier sells to the fixers who want recall campaigns auto-managed for their customers.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 VIN, email alerts only, weekly check frequency</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Basic</h4>
+                            <p class="text-2xl font-bold mb-2">$5/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 3 VINs, SMS + email, daily check, dealer locator</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Lifetime</h4>
+                            <p class="text-2xl font-bold mb-2">$25 once</p>
+                            <p class="text-xs text-neutral-500">1 VIN tracked forever, SMS + email, priority dealer booking</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">SMS cost/alert</p>
+                                <p class="font-semibold">$0.008</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Basic</p>
+                                <p class="font-semibold">~90%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$3&ndash;8</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Insurance referral</p>
+                                <p class="font-semibold">$1&ndash;3/policy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">This is a minimalist stack. NHTSA provides a public JSON API that returns recalls by make/model/year or VIN. Twilio sends SMS. A nightly cron does the matching. The product differentiator is UX polish + speed-to-alert, not backend sophistication.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 + TypeScript</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Landing + VIN entry form + dashboard. Server Actions for VIN validation (calls NHTSA decoder), account creation, and checkout.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Auth + Postgres for users, vehicles (vin, make, model, year, added_at), recall_matches, alerts_sent. RLS per user.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:buildkite" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">NHTSA API</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Free public API. vPIC endpoint decodes VIN to make/model/year; Recalls endpoint returns all recalls matching that trio. No auth needed; respect rate limits.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:twilio" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Twilio SMS</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">SMS is the differentiator. A2P 10DLC registration for US compliance. Include recall summary + remedy description in &lt;160 chars.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Email alert with full recall detail: summary, risk, remedy, dealer locator link. React Email templates.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe + Vercel Cron</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Billing for Basic monthly; Stripe Checkout one-time for Lifetime ($25). Nightly Vercel Cron polls NHTSA recalls API for each tracked make/model/year and fires matching alerts.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build Vehicle Recall Alert Service: a Next.js + Supabase app that stores VINs, polls NHTSA, and dispatches SMS/email alerts.
+
+Requirements:
+- Landing page with a VIN entry form that validates via NHTSA vPIC decoder API
+- Account flow: email signup, verify SMS number, store VIN + decoded make/model/year
+- Supabase schema: users, vehicles (vin, make, model, year, user_id), recall_matches (vehicle_id, recall_id, nhtsa_campaign_no, sent_at)
+- Nightly Vercel Cron: pull fresh recalls, cross-reference each tracked vehicle, insert matches
+- Alert dispatcher: Twilio SMS + Resend email the moment a match is inserted
+
+Ship the landing + VIN form + first-alert path. Add lifetime tier after monthly tier proves.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. NHTSA Sync + Matching</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build the recall sync + matching engine.
+
+1. Nightly Vercel Cron (2am UTC) hits NHTSA Recalls API with the full list of distinct make/model/year tuples in your user base
+2. For each tuple, receive any recalls published in the last 24 hours; upsert to a recalls table keyed by NHTSACampaignNumber
+3. For each new recall, find all vehicles matching make + model + year-range and insert a recall_matches row
+4. Dedupe by (vehicle_id, nhtsa_campaign_no) so a user never gets the same alert twice
+5. Queue the alert dispatcher for each new match
+
+Respect the NHTSA rate limit (be a good citizen). Cache responses for 6 hours.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Alert Dispatcher</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Ship the multi-channel alert.
+
+When a recall_matches row is inserted:
+1. Fetch full recall detail from NHTSA (summary, consequence, remedy)
+2. SMS via Twilio: "Recall alert: [recall summary in 120 chars]. Details: [short link to dashboard]"
+3. Email via Resend with React Email template: full recall text, risk, remedy steps, dealer locator link (NHTSA provides one)
+4. Record alerts_sent with channel + provider message ID for delivery audit
+5. If SMS fails (carrier reject, bounced number), fall back to email with a prompt to update the number
+
+The SMS is the product. A missed or delayed alert erodes trust permanently. Instrument delivery latency tightly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explore More Section -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                    
+                    <!-- Category & Revenue Links -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <a href="productivity/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:zap" class="text-yellow-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More Productivity Ideas</span>
+                                <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                            </div>
+                        </a>
+                        <a href="1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$1K/Month Ideas</span>
+                                <p class="text-xs text-neutral-500">By revenue potential</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Build With Tools -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                Cursor
+                            </a>
+                            <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                Claude
+                            </a>
+                            <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:zap" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
+                                Bolt.new
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ideas For Audiences -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                Solo Founders
+                            </a>
+                            <a href="../ideas-for/non-technical/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:lightbulb" class="text-amber-500" width="14" aria-hidden="true"></iconify-icon>
+                                Non-Technical
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Related Ideas -->
+                    <div>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a href="customer-feedback-aggregator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Customer Feedback Aggregator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="ai-code-reviewer.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Code Reviewer</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="waitlist-manager.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Waitlist &amp; Launch Manager</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~8 hours</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
+    <script src="/ideas/gate.js" defer></script>
+
+
+</body></html>
