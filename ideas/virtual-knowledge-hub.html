@@ -3,26 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <title>Virtual Knowledge Hub | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49&ndash;$149/mo. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
-
-    <!-- Open Graph -->
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://weekendmvp.app/ideas/virtual-knowledge-hub.html">
-    <meta property="og:title" content="Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas">
-    <meta property="og:description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/virtual-knowledge-hub">
+    <meta property="og:title" content="Virtual Knowledge Hub for Business Leaders &amp; Emerging Professionals">
+    <meta property="og:description" content="Executive office hours at scale. Curated VP+ mentors, AI semantic matching, hybrid 1:1 + small-group cohorts.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
-
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Virtual Knowledge Sharing Hub for Business Leaders | Startup Ideas">
-    <meta property="twitter:description" content="Connect emerging professionals with experienced business leaders through structured virtual mentoring sessions. A platform designed for meaningful knowledge transfer with measurable outcomes.">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/virtual-knowledge-hub">
+    <meta property="twitter:title" content="Virtual Knowledge Hub for Business Leaders &amp; Emerging Professionals">
+    <meta property="twitter:description" content="Executive office hours at scale. Curated VP+ mentors, AI semantic matching, hybrid 1:1 + small-group cohorts.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/virtual-knowledge-hub">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
-    <link rel="canonical" href="https://weekendmvp.app/ideas/virtual-knowledge-hub.html">
-    
-    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script type="application/ld+json">{
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "headline": "Virtual Knowledge Hub for Business Leaders & Emerging Professionals",
+          "description": "Two-sided marketplace pairing curated VP+ mentors with mid-career professionals. Hybrid 1:1 sessions, small-group cohorts, async Q&A library.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/virtual-knowledge-hub.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Virtual Knowledge Hub",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web",
+          "description": "Marketplace platform for executive-level mentorship. AI semantic matching, Stripe Connect payouts, async Q&A library, small-group cohorts."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build Virtual Knowledge Hub MVP",
+          "description": "Step-by-step guide to shipping a two-sided mentorship marketplace in a weekend.",
+          "totalTime": "PT12H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Project Setup", "text": "Next.js + Supabase with mentors, mentees, sessions schema and RLS." },
+            { "@type": "HowToStep", "position": 2, "name": "Matching + Booking", "text": "Claude semantic matching + Cal.com embed + Stripe Connect payouts." },
+            { "@type": "HowToStep", "position": 3, "name": "Knowledge Library", "text": "Async Q&A thread library seeded by session recordings for SEO + community moat." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Virtual Knowledge Hub", "item": "https://weekendmvp.app/ideas/virtual-knowledge-hub.html" }
+          ]
+        }
+      ]
+    }</script>
+</head>
+<body class="selection:bg-black/10">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Virtual Knowledge Hub</h1>
+            <p class="text-lg text-neutral-500 mb-10">Executive office hours at scale.</p>
+            <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Education</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Virtual Knowledge Hub</h1>
+                    <p class="text-xl text-neutral-500 font-light">Where VPs mentor the next VP. Executive office hours at scale.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">A mid-career director wants to know how someone became a VP of Product at a public company. She does not want a LinkedIn course. She does not want a $2,000 Reforge cohort. She wants thirty minutes with the person who actually did it, five years ago, at a comparable-sized company. That conversation is worth the cost of a plane ticket. Today, she has no reliable way to have it.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The supply exists. Every post-exit founder, every retiring CFO, every sabbatical-taking VP has explicit interest in mentoring. A recent Ideabrowser research pass found <strong>r/careerchange with 71.8K members, r/careerguidance at 4.8M members, and 1-3M-view TEDx talks</strong> on mid-career pivots &mdash; the demand is not subtle. And <strong>98% of Fortune 500 companies run internal mentorship programs</strong> that deliver measurable retention lifts. The structure works when it exists.</p>
+                    <p class="text-neutral-600 leading-relaxed">The gap: outside the Fortune 500 bubble, there is no meeting place. LinkedIn's cold-DM strategy has a <strong>90% ghost rate</strong>. ADPList is free but high-churn for mentors. MentorCruise is 1:1 only and skews tech-heavy. Maven and Reforge sell cohort courses, not mentor relationships. Nobody runs the middle layer: curated executive mentors, semantic AI matching, async Q&amp;A library, small-group cohorts, and price points between $49 (aspiring) and $149/month (serious), with clean payouts so mentors actually show up.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A two-sided marketplace where <em>curated</em> business leaders (VP+ title, founder-post-exit, or equivalent domain authority) publish office-hours availability. Mentees describe the question and the decision they're facing. Claude semantically matches them to the top 3 mentors whose career arc fits the question. Mentees book a 30-minute 1:1, a small-group cohort session, or simply drop the question into the async Q&amp;A library where any mentor can reply. Mentors earn; mentees learn; the library compounds.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Describe the moment</p>
+                                <p class="text-xs text-neutral-500 mt-1">Role, question, decision, constraints</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">AI matches 3 mentors</p>
+                                <p class="text-xs text-neutral-500 mt-1">Claude ranks by career-arc similarity</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Book, cohort, or ask</p>
+                                <p class="text-xs text-neutral-500 mt-1">1:1 video, small group, or async thread</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The moat is the Q&amp;A library. Every 1:1 session ends with a two-sentence summary the mentor publishes (with permission) to a public question thread. Over 12 months the library becomes the most searchable archive of "senior exec advice on specific decisions" on the internet &mdash; an SEO asset AND the signal that locks new mentees in. This is how Stack Overflow beat the mailing list. Apply it to executive mentorship.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>mentoring software market is $0.81&ndash;$1.7B in 2026, projecting $4.92&ndash;$5.12B by 2035 at 12.4&ndash;22.7% CAGR</strong>. Enterprise leaders (MentorcliQ, Chronus, Together) dominate Fortune 500 HCM integrations but the consumer/SMB layer is wide open. Adjacent: the <strong>global coaching platform market grows from $3.8B (2025) to $11.1B (2035) at 11.2% CAGR</strong>, validating willingness to pay for 1:1 and group access to expertise.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>98% of Fortune 500 companies run internal mentorship programs</strong> and measure 72% retention lifts (Mentorloop industry stats). The model works; only distribution outside the Fortune 500 is missing.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>"Career change at 40" keyword volume up <strong>688% YoY</strong>. r/careerchange 71.8K; r/careerguidance 4.8M. Commercial CPC for "career coach" is $5.68 &mdash; paid-intent validated.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Mentorship demand is counter-cyclical. Layoff waves (2024 tech, 2025 finance) drove LinkedIn Learning signups <strong>+42% YoY</strong> and MentorCruise retention up notably. The TAM expands in downturns, not shrinks.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>AI-powered matching is the fastest-growing sub-category &mdash; <strong>52% of mentoring platforms now claim AI matching</strong> (though most use rule-based filters dressed as AI). Real semantic matching via LLMs is still white space.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>North America holds 44% of spend; Asia-Pacific 19% at <strong>14%+ CAGR</strong>; LATAM/MEA emerging at 4&ndash;10.5% CAGR. Localized cohort content (especially for Spanish-speaking LATAM professionals) is an open lane.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Stage: <em>emerging</em>. Enterprise HCM incumbents are 5&ndash;10+ years old and priced/packaged for HR buyers, not individuals. MentorCruise ($39&ndash;$299/mo) is the closest direct consumer player but heavily tech-focused. ADPList is free and thus unsustainable for mentor supply. The 12&ndash;18 month window to own "curated executive mentorship with an async library" is open. After that, either LinkedIn builds it or a Reforge spins out a marketplace-shaped product.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four distinct classes of competitor, none occupying the curated-executive + async-library + hybrid-format position. Enterprise HCM players optimize for HR buyers. Consumer marketplaces are either tech-heavy or free-and-churning. Cohort course platforms sell structured content, not live mentor relationships. Social-media DMs are the free default with 90% ghost rates.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">MentorCruise / GrowthMentor / Intro</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Consumer 1:1 mentorship marketplaces. MentorCruise has 5,000+ mentors and tech-leaning category. GrowthMentor is marketing-heavy. Intro does celebrity-priced 15-min calls. None curate executive tier or build an async library.</p>
+                            <p class="text-xs text-neutral-400">MentorCruise $39&ndash;$299/mo, GrowthMentor $25&ndash;$99/mo, Intro $50&ndash;$1,000+/call</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ADPList</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Free peer mentorship. Huge mentee demand but mentor supply churns because there's no revenue. Great community, poor retention economics for top-of-funnel mentors who have alternatives.</p>
+                            <p class="text-xs text-neutral-400">Free to both sides; revenue via enterprise add-ons</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Reforge / Maven / On Deck</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Cohort-based courses. Reforge is the category leader for growth/product programs. Maven democratizes cohorts for any instructor. Structured content &ne; relationship. Great for curricula, weak for "here's my specific decision."</p>
+                            <p class="text-xs text-neutral-400">Reforge $2K/cohort, Maven $200&ndash;$3K/cohort, On Deck $3K+/fellowship</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">MentorcliQ / Chronus / Together</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Enterprise HCM-integrated mentorship. 5&ndash;10+ years old, sold to HR leaders at F500s. Opaque pricing, long sales cycles. Not for individuals or SMBs; structurally wrong SKU.</p>
+                            <p class="text-xs text-neutral-400">Enterprise custom contracts, typically $15K&ndash;$100K+ annually</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Curated VP+ mentor supply (application gate, not open signup). Hybrid format: 1:1, small group cohort, async Q&amp;A library. Real LLM semantic matching, not rule-based filters. Priced $49 Aspiring / $149 Serious with mentors keeping 80% after Stripe Connect. The pitch in one sentence: "MentorCruise if it only took executives, Stack Overflow if the answers came from VPs, Reforge if you didn't have to buy a whole curriculum."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Two revenue streams. Mentee subscription (primary) for access to the library, matching, and monthly session credits. Platform take rate (secondary) on mentor 1:1 session fees above the included credits. Mentors keep <strong>80%</strong> (vs. MentorCruise ~75%, Intro ~70%). Higher mentor economics = better supply = better matches = mentee retention.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">Read the Q&amp;A library, 1 async question/month, community newsletter</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Aspiring</h4>
+                            <p class="text-2xl font-bold mb-2">$49/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited async questions, 1 cohort seat/mo, 1x30-min 1:1 credit, full library</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Serious</h4>
+                            <p class="text-2xl font-bold mb-2">$149/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited cohorts, 3x30-min 1:1 credits, priority matching, quarterly career audit with a senior mentor</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Mentor payout</p>
+                                <p class="font-semibold">80% of fee</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin (sub)</p>
+                                <p class="font-semibold">~72%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$60&ndash;$120</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Aspiring conv.</p>
+                                <p class="font-semibold">5&ndash;9%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 200 Aspiring = $9.8K/mo. 1,000 Aspiring + 100 Serious = $63.9K/mo. At 3K Aspiring + 400 Serious = $206.6K/mo (~$2.48M ARR) plus 10&ndash;15% from excess 1:1 credit takes. Enterprise upsell is obvious: the same platform, white-labeled for L&amp;D teams at mid-market companies that can't afford MentorcliQ but want MentorcliQ's outcomes. That's the $5M ARR+ lever.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Marketplace fundamentals: fast matching, clean payouts, safe calls, library search. Nothing exotic. The edge is the AI matching prompt and the library seeding loop, not the stack.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 App Router</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Server Components for mentor discovery + library browse. Server Actions for matching requests. Route handlers for Stripe/Cal.com webhooks. Host on Vercel.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase + pgvector</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">mentors</code>, <code class="text-xs bg-neutral-100 px-1 rounded">mentees</code>, <code class="text-xs bg-neutral-100 px-1 rounded">sessions</code>, <code class="text-xs bg-neutral-100 px-1 rounded">questions</code>, <code class="text-xs bg-neutral-100 px-1 rounded">answers</code>, <code class="text-xs bg-neutral-100 px-1 rounded">cohorts</code>. pgvector column on mentor profiles for embedding-based semantic matching against question text.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude + OpenAI Embeddings</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">OpenAI <code class="text-xs bg-neutral-100 px-1 rounded">text-embedding-3-large</code> for mentor profile vectors; Claude Sonnet re-ranks the top 20 candidates with a qualitative prompt ("which mentor's career arc best matches this question?"). Two-stage matching beats either alone.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Connect Standard + Billing</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Mentors onboard via Connect OAuth; platform takes 20% application_fee on per-session fees. Stripe Billing for mentee subscriptions (Aspiring / Serious). Tax forms handled by Stripe.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:video" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Cal.com embed + Daily.co</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Cal.com for booking (mentor sets availability, mentee picks a slot). Daily.co embedded video room per session. Optional transcript via Deepgram for library seeding.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend + PostHog</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Resend for session confirmations, mentor payouts summaries, weekly "top new answers" digest. PostHog funnels to monitor free&rarr;paid conversion and mentor-response latency (both are retention levers).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Marketplace Scaffold</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router marketplace for executive mentorship. Supabase backend with pgvector extension, Tailwind, TypeScript.
+
+Schema (Supabase Postgres):
+- mentors(id, user_id, display_name, title, company, years_experience, career_arc_text, bio, hourly_rate, stripe_account_id, profile_embedding vector(3072), status ENUM[applied,approved,active,paused], approved_at)
+- mentees(id, user_id, display_name, current_role, target_role, plan ENUM[free,aspiring,serious], stripe_customer_id)
+- questions(id, mentee_id, title, body, desired_outcome, embedding vector(3072), privacy ENUM[public,anonymous,private], created_at)
+- answers(id, question_id, mentor_id, body, session_id, is_from_session_summary, created_at)
+- sessions(id, mentor_id, mentee_id, scheduled_at, duration_min, stripe_payment_intent_id, status, summary_for_library)
+- cohorts(id, mentor_id, title, topic, start_date, seats_max, price_cents)
+- cohort_enrollments(id, cohort_id, mentee_id)
+
+Enable pgvector: CREATE EXTENSION IF NOT EXISTS vector;
+Mentor application gate: new mentors go to status=applied until admin review. Only approved mentors appear in matching. This curation IS the product.
+
+RLS: mentors see their own rows + public questions. Mentees see their own rows + public library + approved mentor profiles. Private questions only visible to mentee + matched mentor.
+
+Routes:
+- / (marketing, library sample)
+- /library (public Q&A browse + search)
+- /ask (mentee submits a question, triggers matching)
+- /mentors/[slug] (mentor profile page)
+- /cohorts (upcoming cohort sessions)
+- /admin/applications (mentor application review, gated to admin)</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Two-Stage AI Matching</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement semantic mentor matching in two stages. This is the core differentiation from rule-based incumbents.
+
+Stage 1 — Embedding candidate retrieval:
+- On mentor approval, compute OpenAI embedding of their career_arc_text + title + company + years using text-embedding-3-large. Store in mentors.profile_embedding.
+- When mentee submits a question, compute embedding of title + body + current_role + target_role.
+- SQL: SELECT id, display_name, career_arc_text, 1 - (profile_embedding <=> $1::vector) AS similarity FROM mentors WHERE status='active' ORDER BY profile_embedding <=> $1::vector LIMIT 20;
+- This narrows 1,000 mentors to 20 in under 100ms.
+
+Stage 2 — Claude re-ranking:
+- Pass the question + the 20 candidate mentor profiles to Claude Sonnet 4.6 with this prompt:
+  "You are matching an executive mentor to a mentee's question. The mentee asked: {question_body}. Their current role is {current_role}, target role is {target_role}. Below are 20 mentor profiles. Rank the top 5 by how well their actual career arc matches what this specific question needs. For each, write one sentence on why this mentor specifically (not their job title) is the right match. Return JSON: {rankings: [{mentor_id, rank: 1-5, reason}]}."
+- Use response_format json_schema.
+- Show the top 3 re-ranked matches to the mentee with the "reason" line as the pitch.
+
+Cost control: two-stage keeps Claude cost bounded to ~20 profiles worth of tokens per match, not 1,000. Cache embeddings; only recompute on profile edit.
+
+Edge case: <20 candidates (early days, <20 mentors total). Skip stage 1, pass all to Claude.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Session → Library Seeding Loop</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the library seeding loop. Every 1:1 session ends by producing a public Q&A entry. This is how you compound SEO and community moat.
+
+Post-session flow:
+1. Session ends (Daily.co webhook fires room_ended event).
+2. Deepgram transcribes the recording (optional; if unavailable, skip to step 4 with manual summary).
+3. Claude generates a two-sentence summary from the transcript: "Question asked" + "Answer given, stripped of names/specifics."
+4. Mentor sees a one-click "Publish to library?" review panel with the generated summary editable.
+5. Mentor chooses: Publish (visible, attributed), Publish anonymously (visible, no attribution), or Keep private.
+6. If Published: create answers(question_id=session.question_id, mentor_id, body, is_from_session_summary=true). Regenerate library index for search.
+
+Mentee consent: mentees must opt-in at booking time ("Allow a non-identifying summary to be added to the public library after this session"). Default off for Serious tier, default on for Aspiring tier (incentive alignment).
+
+Library search:
+- Full-text on questions.title + answers.body via Postgres ts_vector.
+- Filter by mentor industry, career stage, topic tags.
+- "Similar questions" section uses embedding cosine distance on questions.embedding.
+- Public library pages are indexed for SEO. Each answer page gets its own URL /library/q/[question-slug].
+
+Over 12 months, 200 sessions/month × 60% publish rate = 1,440 seeded answers. At that scale, organic traffic from career-decision queries becomes the #1 CAC source.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.businessresearchinsights.com/market-reports/mentoring-software-market-109258" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Business Research Insights &mdash; Mentoring Software Market ($0.81&ndash;$1.7B 2026 &rarr; $4.92&ndash;$5.12B by 2035, 12.4&ndash;22.7% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.futuremarketinsights.com/reports/coaching-platform-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Future Market Insights &mdash; Coaching Platform Market ($3.8B &rarr; $11.1B by 2035, 11.2% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://mentorloop.com/blog/mentoring-statistics/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Mentorloop &mdash; Mentoring Statistics (98% Fortune 500 adoption, 72% retention lift)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.skyquestt.com/report/mentoring-software-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">SkyQuest &mdash; Mentoring Software Market (52% platforms adopting AI matching)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Ideabrowser idea #5658 (opportunity 9, pain 9, timing 9) market stage research + adjacent #3313 generation-gap matching, #1174 learning roadmap builder, April 2026.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Verify competitor pricing on live product pages; mentorship platform packaging shifts quarterly as LinkedIn, MentorCruise, and Reforge iterate.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
     <script src="/ideas/gate.js" defer></script>
 </body>
 </html>

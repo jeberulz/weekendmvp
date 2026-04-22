@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T07:36:44.044Z",
+  "generatedAt": "2026-04-22T07:45:03.528Z",
   "totals": {
-    "PASS": 21,
-    "total": 21,
-    "passing": 21,
+    "PASS": 22,
+    "total": 22,
+    "passing": 22,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "virtual-knowledge-hub",
+      "status": "PASS",
+      "bytes": 38653,
+      "wordCount": 2144,
+      "h2Count": 9,
+      "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49–$149/mo. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "ai-nutrition-planner-trainers",
       "status": "PASS",

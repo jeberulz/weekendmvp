@@ -1,6 +1,37 @@
 {
   "ideas": [
     {
+      "slug": "virtual-knowledge-hub",
+      "title": "Virtual Knowledge Hub for Business Leaders & Emerging Professionals",
+      "publishedAt": "2026-04-22",
+      "category": "education",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "researchLevel": "deep",
+      "source": "ideabrowser:5658-adjacent",
+      "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49–$149/mo. Weekend MVP guide + prompts.",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:mentorship platform",
+          "ideabrowser:get_idea_research:5658:market_stage_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 2300,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T07:44:56.043Z",
+        "backfillNotes": "STUB (1.9KB, 0 words, 0/7 sections) → PASS full 7-section build. Competitive Landscape (MentorCruise/GrowthMentor/Intro consumer 1:1, ADPList free-unsustainable, Reforge/Maven/On Deck cohort courses, MentorcliQ/Chronus/Together enterprise HCM). Business Model (Free / $49 Aspiring / $149 Serious + 80% mentor payout via Stripe Connect, ~72% gross margin on sub). Tech Stack (Next.js 14 + Supabase with pgvector + two-stage matching (OpenAI text-embedding-3-large + Claude Sonnet re-rank) + Stripe Connect Standard + Cal.com embed + Daily.co video + Resend + PostHog). Market stats cite Business Research Insights mentoring market ($0.81-1.7B 2026 → $4.92-5.12B 2035), Future Market Insights coaching platform market, Mentorloop (98% F500 adoption, 72% retention lift), SkyQuest (52% platforms claim AI matching), Ideabrowser #5658 opp 9 pain 9 timing 9. Verify competitor pricing on live pages before marketing push."
+      }
+    },
+    {
       "slug": "ai-nutrition-planner-trainers",
       "title": "AI Nutrition Planner for Trainers",
       "publishedAt": "2026-04-22",
