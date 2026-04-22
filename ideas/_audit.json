@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T07:30:22.205Z",
+  "generatedAt": "2026-04-22T07:36:44.044Z",
   "totals": {
-    "PASS": 20,
-    "total": 20,
-    "passing": 20,
+    "PASS": 21,
+    "total": 21,
+    "passing": 21,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "ai-nutrition-planner-trainers",
+      "status": "PASS",
+      "bytes": 38872,
+      "wordCount": 2218,
+      "h2Count": 9,
+      "description": "B2B tool for personal trainers. Generate macro-matched meal plans per client in seconds, priced per-trainer not per-client. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "client-portal",
       "status": "PASS",

@@ -1,6 +1,40 @@
 {
   "ideas": [
     {
+      "slug": "ai-nutrition-planner-trainers",
+      "title": "AI Nutrition Planner for Trainers",
+      "publishedAt": "2026-04-22",
+      "category": "health",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "researchLevel": "deep",
+      "source": "ideabrowser:1591-adjacent+web-research",
+      "description": "B2B tool for personal trainers. Generate macro-matched meal plans per client in seconds, priced per-trainer not per-client. Weekend MVP guide + prompts.",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:fitness coaching client management",
+          "ideabrowser:get_idea_research:1591:market_stage_analysis",
+          "ideabrowser:browse_ideas:nutrition meal planning",
+          "web-research:BLS fitness trainers 2024",
+          "web-research:Grand View Research online fitness market"
+        ],
+        "citations": 5,
+        "wordCount": 2218,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T07:36:32.209Z",
+        "backfillNotes": "STUB (1.7KB, 0 words, 0/7 sections) → PASS (38.9KB, 2218 words). Full 7-section write from scratch. Competitive Landscape (Trainerize/TrueCoach/My PT Hub workout-first, That Clean Life/Nutrium dietitian-upmarket, MyFitnessPal/Cronometer/Macrofactor consumer-only, Notion/Docs/Excel free workarounds). Business Model (Free / $29 Pro / $79 Studio + ~$0.08/plan LLM cost at ~88% gross margin). Recommended Tech Stack (Next.js 14 multi-tenant + Supabase RLS + Claude Sonnet 4.6 primary w/ GPT-4o fallback + USDA FoodData Central validation loop + react-pdf + Resend + Stripe Billing). Market stats cite Future Market Insights coaching platform market, BLS fitness trainers (340K workforce, 14% growth), Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), USDA FDC API, Ideabrowser #1591 TrainerShield tangential + #3506 FamilyFeast meal-planning adjacent. No direct MCP match for B2B-trainer-nutrition angle; positioning is fresh wedge between Trainerize (thin nutrition) and That Clean Life (dietitian-priced). Verify trainer SaaS pricing pages before marketing push."
+      }
+    },
+    {
       "slug": "client-portal",
       "title": "Client Portal Builder",
       "publishedAt": "2026-04-22",
