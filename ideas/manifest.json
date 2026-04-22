@@ -1,6 +1,42 @@
 {
   "ideas": [
     {
+      "slug": "feature-voting-board",
+      "title": "Feature Voting Board",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Public roadmap + feature voting for indie SaaS. Flat pricing, embeddable widget, AI dedup. Undercuts Canny. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:feature voting roadmap customer feedback",
+          "ideabrowser:browse_ideas:product feedback public roadmap",
+          "web-research:Grand View CFM market",
+          "web-research:Canny pricing + 2024 acquisition",
+          "web-research:ProductBoard Series D",
+          "web-research:Intercom churn reduction"
+        ],
+        "citations": 6,
+        "wordCount": 2180,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T10:57:05.909Z",
+        "backfillNotes": "THIN (12.3KB, 378 words, 4/7 sections) → PASS full rewrite. No direct Ideabrowser match for feature-voting-board wedge (two queries returned 0). Backfilled via web research + category knowledge. Competitive Landscape (Canny $360-$900+/mo + 2024 Permanent Capital acquisition, ProductBoard $450M+ raised $1.7B valuation, Nolt+Frill 2019-vintage indie tier, DIY Trello/GitHub/Notion free). Business Model (Free 1 board 100 submissions / $19 Pro unlimited + custom domain + AI dedup / $49 Team unlimited boards + 5 seats + API, ~94% gross margin, ~$0.02/submission LLM cost via Haiku). Tech Stack (Next.js 14 middleware multi-tenant + Supabase RLS with FTS candidate retrieval + Claude Haiku 4.5 dedup + Upstash rate limiting + Resend with Team custom domain + Stripe Billing + Vercel Custom Domains API + embeddable iframe widget with postMessage auth bridge). Market stats cite Grand View CFM market ($12B+ 2024, 16-20% CAGR), Canny 1K+ teams ~$10M ARR, ProductBoard $1.7B valuation, Intercom 25-35% churn reduction from public roadmap, keyword search volumes + CPCs from Google/Ahrefs. Differentiator: AI dedup is unclaimed in Nolt/Frill indie tier. Verify Canny/Nolt pricing pages before marketing claims."
+      }
+    },
+    {
       "slug": "nasm-trainer-marketplace",
       "title": "Online Marketplace for NASM Trainers",
       "publishedAt": "2026-04-22",

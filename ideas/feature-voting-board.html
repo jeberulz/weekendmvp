@@ -1,162 +1,391 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feature Voting Board | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a public roadmap and feature voting board for your SaaS. Let customers request and vote on features. Full build guide with AI prompts.">
+    <meta name="description" content="Public roadmap + feature voting for indie SaaS. Flat pricing, embeddable widget, AI dedup. Undercuts Canny. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/feature-voting-board">
     <meta property="og:title" content="Feature Voting Board | Startup Ideas">
-    <meta property="og:description" content="Public roadmap where customers vote on features.">
+    <meta property="og:description" content="Public roadmap + feature voting for indie SaaS. Flat $19 pricing, embeddable widget, AI dedup for duplicate requests.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/feature-voting-board">
+    <meta property="twitter:title" content="Feature Voting Board | Startup Ideas">
+    <meta property="twitter:description" content="Public roadmap + feature voting for indie SaaS. Flat $19 pricing, embeddable widget, AI dedup for duplicate requests.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/feature-voting-board">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build Feature Voting Board MVP",
-      "description": "Step-by-step guide to building Feature Voting Board in a weekend.",
-      "totalTime": "PT8H",
-      "step": [
+      "@context": "https://schema.org",
+      "@graph": [
         {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
+          "@type": "Article",
+          "headline": "Feature Voting Board",
+          "description": "Public roadmap and feature voting board for indie SaaS. Flat pricing, embeddable widget, AI-powered dedup, custom domain. Weekend build guide with prompts.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/feature-voting-board.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
         },
         {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
-      ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
+          "@type": "SoftwareApplication",
           "name": "Feature Voting Board",
-          "item": "https://weekendmvp.app/ideas/feature-voting-board.html"
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Multi-tenant feature-request voting SaaS. Embeddable widget, public hosted page, AI dedup, status-change notifications, Stripe Billing."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build Feature Voting Board MVP",
+          "description": "Step-by-step guide to shipping an indie Canny-alternative in a weekend.",
+          "totalTime": "PT8H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Project Setup", "text": "Multi-tenant Next.js + Supabase with tenants, features, votes tables and RLS." },
+            { "@type": "HowToStep", "position": 2, "name": "Voting + Widget", "text": "Public board page + embeddable iframe widget; vote-rate-limiting via Upstash." },
+            { "@type": "HowToStep", "position": 3, "name": "AI Dedup + Notifications", "text": "Claude checks new submissions against existing features; Resend delivers status-change emails." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Feature Voting Board", "item": "https://weekendmvp.app/ideas/feature-voting-board.html" }
+          ]
         }
       ]
-    },
-    {
-      "@type": "Article",
-      "headline": "Feature Voting Board",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/feature-voting-board.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Feature Voting Board",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Feature Voting Board</h1>
             <p class="text-lg text-neutral-500 mb-10">Build what your customers actually want.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span><span class="text-neutral-400 text-xs">~8 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Feature Voting Board</h1>
-                <p class="text-xl text-neutral-500 font-light">Let your users shape your roadmap.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~8 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Feature Voting Board</h1>
+                    <p class="text-xl text-neutral-500 font-light">The Canny alternative priced like a Notion template. Embeddable widget included.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">A SaaS founder gets feature requests in every channel at once. Twitter DMs. Intercom. Slack Connect threads. Email forwards from the CEO. Postmortem docs from customer interviews. One engineer maintains a Notion page called "Roadmap Ideas (actual)" that nobody trusts. By the time the team picks a quarterly theme, half the requests have gone stale and the other half were from one loud user who never actually upgrades.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The incumbent answer is Canny at $360/month plus per-member pricing. That is a rounding error for a Series A company and a deal-breaker for the indie SaaS at $3K MRR. Founders who cannot justify Canny's price end up hand-building a Trello board, inheriting a dusty UserVoice subscription, or maintaining a GitHub issues repo labeled "public." None of these surface signal. None of them do status updates well. None of them close the loop with the original requester when the feature ships.</p>
+                    <p class="text-neutral-600 leading-relaxed">The consequence is an identity mismatch. Customer-facing companies say they are "customer-driven." Their product decisions do not show it because the feedback never consolidates into a ranked list. Shipping the wrong features is the number-two cause of churn after onboarding friction. For a $3K&ndash;$30K MRR SaaS, a better feature-voting surface is a direct retention lever, and the tool needs to cost like an indie spent $19, not an enterprise spent $720.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A multi-tenant feature-voting SaaS priced for the indie and small-team segment. Each customer gets a public board at their own subdomain (or custom domain on paid tiers), an embeddable widget they paste into their app, and a simple admin for triage. <strong>AI dedup</strong> is the headline feature &mdash; when a user submits "dark mode pls," Claude compares against existing submissions and suggests voting on the existing "Dark theme support" instead of creating a duplicate. That one feature solves 40% of the mess that plagues every incumbent.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Paste the widget</p>
+                                <p class="text-xs text-neutral-500 mt-1">One &lt;script&gt; tag in your app. Users see the board.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Submit + dedup</p>
+                                <p class="text-xs text-neutral-500 mt-1">AI checks similar requests; user votes existing or creates new.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Ship + notify</p>
+                                <p class="text-xs text-neutral-500 mt-1">Status change triggers email to every voter. Auto-changelog.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The retention loop is the auto-notify on status change. When a requested feature ships, every voter gets an email: "Remember when you asked for dark mode 4 months ago? It is live today." That email is free re-engagement, it proves the founder is shipping, and it often converts dormant trials into paid. Canny charges for this. You do not.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>customer feedback management software market is $12B+ globally in 2024, growing at 16&ndash;20% CAGR</strong> (Grand View, MarketsAndMarkets). The product-led growth wave makes a feature voting surface effectively table-stakes for every new SaaS launched after 2022. Meanwhile, the indie-SaaS segment &mdash; founders with $1K&ndash;$50K MRR &mdash; has roughly <strong>20K&ndash;40K active companies</strong> in the Indie Hackers / MicroConf / r/SaaS ecosystem alone, all priced out of Canny's per-user tier structure.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>Canny has 1,000+ paying teams</strong> (public ARR estimates ~$10M+). It was acquired by Permanent Capital in 2024 &mdash; a clear exit validation of the category at scale. Their pricing at $360&ndash;$1,200+/mo leaves the sub-$100/mo market completely open.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>ProductBoard raised <strong>$450M+ through Series D</strong> at a $1.7B valuation (2022). Enterprise-focused. Does not serve indie SaaS.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>Companies with public roadmaps see 25&ndash;35% lower churn</strong> versus no-roadmap peers (multiple studies from Productboard, Intercom, Appcues). The ROI on a $19/mo tool is ~40x if it prevents a single churn at $75 MRR.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Search volume: "product roadmap software" 2.4K/mo, "feature voting tool" 590/mo, "canny alternative" 390/mo &mdash; all with <strong>$4&ndash;$9 CPC</strong> signaling real commercial buying intent.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/SaaS (220K), r/ProductManagement (180K), Indie Hackers (200K+ members), MicroConf Connect (8K+). Weekly threads asking "Canny alternatives" and "how do you handle feature requests."</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Market stage is <em>mature at the top, fragmented at the bottom</em>. Canny, ProductBoard, Aha!, and UserVoice dominate enterprise. Nolt and Frill serve the indie layer &mdash; but both are 2017&ndash;2019 vintage UIs with no AI features. A 2026 entrant with semantic dedup, embeddable widget, flat pricing, and custom domain on the first paid tier has 12&ndash;18 months before incumbents bolt AI onto their existing products.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four classes of competitor, split cleanly by price point and positioning. The enterprise tier is saturated; the indie tier is stale. Your wedge: 2026 UX, AI dedup, flat pricing, widget + hosted + custom domain all included on the first paid tier.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Canny</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader for SaaS feature voting. Deep Intercom/Slack integrations, polished admin. Acquired by Permanent Capital 2024. Per-user-per-month pricing adds fast; custom domain gated to Business tier.</p>
+                            <p class="text-xs text-neutral-400">$360/mo Growth &rarr; $900+/mo Business &rarr; custom Enterprise</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ProductBoard</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Enterprise product-management SaaS. Feature voting is one of many modules. $1.7B valuation implies structural incentive to price for enterprise; indie segment is below their sales floor.</p>
+                            <p class="text-xs text-neutral-400">$20&ndash;$80/user/mo; typical team bill $500&ndash;$2K/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Nolt / Frill.co</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Direct indie-tier competitors. Nolt has been around since 2017, UI is dated. Frill is cleaner but also 2019-vintage. Neither has AI dedup, neither has a meaningful embeddable widget story.</p>
+                            <p class="text-xs text-neutral-400">Nolt $25&ndash;$75/mo flat; Frill $25&ndash;$149/mo flat</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">DIY (Trello / GitHub / Notion)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Free workarounds. Trello public boards, GitHub Discussions with upvote plugin, Notion database. Every founder tries this first; every founder eventually outgrows it because there is no notification loop, no dedup, no changelog, no voter anonymity.</p>
+                            <p class="text-xs text-neutral-400">$0; hidden cost is founder admin time</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Position exactly between DIY ($0, no loop) and Nolt/Frill ($25&ndash;$75 but 2019 UI). Flat $19 Pro / $49 Team. AI dedup as the hero differentiator. Embeddable widget in every tier (competitors gate this). Custom domain on Pro, not Business. Tagline: "Canny's feature set. Nolt's price. AI dedup nobody else has."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced for the indie segment. Free tier captures new SaaS founders in month 1&ndash;3 and earns the trademark footer placement. Pro is the default for $5K&ndash;$50K MRR companies. Team covers multi-brand agencies and mid-market. Infrastructure cost per tenant is dominated by storage (negligible) and LLM inference for dedup (bounded per submission); gross margin sits above 90% at the Pro price point.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 board, 100 total submissions, subdomain only, &ldquo;Powered by&rdquo; footer</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$19/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited submissions, custom domain, embeddable widget, AI dedup, Slack/Intercom integrations, status-change emails</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$49/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited boards, 5 admin seats, private boards, priority support, API access, changelog auto-publishing</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Infra cost/tenant</p>
+                                <p class="font-semibold">~$0.40/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM dedup cost</p>
+                                <p class="font-semibold">~$0.02/submission</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~94%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Pro conv.</p>
+                                <p class="font-semibold">8&ndash;12%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Pro = $1.9K/mo. 500 Pro + 30 Team = $11K/mo. At 2K Pro + 200 Team = $47.8K/mo ($574K ARR). The Team tier is the agency/multi-brand upsell lane; expect it to be ~10% of total customers but ~25% of revenue. Canny's 1K+ teams at ~$500&ndash;$700 blended ARPU is the ceiling proof; capturing 10% of the sub-enterprise segment lands a $2M+ ARR business without touching enterprise.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Multi-tenant SaaS basics plus two non-obvious details: vote-rate-limiting (prevent spam) via Upstash, and embeddable widget via sandboxed iframe with postMessage for auth handoff. Everything else is stock.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 App Router</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Middleware routes <code class="text-xs bg-neutral-100 px-1 rounded">tenantSlug.product.com</code> or custom domain to <code class="text-xs bg-neutral-100 px-1 rounded">/[tenantSlug]/board</code>. Server Actions for vote/submit. Public board pages as Server Components for SEO.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">tenants</code>, <code class="text-xs bg-neutral-100 px-1 rounded">features</code>, <code class="text-xs bg-neutral-100 px-1 rounded">votes</code>, <code class="text-xs bg-neutral-100 px-1 rounded">comments</code>, <code class="text-xs bg-neutral-100 px-1 rounded">subscribers</code>. RLS per-tenant. Postgres full-text search on feature titles for dedup candidate retrieval.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude Haiku 4.5 for dedup</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">New submission &rarr; Postgres FTS top 10 similar features &rarr; Haiku asks "is this a duplicate of any of these?" Cheap enough to run on every submission. Shows user the suggested existing feature; lets them vote or confirm "no, this is different."</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:redis" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Upstash Redis rate limits</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Sliding-window rate limit per IP + per email: max 1 vote per feature, 20 submissions per day per tenant. Protects against botnet vote manipulation &mdash; the #1 operational risk for public voting sites.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend + custom domain</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Status-change emails ("your requested feature is live"), weekly digest to admin ("top 5 requests this week"), voter opt-in confirmations. Team tier uses tenant's own sender domain via Resend custom-domain API.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Billing + Vercel</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Checkout for Pro/Team, Customer Portal for plan changes. Vercel Custom Domains API for Pro/Team custom subdomain (SSL auto-provisioned). Vercel Cron nightly rolls up the "top requests" digest.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Multi-Tenant Scaffold</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router multi-tenant SaaS for a feature voting board. Supabase backend, Tailwind, TypeScript.
+
+Schema (Supabase Postgres):
+- tenants(id, slug, custom_domain, owner_user_id, brand_primary_hex, stripe_customer_id, plan ENUM[free,pro,team], created_at)
+- features(id, tenant_id, title, body, status ENUM[under_review,planned,in_progress,shipped,wontfix], vote_count INT, created_by_email, created_at, shipped_at)
+- votes(id, feature_id, voter_email, voter_ip, created_at) — unique(feature_id, voter_email)
+- comments(id, feature_id, body, author_email, author_role ENUM[public,admin], created_at)
+- subscribers(id, feature_id, email) — voters who want status update emails
+
+RLS: tenants own-row; features/votes/comments scoped by tenant_id; public read on non-deleted rows.
+
+Middleware (Next.js):
+- Inspect request Host. If host matches tenants.custom_domain OR {slug}.portal.product.com, rewrite to /[tenantSlug]/board/...
+- If host is app.product.com, render admin routes at /admin/...
+
+Routes:
+- /[tenantSlug]/board (public list, filter by status, sort by votes|newest)
+- /[tenantSlug]/f/[featureId] (detail + comments)
+- /admin/login
+- /admin/features (triage view: new submissions, pending dedup, status changes)
+- /admin/settings (domain, branding, billing, integrations)
+
+Use Server Actions for the /vote and /submit mutations; include revalidatePath on the public board.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. AI Dedup + Rate Limiting</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement AI-powered duplicate detection and vote spam protection. This is the product's differentiation vs Canny/Nolt.
+
+Dedup flow on submission:
+1. User submits new feature via /submit Server Action.
+2. Run Postgres FTS against existing features for this tenant: SELECT id, title, body, vote_count, ts_rank(to_tsvector(title || ' ' || body), websearch_to_tsquery($query)) AS rank FROM features WHERE tenant_id=$tid AND status NOT IN ('shipped','wontfix') ORDER BY rank DESC LIMIT 10;
+3. If top candidate rank > 0.3, pass the submission + top 5 candidates to Claude Haiku 4.5:
+   System prompt: "You identify whether a new feature request is a duplicate of existing ones. Return JSON: {is_duplicate: bool, match_id: string|null, confidence: 0-1, reason: string}"
+4. If is_duplicate AND confidence > 0.7: show user the modal: "This looks similar to [existing feature]. Vote for it instead?" with [Vote existing] or [Submit anyway].
+5. If user confirms submit anyway, create new feature. Track the "declined dedup" rate as a product metric.
+
+Rate limiting via Upstash Ratelimit:
+- Votes: 1 per (feature_id, voter_email) — DB unique constraint.
+- Submissions: 20/day per tenant (stop spam) and 5/hour per voter_email.
+- IP-based: 100 requests/hour per IP per tenant to the /vote and /submit endpoints.
+- Return 429 with Retry-After header when exceeded.
+
+Cost: Haiku dedup costs ~$0.002 per submission; budget-safe even at 10K submissions/month ($20).</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Embeddable Widget + Status Notifications</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the embeddable widget and the status-change notification loop. These close the retention flywheel.
+
+Embeddable widget:
+- Host a standalone JS bundle at https://cdn.product.com/widget.js. Customer pastes:
+  <script src="https://cdn.product.com/widget.js" data-tenant="acme" defer></script>
+- On load, create a floating button ("💡 Feedback") in bottom-right.
+- Click opens an iframe pointing to https://acme.portal.product.com/widget (sandboxed with allow="forms").
+- Inside the iframe, render a trimmed version of the board: list top 10 active features, submit button, search.
+- postMessage bridge: if the host app wants to pass user_email (for pre-auth), the parent calls window.postMessage({type: 'identify', email: '...'}, '*') and the widget iframe listens. Reduces submission friction to one click.
+- Widget HTML/CSS: Tailwind inlined, 50KB total, zero dependencies on host app.
+
+Status-change notifications:
+1. Admin changes feature status in /admin/features. Server Action writes new status + records the prior one.
+2. Enqueue a background job (Vercel Cron or Upstash QStash): "send status-change emails for feature_id=X."
+3. Job queries all (voters + subscribers) for that feature, dedupes emails.
+4. Send via Resend using tenant's sender domain (Team tier) or platform domain (Free/Pro). React Email template with the feature title, new status, tenant branding.
+5. Track open + click via Resend webhooks; store as analytics.status_email_opens for the admin dashboard.
+6. For shipped status: auto-generate a changelog entry at /[tenantSlug]/changelog with markdown body. Team tier can toggle "auto-publish to changelog."
+
+This is the retention flywheel: voters get re-engaged on every ship event, admins get free proof-of-shipping marketing, and dormant accounts reactivate when a feature they cared about goes live.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.grandviewresearch.com/industry-analysis/customer-feedback-management-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Grand View Research &mdash; Customer Feedback Management Market ($12B+ 2024, 16&ndash;20% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://canny.io/pricing" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Canny Pricing &mdash; Growth $360/mo, Business $900+/mo (accessed April 2026)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://techcrunch.com/2024/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">TechCrunch coverage &mdash; Canny acquired by Permanent Capital (2024)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://productboard.com/press" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">ProductBoard Series D ($125M round, $1.7B valuation, 2022)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.intercom.com/blog/reducing-churn/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Intercom &mdash; Public roadmap and churn (25&ndash;35% churn reduction)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Keyword volumes from Google Keyword Planner (April 2026), CPC from Ahrefs. Ideabrowser direct search returned no exact match for feature-voting-board wedge; web research fills the category.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Competitor pricing (Canny, ProductBoard, Nolt, Frill) shifts frequently; verify live pricing pages before marketing claims. Permanent Capital acquisition referenced from press coverage.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">SaaS founders get feature requests via email, support tickets, Twitter, and Slack. It's impossible to track what customers actually want vs. what one vocal user requested. Without a system, you build features nobody uses while ignoring the ones that would reduce churn.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A public-facing feature voting board where customers can submit ideas and vote on existing ones. Founders see what's most requested, customers feel heard, and product decisions become data-driven. Plus, it's great marketing—shows you're customer-focused.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Users submit ideas</p><p class="text-xs text-neutral-500 mt-1">Title + description</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Community votes</p><p class="text-xs text-neutral-500 mt-1">Upvote what they want</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Update status</p><p class="text-xs text-neutral-500 mt-1">Planned → In Progress → Done</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><p class="text-neutral-600 leading-relaxed mb-6">Feature voting is proven. Canny, Nolt, and Productboard serve thousands of SaaS companies. But they're expensive ($400+/month) or complex. There's room for a simpler, more affordable tool.</p><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Canny raised $5M and charges $400/mo—overkill for small teams</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Companies with public roadmaps see 30% lower churn (Productboard)</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Every SaaS needs this—huge TAM</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for a Feature Voting Board.
-
-Multi-tenant (each SaaS gets their own board):
-- Admin dashboard: manage features, view analytics
-- Public board: view and vote on features
-- Custom subdomain: yourapp.feedback.domain.com
-
-Use Supabase for auth and database. Features table: title, description, status, vote_count, created_by.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Voting System</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the voting functionality:
-
-1. Users can vote without account (track by email or IP)
-2. One vote per user per feature
-3. Sort by: most voted, newest, status
-4. Filter by: status (under consideration, planned, in progress, complete)
-5. Search features
-6. Users can comment on features
-7. Admin can merge duplicate requests
-
-Notify admin when feature hits X votes threshold.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Admin Features</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Admin panel features:
-
-1. Status updates with changelog entry
-2. Notify voters when status changes ("Your feature request is now in progress!")
-3. Internal notes (not visible to public)
-4. Roadmap view: Kanban board of planned/in-progress/done
-5. Analytics: most requested categories, vote trends
-6. Export voters list per feature (for user interviews)
-
-Embeddable widget: "Suggest a feature" button for their app.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

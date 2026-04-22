@@ -1,17 +1,37 @@
 {
-  "generatedAt": "2026-04-22T07:53:30.244Z",
+  "generatedAt": "2026-04-22T10:57:13.121Z",
   "totals": {
-    "PASS": 23,
-    "total": 23,
-    "passing": 23,
+    "PASS": 24,
+    "total": 24,
+    "passing": 24,
     "failing": 0
   },
   "ideas": [
     {
+      "slug": "feature-voting-board",
+      "status": "PASS",
+      "bytes": 38529,
+      "wordCount": 2192,
+      "h2Count": 9,
+      "description": "Public roadmap + feature voting for indie SaaS. Flat pricing, embeddable widget, AI dedup. Undercuts Canny. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
       "slug": "nasm-trainer-marketplace",
       "status": "PASS",
-      "bytes": 39892,
-      "wordCount": 2207,
+      "bytes": 45232,
+      "wordCount": 2357,
       "h2Count": 9,
       "description": "Credential-verified marketplace for NASM/ACE/ISSA trainers. In-person + virtual, escrow payments, certification badge. Weekend MVP guide + prompts.",
       "sections": {
@@ -30,8 +50,8 @@
     {
       "slug": "virtual-knowledge-hub",
       "status": "PASS",
-      "bytes": 38653,
-      "wordCount": 2144,
+      "bytes": 43993,
+      "wordCount": 2294,
       "h2Count": 9,
       "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49–$149/mo. Weekend MVP guide + prompts.",
       "sections": {
@@ -50,8 +70,8 @@
     {
       "slug": "ai-nutrition-planner-trainers",
       "status": "PASS",
-      "bytes": 38872,
-      "wordCount": 2218,
+      "bytes": 44212,
+      "wordCount": 2368,
       "h2Count": 9,
       "description": "B2B tool for personal trainers. Generate macro-matched meal plans per client in seconds, priced per-trainer not per-client. Weekend MVP guide + prompts.",
       "sections": {
@@ -70,8 +90,8 @@
     {
       "slug": "client-portal",
       "status": "PASS",
-      "bytes": 37474,
-      "wordCount": 1969,
+      "bytes": 42814,
+      "wordCount": 2119,
       "h2Count": 9,
       "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
       "sections": {
@@ -110,8 +130,8 @@
     {
       "slug": "single-event-app-builder",
       "status": "PASS",
-      "bytes": 36680,
-      "wordCount": 1340,
+      "bytes": 41363,
+      "wordCount": 1483,
       "h2Count": 9,
       "description": "Build branded single-use event apps for weddings, retreats, and reunions that expire after the date and archive as keepsake pages. Replaces five fragmented tools with one link.",
       "sections": {
@@ -130,8 +150,8 @@
     {
       "slug": "vehicle-recall-alert-service",
       "status": "PASS",
-      "bytes": 35981,
-      "wordCount": 1312,
+      "bytes": 40664,
+      "wordCount": 1455,
       "h2Count": 9,
       "description": "Build a VIN-tracking recall alert service for used car owners. NHTSA data + real-time SMS. One VIN entry, lifetime coverage.",
       "sections": {
@@ -150,8 +170,8 @@
     {
       "slug": "conversational-analytics-digest",
       "status": "PASS",
-      "bytes": 36871,
-      "wordCount": 1386,
+      "bytes": 41554,
+      "wordCount": 1529,
       "h2Count": 9,
       "description": "Build an AI tool that turns GA4, Mixpanel, and Plausible data into plain-English weekly emails for non-technical founders. Skip the dashboard.",
       "sections": {
@@ -170,8 +190,8 @@
     {
       "slug": "recall-radar-ecommerce-sellers",
       "status": "PASS",
-      "bytes": 36834,
-      "wordCount": 1335,
+      "bytes": 41517,
+      "wordCount": 1478,
       "h2Count": 9,
       "description": "Build a SaaS tool that monitors FDA, CPSC, and Health Canada recall feeds against Amazon and Shopify catalogs—real-time alerts before listings get pulled. Built for 2025's recall surge.",
       "sections": {
@@ -190,8 +210,8 @@
     {
       "slug": "ai-feedback-triage-widget",
       "status": "PASS",
-      "bytes": 36261,
-      "wordCount": 1288,
+      "bytes": 40944,
+      "wordCount": 1431,
       "h2Count": 9,
       "description": "Build an AI-powered feedback widget that auto-categorizes user input into bugs, features, and praise—then ranks the top 3 priorities. Perfect for solo devs drowning in feedback.",
       "sections": {
@@ -270,8 +290,8 @@
     {
       "slug": "subscription-analytics-dashboard",
       "status": "PASS",
-      "bytes": 32516,
-      "wordCount": 1096,
+      "bytes": 37153,
+      "wordCount": 1239,
       "h2Count": 8,
       "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.",
       "sections": {
@@ -290,8 +310,8 @@
     {
       "slug": "customer-feedback-aggregator",
       "status": "PASS",
-      "bytes": 27880,
-      "wordCount": 988,
+      "bytes": 32563,
+      "wordCount": 1131,
       "h2Count": 8,
       "description": "Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.",
       "sections": {
@@ -310,8 +330,8 @@
     {
       "slug": "waitlist-manager",
       "status": "PASS",
-      "bytes": 34318,
-      "wordCount": 1123,
+      "bytes": 39001,
+      "wordCount": 1266,
       "h2Count": 9,
       "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
       "sections": {
@@ -330,8 +350,8 @@
     {
       "slug": "ai-code-reviewer",
       "status": "PASS",
-      "bytes": 34315,
-      "wordCount": 1107,
+      "bytes": 38998,
+      "wordCount": 1250,
       "h2Count": 9,
       "description": "Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.",
       "sections": {
@@ -350,8 +370,8 @@
     {
       "slug": "ai-resume-tailorer",
       "status": "PASS",
-      "bytes": 27911,
-      "wordCount": 1069,
+      "bytes": 32594,
+      "wordCount": 1212,
       "h2Count": 8,
       "description": "Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full build guide included.",
       "sections": {
@@ -370,8 +390,8 @@
     {
       "slug": "social-media-scheduler",
       "status": "PASS",
-      "bytes": 34563,
-      "wordCount": 1079,
+      "bytes": 39246,
+      "wordCount": 1222,
       "h2Count": 9,
       "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
       "sections": {
@@ -390,8 +410,8 @@
     {
       "slug": "api-documentation-generator",
       "status": "PASS",
-      "bytes": 28007,
-      "wordCount": 1054,
+      "bytes": 32690,
+      "wordCount": 1197,
       "h2Count": 8,
       "description": "Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, interactive docs instantly.",
       "sections": {
@@ -410,8 +430,8 @@
     {
       "slug": "expense-splitter-app",
       "status": "PASS",
-      "bytes": 33982,
-      "wordCount": 1062,
+      "bytes": 38665,
+      "wordCount": 1205,
       "h2Count": 9,
       "description": "Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for trips, roommates, and dinners.",
       "sections": {
@@ -430,8 +450,8 @@
     {
       "slug": "content-repurposing-tool",
       "status": "PASS",
-      "bytes": 28267,
-      "wordCount": 1099,
+      "bytes": 32950,
+      "wordCount": 1242,
       "h2Count": 8,
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
       "sections": {
@@ -450,8 +470,8 @@
     {
       "slug": "abandoned-cart-recovery",
       "status": "PASS",
-      "bytes": 27996,
-      "wordCount": 1075,
+      "bytes": 32679,
+      "wordCount": 1218,
       "h2Count": 8,
       "description": "Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.",
       "sections": {
