@@ -1,17 +1,9 @@
 # Newsletter Metrics
 
-Appended by `/newsletter stats {date}` 24h after each send. Source: Beehiiv `GET /v2/publications/{pub}/posts/{post_id}/stats`.
-
-Watch list:
-
-- PM CTR dropping below 2% for 5+ days → revisit PM rotation
-- AM open rate dropping below 30% for 3+ days → revisit subject formula
-- Unsubscribe rate above 0.5% per send → consider AM/PM opt-in split
-
-## Log
+Stats pulled from Beehiiv (`mcp__beehiiv__get_post_stats`) after each send.
 
 
-| Date       | Slot | Post ID       | Title                                                    | Recipients | Opens  | CTR   | Unsubs |
-| ---------- | ---- | ------------- | -------------------------------------------------------- | ---------- | ------ | ----- | ------ |
-| 2026-04-20 | AM   | post_56b54911 | Idea of the Day: AI Resume Tailorer                      | 406        | 33.50% | 2.21% | 3      |
-| 2026-04-20 | PM   | post_93c0b717 | Builder Brief: 7 Micro-SaaS Ideas Solo Founders Can Ship | 403        | 17.62% | 5.63% | 1      |
+| Date       | Slot | Subject                                 | Sent | Delivered | Delivery % | Open % | Unique Opens | Click % | Unique Clicks | Unsub % | Bounce % |
+| ---------- | ---- | --------------------------------------- | ---- | --------- | ---------- | ------ | ------------ | ------- | ------------- | ------- | -------- |
+| 2026-04-21 | AM   | Idea of the Day: AI Email Reply Drafter | 406  | 404       | 99.51      | 32.18  | 130          | 2.31    | 3             | 0.50    | 0.25     |
+| 2026-04-21 | PM   | Builder Brief: Bolt.new in 10 minutes   | 404  | 402       | 99.50      | 22.39  | 90           | 2.22    | 2             | 0.00    | 0.00     |
