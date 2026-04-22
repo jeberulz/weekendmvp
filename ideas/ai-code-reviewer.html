@@ -20,6 +20,9 @@
         body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
         .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
         .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+            .sidebar-link.active { color: #000; font-weight: 600; }
+        #sidebar { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto; }
+        #sidebar::-webkit-scrollbar { display: none; }
     </style>
     <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -89,8 +92,16 @@
 }</script>
 </head>
 <body class="selection:bg-black/10 selection:text-black">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        </div>
         <div class="flex items-center gap-6">
             <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
             <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
@@ -115,8 +126,33 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
-            <div class="max-w-2xl mx-auto">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
 
                 <div class="mb-12">
@@ -431,6 +467,7 @@ Parse this config on each review and adjust AI prompt accordingly.
                 <div class="mt-12 text-center">
                     <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
                 </div>
+                </main>
             </div>
         </div>
 
@@ -442,6 +479,46 @@ Parse this config on each review and adjust AI prompt accordingly.
     </section>
 
     <script src="/ideas/gate.js" defer></script>
+    <script>
+      (function() {
+        const sidebar = document.getElementById('sidebar');
+        const openBtn = document.getElementById('mobile-menu-open');
+        const closeBtn = document.getElementById('mobile-menu-close');
+        const backdrop = document.getElementById('mobile-menu-backdrop');
+        function openMenu() {
+          if (!sidebar) return;
+          sidebar.classList.remove('-translate-x-full');
+          if (backdrop) backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeMenu() {
+          if (!sidebar) return;
+          sidebar.classList.add('-translate-x-full');
+          if (backdrop) backdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+        if (openBtn) openBtn.addEventListener('click', openMenu);
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+        if (backdrop) backdrop.addEventListener('click', closeMenu);
+        document.querySelectorAll('#sidebar-nav a').forEach(a => a.addEventListener('click', closeMenu));
+        const links = document.querySelectorAll('.sidebar-link');
+        const items = Array.from(links).map(a => {
+          const id = a.getAttribute('href').slice(1);
+          return { link: a, el: document.getElementById(id) };
+        }).filter(it => it.el);
+        if ('IntersectionObserver' in window && items.length) {
+          const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                links.forEach(l => l.classList.remove('active'));
+                const match = items.find(it => it.el === entry.target);
+                if (match) match.link.classList.add('active');
+              }
+            });
+          }, { rootMargin: '-20% 0px -60% 0px' });
+          items.forEach(it => observer.observe(it.el));
+        }
+      })();
+    </script>
+
 
 
 </body></html>
