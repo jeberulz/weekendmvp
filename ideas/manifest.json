@@ -43,6 +43,42 @@
       }
     },
     {
+      "slug": "single-event-app-builder",
+      "title": "Single-Event App Builder",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:6843",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "description": "Branded one-off event apps for weddings, corporate retreats, and family reunions. Per-event pricing. Apps expire with the event and archive as keepsake pages.",
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__get_idea_research:base"
+        ],
+        "citations": 4,
+        "wordCount": 1340,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T00:00:00Z",
+        "publishNotes": "Mode A Ideabrowser MCP source. Competitive: Cvent/Bizzabo/Whova/EventMobi/Zola/The Knot/generic tools. Pricing $75 Reunion / $199 Wedding / $799 Corporate. Tech: Next.js multi-tenant + Supabase + Cloudflare R2/Images + Claude for polish + Resend + Stripe + Vercel Cron."
+      },
+      "researchLevel": "deep"
+    },
+    {
       "slug": "vehicle-recall-alert-service",
       "title": "Vehicle Recall Alert Service",
       "publishedAt": "2026-04-22",
