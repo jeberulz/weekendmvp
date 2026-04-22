@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1">
+  <title>Weekend MVP — We built an audit gate for our ideas (8 slides)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <style>
+    /* ===== Inlined _shared.css ===== */
+    :root {
+      --bg: #050505; --bg-panel: #0a0a0a; --fg: #e5e5e5;
+      --fg-secondary: #a1a1aa; --fg-tertiary: #71717a;
+      --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.2);
+      --grid-line: rgba(255,255,255,0.03); --grid-dot: rgba(255,255,255,0.035);
+      --accent-lime: #D4FF5B; --accent-mint: #8FF59B; --accent-emerald: #2F5F53;
+      --accent-lavender: #C5AEE8; --accent-aubergine: #1E1B38;
+      --status-live: var(--accent-mint); --status-build: #f59e0b;
+      --font-primary: 'Geist','Inter',system-ui,sans-serif;
+      --font-mono: 'Geist Mono','JetBrains Mono',ui-monospace,monospace;
+      --mono: var(--font-mono);
+    }
+    *,*::before,*::after { box-sizing: border-box; margin:0; padding:0; }
+    html,body { background:#111; color:var(--fg); font-family:var(--font-primary); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    body { display:flex; flex-direction:column; align-items:center; gap:40px; padding:40px 0; }
+    .slide { position:relative; width:1080px; height:1350px; background:var(--bg); color:var(--fg); overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+    .slide.grid-lines::before,.slide.grid-dots::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:0; }
+    .slide.grid-lines::before { background-image:linear-gradient(to right,var(--grid-line) 1px,transparent 1px),linear-gradient(to bottom,var(--grid-line) 1px,transparent 1px); background-size:60px 60px; -webkit-mask-image:linear-gradient(to bottom,black 15%,transparent 96%); mask-image:linear-gradient(to bottom,black 15%,transparent 96%); }
+    .slide.grid-dots::before { background-image:radial-gradient(circle at 1px 1px,var(--grid-dot) 1px,transparent 0); background-size:28px 28px; -webkit-mask-image:linear-gradient(to bottom,black 10%,transparent 98%); mask-image:linear-gradient(to bottom,black 10%,transparent 98%); }
+    .slide-inner { position:relative; z-index:1; width:100%; height:100%; display:flex; flex-direction:column; padding:80px; }
+    .slide-header { display:flex; align-items:center; justify-content:space-between; width:100%; }
+    .logo { display:inline-flex; align-items:center; height:28px; color:var(--fg); }
+    .logo svg { height:100%; width:auto; fill:currentColor; }
+    .slide-counter { font-family:var(--font-mono); font-size:20px; font-weight:500; letter-spacing:0.084em; color:var(--fg-tertiary); text-transform:uppercase; font-variant-numeric:tabular-nums; display:inline-flex; align-items:center; gap:10px; }
+    .slide-counter.with-pulse::before { content:""; width:8px; height:8px; background:var(--accent-mint); border-radius:50%; box-shadow:0 0 12px var(--accent-mint); }
+    .slide-footer { margin-top:auto; display:flex; align-items:center; justify-content:space-between; font-family:var(--font-mono); font-size:24px; color:var(--fg-tertiary); letter-spacing:0.022em; }
+    .slide-footer .swipe { display:inline-flex; align-items:center; gap:10px; text-transform:uppercase; letter-spacing:0.076em; }
+    .ico { stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none; flex-shrink:0; vertical-align:middle; }
+    .slide-footer .swipe .ico { width:20px; height:20px; }
+    /* ===== End inlined _shared.css ===== */
+
+    /* Layout-specific (pipeline). Slides use .grid-dots + slide-counter.with-pulse for the BIP aesthetic. */
+
+    .eyebrow { font-family:var(--mono); font-size:20px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-mint); display:inline-flex; align-items:center; gap:14px; }
+    .eyebrow .bracket { color:var(--fg-tertiary); }
+    .section-label { font-family:var(--mono); font-size:18px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:28px; display:inline-flex; align-items:center; gap:12px; }
+    .section-label::before { content:""; width:28px; height:1px; background:var(--accent-mint); }
+
+    /* Hero */
+    .hero-body { margin-top:120px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .hero-body .eyebrow { margin-bottom:36px; }
+    .headline { font-size:112px; line-height:0.98; font-weight:700; letter-spacing:-0.04em; }
+    .headline .muted { color:var(--fg-tertiary); font-weight:500; }
+    .headline .accent { color:var(--accent-mint); }
+    .subtitle { margin-top:36px; font-size:32px; line-height:1.3; color:var(--fg-secondary); max-width:880px; }
+    .meta-strip { margin-top:48px; display:flex; gap:32px; flex-wrap:wrap; padding-top:32px; border-top:1px dashed var(--border-strong); }
+    .meta-strip .cell { display:flex; flex-direction:column; gap:8px; }
+    .meta-strip .k { font-family:var(--mono); font-size:13px; letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-tertiary); }
+    .meta-strip .v { font-family:var(--mono); font-size:22px; color:var(--fg); font-variant-numeric:tabular-nums; }
+    .meta-strip .v.hl { color:var(--accent-mint); }
+
+    /* Pipeline */
+    .pipe-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .pipe-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; }
+    .pipe-flow { display:flex; flex-direction:column; gap:14px; }
+    .pipe-node { position:relative; display:flex; align-items:center; gap:20px; padding:24px 30px; border:1px solid var(--border-strong); border-radius:14px; background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)); }
+    .pipe-node .ix { font-family:var(--mono); font-size:14px; color:var(--fg-tertiary); letter-spacing:0.14em; min-width:36px; }
+    .pipe-node .icon { width:46px; height:46px; border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; color:var(--fg); flex-shrink:0; }
+    .pipe-node .icon .ico { width:22px; height:22px; }
+    .pipe-node .body { flex:1; }
+    .pipe-node .title { font-size:22px; font-weight:600; letter-spacing:-0.01em; }
+    .pipe-node .note { margin-top:4px; font-family:var(--mono); font-size:14px; color:var(--fg-tertiary); }
+    .pipe-node .status { display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--fg-secondary); }
+    .pipe-node .status::before { content:""; width:10px; height:10px; border-radius:50%; }
+    .pipe-node .status.live::before { background:var(--accent-mint); box-shadow:0 0 8px var(--accent-mint); }
+    .pipe-node .status.build::before { background:#f59e0b; box-shadow:0 0 8px #f59e0b; }
+
+    /* Ship log */
+    .log-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .log-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; }
+    .log-list { display:flex; flex-direction:column; border-top:1px solid var(--border); }
+    .log-row { display:grid; grid-template-columns:130px 1fr auto; align-items:center; gap:24px; padding:22px 0; border-bottom:1px solid var(--border); }
+    .log-row .sha { font-family:var(--mono); font-size:15px; color:var(--accent-mint); letter-spacing:0.06em; }
+    .log-row .msg { font-size:20px; color:var(--fg); font-weight:500; letter-spacing:-0.01em; }
+    .log-row .tag { font-family:var(--mono); font-size:13px; color:var(--fg-secondary); padding:6px 12px; border:1px solid var(--border); border-radius:6px; background:rgba(255,255,255,0.03); text-transform:lowercase; }
+
+    /* Terminal */
+    .term-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .term-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; }
+    .terminal { background:var(--accent-aubergine); border:1px solid rgba(197,174,232,0.25); border-radius:18px; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.4); }
+    .terminal .tbar { display:flex; align-items:center; gap:10px; padding:16px 22px; border-bottom:1px solid rgba(197,174,232,0.15); background:rgba(255,255,255,0.02); }
+    .terminal .tbar .dot { width:12px; height:12px; border-radius:50%; background:rgba(197,174,232,0.3); }
+    .terminal .tbar .title { margin-left:auto; font-family:var(--mono); font-size:14px; color:var(--accent-lavender); letter-spacing:0.06em; }
+    .terminal .tbody { padding:28px 32px; font-family:var(--mono); font-size:18px; line-height:1.7; color:#fff; }
+    .term-line { white-space:pre; }
+    .term-line .prompt { color:var(--accent-lavender); }
+    .term-line .cmd { color:#fff; }
+    .term-line .ok { color:var(--accent-lime); }
+    .term-line .warn { color:#f59e0b; }
+    .term-line .dim { color:rgba(255,255,255,0.55); }
+
+    /* Before/After */
+    .ba-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .ba-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; }
+    .ba-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .ba-col { padding:32px; border-radius:18px; border:1px solid var(--border-strong); display:flex; flex-direction:column; gap:16px; min-height:320px; }
+    .ba-col.before { background:rgba(255,255,255,0.02); }
+    .ba-col.after { background:rgba(143,245,155,0.05); border-color:rgba(143,245,155,0.3); }
+    .ba-col .tag { font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; display:inline-flex; align-items:center; gap:10px; }
+    .ba-col.before .tag { color:var(--fg-tertiary); }
+    .ba-col.after .tag { color:var(--accent-mint); }
+    .ba-col .tag .ico { width:18px; height:18px; }
+    .ba-col .metric { font-size:72px; font-weight:800; letter-spacing:-0.04em; line-height:1; margin-top:6px; font-variant-numeric:tabular-nums; }
+    .ba-col.before .metric { color:var(--fg-tertiary); }
+    .ba-col.after .metric { color:var(--accent-mint); }
+    .ba-col .desc { font-size:18px; color:var(--fg-secondary); line-height:1.5; margin-top:auto; }
+
+    /* Metric */
+    .metric-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .metric-number { font-size:340px; font-weight:800; letter-spacing:-0.06em; line-height:0.9; font-variant-numeric:tabular-nums; margin-bottom:28px; color:var(--accent-mint); display:inline-flex; align-items:baseline; gap:20px; }
+    .metric-number .unit { font-size:88px; color:var(--fg-tertiary); font-weight:600; }
+    .metric-label { font-size:40px; font-weight:600; color:var(--fg); margin-bottom:24px; }
+    .metric-context { font-size:22px; line-height:1.5; color:var(--fg-secondary); max-width:840px; }
+
+    /* Lessons */
+    .lessons-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .lessons-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; }
+    .lesson-list { display:flex; flex-direction:column; gap:16px; }
+    .lesson-row { display:flex; align-items:flex-start; gap:24px; padding:24px 32px; border:1px solid var(--border-strong); border-radius:14px; background:rgba(255,255,255,0.02); }
+    .lesson-row .dot { width:14px; height:14px; border-radius:50%; background:var(--accent-mint); box-shadow:0 0 10px var(--accent-mint); margin-top:12px; flex-shrink:0; }
+    .lesson-row .body { flex:1; }
+    .lesson-row .title { font-size:24px; font-weight:600; color:var(--fg); margin-bottom:6px; letter-spacing:-0.01em; }
+    .lesson-row .desc { font-size:17px; color:var(--fg-secondary); line-height:1.5; }
+
+    /* CTA */
+    .cta-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cta-headline { font-size:96px; font-weight:700; letter-spacing:-0.03em; line-height:1; margin-bottom:32px; }
+    .cta-headline .accent { color:var(--accent-mint); }
+    .cta-subtitle { font-size:28px; line-height:1.4; color:var(--fg-secondary); max-width:840px; margin-bottom:52px; }
+    .cta-button { display:inline-flex; align-items:center; gap:14px; padding:24px 40px; background:var(--accent-mint); color:var(--bg); border-radius:999px; font-size:24px; font-weight:700; }
+    .cta-button .ico { width:22px; height:22px; }
+    .cta-url { margin-top:40px; display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:22px; color:var(--fg-tertiary); }
+    .cta-url .ico { width:20px; height:20px; }
+  </style>
+</head>
+<body>
+
+  <!-- 01 HERO -->
+  <div class="slide grid-dots" data-slide="1" data-type="hero">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>01 / 08</div>
+      </div>
+      <div class="hero-body">
+        <div class="eyebrow"><span class="bracket">[</span> BUILD LOG <span class="bracket">·</span> WEEK 17 · 2026 <span class="bracket">]</span></div>
+        <div class="headline"><div>We built</div><div class="muted">an audit gate</div><div class="accent">for our ideas.</div></div>
+        <div class="subtitle">It quarantined 50+ thin pages on first run. By Friday, 8 were rebuilt and back to PASS.</div>
+        <div class="meta-strip">
+          <div class="cell"><div class="k">Commits</div><div class="v hl">11</div></div>
+          <div class="cell"><div class="k">Pages rebuilt</div><div class="v">8</div></div>
+          <div class="cell"><div class="k">Stack</div><div class="v">Cursor · Claude · shell</div></div>
+          <div class="cell"><div class="k">Status</div><div class="v hl">Shipped</div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/build-log</span><span class="swipe">Pipeline <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 02 PIPELINE -->
+  <div class="slide grid-dots" data-slide="2" data-type="pipeline">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>02 / 08</div>
+      </div>
+      <div class="pipe-body">
+        <div class="section-label">THE GATE</div>
+        <div class="pipe-headline">How the gate runs on every push.</div>
+        <div class="pipe-flow">
+          <div class="pipe-node"><span class="ix">01</span><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg></span><div class="body"><div class="title">Parse idea.html</div><div class="note">extract section depth + word count</div></div><span class="status live">Shipped</span></div>
+          <div class="pipe-node"><span class="ix">02</span><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><div class="body"><div class="title">Score sections</div><div class="note">STUB / THIN / PASS thresholds</div></div><span class="status live">Shipped</span></div>
+          <div class="pipe-node"><span class="ix">03</span><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><div class="body"><div class="title">Quarantine fails</div><div class="note">block merge on STUB or THIN</div></div><span class="status live">Shipped</span></div>
+          <div class="pipe-node"><span class="ix">04</span><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg></span><div class="body"><div class="title">Backfill queue</div><div class="note">Claude rewrites missing sections</div></div><span class="status build">In progress</span></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>runs on every git push</span><span class="swipe">Ship log <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 03 LOG -->
+  <div class="slide grid-dots" data-slide="3" data-type="log">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>03 / 08</div>
+      </div>
+      <div class="log-body">
+        <div class="section-label">SHIP LOG</div>
+        <div class="log-headline">What shipped this week.</div>
+        <div class="log-list">
+          <div class="log-row"><span class="sha">c735f62</span><span class="msg">audit-ideas: tighten QUARANTINE_STATUSES</span><span class="tag">gate</span></div>
+          <div class="log-row"><span class="sha">ecb79ab</span><span class="msg">ai-resume-tailorer: backfill, gate PASS</span><span class="tag">backfill</span></div>
+          <div class="log-row"><span class="sha">d926da9</span><span class="msg">abandoned-cart-recovery: backfill, PASS</span><span class="tag">backfill</span></div>
+          <div class="log-row"><span class="sha">de11065</span><span class="msg">api-doc-generator: 487 → 1,100 words</span><span class="tag">backfill</span></div>
+          <div class="log-row"><span class="sha">3c315ed</span><span class="msg">subscription-analytics: backfill, PASS</span><span class="tag">backfill</span></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>5 of 11 commits this week</span><span class="swipe">Terminal <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 04 TERMINAL -->
+  <div class="slide grid-dots" data-slide="4" data-type="terminal">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>04 / 08</div>
+      </div>
+      <div class="term-body">
+        <div class="section-label">THE DEPLOY</div>
+        <div class="term-headline">The gate run, replayed.</div>
+        <div class="terminal">
+          <div class="tbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="title">~/weekendmvp — zsh</span></div>
+          <div class="tbody">
+            <div class="term-line"><span class="prompt">$ </span><span class="cmd">npm run audit:ideas</span></div>
+            <div class="term-line"><span class="warn">↳</span> <span class="dim">scanning 102 ideas…</span></div>
+            <div class="term-line"><span class="ok">✓</span> <span class="dim">46 PASS</span></div>
+            <div class="term-line"><span class="warn">↳</span> <span class="dim">8 THIN (backfill queued)</span></div>
+            <div class="term-line"><span class="warn">↳</span> <span class="dim">2 STUB (quarantined)</span></div>
+            <div class="term-line">&nbsp;</div>
+            <div class="term-line"><span class="prompt">$ </span><span class="cmd">claude backfill --slug api-documentation-generator</span></div>
+            <div class="term-line"><span class="ok">✓</span> <span class="dim">16K → 30K · 487 → 1,100 words</span></div>
+            <div class="term-line"><span class="prompt">$ </span><span class="cmd">git push</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Stack: Cursor · Claude · shell script</span><span class="swipe">Before/After <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 05 BEFORE/AFTER -->
+  <div class="slide grid-dots" data-slide="5" data-type="before-after">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>05 / 08</div>
+      </div>
+      <div class="ba-body">
+        <div class="section-label">BEFORE / AFTER</div>
+        <div class="ba-headline">What the gate caught on <span style="color:var(--accent-mint);">api-documentation-generator.</span></div>
+        <div class="ba-grid">
+          <div class="ba-col before">
+            <div class="tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> BEFORE</div>
+            <div class="metric">487</div>
+            <div class="desc">16KB HTML. Three sections missing. Would ship without catching.</div>
+          </div>
+          <div class="ba-col after">
+            <div class="tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> AFTER</div>
+            <div class="metric">1,100</div>
+            <div class="desc">30KB HTML. Full teardown. Gate PASS, merged clean.</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Words in idea teardown</span><span class="swipe">Metric <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 06 METRIC -->
+  <div class="slide grid-dots" data-slide="6" data-type="metric">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>06 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:100px;">THIS WEEK</div>
+      <div class="metric-body">
+        <div class="metric-number">8<span class="unit">ideas</span></div>
+        <div class="metric-label">idea pages rebuilt this week.</div>
+        <div class="metric-context">Each one backfilled with three missing sections and re-verified by the audit gate before merge. Zero thin pages left in main.</div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/startup-ideas</span><span class="swipe">Lessons <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 07 LESSONS -->
+  <div class="slide grid-dots" data-slide="7" data-type="lessons">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>07 / 08</div>
+      </div>
+      <div class="lessons-body">
+        <div class="section-label">LESSONS</div>
+        <div class="lessons-headline">Three lessons from building the gate.</div>
+        <div class="lesson-list">
+          <div class="lesson-row"><span class="dot"></span><div class="body"><div class="title">Gate beats vibes</div><div class="desc">Manual review misses gaps. A gate doesn't. Every page either PASSes the thresholds or gets blocked from merge until it does.</div></div></div>
+          <div class="lesson-row"><span class="dot"></span><div class="body"><div class="title">Status beats score</div><div class="desc">STUB / THIN / PASS beat a 0–100 number. A status tells you what to do next — a score leaves the decision to you.</div></div></div>
+          <div class="lesson-row"><span class="dot"></span><div class="body"><div class="title">Bulk beats solo</div><div class="desc">Fixing one page is a chore. Eight is a sprint. The gate turns scattered follow-ups into one focused session.</div></div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>audit-ideas + 8 backfills</span><span class="swipe">Follow <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 08 CTA -->
+  <div class="slide grid-dots" data-slide="8" data-type="cta">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter with-pulse" data-counter>08 / 08</div>
+      </div>
+      <div class="cta-body">
+        <div class="eyebrow" style="margin-bottom:32px;"><span class="bracket">[</span> BUILDING IN PUBLIC <span class="bracket">]</span></div>
+        <div class="cta-headline">Watch the build,<br/><span class="accent">weekday mornings.</span></div>
+        <div class="cta-subtitle">Twice-daily Weekend MVP newsletter. Idea drop at 7am, builder brief at 5pm.</div>
+        <a class="cta-button">Subscribe <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <div class="cta-url"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> weekendmvp.app/newsletter</div>
+      </div>
+      <div class="slide-footer"><span>@weekendmvp</span><span class="swipe">Save <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></span></div>
+    </div>
+  </div>
+
+</body>
+</html>
