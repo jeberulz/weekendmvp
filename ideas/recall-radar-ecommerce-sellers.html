@@ -1,0 +1,453 @@
+<!DOCTYPE html><html lang="en" class="antialiased"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recall Radar for E-commerce Sellers | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="Build a SaaS tool that monitors FDA, CPSC, and Health Canada recall feeds against Amazon and Shopify catalogs—real-time alerts before listings get pulled. Built for 2025's recall surge.">
+    <meta name="author" content="John Iseghohi">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/recall-radar-ecommerce-sellers">
+    <meta property="og:title" content="Recall Radar for E-commerce Sellers | Startup Ideas">
+    <meta property="og:description" content="Real-time FDA/CPSC recall alerts matched to Amazon and Shopify catalogs. Protect your listings before they get pulled.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/recall-radar-ecommerce-sellers">
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+    </style>
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Recall Radar for E-commerce Sellers",
+      "description": "Real-time recall alerts matched against Amazon and Shopify catalogs. Built for e-commerce sellers before listings get pulled.",
+      "datePublished": "2026-04-22"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Recall Radar for E-commerce Sellers",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web"
+    },
+    {
+      "@type": "HowTo",
+      "name": "Build Recall Radar MVP",
+      "description": "Step-by-step guide to building the recall alert system in a weekend.",
+      "totalTime": "PT12H",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Catalog Sync",
+          "text": "Connect to Amazon SP-API and Shopify Admin API to pull the seller's active catalog nightly."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Recall Feed Matcher",
+          "text": "Scrape FDA, CPSC, and Health Canada recall feeds; use an LLM to match across UPC / ASIN / brand-model identifiers."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Multi-Channel Alerts",
+          "text": "Dispatch SMS via Twilio and email via Resend the moment a match lands."
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://weekendmvp.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Startup Ideas",
+          "item": "https://weekendmvp.app/startup-ideas.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Recall Radar for E-commerce Sellers",
+          "item": "https://weekendmvp.app/ideas/recall-radar-ecommerce-sellers.html"
+        }
+      ]
+    }
+  ]
+}</script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="hidden md:block text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">Recall Radar for E-commerce Sellers</h1>
+            <p class="text-lg text-neutral-500 font-light max-w-xl mx-auto leading-relaxed mb-10">Real-time FDA and CPSC recall alerts for Amazon and Shopify catalogs.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <input type="text" id="gate-first-name" name="first_name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="email" id="gate-email" name="email" required="" placeholder="Your email address" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 text-sm">
+                        <button type="submit" id="gate-submit-btn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all"><span>Unlock Idea</span><iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="idea-content">
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Recall Radar for E-commerce Sellers</h1>
+                    <p class="text-xl text-neutral-500 font-light">Match FDA, CPSC, and Health Canada recall feeds against your Amazon and Shopify catalog before listings get pulled.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed">The FDA publishes recall notices every day. CPSC ticks through dozens more. Health Canada pushes its own feed before breakfast. All the data an Amazon or Shopify seller needs to protect their account is public and free. But nothing on the seller side reads those feeds against an active catalog, so the recall lands first and the seller reads about it second &mdash; usually via an account suspension notice. Q1 2025 saw a 90% surge in recall events. Amazon enforcement is automated. Sellers without automated monitoring are one recall away from a lost account.</p>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-8">Recall Radar plugs into Amazon Seller Central and Shopify, syncs the active catalog daily, and runs it against FDA, CPSC, and Health Canada recall feeds. When a match hits &mdash; even across UPC, ASIN, or brand-and-model identifiers &mdash; the seller gets an SMS, email, and dashboard alert with affected batch numbers, severity, regulatory deadlines, and recommended next steps. Flagged listings can auto-pause before the platform notices.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Connect catalog</p>
+                                <p class="text-xs text-neutral-500 mt-1">OAuth to Amazon SP-API and Shopify, nightly sync</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">LLM fuzzy-match</p>
+                                <p class="text-xs text-neutral-500 mt-1">Resolve UPC / ASIN / brand-model across feeds</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Instant alerts</p>
+                                <p class="text-xs text-neutral-500 mt-1">SMS + email with severity and next action</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The recall management market sits at roughly $2.14B in 2026 and is projected to grow to $5.19B by 2030 (Grand View Research, ~24.8% CAGR). The surge is driven by two forces: record recall volumes in 2025 and Amazon&rsquo;s increasingly automated enforcement. Government databases publish recall data daily and for free &mdash; but no one on the seller side runs those feeds against an active catalog in real time. That&rsquo;s the gap.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Q1 2025 saw a 90.6% surge in recall events year-over-year; recall volume is structurally higher, not a blip.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>US e-commerce sales crossed $1.1T annual run-rate in 2024 (US Commerce Dept); the catalog under regulatory scrutiny is enormous.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Reddit r/Amazonseller (225K+ members) and r/FulfillmentByAmazon run daily threads on suspension risk; willingness to pay for preventive tooling is observable, not inferred.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Current options are either consumer-grade (SaferProducts.gov alerts) or enterprise ($50K+/yr TraceLink). Zero indie-tier SaaS covers this.</span></li>
+                    </ul>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Three clusters: government portals (free but unaggregated), consumer apps (wrong audience), and enterprise compliance suites (priced for Fortune 500 supply-chain teams). Nobody serves the SMB Amazon/Shopify seller who needs daily catalog-matched alerts at under $200/mo.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">SaferProducts.gov / NHTSA portals</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Official sources. Free, authoritative, but unaggregated and reactive &mdash; sellers have to manually check, and there&rsquo;s no catalog matching or automated alerts.</p>
+                            <p class="text-xs text-neutral-400">Free &mdash; but no automation, no catalog match</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">TraceLink</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Enterprise supply-chain compliance platform. Rich, comprehensive, built for pharma and regulated industries. $50K+/yr pricing prices out every SMB Amazon seller.</p>
+                            <p class="text-xs text-neutral-400">Custom enterprise, typically $50K&ndash;$500K/yr</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Visualping / generic web monitors</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Generic change-detection tools. Can watch a recall page, but can&rsquo;t resolve product identifiers across feeds or match against an Amazon catalog. DIY glue that breaks.</p>
+                            <p class="text-xs text-neutral-400">$10&ndash;$100/mo, but no e-commerce integration</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Yuka / consumer recall apps</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Consumer-facing. Great for individual shoppers; useless for sellers who need seller-perspective workflow (catalog sync, auto-pause, audit trail).</p>
+                            <p class="text-xs text-neutral-400">Free consumer, wrong audience</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Connect Amazon SP-API + Shopify + multi-feed recall ingestion + LLM fuzzy-matching + SMS/email alerts. Price at $99&ndash;$499/mo, hundreds of dollars below enterprise and thousands above consumer tools. The seller-perspective workflow (auto-pause listing, audit-ready documentation) is the moat.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">SaaS subscription scaled by SKU count and coverage depth. Free tier for single-category monitoring builds trust; Pro covers the sub-$1M GMV seller; Scale tier covers mid-market brands with 10K+ SKUs. Enterprise tier for big-box marketplaces. One avoided suspension pays for a full year.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 category, 500 SKUs, daily check, email alerts only</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$99/mo</p>
+                            <p class="text-xs text-neutral-500">All categories, 10K SKUs, hourly check, SMS + email + Slack, audit log</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Scale</h4>
+                            <p class="text-2xl font-bold mb-2">$499/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited SKUs, real-time, auto-pause listings, insurance-ready exports, 5 seats</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-neutral-100 rounded-xl">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM cost/match</p>
+                                <p class="font-semibold">$0.005&ndash;0.02</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~80%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$80&ndash;200</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Net retention</p>
+                                <p class="font-semibold">120%+</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The hard parts are catalog ingestion (Amazon SP-API is rate-limited and auth-heavy) and fuzzy matching product identifiers across feeds. Next.js handles the dashboard, Supabase stores catalog snapshots and match history, and Claude resolves identifier variants (UPC in one feed, ASIN in another, brand-and-model in a third).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 + TypeScript</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Dashboard and marketing in one deploy. Server Actions for the OAuth connect flows; Edge runtime for the webhook receivers that ingest recall feed updates.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:amazon" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Amazon SP-API + Shopify Admin API</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">OAuth to both. Nightly catalog sync with resume-able paging to stay within SP-API rate limits. Store catalog snapshots so matches can reference the exact SKU state at match time.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Auth + Postgres for sellers, catalogs, recall_feeds, matches. RLS per seller workspace. pgvector index on product embeddings for fuzzy similarity across identifier formats.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude (identifier resolution)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Given a recall notice with vague product descriptions, Claude resolves to structured identifiers (UPC / ASIN / brand+model). Prompt cached per feed source for 80%+ token savings on repeat reads.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:twilio" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Twilio + Resend + Slack</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Twilio SMS for severity-1 alerts (account suspension risk). Resend for email digests. Slack Incoming Webhooks for Scale tier real-time team alerts.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Vercel Cron + Stripe</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Hourly cron polls recall feeds and runs matches. Daily cron syncs the catalog. Stripe Billing for Pro/Scale subscriptions with SKU-count metering.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build Recall Radar: a Next.js dashboard that pulls Amazon SP-API and Shopify catalogs, matches them against FDA/CPSC/Health Canada recall feeds, and sends alerts.
+
+Requirements:
+- OAuth connect flows for Amazon SP-API (Professional Seller only) and Shopify Admin API
+- Nightly Vercel Cron syncs each seller's catalog into Supabase Postgres with resume-able paging
+- Supabase schema: sellers, catalogs, products (sku, asin, upc, title, brand), recall_feeds, recall_items, matches (product_id, recall_id, confidence, status)
+- pgvector index on product embeddings (title + brand + description) for fuzzy matching
+- Dashboard: list of active matches sorted by severity, one-click "pause listing" action via SP-API
+
+Ship Amazon-only first. Add Shopify once SP-API rate-limit handling is battle-tested.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Recall Feed Ingestion + Fuzzy Matcher</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build the recall feed ingester and LLM-backed fuzzy matcher.
+
+1. Hourly cron polls FDA (openFDA API), CPSC (SaferProducts.gov data), Health Canada (RSS) for new recall notices
+2. For each notice, parse out the structured fields you can (date, severity, category) and pass the free-text description to Claude for identifier resolution
+3. Claude returns: {upc_candidates[], asin_candidates[], brand_model_candidates[], confidence}
+4. Query the seller catalog for any product matching any candidate with cosine similarity >0.85 on the title embedding
+5. For each match, write a matches row with confidence score; fire the alert pipeline if confidence >0.90 or severity is critical
+
+Target: 95%+ recall on verified matches, &lt;5% false-positive rate per recall feed.
+                            </p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Multi-Channel Alert Pipeline</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+Build the alert dispatch with severity-based escalation.
+
+When a new match lands:
+1. Severity-1 (account-suspension-risk): Twilio SMS + Resend email + Slack webhook within 60 seconds
+2. Severity-2 (list-and-monitor): Resend email within the hour
+3. Severity-3 (FYI): Daily digest email
+4. Every alert links back to the dashboard row with pre-filled action templates: "Pause listing on Amazon," "Pause listing on Shopify," "Acknowledge and document"
+5. Scale tier gets one-click auto-pause that calls SP-API putListingStatus with full audit log
+
+The Severity-1 SMS is the product&rsquo;s differentiator. Make sure it never silently fails.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explore More Section -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                    
+                    <!-- Category & Revenue Links -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <a href="saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:cloud" class="text-blue-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More SaaS Ideas</span>
+                                <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                            </div>
+                        </a>
+                        <a href="1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$1K/Month Ideas</span>
+                                <p class="text-xs text-neutral-500">By revenue potential</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Build With Tools -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                Cursor
+                            </a>
+                            <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                Claude
+                            </a>
+                            <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:zap" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
+                                Bolt.new
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Ideas For Audiences -->
+                    <div class="mb-6">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                Solo Founders
+                            </a>
+                            <a href="../ideas-for/non-technical/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <iconify-icon icon="lucide:lightbulb" class="text-amber-500" width="14" aria-hidden="true"></iconify-icon>
+                                Non-Technical
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Related Ideas -->
+                    <div>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a href="ai-landing-page-generator-ecommerce.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Landing Page Generator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="customer-feedback-aggregator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Customer Feedback Aggregator</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                            <a href="subscription-analytics-dashboard.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Subscription Analytics Dashboard</span>
+                                <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all startup ideas</a>
+                </div>
+            </div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div>
+            </div>
+        </footer>
+    </section>
+
+    <script src="/ideas/gate.js" defer></script>
+
+
+</body></html>

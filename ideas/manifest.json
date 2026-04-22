@@ -1,6 +1,84 @@
 {
   "ideas": [
     {
+      "slug": "expense-report-generator",
+      "title": "AI Expense Report Generator",
+      "publishedAt": "2026-04-22",
+      "category": "automation",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "non-technical"
+      ],
+      "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
+      "_needsBackfill": true,
+      "_retiredAt": "2026-04-21T19:38:10.512Z",
+      "_retiredUnder": 13000,
+      "researchLevel": "deep",
+      "source": "ideabrowser:2665",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:expense tracking",
+          "ideabrowser:get_idea_research:2665:competitive_analysis",
+          "ideabrowser:get_idea_research:2665:market_stage_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 1954,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T07:05:35.465Z",
+        "backfillNotes": "Backfilled Competitive Landscape (Expensify, SAP Concur, Dext, Fetch/QuickBooks/Wave), Business Model (Free / $19 Pro / $49 Team + GPT-4V unit economics at ~92% gross margin), Recommended Tech Stack (Next.js 14 PWA + Supabase + GPT-4V primary with Claude Haiku fallback + react-pdf + Resend + Stripe + Vercel Cron). Market stats cite Market.us receipt/digital receipts reports, Mordor Intelligence, Upwork Freelance Forward 2024, Ideabrowser idea #2665 (opportunity 9, pain 9, timing 9). Verify competitor pricing against live product pages before marketing push."
+      }
+    },
+    {
+      "slug": "recall-radar-ecommerce-sellers",
+      "title": "Recall Radar for E-commerce Sellers",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:6988",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "description": "Daily match of Amazon and Shopify catalogs against FDA, CPSC, and Health Canada recall feeds. SMS + email alerts with auto-pause before listings get pulled.",
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__get_idea_research:base"
+        ],
+        "citations": 4,
+        "wordCount": 1335,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T00:00:00Z",
+        "publishNotes": "Mode A Ideabrowser MCP source. Competitive: SaferProducts.gov/TraceLink/Visualping/Yuka. Pricing Free/$99/$499. Tech: Next.js + Amazon SP-API + Shopify Admin API + Supabase with pgvector + Claude fuzzy-matcher + Twilio/Resend/Slack + Vercel Cron."
+      },
+      "researchLevel": "deep"
+    },
+    {
       "slug": "ai-feedback-triage-widget",
       "title": "AI Feedback Triage Widget",
       "publishedAt": "2026-04-22",
