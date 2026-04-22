@@ -51,13 +51,21 @@ try {
       .replace(/>/g, '&gt;');
   };
 
-  // Generate category filter buttons
-  const categoryFilters = manifest.categories.map(cat => {
-    const count = manifest.ideas.filter(i => i.category === cat.slug).length;
-    return `                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="${escapeHtmlAttr(cat.slug)}" aria-pressed="false">
+  // Generate category filter buttons — only emit a button when the category has ideas
+  const allIdeasButton = `                        <button class="filter-btn active px-4 py-2 bg-white text-black rounded-full text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-white/40" data-category="all" aria-pressed="true">
+                            All Ideas
+                        </button>`;
+  const categoryButtons = manifest.categories
+    .map(cat => {
+      const count = manifest.ideas.filter(i => i.category === cat.slug).length;
+      if (count === 0) return null;
+      return `                        <button class="filter-btn px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" data-category="${escapeHtmlAttr(cat.slug)}" aria-pressed="false">
                             ${escapeHtmlAttr(cat.name)} (${count})
                         </button>`;
-  }).join('\n');
+    })
+    .filter(Boolean)
+    .join('\n');
+  const categoryFilters = `${allIdeasButton}\n${categoryButtons}`;
 
   // Generate visible cards (idea-card HTML)
   const ideaCards = manifest.ideas.map(idea => {
@@ -111,11 +119,19 @@ try {
     `"itemListElement": ${itemListJson.trim()}`
   );
 
-  // Replace category filter buttons placeholder
-  html = html.replace(
-    /<!-- Generate filter buttons from manifest categories -->/,
-    categoryFilters
-  );
+  // Replace category filter buttons — match the live #category-filters block so
+  // regeneration works on every run, not just the first. The block contains only
+  // <button> children, so the first </div> after the opening tag is the close.
+  const filterBarRe = /(<div[^>]*id="category-filters"[^>]*>)[\s\S]*?(<\/div>)/;
+  if (filterBarRe.test(html)) {
+    html = html.replace(filterBarRe, `$1\n${categoryFilters}\n                    $2`);
+  } else {
+    // Fallback for first-ever run against a template that still has the placeholder
+    html = html.replace(
+      /<!-- Generate filter buttons from manifest categories -->/,
+      categoryFilters
+    );
+  }
 
   // Replace idea cards section - find everything between opening and closing div tags of ideas-grid
   const gridStartMarker = '<div id="ideas-grid"';
