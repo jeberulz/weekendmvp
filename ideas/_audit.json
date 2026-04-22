@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T07:22:40.001Z",
+  "generatedAt": "2026-04-22T07:30:22.205Z",
   "totals": {
-    "PASS": 19,
-    "total": 19,
-    "passing": 19,
+    "PASS": 20,
+    "total": 20,
+    "passing": 20,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "client-portal",
+      "status": "PASS",
+      "bytes": 37474,
+      "wordCount": 1969,
+      "h2Count": 9,
+      "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "expense-report-generator",
       "status": "PASS",

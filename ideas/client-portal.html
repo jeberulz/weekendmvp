@@ -1,151 +1,387 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Portal Builder | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a white-label client portal for agencies and freelancers. Share files, track projects, and look professional. Full build guide with AI prompts.">
+    <meta name="description" content="White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/client-portal">
     <meta property="og:title" content="Client Portal Builder | Startup Ideas">
-    <meta property="og:description" content="White-label client portal for agencies and freelancers.">
+    <meta property="og:description" content="Branded client portals in minutes, not hours of Dubsado setup. Freelancer-first, $29 flat, Stripe built in.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/client-portal">
+    <meta property="twitter:title" content="Client Portal Builder | Startup Ideas">
+    <meta property="twitter:description" content="Branded client portals in minutes, not hours of Dubsado setup. Freelancer-first, $29 flat, Stripe built in.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/client-portal">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
+
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Article",
-      "headline": "Client Portal Builder",
-      "datePublished": "2026-01-27"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Client Portal Builder",
-      "applicationCategory": "BusinessApplication"
-    },
-    {
-      "@type": "HowTo",
-      "name": "Build Client Portal Builder MVP",
-      "description": "Step-by-step guide to building Client Portal Builder in a weekend.",
-      "totalTime": "PT12H",
-      "step": [
+      "@context": "https://schema.org",
+      "@graph": [
         {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
+          "@type": "Article",
+          "headline": "Client Portal Builder",
+          "description": "White-label client portal for freelancers and small agencies. Branded subdomains, file sharing, project milestones, Stripe payments. Weekend build guide with prompts.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/client-portal.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
         },
         {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
-      ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
+          "@type": "SoftwareApplication",
           "name": "Client Portal Builder",
-          "item": "https://weekendmvp.app/ideas/client-portal.html"
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Multi-tenant white-label client portal generator for freelancers and agencies. Custom domains, Stripe Connect, Supabase backend."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build Client Portal Builder MVP",
+          "description": "Step-by-step guide to shipping a white-label client portal SaaS in a weekend.",
+          "totalTime": "PT12H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Project Setup", "text": "Multi-tenant Next.js + Supabase with subdomain routing and custom-domain support via Vercel." },
+            { "@type": "HowToStep", "position": 2, "name": "Portal Features", "text": "Files, messages, milestones, invoices scoped per client via Supabase Row Level Security." },
+            { "@type": "HowToStep", "position": 3, "name": "White-label + Billing", "text": "CSS-variable theming + Stripe Connect for agency-owned payments." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Client Portal Builder", "item": "https://weekendmvp.app/ideas/client-portal.html" }
+          ]
         }
       ]
-    }
-  ]
-}</script>
+    }</script>
 </head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Client Portal Builder</h1>
-            <p class="text-lg text-neutral-500 mb-10">Professional client portals in minutes.</p>
+            <p class="text-lg text-neutral-500 mb-10">Professional client portals in minutes, not hours.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">B2B</span><span class="text-neutral-400 text-xs">~12 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Client Portal Builder</h1>
-                <p class="text-xl text-neutral-500 font-light">Look like an enterprise. Charge like one too.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">B2B</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Client Portal Builder</h1>
+                    <p class="text-xl text-neutral-500 font-light">Look like a 10-person agency when it's just you. Priced for solo, not enterprise.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Freelancers and small agencies invest serious money in front-of-house brand: a clean site, polished proposals, tight case studies. Then the client signs and the experience immediately collapses into Google Drive shared links, a Slack channel, a Loom inbox, and a Notion page. Five tools, four logins, zero cohesion. The perception of professionalism ends the second onboarding starts.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The workarounds are worse than they look. Clients forward files to the wrong email. The designer sends a Figma link to a client who does not have Figma. Invoice status lives in Stripe, project timeline lives in a spreadsheet, and revision comments live in whoever's DMs were loudest that week. Every missed file is a billable hour of "where is this?" Every confused client is a reference that does not happen.</p>
+                    <p class="text-neutral-600 leading-relaxed">The incumbent portals exist but they are built for creatives who are willing to spend a weekend building automations in Dubsado or mapping workflows in HoneyBook. A freelance consultant landing a $15K engagement on Monday does not have six hours to study tutorial videos before their client experience looks professional. They want: upload a logo, paste a domain, invite a client, done. Nobody ships that today.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A white-label, multi-tenant client portal where the setup is 60 seconds and every pixel is brandable. Freelancer signs up, picks a service-type template (design, consulting, marketing, coaching, development), uploads a logo, points their domain, and invites their first client. The client sees a portal that lives on <code class="text-xs bg-neutral-100 px-1 rounded">projects.agencyname.com</code>, not <code class="text-xs bg-neutral-100 px-1 rounded">agencyname.honeybook.com</code>. Every client sees only their own projects via row-level security.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Generate portal</p>
+                                <p class="text-xs text-neutral-500 mt-1">Logo, domain, service template. 60 seconds.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Invite clients</p>
+                                <p class="text-xs text-neutral-500 mt-1">Magic-link email, no client account creation</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Run the project</p>
+                                <p class="text-xs text-neutral-500 mt-1">Files, milestones, messages, invoices, approvals</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">Five service-type templates define the MVP. A design consultant's portal surfaces deliverable approvals and Figma embeds. A marketing agency's portal shows campaign status and metric dashboards. A coach's portal tracks session notes and goals. A dev shop's portal shows sprint status and PR links. Each template maps the five things that matter for that vertical — nothing more. The moat is not the portal, it is the defaults. Every freelancer signup trains the template, and the template becomes the product.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The global client portal software market is <strong>$5.8B in 2025 and projected to reach $16.2B by 2035 at an 11.4% CAGR</strong>. SMEs hold 49% of spend, and the segment is still fragmented across 15+ known tools with no conversational-AI leader. Adjacent: the AI website builder market sits at $3.41B (2026) growing to $14.78B by 2035 (17.7% CAGR), and custom AI code generation grows 22.3% CAGR. Clients expect the front-of-house polish of Framer-built sites; freelancers are behind the back-of-house curve.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>57M US freelancers (Upwork 2024)</strong>, 60%+ earning from 2+ clients. Every one of them needs a delivery surface that is not a shared Google Drive.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>70% of B2B buyers prefer self-service portals</strong> over email threads (Forrester). Clients ask "where is the portal?" more often than agencies have an answer.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Agencies spend <strong>5+ hours/week</strong> on client communication that a portal would absorb. At $100/hr that is $500/week of opportunity cost against a $29/mo tool.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: <strong>r/freelance (280K), r/agency (33K), r/nocode (115K), 287K-member AI automation Facebook group</strong>. High weekly post volume on "best client portal 2026"&mdash;search and forum intent both validated.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>Asia Pacific grows 14.2% CAGR</strong>, the fastest region. North America dominates spend today; localized templates unlock the APAC wedge.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Market stage is <em>emerging</em>, not saturated. Dubsado (2015) and HoneyBook (2013) are 10+ years old and built around workflow-automation setup as the value prop. That is exactly the pain, not the feature. The 12&ndash;18 month window before incumbents bolt on AI-generated portals is open. Capture network effects (template library grows with each signup) before HoneyBook pushes a feature release.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four direct incumbents, all weighted toward creatives and all requiring significant setup. Beneath them, the workarounds (Notion, shared Drives, custom WordPress) are where most freelancers actually live today. Your wedge is speed and specificity: a generated portal tuned to one of five service types, running on the freelancer's own domain, in 60 seconds.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">HoneyBook</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader for creative freelancers. Strong mobile, polished templates, acquired by private equity in 2024. Setup is template-heavy; onboarding measured in hours, not minutes. No custom domain on lower tiers.</p>
+                            <p class="text-xs text-neutral-400">$19/mo Starter &rarr; $39 Essentials &rarr; $79 Premium</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Dubsado</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Automation depth for creatives who want fine-grained workflows. Powerful, but the workflow mapping is the actual work. "Tedious setup" is the most-cited complaint in r/freelance and agency Facebook groups.</p>
+                            <p class="text-xs text-neutral-400">~$20/mo Starter &rarr; $40/mo Premier</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">17hats</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Older all-in-one for service pros. Good community but UI feels 2018. Active Facebook Q&amp;A community is a leading indicator of how much tutorial support users still need.</p>
+                            <p class="text-xs text-neutral-400">$19/mo Essentials &rarr; $55/mo Premier</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Softr / WeWeb / Notion</h4>
+                            <p class="text-xs text-neutral-500 mb-2">DIY no-code + workarounds. Cheap or free but the freelancer builds the portal themselves. Zero defaults; every project starts from a blank canvas. Users on r/nocode literally ask "simple client portal without coding" weekly.</p>
+                            <p class="text-xs text-neutral-400">Softr $24&ndash;$79/mo, WeWeb $19&ndash;$99/mo, Notion free&ndash;$10/user</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Zero-setup, service-type templates, custom domain included on the first paid tier, and Stripe Connect so the agency owns the payment relationship. Freelancer-first pricing: $29 flat for up to 5 clients, undercutting HoneyBook Essentials. Positioning: "Looks like Dubsado. Sets up like Framer. Priced like a Notion template." That sentence is the wedge.</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced below HoneyBook Essentials. Free tier captures skeptical freelancers with their first real client; Solo is the steady state; Agency unlocks team seats and multi-brand. Stripe Connect fees are pass-through, so you are not taking a payment cut. The only meaningful cost beyond infra is the custom-domain SSL automation; Vercel absorbs that.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 client portal, 1 GB storage, subdomain only (yourname.portal.app), &ldquo;Powered by&rdquo; footer</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Solo</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 5 active clients, custom domain, full branding, Stripe Connect, all 5 templates, 20 GB</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Agency</h4>
+                            <p class="text-2xl font-bold mb-2">$99/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited clients, 5 team seats, multi-brand, white-label email domain, priority support, 200 GB</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Infra cost/tenant</p>
+                                <p class="font-semibold">~$0.80/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Solo</p>
+                                <p class="font-semibold">~95%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$40&ndash;$80</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Solo conv.</p>
+                                <p class="font-semibold">8&ndash;14%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 50 Solo subs = $1.45K/mo. 500 Solo + 30 Agency = $17.4K/mo. At 2K Solo + 150 Agency = $72.85K/mo ($874K ARR). Switching costs compound: by client #10, the agency has 10 portals of project history, files, and threads. Rebuilding from blank is the moat.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Multi-tenant is the spine. Every portal is a row; every route resolves via subdomain or custom domain to a tenant, not a path. Supabase Row Level Security does the hard isolation work. Vercel handles the custom-domain SSL. Stripe Connect keeps you out of the payment flow.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 App Router</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Middleware inspects the <code class="text-xs bg-neutral-100 px-1 rounded">Host</code> header and rewrites to <code class="text-xs bg-neutral-100 px-1 rounded">/[tenantSlug]/*</code>. Agency admin at <code class="text-xs bg-neutral-100 px-1 rounded">app.product.com</code>; client portals at custom domain or <code class="text-xs bg-neutral-100 px-1 rounded">*.portal.product.com</code>.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Postgres with <code class="text-xs bg-neutral-100 px-1 rounded">tenants</code>, <code class="text-xs bg-neutral-100 px-1 rounded">memberships</code>, <code class="text-xs bg-neutral-100 px-1 rounded">projects</code>, <code class="text-xs bg-neutral-100 px-1 rounded">files</code>, <code class="text-xs bg-neutral-100 px-1 rounded">messages</code>, <code class="text-xs bg-neutral-100 px-1 rounded">milestones</code>. RLS policies scope everything to <code class="text-xs bg-neutral-100 px-1 rounded">auth.uid()</code> + membership. Storage bucket per-tenant with signed URLs.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Vercel Custom Domains API</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tenant adds their domain &rarr; you call <code class="text-xs bg-neutral-100 px-1 rounded">POST /projects/:id/domains</code>, show verification DNS records, Vercel handles Let's Encrypt SSL automatically. Zero ops for SSL.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Connect (Standard)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Agency onboards to Stripe via Connect; invoices are created on their Stripe account. Your platform takes $0 of their money. Separately, Stripe Billing charges the agency for your Solo/Agency subscription.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Resend + custom domain</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Magic-link invites, new-message notifications, weekly digests. Resend's custom domain support lets Agency tier send from <code class="text-xs bg-neutral-100 px-1 rounded">hello@theiragency.com</code>, not your platform domain.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:tailwindcss" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Tailwind + CSS variables</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Every branded color, font, and logo lives in per-tenant CSS variables injected in <code class="text-xs bg-neutral-100 px-1 rounded">layout.tsx</code>. No runtime CSS compilation. <code class="text-xs bg-neutral-100 px-1 rounded">--brand-primary</code>, <code class="text-xs bg-neutral-100 px-1 rounded">--brand-logo-url</code>, etc.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Multi-Tenant Scaffold</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router multi-tenant SaaS for a client portal builder. Supabase backend, Tailwind, TypeScript.
+
+Architecture:
+- Admin app at app.product.com (agency owner dashboard)
+- Client portals at *.portal.product.com AND on custom agency domains
+- Next.js middleware inspects Host header. If host is app.product.com -> render admin routes. If host matches a tenant subdomain or custom domain -> rewrite to /[tenantSlug]/portal/...
+
+Schema (Supabase Postgres):
+- tenants(id, slug, custom_domain, brand_logo_url, brand_primary_hex, service_template_type, stripe_account_id, plan, created_at)
+- memberships(id, tenant_id, user_id, role: 'owner' | 'member' | 'client', created_at)
+- projects(id, tenant_id, client_membership_id, title, status, created_at)
+- milestones(id, project_id, title, due_date, status, position)
+- files(id, project_id, path, size, uploaded_by, created_at)
+- messages(id, project_id, sender_membership_id, body, created_at)
+- invoices(id, project_id, stripe_invoice_id, amount_cents, status)
+
+RLS: every row scoped by tenant_id AND membership. Owners see everything in their tenant. Clients see only projects they are a member of.
+
+Auth: Supabase magic links, no passwords. Client invite email contains a signed URL that auto-joins the client to the project's membership row on click.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Custom Domains via Vercel API</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement custom-domain support end-to-end using the Vercel Domains API.
+
+Flow:
+1. In /admin/settings/domain the agency owner types their domain (projects.agency.com).
+2. Server action calls POST https://api.vercel.com/v10/projects/{PROJECT_ID}/domains with { name: "projects.agency.com" } using VERCEL_API_TOKEN.
+3. Vercel returns verification records. Display them to the user: "Add these DNS records to your domain:"
+   - CNAME projects -> cname.vercel-dns.com
+4. Poll Vercel's GET /v6/domains/:name/config every 30s; when verified=true, update tenants.custom_domain.
+5. Vercel auto-provisions Let's Encrypt SSL within ~60s of verification.
+
+In middleware.ts:
+- For every request, look up tenants WHERE custom_domain = host OR slug = host.split('.')[0]
+- If found, rewrite URL to /[tenantSlug]/portal/rest
+- If not found and host !== app.product.com, render a friendly "portal not found" page
+
+Do NOT store DNS records in your own DB; always re-fetch from Vercel to avoid drift.
+
+Test with a throwaway domain on Cloudflare or Namecheap before shipping.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Stripe Connect + Service Templates</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Two features, one prompt.
+
+A) Stripe Connect (Standard accounts):
+- In /admin/settings/billing, add a "Connect Stripe" button
+- Redirect to https://connect.stripe.com/oauth/authorize?response_type=code&client_id=CA_xxx&scope=read_write&state=<tenant_id>
+- On callback, exchange code for access_token via POST https://connect.stripe.com/oauth/token; store the account_id in tenants.stripe_account_id
+- To create an invoice, call Stripe API with Stripe-Account: {account_id} header. The money flows to the agency's Stripe, not yours.
+- Your platform billing (Solo/Agency $29/$99) is separate: standard Stripe Billing on your own account.
+
+B) Service templates (the product's core UX):
+- When an agency signs up, ask one question: "What do you deliver?"
+- Options: design, consulting, marketing, coaching, development
+- Based on the choice, seed the first project with:
+  - design: milestones = [Brief approved, First round, Revisions, Final delivery]
+  - consulting: milestones = [Kickoff, Discovery, Recommendations, Implementation]
+  - marketing: milestones = [Audit, Strategy approved, Campaign live, Reporting]
+  - coaching: milestones = [Intake, Session 1, Mid-point check-in, Session N, Wrap]
+  - development: milestones = [Scope, Spike, Sprint 1, Sprint 2, Launch]
+- Seed a starter message thread with a welcome message using the agency's logo.
+- Defaults are the product. Let power users edit them; never force them to build from blank.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.makdatainsights.com/reports/global-client-portal-software-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">MAK Data Insights &mdash; Client Portal Software Market ($5.8B &rarr; $16.2B by 2035, 11.4% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.cognitivemarketresearch.com/client-portal-software-market-report" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Cognitive Market Research &mdash; Client Portal Software Market Report<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.custommarketinsights.com/report/ai-powered-website-builder-market/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Custom Market Insights &mdash; AI Website Builder Market (17.7% CAGR, 22.3% custom AI code gen)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.upwork.com/research/freelance-forward-2024" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Upwork Freelance Forward 2024 &mdash; 57M US freelancers<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Ideabrowser idea #6761 (opportunity 9, pain 9, builder_confidence 9, timing 9) competitive and market stage research, April 2026.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Verify competitor pricing against live product pages before marketing claims; tiers and packaging shift quarterly.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Freelancers and small agencies share files via email, track projects in spreadsheets, and communicate through scattered channels. It looks unprofessional and creates friction. Enterprise clients expect a polished experience, but building a custom portal is expensive and time-consuming.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A white-label client portal that agencies can set up in minutes. Custom branding, file sharing, project timelines, and secure messaging—all under your domain. Look like you have a 10-person team when it's just you.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Create portal</p><p class="text-xs text-neutral-500 mt-1">Add logo, colors, domain</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Invite clients</p><p class="text-xs text-neutral-500 mt-1">Email invite, secure login</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Collaborate</p><p class="text-xs text-neutral-500 mt-1">Share files, track progress</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><p class="text-neutral-600 leading-relaxed mb-6">The freelance economy is massive (60M+ in US alone). Agencies need professional tools to compete with larger firms. Client portal tools like Copilot and Dubsado prove the market.</p><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Dubsado raised $7M+ for client management—proves demand</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>70% of clients prefer self-service portals (Forrester)</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Average agency spends 5+ hours/week on client communication</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><p class="text-neutral-500 text-sm mb-8">Copy and paste into Cursor or Claude.</p><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for a Client Portal Builder.
-
-Multi-tenant architecture with:
-- Agency dashboard: create portals, manage clients, brand settings
-- Client-facing portal: project view, files, messages
-- Each portal gets unique subdomain: clientname.portal.yourdomain.com
-
-Use Supabase for auth (both agency and client users) and storage for files.
-Support custom domains with Vercel's domains API.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Features</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the main portal features:
-
-1. Project timeline: visual progress tracker with milestones
-2. File sharing: drag-drop upload, organized by project folder
-3. Messages: threaded discussion per project
-4. Task checklist: simple to-do list for client approvals
-5. Invoice/payment status (integrates with Stripe later)
-
-Each client only sees their own projects. Real-time updates via Supabase subscriptions.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. White Labeling</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement white-label customization:
-
-- Logo upload (header + favicon)
-- Brand colors: primary, secondary, background
-- Custom welcome message/instructions
-- Agency contact info in footer
-- Email templates use agency branding
-- Remove all "Powered by" references on paid plans
-
-Store brand settings per portal, apply via CSS variables.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult<span class="sr-only"> (opens in new tab)</span></a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

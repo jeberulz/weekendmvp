@@ -255,6 +255,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://weekendmvp.app/ideas/client-portal.html</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://weekendmvp.app/ideas/expense-splitter-app.html</loc>
     <lastmod>2026-01-27</lastmod>
     <changefreq>monthly</changefreq>

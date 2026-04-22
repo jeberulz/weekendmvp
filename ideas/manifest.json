@@ -1,6 +1,47 @@
 {
   "ideas": [
     {
+      "slug": "client-portal",
+      "title": "Client Portal Builder",
+      "publishedAt": "2026-04-22",
+      "category": "b2b",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
+      "_needsBackfill": true,
+      "_retiredAt": "2026-04-21T19:38:10.433Z",
+      "_retiredUnder": 13000,
+      "researchLevel": "deep",
+      "source": "ideabrowser:6761",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:client portal agency freelancer",
+          "ideabrowser:get_idea_research:6761:competitive_analysis",
+          "ideabrowser:get_idea_research:6761:market_stage_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 1969,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T07:30:04.190Z",
+        "backfillNotes": "Backfilled Competitive Landscape (HoneyBook, Dubsado, 17hats, Softr/WeWeb/Notion), Business Model (Free / $29 Solo / $99 Agency + $0.80/tenant infra and ~95% gross margin via Stripe Connect pass-through), Recommended Tech Stack (Next.js 14 multi-tenant middleware + Supabase RLS + Vercel Custom Domains API + Stripe Connect Standard + Resend custom-domain + Tailwind CSS-variables theming). Market stats cite MAK Data Insights client portal report ($5.8B->$16.2B, 11.4% CAGR), Custom Market Insights AI website builder market (17.7% CAGR, 22.3% custom AI code gen), Upwork Freelance Forward 2024 (57M US freelancers), Ideabrowser #6761 scores 9/9/9/9. Verify competitor pricing pages before marketing push."
+      }
+    },
+    {
       "slug": "expense-report-generator",
       "title": "AI Expense Report Generator",
       "publishedAt": "2026-04-22",
