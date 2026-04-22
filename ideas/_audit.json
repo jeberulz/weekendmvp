@@ -1,12 +1,32 @@
 {
-  "generatedAt": "2026-04-22T10:57:13.121Z",
+  "generatedAt": "2026-04-22T11:07:00.726Z",
   "totals": {
-    "PASS": 24,
-    "total": 24,
-    "passing": 24,
+    "PASS": 25,
+    "total": 25,
+    "passing": 25,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "user-onboarding-builder",
+      "status": "PASS",
+      "bytes": 38350,
+      "wordCount": 2058,
+      "h2Count": 9,
+      "description": "No-code product tour and onboarding flow builder. AI generates flows from screenshots. Indie-priced under Appcues. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "feature-voting-board",
       "status": "PASS",

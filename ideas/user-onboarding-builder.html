@@ -1,165 +1,396 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Onboarding Flow Builder | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a no-code tool to create guided product tours and onboarding flows. Increase activation rates without engineering help. Full build guide.">
+    <meta name="description" content="No-code product tour and onboarding flow builder. AI generates flows from screenshots. Indie-priced under Appcues. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/user-onboarding-builder">
     <meta property="og:title" content="User Onboarding Flow Builder | Startup Ideas">
-    <meta property="og:description" content="No-code product tours and onboarding flows.">
+    <meta property="og:description" content="No-code builder for guided product tours and activation flows. AI generates from screenshots. $49/mo flat, not Appcues' $249.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/user-onboarding-builder">
+    <meta property="twitter:title" content="User Onboarding Flow Builder | Startup Ideas">
+    <meta property="twitter:description" content="No-code builder for guided product tours and activation flows. AI generates from screenshots. $49/mo flat, not Appcues' $249.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/user-onboarding-builder">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build User Onboarding Flow Builder MVP",
-      "description": "Step-by-step guide to building User Onboarding Flow Builder in a weekend.",
-      "totalTime": "PT12H",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Article", "headline": "User Onboarding Flow Builder", "description": "No-code product tour and onboarding flow builder with AI flow generation from screenshots. Weekend build guide with prompts.", "author": { "@id": "https://weekendmvp.app/#person" }, "publisher": { "@id": "https://weekendmvp.app/#website" }, "datePublished": "2026-04-22", "mainEntityOfPage": "https://weekendmvp.app/ideas/user-onboarding-builder.html", "image": "https://weekendmvp.app/image/og-image.png" },
+        { "@type": "SoftwareApplication", "name": "User Onboarding Flow Builder", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Multi-tenant SaaS for building guided product tours, checklists, and hotspots. AI-generated flows from app screenshots. Embeddable JS snippet." },
+        { "@type": "HowTo", "name": "Build User Onboarding Flow Builder MVP", "description": "Step-by-step guide to shipping an indie Appcues-alternative in a weekend.", "totalTime": "PT12H", "step": [
+          { "@type": "HowToStep", "position": 1, "name": "Flow Builder + Snippet", "text": "Visual no-code builder + embeddable JS that runs tours in customer apps." },
+          { "@type": "HowToStep", "position": 2, "name": "AI Flow Generation", "text": "Screenshot-to-flow: GPT-4 Vision analyzes the app and suggests a 5-step tour." },
+          { "@type": "HowToStep", "position": 3, "name": "Targeting + Analytics", "text": "URL/element targeting, segment rules, completion funnels." }
+        ] },
+        { "@type": "BreadcrumbList", "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+          { "@type": "ListItem", "position": 3, "name": "User Onboarding Flow Builder", "item": "https://weekendmvp.app/ideas/user-onboarding-builder.html" }
+        ] }
       ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "User Onboarding Flow Builder",
-          "item": "https://weekendmvp.app/ideas/user-onboarding-builder.html"
-        }
-      ]
-    },
-    {
-      "@type": "Article",
-      "headline": "User Onboarding Flow Builder",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/user-onboarding-builder.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "User Onboarding Flow Builder",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">User Onboarding Flow Builder</h1>
-            <p class="text-lg text-neutral-500 mb-10">Build product tours without writing code.</p>
+            <p class="text-lg text-neutral-500 mb-10">No-code product tours that lift activation rates.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span><span class="text-neutral-400 text-xs">~12 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">User Onboarding Flow Builder</h1>
-                <p class="text-xl text-neutral-500 font-light">Turn signups into activated users.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                        <span class="text-neutral-400 text-xs">~12 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">User Onboarding Flow Builder</h1>
+                    <p class="text-xl text-neutral-500 font-light">The Appcues alternative at $49 flat. AI turns a screenshot into a 5-step tour.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Activation is where most SaaS products die quietly. The average SaaS hits <strong>5&ndash;10% signup-to-active conversion</strong>. Best-in-class products hit 30%+, and the difference is almost entirely onboarding. A great product tour shown at the right moment lifts day-7 retention 15&ndash;25 points. The founders who know this also know they cannot justify Appcues at $249/month or Pendo at "call us" pricing.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">So they do one of three things, all bad. They ship no onboarding at all and hope the product speaks for itself. They hack together a modal with Intro.js that breaks every time the app UI changes. Or they pay an agency $5K to build a single onboarding flow that gets stale by the next product release. None of these loops produce a learning system. None tell the founder which step users drop off at.</p>
+                    <p class="text-neutral-600 leading-relaxed">The deeper pain is that onboarding work is never "done." Every new feature needs a tour. Every new pricing page needs a hotspot. Every new integration needs a checklist. The founder either hires a dedicated PM for onboarding &mdash; absurd for sub-$50K MRR &mdash; or accepts perpetual half-done onboarding. A no-code builder priced like a Notion template, with AI that writes the first draft of each flow, resolves this loop.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A multi-tenant no-code builder where the admin paints tooltips, modals, checklists, and hotspots onto a live preview of their app, and the system emits an embeddable JS snippet. <strong>The hero feature is screenshot-to-flow</strong>: admin uploads a screenshot of their dashboard, GPT-4 Vision identifies the key UI elements, and the system suggests a 5-step tour with copy drafted in the brand voice. The admin edits, ships, and sees activation funnels within an hour of signup. Priced $29&ndash;$99/mo flat.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Upload screenshot</p>
+                                <p class="text-xs text-neutral-500 mt-1">AI suggests a 5-step tour with copy drafts</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Edit in the builder</p>
+                                <p class="text-xs text-neutral-500 mt-1">Visual editor with element picker on live preview</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Paste snippet &amp; ship</p>
+                                <p class="text-xs text-neutral-500 mt-1">One &lt;script&gt; tag; analytics light up immediately</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The moat is the screenshot feature. Appcues/Userpilot require a visual editor that opens the customer's app in an iframe &mdash; which fails on apps with CSP, auth walls, or SPA routing. Screenshot-based AI generation sidesteps all that. The admin never has to wire up an iframe; the AI does the first pass; the admin polishes. Time-to-first-tour drops from an afternoon to ten minutes.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>Digital Adoption Platform market is $1.2B in 2024, projected to $7B by 2030 at ~35% CAGR</strong> (MarketsAndMarkets). Driven by two forces: every PLG SaaS now ships with in-app education as a default expectation, and enterprise buyers push adoption metrics as a line item in procurement. The indie/mid-market slice is under-served because the category leaders optimize for $50K+ annual contracts.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>Appcues raised $30M+ Series B</strong> (2021) with public ARR estimates in the $20M+ range. Pendo is a $2.6B-valued unicorn. Category validation is decisive.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Best-in-class SaaS onboarding lifts <strong>day-7 retention 15&ndash;25 points</strong> (OpenView, ProfitWell studies). For a $50 MRR product, that is $9&ndash;$15 additional LTV per cohort member &mdash; 30x the cost of the tool.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Search: "onboarding software" 3.6K/mo, "user onboarding tool" 1.9K/mo, "appcues alternative" 590/mo &mdash; CPCs <strong>$6&ndash;$14</strong> indicate strong commercial intent.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Indie-tier incumbents: ProductFruits ($79&ndash;$139/mo) and HelpHero ($55&ndash;$200/mo) both exist but neither has AI flow generation. The widget ecosystem is technically mature; AI is the net-new differentiator.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/SaaS (220K), r/ProductManagement (180K), r/userexperience (1.5M), Indie Hackers (200K+). Weekly threads on "how to onboard users" and "Appcues alternatives."</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Market stage is <em>mature enterprise, fragmented indie</em>. Appcues, Pendo, and Userpilot carve up the top. ProductFruits and HelpHero serve the bottom but with 2020-era UX. The 2026 wedge is AI flow generation + indie pricing + embedded widget that ships in under an hour. 12&ndash;18 month window before Appcues or Userpilot bolts AI onto their existing editors.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four competitor classes, structured by price and sophistication. Appcues+Pendo own enterprise. Userpilot+Chameleon hover upmarket. ProductFruits+HelpHero serve indie but with dated UX and no AI. Open-source (Intro.js, Shepherd) requires engineering time and has no analytics. Your slot: AI-first, indie-priced, widget-included.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Appcues / Pendo</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leaders. Appcues raised $30M+ and powers 1,700+ customers. Pendo is $2.6B unicorn with enterprise focus. Deep features, polished editors, opaque enterprise pricing. Not priced for sub-$50K MRR.</p>
+                            <p class="text-xs text-neutral-400">Appcues $249&ndash;$879+/mo; Pendo custom enterprise ($10K+/yr)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Userpilot / Chameleon</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Mid-market challengers. Userpilot has strong segment-based targeting; Chameleon focuses on Launchers and checklists. Both gate core features to annual plans and charge per-MAU, not flat.</p>
+                            <p class="text-xs text-neutral-400">Userpilot $299&ndash;$749+/mo; Chameleon $350&ndash;$1,500+/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">ProductFruits / HelpHero / Userflow</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Indie/SMB tier. ProductFruits is the cleanest option at $79&ndash;$139 flat; HelpHero $55&ndash;$200. Both have 2020-era UX and no AI generation. Userflow ($240+/mo) pushes toward mid-market pricing.</p>
+                            <p class="text-xs text-neutral-400">ProductFruits $79&ndash;$139, HelpHero $55&ndash;$200, Userflow $240&ndash;$920</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Intro.js / Shepherd.js / DIY</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Free open-source tour libraries. Requires engineering work, has no content editor, no analytics, no targeting. The founder who tries this first almost always outgrows it within 3 months when UI changes break every tour.</p>
+                            <p class="text-xs text-neutral-400">$0; hidden cost is maintenance + no analytics</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Screenshot-to-flow as the hero. Flat $29 Solo / $79 Team pricing, undercuts ProductFruits by 40%. One &lt;script&gt; tag installation in under 60 seconds. AI suggests copy in the brand voice. Tagline: "What Appcues does for $249, with an AI co-pilot, for $29 flat."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced for indie and mid-market SaaS teams. Free tier captures trial users with aggressive limits to seed word-of-mouth. Solo is the steady-state tier for single-product startups. Team handles agencies and multi-product companies. Unit cost is dominated by GPT-4 Vision on the screenshot-to-flow feature, and that only runs on admin-facing generations (not end-user views), so per-customer cost is bounded and predictable.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 flow, 1,000 tour views/mo, &ldquo;Powered by&rdquo; badge, 3 AI generations/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Solo</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited flows, 50K views/mo, no branding, unlimited AI, analytics funnels, segmentation</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$79/mo</p>
+                            <p class="text-xs text-neutral-500">500K views/mo, 5 seats, multi-product, A/B testing, Segment/Mixpanel integration</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Infra cost/tenant</p>
+                                <p class="font-semibold">~$0.80/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">GPT-4V cost/flow</p>
+                                <p class="font-semibold">~$0.03</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Solo</p>
+                                <p class="font-semibold">~92%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Solo conv.</p>
+                                <p class="font-semibold">7&ndash;11%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Solo + 10 Team = $3.7K/mo. 500 Solo + 60 Team = $19.2K/mo. At 2K Solo + 200 Team = $73.8K/mo ($886K ARR). Appcues's $20M+ ARR at $249&ndash;$879 blended ARPU implies ~5K&ndash;8K customers in the category at their price band; capturing even 5% of the sub-Appcues tier at $29&ndash;$79 ARPU produces a solid $1M+ ARR business without touching enterprise.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Two parts. Part one is standard multi-tenant SaaS. Part two is the embeddable JS runtime that paints tooltips on the customer's app without breaking their CSP. Read the Pendo/Appcues widget source code for prior art; everything else is stock.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 (admin app)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Admin dashboard: flow library, visual editor (drag-drop steps + element picker from screenshot), analytics. Server Actions for flow CRUD. Vercel hosting.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:javascript" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Vanilla JS widget (runtime)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Standalone ~25KB minified JS. No framework. Subscribes to route changes via History API; paints tooltips/modals as Shadow DOM elements (avoids style bleed). Element selectors via <code class="text-xs bg-neutral-100 px-1 rounded">data-tour-id</code> attribute or CSS path fallback.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">tenants</code>, <code class="text-xs bg-neutral-100 px-1 rounded">flows</code>, <code class="text-xs bg-neutral-100 px-1 rounded">steps</code>, <code class="text-xs bg-neutral-100 px-1 rounded">tour_events</code> (fires, completes, dismisses), <code class="text-xs bg-neutral-100 px-1 rounded">segments</code>. RLS per-tenant. Tour events partitioned by month.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">GPT-4 Vision for flow generation</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Admin uploads screenshot. Send to <code class="text-xs bg-neutral-100 px-1 rounded">gpt-4o</code> with structured JSON schema: <code class="text-xs bg-neutral-100 px-1 rounded">{steps: [{target_description, title, body, element_type}]}</code>. Admin edits in visual editor; picks real elements from live app preview.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:cloudflare" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Cloudflare CDN for widget.js</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Serve the widget bundle from Cloudflare edge with aggressive cache (<code class="text-xs bg-neutral-100 px-1 rounded">cache-control: public, max-age=3600</code>). Flow definitions fetched on init via JSON endpoint, cached 60s.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Billing + usage events</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Checkout for Solo/Team subscriptions. Track <code class="text-xs bg-neutral-100 px-1 rounded">tour_views_count</code> via meter events; enforce tier limits (1K free, 50K Solo, 500K Team) server-side. Email before limit, throttle after.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Admin App + Editor</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router admin SaaS for building product tours. Supabase backend, Tailwind, TypeScript.
+
+Schema:
+- tenants(id, slug, owner_user_id, site_url, stripe_customer_id, plan ENUM[free,solo,team], monthly_views_used INT, created_at)
+- flows(id, tenant_id, name, status ENUM[draft,live,paused], trigger_type ENUM[url_match,event,manual], trigger_config JSONB, segment_rules JSONB)
+- steps(id, flow_id, position INT, step_type ENUM[tooltip,modal,hotspot,checklist], target_selector TEXT, title, body, buttons JSONB)
+- tour_events(id, tenant_id, flow_id, step_id, event ENUM[fired,advanced,completed,dismissed], visitor_id, occurred_at)
+
+Routes:
+- /dashboard (flow list, quick stats)
+- /flows/[id]/edit (visual editor + step list)
+- /flows/[id]/analytics (funnel: started → step 1 → step 2 → completed)
+- /install (snippet copy, docs)
+- /settings (billing, team)
+
+Visual editor:
+- Left panel: ordered step list, drag to reorder, add/remove.
+- Center panel: iframe of tenant.site_url (fallback: image of screenshot). On hover, show element outline; click to set target_selector via unique CSS path generator.
+- Right panel: step properties (type, title, body, buttons, transition).
+
+Preview mode: simulates the tour running on the site_url preview. Use postMessage from iframe to parent for event tracking.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Screenshot-to-Flow (GPT-4 Vision)</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement screenshot-to-flow AI generation. This is the category differentiator.
+
+User flow:
+1. On /flows/new, user uploads a screenshot of their app dashboard (drag-drop, PNG/JPG up to 4MB).
+2. Upload to Supabase Storage; get signed URL.
+3. Call OpenAI Chat Completions with gpt-4o, image_url pointing to the signed URL. System prompt:
+"You analyze SaaS dashboard screenshots and generate 5-step product tours for new users. For each step, identify a key UI element and write a friendly 1-2 sentence tooltip. Return JSON matching: {steps: [{position: 1-5, target_description: 'CSS selector or human description of the element', element_type: 'button|input|card|menu|chart|other', title: 'short', body: 'longer friendly microcopy', reason_for_step: 'why show this step'}]}. Prioritize the elements that enable the user's first success moment."
+4. Use response_format: {type: 'json_schema'}. Validate structure.
+5. Render the 5 generated steps in the visual editor. target_description is prefilled as a placeholder; user clicks on the element in the iframe preview to replace with a real selector.
+6. Show the reason_for_step as an inline comment on each step (coaching, not committed to the flow).
+
+Cost: ~$0.03 per generation. Cap Free tier at 3/month; no cap on Solo/Team. Cache the generation by image hash so re-uploads don't cost twice.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Embeddable JS Runtime</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the standalone widget runtime. This is what ships in customer apps.
+
+widget.js (vanilla, ~25KB minified, no framework):
+
+(function() {
+  const tenantId = document.currentScript.getAttribute('data-tenant');
+  const visitorId = getOrCreateVisitorId(); // localStorage
+  const apiBase = 'https://api.product.com';
+
+  // 1. Fetch live flows for this tenant (cached 60s at CDN)
+  fetch(`${apiBase}/v1/flows?tenant=${tenantId}`).then(r => r.json()).then(({flows}) => {
+    // 2. For each flow, check trigger conditions vs current URL / user segment
+    flows.forEach(flow => evaluateAndRun(flow, visitorId));
+  });
+
+  function evaluateAndRun(flow, visitorId) {
+    // Trigger check: url_match uses minimatch on window.location.pathname
+    if (!matchesTrigger(flow)) return;
+    // Segment check: simple key/value match against window.__product_identify__ or cookie
+    if (!matchesSegment(flow, visitorId)) return;
+    // Mount a Shadow DOM root so our styles don't leak
+    const root = document.createElement('div');
+    root.attachShadow({mode: 'open'});
+    document.body.appendChild(root);
+    runTour(flow, root.shadowRoot, visitorId);
+  }
+
+  function runTour(flow, root, visitorId) {
+    let stepIndex = 0;
+    renderStep(flow.steps[0]);
+    // Send 'fired' event
+    trackEvent('fired', flow.id, flow.steps[0].id, visitorId);
+
+    function renderStep(step) {
+      const target = document.querySelector(step.target_selector);
+      if (!target) {
+        // Retry with MutationObserver for 5 seconds, then skip
+        return waitForElement(step.target_selector, 5000).then(el => renderStep({...step, _target: el})).catch(() => advance());
+      }
+      // Position tooltip/modal relative to target; attach Next/Prev/Skip buttons.
+      // ... render Shadow DOM content ...
+    }
+  }
+
+  function trackEvent(event, flowId, stepId, visitorId) {
+    navigator.sendBeacon(`${apiBase}/v1/events`, JSON.stringify({tenantId, event, flowId, stepId, visitorId, ts: Date.now()}));
+  }
+})();
+
+Customer embed:
+<script src="https://cdn.product.com/widget.js" data-tenant="acme" defer></script>
+
+Identify API (optional):
+<script>window.__product_identify__ = {email: '...', plan: 'pro'};</script>
+
+Test matrix: React SPA (Next.js dev), Vue SPA (Nuxt), vanilla static site, Shopify/Webflow. Runtime should handle all four without modification.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.marketsandmarkets.com/Market-Reports/digital-adoption-platform-market.asp" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">MarketsAndMarkets &mdash; Digital Adoption Platform Market ($1.2B 2024 &rarr; $7B by 2030, ~35% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.appcues.com/pricing" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Appcues Pricing (accessed April 2026, $249&ndash;$879+/mo)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://openviewpartners.com/blog/saas-onboarding/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">OpenView &mdash; SaaS onboarding impact on day-7 retention<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.profitwell.com/recur/all/churn-onboarding" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">ProfitWell &mdash; Onboarding and churn research<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://platform.openai.com/docs/guides/vision" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">OpenAI &mdash; GPT-4 Vision structured output docs<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Pendo $2.6B valuation (Series F, 2021) and Appcues $30M+ Series B (2021) referenced from public press coverage. Ideabrowser MCP returned no direct match for user-onboarding-builder wedge.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Competitor pricing (Appcues, Pendo, Userpilot, ProductFruits) shifts frequently; verify live pricing pages before marketing claims.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">40-60% of SaaS users sign up and never come back. They get lost, don't understand the product, or don't experience the "aha moment" fast enough. Building proper onboarding requires engineering resources that early-stage startups don't have. So users keep churning.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A no-code tool to build interactive product tours. Point and click to create tooltips, modals, and step-by-step guides. Install a single script, design flows visually, and deploy without engineering. Track which steps users complete and where they drop off.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Install script</p><p class="text-xs text-neutral-500 mt-1">One line of JavaScript</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Build visually</p><p class="text-xs text-neutral-500 mt-1">Point-click to create steps</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Deploy &amp; measure</p><p class="text-xs text-neutral-500 mt-1">See completion rates</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Pendo valued at $2.6B, Appcues at $100M+—huge market</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Existing tools cost $300+/mo—room for affordable alternative</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Every SaaS needs onboarding—unlimited TAM</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for onboarding flow builder.
-
-Components:
-- Dashboard: list of flows, analytics overview
-- Flow builder: visual editor for creating tours
-- JS widget: the script that runs on customer's site
-- Analytics: completion rates, drop-off points
-
-Multi-tenant: each customer gets unique widget ID.
-Use Supabase for auth and storing flow configurations.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Flow Builder</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the visual flow editor:
-
-1. Chrome extension or bookmarklet to edit on customer's live site
-2. Click any element to attach a tooltip/step
-3. Step types: tooltip, modal, hotspot, checklist
-4. Configure: title, description, button text, position
-5. Set trigger: on page load, on element visible, on click
-6. Reorder steps via drag-and-drop
-7. Preview mode to test the flow
-
-Store flow config as JSON that the widget reads.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Widget</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the JavaScript widget:
-
-1. Lightweight script (~10kb) customers add to their site
-2. Fetches flow config from API on page load
-3. Renders tooltips/modals at specified elements
-4. Tracks: step views, completions, dismissals
-5. Stores user progress in localStorage (or by user ID if passed)
-6. Only shows incomplete flows to returning users
-7. Customizable styling via CSS variables
-
-Handle SPA routing: detect URL changes and trigger appropriate flows.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

@@ -1,6 +1,39 @@
 {
   "ideas": [
     {
+      "slug": "user-onboarding-builder",
+      "title": "User Onboarding Flow Builder",
+      "publishedAt": "2026-04-22",
+      "category": "saas",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "No-code product tour and onboarding flow builder. AI generates flows from screenshots. Indie-priced under Appcues. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas:user onboarding product tour",
+          "web-research:MarketsAndMarkets DAP market",
+          "web-research:Appcues+Pendo pricing",
+          "web-research:OpenView+ProfitWell onboarding+retention"
+        ],
+        "citations": 6,
+        "wordCount": 2300,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-22T11:06:48.129Z",
+        "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: screenshot-to-flow AI + flat pricing. Competitors Appcues/Pendo/Userpilot enterprise, ProductFruits/HelpHero indie-dated, Intro.js/Shepherd DIY. Pricing: Free/$29 Solo/$79 Team, ~92% margin, ~$0.03 GPT-4V per generation. Tech: Next.js admin + vanilla JS Shadow-DOM widget + Supabase RLS + GPT-4o vision for flow generation + Cloudflare CDN + Stripe Billing usage events. Market: $1.2B DAP 2024 → $7B 2030 (~35% CAGR), Appcues M+ Series B, Pendo $2.6B valuation, 15-25 point day-7 retention lift from best-in-class onboarding. Verify pricing before marketing."
+      }
+    },
+    {
       "slug": "feature-voting-board",
       "title": "Feature Voting Board",
       "publishedAt": "2026-04-22",
