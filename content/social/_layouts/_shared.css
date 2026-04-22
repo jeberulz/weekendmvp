@@ -1,0 +1,193 @@
+/* ==========================================================================
+   Weekend MVP Carousel Layouts — Shared Foundation
+   --------------------------------------------------------------------------
+   One source of truth for design tokens, slide frame, and primitives that
+   every layout shares. Layout-specific CSS lives in each layout's HTML.
+
+   Palette source: content/social/_brand/palette.md
+   Typography: Geist + Geist Mono via Google Fonts CDN (loaded in each HTML)
+   Icons: Iconify `lucide:*` only (loaded in each HTML)
+
+   Local preview: linked via <link rel="stylesheet" href="_shared.css">
+   Post rendering: /carousel Phase 5.1 inlines this file into the post's
+   slides.html so published carousels are self-contained for Figma capture.
+   ========================================================================== */
+
+:root {
+  /* ---- Base system ---- */
+  --bg: #050505;
+  --bg-panel: #0a0a0a;
+  --fg: #e5e5e5;
+  --fg-secondary: #a1a1aa;   /* zinc-400 */
+  --fg-tertiary: #71717a;    /* zinc-500 */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --grid-line: rgba(255, 255, 255, 0.03);
+  --grid-dot: rgba(255, 255, 255, 0.035);
+
+  /* ---- Soluna accent palette ---- */
+  --accent-lime: #D4FF5B;
+  --accent-mint: #8FF59B;
+  --accent-emerald: #2F5F53;
+  --accent-lavender: #C5AEE8;
+  --accent-aubergine: #1E1B38;
+
+  /* ---- Functional colors ---- */
+  --status-live: var(--accent-mint);
+  --status-build: #f59e0b;
+
+  /* ---- Typography ---- */
+  --font-primary: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  /* Back-compat alias (older layouts used --mono) */
+  --mono: var(--font-mono);
+}
+
+/* ==========================================================================
+   Reset + page
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #111;
+  color: var(--fg);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 40px 0;
+}
+
+/* ==========================================================================
+   Slide frame — 1080 × 1350 per slide (native)
+   ========================================================================== */
+
+.slide {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* Grid backgrounds — add .grid-lines or .grid-dots class to .slide */
+.slide.grid-lines::before,
+.slide.grid-dots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.slide.grid-lines::before {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 60px 60px;
+  -webkit-mask-image: linear-gradient(to bottom, black 15%, transparent 96%);
+          mask-image: linear-gradient(to bottom, black 15%, transparent 96%);
+}
+
+.slide.grid-dots::before {
+  background-image: radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 0);
+  background-size: 28px 28px;
+  -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent 98%);
+          mask-image: linear-gradient(to bottom, black 10%, transparent 98%);
+}
+
+.slide-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 80px;
+}
+
+/* ==========================================================================
+   Header + footer primitives
+   ========================================================================== */
+
+.slide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  color: var(--fg);
+}
+.logo svg { height: 100%; width: auto; fill: currentColor; }
+
+.slide-counter {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.084em;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Add .with-pulse for build-log / pipeline layouts */
+.slide-counter.with-pulse::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--accent-mint);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent-mint);
+}
+
+.slide-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--fg-tertiary);
+  letter-spacing: 0.022em;
+}
+
+.slide-footer .swipe {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.076em;
+}
+
+/* ==========================================================================
+   Inline icon helper — used by all layouts for capture-safe SVG rendering
+   ========================================================================== */
+
+.ico {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.slide-footer .swipe .ico { width: 20px; height: 20px; }

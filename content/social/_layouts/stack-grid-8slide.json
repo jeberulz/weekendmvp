@@ -1,0 +1,30 @@
+{
+  "name": "stack-grid",
+  "displayName": "Stack Grid (Tool Stack)",
+  "html": "stack-grid-8slide.html",
+  "style": "Tool-catalog editorial. Lavender tool tiles, lime cost callout, invoice-style receipt slide.",
+  "bestFor": ["Tool Stack", "Friday stack recap", "Build-with pages", "Tool comparisons"],
+  "recommendFor": ["Tool Stack"],
+  "slideCount": 8,
+  "variableSlides": false,
+  "slideCountMin": 8,
+  "slideCountMax": 8,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "lavender", "secondary": "lime" },
+  "slides": [
+    { "index": 1, "type": "hero",              "fixed": true, "description": "Lavender eyebrow + 2-line hero ('$0 stack' in lime) + sub + meta (tools/cost/free-tier/setup)." },
+    { "index": 2, "type": "stack-grid",        "fixed": true, "description": "2-column grid of 6-8 tool tiles (lavender ico, name, role, lime price)." },
+    { "index": 3, "type": "tool-deep-dive",    "fixed": true, "description": "Deep-dive card #1 (e.g. Claude). Head block + why + 3 stats + pull-quote with lime left-border." },
+    { "index": 4, "type": "tool-deep-dive",    "fixed": true, "description": "Deep-dive card #2 (e.g. Cursor)." },
+    { "index": 5, "type": "tool-deep-dive",    "fixed": true, "description": "Deep-dive card #3 (e.g. Vercel)." },
+    { "index": 6, "type": "why-stack",         "fixed": true, "description": "3 reasons rows. Lime icon boxes, dark cards." },
+    { "index": 7, "type": "cost-breakdown",    "fixed": true, "description": "Invoice-style cost receipt. Free items shown in mint. Lime total bar." },
+    { "index": 8, "type": "cta",               "fixed": true, "description": "Lavender eyebrow + 2-line headline (lime 'Ship the weekend') + lime button." }
+  ],
+  "availableMiddleSlideTypes": [],
+  "notes": [
+    "3 deep-dives is the budget — pick tools where the 'why' is strongest, not just your most-used.",
+    "Cost receipt must match real pricing — check before publishing, tool prices change."
+  ]
+}

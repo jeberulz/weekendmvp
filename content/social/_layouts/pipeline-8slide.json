@@ -1,0 +1,31 @@
+{
+  "name": "pipeline",
+  "displayName": "Pipeline (Build-in-public)",
+  "html": "pipeline-8slide.html",
+  "style": "Technical, dotted grid, Geist Mono, mint status dots, aubergine terminal panel.",
+  "bestFor": ["Build-in-public", "Feature shipped", "Deploy log", "Engineering storytelling"],
+  "recommendFor": ["Build-in-public"],
+  "slideCount": 8,
+  "variableSlides": true,
+  "slideCountMin": 5,
+  "slideCountMax": 10,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "mint", "secondary": "aubergine" },
+  "slides": [
+    { "index": 1, "type": "hero",          "fixed": true,  "description": "[ BUILD LOG · WEEK N · YYYY ] eyebrow + 3-line headline + meta strip (commits/files/stack/status)." },
+    { "index": 2, "type": "pipeline",      "fixed": false, "description": "3-5 vertical pipeline nodes with mint live / amber in-progress status chips." },
+    { "index": 3, "type": "log",           "fixed": false, "description": "Ship-log table: sha (mint) + message + tag. 3-6 rows from real git log." },
+    { "index": 4, "type": "terminal",      "fixed": false, "description": "Aubergine terminal panel with lavender prompts, lime OK markers, realistic commands." },
+    { "index": 5, "type": "before-after",  "fixed": false, "description": "Split before/after cards. After card has mint border + big mint metric." },
+    { "index": 6, "type": "metric",        "fixed": false, "description": "One dominant mint number + label + context." },
+    { "index": 7, "type": "lessons",       "fixed": false, "description": "Section headline + 3 lesson rows with mint pulse dots." },
+    { "index": 8, "type": "cta",           "fixed": true,  "description": "Bracketed eyebrow + 2-line headline (mint accent) + mint button." }
+  ],
+  "availableMiddleSlideTypes": ["pipeline", "log", "terminal", "before-after", "metric", "lessons"],
+  "notes": [
+    "Only layout using Geist Mono as voice cue.",
+    "Slide counter has pulsing mint dot — signature BIP aesthetic.",
+    "Terminal uses aubergine bg (not black) to visually distinguish from OS terminals."
+  ]
+}

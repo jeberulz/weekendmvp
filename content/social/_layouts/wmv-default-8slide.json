@@ -1,0 +1,26 @@
+{
+  "name": "wmv-default",
+  "displayName": "Default",
+  "html": "wmv-default-8slide.html",
+  "style": "Editorial, brand-forward. Dark, line grid, lime+lavender accents.",
+  "bestFor": ["Idea of the Day", "Playbook / Framework", "Problem→Solution", "Generic fallback"],
+  "recommendFor": ["Idea of the Day", "Playbook", "Problem→Solution", "generic"],
+  "slideCount": 8,
+  "variableSlides": true,
+  "slideCountMin": 5,
+  "slideCountMax": 10,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "lime", "secondary": "lavender" },
+  "slides": [
+    { "index": 1, "type": "hero",     "fixed": true,  "description": "Eyebrow + 3-line headline + subtitle. Lime accent on payoff line." },
+    { "index": 2, "type": "problem",  "fixed": false, "description": "Icon + label + problem statement + lavender-framed stat chip." },
+    { "index": 3, "type": "idea",     "fixed": false, "description": "Lavender gradient-border idea card with name, pitch, meta pills, stack chips." },
+    { "index": 4, "type": "insight",  "fixed": false, "description": "Large quote-style insight; accent words in lime. Byline line underneath." },
+    { "index": 5, "type": "steps",    "fixed": false, "description": "Section headline + 3-5 numbered step rows; step numbers in lime." },
+    { "index": 6, "type": "metric",   "fixed": false, "description": "One dominant number (lime) + label + context." },
+    { "index": 7, "type": "quote",    "fixed": false, "description": "Testimonial on aubergine panel with lavender/mint gradient avatar." },
+    { "index": 8, "type": "cta",      "fixed": true,  "description": "Eyebrow + 2-line headline (accent word in lime) + button (lime bg) + URL." }
+  ],
+  "availableMiddleSlideTypes": ["problem", "idea", "insight", "steps", "metric", "quote", "before-after"]
+}

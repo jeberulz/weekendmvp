@@ -1,0 +1,31 @@
+{
+  "name": "digest",
+  "displayName": "Digest (Newsletter Recap)",
+  "html": "digest-8slide.html",
+  "style": "Sunday weekly recap. Emerald panel for top-idea, aubergine for top-article, mint AM / lavender PM slot markers.",
+  "bestFor": ["Newsletter Recap", "Weekly digest", "Sunday roundup", "Vision / culture"],
+  "recommendFor": ["Newsletter Recap"],
+  "slideCount": 8,
+  "variableSlides": false,
+  "slideCountMin": 8,
+  "slideCountMax": 8,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "emerald", "secondary": "mint" },
+  "slides": [
+    { "index": 1, "type": "week-hero",      "fixed": true, "description": "Mint week stamp + massive emerald 'W17' + 2-line sub + meta strip (AM/PM/library/subs)." },
+    { "index": 2, "type": "am-highlights",  "fixed": true, "description": "Mint sun icon header + 5 day-rows (MON-FRI) with idea title + pitch + arrow-up-right." },
+    { "index": 3, "type": "pm-highlights",  "fixed": true, "description": "Lavender moon icon header + 5 day-rows with brief title + hook. PM theme." },
+    { "index": 4, "type": "top-idea",       "fixed": true, "description": "Emerald panel. 'Most-saved' tag in mint. Idea name in white + meta chips." },
+    { "index": 5, "type": "top-article",    "fixed": true, "description": "Aubergine panel. 'Article of the week' lavender tag. Title + pulled excerpt + 4 stats." },
+    { "index": 6, "type": "community",      "fixed": true, "description": "Reader win quote, lime-bordered panel. Lime highlight word inside quote." },
+    { "index": 7, "type": "coming-next",    "fixed": true, "description": "Week N+1 preview. 5 rows, mint day labels, 'next five already drafted' headline." },
+    { "index": 8, "type": "cta",            "fixed": true, "description": "Mint eyebrow + 2-line headline (mint accent) + mint button." }
+  ],
+  "availableMiddleSlideTypes": [],
+  "notes": [
+    "Only layout to use emerald bg panels — the Sunday-recap calm signature.",
+    "AM rows use mint markers, PM rows use lavender — keeps the two halves of the day distinct at a glance.",
+    "Community slide requires a real reader quote — don't fabricate. If none available, replace with community stats (subs, open rate, etc.)."
+  ]
+}

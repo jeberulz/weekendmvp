@@ -1,0 +1,31 @@
+{
+  "name": "receipt",
+  "displayName": "Receipt (Case Study)",
+  "html": "receipt-8slide.html",
+  "style": "Invoice-inspired proof posts. Lime for money, aubergine for customer quote.",
+  "bestFor": ["Case Study", "$1K Month", "Revenue milestone", "Paying-customer stories"],
+  "recommendFor": ["Case Study", "$1K Month"],
+  "slideCount": 8,
+  "variableSlides": false,
+  "slideCountMin": 8,
+  "slideCountMax": 8,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "lime", "secondary": "aubergine" },
+  "slides": [
+    { "index": 1, "type": "revenue-hero",   "fixed": true, "description": "Receipt stamp + massive lime revenue number + subtitle + meta strip (customers/price/hours/cost)." },
+    { "index": 2, "type": "quote",          "fixed": true, "description": "Aubergine quote card for first paying user. Gradient avatar (lime→lavender)." },
+    { "index": 3, "type": "timeline",       "fixed": true, "description": "30-day revenue bar chart. Bars use lime→emerald gradient. X-axis day markers." },
+    { "index": 4, "type": "build-summary",  "fixed": true, "description": "Build metadata: hours (lime) + cost (lime) + LOC + team size + stack row." },
+    { "index": 5, "type": "acquisition",    "fixed": true, "description": "Horizontal bars showing % by channel (LinkedIn/Reddit/IH/WOM). Lime fill." },
+    { "index": 6, "type": "math",           "fixed": true, "description": "Cost cell (dark) vs revenue cell (lime bg, black text) + profit summary with dashed lime border." },
+    { "index": 7, "type": "lessons",        "fixed": true, "description": "Section headline + 3 numbered lesson rows; lime numbers." },
+    { "index": 8, "type": "cta",            "fixed": true, "description": "Eyebrow + 2-line headline (lime 'one weekend') + lime button." }
+  ],
+  "availableMiddleSlideTypes": [],
+  "notes": [
+    "Revenue numbers are the protagonist — lime used generously here vs other layouts.",
+    "Real acquisition % required — don't fake. If exact breakdown unknown, use approximate quartiles.",
+    "Quote slide should be a genuine customer voice pulled from replies/reviews, not fabricated."
+  ]
+}

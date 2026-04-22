@@ -1,0 +1,8 @@
+{
+  "fileKey": "BXwNVjNwTqudxWq66B2Y8Y",
+  "fileName": "WeekendMVP",
+  "defaultNodeId": "0:1",
+  "url": "https://www.figma.com/design/BXwNVjNwTqudxWq66B2Y8Y/WeekendMVP",
+  "outputMode": "existingFile",
+  "_note": "The /carousel skill reads this in Phase 5.3 to decide where to push rendered slides. outputMode can be 'existingFile' (use fileKey) or 'newFile' (auto-name per post)."
+}

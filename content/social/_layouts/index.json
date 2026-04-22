@@ -1,0 +1,11 @@
+{
+  "_note": "Layout manifests live alongside this file. The /carousel skill reads this list in Phase 0.",
+  "layouts": [
+    "wmv-default-8slide.json",
+    "idea-spotlight-8slide.json",
+    "pipeline-8slide.json",
+    "receipt-8slide.json",
+    "stack-grid-8slide.json",
+    "digest-8slide.json"
+  ]
+}

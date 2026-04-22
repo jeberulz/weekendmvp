@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1">
+  <title>Weekend MVP — Idea Spotlight (8 slides)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    /* Shared tokens + frame + .ico helper in _shared.css. Layout-specific below. */
+
+    .section-label { font-family:var(--mono); font-size:18px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:28px; display:inline-flex; align-items:center; gap:12px; }
+    .section-label::before { content:""; width:24px; height:1px; background:var(--accent-lavender); }
+
+    /* 01 Hero */
+    .hero-body { margin-top:70px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .date-line { font-family:var(--mono); font-size:20px; color:var(--fg-tertiary); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:24px; }
+    .idea-hero-eyebrow { font-size:24px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; color:var(--accent-lime); margin-bottom:40px; display:inline-flex; align-items:center; gap:16px; }
+    .idea-hero-eyebrow::after { content:""; width:80px; height:1px; background:var(--accent-lime); }
+    .idea-hero-name { font-size:108px; line-height:0.98; font-weight:800; letter-spacing:-0.045em; margin-bottom:32px; }
+    .idea-hero-pitch { font-size:36px; line-height:1.25; color:var(--fg-secondary); max-width:880px; margin-bottom:48px; font-weight:400; }
+    .idea-hero-signals { display:flex; gap:16px; flex-wrap:wrap; }
+    .signal-chip { display:inline-flex; align-items:center; gap:12px; padding:16px 24px; border:1px solid var(--accent-lavender); border-radius:999px; background:rgba(197,174,232,0.06); font-size:18px; color:var(--accent-lavender); font-weight:500; }
+    .signal-chip .ico { width:18px; height:18px; }
+
+    /* 02 Signal */
+    .signal-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .signal-stat-wrap { display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-bottom:40px; }
+    .signal-stat { border:1px solid var(--border-strong); border-radius:20px; padding:36px; background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)); }
+    .signal-stat .k { font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:18px; }
+    .signal-stat .v { font-size:88px; font-weight:800; letter-spacing:-0.04em; line-height:1; font-variant-numeric:tabular-nums; margin-bottom:14px; color:var(--accent-lime); }
+    .signal-stat .note { font-size:16px; color:var(--fg-secondary); line-height:1.5; }
+    .spark { display:flex; align-items:flex-end; gap:5px; height:70px; margin-top:16px; }
+    .spark .bar { flex:1; background:linear-gradient(180deg,var(--accent-lime),var(--accent-emerald)); border-radius:3px 3px 0 0; }
+    .signal-callout { border-top:1px dashed var(--border-strong); padding-top:32px; font-size:28px; line-height:1.35; max-width:880px; }
+    .signal-callout .muted { color:var(--fg-tertiary); }
+
+    /* 03 Twist */
+    .twist-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .twist-headline { font-size:72px; line-height:1.05; font-weight:700; letter-spacing:-0.03em; margin-bottom:40px; max-width:940px; }
+    .twist-headline .accent { color:var(--accent-lime); }
+    .twist-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .twist-col { padding:32px; border:1px solid var(--border-strong); border-radius:18px; background:rgba(255,255,255,0.02); }
+    .twist-col.minus { border-color:rgba(113,113,122,0.4); }
+    .twist-col.plus { border-color:rgba(212,255,91,0.4); background:rgba(212,255,91,0.04); }
+    .twist-col .tag { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:16px; display:inline-flex; align-items:center; gap:10px; }
+    .twist-col.plus .tag { color:var(--accent-lime); }
+    .twist-col .tag .ico { width:18px; height:18px; }
+    .twist-col .body { font-size:22px; line-height:1.45; color:var(--fg); }
+    .twist-col.minus .body { color:var(--fg-secondary); }
+
+    /* 04 Teardown */
+    .tear-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .tear-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .tear-cell { border:1px solid var(--border-strong); border-radius:18px; padding:28px 30px; background:rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:14px; min-height:160px; }
+    .tear-cell.span-2 { grid-column:span 2; }
+    .tear-cell .icon { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; color:var(--fg); margin-bottom:2px; }
+    .tear-cell .icon .ico { width:22px; height:22px; }
+    .tear-cell .k { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); }
+    .tear-cell .v { font-size:28px; font-weight:600; letter-spacing:-0.015em; line-height:1.15; }
+    .tear-cell .v.big { font-size:38px; font-weight:700; }
+    .stack-chips { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .stack-chip { padding:10px 16px; border:1px solid var(--border); border-radius:8px; font-family:var(--mono); font-size:14px; color:var(--fg-secondary); background:rgba(255,255,255,0.02); }
+
+    /* 05 Prompt */
+    .prompt-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .prompt-headline { font-size:52px; font-weight:700; letter-spacing:-0.025em; margin-bottom:32px; max-width:880px; line-height:1.1; }
+    .prompt-panel { background:var(--accent-aubergine); border:1px solid rgba(197,174,232,0.3); border-radius:22px; padding:36px 40px; font-family:var(--mono); font-size:18px; line-height:1.7; color:rgba(255,255,255,0.92); }
+    .prompt-panel .meta { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid rgba(197,174,232,0.2); font-size:14px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent-lavender); }
+    .prompt-panel .meta .ico { width:16px; height:16px; }
+    .prompt-panel .role { color:var(--accent-lavender); font-weight:600; }
+    .prompt-panel .var { color:var(--accent-lime); }
+    .prompt-caption { margin-top:20px; font-size:16px; color:var(--fg-tertiary); font-family:var(--mono); letter-spacing:0.03em; }
+
+    /* 06 Math */
+    .math-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .math-equation { display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin-bottom:40px; }
+    .math-piece { display:flex; flex-direction:column; gap:10px; padding:24px 30px; border:1px solid var(--border-strong); border-radius:18px; background:rgba(255,255,255,0.03); }
+    .math-piece .label { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); }
+    .math-piece .value { font-size:56px; font-weight:800; letter-spacing:-0.035em; line-height:1; font-variant-numeric:tabular-nums; }
+    .math-piece .value .unit { font-size:26px; color:var(--fg-tertiary); font-weight:500; }
+    .math-op { font-size:48px; color:var(--fg-tertiary); font-weight:300; font-family:var(--mono); }
+    .math-answer { padding:40px; background:var(--accent-lime); color:var(--bg); border-radius:22px; font-size:48px; font-weight:700; letter-spacing:-0.025em; display:flex; align-items:center; justify-content:space-between; gap:26px; box-shadow:0 12px 48px rgba(212,255,91,0.2); }
+    .math-answer .label-sm { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(5,5,5,0.65); font-weight:600; margin-bottom:8px; }
+    .math-answer .big { font-size:76px; line-height:1; }
+    .math-answer .ico { width:52px; height:52px; }
+    .math-audience { margin-top:36px; font-size:22px; line-height:1.5; color:var(--fg-secondary); max-width:860px; }
+    .math-audience strong { color:var(--fg); font-weight:600; }
+
+    /* 07 Buyers */
+    .buyers-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .buyers-headline { font-size:58px; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; }
+    .buyers-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+    .buyer-card { padding:28px; border:1px solid var(--border-strong); border-radius:18px; background:rgba(255,255,255,0.02); display:flex; flex-direction:column; gap:14px; min-height:260px; }
+    .buyer-card .av { width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,var(--accent-lavender),var(--accent-mint)); }
+    .buyer-card .who { font-size:22px; font-weight:700; letter-spacing:-0.01em; }
+    .buyer-card .pain { font-size:16px; color:var(--fg-secondary); line-height:1.5; }
+    .buyer-card .will-pay { margin-top:auto; font-family:var(--mono); font-size:14px; letter-spacing:0.14em; color:var(--accent-lime); text-transform:uppercase; display:inline-flex; align-items:center; gap:10px; }
+    .buyer-card .will-pay .ico { width:14px; height:14px; }
+
+    /* 08 CTA */
+    .cta-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cta-eyebrow { font-size:24px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; color:var(--accent-lime); margin-bottom:36px; display:inline-flex; align-items:center; gap:16px; }
+    .cta-eyebrow::after { content:""; width:80px; height:1px; background:var(--accent-lime); }
+    .cta-headline { font-size:108px; font-weight:800; letter-spacing:-0.04em; line-height:0.98; margin-bottom:32px; }
+    .cta-headline .accent { color:var(--accent-lime); }
+    .cta-subtitle { font-size:32px; line-height:1.35; color:var(--fg-secondary); max-width:840px; margin-bottom:56px; }
+    .cta-button { display:inline-flex; align-items:center; gap:14px; padding:24px 40px; background:var(--accent-lime); color:var(--bg); border-radius:999px; font-size:24px; font-weight:700; box-shadow:0 8px 40px rgba(212,255,91,0.2); }
+    .cta-button .ico { width:22px; height:22px; }
+    .cta-url { margin-top:40px; display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:22px; color:var(--fg-tertiary); }
+    .cta-url .ico { width:20px; height:20px; }
+  </style>
+</head>
+<body>
+
+  <!-- 01 HERO -->
+  <div class="slide grid-lines" data-slide="1" data-type="idea-hero">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>01 / 08</div>
+      </div>
+      <div class="hero-body">
+        <div class="date-line" data-hero-date>TUE · APR 22 · 2026</div>
+        <div class="idea-hero-eyebrow" data-hero-eyebrow>Idea of the Day</div>
+        <div class="idea-hero-name" data-hero-name>AI Email<br/>Reply Drafter.</div>
+        <div class="idea-hero-pitch" data-hero-pitch>Paste the email. Pick a tone. Get a polished reply in your voice — not somebody else's template.</div>
+        <div class="idea-hero-signals">
+          <div class="signal-chip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>+238% search</span></div>
+          <div class="signal-chip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>6 hours to MVP</span></div>
+          <div class="signal-chip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>$1K/mo at $29</span></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/startup-ideas</span><span class="swipe">Signals <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 02 SIGNAL -->
+  <div class="slide grid-lines" data-slide="2" data-type="signal">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>02 / 08</div>
+      </div>
+      <div class="signal-body">
+        <div class="section-label">THE SIGNAL</div>
+        <div class="signal-stat-wrap">
+          <div class="signal-stat"><div class="k">Search volume</div><div class="v">2,900</div><div class="note">monthly searches for "automated email response examples"</div></div>
+          <div class="signal-stat"><div class="k">90-day trend</div><div class="v">+238%</div>
+            <div class="spark"><div class="bar" style="height:22%"></div><div class="bar" style="height:28%"></div><div class="bar" style="height:26%"></div><div class="bar" style="height:34%"></div><div class="bar" style="height:42%"></div><div class="bar" style="height:48%"></div><div class="bar" style="height:56%"></div><div class="bar" style="height:66%"></div><div class="bar" style="height:78%"></div><div class="bar" style="height:100%"></div></div>
+          </div>
+        </div>
+        <div class="signal-callout">The template market is saturated. <span class="muted">What's missing is a tool that writes the reply in your voice, not somebody else's.</span></div>
+      </div>
+      <div class="slide-footer"><span>Source: Google Trends · Ahrefs</span><span class="swipe">Twist <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 03 TWIST -->
+  <div class="slide grid-lines" data-slide="3" data-type="twist">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>03 / 08</div>
+      </div>
+      <div class="twist-body">
+        <div class="section-label">THE TWIST</div>
+        <div class="twist-headline">Templates sold <span class="accent">one-size-fits-all.</span> This sells you <span class="accent">yours</span>.</div>
+        <div class="twist-grid">
+          <div class="twist-col minus">
+            <div class="tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> WHAT EXISTS</div>
+            <div class="body">Generic templates. Paid template libraries. Chrome extensions with 40 prewritten openers nobody reads past "Hope this finds you well."</div>
+          </div>
+          <div class="twist-col plus">
+            <div class="tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> THE TWIST</div>
+            <div class="body">Paid upgrade trains on 5-10 of your own sent emails. Output sounds like you — not a library. That's the wedge.</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Competitors: Magical · Text Blaze · Grammarly</span><span class="swipe">Teardown <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 04 TEARDOWN -->
+  <div class="slide grid-lines" data-slide="4" data-type="teardown">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>04 / 08</div>
+      </div>
+      <div class="tear-body">
+        <div class="section-label">THE TEARDOWN</div>
+        <div class="tear-grid">
+          <div class="tear-cell"><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><div class="k">Build time</div><div class="v big">6 hours</div></div>
+          <div class="tear-cell"><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><div class="k">Price point</div><div class="v big">$29/mo</div></div>
+          <div class="tear-cell"><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div class="k">Target audience</div><div class="v">Sales reps, support teams, non-native English writers</div></div>
+          <div class="tear-cell"><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg></span><div class="k">Infra cost (day 1)</div><div class="v big">$0</div></div>
+          <div class="tear-cell span-2"><span class="icon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></span><div class="k">Stack</div>
+            <div class="stack-chips"><span class="stack-chip">Cursor</span><span class="stack-chip">Claude</span><span class="stack-chip">Bolt</span><span class="stack-chip">Vercel</span><span class="stack-chip">Stripe</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Full teardown on weekendmvp.app</span><span class="swipe">Prompt <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 05 PROMPT -->
+  <div class="slide grid-lines" data-slide="5" data-type="prompt">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>05 / 08</div>
+      </div>
+      <div class="prompt-body">
+        <div class="section-label">THE PROMPT</div>
+        <div class="prompt-headline">Copy this into Claude to start building:</div>
+        <div class="prompt-panel">
+          <div class="meta"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg> System prompt · tone-matched reply</div>
+<div style="white-space:pre-wrap;"><span class="role">You are</span> a professional email reply assistant. Match the user's writing voice using the <span class="var">{style_samples}</span>.
+
+<span class="role">Input:</span>
+- <span class="var">{incoming_email}</span>
+- <span class="var">{points_to_cover}</span> (2-3 items)
+- <span class="var">{tone}</span>: warm | direct | neutral
+
+<span class="role">Output:</span>
+A reply, 60-120 words. No "Hope this finds you well." No "Per my last email." Match sentence length, punctuation, greeting style from samples.</div>
+        </div>
+        <div class="prompt-caption">Paste this into a Bolt scaffold. Ship tonight.</div>
+      </div>
+      <div class="slide-footer"><span>Full build guide at weekendmvp.app</span><span class="swipe">Math <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 06 MATH -->
+  <div class="slide grid-lines" data-slide="6" data-type="math">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>06 / 08</div>
+      </div>
+      <div class="math-body">
+        <div class="section-label">THE MATH</div>
+        <div class="math-equation">
+          <div class="math-piece"><span class="label">Price</span><span class="value">$29<span class="unit">/mo</span></span></div>
+          <span class="math-op">×</span>
+          <div class="math-piece"><span class="label">Customers</span><span class="value">35</span></div>
+          <span class="math-op">=</span>
+        </div>
+        <div class="math-answer">
+          <div><div class="label-sm">Monthly revenue</div><span class="big">$1,015</span></div>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </div>
+        <div class="math-audience">Find <strong>35 sales reps</strong> who'd pay $29/mo to write replies faster. No VC, no runway pressure — just 35 people and a weekend.</div>
+      </div>
+      <div class="slide-footer"><span>$0 infra until first paying user</span><span class="swipe">Who buys <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 07 BUYERS -->
+  <div class="slide grid-lines" data-slide="7" data-type="buyers">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>07 / 08</div>
+      </div>
+      <div class="buyers-body">
+        <div class="section-label">WHO BUYS IT</div>
+        <div class="buyers-headline">Three personas. All already paying.</div>
+        <div class="buyers-grid">
+          <div class="buyer-card">
+            <div class="av"></div>
+            <div class="who">SMB sales rep</div>
+            <div class="pain">Sends 40+ follow-ups/day. Has been burned by generic templates. Wants fast + personal.</div>
+            <div class="will-pay"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Will pay $29/mo</div>
+          </div>
+          <div class="buyer-card">
+            <div class="av"></div>
+            <div class="who">Non-native English writer</div>
+            <div class="pain">Knows the language, wants the nuance. Current tools (Grammarly) fix grammar, not tone.</div>
+            <div class="will-pay"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Will pay $29/mo</div>
+          </div>
+          <div class="buyer-card">
+            <div class="av"></div>
+            <div class="who">Customer support lead</div>
+            <div class="pain">Manages a team. Needs reply quality + tone consistency across 5-person pod.</div>
+            <div class="will-pay"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Team plan $99/mo</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Reddit, IH, LinkedIn are the channels</span><span class="swipe">Subscribe <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 08 CTA -->
+  <div class="slide grid-lines" data-slide="8" data-type="cta">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>08 / 08</div>
+      </div>
+      <div class="cta-body">
+        <div class="cta-eyebrow">One idea. Every morning.</div>
+        <div class="cta-headline">Get tomorrow's<br/><span class="accent">teardown first.</span></div>
+        <div class="cta-subtitle">Weekend-buildable startup ideas, sourced from real search trends. Free daily newsletter.</div>
+        <a class="cta-button">Subscribe <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <div class="cta-url"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> weekendmvp.app/newsletter</div>
+      </div>
+      <div class="slide-footer"><span>@weekendmvp</span><span class="swipe">Save <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></span></div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1">
+  <title>Weekend MVP — Receipt (Case Study, 8 slides)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    .section-label { font-family:var(--mono); font-size:18px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:28px; display:inline-flex; align-items:center; gap:12px; }
+    .section-label::before { content:""; width:28px; height:1px; background:var(--accent-lime); }
+
+    /* 01 Revenue hero */
+    .hero-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .receipt-stamp { display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:16px; color:var(--accent-lime); letter-spacing:0.22em; text-transform:uppercase; padding:12px 20px; border:1px solid var(--accent-lime); border-radius:999px; margin-bottom:40px; }
+    .receipt-stamp .ico { width:16px; height:16px; }
+    .rev-headline { font-size:200px; font-weight:800; letter-spacing:-0.05em; line-height:0.92; color:var(--accent-lime); font-variant-numeric:tabular-nums; margin-bottom:24px; }
+    .rev-sub { font-size:52px; font-weight:600; letter-spacing:-0.02em; margin-bottom:40px; line-height:1.05; }
+    .rev-sub .muted { color:var(--fg-tertiary); font-weight:400; }
+    .rev-meta { display:flex; gap:36px; flex-wrap:wrap; padding-top:32px; border-top:1px dashed var(--border-strong); }
+    .rev-meta .cell { display:flex; flex-direction:column; gap:6px; }
+    .rev-meta .k { font-family:var(--mono); font-size:13px; letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-tertiary); }
+    .rev-meta .v { font-family:var(--mono); font-size:22px; color:var(--fg); font-variant-numeric:tabular-nums; }
+
+    /* 02 Quote */
+    .quote-body { margin-top:60px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .quote-card { background:var(--accent-aubergine); border:1px solid rgba(197,174,232,0.3); border-radius:24px; padding:64px 56px; position:relative; }
+    .quote-card .qmark { position:absolute; top:28px; right:48px; font-size:160px; line-height:1; color:var(--accent-lavender); opacity:0.35; font-weight:700; }
+    .q-text { font-size:44px; line-height:1.2; font-weight:500; color:#fff; letter-spacing:-0.015em; margin-bottom:36px; max-width:820px; }
+    .q-attr { display:flex; align-items:center; gap:18px; }
+    .q-attr .av { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--accent-lime),var(--accent-lavender)); border:2px solid rgba(255,255,255,0.15); }
+    .q-attr .who { color:var(--accent-lavender); font-family:var(--mono); font-size:18px; letter-spacing:0.04em; font-weight:600; }
+    .q-attr .role { color:rgba(255,255,255,0.5); font-family:var(--mono); font-size:15px; margin-top:3px; }
+
+    /* 03 Timeline */
+    .tl-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .tl-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; }
+    .chart { padding:36px; border:1px solid var(--border-strong); border-radius:22px; background:rgba(255,255,255,0.02); }
+    .chart-bars { display:flex; align-items:flex-end; gap:8px; height:320px; border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:22px; }
+    .chart-bar { flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+    .chart-bar .b { width:100%; background:linear-gradient(180deg,var(--accent-lime),var(--accent-emerald)); border-radius:6px 6px 0 0; min-height:6px; }
+    .chart-bar .v { font-family:var(--mono); font-size:12px; color:var(--fg-tertiary); }
+    .chart-x { display:flex; gap:8px; }
+    .chart-x span { flex:1; text-align:center; font-family:var(--mono); font-size:12px; letter-spacing:0.1em; color:var(--fg-tertiary); text-transform:uppercase; }
+
+    /* 04 Build summary */
+    .bs-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .bs-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .bs-cell { padding:32px; border:1px solid var(--border-strong); border-radius:18px; background:rgba(255,255,255,0.02); }
+    .bs-cell.span-2 { grid-column:span 2; }
+    .bs-cell .k { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:16px; }
+    .bs-cell .v { font-size:56px; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; line-height:1; }
+    .bs-cell .v.lime { color:var(--accent-lime); }
+    .bs-cell .note { font-size:16px; color:var(--fg-secondary); margin-top:12px; line-height:1.45; }
+    .bs-stack { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .bs-stack .chip { padding:10px 16px; border:1px solid var(--border); border-radius:8px; font-family:var(--mono); font-size:14px; color:var(--fg-secondary); background:rgba(255,255,255,0.02); }
+
+    /* 05 Acquisition */
+    .acq-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .acq-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; }
+    .acq-list { display:flex; flex-direction:column; gap:14px; }
+    .acq-row { display:grid; grid-template-columns:220px 1fr auto; align-items:center; gap:26px; padding:24px 30px; border:1px solid var(--border-strong); border-radius:14px; background:rgba(255,255,255,0.02); }
+    .acq-row .src { display:flex; align-items:center; gap:14px; font-size:20px; font-weight:600; color:var(--fg); }
+    .acq-row .src .ico { width:22px; height:22px; }
+    .acq-row .meter { height:12px; border-radius:99px; background:rgba(255,255,255,0.06); overflow:hidden; }
+    .acq-row .meter .fill { height:100%; background:var(--accent-lime); border-radius:99px; }
+    .acq-row .pct { font-family:var(--mono); font-size:20px; color:var(--accent-lime); font-weight:600; min-width:80px; text-align:right; font-variant-numeric:tabular-nums; }
+
+    /* 06 Cost vs Revenue */
+    .cvr-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cvr-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-bottom:36px; }
+    .cvr-cell { padding:40px; border-radius:20px; border:1px solid var(--border-strong); }
+    .cvr-cell.cost { background:rgba(255,255,255,0.02); }
+    .cvr-cell.rev { background:var(--accent-lime); color:var(--bg); border-color:var(--accent-lime); }
+    .cvr-cell .k { font-family:var(--mono); font-size:13px; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:18px; }
+    .cvr-cell.cost .k { color:var(--fg-tertiary); }
+    .cvr-cell.rev .k { color:rgba(5,5,5,0.65); }
+    .cvr-cell .v { font-size:80px; font-weight:800; letter-spacing:-0.04em; line-height:1; font-variant-numeric:tabular-nums; margin-bottom:10px; }
+    .cvr-cell .desc { font-size:16px; opacity:0.7; }
+    .cvr-profit { padding:32px 40px; border:1px dashed var(--accent-lime); border-radius:20px; display:flex; align-items:center; justify-content:space-between; }
+    .cvr-profit .k { font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-lime); }
+    .cvr-profit .v { font-size:52px; font-weight:700; color:var(--accent-lime); font-variant-numeric:tabular-nums; letter-spacing:-0.02em; }
+
+    /* 07 Lessons */
+    .lessons-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .lessons-headline { font-size:56px; line-height:1.05; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; }
+    .lesson-list { display:flex; flex-direction:column; gap:14px; }
+    .lesson-row { display:flex; align-items:flex-start; gap:24px; padding:26px 32px; border:1px solid var(--border-strong); border-radius:14px; background:rgba(255,255,255,0.02); }
+    .lesson-row .num { font-family:var(--mono); font-size:16px; color:var(--accent-lime); font-weight:700; min-width:40px; padding-top:4px; letter-spacing:0.08em; }
+    .lesson-row .title { font-size:24px; font-weight:600; letter-spacing:-0.01em; margin-bottom:6px; }
+    .lesson-row .desc { font-size:17px; color:var(--fg-secondary); line-height:1.5; }
+
+    /* 08 CTA */
+    .cta-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cta-eyebrow { font-family:var(--mono); font-size:16px; letter-spacing:0.22em; text-transform:uppercase; color:var(--accent-lime); margin-bottom:32px; }
+    .cta-headline { font-size:108px; font-weight:800; letter-spacing:-0.04em; line-height:0.98; margin-bottom:32px; }
+    .cta-headline .accent { color:var(--accent-lime); }
+    .cta-subtitle { font-size:32px; line-height:1.35; color:var(--fg-secondary); max-width:840px; margin-bottom:52px; }
+    .cta-button { display:inline-flex; align-items:center; gap:14px; padding:24px 40px; background:var(--accent-lime); color:var(--bg); border-radius:999px; font-size:24px; font-weight:700; box-shadow:0 8px 40px rgba(212,255,91,0.2); }
+    .cta-button .ico { width:22px; height:22px; }
+    .cta-url { margin-top:40px; display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:22px; color:var(--fg-tertiary); }
+    .cta-url .ico { width:20px; height:20px; }
+  </style>
+</head>
+<body>
+
+  <!-- 01 REVENUE HERO -->
+  <div class="slide grid-lines" data-slide="1" data-type="revenue-hero">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>01 / 08</div>
+      </div>
+      <div class="hero-body">
+        <div class="receipt-stamp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> CASE STUDY · PAID · 30 DAYS</div>
+        <div class="rev-headline">$1,015</div>
+        <div class="rev-sub"><span>in 30 days.</span> <span class="muted">Built one weekend.</span></div>
+        <div class="rev-meta">
+          <div class="cell"><div class="k">Customers</div><div class="v">35</div></div>
+          <div class="cell"><div class="k">Price</div><div class="v">$29/mo</div></div>
+          <div class="cell"><div class="k">Build time</div><div class="v">6 hours</div></div>
+          <div class="cell"><div class="k">Cost to date</div><div class="v">$47</div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/startup-ideas</span><span class="swipe">Customer <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 02 QUOTE -->
+  <div class="slide grid-lines" data-slide="2" data-type="quote">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>02 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:80px;">THE FIRST PAYING USER</div>
+      <div class="quote-body">
+        <div class="quote-card">
+          <div class="qmark">"</div>
+          <div class="q-text">Saved me two hours a day. I stopped dreading my inbox. First tool I've paid for this year that I actually use every day.</div>
+          <div class="q-attr"><div class="av"></div><div><div class="who">@nicole · SMB sales rep</div><div class="role">customer #1 · still paying week 14</div></div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>30 beta users · 94% week-2 retention</span><span class="swipe">Revenue <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 03 TIMELINE -->
+  <div class="slide grid-lines" data-slide="3" data-type="timeline">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>03 / 08</div>
+      </div>
+      <div class="tl-body">
+        <div class="section-label">30-DAY REVENUE</div>
+        <div class="tl-headline">From $0 to $1,015. No paid ads.</div>
+        <div class="chart">
+          <div class="chart-bars">
+            <div class="chart-bar"><div class="b" style="height:8%"></div><div class="v">$29</div></div>
+            <div class="chart-bar"><div class="b" style="height:12%"></div><div class="v">$87</div></div>
+            <div class="chart-bar"><div class="b" style="height:20%"></div><div class="v">$174</div></div>
+            <div class="chart-bar"><div class="b" style="height:28%"></div><div class="v">$232</div></div>
+            <div class="chart-bar"><div class="b" style="height:38%"></div><div class="v">$348</div></div>
+            <div class="chart-bar"><div class="b" style="height:48%"></div><div class="v">$464</div></div>
+            <div class="chart-bar"><div class="b" style="height:62%"></div><div class="v">$609</div></div>
+            <div class="chart-bar"><div class="b" style="height:74%"></div><div class="v">$754</div></div>
+            <div class="chart-bar"><div class="b" style="height:88%"></div><div class="v">$899</div></div>
+            <div class="chart-bar"><div class="b" style="height:100%"></div><div class="v">$1,015</div></div>
+          </div>
+          <div class="chart-x">
+            <span>D3</span><span>D6</span><span>D9</span><span>D12</span><span>D15</span><span>D18</span><span>D21</span><span>D24</span><span>D27</span><span>D30</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>No paid ads. No cold DMs. Organic only.</span><span class="swipe">Build <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 04 BUILD SUMMARY -->
+  <div class="slide grid-lines" data-slide="4" data-type="build-summary">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>04 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:80px;">THE BUILD</div>
+      <div class="bs-body">
+        <div class="bs-grid">
+          <div class="bs-cell"><div class="k">Hours to MVP</div><div class="v lime">6</div><div class="note">Friday 8pm → Sunday 2pm. With sleep.</div></div>
+          <div class="bs-cell"><div class="k">Out-of-pocket</div><div class="v lime">$47</div><div class="note">Cursor Pro + Claude + domain. Vercel free tier.</div></div>
+          <div class="bs-cell"><div class="k">Lines of code</div><div class="v">~580</div><div class="note">One Next.js app. One API route. No database until paying user.</div></div>
+          <div class="bs-cell"><div class="k">Team size</div><div class="v">1</div><div class="note">Solo. No cofounder. No designer. No VC.</div></div>
+          <div class="bs-cell span-2"><div class="k">Stack</div>
+            <div class="bs-stack"><span class="chip">Cursor</span><span class="chip">Claude</span><span class="chip">Bolt</span><span class="chip">Next.js</span><span class="chip">Vercel</span><span class="chip">Stripe</span><span class="chip">Supabase</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>All commits public at github.com/...</span><span class="swipe">Traffic <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 05 ACQUISITION -->
+  <div class="slide grid-lines" data-slide="5" data-type="acquisition">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>05 / 08</div>
+      </div>
+      <div class="acq-body">
+        <div class="section-label">WHERE CUSTOMERS CAME FROM</div>
+        <div class="acq-headline">Three channels did 90%.</div>
+        <div class="acq-list">
+          <div class="acq-row"><div class="src"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg> LinkedIn</div><div class="meter"><div class="fill" style="width:48%"></div></div><div class="pct">48%</div></div>
+          <div class="acq-row"><div class="src"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> Reddit (r/sales)</div><div class="meter"><div class="fill" style="width:26%"></div></div><div class="pct">26%</div></div>
+          <div class="acq-row"><div class="src"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg> IndieHackers</div><div class="meter"><div class="fill" style="width:16%"></div></div><div class="pct">16%</div></div>
+          <div class="acq-row"><div class="src"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Word of mouth</div><div class="meter"><div class="fill" style="width:10%"></div></div><div class="pct">10%</div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>One viral LinkedIn carousel did the lift</span><span class="swipe">Math <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 06 COST VS REVENUE -->
+  <div class="slide grid-lines" data-slide="6" data-type="math">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>06 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:80px;">THE BOTTOM LINE</div>
+      <div class="cvr-body">
+        <div class="cvr-grid">
+          <div class="cvr-cell cost"><div class="k">Total cost (30d)</div><div class="v">$47</div><div class="desc">Tools + domain. Zero ad spend.</div></div>
+          <div class="cvr-cell rev"><div class="k">Total revenue (30d)</div><div class="v">$1,015</div><div class="desc">35 customers × $29/mo.</div></div>
+        </div>
+        <div class="cvr-profit"><div class="k">Net · 30 days</div><div class="v">+ $968</div></div>
+      </div>
+      <div class="slide-footer"><span>21.6× ROI. Still growing.</span><span class="swipe">Lessons <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 07 LESSONS -->
+  <div class="slide grid-lines" data-slide="7" data-type="lessons">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>07 / 08</div>
+      </div>
+      <div class="lessons-body">
+        <div class="section-label">WHAT WORKED</div>
+        <div class="lessons-headline">Three moves I'd repeat on day one.</div>
+        <div class="lesson-list">
+          <div class="lesson-row"><span class="num">01</span><div><div class="title">Charged on day 1</div><div class="desc">No free trial. No freemium. $29/mo from the first click. Filtered for people who actually have the pain.</div></div></div>
+          <div class="lesson-row"><span class="num">02</span><div><div class="title">Shipped the teardown before the tool</div><div class="desc">LinkedIn carousel explaining the idea drove 48% of customers. The landing page was the teardown.</div></div></div>
+          <div class="lesson-row"><span class="num">03</span><div><div class="title">Built for one persona, not three</div><div class="desc">Sales reps only. Skipped the "also works for X" copy. Laser focus meant every post landed.</div></div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Mistakes: detailed in the full writeup</span><span class="swipe">Your turn <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 08 CTA -->
+  <div class="slide grid-lines" data-slide="8" data-type="cta">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>08 / 08</div>
+      </div>
+      <div class="cta-body">
+        <div class="cta-eyebrow">$1K/MO IS A TUESDAY, NOT A MILESTONE</div>
+        <div class="cta-headline">Your turn.<br/><span class="accent">One weekend.</span></div>
+        <div class="cta-subtitle">Get the full teardown — stack, prompts, pricing, launch thread — every weekday morning. Free.</div>
+        <a class="cta-button">Grab the ideas <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <div class="cta-url"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> weekendmvp.app/newsletter</div>
+      </div>
+      <div class="slide-footer"><span>@weekendmvp</span><span class="swipe">Save <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></span></div>
+    </div>
+  </div>
+
+</body>
+</html>

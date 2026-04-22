@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, initial-scale=1">
+  <title>Weekend MVP — Digest (Newsletter Recap, 8 slides)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  <link rel="stylesheet" href="_shared.css">
+  <style>
+    .section-label { font-family:var(--mono); font-size:18px; font-weight:600; letter-spacing:0.22em; text-transform:uppercase; color:var(--fg-tertiary); margin-bottom:28px; display:inline-flex; align-items:center; gap:12px; }
+    .section-label::before { content:""; width:28px; height:1px; background:var(--accent-mint); }
+
+    /* 01 Week hero */
+    .hero-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .week-stamp { display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:16px; color:var(--accent-mint); letter-spacing:0.22em; text-transform:uppercase; padding:12px 20px; border:1px solid var(--accent-mint); border-radius:999px; margin-bottom:40px; }
+    .week-stamp .ico { width:16px; height:16px; }
+    .week-num { font-size:280px; font-weight:800; letter-spacing:-0.05em; line-height:0.9; color:var(--accent-emerald); font-variant-numeric:tabular-nums; margin-bottom:16px; }
+    .week-num .hash { color:var(--fg-tertiary); font-weight:400; }
+    .week-sub { font-size:44px; font-weight:600; letter-spacing:-0.02em; margin-bottom:40px; line-height:1.1; max-width:880px; }
+    .week-sub .muted { color:var(--fg-tertiary); font-weight:400; }
+    .week-meta { display:flex; gap:36px; flex-wrap:wrap; padding-top:32px; border-top:1px dashed var(--border-strong); }
+    .week-meta .cell { display:flex; flex-direction:column; gap:6px; }
+    .week-meta .k { font-family:var(--mono); font-size:13px; letter-spacing:0.18em; text-transform:uppercase; color:var(--fg-tertiary); }
+    .week-meta .v { font-family:var(--mono); font-size:22px; color:var(--fg); font-variant-numeric:tabular-nums; }
+
+    /* 02/03 AM/PM highlights */
+    .hl-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .hl-head { display:flex; align-items:center; gap:22px; margin-bottom:32px; }
+    .hl-icon { width:64px; height:64px; border-radius:16px; display:inline-flex; align-items:center; justify-content:center; }
+    .hl-icon.am { background:rgba(143,245,155,0.1); border:1px solid rgba(143,245,155,0.3); color:var(--accent-mint); }
+    .hl-icon.pm { background:rgba(197,174,232,0.1); border:1px solid rgba(197,174,232,0.3); color:var(--accent-lavender); }
+    .hl-icon .ico { width:32px; height:32px; }
+    .hl-title { font-size:52px; font-weight:800; letter-spacing:-0.025em; line-height:1; }
+    .hl-slot { font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; color:var(--fg-tertiary); margin-top:8px; }
+    .hl-list { display:flex; flex-direction:column; gap:14px; }
+    .hl-row { display:grid; grid-template-columns:90px 1fr auto; align-items:center; gap:22px; padding:22px 28px; border:1px solid var(--border-strong); border-radius:14px; background:rgba(255,255,255,0.02); }
+    .hl-row .day { font-family:var(--mono); font-size:15px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent-mint); font-weight:600; }
+    .hl-row.pm .day { color:var(--accent-lavender); }
+    .hl-row .t { font-size:21px; font-weight:600; color:var(--fg); letter-spacing:-0.01em; margin-bottom:4px; }
+    .hl-row .s { font-size:15px; color:var(--fg-secondary); line-height:1.45; }
+    .hl-row .arrow { color:var(--fg-tertiary); }
+    .hl-row .arrow .ico { width:18px; height:18px; }
+
+    /* 04 Top idea */
+    .top-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .top-card { padding:48px; border-radius:26px; background:var(--accent-emerald); border:1px solid rgba(143,245,155,0.3); }
+    .top-tag { display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-mint); padding:8px 14px; border:1px solid var(--accent-mint); border-radius:999px; margin-bottom:28px; }
+    .top-tag .ico { width:14px; height:14px; }
+    .top-name { font-size:72px; font-weight:800; letter-spacing:-0.03em; line-height:1; margin-bottom:24px; color:#fff; }
+    .top-pitch { font-size:24px; line-height:1.4; color:rgba(255,255,255,0.75); max-width:840px; margin-bottom:32px; }
+    .top-meta { display:flex; gap:14px; flex-wrap:wrap; }
+    .top-chip { padding:12px 18px; border:1px solid rgba(143,245,155,0.3); border-radius:999px; font-family:var(--mono); font-size:14px; color:var(--accent-mint); background:rgba(143,245,155,0.06); }
+
+    /* 05 Top article */
+    .art-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .art-card { padding:48px; border-radius:26px; background:var(--accent-aubergine); border:1px solid rgba(197,174,232,0.3); }
+    .art-tag { display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-size:14px; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent-lavender); padding:8px 14px; border:1px solid var(--accent-lavender); border-radius:999px; margin-bottom:28px; }
+    .art-tag .ico { width:14px; height:14px; }
+    .art-title { font-size:56px; font-weight:800; letter-spacing:-0.025em; line-height:1.05; margin-bottom:24px; color:#fff; }
+    .art-excerpt { font-size:21px; line-height:1.5; color:rgba(255,255,255,0.7); max-width:860px; margin-bottom:32px; font-style:italic; padding-left:22px; border-left:3px solid var(--accent-lavender); }
+    .art-stats { display:flex; gap:32px; flex-wrap:wrap; padding-top:28px; border-top:1px dashed rgba(197,174,232,0.25); }
+    .art-stats .cell { display:flex; flex-direction:column; gap:6px; }
+    .art-stats .k { font-family:var(--mono); font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:rgba(197,174,232,0.6); }
+    .art-stats .v { font-family:var(--mono); font-size:20px; color:#fff; font-variant-numeric:tabular-nums; }
+
+    /* 06 Community */
+    .cs-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cs-headline { font-size:56px; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; max-width:880px; line-height:1.05; }
+    .cs-quote { padding:40px 44px; border:1px solid var(--accent-lime); border-radius:22px; background:rgba(212,255,91,0.04); position:relative; }
+    .cs-mark { position:absolute; top:20px; right:32px; font-size:120px; line-height:1; color:var(--accent-lime); opacity:0.3; font-weight:700; }
+    .cs-text { font-size:32px; line-height:1.3; color:var(--fg); max-width:780px; margin-bottom:28px; font-weight:500; }
+    .cs-text .hl { color:var(--accent-lime); font-weight:700; }
+    .cs-attr { display:flex; align-items:center; gap:16px; }
+    .cs-attr .av { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--accent-lime),var(--accent-mint)); }
+    .cs-attr .who { color:var(--fg); font-family:var(--mono); font-size:16px; letter-spacing:0.04em; font-weight:600; }
+    .cs-attr .role { color:var(--fg-tertiary); font-family:var(--mono); font-size:14px; margin-top:3px; }
+
+    /* 07 Coming next */
+    .next-body { margin-top:80px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .next-headline { font-size:58px; font-weight:700; letter-spacing:-0.025em; margin-bottom:40px; }
+    .next-headline .accent { color:var(--accent-mint); }
+    .next-list { display:flex; flex-direction:column; gap:14px; }
+    .next-row { display:grid; grid-template-columns:110px 1fr; gap:22px; padding:24px 30px; border:1px solid var(--border-strong); border-radius:14px; background:rgba(255,255,255,0.02); align-items:center; }
+    .next-row .day { font-family:var(--mono); font-size:15px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent-mint); font-weight:600; }
+    .next-row .t { font-size:22px; font-weight:600; color:var(--fg); margin-bottom:4px; letter-spacing:-0.01em; }
+    .next-row .s { font-size:15px; color:var(--fg-secondary); line-height:1.45; }
+
+    /* 08 CTA */
+    .cta-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+    .cta-eyebrow { font-family:var(--mono); font-size:16px; letter-spacing:0.24em; text-transform:uppercase; color:var(--accent-mint); margin-bottom:32px; }
+    .cta-headline { font-size:108px; font-weight:800; letter-spacing:-0.04em; line-height:0.98; margin-bottom:32px; }
+    .cta-headline .accent { color:var(--accent-mint); }
+    .cta-subtitle { font-size:32px; line-height:1.35; color:var(--fg-secondary); max-width:840px; margin-bottom:52px; }
+    .cta-button { display:inline-flex; align-items:center; gap:14px; padding:24px 40px; background:var(--accent-mint); color:var(--bg); border-radius:999px; font-size:24px; font-weight:700; box-shadow:0 8px 40px rgba(143,245,155,0.15); }
+    .cta-button .ico { width:22px; height:22px; }
+    .cta-url { margin-top:40px; display:inline-flex; align-items:center; gap:12px; font-family:var(--mono); font-size:22px; color:var(--fg-tertiary); }
+    .cta-url .ico { width:20px; height:20px; }
+  </style>
+</head>
+<body>
+
+  <!-- 01 WEEK HERO -->
+  <div class="slide grid-lines" data-slide="1" data-type="week-hero">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>01 / 08</div>
+      </div>
+      <div class="hero-body">
+        <div class="week-stamp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg> WEEKLY DIGEST · ISO WEEK</div>
+        <div class="week-num"><span class="hash">W</span>17</div>
+        <div class="week-sub"><span>Five ideas. Five briefs.</span> <span class="muted">One weekend ahead.</span></div>
+        <div class="week-meta">
+          <div class="cell"><div class="k">AM editions</div><div class="v">5</div></div>
+          <div class="cell"><div class="k">PM editions</div><div class="v">5</div></div>
+          <div class="cell"><div class="k">Ideas in library</div><div class="v">104</div></div>
+          <div class="cell"><div class="k">New subs</div><div class="v">+42</div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/newsletter</span><span class="swipe">AM recap <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 02 AM -->
+  <div class="slide grid-lines" data-slide="2" data-type="am-highlights">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>02 / 08</div>
+      </div>
+      <div class="hl-body">
+        <div class="section-label">AM · IDEAS OF THE DAY</div>
+        <div class="hl-head"><div class="hl-icon am"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></div><div><div class="hl-title">Five ideas.</div><div class="hl-slot">Mon – Fri · 7am</div></div></div>
+        <div class="hl-list">
+          <div class="hl-row"><span class="day">MON</span><div><div class="t">AI Meeting Notes Cleaner</div><div class="s">For consultants. $29/mo. 4 hours to MVP.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row"><span class="day">TUE</span><div><div class="t">AI Email Reply Drafter</div><div class="s">For sales reps. $29/mo. 6 hours to MVP.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row"><span class="day">WED</span><div><div class="t">AI Resume Tailorer</div><div class="s">For job seekers. $19 one-time. 5 hours to MVP.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row"><span class="day">THU</span><div><div class="t">AI Podcast Clipper</div><div class="s">For creators. $39/mo. 8 hours to MVP.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row"><span class="day">FRI</span><div><div class="t">AI Competitor Tracker</div><div class="s">For indie SaaS. $49/mo. 10 hours to MVP.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>All teardowns at weekendmvp.app/startup-ideas</span><span class="swipe">PM <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 03 PM -->
+  <div class="slide grid-lines" data-slide="3" data-type="pm-highlights">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>03 / 08</div>
+      </div>
+      <div class="hl-body">
+        <div class="section-label">PM · BUILDER BRIEFS</div>
+        <div class="hl-head"><div class="hl-icon pm"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div><div><div class="hl-title">Five briefs.</div><div class="hl-slot">Mon – Fri · 5pm</div></div></div>
+        <div class="hl-list">
+          <div class="hl-row pm"><span class="day">MON</span><div><div class="t">Shipping a landing page in 30 min</div><div class="s">Bolt + Vercel + Stripe. Template included.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row pm"><span class="day">TUE</span><div><div class="t">The 48-hour validation sprint</div><div class="s">3 steps. $0 spend. Go/no-go by Sunday.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row pm"><span class="day">WED</span><div><div class="t">Pricing without guilt</div><div class="s">$29 is the wedge. Here's why most solos undercharge.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row pm"><span class="day">THU</span><div><div class="t">Claude prompts that ship code</div><div class="s">6 reusable templates we actually use daily.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+          <div class="hl-row pm"><span class="day">FRI</span><div><div class="t">Picking your first 10 customers</div><div class="s">Where to find them, what to say, how to close.</div></div><span class="arrow"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Archive: weekendmvp.app/newsletter</span><span class="swipe">Top idea <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 04 TOP IDEA -->
+  <div class="slide grid-lines" data-slide="4" data-type="top-idea">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>04 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:80px;">MOST-SAVED IDEA</div>
+      <div class="top-body">
+        <div class="top-card">
+          <div class="top-tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 212 SAVES · TOP OF THE WEEK</div>
+          <div class="top-name">AI Email Reply Drafter</div>
+          <div class="top-pitch">Paste the email, pick a tone, get a polished reply in your voice. Paid tier trains on 5-10 of your own sent emails — output sounds like you.</div>
+          <div class="top-meta">
+            <div class="top-chip">+238% search</div>
+            <div class="top-chip">6hr build</div>
+            <div class="top-chip">$29/mo</div>
+            <div class="top-chip">Sales reps</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Full teardown on weekendmvp.app</span><span class="swipe">Article <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 05 TOP ARTICLE -->
+  <div class="slide grid-lines" data-slide="5" data-type="top-article">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>05 / 08</div>
+      </div>
+      <div class="section-label" style="margin-top:80px;">MOST-READ PLAYBOOK</div>
+      <div class="art-body">
+        <div class="art-card">
+          <div class="art-tag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> ARTICLE OF THE WEEK</div>
+          <div class="art-title">How to validate a startup idea in 48 hours.</div>
+          <div class="art-excerpt">"The cheapest validation is a landing page with a $29 'Buy' button and no product. If 3 strangers click it, you've got a signal. If 0 click it, you just saved yourself six months."</div>
+          <div class="art-stats">
+            <div class="cell"><div class="k">Pageviews</div><div class="v">1,847</div></div>
+            <div class="cell"><div class="k">Avg read time</div><div class="v">4m 12s</div></div>
+            <div class="cell"><div class="k">Scroll depth</div><div class="v">87%</div></div>
+            <div class="cell"><div class="k">Subs from page</div><div class="v">+38</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>weekendmvp.app/articles/validate-startup-idea-48-hours</span><span class="swipe">Community <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 06 COMMUNITY -->
+  <div class="slide grid-lines" data-slide="6" data-type="community">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>06 / 08</div>
+      </div>
+      <div class="cs-body">
+        <div class="section-label">READER WIN</div>
+        <div class="cs-headline">A subscriber shipped. <span style="color:var(--accent-lime);">Live in 11 hours.</span></div>
+        <div class="cs-quote">
+          <div class="cs-mark">"</div>
+          <div class="cs-text">Built <span class="hl">AI Meeting Notes Cleaner</span> from Monday's teardown. Live on Sunday. First $29 customer on Monday. Didn't write a line from scratch.</div>
+          <div class="cs-attr"><div class="av"></div><div><div class="who">@marcus</div><div class="role">reader · shipped W17</div></div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Reply to the newsletter — we'll feature yours next</span><span class="swipe">Next week <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 07 COMING NEXT -->
+  <div class="slide grid-lines" data-slide="7" data-type="coming-next">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>07 / 08</div>
+      </div>
+      <div class="next-body">
+        <div class="section-label">COMING WEEK 18</div>
+        <div class="next-headline">Next <span class="accent">five</span> already drafted.</div>
+        <div class="next-list">
+          <div class="next-row"><span class="day">MON</span><div><div class="t">AI Invoice Chaser for freelancers</div><div class="s">Automates late-payment reminders with tone matching.</div></div></div>
+          <div class="next-row"><span class="day">TUE</span><div><div class="t">Niche Job Board Starter Kit</div><div class="s">Template + scraper + Stripe paywall.</div></div></div>
+          <div class="next-row"><span class="day">WED</span><div><div class="t">AI Code Reviewer for solo devs</div><div class="s">Reviews PRs like a senior, ships line-level suggestions.</div></div></div>
+          <div class="next-row"><span class="day">THU</span><div><div class="t">Fintech: SMB Expense Categorizer</div><div class="s">$49/mo. Plaid + Claude. Compliance-first.</div></div></div>
+          <div class="next-row"><span class="day">FRI</span><div><div class="t">Friday Stack: The "sell-first" toolbox</div><div class="s">7 tools for landing-page-before-product launches.</div></div></div>
+        </div>
+      </div>
+      <div class="slide-footer"><span>Subscribe to get them first</span><span class="swipe">Subscribe <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span></div>
+    </div>
+  </div>
+
+  <!-- 08 CTA -->
+  <div class="slide grid-lines" data-slide="8" data-type="cta">
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="logo"><svg viewBox="0 0 771 98" width="220" height="28" fill="currentColor" aria-label="Weekend MVP" role="img"><path d="M746.964 29.6006C762.364 29.6006 770.864 39.5008 770.864 55.8008C770.864 72.2006 762.564 82 747.764 82C735.864 81.9999 730.264 76.4 728.764 68H727.764V98H708.964V30.6006H726.563V44.2002H727.563C729.164 34.2003 735.164 29.6006 746.964 29.6006ZM191.449 29.6006C208.849 29.6007 219.949 38.3004 219.949 54.5C219.949 56.2 219.849 57.5008 219.649 59.3008H180.149C180.449 65.4005 183.15 67.1006 191.149 67.1006C198.749 67.1005 200.749 65.8005 200.749 62.8008V61.7002H219.549V62.9004C219.549 74.1004 208.849 82 191.849 82C174.749 81.9999 162.749 74.7004 162.749 55.8008C162.749 39.4008 174.649 29.6006 191.449 29.6006ZM252.68 29.6006C270.079 29.6006 281.179 38.3004 281.18 54.5C281.18 56.2 281.08 57.5008 280.88 59.3008H241.38C241.68 65.4005 244.38 67.1006 252.38 67.1006C259.979 67.1005 261.979 65.8005 261.979 62.8008V61.7002H280.779V62.9004C280.779 74.1004 270.079 82 253.079 82C235.979 81.9999 223.98 74.7004 223.979 55.8008C223.979 39.4008 235.88 29.6006 252.68 29.6006ZM376.898 29.6006C394.298 29.6007 405.398 38.3004 405.398 54.5C405.398 56.2 405.299 57.5008 405.099 59.3008H365.599C365.899 65.4005 368.599 67.1006 376.599 67.1006C384.198 67.1005 386.198 65.8005 386.198 62.8008V61.7002H404.998V62.9004C404.998 74.1004 394.298 82 377.298 82C360.198 81.9999 348.198 74.7004 348.198 55.8008C348.198 39.4008 360.098 29.6006 376.898 29.6006ZM535.587 81H517.986V67.4004H516.986C515.386 77.4003 509.387 81.9999 497.587 82C482.187 82 473.687 72.1005 473.687 55.8008C473.687 39.4009 481.986 29.6008 496.786 29.6006C508.686 29.6006 514.286 35.2006 515.786 43.6006H516.786V14H535.587V81ZM162.626 38.9111L97.3594 81.2959L97.3525 43.3643L38.9082 81.3184V81.3164H0V3.49512H38.9111V42.4004L104.168 0.0224609L104.174 37.9541L162.619 0L162.626 38.9111ZM305.01 48.1006H313.91L325.01 30.6006H347.21L329.31 55.1006L346.91 81H324.71L314.11 64.9004H305.01V81H286.21V14H305.01V48.1006ZM449.129 29.6006C462.729 29.6007 469.129 37.8004 469.129 48.7002V81H450.329V55.6006C450.329 48.6006 447.728 46.4004 439.528 46.4004C431.229 46.4005 429.229 48.5005 429.229 55V81H410.429V30.6006H428.028V45.9004H429.028C430.128 37.5004 435.629 29.6006 449.129 29.6006ZM617.181 29.6006C630.081 29.6006 636.181 37.8003 636.181 48.7002V81H617.381V55.6006C617.381 48.6006 615.381 46.4004 607.581 46.4004C599.881 46.4004 598.281 48.5004 598.281 55V81H579.481V55.6006C579.481 48.6006 577.481 46.4004 569.681 46.4004C561.981 46.4005 560.381 48.5005 560.381 55V81H541.581V30.6006H559.181V45.9004H560.181C561.281 37.5004 565.881 29.6006 578.581 29.6006C590.481 29.6006 596.181 36.8004 597.181 45.9004H598.181C599.281 37.5005 604.081 29.6007 617.181 29.6006ZM671.876 62.7002H673.177L685.876 30.6006H706.477L683.876 81H660.677L638.276 30.6006H659.276L671.876 62.7002ZM740.164 46.8008C731.764 46.8008 727.764 48.4004 727.764 55.7002V56.4004C727.764 63.5004 731.764 64.9004 740.164 64.9004C748.864 64.9004 751.864 62.5005 751.864 55.8008C751.864 49.1008 748.864 46.8008 740.164 46.8008ZM504.387 46.7002C495.687 46.7002 492.687 49.1008 492.687 55.8008C492.687 62.5005 495.687 64.8008 504.387 64.8008C512.787 64.8008 516.786 63.2003 516.786 55.9004V55.2002C516.786 48.1004 512.787 46.7002 504.387 46.7002Z"/></svg></div>
+        <div class="slide-counter" data-counter>08 / 08</div>
+      </div>
+      <div class="cta-body">
+        <div class="cta-eyebrow">10 EDITIONS / WEEK · 0 SPAM</div>
+        <div class="cta-headline">Get week 18<br/><span class="accent">before anyone else.</span></div>
+        <div class="cta-subtitle">AM idea. PM brief. Weekly digest. Subscribe and the whole thing lands in your inbox.</div>
+        <a class="cta-button">Subscribe <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        <div class="cta-url"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> weekendmvp.app/newsletter</div>
+      </div>
+      <div class="slide-footer"><span>@weekendmvp</span><span class="swipe">Save <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></span></div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "idea-spotlight",
+  "displayName": "Idea Spotlight",
+  "html": "idea-spotlight-8slide.html",
+  "style": "Magazine-editorial. Fixed 8-slide arc optimized for daily Idea of the Day. Lime + lavender accents.",
+  "bestFor": ["Idea of the Day", "Featured idea", "Trend-driven idea launches"],
+  "recommendFor": ["Idea of the Day"],
+  "slideCount": 8,
+  "variableSlides": false,
+  "slideCountMin": 8,
+  "slideCountMax": 8,
+  "slideCounterFormat": "{index} / {total}",
+  "dimensions": { "width": 1080, "height": 1350, "unit": "px" },
+  "accents": { "primary": "lime", "secondary": "lavender" },
+  "slides": [
+    { "index": 1, "type": "idea-hero", "fixed": true, "description": "Date line + lime 'Idea of the Day' eyebrow + big idea name + pitch + 3 lavender signal chips." },
+    { "index": 2, "type": "signal",    "fixed": true, "description": "Search volume + 90-day trend cards with lime→emerald sparkline. Callout line below." },
+    { "index": 3, "type": "twist",     "fixed": true, "description": "Split before/after: 'what exists' (muted) vs 'the twist' (lime-accented)." },
+    { "index": 4, "type": "teardown",  "fixed": true, "description": "4-cell grid (build time, price, audience, infra) + full-width stack row." },
+    { "index": 5, "type": "prompt",    "fixed": true, "description": "Aubergine terminal-style panel with a copy-paste Claude prompt. Lavender header, lime variables." },
+    { "index": 6, "type": "math",      "fixed": true, "description": "Price × Customers equation. Answer block is lime with black text — dominant moment." },
+    { "index": 7, "type": "buyers",    "fixed": true, "description": "3-persona grid. Each card: avatar, who, pain, 'will pay $X' line in lime." },
+    { "index": 8, "type": "cta",       "fixed": true, "description": "Lime eyebrow + 2-line headline (lime accent) + lime button + URL." }
+  ],
+  "availableMiddleSlideTypes": [],
+  "notes": [
+    "Fixed 8-slide narrative arc. Don't add/remove — the flow breaks.",
+    "If the topic needs variable slides, switch to wmv-default.",
+    "The prompt slide (05) needs real copy-paste-ready text — this is the skill's one chance to give tangible value."
+  ]
+}
