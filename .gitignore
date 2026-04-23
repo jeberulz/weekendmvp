@@ -24,3 +24,38 @@ content/video/**/*.md
 
 # OS
 .DS_Store
+._*
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Internal Claude / Cursor workflows (local-only IP)
+.claude/skills/
+.cursor/plans/
+.cursor/rules/
+.cursorrules
+
+# Draft content (pre-publish)
+ideas/drafts/
+ideas/manifest.draft.json
+
+# Internal testers / documentation snippets
+test-api.html
+.analytics-snippet.html
+
+# Integration setup guides (internal reference)
+BEEHIIV_SETUP.md
+BEEHIIV_CURSOR_RULES.md
