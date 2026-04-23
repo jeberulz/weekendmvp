@@ -1,6 +1,159 @@
 {
   "ideas": [
     {
+      "slug": "meeting-scheduler",
+      "title": "Smart Meeting Scheduler",
+      "publishedAt": "2026-04-23",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "ideabrowser:2161-adjacent+web-research",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas",
+          "web-research:category+pricing+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-23T10:49:03.880Z",
+        "backfillNotes": "THIN → PASS. Anchor: Ideabrowser #2161 TimeSync (opp 9) + #2663 Calendar Shield adjacent. Competitors: Calendly $10-$20/user 20M users $3B valuation, Cal.com $12/user hosted + open-source, SavvyCal $12-$20/user premium UX, Motion/Reclaim $10-$34/user AI calendar defrag. Wedge: AI slot resolver respects working hours across timezones + team round-robin + embeddable widget + flat team pricing. Pricing Free/$19 Solo Pro/$49 Team up to 10 members. Tech: Next.js + Supabase + Google Calendar v3 + Microsoft Graph + Claude Haiku ranking + Zoom/Meet API + Cloudflare CDN widget + Stripe. Market: online scheduling $5.5B → $13B 15.6% CAGR, Calendly $3B Series B, remote work 28% fully remote + 30% hybrid."
+      }
+    },
+    {
+      "slug": "habit-tracker",
+      "title": "Minimalist Habit Tracker",
+      "publishedAt": "2026-04-23",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas",
+          "web-research:category+pricing+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-23T10:49:03.880Z",
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Streaks $4.99 one-time iOS-only, Habitica gamified 4M+ users $47.99/yr, Way of Life/HabitBull legacy dated UX, Notion templates DIY. Wedge: clean Linear-inspired PWA + Apple HealthKit via iOS Shortcut bridge + Google Fit OAuth + accountability partner (Dominican University 65% goal achievement research). Pricing Free/$29 year/$79 family-lifetime. Tech: Next.js PWA offline-first via Dexie + Supabase + iOS Shortcuts + Google Fit REST + Web Push + Stripe. Market: mHealth $58B → $142B 15.7% CAGR, Atomic Habits 20M+ copies, Apple HealthKit 900M active."
+      }
+    },
+    {
+      "slug": "email-to-todo",
+      "title": "Email to Todo Converter",
+      "publishedAt": "2026-04-23",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas",
+          "web-research:category+pricing+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-23T10:49:03.880Z",
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Todoist/Things/TickTick native email-in (free, no parsing), Superhuman $30/mo, Zapier $20+/mo, ClickUp+ChatGPT manual. Wedge: Claude Haiku AI extraction with due-date inference + priority + owner detection, routes to user-chosen destination. Pricing Free/$5 Basic/$12 Pro. Tech: Resend Inbound + Next.js + Claude Haiku 4.5 + Supabase + Todoist/Notion/Linear/Things OAuth adapters + Upstash Ratelimit + Stripe. Market: Task management $4.2B 2024 → $9.8B 2030 15.2% CAGR, 121 emails/day/user, 2.5 hrs/day email triage."
+      }
+    },
+    {
+      "slug": "daily-standup-bot",
+      "title": "Async Standup Bot",
+      "publishedAt": "2026-04-23",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "web-research+category-knowledge",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas",
+          "web-research:category+pricing+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-23T10:49:03.880Z",
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Geekbot $2.50-$4/user/mo acquired 2023, Standuply $4-$6/user, Range/Friday/Status Hero $7.50-$8/user, Slack Workflow Builder free. Wedge: AI digest + blocker detection + flat $29/mo up to 20 users. Tech: Slack Bolt SDK + Next.js minimal admin + Supabase + Claude Haiku 4.5 + Vercel Cron + Upstash QStash + Stripe. Market: Slack 38M DAU, $15K-$40K/yr/team opportunity cost of standups, remote work mature."
+      }
+    },
+    {
+      "slug": "focus-session-timer",
+      "title": "Focus Session Timer",
+      "publishedAt": "2026-04-23",
+      "category": "productivity",
+      "buildTime": "6",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "description": "Deep-work Pomodoro timer with analytics, website blocking, calendar sync. Flat annual pricing under Forest/Flow. Weekend MVP guide + prompts.",
+      "researchLevel": "deep",
+      "source": "ideabrowser:4076-adjacent+web-research",
+      "provenance": {
+        "researchCalls": [
+          "ideabrowser:browse_ideas",
+          "web-research:category+pricing+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-23T10:49:03.871Z",
+        "backfillNotes": "THIN → PASS. Anchor: Ideabrowser #4076 FocusFlow (opp 9). Competitors: Forest $3.99 one-time, Flow $9.99/mo, Sessions $4-8/mo, Focus Keeper free. Pricing Free/$29 year/$79 lifetime. Tech: Next.js PWA + Chrome/Firefox Manifest V3 extension + Supabase + Google Calendar API + Web Audio API + Stripe. Market: brain training $130B by 2035, UC Irvine 23 min recovery research, Forest 10M+ downloads."
+      }
+    },
+    {
       "slug": "notion-backup-tool",
       "title": "Notion Backup Tool",
       "publishedAt": "2026-04-22",

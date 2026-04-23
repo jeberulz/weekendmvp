@@ -1,163 +1,378 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Meeting Scheduler | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a meeting scheduling tool that finds optimal times across time zones. Share a link, they pick a slot. Cal.com alternative. Full build guide.">
+    <meta name="description" content="Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/meeting-scheduler">
     <meta property="og:title" content="Smart Meeting Scheduler | Startup Ideas">
-    <meta property="og:description" content="Scheduling meetings without the back-and-forth.">
+    <meta property="og:description" content="Scheduling link tool with AI conflict resolver, team round-robin, embed widget. Flat pricing beats Calendly's per-user.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/meeting-scheduler">
+    <meta property="twitter:title" content="Smart Meeting Scheduler | Startup Ideas">
+    <meta property="twitter:description" content="Scheduling link tool with AI conflict resolver, team round-robin, embed widget. Flat pricing beats Calendly's per-user.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/meeting-scheduler">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build Smart Meeting Scheduler MVP",
-      "description": "Step-by-step guide to building Smart Meeting Scheduler in a weekend.",
-      "totalTime": "PT10H",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Article", "headline": "Smart Meeting Scheduler", "description": "Scheduling link tool with AI cross-timezone conflict resolution, team round-robin routing, and embeddable widget. Flat-team pricing. Weekend build guide.", "author": { "@id": "https://weekendmvp.app/#person" }, "publisher": { "@id": "https://weekendmvp.app/#website" }, "datePublished": "2026-04-23", "mainEntityOfPage": "https://weekendmvp.app/ideas/meeting-scheduler.html", "image": "https://weekendmvp.app/image/og-image.png" },
+        { "@type": "SoftwareApplication", "name": "Smart Meeting Scheduler", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Multi-tenant scheduling SaaS. Cross-timezone slot suggestion, team round-robin, embeddable widget, Google/Outlook calendar sync." },
+        { "@type": "HowTo", "name": "Build Smart Meeting Scheduler MVP", "description": "Weekend build guide.", "totalTime": "PT10H", "step": [
+          { "@type": "HowToStep", "position": 1, "name": "Calendar Integration", "text": "OAuth Google + Microsoft calendars; read busy blocks; write events on booking." },
+          { "@type": "HowToStep", "position": 2, "name": "Cross-Timezone Matching", "text": "AI suggests slots that work for all attendees with working-hour constraints." },
+          { "@type": "HowToStep", "position": 3, "name": "Team Round-Robin + Widget", "text": "Distribute incoming bookings round-robin; embeddable iframe widget." }
+        ] },
+        { "@type": "BreadcrumbList", "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+          { "@type": "ListItem", "position": 3, "name": "Smart Meeting Scheduler", "item": "https://weekendmvp.app/ideas/meeting-scheduler.html" }
+        ] }
       ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Smart Meeting Scheduler",
-          "item": "https://weekendmvp.app/ideas/meeting-scheduler.html"
-        }
-      ]
-    },
-    {
-      "@type": "Article",
-      "headline": "Smart Meeting Scheduler",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/meeting-scheduler.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Smart Meeting Scheduler",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Smart Meeting Scheduler</h1>
-            <p class="text-lg text-neutral-500 mb-10">Stop the "when are you free?" emails.</p>
+            <p class="text-lg text-neutral-500 mb-10">Cross-timezone booking that respects working hours.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span><span class="text-neutral-400 text-xs">~10 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Smart Meeting Scheduler</h1>
-                <p class="text-xl text-neutral-500 font-light">Share a link. They pick a time. Done.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span>
+                        <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Smart Meeting Scheduler</h1>
+                    <p class="text-xl text-neutral-500 font-light">Cross-timezone slots that respect working hours. Team round-robin without per-user pricing.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Global teams lose <strong>7+ hours a week</strong> (Ideabrowser #2161 TimeSync market signal) to cross-timezone scheduling. A sales rep in New York trying to schedule a prospect in Sydney. A design team coordinating a cross-functional review across EMEA, APAC, and the Americas. A founder hiring their first engineer in Europe. Current tools either show "everyone's availability" as a raw union (Calendly group polls, When2Meet) or pick a slot without considering that 6am for Singapore is a terrible time to think clearly.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Calendly dominates the scheduling-link category with <strong>20M+ users</strong> and a $3B+ valuation, but charges <strong>$10&ndash;$20 per user per month</strong>. For a 10-person team that's $1,200&ndash;$2,400/year just for booking links. SavvyCal and Cal.com chip at the edges with better UX and lower pricing, but the "AI conflict resolver that understands working hours" is not yet a standard feature. The wedge is opinionated defaults: never suggest outside a person's working hours, never suggest back-to-back meetings, always prefer slots after lunch.</p>
+                    <p class="text-neutral-600 leading-relaxed">The second wedge is flat-team pricing. Calendly charges per user even for a round-robin routing group where technically only one person takes the meeting. For a growing company that's pricing friction. Charging $49/mo flat up to 10 team members undercuts Calendly by 80% at team size 10. Cal.com's self-hosted angle is technical overhead that most teams don't want; managed hosted + AI features + flat pricing is the sweet spot.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A Calendly-class scheduling SaaS with three opinionated improvements. One: AI slot suggestion that respects working hours by timezone (never shows 6am Sydney as a "free" slot even if the calendar is empty). Two: team round-robin that distributes incoming bookings across configured teammates based on load balance (not just availability). Three: embeddable widget that drops into any website without iframe hell. Flat pricing: free solo, $19 Solo Pro, $49 Team up to 10 members.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Connect calendar</p>
+                                <p class="text-xs text-neutral-500 mt-1">Google / Outlook / iCloud. Set working hours per day.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Share link</p>
+                                <p class="text-xs text-neutral-500 mt-1">Booker picks a slot in their own timezone. AI respects yours.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Auto-confirm + Zoom</p>
+                                <p class="text-xs text-neutral-500 mt-1">Calendar event created both sides; Zoom/Meet link attached.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The AI conflict resolver uses a simple rule engine + LLM judgment. Rules: within working hours, not back-to-back, not 30 minutes before end-of-day. LLM: for hard cases, "suggest 3 slots where both attendees will have reasonable energy." Over time, user feedback tunes the system ("never Mondays before 10am" as learned preference). This is a genuine differentiator that the incumbents haven't shipped because they optimize for enterprise compliance, not individual ergonomics.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>online scheduling software market is $5.5B in 2024, projected to $13B by 2030 at 15.6% CAGR</strong> (Grand View Research). Calendly is the clear category leader with a <strong>$3B+ valuation</strong> (2021 Series B at $3B). Cal.com raised <strong>$32M Series A+</strong> (2023) as the open-source challenger. The market validates big outcomes; the question is whether a focused AI + flat-pricing entrant can carve out 1&ndash;2% share.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Calendly has <strong>20M+ users across 100K+ companies</strong> (public stats, 2023). SavvyCal reports strong indie traction. Cal.com GitHub repo has 30K+ stars and 5K+ self-hosted instances.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Cross-timezone pain validated by Ideabrowser #2161 (TimeSync, opp 9 pain 9 timing 9) and #2663 (Calendar Shield, opp 9 pain 9 timing 9). Both score high because the pain is universal for remote-first companies.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Remote work plateau: <strong>28% fully remote + 30% hybrid</strong> in US knowledge work (McKinsey 2024). Distributed scheduling remains the default, not the exception.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Search: "meeting scheduler" 22K/mo, "calendly alternative" 5.4K/mo, "schedule across timezones" 1.3K/mo. CPC <strong>$8&ndash;$15</strong> is commercial and competitive.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/remotework (180K), r/startups (1.8M), Indie Hackers (200K+). LinkedIn "distributed teams" content gets strong engagement. AI schedule-assistant tools are a common builder-community thread.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Stage: <em>mature but AI-disrupted</em>. Calendly is entrenched. SavvyCal serves power users. Cal.com serves developers. Motion and Reclaim focus on calendar defragmentation (related but different). A flat-priced, AI-conflict-aware entrant has a 12&ndash;18 month window before Calendly bolts in AI suggestions as table stakes.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Five competitor classes: Calendly + Cal.com (category leaders), SavvyCal (premium UX), Motion + Reclaim (AI calendar defrag adjacent), native calendar group-find-time (Google/Outlook built-in), and Doodle/When2Meet (legacy polls). None combine AI slot suggestions with flat-team pricing and an embeddable widget.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Calendly</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader. 20M+ users, $3B valuation. Deep Salesforce/HubSpot integrations. Per-user pricing scales linearly; enterprise focus. Round-robin requires Teams plan at $16/user/mo.</p>
+                            <p class="text-xs text-neutral-400">$10 Standard &rarr; $16 Teams &rarr; $20+ Enterprise per user/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Cal.com</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Open-source + hosted. Developer darling, 30K+ GitHub stars. Flexible but requires setup. AI features nascent. Hosted pricing is per-user. Self-hosting has ops overhead most SMBs avoid.</p>
+                            <p class="text-xs text-neutral-400">Free self-hosted; $12/user/mo Teams hosted</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">SavvyCal</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Premium UX challenger. Overlay feature (see booker's calendar + your calendar at once) is beloved. Priced higher per-user than Calendly; no flat-team tier. No AI slot suggestions yet.</p>
+                            <p class="text-xs text-neutral-400">$12 Basic &rarr; $20 Premium / $40 Team per user/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Motion / Reclaim.ai</h4>
+                            <p class="text-xs text-neutral-500 mb-2">AI calendar tools but focused on defragmenting existing calendars and auto-scheduling tasks. Not primarily booking-link tools. Pricing $34&ndash;$49/user/mo &mdash; overkill for teams that just want scheduling.</p>
+                            <p class="text-xs text-neutral-400">Motion $34/user/mo; Reclaim.ai $10&ndash;$18/user/mo</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Flat $49/mo up to 10 team members. AI slot resolver that respects working hours and energy patterns across timezones. Embeddable widget that works without iframe contortion. Tagline: "Scheduling that feels like it thought about your 8am, not just your calendar."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat pricing, not per-user. Free tier for solo indie; Solo Pro for single users who need the advanced AI; Team for small companies. LLM cost per booking is minimal (&lt;$0.005); infra dominated by calendar API quota. Gross margin stays above 93% at scale.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 event type, 1 calendar, 10 bookings/mo, &ldquo;Powered by&rdquo; footer</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Solo Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$19/mo</p>
+                            <p class="text-xs text-neutral-500">Unlimited event types, multi-calendar, AI slot resolver, embeddable widget, custom branding</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$49/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 10 members, round-robin routing, team calendars, Salesforce/HubSpot integrations, SSO</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Infra cost/tenant</p>
+                                <p class="font-semibold">~$0.60/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Solo</p>
+                                <p class="font-semibold">~96%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$30&ndash;$60</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Solo conv.</p>
+                                <p class="font-semibold">5&ndash;9%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 200 Solo + 30 Team = $5.3K/mo. 1K Solo + 150 Team = $26.4K/mo. At 4K Solo + 600 Team = $105.4K/mo ($1.26M ARR). Switching costs are high once users bake the scheduling link into email signatures, website footers, and CRM workflows.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Calendar OAuth + slot computation + AI layer. The hardest part is handling calendar API quotas and correctly computing free/busy across attendees in different timezones. Rest is SaaS plumbing.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 App Router</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Admin + booker-facing pages. <code class="text-xs bg-neutral-100 px-1 rounded">/[username]/[event-type]</code> public booking URLs as Server Components for fast first paint and SEO.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase + Postgres</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">users</code>, <code class="text-xs bg-neutral-100 px-1 rounded">teams</code>, <code class="text-xs bg-neutral-100 px-1 rounded">calendars</code>, <code class="text-xs bg-neutral-100 px-1 rounded">event_types</code>, <code class="text-xs bg-neutral-100 px-1 rounded">bookings</code>, <code class="text-xs bg-neutral-100 px-1 rounded">routing_rules</code>. RLS per-user and per-team.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:google" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Google + Microsoft Calendar APIs</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Google Calendar API v3 + Microsoft Graph API. OAuth with calendar scopes. Use freebusy endpoints for availability computation; <code class="text-xs bg-neutral-100 px-1 rounded">events.insert</code> on booking. Handle token refresh per tenant.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude Haiku for slot judgment</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">When multiple valid slots exist, Claude ranks them considering working hours, both-party timezones, prior bookings patterns, and user-supplied preferences ("never before 10am Mondays"). Invoked only for Pro+ tiers to preserve margin.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:video" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Zoom + Google Meet API</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Zoom OAuth for auto-creating meeting URLs on booking confirmation. Google Meet link is free with Google Calendar invites. Microsoft Teams via Graph API for Outlook users.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Billing + Widget CDN</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Checkout for Solo/Team. Widget served from Cloudflare CDN as a Shadow-DOM iframe embed; one-line <code class="text-xs bg-neutral-100 px-1 rounded">&lt;script&gt;</code> install for any website.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Calendar OAuth + Availability</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router scheduling SaaS. Supabase backend.
+
+Schema:
+- users(id, email, username, timezone, working_hours JSONB, plan, stripe_customer_id)
+- calendars(id, user_id, provider ENUM[google,outlook,icloud], access_token_encrypted, refresh_token_encrypted, calendar_id_external, is_primary bool, is_availability_source bool)
+- event_types(id, user_id OR team_id, slug, title, duration_min, buffer_min, min_notice_hours, max_advance_days, location_type ENUM[zoom,meet,phone,in_person], location_config JSONB)
+- bookings(id, event_type_id, invitee_email, invitee_name, invitee_timezone, start_at, end_at, meeting_url, status ENUM[confirmed,canceled,rescheduled])
+- teams(id, name, plan)
+- team_members(id, team_id, user_id, role)
+- routing_rules(id, event_type_id, strategy ENUM[round_robin,load_balanced,collective], member_ids JSONB)
+
+OAuth flow:
+- /api/calendars/google/connect redirects to https://accounts.google.com/o/oauth2/v2/auth with scopes 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly'.
+- Callback stores refresh_token encrypted via Supabase Vault.
+- Similar for Microsoft Graph with scopes 'Calendars.ReadWrite offline_access'.
+
+Availability computation:
+- For a booking request, fetch freebusy for each attendee from their calendars (cached 5 min).
+- Apply user.working_hours by day of week.
+- Subtract existing bookings from local DB (not-yet-synced double-booking protection).
+- Generate candidate slots matching event_type.duration_min at event_type.buffer_min spacing.
+- Filter: min_notice_hours satisfied, max_advance_days respected.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. AI Cross-Timezone Slot Resolver</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the AI slot ranking feature for Pro+ tiers.
+
+When a booker arrives at a booking page, we have:
+- List of 50+ candidate slots from availability computation.
+- Attendee timezones (user's known tz; booker's tz from browser).
+- User working_hours preferences.
+- User's learned preferences (e.g., stored tags like "avoid Mondays before 10am", "prefer afternoons").
+
+Ranking via rule engine + Claude:
+1. Rule pass: filter slots that violate hard rules (outside working hours either side, weekends if not allowed, less than buffer_min after a prior meeting).
+2. Score pass: assign numeric scores by heuristic:
+   - +10 mid-morning (10am-11:30am local)
+   - +5 early afternoon (1:30pm-3pm)
+   - -5 end-of-day (within 30 min of working_hours end)
+   - -15 first-thing (within 30 min of working_hours start)
+   - -10 back-to-back with adjacent meeting
+   - -20 cross-timezone mismatch (one side outside normal working hours)
+3. Claude pass (Pro+ only): top 10 scored slots passed to Claude with user's preferences:
+   "Given these 10 slots and this user's stored preferences {preferences}, rank the top 5 for this meeting. Consider the booker is in {booker_tz} and user is in {user_tz}. Return JSON: {rankings: [{slot_start, reason}]}."
+4. Show top 5 in the booking UI with an optional 'why?' tooltip explaining the AI's reasoning.
+
+Feedback loop:
+- If user deletes/reschedules a booking with source='ai_suggested', note in preferences ('dispreferred Tuesday 4pm'). Claude reads preferences back next time.
+- Rate limit Claude calls: cache per (user, booker_tz, date_range) for 10 min to avoid thundering herd on popular booking pages.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Round-Robin + Embeddable Widget</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement team round-robin routing and the embeddable widget.
+
+Round-robin routing:
+- event_types with team_id and routing_rules with strategy='round_robin' use the following logic:
+  1. On booking request, query all team_members assigned in routing_rules.member_ids who are in team_id.
+  2. Fetch each member's availability for requested slot.
+  3. Load last-booked-at timestamp per member (from bookings table).
+  4. Assign to member with OLDEST last-booked-at among available members (load balancing).
+  5. Create booking with that member as host.
+- Strategy 'collective': require ALL team members available. Strategy 'load_balanced': weight by capacity_per_day setting per member.
+
+Failover: if chosen member unexpectedly declines (e.g., their calendar changed between query and commit), auto-reroute to next-best member before returning error to booker.
+
+Embeddable widget (scheduler.js):
+- ~30KB vanilla JS bundle hosted at https://cdn.product.com/scheduler.js.
+- Embed:
+  <div data-scheduler data-user="username" data-event="intro-call"></div>
+  <script src="https://cdn.product.com/scheduler.js" defer></script>
+- On load, scans for data-scheduler divs; for each, injects a Shadow DOM iframe pointing to https://product.com/embed/{user}/{event}.
+- Iframe is styled to be transparent; host page CSS doesn't leak in (Shadow DOM isolation).
+- postMessage bridge: iframe emits 'booking_confirmed' event on completion; host page can listen and trigger confetti, redirect, or analytics.
+
+Test matrix: plain HTML, WordPress, Webflow, Framer, Next.js site. Must work without hosting-platform-specific workarounds.
+
+Embed analytics: track (tenant, host_domain, date, views, bookings) to a lightweight events table. Show embed performance in /admin/embed for the user.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.grandviewresearch.com/industry-analysis/online-appointment-scheduling-software-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Grand View Research &mdash; Online Scheduling Software Market ($5.5B 2024 &rarr; $13B 2030, 15.6% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://calendly.com/pricing" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Calendly Pricing &mdash; $10&ndash;$20 per user/mo<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://cal.com/pricing" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Cal.com Pricing &mdash; hosted Teams $12/user/mo<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://developers.google.com/calendar/api/v3/reference" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Google Calendar API v3 documentation<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://learn.microsoft.com/en-us/graph/api/resources/calendar" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Microsoft Graph API &mdash; Calendar resources<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Ideabrowser idea #2161 TimeSync (opp 9 pain 9 timing 9) cross-timezone signal + #2663 Calendar Shield adjacent; Calendly $3B valuation referenced from public 2021 Series B press.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Verify Calendly, Cal.com, and SavvyCal pricing on live pages before marketing claims.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Scheduling meetings is still painful. "What times work for you?" leads to 5+ back-and-forth emails. Remote teams across time zones make it worse. Calendly and Cal.com work but are bloated with features most people don't need. Small teams want simple scheduling without complexity.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A dead-simple meeting scheduler. Connect your calendar, set your availability, share a link. Visitors see available slots in their time zone and book instantly. Auto-creates calendar events and sends reminders. No unnecessary features—just scheduling that works.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Set availability</p><p class="text-xs text-neutral-500 mt-1">Your working hours</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Share link</p><p class="text-xs text-neutral-500 mt-1">name.schedule.app</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">They book</p><p class="text-xs text-neutral-500 mt-1">Auto-added to calendars</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Calendly: 10M+ users, valued at $3B—proven demand</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Cal.com is open-source but complex for simple needs</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Market fragmented—room for focused, simple tool</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app for meeting scheduling.
-
-Features:
-- Dashboard: upcoming meetings, booking link
-- Event types: 15min, 30min, 60min calls with custom names
-- Availability settings: weekly hours, blocked dates
-- Public booking page: shows available slots
-- Calendar sync: Google Calendar and Outlook
-
-Use Supabase for auth. Google/Microsoft OAuth for calendar access.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Availability Engine</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the slot calculation system:
-
-1. User sets weekly availability (e.g., Mon-Fri 9am-5pm)
-2. Fetch existing events from connected calendars
-3. Calculate available slots: availability minus booked events
-4. Account for buffer time between meetings (configurable)
-5. Display slots in visitor's local timezone
-6. Prevent double-booking: lock slot when selected
-
-Handle edge cases: holidays, all-day events, out-of-office.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Booking Flow</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the booking experience:
-
-1. Booking page: clean UI showing date picker and available times
-2. Visitor selects slot, enters name and email
-3. Optional: custom questions (e.g., "What's this meeting about?")
-4. Create calendar event via Google/Microsoft API
-5. Send confirmation emails to both parties
-6. Send reminder emails: 24 hours and 1 hour before
-
-Include cancel/reschedule links in confirmation email.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

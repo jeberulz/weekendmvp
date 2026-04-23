@@ -1,163 +1,372 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Async Standup Bot | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a Slack bot that collects daily standups asynchronously and summarizes them. Save 30 minutes of meeting time every day. Full build guide.">
+    <meta name="description" content="Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/daily-standup-bot">
     <meta property="og:title" content="Async Standup Bot | Startup Ideas">
-    <meta property="og:description" content="Collect daily standups asynchronously via Slack. Save meeting time.">
+    <meta property="og:description" content="Async standups via Slack DM, AI summary + blocker surfacing. Flat $29/mo up to 20 users vs per-seat competitors.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/daily-standup-bot">
+    <meta property="twitter:title" content="Async Standup Bot | Startup Ideas">
+    <meta property="twitter:description" content="Async standups via Slack DM, AI summary + blocker surfacing. Flat $29/mo up to 20 users vs per-seat competitors.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/daily-standup-bot">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build Async Standup Bot MVP",
-      "description": "Step-by-step guide to building Async Standup Bot in a weekend.",
-      "totalTime": "PT8H",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Article", "headline": "Async Standup Bot", "description": "Slack-first async standup bot with AI daily summary and automatic blocker detection. Flat team pricing. Weekend build guide with prompts.", "author": { "@id": "https://weekendmvp.app/#person" }, "publisher": { "@id": "https://weekendmvp.app/#website" }, "datePublished": "2026-04-23", "mainEntityOfPage": "https://weekendmvp.app/ideas/daily-standup-bot.html", "image": "https://weekendmvp.app/image/og-image.png" },
+        { "@type": "SoftwareApplication", "name": "Async Standup Bot", "applicationCategory": "BusinessApplication", "operatingSystem": "Web", "description": "Slack bot that DMs each team member at a scheduled time, collects standups, generates an AI team summary with blockers called out, posts to a channel." },
+        { "@type": "HowTo", "name": "Build Async Standup Bot MVP", "description": "Step-by-step weekend build.", "totalTime": "PT8H", "step": [
+          { "@type": "HowToStep", "position": 1, "name": "Slack App", "text": "Slack bot user with OAuth install and chat.postMessage + conversations.history scopes." },
+          { "@type": "HowToStep", "position": 2, "name": "Scheduled DM Flow", "text": "Cron triggers DMs with 3 canonical standup questions; collect responses." },
+          { "@type": "HowToStep", "position": 3, "name": "AI Summary", "text": "Claude summarizes team responses and flags blockers; posts digest to #standup channel." }
+        ] },
+        { "@type": "BreadcrumbList", "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+          { "@type": "ListItem", "position": 3, "name": "Async Standup Bot", "item": "https://weekendmvp.app/ideas/daily-standup-bot.html" }
+        ] }
       ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Async Standup Bot",
-          "item": "https://weekendmvp.app/ideas/daily-standup-bot.html"
-        }
-      ]
-    },
-    {
-      "@type": "Article",
-      "headline": "Async Standup Bot",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/daily-standup-bot.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Async Standup Bot",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Async Standup Bot</h1>
-            <p class="text-lg text-neutral-500 mb-10">Daily standups without the daily meeting.</p>
+            <p class="text-lg text-neutral-500 mb-10">Kill the daily meeting. Keep the signal.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span><span class="text-neutral-400 text-xs">~8 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Async Standup Bot</h1>
-                <p class="text-xl text-neutral-500 font-light">Replace standup meetings with a 2-minute Slack message.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span>
+                        <span class="text-neutral-400 text-xs">~8 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Async Standup Bot</h1>
+                    <p class="text-xl text-neutral-500 font-light">Slack DM answers, AI-summarized digest, blockers surfaced. $29/mo flat up to 20 users.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The daily standup meeting is the most universally hated 15 minutes in software. Time-zone-spread teams schedule it at 9am somewhere, which means 2am for someone. Every engineer answers the same three questions out loud that could have been written in 60 seconds. The manager takes notes nobody reads. Blockers get buried behind "mostly fine, working on the thing." The meeting ends with everyone nodding and then Slacking each other privately to ask "wait, what did X actually say?"</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Async tooling exists. Geekbot has ~<strong>20K+ teams</strong> paying $2.50&ndash;$4/user/mo. Standuply, Status Hero, Troopr, Range, Friday &mdash; at least 10 products in this category. The problem is they all charge per-seat, so a 10-person team is at $25&ndash;$40/mo before considering overhead. Worse, most of them post raw dumps of everyone's answers to #standup with no summary, so a busy team lead scrolls past 10 identical-looking messages and misses the two blockers buried inside.</p>
+                    <p class="text-neutral-600 leading-relaxed">The AI opportunity is obvious: read the full dump, extract blockers in one line each, summarize shared themes, surface who's been skipping. A small team does not need Geekbot's fancy dashboards. They need DMs that go out on schedule, responses that get intelligently summarized, and a single digest in the team channel they'll actually read. Priced flat so the <em>third</em> engineer doesn't increase the bill.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A Slack bot that installs in one click. Each user configures their personal standup time (defaults to 10am user-local). Bot DMs three questions: "What did you ship yesterday? What's the plan today? Anything blocking you?" User replies in thread; bot acknowledges with a smile. At the team's configured digest time (default 10:30am team-local), Claude reads all responses and posts a single structured summary to #standup: top themes, individual one-liners, and a clearly flagged <strong>Blockers</strong> section that @mentions the owner and any relevant teammate.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Bot DMs each user</p>
+                                <p class="text-xs text-neutral-500 mt-1">3 questions at their local time</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Collect responses</p>
+                                <p class="text-xs text-neutral-500 mt-1">Stored per-user; follow-up nudge at 1h</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">AI digest to #standup</p>
+                                <p class="text-xs text-neutral-500 mt-1">Themes, blockers flagged, owners @tagged</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The blocker surfacing is the killer feature. Claude reads "waiting for review on PR #742" and automatically writes "Blocker: PR #742 review &mdash; @reviewers-of-that-PR." Nobody has to scroll. Managers see blockers at the top. Engineers see their own blockers get acted on, which creates positive feedback and increases standup completion rate &mdash; the metric every tool in this category fights over.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Slack has <strong>38M+ daily active users</strong> (Salesforce earnings 2024) across hundreds of thousands of paid workspaces. Geekbot's public stats claim <strong>20K+ teams</strong>. The async-standup category alone is a $50M+ revenue slice of the broader "meeting reduction" market projected at <strong>$5B+ by 2030</strong> (various analyst reports on remote-work tooling).</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Remote/hybrid work remains dominant post-2022. <strong>58% of US workers are remote-eligible</strong> (McKinsey 2023), and async-first teams are the fastest-growing organizational model (Gitlab, Automattic, Basecamp playbooks).</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Daily standup meetings cost an estimated <strong>$15K&ndash;$40K/year per 10-person team</strong> in salary-hours (15 min &times; 10 people &times; 250 days &times; avg $80/hr). Async alternatives save 60%+ of that, a clear ROI for any tool under $500/yr.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Search: "async standup" 4.4K/mo, "standup bot" 2.9K/mo, "geekbot alternative" 480/mo. CPC <strong>$3&ndash;$6</strong>; B2B commercial intent.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Slack App Directory is the <strong>primary distribution channel</strong> for this category. Geekbot, Standuply, and Range are Top 50 productivity apps; trust + review velocity on the directory drives installs.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/engineeringmanagers (120K), r/remotework (180K), r/agile (90K). Engineering management newsletters (LeadDev, Pragmatic Engineer) convert reliably.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Stage: <em>mature, per-seat entrenched</em>. Geekbot (acquired by Spectrum Labs 2023) and Standuply dominate the paid tier. Slack Workflow Builder offers a free DIY version that loses signal (no AI summary). Your wedge: AI digest as the differentiator, flat-team pricing (not per-seat) as the pricing hack. Slack App Directory listing + AI-summary demo GIF in the listing header converts.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four competitor classes: dedicated async standup bots (Geekbot, Standuply), broader remote-management suites (Range, Friday, Status Hero), free Slack Workflow Builder, and "just use a channel" DIY. Your wedge is AI blocker surfacing + flat pricing, neither of which is bundled together elsewhere.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Geekbot</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader for async Slack standups. 20K+ teams, acquired by Spectrum Labs 2023. Raw response dumps to channel (no AI summary). Per-user pricing bites at team size 10+.</p>
+                            <p class="text-xs text-neutral-400">$2.50&ndash;$4/user/mo; free up to 10 users</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Standuply</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Direct Geekbot competitor. Adds video responses and meeting transcripts as premium features. Per-user billing, no AI summarization in default plans.</p>
+                            <p class="text-xs text-neutral-400">$4&ndash;$6/user/mo; complex plan tiers</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Range / Friday / Status Hero</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Broader remote-management platforms. Standups are one of many features. Priced higher ($8&ndash;$20/user/mo) because they replace multiple tools. Overkill for teams that just want standups.</p>
+                            <p class="text-xs text-neutral-400">Range $8/user, Friday $7.50/user, Status Hero $3&ndash;$5/user</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Slack Workflow Builder (DIY)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Free. Build a form that DMs users, collects responses, posts to a channel. No AI summary, no blocker detection, no analytics. Every team tries this first; most abandon within 60 days because the signal-to-noise is poor.</p>
+                            <p class="text-xs text-neutral-400">Free (included with Slack paid plans)</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Flat $29/mo up to 20 users. Claude-generated digest with <em>Blockers</em> section as the hero screenshot in the Slack directory listing. 14-day free trial, Slack OAuth install in 30 seconds. Tagline: "The only standup bot that actually reads the responses."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat per-team pricing. Free tier captures trials and very small teams. Team tier covers the vast majority of paying customers. Growth tier for larger teams with multiple squads. LLM inference cost per team is bounded (&lt;10 messages/day &times; ~1K tokens each &times; Haiku pricing) and trivial compared to ARPU.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">1 standup, up to 5 users, 7-day history, basic digest (no AI)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Team</h4>
+                            <p class="text-2xl font-bold mb-2">$29/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 20 users, unlimited standups, AI summary + blocker detection, 1-year history, Slack &amp; email digest</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Growth</h4>
+                            <p class="text-2xl font-bold mb-2">$79/mo</p>
+                            <p class="text-xs text-neutral-500">Up to 100 users, multiple squads, retro questions, Notion/Linear integrations, priority support, 3-year history</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">LLM cost/team/mo</p>
+                                <p class="font-semibold">~$0.60</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Team</p>
+                                <p class="font-semibold">~96%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$30&ndash;$60</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Team conv.</p>
+                                <p class="font-semibold">10&ndash;14%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Team + 10 Growth = $3.7K/mo. 500 Team + 50 Growth = $18.45K/mo. At 2K Team + 200 Growth = $73.8K/mo ($886K ARR). Slack directory listing with 4.8+ stars drives organic discovery; target CAC stays low because the install is frictionless.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Slack bot + cron + LLM. No UI except a thin settings page. Most of the product lives inside Slack DMs and channels.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:slack" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Slack Bolt SDK (Node.js)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">OAuth install flow with <code class="text-xs bg-neutral-100 px-1 rounded">chat:write</code>, <code class="text-xs bg-neutral-100 px-1 rounded">im:write</code>, <code class="text-xs bg-neutral-100 px-1 rounded">users:read</code> scopes. Event subscriptions for <code class="text-xs bg-neutral-100 px-1 rounded">message.im</code>. Modals for settings.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 admin (minimal)</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Billing + settings only. Most configuration happens via Slack slash commands and modals. Admin shows past digests + blocker history for managers who want a web view.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">workspaces</code>, <code class="text-xs bg-neutral-100 px-1 rounded">standups</code>, <code class="text-xs bg-neutral-100 px-1 rounded">participants</code>, <code class="text-xs bg-neutral-100 px-1 rounded">responses</code>, <code class="text-xs bg-neutral-100 px-1 rounded">digests</code>, <code class="text-xs bg-neutral-100 px-1 rounded">blockers</code>. Slack tokens encrypted via Supabase Vault.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Claude Haiku 4.5 for digest + blocker extraction</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Prompt: take all responses, return JSON with <code class="text-xs bg-neutral-100 px-1 rounded">themes</code>, <code class="text-xs bg-neutral-100 px-1 rounded">blockers: [{owner_slack_id, summary, suggested_helpers: []}]</code>, <code class="text-xs bg-neutral-100 px-1 rounded">individual_summaries</code>. Bot posts formatted digest using Slack Block Kit.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:timer" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Vercel Cron + Upstash QStash</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Vercel Cron runs every 5 min, checks which users need a DM. QStash schedules the follow-up "hey did you forget?" nudge 1 hour after initial DM if no response. Digest posts fire at team-configured time.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Billing + Slack Directory</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Stripe Checkout for Team/Growth. Slack App Directory listing is the distribution: 3 screenshots (install, DM collection, AI digest), 90-second video, clear pricing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Slack App Scaffold</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Slack bot using @slack/bolt on Node.js hosted on Vercel. OAuth install flow, Supabase backend.
+
+Schema:
+- workspaces(id, slack_team_id, team_name, bot_token_encrypted, installer_user_id, plan, stripe_customer_id, digest_channel_id, digest_time, timezone, created_at)
+- standups(id, workspace_id, name, questions JSONB, schedule_cron, active)
+- participants(id, standup_id, slack_user_id, user_timezone, personal_dm_time, active)
+- responses(id, standup_id, participant_id, date, answers JSONB, submitted_at, latency_seconds)
+- digests(id, standup_id, date, themes JSONB, individual_summaries JSONB, posted_at, slack_message_ts)
+- blockers(id, digest_id, owner_slack_id, summary, suggested_helpers JSONB, resolved_at)
+
+OAuth flow: /api/slack/install redirects to Slack's OAuth URL with scopes chat:write,im:write,im:history,users:read,channels:read. /api/slack/callback exchanges code, encrypts bot_token via Supabase Vault, creates workspace row.
+
+Slash commands:
+- /standup setup → opens modal to configure questions, times, channel
+- /standup skip today → participant opts out of today's standup
+- /standup status → shows today's response state for the team
+
+Event handlers:
+- message.im: if user is in a participant row and responses table has no entry for today, parse their DM reply into the questions JSONB structure. If ambiguous, bot asks a clarifying question.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Scheduled DM Flow</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the scheduled DM collection flow via Vercel Cron.
+
+Cron job (every 5 min):
+1. Query SELECT p.*, s.questions, w.bot_token_encrypted FROM participants p JOIN standups s ON p.standup_id=s.id JOIN workspaces w ON s.workspace_id=w.id WHERE p.active AND s.active AND p.personal_dm_time BETWEEN NOW()-INTERVAL '5 min' AND NOW() AND NOT EXISTS (SELECT 1 FROM responses r WHERE r.participant_id=p.id AND r.date=CURRENT_DATE);
+2. For each participant, decrypt bot token, send DM via Slack Web API chat.postMessage:
+   - Opens thread with "Morning! Ready for today's standup?" + 3 questions in a numbered list
+   - Uses Slack Block Kit for a friendly, scannable layout
+3. Enqueue Upstash QStash follow-up: if no response row created in 1 hour, send a gentle nudge.
+
+Response parsing:
+- User replies in DM thread with either numbered answers or free-form text.
+- Try structured parse first (if lines start with "1.", "2.", "3."): map to question indices.
+- Fallback to Claude Haiku: "Parse this standup response into JSON matching schema {q1, q2, q3}: ..."
+- Save to responses table. Bot reacts with 👍 emoji on the user's message as ack.
+
+Edge cases:
+- User skips: "/standup skip today" command or replies with "skip" or "off today" — log a response row with answers={skipped: true}.
+- User responds to yesterday's thread: bot politely ignores (thread timestamp check).
+- Timezone changes: participant row has user_timezone synced from Slack user profile on DM send.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. AI Digest with Blocker Detection</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Generate the AI team digest and post to Slack channel at configured digest_time.
+
+Digest cron (fires at workspace.digest_time in workspace.timezone):
+1. Collect all today's responses for this standup.
+2. Build the prompt:
+"You are summarizing a team's async standup. Below are responses from N team members. Extract:
+- themes: 1-3 shared things people are working on (e.g. 'Q2 planning', 'migration sprint')
+- blockers: any item where someone is explicitly blocked or waiting. For each, identify owner_slack_id and suggest who else on the team might help based on their responses.
+- individual_summaries: 1-line summary per person, {slack_user_id, one_liner}
+- skipped: array of slack_user_ids who didn't respond
+
+Return strict JSON. Be terse. Use active voice.
+
+Responses:
+{responses_json}"
+
+3. Call Claude Haiku 4.5 with response_format json_schema.
+4. Render to Slack Block Kit:
+   - Header: 'Team Standup — {today}'
+   - Themes section: bulleted
+   - Blockers section: each with :warning: emoji, owner @mention, suggested helpers @mention
+   - Individuals section: compact list
+   - Footer: '{N} of {M} responded' + skip list
+5. Post to workspace.digest_channel_id, save message_ts to digests table.
+6. Email-only option: also send via Resend to a configured CC address for managers who don't live in Slack.
+
+Blocker threading: if a digest has blockers, reply in thread 4 hours later asking owner "Still blocked?" and offer to @ help again. Track resolution rate per-user; surface as an analytics metric for Growth tier.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://slack.com/about" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Slack &mdash; 38M+ daily active users (Salesforce 2024 earnings)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://geekbot.com/pricing/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Geekbot Pricing &mdash; per-user tier ($2.50&ndash;$4/user/mo)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.mckinsey.com/featured-insights/future-of-work" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">McKinsey &mdash; 58% of US workers remote-eligible (2023)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://api.slack.com/apis" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Slack API &mdash; Bolt SDK + OAuth + Block Kit documentation<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://slack.com/marketplace" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Slack App Directory (primary distribution channel for this category)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Geekbot 20K+ teams + Spectrum Labs 2023 acquisition referenced from public press coverage. Ideabrowser MCP returned no direct match for async-standup wedge; web research fills the category.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Competitor pricing and user counts shift frequently; verify live pricing pages before marketing claims.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Daily standup meetings eat 30+ minutes of everyone's time, often at the worst possible moment for deep work. Remote teams across time zones suffer most—someone's always joining at 6am or 10pm. The information shared could be a Slack message, but manually collecting updates is chaotic.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A Slack bot that DMs team members at their preferred time, asks the classic three questions (yesterday, today, blockers), and posts a compiled summary to a channel. AI highlights blockers and suggests who can help.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Bot DMs team</p><p class="text-xs text-neutral-500 mt-1">At each person's start time</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">Collect updates</p><p class="text-xs text-neutral-500 mt-1">Yesterday, today, blockers</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Post summary</p><p class="text-xs text-neutral-500 mt-1">AI-summarized to channel</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><p class="text-neutral-600 leading-relaxed mb-6">Async work is the future. Tools like Geekbot and Standuply have proven the model with thousands of paying teams. Remote-first companies are actively seeking alternatives to synchronous meetings.</p><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Geekbot serves 100K+ teams—clear product-market fit</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Average standup meeting costs $1,000/week in lost time</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>70% of workers want async communication options (Buffer)</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js app with Slack bot integration.
-
-Features:
-- Slack OAuth "Add to Slack" flow
-- Dashboard: teams using bot, response rates, configure settings
-- Settings: standup questions, schedule, timezone per user, target channel
-- History view: past standups searchable
-
-Use Bolt.js for Slack bot framework. Supabase for data storage.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Standup Collection</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the standup collection flow:
-
-1. Cron job checks for scheduled standups
-2. DM each team member with interactive message:
-   - "What did you work on yesterday?"
-   - "What are you working on today?"
-   - "Any blockers?"
-3. Collect responses via Slack message actions
-4. Send reminder after 2 hours if no response
-5. Mark as "skipped" if no response by end of day
-
-Store responses with timestamps for analytics.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. AI Summary</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create AI-powered summary and insights:
-
-1. Once all responses collected (or deadline hit), compile into summary
-2. Use Claude to: highlight key themes, flag blockers requiring attention, suggest who might help with blockers
-3. Post formatted message to channel with sections for each person
-4. Blockers section at top with @mentions for visibility
-5. Weekly digest: "This week the team completed X, blockers around Y"
-
-Format nicely with Slack Block Kit.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

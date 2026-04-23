@@ -1,163 +1,380 @@
-<!DOCTYPE html><html lang="en" class="antialiased"><head>
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minimalist Habit Tracker | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Build a beautiful, no-nonsense habit tracking app. Track streaks, visualize progress, get gentle reminders. Full build guide with AI prompts.">
+    <meta name="description" content="Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.">
     <meta name="author" content="John Iseghohi">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://weekendmvp.app/ideas/habit-tracker">
     <meta property="og:title" content="Minimalist Habit Tracker | Startup Ideas">
-    <meta property="og:description" content="Track habits with beautiful simplicity.">
+    <meta property="og:description" content="Minimalist PWA habit tracker. Streaks, Apple Health sync, partner accountability. $29/year flat.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/ideas/habit-tracker">
+    <meta property="twitter:title" content="Minimalist Habit Tracker | Startup Ideas">
+    <meta property="twitter:description" content="Minimalist PWA habit tracker. Streaks, Apple Health sync, partner accountability. $29/year flat.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
     <link rel="canonical" href="https://weekendmvp.app/ideas/habit-tracker">
     <link rel="icon" type="image/png" href="../image/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <style>body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; } .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; } .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }</style>
+    <style>
+        body { font-family: 'Geist', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-size: contain; }
+    </style>
 
     <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "HowTo",
-      "name": "Build Minimalist Habit Tracker MVP",
-      "description": "Step-by-step guide to building Minimalist Habit Tracker in a weekend.",
-      "totalTime": "PT8H",
-      "step": [
-        {
-          "@type": "HowToStep",
-          "position": 1,
-          "name": "Project Setup",
-          "text": "Set up your development environment and project structure."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 2,
-          "name": "Core Feature",
-          "text": "Build the main feature of your MVP."
-        },
-        {
-          "@type": "HowToStep",
-          "position": 3,
-          "name": "Landing Page",
-          "text": "Create a landing page to showcase your MVP."
-        }
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Article", "headline": "Minimalist Habit Tracker", "description": "Beautiful PWA habit tracker with streaks, Apple Health sync, shared partner accountability. Indie annual pricing. Weekend build guide with prompts.", "author": { "@id": "https://weekendmvp.app/#person" }, "publisher": { "@id": "https://weekendmvp.app/#website" }, "datePublished": "2026-04-23", "mainEntityOfPage": "https://weekendmvp.app/ideas/habit-tracker.html", "image": "https://weekendmvp.app/image/og-image.png" },
+        { "@type": "SoftwareApplication", "name": "Minimalist Habit Tracker", "applicationCategory": "HealthApplication", "operatingSystem": "Web", "description": "PWA habit tracker with streak heatmap, Apple HealthKit integration, shared partner accountability, and minimalist aesthetic." },
+        { "@type": "HowTo", "name": "Build Minimalist Habit Tracker MVP", "description": "Weekend build guide.", "totalTime": "PT8H", "step": [
+          { "@type": "HowToStep", "position": 1, "name": "PWA Core", "text": "Next.js PWA + Supabase with offline-first habit logging." },
+          { "@type": "HowToStep", "position": 2, "name": "HealthKit Bridge", "text": "iOS shortcut automation writes habit events to HealthKit and back." },
+          { "@type": "HowToStep", "position": 3, "name": "Partners + Notifications", "text": "Accountability partner linking, daily push reminders via web push." }
+        ] },
+        { "@type": "BreadcrumbList", "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+          { "@type": "ListItem", "position": 3, "name": "Minimalist Habit Tracker", "item": "https://weekendmvp.app/ideas/habit-tracker.html" }
+        ] }
       ]
-    },
-    {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://weekendmvp.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Startup Ideas",
-          "item": "https://weekendmvp.app/startup-ideas.html"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Minimalist Habit Tracker",
-          "item": "https://weekendmvp.app/ideas/habit-tracker.html"
-        }
-      ]
-    },
-    {
-      "@type": "Article",
-      "headline": "Minimalist Habit Tracker",
-      "description": "",
-      "author": {
-        "@id": "https://weekendmvp.app/#person"
-      },
-      "publisher": {
-        "@id": "https://weekendmvp.app/#website"
-      },
-      "datePublished": "2026-01-27",
-      "mainEntityOfPage": "https://weekendmvp.app/ideas/habit-tracker.html",
-      "image": "https://weekendmvp.app/image/og-image.png"
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Minimalist Habit Tracker",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web",
-      "description": ""
-    }
-  ]
-}</script>
-    </head>
+    }</script>
+</head>
 <body class="selection:bg-black/10">
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
         <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black">All Ideas</a>
+        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
     </div>
+
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Minimalist Habit Tracker</h1>
-            <p class="text-lg text-neutral-500 mb-10">Build better habits with beautiful simplicity.</p>
+            <p class="text-lg text-neutral-500 mb-10">Streaks, not notifications. Tracking, not shame.</p>
             <form id="ideas-email-form" class="max-w-md mx-auto space-y-4">
-                <input type="text" id="gate-first-name" required="" placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm">
-                <div class="flex gap-3"><input type="email" id="gate-email" required="" placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm"><button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold">Unlock</button></div>
+                <label for="gate-first-name" class="sr-only">First name</label>
+                <input type="text" id="gate-first-name" required placeholder="Your first name" class="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                <div class="flex gap-3">
+                    <label for="gate-email" class="sr-only">Email address</label>
+                    <input type="email" id="gate-email" required placeholder="Your email" class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/30">
+                    <button type="submit" id="gate-submit-btn" class="px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-colors">Unlock</button>
+                </div>
             </form>
         </div>
     </section>
+
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6"><div class="max-w-2xl mx-auto">
-            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> All Startup Ideas</a>
-            <div class="mb-12">
-                <div class="flex items-center gap-3 mb-4"><span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span><span class="text-neutral-400 text-xs">~8 hours to build</span></div>
-                <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Minimalist Habit Tracker</h1>
-                <p class="text-xl text-neutral-500 font-light">One tap. Daily progress. Long streaks.</p>
+        <div class="pt-24 pb-16 px-6">
+            <div class="max-w-2xl mx-auto">
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
+
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Productivity</span>
+                        <span class="text-neutral-400 text-xs">~8 hours to build</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Minimalist Habit Tracker</h1>
+                    <p class="text-xl text-neutral-500 font-light">Beautiful, quiet, effective. Streaks, Apple Health sync, partner accountability. $29/year flat.</p>
+                </div>
+
+                <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-4">Behavior change works when it's simple. Atomic Habits sold <strong>20M+ copies</strong> because James Clear reduced the entire field to "make it obvious, easy, attractive, satisfying." Yet the habit-tracking app market is full of gamification-overloaded products that turn exercise and meditation into RPGs. Habitica has leveling up, equipment, party raids. Streaks is cleaner but locked to Apple ecosystem and $4.99 one-time. Way of Life and HabitBull look like 2014 Android apps. Nothing hits the sweet spot of Notion-level aesthetic + genuine behavior science.</p>
+                    <p class="text-neutral-600 leading-relaxed mb-4">The friction is daily. Open app. Find habit. Tap checkmark. Close app. Multiply by 3&ndash;6 habits, 365 days. Most users abandon within <strong>30 days</strong> (Flurry Analytics on productivity-app retention). The apps that survive are the ones that reduce friction aggressively: widgets on home screen, Apple Watch taps, Siri voice logs. These are the table stakes nobody at indie pricing is currently executing well.</p>
+                    <p class="text-neutral-600 leading-relaxed">The wedge is taste + integration + accountability. A PWA-native tracker that looks like Linear, syncs with Apple Health / Google Fit (so running shows up without logging), lets users optionally share specific habits with an accountability partner (partner gets a gentle nudge if streak breaks), and charges <strong>$29/year flat</strong>. Undercuts Streaks/Habitica subscription math. Ships on web-first, so Android parity is free.</p>
+                </div>
+
+                <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">A PWA habit tracker priced $29/year with three differentiators: Apple Health / Google Fit auto-log (the habit "Ran 3 miles" gets ticked automatically if HealthKit records a run), optional accountability partner (share a specific habit with one friend; they see your streak; notify on break), and a minimalist design inspired by Linear + Notion + Things. Streak heatmap, clean typography, no gamification dopamine tricks.</p>
+                    <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
+                        <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">1</span>
+                                <p class="text-sm font-medium mt-1">Pick your habits</p>
+                                <p class="text-xs text-neutral-500 mt-1">5 free, unlimited on Pro. 1 tap per day to log.</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">2</span>
+                                <p class="text-sm font-medium mt-1">Auto-log via health</p>
+                                <p class="text-xs text-neutral-500 mt-1">Apple Health / Google Fit integration ticks fitness habits for you</p>
+                            </div>
+                            <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                <span class="text-xs font-bold text-neutral-400">3</span>
+                                <p class="text-sm font-medium mt-1">Share with a partner</p>
+                                <p class="text-xs text-neutral-500 mt-1">Optional. Accountability without a leaderboard.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed">The retention engineering is the accountability partner loop. Research from Dominican University shows people with accountability partners are <strong>95% more likely to achieve goals</strong> than solo attempters. Most habit apps monetize via gamification; we monetize via social accountability, which is both more effective and less cringe. Partner notifications are rate-limited to one per week max to avoid spam.</p>
+                </div>
+
+                <div id="section-market" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">The <strong>mobile health and fitness app market is $58B in 2024, projected to $142B by 2030 at 15.7% CAGR</strong> (Grand View Research). Habit-tracking as a sub-segment is estimated at <strong>$2B+</strong> with double-digit growth. Atomic Habits has been a sustained top-10 Amazon business book since 2018, showing cultural durability.</p>
+                    <ul class="space-y-3 mb-4">
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span><strong>Streaks (iOS) has 5M+ downloads</strong> at $4.99 one-time, implies $20M+ lifetime revenue. Habitica free+$48/year has 4M+ users. Market validates pricing both one-time and annual.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Apple HealthKit has <strong>900M+ active users</strong> across iPhone + Apple Watch. Google Fit ~200M. Integration is a discoverability moat on iOS (habit shows up in Health summary).</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Accountability partner mechanism is under-productized. Dominican University 2015 study: <strong>65% goal achievement</strong> with commitment to a partner vs. 35% with just a plan. Mechanism proven; software rare.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Search: "habit tracker" 74K/mo, "habit app" 22K/mo, "streaks alternative" 320/mo. CPC <strong>$1.50&ndash;$3</strong>; cheap acquisition but competitive.</span></li>
+                        <li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Communities: r/getdisciplined (1.6M), r/productivity (2.4M), r/DecidingToBeBetter (2M), Atomic Habits subreddit (45K). Productivity YouTubers (Ali Abdaal, Matt D'Avella) do habit-tracker reviews that convert.</span></li>
+                    </ul>
+                    <p class="text-neutral-600 leading-relaxed">Stage: <em>mature mobile, fragmented web</em>. iOS-first habit apps dominate but web/Android is weaker. PWA approach plus Apple Health auto-log via iOS Shortcuts (a user-installable bridge) captures Apple users without App Store tax (30% cut). Android Google Fit integration is native-easy. 18-month window to establish brand before an AI-first Atomic-Habits-branded app launches.</p>
+                </div>
+
+                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Four competitor classes: premium iOS one-time purchases (Streaks), freemium gamified (Habitica, HabitNow), legacy utility apps (Way of Life, HabitBull), and Notion templates / paper (Atomic Habits branded). Your wedge: beautiful PWA + health integration + accountability partner at flat annual price.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Streaks (iOS)</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Category leader on iOS. Clean design, deep Apple Health integration, Apple Watch support. One-time purchase. iOS-only; no web, no Android, no partner feature.</p>
+                            <p class="text-xs text-neutral-400">$4.99 one-time (iOS App Store)</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Habitica</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Gamified RPG approach. Open-source core; subscription adds party quests and pets. 4M+ users but retention skews young. Design is intentionally dated pixel-art; not for users who want quiet.</p>
+                            <p class="text-xs text-neutral-400">Free + $4.99/mo Premium; $47.99/year</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Way of Life / HabitBull / HabitNow</h4>
+                            <p class="text-xs text-neutral-500 mb-2">Legacy habit-tracker apps. Functional but UX dated (2015&ndash;2018 design vintage). Tiered subscriptions with per-feature unlocks. Poor mobile-web experience.</p>
+                            <p class="text-xs text-neutral-400">Way of Life Pro $6/mo; HabitBull $9.99/mo; HabitNow $4.99/mo</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <h4 class="font-medium text-sm mb-1">Notion templates / paper / Google Sheets</h4>
+                            <p class="text-xs text-neutral-500 mb-2">DIY: Atomic Habits-branded Notion templates sold on Gumroad for $5&ndash;$29, Bullet Journal paper trackers, spreadsheet streak counters. Zero integration with health, zero partner feature.</p>
+                            <p class="text-xs text-neutral-400">$0&ndash;$29 one-time; high abandon rate</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                        <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                        <p class="text-sm text-green-700">Clean Linear-inspired PWA + Apple Health/Google Fit auto-log + optional accountability partner + $29/year flat. Ships on iOS via PWA install (no App Store cut), Android, and desktop web. Tagline: "Streaks with a partner, priced like a book."</p>
+                    </div>
+                </div>
+
+                <div id="section-business" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">Flat annual. Free tier is generous to earn PWA installs and Apple/Google Fit integration users. Pro annual or lifetime covers the monetization. Family tier unlocks partner sharing across multiple paid accounts (parents + teens, couples building shared habits). Zero App Store tax by shipping PWA.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Free</h4>
+                            <p class="text-2xl font-bold mb-2">$0</p>
+                            <p class="text-xs text-neutral-500">Up to 5 habits, 30-day history, basic streaks, no health integration</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Pro</h4>
+                            <p class="text-2xl font-bold mb-2">$29/year</p>
+                            <p class="text-xs text-neutral-500">Unlimited habits, unlimited history, Apple Health / Google Fit auto-log, accountability partner (1), heatmap export, widgets</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                            <h4 class="font-medium text-sm mb-1">Lifetime / Family</h4>
+                            <p class="text-2xl font-bold mb-2">$79</p>
+                            <p class="text-xs text-neutral-500">All Pro features forever, 4-seat family plan w/ shared habits, priority support</p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                        <h4 class="text-sm font-semibold mb-3">Unit Economics (illustrative)</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <p class="text-xs text-neutral-500">Infra cost/user</p>
+                                <p class="font-semibold">~$0.05/mo</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Gross margin Pro</p>
+                                <p class="font-semibold">~97%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Target CAC</p>
+                                <p class="font-semibold">$5&ndash;$10</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500">Free &rarr; Pro conv.</p>
+                                <p class="font-semibold">3&ndash;6%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-neutral-600 leading-relaxed text-sm">ARR path: 2K Pro + 200 Lifetime = $73.8K ARR. 10K Pro + 1K Lifetime = $369K ARR. At 30K Pro + 3K Lifetime = $1.1M ARR. Retention rate for paid habit apps is strong (~60% annual renewal vs 40% in productivity broadly) because users who paid upfront are more committed. Brand-building via productivity YouTube + Atomic Habits-adjacent content.</p>
+                </div>
+
+                <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                    <p class="text-neutral-600 leading-relaxed mb-6">PWA with offline-first sync. Mobile widgets via iOS Shortcuts (for HealthKit bridge) and Android native app widgets. Minimal backend: auth + sync + partner notifications.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Next.js 14 PWA</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">App Router. <code class="text-xs bg-neutral-100 px-1 rounded">next-pwa</code> with service worker for offline logging. IndexedDB local-first; sync to Supabase on reconnect.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Supabase</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Tables: <code class="text-xs bg-neutral-100 px-1 rounded">users</code>, <code class="text-xs bg-neutral-100 px-1 rounded">habits</code>, <code class="text-xs bg-neutral-100 px-1 rounded">checkins</code>, <code class="text-xs bg-neutral-100 px-1 rounded">partners</code>, <code class="text-xs bg-neutral-100 px-1 rounded">partner_nudges</code>. RLS per-user with explicit allow for partner visibility on shared habits only.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:apple" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Apple HealthKit via iOS Shortcuts</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">User installs an iOS Shortcut we publish (one-tap from the app). Shortcut runs daily, reads HealthKit samples (workouts, steps, mindfulness minutes), POSTs to /api/healthkit-sync. Full HealthKit access requires native app; Shortcut bridge covers 80% of habits (run, walk, meditation, sleep hours) without a native app.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:google" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Google Fit REST API</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">OAuth with <code class="text-xs bg-neutral-100 px-1 rounded">fitness.activity.read</code>. Nightly cron pulls yesterday's activities; maps to user's fitness habits by type/duration threshold. Native Android integration future-roadmap.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="lucide:bell" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Web Push notifications</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Web Push API for daily reminders and partner nudges. iOS 16.4+ supports web push for installed PWAs. Rate-limit partner nudges to 1/week max per shared habit.</p>
+                        </div>
+                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                <h4 class="font-medium text-sm">Stripe Checkout</h4>
+                            </div>
+                            <p class="text-xs text-neutral-500">Annual subscription + lifetime one-time. Customer Portal for plan management. Family tier uses Stripe seat-pooling for 4-user sharing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                    <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+                    <div class="space-y-6">
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Offline-First PWA</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js 14 App Router PWA for habit tracking. Offline-first with IndexedDB; sync to Supabase.
+
+Schema (Supabase Postgres):
+- users(id, email, plan ENUM[free,pro,lifetime,family], stripe_customer_id, timezone, created_at)
+- habits(id, user_id, name, icon, color, frequency ENUM[daily,weekly,xdays], target_count_per_period INT, shared_with_partner_id, archived bool, created_at)
+- checkins(id, habit_id, date, value INT, source ENUM[manual,healthkit,google_fit], created_at)
+- partners(id, user_a_id, user_b_id, status ENUM[invited,accepted,declined], created_at)
+- partner_nudges(id, sender_user_id, receiver_user_id, habit_id, sent_at)
+
+RLS: users see own. Habits: viewable by owner, and by partner if habits.shared_with_partner_id = partner.user_x_id and status=accepted.
+
+Offline storage:
+- IndexedDB via Dexie.js: mirror habits and today's checkins.
+- On check-in: write to IndexedDB immediately, show UI update. Enqueue sync operation in a pending-queue. Service worker processes queue when online.
+- Conflict resolution: last-write-wins per (habit_id, date); server timestamp authoritative.
+
+Routes:
+- / (marketing, see heatmap of anonymized user for demo)
+- /app (authed: today's habits grid, tap to check)
+- /habits (list, reorder, archive)
+- /history (year-view heatmap, longest streak, current streak per habit)
+- /partner (invite flow, shared-habit picker, nudge history)
+- /settings (notifications, integrations, billing)
+
+Heatmap: react-calendar-heatmap or custom SVG; 365-day grid colored by completion rate.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Health Integration Bridge</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement the Apple HealthKit (via iOS Shortcut) and Google Fit auto-log bridges.
+
+Apple HealthKit flow (iOS only):
+1. On iOS, user visits /integrations/healthkit. Show a button: "Add to Shortcuts."
+2. Deep link to a pre-built iCloud Shortcut: https://www.icloud.com/shortcuts/{uuid}.
+3. Shortcut definition:
+   - Get today's HKQuantityType samples (stepCount, distanceWalkingRunning, mindfulSession, sleepAnalysis).
+   - Filter by user's configured habit mappings (stored in Shortcut input from user's account).
+   - For each match, POST to https://product.com/api/healthkit-sync with signed request: {user_api_key, date, habit_mappings: [{habit_id, value}]}.
+4. User schedules the Shortcut via Personal Automation: daily at 11:59pm local. One-time setup.
+
+On server side /api/healthkit-sync:
+- Authenticate request via user_api_key (32-char random, stored in user profile).
+- Upsert checkins rows with source='healthkit'. Replace manual check-ins for the same (habit, date) if healthkit value >= configured threshold.
+
+Google Fit flow (cross-platform):
+1. User clicks 'Connect Google Fit' → OAuth flow with scope fitness.activity.read.
+2. Store refresh_token encrypted.
+3. Nightly cron (Vercel Cron):
+   - For each user with Google Fit connected: refresh access token, query Google Fit Aggregate API for yesterday's activities.
+   - Match to habits by activity type + duration threshold (e.g., "Run 3 miles" habit triggers if running distance >= 4828 meters).
+   - Insert checkins with source='google_fit'.
+
+Conflict rule: healthkit/google_fit can add a check-in; they never remove. Manual takes precedence if user explicitly un-checks.</p>
+                        </div>
+                        <div class="prompt-box rounded-3xl p-6 relative">
+                            <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt"><iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon></button>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Accountability Partner Loop</h4>
+                            <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the partner invitation and nudge system. This is the retention moat.
+
+Invite flow:
+1. /partner → 'Invite a partner' button. User enters email.
+2. Server creates partners(user_a_id=current, user_b_id=NULL, invited_email, invite_token, status='invited').
+3. Resend sends email with link https://product.com/partner/accept/{invite_token} and friendly copy.
+4. Recipient clicks link, signs up or logs in, /partner/accept resolves user_b_id, sets status='accepted'.
+5. Both users now see partner section populated.
+
+Share a habit:
+1. In /habits/:id/settings → 'Share with partner' toggle (only if partner exists).
+2. Sets habits.shared_with_partner_id = partner.user_b_id (or user_a_id depending on who is sharing).
+3. RLS policy allows partner to SELECT this habit + associated checkins.
+
+Nudge logic (daily cron):
+- For each (habit, partner) where shared AND habit's streak broken yesterday (no checkin, frequency=daily):
+  - Check partner_nudges WHERE habit_id=X AND sender=partner AND receiver=owner AND sent_at > NOW() - INTERVAL '7 days'. If exists, skip (rate limit).
+  - Send Web Push notification to partner: 'Chris didn't check in Meditate yesterday. Want to send a nudge?'
+  - Partner taps → sends thoughtful pre-written nudge email to owner ('Hey, just checking in on meditation — no pressure, just thinking of you').
+  - Record partner_nudges row with sent_at.
+
+Crucial UX: partner CANNOT see habit data, only streak status (unbroken/broken). Owner can revoke partner visibility at any time. Streak visibility is opt-in per-habit.
+
+Privacy settings: /partner/privacy explicitly lists what the partner sees and what they don't.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="section-sources" class="mb-12">
+                    <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                    <ul class="space-y-2 text-sm text-neutral-500">
+                        <li>&bull; <a href="https://www.grandviewresearch.com/industry-analysis/mhealth-app-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Grand View Research &mdash; mHealth App Market ($58B 2024 &rarr; $142B 2030, 15.7% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.jamesclear.com/atomic-habits" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">James Clear &mdash; Atomic Habits (20M+ copies sold, behavior-change framework)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://www.dominican.edu/dominicannews/research-cited-wall-street-journal" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Dominican University &mdash; Accountability partner research (65% goal achievement vs 35%)<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://developer.apple.com/documentation/healthkit" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Apple HealthKit documentation<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; <a href="https://developers.google.com/fit/rest" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Google Fit REST API documentation<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li>&bull; Streaks (5M+ downloads), Habitica (4M+ users), Apple HealthKit (900M+ active) referenced from public product/company pages. MCP search returned no direct match for the habit-tracker wedge.</li>
+                    </ul>
+                    <p class="text-xs text-neutral-400 mt-4 italic">Verify competitor download and user counts on live pages before marketing claims.</p>
+                </div>
+
+                <div class="p-12 bg-black rounded-[3rem] text-center">
+                    <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                    <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                    <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all"><span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span></a>
+                </div>
+
+                <div class="mt-12 text-center">
+                    <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> See all startup ideas</a>
+                </div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Problem</h2><p class="text-neutral-600 leading-relaxed">Habit apps are either too complex (gamification overload, social features, AI coaches) or too basic (notes app with checkboxes). People want something in between: beautiful, focused, and satisfying to use. Most apps make habit tracking feel like a chore instead of a win.</p></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">The Solution</h2><p class="text-neutral-600 leading-relaxed mb-8">A clean, minimal habit tracker focused on streaks and visual progress. One tap to complete a habit. Beautiful streak visualization. Gentle reminders. No gamification, no social pressure—just you and your habits.</p>
-                <div class="p-8 bg-neutral-100 rounded-3xl"><h4 class="text-sm font-semibold mb-6">How it works:</h4><div class="flex flex-col md:flex-row gap-4"><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">1</span><p class="text-sm font-medium mt-1">Add habits</p><p class="text-xs text-neutral-500 mt-1">Daily, weekly, or custom</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">2</span><p class="text-sm font-medium mt-1">One-tap check</p><p class="text-xs text-neutral-500 mt-1">Satisfying completion</p></div><div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200"><span class="text-xs font-bold text-neutral-400">3</span><p class="text-sm font-medium mt-1">Watch streaks grow</p><p class="text-xs text-neutral-500 mt-1">Visual progress calendar</p></div></div></div>
+        </div>
+
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="pt-8 border-t border-neutral-200"><p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP</p></div>
             </div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-6">Market Research</h2><ul class="space-y-3"><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Habitica, Streaks, Fabulous prove habit apps work</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Self-improvement is $10B+ market growing 5.5% annually</span></li><li class="flex items-start gap-3 text-sm"><div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div><span>Room for "anti-feature" minimal approach</span></li></ul></div>
-            <div class="mb-12"><h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2><div class="space-y-6">
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Create a Next.js PWA for habit tracking.
-
-Features:
-- Home: today's habits with one-tap completion
-- Add habit: name, emoji, frequency (daily/weekly/custom days)
-- Stats: streak counter, completion rate, calendar heatmap
-- Settings: reminder times, dark mode
-
-PWA: installable, works offline, push notifications.
-Use Supabase for auth and sync across devices.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Streak System</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Build the core streak logic:
-
-1. Track completion for each habit per day
-2. Calculate current streak: consecutive days completed
-3. Handle frequency: daily habits must be done daily, weekly habits within the week
-4. Longest streak record: personal best
-5. Grace period option: allow one missed day without breaking streak
-6. Calendar heatmap: GitHub contribution style visualization
-
-Make check-in satisfying: small animation, haptic feedback on mobile.</p></div>
-                <div class="prompt-box rounded-3xl p-6 relative"><button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black" aria-label="Copy"><iconify-icon icon="lucide:copy" width="18"></iconify-icon></button><h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Reminders</h4><p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">Implement gentle reminder system:
-
-1. User sets preferred reminder time per habit
-2. Push notification at that time: "Time for [habit] - 12 day streak!"
-3. If not completed by evening, send one follow-up
-4. No nagging: max 2 reminders per habit per day
-5. Smart timing: learn when user usually completes and nudge then
-
-Use Web Push API. Store push subscription in database.
-Fall back to email reminders if push not available.</p></div>
-            </div></div>
-            <div class="p-12 bg-black rounded-[3rem] text-center"><h2 class="text-2xl font-medium text-white mb-4">Want me to build this for you?</h2><p class="text-neutral-400 mb-8">Book a consult and let's turn this into your MVP.</p><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200">Book a Consult</a></div>
-            <div class="mt-12 text-center"><a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black"><iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon> See all ideas</a></div>
-        </div></div>
-        <footer class="mt-32 border-t border-neutral-200 bg-neutral-50"><div class="max-w-7xl mx-auto px-6 py-16"><p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP</p></div></footer>
+        </footer>
     </section>
+
     <script src="/ideas/gate.js" defer></script>
-
-
-</body></html>
+</body>
+</html>

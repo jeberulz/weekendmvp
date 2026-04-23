@@ -1,12 +1,112 @@
 {
-  "generatedAt": "2026-04-22T11:10:59.694Z",
+  "generatedAt": "2026-04-23T10:49:46.651Z",
   "totals": {
-    "PASS": 26,
-    "total": 26,
-    "passing": 26,
+    "PASS": 31,
+    "total": 31,
+    "passing": 31,
     "failing": 0
   },
   "ideas": [
+    {
+      "slug": "meeting-scheduler",
+      "status": "PASS",
+      "bytes": 37860,
+      "wordCount": 2021,
+      "h2Count": 9,
+      "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "habit-tracker",
+      "status": "PASS",
+      "bytes": 37276,
+      "wordCount": 2003,
+      "h2Count": 9,
+      "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "email-to-todo",
+      "status": "PASS",
+      "bytes": 38614,
+      "wordCount": 2154,
+      "h2Count": 9,
+      "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "daily-standup-bot",
+      "status": "PASS",
+      "bytes": 37146,
+      "wordCount": 2038,
+      "h2Count": 9,
+      "description": "Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "focus-session-timer",
+      "status": "PASS",
+      "bytes": 36861,
+      "wordCount": 1949,
+      "h2Count": 9,
+      "description": "Deep-work Pomodoro timer with analytics, website blocking, calendar sync. Flat annual pricing under Forest/Flow. Weekend MVP guide + prompts.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
     {
       "slug": "notion-backup-tool",
       "status": "PASS",
