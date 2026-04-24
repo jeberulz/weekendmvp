@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idea of the Day: AI Nutrition Planner for Trainers | Weekend MVP Newsletter</title>
+    <meta name="description" content="'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.">
+    <meta name="author" content="John Iseghohi">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/newsletter/2026-04-23-am.html">
+    <meta property="og:title" content="Idea of the Day: AI Nutrition Planner for Trainers">
+    <meta property="og:description" content="'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/newsletter/2026-04-23-am.html">
+    <meta property="twitter:title" content="Idea of the Day: AI Nutrition Planner for Trainers">
+    <meta property="twitter:description" content="'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/newsletter/2026-04-23-am.html">
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      // Initialize dataLayer but don't load gtag.js until consent
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                // Load GA immediately if consent exists
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                // Initialize Meta Pixel immediately if consent exists
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      // Wrapper to prevent gtag calls before consent
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      // Initialize fbq queue but don't load until consent
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      // Only initialize if consent exists
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        // Queue the init call for when consent is given
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Weekend MVP Analytics Utility -->
+    <script>
+      /**
+       * wmvpAnalytics - Custom event tracking for Weekend MVP programmatic SEO pages
+       * All methods are safe to call before consent (events are queued)
+       */
+      window.wmvpAnalytics = (function() {
+        // Queue for events fired before GA is ready
+        const eventQueue = [];
+        let gaReady = false;
+        
+        // Check if GA is loaded and ready
+        function checkGAReady() {
+          if (window.analyticsConsent === true && typeof window.gtag === 'function') {
+            gaReady = true;
+            // Flush queued events
+            while (eventQueue.length > 0) {
+              const { eventName, params } = eventQueue.shift();
+              window.gtag('event', eventName, params);
+            }
+          }
+        }
+        
+        // Safe event tracking that queues if GA not ready
+        function trackEvent(eventName, params) {
+          checkGAReady();
+          if (gaReady) {
+            window.gtag('event', eventName, params);
+          } else {
+            eventQueue.push({ eventName, params });
+          }
+        }
+        
+        // Auto-detect page type from URL and fire appropriate event
+        function autoTrack() {
+          const path = window.location.pathname;
+          
+          // Category pages: /ideas/{category}/
+          const categoryMatch = path.match(/^\/ideas\/([a-z-]+)\/$/);
+          if (categoryMatch && !['1k-month', '5k-month', '10k-month', 'passive-income', 'quick-wins', 'build-in-8-hours', 'build-in-weekend', 'build-in-1-week', 'build-in-24-hours'].includes(categoryMatch[1])) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_category', {
+              category_name: categoryMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Revenue goal pages: /ideas/{revenue}/
+          const revenueMatch = path.match(/^\/ideas\/(1k-month|5k-month|10k-month|passive-income|quick-wins)\/$/);
+          if (revenueMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Build time pages: /ideas/build-in-{time}/
+          const buildTimeMatch = path.match(/^\/ideas\/(build-in-[a-z0-9-]+)\/$/);
+          if (buildTimeMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_build_time', {
+              build_time: buildTimeMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Tool pages: /build-with/{tool}/
+          const toolMatch = path.match(/^\/build-with\/([a-z-]+)\/$/);
+          if (toolMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_tool_page', {
+              tool_name: toolMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Audience pages: /ideas-for/{audience}/
+          const audienceMatch = path.match(/^\/ideas-for\/([a-z-]+)\/$/);
+          if (audienceMatch) {
+            const ideaCount = document.querySelectorAll('[data-idea-card]').length || 0;
+            trackEvent('view_audience_page', {
+              audience_name: audienceMatch[1],
+              idea_count: ideaCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Problem pages: /solve/{problem}/
+          const problemMatch = path.match(/^\/solve\/([a-z-]+)\/$/);
+          if (problemMatch) {
+            const solutionCount = document.querySelectorAll('[data-solution-card]').length || 0;
+            trackEvent('view_problem_page', {
+              problem_name: problemMatch[1],
+              solution_count: solutionCount,
+              page_path: path
+            });
+            return;
+          }
+          
+          // Individual idea pages: /ideas/{slug}.html
+          const ideaMatch = path.match(/^\/ideas\/([a-z0-9-]+)\.html$/);
+          if (ideaMatch) {
+            const category = document.querySelector('[data-idea-category]')?.dataset?.ideaCategory || 'unknown';
+            trackEvent('view_idea', {
+              idea_slug: ideaMatch[1],
+              idea_category: category,
+              page_path: path
+            });
+            return;
+          }
+        }
+        
+        return {
+          /**
+           * Track category page view
+           * @param {string} categoryName - Category slug (e.g., 'saas', 'ai-tools')
+           * @param {number} ideaCount - Number of ideas on the page
+           */
+          trackCategory: function(categoryName, ideaCount) {
+            trackEvent('view_category', {
+              category_name: categoryName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track tool page view
+           * @param {string} toolName - Tool slug (e.g., 'cursor', 'claude')
+           * @param {number} ideaCount - Number of ideas suited for this tool
+           */
+          trackTool: function(toolName, ideaCount) {
+            trackEvent('view_tool_page', {
+              tool_name: toolName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track audience page view
+           * @param {string} audienceName - Audience slug (e.g., 'developers', 'non-technical')
+           * @param {number} ideaCount - Number of ideas for this audience
+           */
+          trackAudience: function(audienceName, ideaCount) {
+            trackEvent('view_audience_page', {
+              audience_name: audienceName,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track revenue goal page view
+           * @param {string} revenueGoal - Revenue goal slug (e.g., '1k-month', 'passive-income')
+           * @param {number} ideaCount - Number of ideas for this revenue goal
+           */
+          trackRevenueGoal: function(revenueGoal, ideaCount) {
+            trackEvent('view_revenue_goal', {
+              revenue_goal: revenueGoal,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track problem/solution page view
+           * @param {string} problemName - Problem slug (e.g., 'invoicing', 'meeting-notes')
+           * @param {number} solutionCount - Number of solution ideas
+           */
+          trackProblem: function(problemName, solutionCount) {
+            trackEvent('view_problem_page', {
+              problem_name: problemName,
+              solution_count: solutionCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track build time page view
+           * @param {string} buildTime - Build time slug (e.g., 'build-in-weekend', 'build-in-8-hours')
+           * @param {number} ideaCount - Number of ideas for this build time
+           */
+          trackBuildTime: function(buildTime, ideaCount) {
+            trackEvent('view_build_time', {
+              build_time: buildTime,
+              idea_count: ideaCount || 0,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track individual idea page view
+           * @param {string} ideaSlug - Idea slug (e.g., 'ai-meeting-notes-cleaner')
+           * @param {string} category - Idea category
+           */
+          trackIdea: function(ideaSlug, category) {
+            trackEvent('view_idea', {
+              idea_slug: ideaSlug,
+              idea_category: category || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track internal link clicks for navigation analysis
+           * @param {string} linkType - Type of link (e.g., 'category_to_idea', 'tool_to_idea', 'related_idea')
+           * @param {string} destination - Destination slug or URL
+           */
+          trackInternalLink: function(linkType, destination) {
+            trackEvent('internal_link_click', {
+              link_type: linkType,
+              destination: destination,
+              source_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track CTA button clicks
+           * @param {string} ctaName - CTA identifier (e.g., 'get_starter_kit', 'book_consult')
+           * @param {string} location - Where on the page (e.g., 'hero', 'footer', 'sidebar')
+           */
+          trackCTA: function(ctaName, location) {
+            trackEvent('cta_click', {
+              cta_name: ctaName,
+              cta_location: location || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track email signup events
+           * @param {string} source - Page or section where signup occurred
+           * @param {string} formType - Type of form (e.g., 'newsletter', 'gated_content', 'ideas_daily')
+           */
+          trackEmailSignup: function(source, formType) {
+            trackEvent('email_signup', {
+              signup_source: source,
+              form_type: formType || 'newsletter',
+              page_path: window.location.pathname
+            });
+            // Also track in Meta Pixel if available
+            if (window.analyticsConsent === true && typeof window.fbq === 'function') {
+              window.fbq('track', 'Lead', { content_name: formType || 'newsletter' });
+            }
+          },
+          
+          /**
+           * Track copy-to-clipboard events (for AI prompts)
+           * @param {string} contentType - What was copied (e.g., 'ai_prompt', 'code_snippet')
+           * @param {string} ideaSlug - Related idea if applicable
+           */
+          trackCopy: function(contentType, ideaSlug) {
+            trackEvent('copy_content', {
+              content_type: contentType,
+              idea_slug: ideaSlug || 'unknown',
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Track search/filter interactions on collection pages
+           * @param {string} filterType - Type of filter (e.g., 'category', 'build_time', 'revenue')
+           * @param {string} filterValue - Selected filter value
+           */
+          trackFilter: function(filterType, filterValue) {
+            trackEvent('filter_applied', {
+              filter_type: filterType,
+              filter_value: filterValue,
+              page_path: window.location.pathname
+            });
+          },
+          
+          /**
+           * Manually trigger page type detection and auto-tracking
+           * Call this on DOMContentLoaded for programmatic pages
+           */
+          autoTrack: autoTrack,
+          
+          /**
+           * Check GA ready state and flush queue
+           */
+          flushQueue: checkGAReady,
+          
+          /**
+           * Raw event tracking (for custom events)
+           * @param {string} eventName - GA4 event name
+           * @param {object} params - Event parameters
+           */
+          track: trackEvent
+        };
+      })();
+      
+      // Auto-track on DOMContentLoaded for programmatic pages
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Small delay to ensure GA has loaded
+          setTimeout(function() {
+            wmvpAnalytics.flushQueue();
+            wmvpAnalytics.autoTrack();
+          }, 100);
+        });
+      } else {
+        // DOM already loaded
+        setTimeout(function() {
+          wmvpAnalytics.flushQueue();
+          wmvpAnalytics.autoTrack();
+        }, 100);
+      }
+    </script>
+
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Idea of the Day: AI Nutrition Planner for Trainers",
+      "description": "'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-04-23",
+      "dateModified": "2026-04-23",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/newsletter/2026-04-23-am.html"
+      },
+      "image": "https://weekendmvp.app/image/og-image.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">Ideas</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../newsletter.html" class="text-white" aria-current="page">Newsletter</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+            <a href="../starter-kit.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">Get the Kit</span>
+            </a>
+        </nav>
+    </div>
+
+    <article data-nl-slot="am" class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../newsletter.html" class="hover:text-white transition-colors">Newsletter</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">Apr 23, 2026 — AM</span>
+            </nav>
+
+            <header class="mb-16">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Idea of the Day</span>
+                    <span class="text-neutral-600 text-xs">•</span>
+                    <time class="text-neutral-600 text-xs" datetime="2026-04-23">Apr 23, 2026</time>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight leading-[1.1] mb-6">Idea of the Day: AI Nutrition Planner for Trainers</h1>
+                <p class="text-xl text-neutral-400 font-light leading-relaxed">'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.</p>
+            </header>
+
+            <div class="prose-nl text-neutral-300 leading-relaxed space-y-6">
+                <p class="text-neutral-300 leading-relaxed">"Strength training gear" just broke out +340% this week. That's not just lifters buying dumbbells — it's personal trainers, gym owners, and online coaches staffing up. Every one of them sells nutrition too. And almost none of them can build it.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">IDEA OF THE DAY</strong></p>
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">AI Nutrition Planner for Trainers</h2>
+                <p class="text-neutral-300 leading-relaxed">Personal trainers sell results. Nutrition drives 70–80% of those results. Yet almost every trainer delivers nutrition the same broken way — a Google Doc with a generic 2,000-calorie template copy-pasted from a certification manual, with a sticky note that says "adjust to your client." That Clean Life is priced at $39–$119/mo for dietitians, not NASM-certified PTs serving 10–30 clients. Trainerize has nutrition as an afterthought bolted onto workouts. Result: the trainer with a $150/mo client roster writes meal plans by hand in Notion on Sunday nights, 45 minutes per client, forever.</p>
+                <p class="text-neutral-300 leading-relaxed">A trainer-first SaaS where one client profile produces a week of macro-matched meals in under 20 seconds. Trainer enters goal (cut / bulk / recomp / maintain), target macros, allergies, cuisine preferences, and weekly budget. The AI writes the plan, USDA FoodData Central validates the macros, and a branded PDF or client portal link ships in the trainer's voice. Pricing is per-trainer flat — $29/mo covers 3 clients or 30. The value is the trainer's time, not the client list length.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Why it's a weekend build:</strong> ~8h to MVP, $1K/mo target. Stack: Cursor, Claude.</p>
+                <div class="my-8 text-center"><a href="https://weekendmvp.app/ideas/ai-nutrition-planner-trainers.html?utm_source=beehiiv&utm_medium=newsletter&utm_campaign=am-20260423&e={{email}}" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">Read the full teardown <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon></a></div>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">TREND WATCH</strong></p>
+                <p class="text-neutral-300 leading-relaxed">"Strength training gear" jumped from quiet background noise to 4,400 monthly searches — a 340% breakout. Search curves for fitness gear tend to lead fitness-service adoption by 60–90 days. The 340,000 certified trainers in the U.S. (BLS, 14% projected job growth) are about to hit a demand wave, and their current tech stack is Google Docs plus MyFitnessPal. The weekend opportunity isn't selling them another gym app. It's selling them the one tool they need at the single biggest bottleneck in their week.</p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">The hidden customer lives one step up.</strong> The online coach running 15–50 clients remotely. Same pain, bigger willingness to pay. They'll happily pay $49/mo for a tool that hands back a full Sunday.</p>
+                <blockquote class="border-l-2 border-white/20 pl-4 my-6 text-neutral-400 italic">📈 <strong class="text-white font-medium">"strength training gear"</strong> — 4,400/mo volume · +340% growth · <strong class="text-white font-medium">BREAKOUT</strong></blockquote>
+                <p class="text-neutral-300 leading-relaxed">Also trending: <em>nasm certification, online personal trainer, macro calculator.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">FOUNDER PLAYBOOK</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">Trainerize and That Clean Life have been dominant for a decade. The opening is the NASM-certified PT the incumbents priced out.</strong></p>
+                <p class="text-neutral-300 leading-relaxed"><em>Sell per-trainer, not per-client. The moment you charge by client count, you lose the plan.</em></p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">USDA is the moat.</strong> An AI that hallucinates macros is a lawsuit waiting to happen. Every generated plan runs through a USDA FoodData Central validation loop that checks calories, protein, carbs, and fat against real food. That validation step is the trust signal a certified PT will pay for — and the reason competitors can't ship this in a week.</li><li class="leading-relaxed"><strong class="text-white font-medium">Brand the PDF, not the app.</strong> Trainers don't want to push clients to another SaaS login. Generate branded PDFs the trainer attaches to email. Their logo, their voice — invisible infrastructure. You win by disappearing.</li><li class="leading-relaxed"><strong class="text-white font-medium">Price flat at $29.</strong> Not $29/month/client. $29/month. Serve 3 or 30 — same price. Trainerize at $75+ and That Clean Life at $39–$119 both price per-seat or per-client. That pricing-structure gap is the wedge.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Read more on trainer SaaS pricing wedges → [SOURCE — add link before sending]</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">🛠 STEAL THIS — The 90-minute "one-client meal plan" MVP</strong></p>
+                <p class="text-neutral-300 leading-relaxed">Build the slice, not the suite. Prove the plan quality before you build the billing.</p>
+                <ul class="list-disc list-outside pl-6 space-y-2 text-neutral-300"><li class="leading-relaxed"><strong class="text-white font-medium">0–30 min:</strong> Next.js + Supabase scaffold. One form: client goal, target macros, allergies, cuisine. Submit button only. No auth, no multi-tenancy — single user, local.</li><li class="leading-relaxed"><strong class="text-white font-medium">30–60 min:</strong> Claude call with a tight system prompt: <em>"generate a 7-day meal plan for {goal}, {macros}, avoiding {allergies}, cuisine={cuisine}."</em> Return structured JSON with macros per meal.</li><li class="leading-relaxed"><strong class="text-white font-medium">60–90 min:</strong> Wire a basic USDA FoodData Central lookup that sanity-checks the total daily calories and macros against the target. Show the delta. That's your trust layer.</li></ul>
+                <p class="text-neutral-300 leading-relaxed">Test it on yourself before anyone else. If the macros miss the target by more than 10% on the first try, the prompt is wrong — not the idea.</p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed">Sneak peek at tomorrow's idea…</p>
+                <p class="text-neutral-300 leading-relaxed"><em>A dashboard that turns scattered subscription metrics — MRR, churn, LTV — into a single weekly text even a non-technical investor actually reads.</em></p>
+                <hr class="my-8 border-0 h-px bg-white/10">
+                <p class="text-neutral-300 leading-relaxed"><strong class="text-white font-medium">PS</strong> — What's your experience with Trainerize or That Clean Life? Hit reply — I'll compile a short competitive audit this weekend and share the best notes Friday.</p>
+            </div>
+
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Want more ideas like this?</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse 45+ startup ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <section class="mt-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl">
+                <h2 class="text-xl md:text-2xl font-medium text-white tracking-tight mb-2">Get the next one in your inbox</h2>
+                <p class="text-sm text-neutral-400 mb-6">Free. 2 emails a day. Unsubscribe anytime.</p>
+                <form data-newsletter-subscribe
+                      data-utm-campaign="newsletter-web-am"
+                      class="flex flex-col sm:flex-row gap-2"
+                      novalidate>
+                    <label for="nl-2026-04-23-am-email" class="sr-only">Email address</label>
+                    <input
+                        type="email"
+                        id="nl-2026-04-23-am-email"
+                        name="email"
+                        required
+                        placeholder="you@example.com"
+                        aria-label="Email address"
+                        class="flex-1 bg-white/[0.03] border border-white/10 rounded-full px-5 py-3 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/30 transition-all">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span data-label-default>Subscribe</span>
+                        <span data-label-loading class="hidden">Sending…</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </button>
+                </form>
+                <p data-form-message class="mt-3 text-xs text-neutral-500" role="status" aria-live="polite">
+                    Free. 2 emails a day. Unsubscribe anytime.
+                </p>
+            </section>
+
+            <div class="mt-12 text-center">
+                <a href="../newsletter.html" class="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-white transition-colors">
+                    <iconify-icon icon="lucide:arrow-left" width="14" aria-hidden="true"></iconify-icon>
+                    <span>All newsletters</span>
+                </a>
+            </div>
+        </div>
+    </article>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505] mt-16">
+        <div class="max-w-4xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+            <div class="flex items-center gap-6 text-xs text-neutral-500">
+                <a href="../newsletter.html" class="hover:text-white transition-colors">Newsletter</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+                <a href="../privacy-policy.html" class="hover:text-white transition-colors">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        document.querySelectorAll('form[data-newsletter-subscribe]').forEach((form) => {
+            const msg = form.parentElement.querySelector('[data-form-message]');
+            const btn = form.querySelector('button[type="submit"]');
+            const labelDefault = form.querySelector('[data-label-default]');
+            const labelLoading = form.querySelector('[data-label-loading]');
+            const campaign = form.dataset.utmCampaign || 'newsletter-web';
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = form.querySelector('input[type="email"]').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#CC5500]'); }
+                    return;
+                }
+                btn.disabled = true;
+                labelDefault?.classList.add('hidden');
+                labelLoading?.classList.remove('hidden');
+                if (msg) { msg.textContent = 'Sending…'; msg.classList.remove('text-[#CC5500]'); msg.classList.add('text-neutral-500'); }
+
+                try {
+                    const res = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'newsletter-web', utm_medium: 'website' })
+                    });
+                    if (!res.ok) throw new Error('Subscribe failed');
+                    form.reset();
+                    if (msg) { msg.textContent = 'Check your inbox to confirm — you\'re in.'; msg.classList.remove('text-[#CC5500]'); msg.classList.add('text-white'); }
+                    labelDefault && (labelDefault.textContent = 'Subscribed ✓');
+                } catch (err) {
+                    if (msg) { msg.textContent = 'Something went wrong. Try again in a moment.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#CC5500]'); }
+                    btn.disabled = false;
+                    labelLoading?.classList.add('hidden');
+                    labelDefault?.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
