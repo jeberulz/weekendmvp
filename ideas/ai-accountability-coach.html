@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Accountability Coach | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-accountability-coach">
+    <meta property="og:title" content="AI Accountability Coach | Startup Ideas">
+    <meta property="og:description" content="A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:type" content="image/png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI Accountability Coach | Startup Ideas">
+    <meta property="twitter:description" content="A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-accountability-coach">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) { dataLayer.push(arguments); }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    <!-- Meta Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .prompt-box {
+            background-color: #f5f2ed;
+            border: 1px solid #e5e0d8;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .sidebar-link.active {
+            color: #000;
+            font-weight: 600;
+        }
+        #sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overflow-y: auto;
+        }
+        #sidebar::-webkit-scrollbar { display: none; }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "AI Accountability Coach",
+          "description": "A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-04-24",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-accountability-coach.html",
+          "image": "https://weekendmvp.app/image/og-image.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "AI Accountability Coach",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web",
+          "description": "A daily AI coach for remote workers that onboards your goals, checks in by SMS and web, nudges you around your drift windows, and runs weekly momentum reviews."
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build AI Accountability Coach MVP",
+          "description": "Step-by-step guide to building an AI accountability coach in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Scaffold Next.js 15, Supabase (Postgres + pgvector), Clerk, Stripe, and Twilio. Define goals, check_ins, reflections, and memory tables with RLS."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Ship onboarding, morning SMS check-in via Twilio, retrieval-grounded reply using goal embeddings in pgvector, and streak updates in Redis."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Build a conversion page with a James Clear-style positioning headline, live check-in demo, 3 pricing tiers, and waitlist capture."
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "AI Accountability Coach", "item": "https://weekendmvp.app/ideas/ai-accountability-coach.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section (hidden by default for SEO) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
+                AI Accountability Coach
+            </h1>
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
+                A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift.
+            </p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" aria-label="First name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address" aria-label="Email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (Visible by default for SEO) -->
+    <section id="idea-content">
+        <div id="gated-content" class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SAAS</span>
+                            <span class="text-neutral-400 text-xs">~8-10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Accountability Coach</h1>
+                        <p class="text-xl text-neutral-500 font-light">A pocket James Clear: daily check-ins, contextual nudges, and weekly reviews that keep remote workers locked in on goals that actually matter.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Remote workers are drowning in their own autonomy. Reddit&rsquo;s r/RemoteJobs (286K members), r/WorkOnline (654K), and r/DigitalNomad (2.3M) run constant threads about the same quiet failure mode: high-agency people with clear goals, zero external pressure&mdash;and somehow the week disappears. Existing tools miss the point. Todoist adds more rows to a backlog. RescueTime watches your screen and guilts you afterward. Asana is for teams, not personal ambition. What&rsquo;s missing is a system that sits with <em>you</em> every day: asks what you&rsquo;re committed to, checks in while you work, and gently intervenes when the pattern says you&rsquo;re about to drift.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            The second failure is emotional. Goals die in isolation&mdash;not because they&rsquo;re too ambitious, but because nobody notices when you don&rsquo;t follow through. Focusmate ($5/mo) solved this with human partners but requires scheduling around strangers at fixed times. Human accountability coaches ($200&ndash;500/mo) solve it with real relationships but don&rsquo;t scale past a small book of clients. There&rsquo;s a wide gap in the middle: most people can&rsquo;t afford (or tolerate) a human coach, and no tool today actually <em>understands</em> what you&rsquo;re trying to become&mdash;only what&rsquo;s on your list today.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            The third failure is trust. Users are rightly suspicious of productivity software that logs everything they do. Search trends for &ldquo;remote productivity&rdquo; grew roughly 20% year-over-year and willingness-to-pay for AI tools that ship clear outcomes is high (ChatGPT Plus, Motion, Superhuman all prove it). But monitoring-flavored tools like RescueTime, Time Doctor, and Hubstaff hit a ceiling with individuals because they frame productivity as surveillance. A coach frames it as support&mdash;same inputs, completely different emotional contract, and an entirely different price ceiling.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-4">
+                            AccountCoach is a web + SMS AI coach that remembers what you told it you wanted and nudges you toward it without ever feeling like Clippy. Day-one onboarding takes seven minutes: your three active goals (shipping a side project, hitting a revenue target, daily writing habit, reading 20 books), your definition of a &ldquo;good day,&rdquo; and the times you&rsquo;re most likely to drift (post-lunch scroll? Friday afternoon?). From that point forward the agent does four jobs no todo app does.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            First, a <strong>morning check-in</strong> by SMS or web: &ldquo;What&rsquo;s the one thing today that moves X forward?&rdquo; Your answer becomes the day&rsquo;s commitment&mdash;no calendar bloat, no board to maintain. Second, a <strong>contextual mid-day nudge</strong> tuned to your historical drift windows. If Tuesday 3pm is your Reddit-spiral zone, that&rsquo;s when a short, specific ping lands&mdash;not a buzzer, a sentence that names what you said mattered this morning. Third, a <strong>90-second end-of-day reflection</strong>: what shipped, what got blocked, what you noticed about your own pattern. The model writes a two-line journal entry you can accept or edit. Fourth, a <strong>weekly momentum review</strong> with trends, streaks, and one uncomfortable question: &ldquo;You said X was the priority 14 days ago. Looking at the log, what&rsquo;s actually happened?&rdquo; That weekly review is the retention hook&mdash;over a month the AI has more context on you than any human coach would after three sessions.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            Under the hood it&rsquo;s retrieval over your own goal-and-reflection history plus a small set of carefully-prompted agents: one for onboarding, one for check-ins, one for reflections, one for review. Every message cites the goal and the evidence (your own words from previous sessions) so suggestions never feel generic and the model can&rsquo;t invent commitments you didn&rsquo;t make. You can mute by tag, reschedule on the fly, or change voice (&ldquo;more James Clear, less Tony Robbins&rdquo;). Export is first-class; deletion is one click. The positioning line writes itself: <em>&ldquo;An AI that actually cares if you follow through.&rdquo;</em>
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Onboard</p>
+                                    <p class="text-xs text-neutral-500 mt-1">7-minute intake: 3 goals, drift windows, preferred voice, SMS or web</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Check in</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Morning commitment + mid-day nudge tuned to your drift pattern</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Reflect</p>
+                                    <p class="text-xs text-neutral-500 mt-1">90-second evening journal, stored as vector memory for future context</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Review</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Weekly momentum report with streaks and one uncomfortable question</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The timing is unusually clean: three AI-market growth curves intersect the remote-work trend in 2025&ndash;2026, and none of the incumbents have locked in the personal-coaching seat yet. Directional sizing (treat all forecasts as directional, not gospel):</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Responsible AI</strong> &mdash; the sub-category most directly tied to accountable, explainable agent behavior &mdash; was $910.4M in 2024 and is projected to grow at a <strong>48.4% CAGR to $47.2B by 2034</strong> (market.us). That&rsquo;s the funding runway and enterprise mandate that makes &ldquo;AI you can trust with personal data&rdquo; a defensible wedge.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Total AI market</strong> hit $638.23B in early 2025 with analyst projections ranging from $1.81T (Grand View) to <strong>$3.68T by 2034</strong> (Precedence Research). McKinsey puts the addressable productivity gain at <strong>$4.4T</strong> annually&mdash;productivity is one of the three largest AI use-case slices.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Explainable AI</strong>&mdash;the infrastructure that underwrites users&rsquo; willingness to hand over personal goal data&mdash;was <strong>$6.8B in 2024</strong> and is growing at 21.2% CAGR through 2035. Mass-market accountability tools need &ldquo;show me why you nudged me&rdquo; receipts to not feel creepy; that substrate is maturing right now.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Demand-side signal</strong>: r/RemoteJobs (286K), r/WorkOnline (654K), r/DigitalNomad (2.3M), Facebook&rsquo;s &ldquo;Remote Jobs / Work from Anywhere&rdquo; (697K) and &ldquo;Digital Nomad Jobs&rdquo; (555K). Five communities, roughly 4.5M people actively discussing productivity and accountability gaps&mdash;with no dominant AI-native coaching solution named in the threads.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Category gap</strong>: Motion has raised $30M+ and owns AI scheduling. Focusmate owns human accountability. Forest (40M+ downloads) owns gamified focus. None of them combine the four jobs above in one personal agent&mdash;and the Responsible AI forecasting wave is precisely what gives a new entrant credibility to ask for the goal data.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Four real players and one obvious DIY stack. Each of them nails part of the stack&mdash;none of them is the agent that remembers your goals and follows up for months.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Focusmate</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Video coworking with real human partners. Proven accountability model; requires booking around strangers&rsquo; calendars; no AI memory of your goals between sessions.</p>
+                                <p class="text-xs text-neutral-400">Freemium (3 sessions/week free) &middot; Unlimited $5/mo</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">RescueTime</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Automatic screen-time tracking plus focus sessions and reports. Backward-looking and passive&mdash;it grades you after the week; it never asks what you were trying to do.</p>
+                                <p class="text-xs text-neutral-400">$12/mo or $78/year (Premium)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Motion</h4>
+                                <p class="text-xs text-neutral-500 mb-2">AI calendar auto-scheduler and task prioritizer. $30M+ raised. Reshuffles blocks but doesn&rsquo;t ask what matters or follow up if you ignore the plan.</p>
+                                <p class="text-xs text-neutral-400">$34/mo monthly &middot; $19/mo on annual contract</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Forest App</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Gamified focus timer with 40M+ downloads. Sticky and simple; no persistent goal memory, no coaching layer, no cross-session continuity.</p>
+                                <p class="text-xs text-neutral-400">$1.99 one-time (mobile) / freemium</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Human accountability coaches</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Deep, personalized, high-trust. Scales horribly&mdash;a coach can hold maybe 20&ndash;30 clients before quality drops&mdash;and the price puts it out of reach for the target user.</p>
+                                <p class="text-xs text-neutral-400">$200&ndash;$500/mo per client</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">ChatGPT / Claude DIY</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Flexible but has no scheduled outreach, no durable memory of your commitments, and no streak system. Users try it for a week, then the thread dies.</p>
+                                <p class="text-xs text-neutral-400">$20/mo (ChatGPT Plus / Claude Pro)</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Position as <em>&ldquo;the AI coach Focusmate users wish existed on the days they can&rsquo;t book a partner.&rdquo;</em> Price between Focusmate ($5) and Motion ($34) at $19/mo, wrap it in Responsible-AI-grade transparency (every nudge cites your past words), and win the 90% of sessions that are really just &ldquo;someone I trust checking in on me.&rdquo; Undercut human coaches by 10x&mdash;with better continuity than any of them can offer across a full year.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Three-tier personal SaaS plus an enterprise / white-label tier for coaching orgs and accelerators. Anchor against ChatGPT Plus ($20/mo) on the low end and human coaches ($200+/mo) on the high end&mdash;the sweet spot sits cleanly above Focusmate and below Motion.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Starter</h4>
+                                <p class="text-2xl font-bold mb-2">$9/mo</p>
+                                <p class="text-xs text-neutral-500">1 goal track, SMS or web check-ins, weekly review, 30-day history</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Growth</h4>
+                                <p class="text-2xl font-bold mb-2">$19/mo</p>
+                                <p class="text-xs text-neutral-500">Unlimited goals, all channels, daily reflection, Slack + calendar, full history</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Pro</h4>
+                                <p class="text-2xl font-bold mb-2">$39/mo</p>
+                                <p class="text-xs text-neutral-500">Team spaces (up to 5 partners), custom agent voice, API access, priority inference</p>
+                            </div>
+                        </div>
+
+                        <p class="text-neutral-600 leading-relaxed mb-6 text-sm">Enterprise / white-label: $5K&ndash;$20K/year for coaching companies, accelerators, and cohort-course creators who want to ship a branded AI co-pilot to their members (direct lift from the Ideabrowser value-ladder analysis). This is where the category&rsquo;s $1M&ndash;$10M ARR upside lives once the D2C motion proves retention.</p>
+
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-xs text-neutral-500">Target CAC</p>
+                                    <p class="font-semibold">$30</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Blended ARPU</p>
+                                    <p class="font-semibold">$22/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Est. Churn</p>
+                                    <p class="font-semibold">6%/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">LTV (~15 mo)</p>
+                                    <p class="font-semibold">$330</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-neutral-500 text-xs mt-4">Path to $1M ARR: ~3,800 Growth-tier seats, or roughly 1,500 Growth + 500 Pro + 2 enterprise deals. Organic-heavy acquisition (creator rev-share with Ali Abdaal / Thomas Frank / Tiago Forte-style operators) is how this gets to CAC &lt; $30 instead of $150.</p>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The critical path is scheduled message &rarr; short LLM call with long-term memory retrieval &rarr; structured response stored &rarr; streak update. Supabase pgvector plus Inngest cron handles 95% of that with minimal plumbing. You can ship onboarding plus the morning SMS loop in a weekend.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js 15 + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">App Router for the dashboard; server actions for goal edits; streaming UI for the evening reflection.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI (GPT-4o-mini + embeddings)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">4o-mini for daily check-ins (cheap, fast), 4.1 for weekly reviews, text-embedding-3-small for goal and reflection vectors.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase + pgvector</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">One Postgres for users, goals, check_ins, reflections, embeddings, and streaks. RLS per user; edge functions for async re-embedding jobs.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:twilio" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Twilio Programmable Messaging</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">SMS is the highest-open-rate channel for nudges. Webhook back into Next.js for inbound replies; store raw text for memory.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Auth plus phone verification out of the box; org model ready when you ship Pro team spaces.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="lucide:clock" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Inngest</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Scheduled jobs for morning check-ins, drift-window nudges, and the Sunday-night weekly review run.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:redis" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Upstash Redis</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Streak counters, rate-limiting on SMS sends (respect quiet hours), and the last-N message cache to keep LLM context tight.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Stripe Billing</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Three-tier subscriptions, customer portal for plan changes; metered add-on slot for future overages on SMS sends.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI BUILD PROMPTS -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Scaffold a Next.js 15 App Router + TypeScript project called accountcoach. Wire Supabase (Postgres + pgvector), Clerk (auth with phone verification), Stripe Billing (3 tiers: Starter $9, Growth $19, Pro $39), Twilio Programmable Messaging, Inngest for scheduled jobs, and Upstash Redis. Create tables: users, goals (title, target_date, cadence, drift_windows jsonb), check_ins (goal_id, commitment, completed, ts), reflections (date, text, embedding vector(1536)), streaks (goal_id, count, last_hit). Enable RLS per user_id on every table. Add an env schema with zod. Include a README with the four Inngest functions stubbed: morning_check_in, drift_nudge, evening_reflection, weekly_review.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the morning check-in loop. Inngest cron fires at user.quiet_hours_end in their timezone. For each user: retrieve the top-3 active goals; embed the most recent 7 reflections with text-embedding-3-small; build a prompt that cites prior commitments verbatim and asks &ldquo;What&rsquo;s the one thing today that moves {goal.title} forward?&rdquo; Call GPT-4o-mini with structured output { question, cited_goal_id, tone }. Send via Twilio SMS (or web push fallback). On inbound SMS: append commitment to check_ins, increment streak in Redis, queue drift_nudge for the user&rsquo;s flagged drift window. Include a replayable dev mode that runs the loop against a test user without actually texting. Write Vitest tests for streak math and the citation format.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Design a conversion landing page at / with this structure: hero headline &ldquo;An AI that actually cares if you follow through.&rdquo; plus subhead &ldquo;Daily check-ins. Honest weekly reviews. Zero Notion templates.&rdquo; Include a live demo panel that fakes a morning SMS exchange (typewriter effect). Social proof row: r/RemoteJobs (286K), r/DigitalNomad (2.3M), r/WorkOnline (654K)&mdash;the communities this was built for. Three-tier pricing matching the Stripe products. FAQ: privacy (&ldquo;exportable, deletable, never sold&rdquo;), SMS cost, does it work on web only. Primary CTA: &ldquo;Start your first check-in&rdquo; &rarr; Clerk signup. Use Geist font, warm off-white background (#fcfaf7), minimal neutrals, no stock photos.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a branding package for AccountCoach, a daily AI accountability coach for remote workers. Voice: warm, direct, James Clear rather than Tony Robbins&mdash;never corporate-cheery, never surveillance-coded. Logo: a simple geometric mark (circle + single tally mark) that reads at 16px; no gradients. Color palette: off-white canvas #fcfaf7, charcoal text #1a1a1a, green progress #16a34a, amber nudge #f59e0b; no bright red anywhere (this is a coach, not a warning). Typography: Geist 500 for headlines, Geist 400 for body, monospace only for SMS previews. Write three positioning lines and three microcopy patterns for nudges. Output as a single Markdown brand guide with hex codes, font weights, and usage rules.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CROSS-LINKING -->
+                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <a href="../ideas/saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:layers" class="text-neutral-600" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More SaaS Ideas</span>
+                                    <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                                </div>
+                            </a>
+                            <a href="../ideas/1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:dollar-sign" class="text-neutral-600" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$1K/Month Ideas</span>
+                                    <p class="text-xs text-neutral-500">By revenue potential</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../build-with/claude/" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700 hover:bg-neutral-200 transition-colors">Claude</a>
+                                <a href="../build-with/cursor/" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700 hover:bg-neutral-200 transition-colors">Cursor</a>
+                                <a href="../build-with/bolt/" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700 hover:bg-neutral-200 transition-colors">Bolt.new</a>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../ideas-for/solo-founders/" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700 hover:bg-neutral-200 transition-colors">Solo Founders</a>
+                                <a href="../ideas-for/developers/" class="px-3 py-1.5 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700 hover:bg-neutral-200 transition-colors">Developers</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sources -->
+                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">Sources</h2>
+                        <p class="text-neutral-500 text-sm mb-4">Market sizing, competitor pricing, and community-signal data pulled via Ideabrowser research on 2026-04-24:</p>
+                        <ul class="space-y-2 text-sm text-neutral-600">
+                            <li>&middot; <a href="https://market.us/report/responsible-ai-market/" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">market.us &mdash; Responsible AI market ($910.4M in 2024, 48.4% CAGR, $47.2B by 2034)<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li>&middot; <a href="https://www.precedenceresearch.com/artificial-intelligence-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Precedence Research &mdash; global AI market ($638.23B 2025 &rarr; $3.68T 2034)<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li>&middot; <a href="https://www.mckinsey.com/capabilities/mckinsey-digital/our-insights/superagency-in-the-workplace-empowering-people-to-unlock-ais-full-potential-at-work" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">McKinsey &mdash; $4.4T AI productivity potential<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li>&middot; <a href="https://www.einpresswire.com/article/814698285/explainable-ai-market-to-reach-usd-18-6-billion-by-2035-amid-rising-ai-accountability" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Explainable AI market ($6.8B 2024, 21.2% CAGR)<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li>&middot; <a href="https://explodingtopics.com/blog/ai-statistics" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Exploding Topics &mdash; AI adoption statistics<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li>&middot; Competitor pricing: Focusmate, RescueTime, Motion, Forest App (public pricing pages, verified 2026-04).</li>
+                        </ul>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                    <div class="col-span-2 md:col-span-1">
+                        <a href="../index.html">
+                            <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
+                        </a>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                        <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                            <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                            <li><a href="../ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
+                            <li><a href="../ideas/automation/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Automation</a></li>
+                            <li><a href="../ideas/1k-month/" class="text-neutral-500 hover:text-neutral-900 transition-colors">$1K/Month Ideas</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All &rarr;</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                            <li><a href="../build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                            <li><a href="../build-with/bolt/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Bolt.new</a></li>
+                            <li><a href="../build-with/no-code/" class="text-neutral-500 hover:text-neutral-900 transition-colors">No-Code</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas-for/developers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Developers</a></li>
+                            <li><a href="../ideas-for/non-technical/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Non-Technical</a></li>
+                            <li><a href="../ideas-for/solo-founders/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Solo Founders</a></li>
+                            <li><a href="../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                            <li><a href="../articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                            <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-neutral-900 transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                    <div class="flex items-center gap-6">
+                        <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                            <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                            <span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script src="/ideas/gate.js" defer></script>
+</body>
+</html>

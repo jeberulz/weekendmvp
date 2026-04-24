@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-04-23T10:49:46.651Z",
+  "generatedAt": "2026-04-24T09:45:49.368Z",
   "totals": {
-    "PASS": 31,
-    "total": 31,
-    "passing": 31,
+    "PASS": 32,
+    "total": 32,
+    "passing": 32,
     "failing": 0
   },
   "ideas": [
     {
       "slug": "meeting-scheduler",
       "status": "PASS",
-      "bytes": 37860,
+      "bytes": 38111,
       "wordCount": 2021,
       "h2Count": 9,
       "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
@@ -30,7 +30,7 @@
     {
       "slug": "habit-tracker",
       "status": "PASS",
-      "bytes": 37276,
+      "bytes": 37527,
       "wordCount": 2003,
       "h2Count": 9,
       "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
@@ -50,7 +50,7 @@
     {
       "slug": "email-to-todo",
       "status": "PASS",
-      "bytes": 38614,
+      "bytes": 38865,
       "wordCount": 2154,
       "h2Count": 9,
       "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
@@ -70,7 +70,7 @@
     {
       "slug": "daily-standup-bot",
       "status": "PASS",
-      "bytes": 37146,
+      "bytes": 37397,
       "wordCount": 2038,
       "h2Count": 9,
       "description": "Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.",
@@ -90,7 +90,7 @@
     {
       "slug": "focus-session-timer",
       "status": "PASS",
-      "bytes": 36861,
+      "bytes": 37112,
       "wordCount": 1949,
       "h2Count": 9,
       "description": "Deep-work Pomodoro timer with analytics, website blocking, calendar sync. Flat annual pricing under Forest/Flow. Weekend MVP guide + prompts.",
@@ -110,7 +110,7 @@
     {
       "slug": "notion-backup-tool",
       "status": "PASS",
-      "bytes": 37632,
+      "bytes": 37883,
       "wordCount": 2103,
       "h2Count": 9,
       "description": "Automated Notion workspace backup with version history and point-in-time restore. Indie-priced under Rewind. Weekend MVP guide + prompts.",
@@ -130,7 +130,7 @@
     {
       "slug": "user-onboarding-builder",
       "status": "PASS",
-      "bytes": 38350,
+      "bytes": 38601,
       "wordCount": 2058,
       "h2Count": 9,
       "description": "No-code product tour and onboarding flow builder. AI generates flows from screenshots. Indie-priced under Appcues. Weekend MVP guide + prompts.",
@@ -150,7 +150,7 @@
     {
       "slug": "feature-voting-board",
       "status": "PASS",
-      "bytes": 38529,
+      "bytes": 38780,
       "wordCount": 2192,
       "h2Count": 9,
       "description": "Public roadmap + feature voting for indie SaaS. Flat pricing, embeddable widget, AI dedup. Undercuts Canny. Weekend MVP guide + prompts.",
@@ -170,7 +170,7 @@
     {
       "slug": "nasm-trainer-marketplace",
       "status": "PASS",
-      "bytes": 45232,
+      "bytes": 45483,
       "wordCount": 2357,
       "h2Count": 9,
       "description": "Credential-verified marketplace for NASM/ACE/ISSA trainers. In-person + virtual, escrow payments, certification badge. Weekend MVP guide + prompts.",
@@ -190,7 +190,7 @@
     {
       "slug": "virtual-knowledge-hub",
       "status": "PASS",
-      "bytes": 43993,
+      "bytes": 44244,
       "wordCount": 2294,
       "h2Count": 9,
       "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49–$149/mo. Weekend MVP guide + prompts.",
@@ -210,7 +210,7 @@
     {
       "slug": "ai-nutrition-planner-trainers",
       "status": "PASS",
-      "bytes": 44212,
+      "bytes": 44463,
       "wordCount": 2368,
       "h2Count": 9,
       "description": "B2B tool for personal trainers. Generate macro-matched meal plans per client in seconds, priced per-trainer not per-client. Weekend MVP guide + prompts.",
@@ -230,7 +230,7 @@
     {
       "slug": "client-portal",
       "status": "PASS",
-      "bytes": 42814,
+      "bytes": 43065,
       "wordCount": 2119,
       "h2Count": 9,
       "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
@@ -250,7 +250,7 @@
     {
       "slug": "expense-report-generator",
       "status": "PASS",
-      "bytes": 42045,
+      "bytes": 42296,
       "wordCount": 2104,
       "h2Count": 9,
       "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
@@ -270,7 +270,7 @@
     {
       "slug": "single-event-app-builder",
       "status": "PASS",
-      "bytes": 41363,
+      "bytes": 41614,
       "wordCount": 1483,
       "h2Count": 9,
       "description": "Build branded single-use event apps for weddings, retreats, and reunions that expire after the date and archive as keepsake pages. Replaces five fragmented tools with one link.",
@@ -290,7 +290,7 @@
     {
       "slug": "vehicle-recall-alert-service",
       "status": "PASS",
-      "bytes": 40664,
+      "bytes": 40915,
       "wordCount": 1455,
       "h2Count": 9,
       "description": "Build a VIN-tracking recall alert service for used car owners. NHTSA data + real-time SMS. One VIN entry, lifetime coverage.",
@@ -310,7 +310,7 @@
     {
       "slug": "conversational-analytics-digest",
       "status": "PASS",
-      "bytes": 41554,
+      "bytes": 41805,
       "wordCount": 1529,
       "h2Count": 9,
       "description": "Build an AI tool that turns GA4, Mixpanel, and Plausible data into plain-English weekly emails for non-technical founders. Skip the dashboard.",
@@ -330,7 +330,7 @@
     {
       "slug": "recall-radar-ecommerce-sellers",
       "status": "PASS",
-      "bytes": 41517,
+      "bytes": 41768,
       "wordCount": 1478,
       "h2Count": 9,
       "description": "Build a SaaS tool that monitors FDA, CPSC, and Health Canada recall feeds against Amazon and Shopify catalogs—real-time alerts before listings get pulled. Built for 2025's recall surge.",
@@ -350,7 +350,7 @@
     {
       "slug": "ai-feedback-triage-widget",
       "status": "PASS",
-      "bytes": 40944,
+      "bytes": 41195,
       "wordCount": 1431,
       "h2Count": 9,
       "description": "Build an AI-powered feedback widget that auto-categorizes user input into bugs, features, and praise—then ranks the top 3 priorities. Perfect for solo devs drowning in feedback.",
@@ -370,7 +370,7 @@
     {
       "slug": "brakes-maintenance-tracker-app",
       "status": "PASS",
-      "bytes": 57913,
+      "bytes": 58164,
       "wordCount": 1428,
       "h2Count": 10,
       "description": "Niche vehicle app: log brake service, pad wear, and inspections with mileage- and time-based reminders—without fighting generic maintenance giants. Weekend MVP guide + prompts.",
@@ -390,7 +390,7 @@
     {
       "slug": "ai-rfp-response-assistant",
       "status": "PASS",
-      "bytes": 58833,
+      "bytes": 59084,
       "wordCount": 1545,
       "h2Count": 10,
       "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.",
@@ -410,7 +410,7 @@
     {
       "slug": "ai-landing-page-generator-ecommerce",
       "status": "PASS",
-      "bytes": 62763,
+      "bytes": 63014,
       "wordCount": 1713,
       "h2Count": 11,
       "description": "Build conversion-focused landing pages in minutes with AI. A Pagely-style tool that integrates with Shopify and WordPress, lifts conversion rates 15-30%, and cuts wasted ad spend for e-commerce brands.",
@@ -430,7 +430,7 @@
     {
       "slug": "subscription-analytics-dashboard",
       "status": "PASS",
-      "bytes": 37153,
+      "bytes": 37404,
       "wordCount": 1239,
       "h2Count": 8,
       "description": "Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to build it this weekend.",
@@ -450,7 +450,7 @@
     {
       "slug": "customer-feedback-aggregator",
       "status": "PASS",
-      "bytes": 32563,
+      "bytes": 32814,
       "wordCount": 1131,
       "h2Count": 8,
       "description": "Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI prompts included.",
@@ -470,7 +470,7 @@
     {
       "slug": "waitlist-manager",
       "status": "PASS",
-      "bytes": 39001,
+      "bytes": 39252,
       "wordCount": 1266,
       "h2Count": 9,
       "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
@@ -490,7 +490,7 @@
     {
       "slug": "ai-code-reviewer",
       "status": "PASS",
-      "bytes": 38998,
+      "bytes": 39249,
       "wordCount": 1250,
       "h2Count": 9,
       "description": "Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Full build guide with AI prompts.",
@@ -510,7 +510,7 @@
     {
       "slug": "ai-resume-tailorer",
       "status": "PASS",
-      "bytes": 32594,
+      "bytes": 32845,
       "wordCount": 1212,
       "h2Count": 8,
       "description": "Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full build guide included.",
@@ -530,7 +530,7 @@
     {
       "slug": "social-media-scheduler",
       "status": "PASS",
-      "bytes": 39246,
+      "bytes": 39497,
       "wordCount": 1222,
       "h2Count": 9,
       "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
@@ -550,7 +550,7 @@
     {
       "slug": "api-documentation-generator",
       "status": "PASS",
-      "bytes": 32690,
+      "bytes": 32941,
       "wordCount": 1197,
       "h2Count": 8,
       "description": "Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, interactive docs instantly.",
@@ -570,7 +570,7 @@
     {
       "slug": "expense-splitter-app",
       "status": "PASS",
-      "bytes": 38665,
+      "bytes": 38916,
       "wordCount": 1205,
       "h2Count": 9,
       "description": "Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for trips, roommates, and dinners.",
@@ -590,7 +590,7 @@
     {
       "slug": "content-repurposing-tool",
       "status": "PASS",
-      "bytes": 32950,
+      "bytes": 33201,
       "wordCount": 1242,
       "h2Count": 8,
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
@@ -610,10 +610,30 @@
     {
       "slug": "abandoned-cart-recovery",
       "status": "PASS",
-      "bytes": 32679,
+      "bytes": 32930,
       "wordCount": 1218,
       "h2Count": 8,
       "description": "Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-accountability-coach",
+      "status": "PASS",
+      "bytes": 62092,
+      "wordCount": 2327,
+      "h2Count": 10,
+      "description": "A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.",
       "sections": {
         "problem": true,
         "solution": true,

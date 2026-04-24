@@ -1020,6 +1020,48 @@
         "backfillNotes": "Added Competitive Landscape (Klaviyo, Omnisend, Privy, Recart/ReConvert), Business Model (Free 500 abandons / $19 Pro / $49 Growth + SMS unit economics), Recommended Tech Stack (Shopify App Remix template + Supabase + Twilio SMS + Resend email + Claude for AI copy + Vercel Cron + Shopify Billing API). Market stats cite Baymard 70.19% cart abandonment benchmark, eMarketer $6T e-commerce, BuiltWith Shopify count, Klaviyo IPO valuation, Attentive/Postscript SMS performance reports; verify pricing against live product pages before marketing push."
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-accountability-coach",
+      "title": "AI Accountability Coach",
+      "publishedAt": "2026-04-24",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "description": "A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.",
+      "source": "ideabrowser:1230",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "market_stage_analysis"
+        ],
+        "citations": 6,
+        "wordCount": 2327,
+        "auditPassed": true,
+        "auditRunAt": "2026-04-24T09:44:42.043Z"
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
