@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Claude Code Workflow: From Idea to Live App in 48 Hours | Weekend MVP</title>
+    <meta name="description" content="An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints.">
+    <meta name="author" content="John Iseghohi">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/articles/claude-code-48-hour-workflow.html">
+    <meta property="og:title" content="The Claude Code Workflow: From Idea to Live App in 48 Hours | Weekend MVP">
+    <meta property="og:description" content="An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/articles/claude-code-48-hour-workflow.html">
+    <meta property="twitter:title" content="The Claude Code Workflow: From Idea to Live App in 48 Hours | Weekend MVP">
+    <meta property="twitter:description" content="An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/articles/claude-code-48-hour-workflow.html">
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "The Claude Code Workflow: From Idea to Live App in 48 Hours",
+      "description": "An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-01",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/articles/claude-code-48-hour-workflow.html"
+      },
+      "image": "https://weekendmvp.app/image/og-image.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">Browse Ideas</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+            <a href="../startup-ideas.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">Browse Ideas</span>
+            </a>
+            <button id="mobile-menu-open" class="md:hidden ml-2 p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </nav>
+    </div>
+
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-80 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../startup-ideas.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Browse Ideas</a>
+            <a href="../articles.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <article class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">The 48-Hour Claude Code Workflow</span>
+            </nav>
+
+            <header class="mb-16">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Tutorial</span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">By <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">May 1, 2026</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+                    The Claude Code Workflow: From Idea to Live App in 48 Hours
+                </h1>
+                <p class="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
+                    Friday night planning. Saturday building. Sunday shipping. An hour-by-hour ritual you can actually finish.
+                </p>
+            </header>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Why "48 Hours" Beats "Someday"</h2>
+                <p class="text-neutral-300 leading-relaxed mb-6">A weekend has a hard edge. Monday morning is a deadline you can't negotiate with. That edge is the only thing separating "I'm working on something" from "I shipped something."</p>
+                <p class="text-neutral-300 leading-relaxed mb-6">Most weekend projects fail not because the tools are slow, but because the builder is wandering. Two days is not enough time to wander. With <a href="claude-code-for-non-technical-founders.html" class="text-white hover:underline">Claude Code</a> doing the typing, two days is more than enough to ship.</p>
+                <p class="text-neutral-300 leading-relaxed">This is the workflow. Hour by hour.</p>
+            </section>
+
+            <!-- Friday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-8 tracking-tight">Friday Night: Plan</h2>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">7:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Pick the idea (15 min)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Don't pick on Saturday. You'll waste your best building hours debating. Browse <a href="../startup-ideas.html" class="text-white hover:underline">startup ideas</a> or your own backlog and commit to one.</p>
+                    <p class="text-neutral-500 text-xs">Output: a one-sentence pitch you can text a friend.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">7:15 PM</span>
+                        <h3 class="text-lg text-white font-medium">Define the 3 screens (30 min)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Use the <a href="the-3-screen-mvp-framework.html" class="text-white hover:underline">3-Screen MVP framework</a>: Landing &rarr; Input &rarr; Output. Sketch each on paper or Figma. No more than 3.</p>
+                    <p class="text-neutral-500 text-xs">Output: 3 rough screens with the key fields/buttons named.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">7:45 PM</span>
+                        <h3 class="text-lg text-white font-medium">Set up the project (30 min)</h3>
+                    </div>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">mkdir weekend-mvp &amp;&amp; cd weekend-mvp<br>git init<br>claude</div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Then drop this in:</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Scaffold a Next.js 15 app with Tailwind CSS, TypeScript, and Supabase. Set up the basic layout: a landing page route, an input route, and an output/dashboard route. Use a dark theme. Don't fill the pages yet&mdash;just the scaffold and routing."</div>
+                    <p class="text-neutral-500 text-xs">Output: a runnable scaffold with three blank pages and routing.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">8:15 PM</span>
+                        <h3 class="text-lg text-white font-medium">Write a CLAUDE.md (15 min)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Tell Claude what this project <em>is</em> so it stays on track all weekend. One file at the project root, ~30 lines.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Create a CLAUDE.md file that describes: (1) what this product does in one sentence, (2) the 3 screens, (3) tech stack, (4) coding conventions (Tailwind, no inline styles, dark theme), (5) what we're NOT building this weekend (auth, payments, admin)."</div>
+                    <p class="text-neutral-500 text-xs">Output: a single source of truth that prevents Claude from drifting.</p>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Friday end-of-day checkpoint</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Idea committed.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>3 screens sketched.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Scaffold runs locally.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>CLAUDE.md exists.</span></li>
+                    </ul>
+                    <p class="text-neutral-500 text-xs mt-3">Total time: ~90 min. Sleep with the idea.</p>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Don't have an idea yet? Don't waste Friday.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- Saturday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-8 tracking-tight">Saturday: Build</h2>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">9:00 AM</span>
+                        <h3 class="text-lg text-white font-medium">Build screen 1: the landing (2 hours)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Headline. Subhead. Hero visual placeholder. Three benefit blocks. CTA. Footer. That's it.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Fill in the landing page route. Headline: '[your one-liner]'. Subhead: '[the problem you solve]'. Three benefit cards with Lucide icons. Email signup form that POSTs to /api/signup (we'll wire it up later). Hero image placeholder. Make it feel like a Linear or Vercel landing page."</div>
+                    <p class="text-neutral-500 text-xs">Tip: when something looks off, take a screenshot and paste it back: "fix the spacing on the benefit cards&mdash;they're too tight."</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">11:00 AM</span>
+                        <h3 class="text-lg text-white font-medium">Build screen 2: the input (3 hours)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">This is the form, upload, or workflow that turns a user's data into something. The most product-specific screen.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Build the input page. The user does X. The form has fields A, B, C. On submit, send to /api/process which calls the Claude API to do Y. While processing, show a loading state. Save the result to Supabase under the user's session id."</div>
+                    <p class="text-neutral-500 text-xs">Mid-checkpoint: try it yourself end-to-end. Bugs found at hour 3 are 10x easier to fix than bugs found at hour 30.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">2:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Lunch + walk (45 min)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed">No laptop. The best refactoring ideas come when you stop typing.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">3:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Build screen 3: the output (3 hours)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">The result. The thing the user gets. A dashboard, a download, a generated artifact, a confirmation page&mdash;whatever it is, this is the payoff.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Build the output page. Read the result from Supabase. Display it as [cards / a dashboard / a downloadable file / etc]. Add a 'Copy link to share' button. Add a 'Run again' button that resets back to the input page."</div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">6:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">First end-to-end test (1 hour)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Use the app like a real user would. From landing &rarr; input &rarr; output. Take notes on every bug, every "huh?" moment, every dead end.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Here are the issues I found going through the flow:<br>1. ...<br>2. ...<br>3. ...<br>Fix all of them. Also, write a quick smoke test that hits the /api/process endpoint and confirms it returns a result."</div>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Saturday end-of-day checkpoint</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>All 3 screens work end-to-end on localhost.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>You've used your own product at least once.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Top 5 bugs are fixed.</span></li>
+                    </ul>
+                    <p class="text-neutral-500 text-xs mt-3">Stop. Don't keep building features. Sunday is for shipping.</p>
+                </div>
+            </section>
+
+            <!-- CTA mid -->
+            <div class="my-16 p-8 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-2xl text-center">
+                <h3 class="text-xl text-white font-medium mb-3">Stuck for ideas to plug into this workflow?</h3>
+                <p class="text-neutral-400 text-sm mb-6">Browse 100+ research-backed startup ideas with paste-ready Claude Code prompts.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- Sunday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-8 tracking-tight">Sunday: Ship</h2>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">10:00 AM</span>
+                        <h3 class="text-lg text-white font-medium">Polish pass (2 hours)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Visual cleanup. Loading states. Empty states. Error messages that don't sound like an engineer wrote them.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Polish the whole app. Make sure: every form has a loading state, every error message is human-readable, every empty state has a helpful prompt, and the meta tags + favicon are set. Also add basic SEO: title, description, OG image."</div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">12:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Ship to production (1 hour)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">If it's not on the public internet, it doesn't exist.</p>
+                    <div class="p-4 bg-[#0A0A0A] border border-white/5 rounded-xl mb-3 font-mono text-xs text-neutral-300 leading-relaxed">"Push this repo to GitHub (create a new private repo for me). Then deploy it to Vercel and connect it to my Supabase project. Set up the environment variables. Give me the live URL when it's done."</div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">1:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Production smoke test + 5 friends (1 hour)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Use the live URL yourself. Then text 5 specific people: "I built this. 60 seconds. What's broken?"</p>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Don't post publicly yet. Friends will catch obvious bugs in 5 minutes that you'd be embarrassed to find in a public launch.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">2:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Fix friend bugs (2 hours)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Paste their feedback verbatim into Claude Code. Fix in batches. Redeploy. Confirm live.</p>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-2 py-1 bg-[#CC5500]/10 border border-[#CC5500]/20 rounded text-[10px] font-mono text-[#CC5500] uppercase tracking-wider">5:00 PM</span>
+                        <h3 class="text-lg text-white font-medium">Launch (1 hour)</h3>
+                    </div>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Pick one channel. Just one. Twitter/X thread, LinkedIn post, the relevant subreddit, your newsletter, Indie Hackers. Don't spread thin.</p>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Format: 1 problem &rarr; 1 solution &rarr; 1 link. Skip the manifesto.</p>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Sunday end-of-day checkpoint</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Live on the internet at a real URL.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>5 friends have used it.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>You shared it once, publicly.</span></li>
+                    </ul>
+                    <p class="text-neutral-500 text-xs mt-3">Monday: read responses. Note the 3 most-requested features. Don't build them yet.</p>
+                </div>
+            </section>
+
+            <!-- Common detours -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Common 48-Hour Detours (and How to Avoid Them)</h2>
+                <div class="space-y-6">
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "I should add real auth"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> Magic-link only. Or skip auth entirely until launch +1 week. CLAUDE.md should explicitly say "no auth this weekend."</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "Let me redesign the landing"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> Pick a reference site at the start (Linear, Vercel, Posthog). Tell Claude "make it feel like X." Don't redesign mid-build.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "I need to add Stripe"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> A Stripe Payment Link is enough for v1. Real billing is a week-2 problem.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "What if it doesn't scale?"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> If you have to scale, you've already won. Focus on shipping.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-16 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                <h2 class="text-lg font-medium text-white mb-4">TL;DR</h2>
+                <ul class="space-y-2 text-neutral-400 text-sm">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Friday night:</span> pick idea, sketch 3 screens, scaffold, write CLAUDE.md.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Saturday:</span> build all 3 screens. End-to-end test by 6pm.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Sunday:</span> polish, deploy, friend-test, launch on one channel.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Avoid auth, billing, redesigns. Add them after launch.</span></li>
+                </ul>
+            </section>
+
+            <!-- 1:1 Claude Code Setup Service -->
+            <div class="my-16 p-8 bg-gradient-to-br from-[#CC5500]/10 to-[#CC5500]/[0.02] border border-[#CC5500]/30 rounded-2xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <iconify-icon icon="lucide:sparkles" width="14" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-[#CC5500]">1:1 Setup Service</span>
+                </div>
+                <h3 class="text-xl text-white font-medium mb-3">Want a co-pilot for your first weekend?</h3>
+                <p class="text-neutral-400 text-sm mb-6 leading-relaxed">Book a 1:1 with John before Friday. We'll install Claude Code, configure your project, and walk through the workflow above on a screen share so by Saturday morning you're building, not setting up. For founders who don't want to lose 6 hours to YouTube tutorials.</p>
+                <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-[#CC5500] text-white rounded-full text-sm font-semibold hover:bg-[#CC5500]/90 transition-all shadow-[0_0_30px_-10px_rgba(204,85,0,0.5)] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black">
+                    <span>Book a Claude Code Setup Session</span>
+                    <iconify-icon icon="lucide:arrow-up-right" width="16" aria-hidden="true"></iconify-icon>
+                    <span class="sr-only"> (opens in new tab)</span>
+                </a>
+            </div>
+
+            <section class="text-center py-12">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    The deadline is Monday.<br>The tools are ready.
+                </h2>
+                <p class="text-neutral-400 mb-8">Pick the idea now. Friday won't pick itself.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </section>
+
+        </div>
+    </article>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../index.html"><div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Explore</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../startup-ideas.html" class="text-neutral-500 hover:text-white transition-colors">Startup Ideas</a></li>
+                        <li><a href="../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">More on Claude Code</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="claude-code-for-non-technical-founders.html" class="text-neutral-500 hover:text-white transition-colors">Beginner's Guide</a></li>
+                        <li><a href="7-things-to-build-with-claude-code-this-weekend.html" class="text-neutral-500 hover:text-white transition-colors">7 Things to Build</a></li>
+                        <li><a href="vibe-coding-101.html" class="text-neutral-500 hover:text-white transition-colors">Vibe Coding 101</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../scripts.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

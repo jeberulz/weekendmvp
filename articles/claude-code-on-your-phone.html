@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code on Your Phone: How to Ship MVPs from Anywhere | Weekend MVP</title>
+    <meta name="description" content="Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch.">
+    <meta name="author" content="John Iseghohi">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/articles/claude-code-on-your-phone.html">
+    <meta property="og:title" content="Claude Code on Your Phone: How to Ship MVPs from Anywhere | Weekend MVP">
+    <meta property="og:description" content="Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/articles/claude-code-on-your-phone.html">
+    <meta property="twitter:title" content="Claude Code on Your Phone: How to Ship MVPs from Anywhere | Weekend MVP">
+    <meta property="twitter:description" content="Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/articles/claude-code-on-your-phone.html">
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Claude Code on Your Phone: How to Ship MVPs from Anywhere",
+      "description": "Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-05-01",
+      "dateModified": "2026-05-01",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/articles/claude-code-on-your-phone.html"
+      },
+      "image": "https://weekendmvp.app/image/og-image.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <a href="../startup-ideas.html" class="hover:text-white transition-colors">Browse Ideas</a>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <a href="../starter-kit.html" class="hover:text-white transition-colors">Starter Kit</a>
+            </div>
+            <a href="../startup-ideas.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">Browse Ideas</span>
+            </a>
+            <button id="mobile-menu-open" class="md:hidden ml-2 p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </nav>
+    </div>
+
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-80 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../startup-ideas.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Browse Ideas</a>
+            <a href="../articles.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <article class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">Claude Code on Your Phone</span>
+            </nav>
+
+            <header class="mb-16">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Tutorial</span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">By <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">May 1, 2026</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+                    Claude Code on Your Phone
+                </h1>
+                <p class="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
+                    Four real workflows for shipping MVPs from your iPhone, iPad, or Android&mdash;without sitting in front of your laptop.
+                </p>
+            </header>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Why You'd Want This</h2>
+                <div class="space-y-4 text-neutral-300 leading-relaxed">
+                    <p class="flex items-start gap-3"><span class="text-neutral-500 mt-1">&#10132;</span><span>You're on the train and a fix you need to ship is two lines of code.</span></p>
+                    <p class="flex items-start gap-3"><span class="text-neutral-500 mt-1">&#10132;</span><span>You're on a trip without your laptop and your weekend MVP just got a wave of users.</span></p>
+                    <p class="flex items-start gap-3"><span class="text-neutral-500 mt-1">&#10132;</span><span>You want to keep building during a long meeting that you don't actually need to be in.</span></p>
+                    <p class="flex items-start gap-3"><span class="text-neutral-500 mt-1">&#10132;</span><span>You want your dev environment to follow you, not the other way around.</span></p>
+                </div>
+                <p class="mt-8 text-neutral-400 leading-relaxed">Phones aren't great for building from scratch. They're excellent for reviewing, fixing, and shipping&mdash;the boring last mile. Below are four ways to make that work.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Before You Start: A Few Honest Limits</h2>
+                <p class="text-neutral-300 leading-relaxed mb-4">Three things to accept up front:</p>
+                <div class="space-y-3">
+                    <div class="p-5 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-1 text-sm">1. Don't start a project from scratch on your phone.</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Initial scaffolding (creating folders, picking the stack, writing CLAUDE.md) is much faster on a real keyboard. Phones are for projects you've already started.</p>
+                    </div>
+                    <div class="p-5 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-1 text-sm">2. Speech-to-text is your real keyboard.</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Dictate prompts. Don't peck. Mobile becomes genuinely productive when you stop trying to type.</p>
+                    </div>
+                    <div class="p-5 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-1 text-sm">3. The compute lives somewhere else.</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Claude Code itself isn't an iOS app (yet). Every workflow below runs Claude Code on a remote machine&mdash;your laptop, a cloud VM, or GitHub's servers&mdash;and gives you a phone window into it.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Option 1 -->
+            <section class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm font-medium">1</span>
+                    <h2 class="text-2xl text-white font-medium tracking-tight">Termius + Tailscale + tmux (the indie classic)</h2>
+                </div>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">What it is:</span> SSH from your phone into your laptop or a cloud VM where Claude Code is already installed.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">Best for:</span> People who already have a daily-driver laptop and want a phone to be a remote control for it.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">How it works:</span></p>
+                <ul class="space-y-2 text-neutral-400 text-sm mb-4">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Tailscale</span> creates a secure private network between your phone and your laptop&mdash;no port forwarding, no public IPs.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Termius</span> (iOS / Android) is the SSH client. It has a mobile-friendly key row with Ctrl, Esc, arrows&mdash;so you don't have to fight your keyboard.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">tmux</span> keeps your Claude Code session alive even when you switch apps or lose signal. Reconnect, attach, keep going.</span></li>
+                </ul>
+                <p class="text-neutral-400 text-sm leading-relaxed mb-4"><span class="text-white">Cost:</span> Tailscale is free for personal use, Termius has a free tier ($10/month for sync).</p>
+                <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Verdict:</span> The most flexible setup. Steepest one-time learning curve. After you set it up once, it just works.</p>
+            </section>
+
+            <!-- Option 2 -->
+            <section class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm font-medium">2</span>
+                    <h2 class="text-2xl text-white font-medium tracking-tight">GitHub Codespaces in your phone browser</h2>
+                </div>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">What it is:</span> Spin up a cloud dev environment that runs in any browser&mdash;including Safari or Chrome on your phone or iPad. Install Claude Code inside it.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">Best for:</span> People who don't have a server and don't want to keep their laptop running.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">How it works:</span></p>
+                <ul class="space-y-2 text-neutral-400 text-sm mb-4">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Open your repo on GitHub mobile, hit "Open in Codespaces."</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>You get a full VS Code in the browser, with a real terminal.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>In that terminal: <span class="font-mono text-white">npm install -g @anthropic-ai/claude-code</span>, then <span class="font-mono text-white">claude</span>.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>iPad with a Bluetooth keyboard makes this near-desktop. iPhone is workable but tight.</span></li>
+                </ul>
+                <p class="text-neutral-400 text-sm leading-relaxed mb-4"><span class="text-white">Cost:</span> 60 free hours/month on GitHub Free. Pay-as-you-go after that.</p>
+                <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Verdict:</span> The lowest-friction setup. Best on iPad. iPhone is a stretch unless you really need it.</p>
+            </section>
+
+            <!-- CTA mid -->
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Need something to ship from your phone? Pick an idea worth carrying.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- Option 3 -->
+            <section class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm font-medium">3</span>
+                    <h2 class="text-2xl text-white font-medium tracking-tight">The Claude Code GitHub Action (issue-to-PR from anywhere)</h2>
+                </div>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">What it is:</span> An official GitHub Action from Anthropic. You tag <span class="font-mono text-white">@claude</span> in a GitHub issue or PR comment, and Claude Code does the work in the background and opens (or updates) a PR.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">Best for:</span> Bug fixes, small features, and review responses you can describe in a sentence. Works great from the GitHub mobile app.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">How it works:</span></p>
+                <ul class="space-y-2 text-neutral-400 text-sm mb-4">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>One-time setup: in your terminal, run <span class="font-mono text-white">claude</span> then type <span class="font-mono text-white">/install-github-app</span>. It walks you through installing the GitHub App and adding the secret to your repo.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Open an issue from the GitHub mobile app: "@claude the signup form crashes when the email field is empty. Fix it and add a test."</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>A few minutes later, Claude opens a PR with the fix. You review and merge from your phone.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>You can also tag it on existing PR comments to fix review feedback automatically.</span></li>
+                </ul>
+                <p class="text-neutral-400 text-sm leading-relaxed mb-4"><span class="text-white">Cost:</span> Anthropic API credits per run. A typical small fix is well under $1.</p>
+                <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Verdict:</span> The best workflow when you don't want to <em>watch</em> Claude work. You queue tasks. Claude finishes them. You review on the train.</p>
+            </section>
+
+            <!-- Option 4 -->
+            <section class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white text-sm font-medium">4</span>
+                    <h2 class="text-2xl text-white font-medium tracking-tight">Catnip (Claude Code on iPhone via Codespaces)</h2>
+                </div>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">What it is:</span> A community-built iOS shell that runs Claude Code in a GitHub Codespace under the hood, with a UI built for thumbs.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">Best for:</span> Pure iPhone users who want a native-feeling experience without configuring Tailscale or a VM.</p>
+                <p class="text-neutral-300 leading-relaxed mb-4"><span class="text-white">How it works:</span></p>
+                <ul class="space-y-2 text-neutral-400 text-sm mb-4">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Connect your GitHub account.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Pick a repo. Catnip spins up a Codespace with Claude Code pre-installed.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Chat with Claude through the app. Voice input is the killer feature.</span></li>
+                </ul>
+                <p class="text-neutral-400 text-sm leading-relaxed mb-4"><span class="text-white">Cost:</span> Codespaces hours + your Anthropic plan.</p>
+                <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Verdict:</span> Newest of the bunch&mdash;rough edges&mdash;but the most "just works" iPhone experience available today.</p>
+            </section>
+
+            <!-- Pick one -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Which One Should You Pick?</h2>
+                <div class="space-y-4">
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-2 text-sm">If you have a Mac or Linux machine you can leave on:</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Termius + Tailscale + tmux. One setup, lifetime of remote access.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-2 text-sm">If your main device is an iPad:</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">GitHub Codespaces in Safari. Add a Bluetooth keyboard. You're 90% of the way to a desktop.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-2 text-sm">If you mostly want to dispatch fixes async:</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">The Claude Code GitHub Action. Zero need for a terminal. Tag @claude, get a PR.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-white font-medium mb-2 text-sm">If you only have an iPhone:</p>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Catnip first. Fall back to Codespaces in Safari if Catnip's not your speed.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mobile-specific tips -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Five Habits That Make Mobile Building Actually Work</h2>
+                <ol class="space-y-4 text-neutral-300 leading-relaxed">
+                    <li class="flex items-start gap-3"><span class="text-neutral-500 font-mono">01</span><span><span class="text-white">Dictate, don't type.</span> iOS dictation is excellent. Push the mic button, say the prompt, hit send.</span></li>
+                    <li class="flex items-start gap-3"><span class="text-neutral-500 font-mono">02</span><span><span class="text-white">Set up shell snippets in Termius.</span> "claude," "git status," "git pull &amp;&amp; npm run build"&mdash;one tap each.</span></li>
+                    <li class="flex items-start gap-3"><span class="text-neutral-500 font-mono">03</span><span><span class="text-white">Always run inside tmux.</span> Phones disconnect. tmux makes that a non-event.</span></li>
+                    <li class="flex items-start gap-3"><span class="text-neutral-500 font-mono">04</span><span><span class="text-white">Keep prompts short.</span> "Fix the loading state on the dashboard&mdash;it flickers." Better than five paragraphs.</span></li>
+                    <li class="flex items-start gap-3"><span class="text-neutral-500 font-mono">05</span><span><span class="text-white">Use plan mode for anything risky.</span> "Plan first, don't write code yet" prevents Claude from rewriting half your repo while you're at lunch.</span></li>
+                </ol>
+            </section>
+
+            <section class="mb-16 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                <h2 class="text-lg font-medium text-white mb-4">TL;DR</h2>
+                <ul class="space-y-2 text-neutral-400 text-sm">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Claude Code isn't a phone app, but four workflows give you mobile access.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Termius + Tailscale + tmux</span> &mdash; SSH into your own machine.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">GitHub Codespaces</span> &mdash; full VS Code in your browser.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">@claude GitHub Action</span> &mdash; tag it, get a PR.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Catnip</span> &mdash; native iPhone shell over Codespaces.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Dictate prompts. Use tmux. Keep it short.</span></li>
+                </ul>
+            </section>
+
+            <!-- 1:1 Claude Code Setup Service -->
+            <div class="my-16 p-8 bg-gradient-to-br from-[#CC5500]/10 to-[#CC5500]/[0.02] border border-[#CC5500]/30 rounded-2xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <iconify-icon icon="lucide:sparkles" width="14" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-[#CC5500]">1:1 Setup Service</span>
+                </div>
+                <h3 class="text-xl text-white font-medium mb-3">Want this set up on your phone in 30 minutes?</h3>
+                <p class="text-neutral-400 text-sm mb-6 leading-relaxed">Book a 1:1 with John. We'll set up Termius + Tailscale + tmux (or your preferred stack) on your laptop and phone, install Claude Code, and confirm it works end-to-end while we're on the call. For founders who'd rather skip the SSH-key debugging detour.</p>
+                <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-[#CC5500] text-white rounded-full text-sm font-semibold hover:bg-[#CC5500]/90 transition-all shadow-[0_0_30px_-10px_rgba(204,85,0,0.5)] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black">
+                    <span>Book a Claude Code Setup Session</span>
+                    <iconify-icon icon="lucide:arrow-up-right" width="16" aria-hidden="true"></iconify-icon>
+                    <span class="sr-only"> (opens in new tab)</span>
+                </a>
+            </div>
+
+            <section class="text-center py-12">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Your dev environment<br>doesn't need a desk.
+                </h2>
+                <p class="text-neutral-400 mb-8">Pick the idea. Set up the workflow once. Build from anywhere.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </section>
+
+        </div>
+    </article>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../index.html"><div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Explore</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../startup-ideas.html" class="text-neutral-500 hover:text-white transition-colors">Startup Ideas</a></li>
+                        <li><a href="../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">More on Claude Code</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="claude-code-for-non-technical-founders.html" class="text-neutral-500 hover:text-white transition-colors">Beginner's Guide</a></li>
+                        <li><a href="claude-code-48-hour-workflow.html" class="text-neutral-500 hover:text-white transition-colors">48-Hour Workflow</a></li>
+                        <li><a href="7-things-to-build-with-claude-code-this-weekend.html" class="text-neutral-500 hover:text-white transition-colors">7 Things to Build</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../scripts.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
