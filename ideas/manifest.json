@@ -1106,6 +1106,49 @@
       },
       "researchLevel": "deep",
       "replacedThinPage": true
+    },
+    {
+      "slug": "agent-storefront-platform",
+      "title": "Storefront for Custom AI Agents",
+      "publishedAt": "2026-05-01",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
+      "source": "ideabrowser:5995",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 2142,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-01T08:23:00.000Z"
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

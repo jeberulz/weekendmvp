@@ -143,7 +143,7 @@
           "author": { "@id": "https://weekendmvp.app/#person" },
           "mainEntity": {
             "@type": "ItemList",
-            "numberOfItems": 33,
+            "numberOfItems": 34,
             "itemListElement": [
                         {
                                   "@type": "ListItem",
@@ -506,6 +506,17 @@
                                             "applicationCategory": "BusinessApplication",
                                             "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
                                             "url": "https://weekendmvp.app/ideas/contract-analyzer.html"
+                                  }
+                        },
+                        {
+                                  "@type": "ListItem",
+                                  "position": 34,
+                                  "item": {
+                                            "@type": "SoftwareApplication",
+                                            "name": "Storefront for Custom AI Agents",
+                                            "applicationCategory": "BusinessApplication",
+                                            "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
+                                            "url": "https://weekendmvp.app/ideas/agent-storefront-platform.html"
                                   }
                         }
               ]
@@ -1024,6 +1035,25 @@
 
                 <!-- Ideas Grid -->
                 <div id="ideas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Idea Card: Storefront for Custom AI Agents -->
+                    <a href="ideas/agent-storefront-platform.html"
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="deep"
+                       data-title="storefront for custom ai agents"
+                       data-description="shopify-for-ai-agents: publishing, metered billing, analytics, a/b testing. for developers and agencies stuck between github stars and a real business.">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">Storefront for Custom AI Agents</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Shopify-for-AI-agents: publishing, metered billing, analytics, A/B testing. The business layer GitHub doesn't ship.</p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
 
                     <!-- Idea Card: AI Contract Decoder for Non-Lawyers -->
                     <a href="ideas/contract-analyzer.html"

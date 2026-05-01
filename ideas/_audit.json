@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-01T08:09:07.051Z",
+  "generatedAt": "2026-05-01T08:23:39.020Z",
   "totals": {
-    "PASS": 33,
-    "total": 33,
-    "passing": 33,
+    "PASS": 34,
+    "total": 34,
+    "passing": 34,
     "failing": 0
   },
   "ideas": [
@@ -654,6 +654,26 @@
       "wordCount": 2107,
       "h2Count": 10,
       "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "agent-storefront-platform",
+      "status": "PASS",
+      "bytes": 68382,
+      "wordCount": 2142,
+      "h2Count": 10,
+      "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
       "sections": {
         "problem": true,
         "solution": true,
