@@ -143,7 +143,7 @@
           "author": { "@id": "https://weekendmvp.app/#person" },
           "mainEntity": {
             "@type": "ItemList",
-            "numberOfItems": 32,
+            "numberOfItems": 33,
             "itemListElement": [
                         {
                                   "@type": "ListItem",
@@ -495,6 +495,17 @@
                                             "applicationCategory": "ProductivityApplication",
                                             "description": "A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.",
                                             "url": "https://weekendmvp.app/ideas/ai-accountability-coach.html"
+                                  }
+                        },
+                        {
+                                  "@type": "ListItem",
+                                  "position": 33,
+                                  "item": {
+                                            "@type": "SoftwareApplication",
+                                            "name": "AI Contract Decoder for Non-Lawyers",
+                                            "applicationCategory": "BusinessApplication",
+                                            "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
+                                            "url": "https://weekendmvp.app/ideas/contract-analyzer.html"
                                   }
                         }
               ]
@@ -1013,6 +1024,25 @@
 
                 <!-- Ideas Grid -->
                 <div id="ideas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Idea Card: AI Contract Decoder for Non-Lawyers -->
+                    <a href="ideas/contract-analyzer.html"
+                       class="idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all"
+                       data-category="saas"
+                       data-research-level="deep"
+                       data-title="ai contract decoder for non-lawyers"
+                       data-description="plain-english contract summaries with risk flags and red-flag comparisons. for solo founders and small businesses who can't justify $500/hour attorneys.">
+                        <div class="flex items-center gap-2 mb-4 flex-wrap">
+                            <span class="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">SaaS</span>
+                            <span class="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">Deep Research</span>
+                        </div>
+                        <h3 class="idea-title text-lg font-medium text-white mb-2 transition-colors">AI Contract Decoder for Non-Lawyers</h3>
+                        <p class="text-sm text-neutral-500 leading-relaxed mb-4">Plain-English summaries, risk flags, and red-flag comparisons for every NDA, vendor contract, and lease—built for the founders who'll never call a $500/hour attorney.</p>
+                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                            <iconify-icon icon="lucide:clock" width="14" aria-hidden="true"></iconify-icon>
+                            <span>~10 hours to build</span>
+                        </div>
+                    </a>
 
                     <!-- Idea Card: AI Accountability Coach -->
                     <a href="ideas/ai-accountability-coach.html"

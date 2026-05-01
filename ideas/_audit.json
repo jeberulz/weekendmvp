@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-24T09:45:49.368Z",
+  "generatedAt": "2026-05-01T08:09:07.051Z",
   "totals": {
-    "PASS": 32,
-    "total": 32,
-    "passing": 32,
+    "PASS": 33,
+    "total": 33,
+    "passing": 33,
     "failing": 0
   },
   "ideas": [
@@ -634,6 +634,26 @@
       "wordCount": 2327,
       "h2Count": 10,
       "description": "A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift. Built for remote workers who are tired of Notion templates that don't keep them accountable.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "contract-analyzer",
+      "status": "PASS",
+      "bytes": 67492,
+      "wordCount": 2107,
+      "h2Count": 10,
+      "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
       "sections": {
         "problem": true,
         "solution": true,

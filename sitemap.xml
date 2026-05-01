@@ -497,6 +497,13 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://weekendmvp.app/ideas/contract-analyzer.html</loc>
+    <lastmod>2026-05-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Legal Pages -->
   <url>
     <loc>https://weekendmvp.app/privacy-policy.html</loc>
