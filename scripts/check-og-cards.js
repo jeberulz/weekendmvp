@@ -15,7 +15,8 @@ const strict = process.env.STRICT === '1';
 
 const surfaces = [
   { name: 'idea', manifest: 'ideas/manifest.json', listKey: 'ideas', pngDir: 'image/og/idea' },
-  { name: 'article', manifest: 'articles/manifest.json', listKey: 'articles', pngDir: 'image/og/article' }
+  { name: 'article', manifest: 'articles/manifest.json', listKey: 'articles', pngDir: 'image/og/article' },
+  { name: 'newsletter', manifest: 'newsletter/manifest.json', listKey: 'newsletters', pngDir: 'image/og/newsletter' }
 ];
 
 let totalChecked = 0;
