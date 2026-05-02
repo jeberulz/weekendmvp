@@ -108,3 +108,52 @@ test('parseArgs handles --surface newsletter', () => {
   const opts = parseArgs(['--surface', 'newsletter']);
   assert.equal(opts.surface, 'newsletter');
 });
+
+test('updateManifestStatus writes to og.emailStatus for surface=email-newsletter', async () => {
+  const dir = mkdtempSync(join(tmpdir(), `og-test-${Date.now()}-`));
+  mkdirSync(join(dir, 'newsletter'), { recursive: true });
+  const path = join(dir, 'newsletter/manifest.json');
+  await writeFile(
+    path,
+    JSON.stringify({
+      newsletters: [{ slug: '2026-05-01-am', title: 'AM', edition: 'am' }]
+    }, null, 2)
+  );
+
+  await updateManifestStatus('email-newsletter', '2026-05-01-am', 'ready', { rootDir: dir });
+
+  const json = JSON.parse(await readFile(path, 'utf8'));
+  const entry = json.newsletters.find((i) => i.slug === '2026-05-01-am');
+  assert.equal(entry.og.emailStatus, 'ready', 'writes to emailStatus, not status');
+  assert.equal(entry.og.status, undefined, 'does not touch og.status');
+
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('updateManifestStatus surface=newsletter and surface=email-newsletter share manifest but use different fields', async () => {
+  const dir = mkdtempSync(join(tmpdir(), `og-test-${Date.now()}-`));
+  mkdirSync(join(dir, 'newsletter'), { recursive: true });
+  const path = join(dir, 'newsletter/manifest.json');
+  await writeFile(
+    path,
+    JSON.stringify({
+      newsletters: [{ slug: '2026-05-01-pm', title: 'PM', edition: 'pm', og: { subject: 's' } }]
+    }, null, 2)
+  );
+
+  await updateManifestStatus('newsletter', '2026-05-01-pm', 'ready', { rootDir: dir });
+  await updateManifestStatus('email-newsletter', '2026-05-01-pm', 'failed', { rootDir: dir });
+
+  const json = JSON.parse(await readFile(path, 'utf8'));
+  const entry = json.newsletters.find((i) => i.slug === '2026-05-01-pm');
+  assert.equal(entry.og.status, 'ready', 'OG card status preserved');
+  assert.equal(entry.og.emailStatus, 'failed', 'email status independent');
+  assert.equal(entry.og.subject, 's', 'existing fields preserved');
+
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('parseArgs handles --surface email-newsletter', () => {
+  const opts = parseArgs(['--surface', 'email-newsletter']);
+  assert.equal(opts.surface, 'email-newsletter');
+});

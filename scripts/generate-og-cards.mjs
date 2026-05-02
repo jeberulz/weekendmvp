@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { listIdeas } from '../lib/og/sources/ideas.mjs';
 import { listArticles } from '../lib/og/sources/articles.mjs';
 import { listNewsletter } from '../lib/og/sources/newsletter.mjs';
+import { listEmailNewsletter } from '../lib/og/sources/email-newsletter.mjs';
 import { generate as generateRecraft } from '../lib/og/providers/recraft.mjs';
 import { generate as generateOpenAI } from '../lib/og/providers/openai.mjs';
 import { compose } from '../lib/og/compose.mjs';
@@ -33,17 +34,32 @@ const ROOT = join(__dirname, '..');
 
 // Surface → manifest path (relative to root). Each source returns items with
 // item.surface set, so this is just a lookup table for status writeback.
+// Note: `newsletter` and `email-newsletter` SHARE the same manifest path —
+// they write to different status fields (see STATUS_FIELDS below).
 const MANIFEST_PATHS = {
   idea: 'ideas/manifest.json',
   article: 'articles/manifest.json',
-  newsletter: 'newsletter/manifest.json'
+  newsletter: 'newsletter/manifest.json',
+  'email-newsletter': 'newsletter/manifest.json'
 };
 
-// Surface → manifest top-level array key (idea→ideas, article→articles, newsletter→newsletters).
+// Surface → manifest top-level array key (idea→ideas, article→articles,
+// newsletter→newsletters). email-newsletter shares the newsletter manifest.
 const MANIFEST_KEYS = {
   idea: 'ideas',
   article: 'articles',
-  newsletter: 'newsletters'
+  newsletter: 'newsletters',
+  'email-newsletter': 'newsletters'
+};
+
+// Surface → field on entry.og to write status to. Lets two surfaces
+// (newsletter OG card + email-newsletter hero) share a manifest entry
+// without clobbering each other's state.
+const STATUS_FIELDS = {
+  idea: 'status',
+  article: 'status',
+  newsletter: 'status',
+  'email-newsletter': 'emailStatus'
 };
 
 // Minimal .env.local loader (matches autocrew pattern; no dotenv dep)
@@ -92,8 +108,9 @@ export async function updateManifestStatus(surface, slug, status, { rootDir = RO
   if (!Array.isArray(list)) return;
   const entry = list.find((i) => i.slug === slug);
   if (!entry) return;
+  const field = STATUS_FIELDS[surface] ?? 'status';
   entry.og = entry.og ?? {};
-  entry.og.status = status;
+  entry.og[field] = status;
   writeFileSync(path, JSON.stringify(json, null, 2) + '\n');
 }
 
@@ -113,6 +130,7 @@ async function loadAllItems() {
   await tryLoad(listIdeas);
   await tryLoad(listArticles);
   await tryLoad(listNewsletter);
+  await tryLoad(listEmailNewsletter);
   return items;
 }
 
