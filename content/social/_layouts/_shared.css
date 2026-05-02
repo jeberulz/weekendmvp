@@ -191,3 +191,30 @@ body {
 }
 
 .slide-footer .swipe .ico { width: 20px; height: 20px; }
+
+/* ==========================================================================
+   Slide-1 hero image overlay (Surface D v2)
+   --------------------------------------------------------------------------
+   Activates when the /carousel skill's render step copies
+   image/social/carousel/{slug}.jpg → {post-dir}/hero.jpg AND adds the
+   `data-has-hero` attribute to the [data-slide="1"] element. Without the
+   attribute, slide-1 renders identically to today (dark bg + grid lines).
+   ========================================================================== */
+
+.slide-hero[data-has-hero] {
+  background-image: url('hero.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.slide-hero[data-has-hero]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(5, 5, 5, 0.55) 55%,
+    var(--bg) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
