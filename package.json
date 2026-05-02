@@ -18,6 +18,7 @@
     "og:generate:ideas": "node scripts/generate-og-cards.mjs --surface idea",
     "og:generate:articles": "node scripts/generate-og-cards.mjs --surface article",
     "og:generate:newsletter": "node scripts/generate-og-cards.mjs --surface newsletter",
+    "og:generate:email-newsletter": "node scripts/generate-og-cards.mjs --surface email-newsletter",
     "test:og": "node --test tests/og/"
   },
   "keywords": [],
