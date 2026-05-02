@@ -1,0 +1,24 @@
+{
+  "articles": [
+    {
+      "slug": "with-og",
+      "title": "Article With OG Block",
+      "description": "Fallback description.",
+      "readMinutes": 8,
+      "og": {
+        "subject": "An open notebook with one mint line",
+        "accent": "mint"
+      }
+    },
+    {
+      "slug": "no-og-has-description",
+      "title": "Article With Only Description",
+      "description": "Falls back to this description.",
+      "readMinutes": 4
+    },
+    {
+      "slug": "no-og-no-description",
+      "title": "Bare Article Title Only"
+    }
+  ]
+}
