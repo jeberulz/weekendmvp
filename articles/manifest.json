@@ -9,7 +9,7 @@
       "og": {
         "subject": "A neat row of small labeled index cards on a near-black surface, the front card lit by a single lavender beam, the rest fading into shadow",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -21,7 +21,7 @@
       "og": {
         "subject": "A stack of weathered paper receipts on a dark desk, the topmost receipt lit by a single lime light from the side, deep shadow filling the background",
         "accent": "lime",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -33,7 +33,7 @@
       "og": {
         "subject": "A folded sheet of paper on a near-black surface with seven small bullet marks visible in single mint side-lighting, very shallow focus",
         "accent": "mint",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -45,7 +45,7 @@
       "og": {
         "subject": "A small notecard on a dark desk showing a numbered list with one item checked off in lime, single overhead lamp catching the checked line, deep shadow elsewhere",
         "accent": "lime",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -57,7 +57,7 @@
       "og": {
         "subject": "An open daily planner on a near-black desk, a single date circled in mint marker, single overhead lamp lighting just that page, deep shadows beyond",
         "accent": "mint",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -69,7 +69,7 @@
       "og": {
         "subject": "An open paperback book on a near-black desk, a lavender bookmark protruding from the spine, single overhead lamp catching the lifted corner of a page, deep shadow elsewhere",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -81,7 +81,7 @@
       "og": {
         "subject": "A small leather-bound pocket notebook open on a dark surface, a lime ribbon-marker draped across a half-written page, shallow focus, single side light",
         "accent": "lime",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -93,7 +93,7 @@
       "og": {
         "subject": "A brand-new notebook on a dark surface, cover slightly open, single lavender light from the side glancing off the smooth blank paper edge, deep shadow surrounding",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -105,7 +105,7 @@
       "og": {
         "subject": "A single sticky note pinned at the corner of a dark desk, one short word visible lit by an emerald glow from a phone screen beside it, the rest of the note in deep shadow",
         "accent": "emerald",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -117,7 +117,7 @@
       "og": {
         "subject": "A torn corner of dark paper on a near-black desk with a single hand-written number visible in mint ink, single overhead lamp catching just that corner, deep shadow elsewhere",
         "accent": "mint",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -129,7 +129,7 @@
       "og": {
         "subject": "Three small blank index cards arranged in a row on a dark surface, single lavender light glancing across the leftmost card, the other two fading into shadow",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -141,7 +141,7 @@
       "og": {
         "subject": "A clipboard on a dark desk with a checklist visible, the topmost item ticked in mint marker, single overhead lamp lighting the clip and the first line, deep shadow surrounding",
         "accent": "mint",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -153,7 +153,7 @@
       "og": {
         "subject": "An old hardcover guidebook lying closed on a near-black desk, a single lime tassel-bookmark draped across the cover, single overhead lamp warming the leather, deep shadow elsewhere",
         "accent": "lime",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -165,7 +165,7 @@
       "og": {
         "subject": "A coffee mug at the edge of a dark desk, single lavender glow from a phone screen catching the rim, the rest of the desk falling into deep shadow",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       }
     },
     {
@@ -177,7 +177,7 @@
       "og": {
         "subject": "A crumpled ball of paper at the edge of a dark desk beside a fresh closed notebook, single emerald light glancing off the smooth notebook cover, the crumpled paper falling into deep shadow",
         "accent": "emerald",
-        "status": "pending"
+        "status": "ready"
       }
     }
   ]
