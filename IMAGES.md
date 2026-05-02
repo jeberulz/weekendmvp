@@ -254,6 +254,35 @@ export const config = {
 
 `png` is the default (matches the OG card pattern). Email surfaces opt into `jpeg` because (a) email clients prefer JPGs for hero photography (smaller file size, broadly supported), and (b) the Beehiiv editor renders embedded JPGs reliably across Gmail / Apple Mail / Outlook.
 
+## Carousel slide-1 hero surface
+
+The carousel surface produces a 1080×1350 JPEG hero (quality 88, full-bleed, no chrome) intended as the slide-1 background of LinkedIn/Instagram carousel posts. One JPG per `content/social/posts/{date}_{slug}/` directory.
+
+Generate with:
+
+```bash
+npm run og:generate:carousel-hero            # all carousel posts, missing only
+npm run og:generate:carousel-hero -- --force # regenerate all
+node scripts/generate-og-cards.mjs --slug 2026-04-23_1k-nutrition-planner --surface carousel-hero
+```
+
+### "Manifest" is the markdown table at the top of `carousel.md`
+
+Unlike the other surfaces (which read JSON manifests), `carousel-hero` parses the pipe-delimited markdown table at the top of every `content/social/posts/{date}_{slug}/carousel.md`. There is no JSON manifest for this surface. Status writeback is a deliberate silent no-op: `updateManifestStatus` early-returns when `MANIFEST_PATHS[surface]` is undefined, and `carousel-hero` intentionally has no entry there.
+
+### Subject sourcing (priority order)
+
+1. `slide_01_subject` (author-written director's note inside the table) — preferred. Match the style of newsletter `og.subject` notes: short, sensory, dark + accent lighting, no logos or text in the scene.
+2. `${theme} — ${topic}` (concatenated table fields) — fallback for legacy posts that pre-date the `slide_01_subject` convention.
+3. `${slug}` — last resort.
+
+The accent is read directly from `accent_primary` in the table (already a brand accent name — `lime`, `mint`, `lavender`, etc.). Defaults to `lime` if missing.
+
+### Known v1 gaps (deferred to Surface D v2)
+
+- `scripts/check-og-cards.js` does NOT walk carousel posts. The build gate is JSON-manifest-shaped; a markdown-table-walking strategy is needed before it can cover this surface.
+- `content/social/_layouts/*.html` does NOT yet honor the slide-1 hero JPG as a CSS background under the existing typography. Until that ships, the JPG is a standalone deliverable (post manually as a separate slide-0 card, or composite by hand). Wiring the JPG into the layout HTML — likely as a `background-image` with a dark gradient overlay so the headline still passes contrast — is the entire scope of the Surface D v2 spec/plan.
+
 ## Per-template config (how surfaces are decoupled)
 
 Each template module in `lib/og/templates/` exports a `config` object:
