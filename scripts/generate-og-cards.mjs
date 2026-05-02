@@ -22,6 +22,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listIdeas } from '../lib/og/sources/ideas.mjs';
 import { listArticles } from '../lib/og/sources/articles.mjs';
+import { listNewsletter } from '../lib/og/sources/newsletter.mjs';
 import { generate as generateRecraft } from '../lib/og/providers/recraft.mjs';
 import { generate as generateOpenAI } from '../lib/og/providers/openai.mjs';
 import { compose } from '../lib/og/compose.mjs';
@@ -34,13 +35,15 @@ const ROOT = join(__dirname, '..');
 // item.surface set, so this is just a lookup table for status writeback.
 const MANIFEST_PATHS = {
   idea: 'ideas/manifest.json',
-  article: 'articles/manifest.json'
+  article: 'articles/manifest.json',
+  newsletter: 'newsletter/manifest.json'
 };
 
-// Surface → manifest top-level array key (idea→ideas, article→articles).
+// Surface → manifest top-level array key (idea→ideas, article→articles, newsletter→newsletters).
 const MANIFEST_KEYS = {
   idea: 'ideas',
-  article: 'articles'
+  article: 'articles',
+  newsletter: 'newsletters'
 };
 
 // Minimal .env.local loader (matches autocrew pattern; no dotenv dep)
@@ -109,6 +112,7 @@ async function loadAllItems() {
   };
   await tryLoad(listIdeas);
   await tryLoad(listArticles);
+  await tryLoad(listNewsletter);
   return items;
 }
 
@@ -171,7 +175,9 @@ async function main() {
         title: item.title,
         surface: item.surface,
         accent: item.accent,
-        readMinutes: item.readMinutes
+        readMinutes: item.readMinutes,
+        edition: item.edition,
+        publishedAt: item.publishedAt
       });
       writeFileSync(outPath, png);
       await updateManifestStatus(item.surface, item.slug, 'ready');

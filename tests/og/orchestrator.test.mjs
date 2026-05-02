@@ -81,3 +81,30 @@ test('updateManifestStatus writes to articles/manifest.json for surface=article'
 
   await rm(dir, { recursive: true, force: true });
 });
+
+test('updateManifestStatus writes to newsletter/manifest.json for surface=newsletter', async () => {
+  const dir = mkdtempSync(join(tmpdir(), `og-test-${Date.now()}-`));
+  mkdirSync(join(dir, 'newsletter'), { recursive: true });
+  const path = join(dir, 'newsletter/manifest.json');
+  await writeFile(
+    path,
+    JSON.stringify({
+      newsletters: [{ slug: '2026-05-01-am', title: 'AM', edition: 'am' }]
+    }, null, 2)
+  );
+
+  await updateManifestStatus('newsletter', '2026-05-01-am', 'ready', { rootDir: dir });
+
+  const json = JSON.parse(await readFile(path, 'utf8'));
+  const entry = json.newsletters.find((i) => i.slug === '2026-05-01-am');
+  assert.equal(entry.og.status, 'ready', 'creates og block when missing and sets status');
+  assert.equal(entry.title, 'AM', 'preserves non-og fields');
+  assert.equal(entry.edition, 'am', 'preserves edition');
+
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('parseArgs handles --surface newsletter', () => {
+  const opts = parseArgs(['--surface', 'newsletter']);
+  assert.equal(opts.surface, 'newsletter');
+});
