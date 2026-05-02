@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildElement, ACCENTS, pickTitleFontSize } from '../../lib/og/templates/idea.mjs';
+import { buildElement, ACCENTS, pickTitleFontSize, config } from '../../lib/og/templates/idea.mjs';
 
 test('ACCENTS map contains all five brand accents', () => {
   for (const k of ['lime', 'mint', 'lavender', 'emerald', 'aubergine']) {
@@ -38,4 +38,11 @@ test('buildElement defaults to lime when accent is unknown', () => {
     accent: 'unknown-accent'
   });
   assert.ok(JSON.stringify(el).includes('#D4FF5B'));
+});
+
+test('config describes a full-bleed 1200x630 frame', () => {
+  assert.equal(config.width, 1200);
+  assert.equal(config.height, 630);
+  assert.deepEqual(config.bgRect, { x: 0, y: 0, width: 1200, height: 630 });
+  assert.equal(config.bgFill, '#050505');
 });
