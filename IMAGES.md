@@ -205,6 +205,55 @@ Same dark + accent atmosphere as the other surfaces.
 }
 ```
 
+## Email newsletter hero surface
+
+The email surface produces a 600×400 JPG hero that gets embedded at the top of each Beehiiv send. **No chrome** — pure Recraft scene resized + JPG-encoded. The newsletter skill writes a markdown image ref into the BODY section pointing at `weekendmvp.app/image/email/newsletter/{slug}.jpg`.
+
+Generate with:
+
+```bash
+npm run og:generate:email-newsletter            # missing only
+npm run og:generate:email-newsletter -- --force # regenerate all
+node scripts/generate-og-cards.mjs --slug {slug} --surface email-newsletter
+```
+
+### Why two newsletter surfaces?
+
+Each Beehiiv send produces TWO outputs from a single manifest entry:
+
+- `surface: 'newsletter'` → `image/og/newsletter/{slug}.png` (1200×630, postcard chrome — for social shares)
+- `surface: 'email-newsletter'` → `image/email/newsletter/{slug}.jpg` (600×400, no chrome — for the email body)
+
+Both surfaces read the same `newsletter/manifest.json` entry and use the same `og.subject` (so the email scene visually matches the OG card scene), but write status to **different fields**:
+
+- `og.status` ← OG card surface
+- `og.emailStatus` ← email-newsletter surface
+
+This means re-running one surface doesn't clobber the other's state. If only the email hero failed, run `npm run og:generate:email-newsletter` to retry just those.
+
+### No-chrome surfaces (templates without `buildElement`)
+
+If a template module exports `config` but NOT `buildElement`, the compose pipeline detects this and skips the Satori chrome render entirely. The output is the resized Recraft scene placed on the canvas, encoded per `config.format`.
+
+This is how email-newsletter works: pure image, no logo, no title overlay. Useful when the surrounding context (e.g., the email body itself) provides all the typography.
+
+### JPEG vs PNG output
+
+Templates can declare an output format in their `config`:
+
+```js
+export const config = {
+  width: 600,
+  height: 400,
+  bgRect: { x: 0, y: 0, width: 600, height: 400 },
+  bgFill: '#050505',
+  format: 'jpeg',       // 'png' (default) or 'jpeg'
+  jpegQuality: 85       // only used if format === 'jpeg'
+};
+```
+
+`png` is the default (matches the OG card pattern). Email surfaces opt into `jpeg` because (a) email clients prefer JPGs for hero photography (smaller file size, broadly supported), and (b) the Beehiiv editor renders embedded JPGs reliably across Gmail / Apple Mail / Outlook.
+
 ## Per-template config (how surfaces are decoupled)
 
 Each template module in `lib/og/templates/` exports a `config` object:
