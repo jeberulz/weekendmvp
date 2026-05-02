@@ -15,33 +15,48 @@ function runIn(dir, env = {}) {
   });
 }
 
-function setupDir({ withPng = false } = {}) {
+function setupDir({ ideaPng = false, articlePng = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'og-check-'));
   mkdirSync(join(dir, 'ideas'), { recursive: true });
+  mkdirSync(join(dir, 'articles'), { recursive: true });
   mkdirSync(join(dir, 'image/og/idea'), { recursive: true });
+  mkdirSync(join(dir, 'image/og/article'), { recursive: true });
   writeFileSync(
     join(dir, 'ideas/manifest.json'),
-    JSON.stringify({ ideas: [{ slug: 'one', title: 'One' }] })
+    JSON.stringify({ ideas: [{ slug: 'idea-one', title: 'Idea One' }] })
   );
-  if (withPng) writeFileSync(join(dir, 'image/og/idea/one.png'), 'fake');
+  writeFileSync(
+    join(dir, 'articles/manifest.json'),
+    JSON.stringify({ articles: [{ slug: 'article-one', title: 'Article One' }] })
+  );
+  if (ideaPng) writeFileSync(join(dir, 'image/og/idea/idea-one.png'), 'fake');
+  if (articlePng) writeFileSync(join(dir, 'image/og/article/article-one.png'), 'fake');
   return dir;
 }
 
-test('exits 0 by default when PNG missing (warn-only)', () => {
-  const dir = setupDir({ withPng: false });
+test('exits 0 by default when PNGs missing (warn-only)', () => {
+  const dir = setupDir();
   const r = runIn(dir);
   assert.equal(r.status, 0);
   assert.match(r.stdout + r.stderr, /missing/i);
 });
 
-test('exits 1 when STRICT=1 and PNG missing', () => {
-  const dir = setupDir({ withPng: false });
+test('exits 1 with STRICT=1 when any PNG missing', () => {
+  const dir = setupDir({ ideaPng: true });
+  // article PNG still missing
   const r = runIn(dir, { STRICT: '1' });
   assert.equal(r.status, 1);
 });
 
-test('exits 0 when all PNGs present even under STRICT=1', () => {
-  const dir = setupDir({ withPng: true });
+test('exits 0 with STRICT=1 when all PNGs present', () => {
+  const dir = setupDir({ ideaPng: true, articlePng: true });
   const r = runIn(dir, { STRICT: '1' });
   assert.equal(r.status, 0);
+});
+
+test('reports missing slugs broken down by surface', () => {
+  const dir = setupDir();
+  const r = runIn(dir);
+  assert.match(r.stdout, /idea/);
+  assert.match(r.stdout, /article/);
 });

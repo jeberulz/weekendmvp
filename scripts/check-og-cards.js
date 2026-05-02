@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Asserts every idea in ideas/manifest.json has a corresponding OG PNG on
- * disk at image/og/idea/{slug}.png.
+ * Asserts every entry in ideas/manifest.json AND articles/manifest.json has
+ * a corresponding OG PNG on disk.
  *
  * Default: warn-only, exit 0.
  * STRICT=1: exit 1 if any are missing. Used in CI gates.
@@ -11,30 +11,45 @@ const fs = require('fs');
 const path = require('path');
 
 const root = process.cwd();
-const manifestPath = path.join(root, 'ideas/manifest.json');
-const ogDir = path.join(root, 'image/og/idea');
 const strict = process.env.STRICT === '1';
 
-if (!fs.existsSync(manifestPath)) {
-  console.log(`No manifest at ${manifestPath} — nothing to check.`);
+const surfaces = [
+  { name: 'idea', manifest: 'ideas/manifest.json', listKey: 'ideas', pngDir: 'image/og/idea' },
+  { name: 'article', manifest: 'articles/manifest.json', listKey: 'articles', pngDir: 'image/og/article' }
+];
+
+let totalChecked = 0;
+let totalMissing = 0;
+
+for (const s of surfaces) {
+  const manifestPath = path.join(root, s.manifest);
+  if (!fs.existsSync(manifestPath)) {
+    console.log(`og-cards: no manifest at ${s.manifest} — skipping ${s.name} surface.`);
+    continue;
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const list = manifest[s.listKey] ?? [];
+  totalChecked += list.length;
+
+  const missing = [];
+  for (const entry of list) {
+    const png = path.join(root, s.pngDir, `${entry.slug}.png`);
+    if (!fs.existsSync(png)) missing.push(entry.slug);
+  }
+
+  if (missing.length === 0) {
+    console.log(`og-cards: all ${list.length} ${s.name} entries have OG cards`);
+  } else {
+    totalMissing += missing.length;
+    console.log(`og-cards: ${missing.length} ${s.name} missing`);
+    for (const slug of missing) console.log(`  - ${s.name}/${slug}`);
+  }
+}
+
+if (totalMissing === 0) {
+  console.log(`og-cards: ${totalChecked} total entries OK`);
   process.exit(0);
 }
 
-const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-const missing = [];
-
-for (const idea of manifest.ideas ?? []) {
-  const png = path.join(ogDir, `${idea.slug}.png`);
-  if (!fs.existsSync(png)) missing.push(idea.slug);
-}
-
-if (missing.length === 0) {
-  console.log(`og-cards: all ${manifest.ideas.length} ideas have OG cards`);
-  process.exit(0);
-}
-
-console.log(`og-cards: ${missing.length} missing`);
-for (const s of missing) console.log(`  - ${s}`);
-console.log(`run: npm run og:generate`);
-
+console.log(`og-cards: run \`npm run og:generate\` to fill the gaps`);
 process.exit(strict ? 1 : 0);
