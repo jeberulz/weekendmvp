@@ -1,0 +1,25 @@
+{
+  "ideas": [
+    {
+      "slug": "with-og",
+      "title": "Idea With OG Block",
+      "description": "Fallback description.",
+      "category": "developer",
+      "og": {
+        "subject": "A glowing terminal at 2am",
+        "accent": "lavender"
+      }
+    },
+    {
+      "slug": "no-og-has-description",
+      "title": "Idea With Only Description",
+      "description": "Falls back to this description.",
+      "category": "saas"
+    },
+    {
+      "slug": "no-og-no-description",
+      "title": "Bare Idea Title Only",
+      "category": "productivity"
+    }
+  ]
+}
