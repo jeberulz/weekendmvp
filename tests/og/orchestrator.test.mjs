@@ -20,6 +20,12 @@ test('parseArgs handles --force --slug X --non-blocking together', () => {
   assert.equal(opts.nonBlocking, true);
 });
 
+test('parseArgs handles --raw', () => {
+  const opts = parseArgs(['--raw']);
+  assert.equal(opts.raw, true);
+  assert.equal(parseArgs([]).raw, false);
+});
+
 test('updateManifestStatus writes og.status without losing other fields', async () => {
   const dir = await mkdir(join(tmpdir(), `og-test-${Date.now()}`), { recursive: true });
   const path = join(dir ?? tmpdir(), 'manifest.json');

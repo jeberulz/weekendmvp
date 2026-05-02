@@ -56,6 +56,7 @@ export function parseArgs(argv) {
     dryRun: args.includes('--dry-run'),
     force: args.includes('--force'),
     nonBlocking: args.includes('--non-blocking'),
+    raw: args.includes('--raw'),
     slug: args.includes('--slug') ? args[args.indexOf('--slug') + 1] : null
   };
 }
@@ -116,6 +117,11 @@ async function main() {
 
     try {
       const { buffer: bg, provider } = await generateOne({ subject: item.subject });
+      if (opts.raw) {
+        const rawPath = outPath.replace(/\.png$/, '-raw.png');
+        writeFileSync(rawPath, bg);
+        console.log(`      ✎ raw → ${rawPath.replace(ROOT + '/', '')}`);
+      }
       const png = await compose({
         bgBuffer: bg,
         title: item.title,
