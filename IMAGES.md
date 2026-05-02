@@ -146,6 +146,65 @@ Manifest at `articles/manifest.json` — same `og.subject` / `og.accent` / `og.s
 
 **Aubergine accent caveat:** the `aubergine` brand color (`#1E1B38`) is intentionally NOT used on article cards because its label/dot/bar would be near-invisible on the `#050505` panel. The article surface uses lime, mint, lavender, and emerald only.
 
+## Newsletter surface
+
+Newsletters use a **postcard layout**:
+
+- **Top 60% (378px)**: Recraft scene (the "front of postcard")
+- **Postmark circle** in the top-right of the Recraft area: 120px diameter with date + AM/PM letters in Geist Mono, accent-colored
+- **Bottom 40% (252px)**: solid `#050505` panel with WMV mark + 2-line meta in Geist Mono on the left, title in Geist Bold (autoshrunk) on the right
+- **Bottom**: 4px accent bar spanning the full width
+
+Generate with:
+
+```bash
+npm run og:generate:newsletter                  # missing only
+npm run og:generate:newsletter -- --force       # regenerate all
+node scripts/generate-og-cards.mjs --slug {slug} --surface newsletter
+```
+
+### AM/PM accent rule
+
+Newsletter slugs end in `-am` or `-pm` (e.g., `2026-05-01-pm`). The source module auto-derives the brand accent from the suffix:
+
+- **AM** newsletters → **mint** (`#8FF59B`) — fresh, morning energy
+- **PM** newsletters → **lavender** (`#C5AEE8`) — calm, evening reflection
+
+The accent shows up in the postmark border + center text, the meta line's second row, and the bottom accent bar. The Recraft scene's `og.subject` should also match (mint-glow phrasing for AM, lavender-glow for PM).
+
+`og.accent` is OMITTED from the manifest for newsletters (auto-derived). It can be overridden manually if needed.
+
+### Newsletter subject library
+
+Subjects shift to **daily-ritual objects** (different from ideas' doing-objects and articles' reading/thinking objects):
+
+- AM: coffee mug, kettle on stovetop, breakfast bowl, alarm clock with mint LED
+- PM: reading lamp, evening tea cup, journal under a lamp, folded letter
+
+Same dark + accent atmosphere as the other surfaces.
+
+### Newsletter manifest
+
+`newsletter/manifest.json` — schema mirrors articles, plus an `edition` field (`am` | `pm`):
+
+```json
+{
+  "newsletters": [
+    {
+      "slug": "2026-05-01-pm",
+      "title": "This week in AI: 8 things you may have missed",
+      "publishedAt": "2026-05-01",
+      "edition": "pm",
+      "description": "<from page meta>",
+      "og": {
+        "subject": "An evening tea cup beside a closed laptop on a near-black desk, single lavender light from a phone screen",
+        "status": "ready"
+      }
+    }
+  ]
+}
+```
+
 ## Per-template config (how surfaces are decoupled)
 
 Each template module in `lib/og/templates/` exports a `config` object:
