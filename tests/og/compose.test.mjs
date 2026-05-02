@@ -136,3 +136,63 @@ test('newsletter composite places Recraft bg in top 60% (bottom 40% stays solid)
   const bottomRed = data[bottomIdx];
   assert.ok(bottomRed < 30, `bottom panel should be near-black, got R=${bottomRed}`);
 });
+
+test('compose returns a 600x400 JPEG buffer for surface=email-newsletter (no chrome)', async () => {
+  const png = await compose({
+    bgBuffer: await fakeBg(),
+    title: 'Sample Email Hero',
+    surface: 'email-newsletter',
+    accent: 'mint'
+  });
+  assert.ok(Buffer.isBuffer(png));
+  const meta = await sharp(png).metadata();
+  assert.equal(meta.width, 600);
+  assert.equal(meta.height, 400);
+  assert.equal(meta.format, 'jpeg', 'output format should be JPEG, not PNG');
+});
+
+test('email-newsletter output has NO chrome — full-bleed Recraft scene', async () => {
+  // Use a bright RED stand-in. The entire output should be dominantly red
+  // because there's no Satori chrome compositing dark text/postmark on top.
+  // Sample multiple points across the frame.
+  const redBg = await sharp({
+    create: { width: 100, height: 100, channels: 3, background: { r: 255, g: 0, b: 0 } }
+  }).png().toBuffer();
+
+  const jpg = await compose({
+    bgBuffer: redBg,
+    title: 'Red Test',
+    surface: 'email-newsletter',
+    accent: 'lavender'
+  });
+
+  const raw = await sharp(jpg).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = raw;
+  const channels = info.channels;
+
+  // Sample 4 corners + center — all should be dominantly red (allowing
+  // some JPEG compression noise, but >180 R is safe with quality=85).
+  const samples = [
+    { x: 50, y: 50, label: 'top-left' },
+    { x: 550, y: 50, label: 'top-right' },
+    { x: 50, y: 350, label: 'bottom-left' },
+    { x: 550, y: 350, label: 'bottom-right' },
+    { x: 300, y: 200, label: 'center' }
+  ];
+  for (const { x, y, label } of samples) {
+    const idx = (y * info.width + x) * channels;
+    assert.ok(data[idx] > 180, `${label} pixel should be dominantly red, got R=${data[idx]}`);
+  }
+});
+
+test('compose throws on unknown surface (regression)', async () => {
+  await assert.rejects(
+    compose({
+      bgBuffer: await fakeBg(),
+      title: 'X',
+      surface: 'totally-unknown',
+      accent: 'lime'
+    }),
+    /unknown surface/i
+  );
+});
