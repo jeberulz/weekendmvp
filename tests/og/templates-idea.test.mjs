@@ -18,8 +18,7 @@ test('pickTitleFontSize shrinks for long titles', () => {
 test('buildElement returns an element tree with title and 1200x630 frame', () => {
   const el = buildElement({
     title: 'Test Title',
-    accent: 'lime',
-    bgDataUrl: 'data:image/png;base64,fake'
+    accent: 'lime'
   });
   assert.equal(el.type, 'div');
   assert.equal(el.props.style.width, 1200);
@@ -28,13 +27,15 @@ test('buildElement returns an element tree with title and 1200x630 frame', () =>
   const json = JSON.stringify(el);
   assert.ok(json.includes('Test Title'), 'title not found in element tree');
   assert.ok(json.includes('#D4FF5B'), 'lime accent color not used');
+  // Root must be transparent so sharp can composite over the Recraft bg.
+  assert.equal(el.props.style.backgroundColor, undefined, 'root must be transparent');
+  assert.equal(el.props.style.backgroundImage, undefined, 'root must not declare a backgroundImage');
 });
 
 test('buildElement defaults to lime when accent is unknown', () => {
   const el = buildElement({
     title: 'X',
-    accent: 'unknown-accent',
-    bgDataUrl: 'data:image/png;base64,fake'
+    accent: 'unknown-accent'
   });
   assert.ok(JSON.stringify(el).includes('#D4FF5B'));
 });
