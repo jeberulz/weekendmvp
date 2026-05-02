@@ -124,15 +124,60 @@ If Recraft AND `gpt-image-1` both fail for a slug:
 - The page still ships with `<meta og:image>` pointing at the missing PNG path; social crawlers fall back to the site-wide `image/og-image.png` automatically
 - A future `npm run og:generate` run will retry every missing slug
 
-## Adding new surfaces (articles, newsletter, carousel)
+## Article surface
 
-The pipeline shape supports it. Each new surface needs:
-1. A new source module: `lib/og/sources/{surface}.mjs` returning items shaped `{slug, title, subject, surface, accent, outputPath}`
-2. A new template: `lib/og/templates/{surface}.mjs` exporting `buildElement({title, accent, bgDataUrl})`
-3. Register the template in `lib/og/compose.mjs` `TEMPLATES` map
-4. Add the surface to the orchestrator's source iteration
+Articles use a different layout than ideas (split-frame editorial poster):
 
-See the spec at `docs/superpowers/specs/2026-05-02-recraft-og-image-pipeline-design.md` for the full surface roadmap.
+- **Left 40% (480px)**: solid `#050505` panel containing WMV logo, "ARTICLE" label (Geist Mono, accent color), title (Geist Bold, autoshrunk), and a "X MIN READ" chip
+- **Right 60% (720px)**: Recraft scene
+- **Bottom**: 4px accent bar spanning the full width
+
+Generate with:
+
+```bash
+npm run og:generate:articles                    # missing only
+npm run og:generate:articles -- --force         # regenerate all
+node scripts/generate-og-cards.mjs --slug {slug} --surface article
+```
+
+Same `STYLE_BLUEPRINT` text anchor as ideas. Subjects shift toward **reading/thinking objects** (open notebook, bookmark, highlighted page, sticky note, pencil mid-stroke, paperback book, index cards) instead of doing-objects (laptop, phone, watch). The brand world stays the same: dark surface, single accent light, late-night atmosphere.
+
+Manifest at `articles/manifest.json` — same `og.subject` / `og.accent` / `og.status` schema as ideas, plus a `readMinutes` field that drives the read-time chip in the lower-left corner.
+
+**Aubergine accent caveat:** the `aubergine` brand color (`#1E1B38`) is intentionally NOT used on article cards because its label/dot/bar would be near-invisible on the `#050505` panel. The article surface uses lime, mint, lavender, and emerald only.
+
+## Per-template config (how surfaces are decoupled)
+
+Each template module in `lib/og/templates/` exports a `config` object:
+
+```js
+export const config = {
+  width: 1200,                                       // canvas width
+  height: 630,                                       // canvas height
+  bgRect: { x: 0, y: 0, width: 1200, height: 630 }, // where the Recraft image goes
+  bgFill: '#050505'                                  // fills any pixels outside bgRect
+};
+```
+
+`compose.mjs` reads this config to:
+1. Resize the Recraft buffer to `bgRect.{width,height}` (sharp, fit:cover, position:centre)
+2. Build a frame-sized canvas with `bgFill` background
+3. Place the resized Recraft image at `(bgRect.x, bgRect.y)`
+4. Render the Satori chrome over the full canvas (chrome's root must be transparent)
+
+**Idea cards** have `bgRect = full frame`. **Article cards** have `bgRect = right 60%`. New surfaces (newsletter, carousel) just declare their own `config` — no compose changes needed.
+
+## Adding a new surface (newsletter, carousel, etc.)
+
+1. Create `lib/og/templates/{surface}.mjs` exporting `buildElement({title, accent, ...})` + `config`
+2. Create `lib/og/sources/{surface}.mjs` exporting `list{Surface}({manifestPath?})` returning items with `surface`, `slug`, `title`, `subject`, `accent`, `outputPath` fields (plus any per-surface fields like `readMinutes`)
+3. Register the template in `lib/og/compose.mjs`'s `TEMPLATES` map
+4. Add the source to the orchestrator's `loadAllItems()` and the `MANIFEST_PATHS` / `MANIFEST_KEYS` lookups in `scripts/generate-og-cards.mjs`
+5. Add the surface to `scripts/check-og-cards.js`'s `surfaces` array
+6. Add `og:generate:{surface}` to `package.json` scripts
+7. Author the manifest + run the batch
+
+See the specs in `docs/superpowers/specs/` for how this pattern was established (`2026-05-02-recraft-og-image-pipeline-design.md` for the original idea surface, `2026-05-02-article-og-cards-design.md` for the article surface + per-template config refactor).
 
 ## Why no Midjourney?
 
