@@ -24,6 +24,7 @@ import { listIdeas } from '../lib/og/sources/ideas.mjs';
 import { listArticles } from '../lib/og/sources/articles.mjs';
 import { listNewsletter } from '../lib/og/sources/newsletter.mjs';
 import { listEmailNewsletter } from '../lib/og/sources/email-newsletter.mjs';
+import { listCarouselHero } from '../lib/og/sources/carousel-hero.mjs';
 import { generate as generateRecraft } from '../lib/og/providers/recraft.mjs';
 import { generate as generateOpenAI } from '../lib/og/providers/openai.mjs';
 import { compose } from '../lib/og/compose.mjs';
@@ -131,6 +132,7 @@ async function loadAllItems() {
   await tryLoad(listArticles);
   await tryLoad(listNewsletter);
   await tryLoad(listEmailNewsletter);
+  await tryLoad(listCarouselHero);
   return items;
 }
 
