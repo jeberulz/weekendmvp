@@ -19,7 +19,8 @@
       "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
       "og": {
         "subject": "A wristwatch face glowing in mint light on a dark wooden surface, a closed laptop just out of focus behind it, pre-dawn atmosphere",
-        "accent": "mint"
+        "accent": "mint",
+        "status": "ready"
       },
       "researchLevel": "deep",
       "source": "ideabrowser:2161-adjacent+web-research",
@@ -54,7 +55,8 @@
       "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
       "og": {
         "subject": "A small open notebook on a black surface with a single lavender highlighter beside it, single-light side lighting, very shallow focus, no visible writing",
-        "accent": "lavender"
+        "accent": "lavender",
+        "status": "ready"
       },
       "researchLevel": "deep",
       "source": "web-research+category-knowledge",
@@ -89,7 +91,8 @@
       "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
       "og": {
         "subject": "A phone face-up on a dark desk showing a single notification dot in lime, paper sticky note crumpled beside it, low key lighting, late evening",
-        "accent": "lime"
+        "accent": "lime",
+        "status": "ready"
       },
       "researchLevel": "deep",
       "source": "web-research+category-knowledge",
@@ -132,6 +135,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.880Z",
         "backfillNotes": "THIN → PASS. No MCP match. Competitors: Geekbot $2.50-$4/user/mo acquired 2023, Standuply $4-$6/user, Range/Friday/Status Hero $7.50-$8/user, Slack Workflow Builder free. Wedge: AI digest + blocker detection + flat $29/mo up to 20 users. Tech: Slack Bolt SDK + Next.js minimal admin + Supabase + Claude Haiku 4.5 + Vercel Cron + Upstash QStash + Stripe. Market: Slack 38M DAU, $15K-$40K/yr/team opportunity cost of standups, remote work mature."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -163,6 +169,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.871Z",
         "backfillNotes": "THIN → PASS. Anchor: Ideabrowser #4076 FocusFlow (opp 9). Competitors: Forest $3.99 one-time, Flow $9.99/mo, Sessions $4-8/mo, Focus Keeper free. Pricing Free/$29 year/$79 lifetime. Tech: Next.js PWA + Chrome/Firefox Manifest V3 extension + Supabase + Google Calendar API + Web Audio API + Stripe. Market: brain training $130B by 2035, UC Irvine 23 min recovery research, Forest 10M+ downloads."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -197,6 +206,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T11:10:38.877Z",
         "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: Notion-only incremental diff backup at indie price. Competitors: Rewind.io bundle ($12-$99), NotionBackups.com manual-export indie ($5-$50), Notion native export (manual only), DIY scripts. Pricing: Free/$9 Solo/$29 Team, ~96% margin via R2 content-addressable dedup. Tech: Next.js + Supabase RLS + Cloudflare R2 storage + Upstash QStash workers respecting Notion 3req/sec + Merkle-tree block hashing + stable-JSON diff viewer + Stripe Billing. Market: SaaS backup $4.7B 2024 → $18.5B 2030 (25%+ CAGR), 30M+ Notion users, Rewind $65M funding at $150M valuation. Differentiator: block-level dedup across workspaces + page-level point-in-time restore + GDPR Art 32 compliance wedge for B2B upsell."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -230,6 +242,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T11:06:48.129Z",
         "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: screenshot-to-flow AI + flat pricing. Competitors Appcues/Pendo/Userpilot enterprise, ProductFruits/HelpHero indie-dated, Intro.js/Shepherd DIY. Pricing: Free/$29 Solo/$79 Team, ~92% margin, ~$0.03 GPT-4V per generation. Tech: Next.js admin + vanilla JS Shadow-DOM widget + Supabase RLS + GPT-4o vision for flow generation + Cloudflare CDN + Stripe Billing usage events. Market: $1.2B DAP 2024 → $7B 2030 (~35% CAGR), Appcues M+ Series B, Pendo $2.6B valuation, 15-25 point day-7 retention lift from best-in-class onboarding. Verify pricing before marketing."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -1096,7 +1111,8 @@
       "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
       "og": {
         "subject": "A stack of paper documents lit by a single overhead lamp on a near-black desk, lime accent glow from a phone screen beside them, shallow focus",
-        "accent": "lime"
+        "accent": "lime",
+        "status": "ready"
       },
       "source": "ideabrowser:1175",
       "scores": {
@@ -1144,7 +1160,8 @@
       "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
       "og": {
         "subject": "A single glowing laptop screen on a dark counter, lavender backlight, a cluster of small product cards floating in shallow depth above the keyboard, late night",
-        "accent": "lavender"
+        "accent": "lavender",
+        "status": "ready"
       },
       "source": "ideabrowser:5995",
       "scores": {
