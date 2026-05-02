@@ -13,10 +13,14 @@ const path = require('path');
 const root = process.cwd();
 const strict = process.env.STRICT === '1';
 
+// Each surface declares where to look for outputs and the file extension.
+// `email-newsletter` shares the newsletter manifest but checks a different
+// directory + extension (.jpg vs .png).
 const surfaces = [
-  { name: 'idea', manifest: 'ideas/manifest.json', listKey: 'ideas', pngDir: 'image/og/idea' },
-  { name: 'article', manifest: 'articles/manifest.json', listKey: 'articles', pngDir: 'image/og/article' },
-  { name: 'newsletter', manifest: 'newsletter/manifest.json', listKey: 'newsletters', pngDir: 'image/og/newsletter' }
+  { name: 'idea', manifest: 'ideas/manifest.json', listKey: 'ideas', outDir: 'image/og/idea', ext: 'png' },
+  { name: 'article', manifest: 'articles/manifest.json', listKey: 'articles', outDir: 'image/og/article', ext: 'png' },
+  { name: 'newsletter', manifest: 'newsletter/manifest.json', listKey: 'newsletters', outDir: 'image/og/newsletter', ext: 'png' },
+  { name: 'email-newsletter', manifest: 'newsletter/manifest.json', listKey: 'newsletters', outDir: 'image/email/newsletter', ext: 'jpg' }
 ];
 
 let totalChecked = 0;
@@ -34,8 +38,8 @@ for (const s of surfaces) {
 
   const missing = [];
   for (const entry of list) {
-    const png = path.join(root, s.pngDir, `${entry.slug}.png`);
-    if (!fs.existsSync(png)) missing.push(entry.slug);
+    const out = path.join(root, s.outDir, `${entry.slug}.${s.ext}`);
+    if (!fs.existsSync(out)) missing.push(entry.slug);
   }
 
   if (missing.length === 0) {
