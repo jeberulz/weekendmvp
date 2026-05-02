@@ -1,0 +1,114 @@
+{
+  "newsletters": [
+    {
+      "slug": "2026-04-20-am",
+      "title": "Idea of the Day: AI Resume Tailorer",
+      "publishedAt": "2026-04-20",
+      "edition": "am",
+      "description": "'Recruit me' searches jumped 10,178% this month — here's the $1K/mo weekend build that rides the wave.",
+      "og": {
+        "subject": "A coffee mug on a near-black counter with a single mint LED clock glow catching the rim, very early morning, deep shadow elsewhere",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-20-pm",
+      "title": "Builder Brief: 7 Micro-SaaS Ideas Solo Founders Can Ship in 2026",
+      "publishedAt": "2026-04-20",
+      "edition": "pm",
+      "description": "Micro-SaaS is heading from $15.7B to $59.6B by 2030. Seven focused ideas you can start this weekend.",
+      "og": {
+        "subject": "A reading lamp on a dark desk, single lavender bulb warm-lighting a closed notebook, deep shadow surrounding",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-21-am",
+      "title": "Idea of the Day: AI Email Reply Drafter",
+      "publishedAt": "2026-04-21",
+      "edition": "am",
+      "description": "'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.",
+      "og": {
+        "subject": "An alarm clock on a bedside table with a mint LED display lit, a folded note beside it, the rest of the room in deep shadow",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-21-pm",
+      "title": "Builder Brief: Bolt.new in 10 minutes",
+      "publishedAt": "2026-04-21",
+      "edition": "pm",
+      "description": "Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.",
+      "og": {
+        "subject": "An evening tea cup beside a closed laptop on a near-black desk, single lavender light from a phone screen catching the rim, late evening",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-22-am",
+      "title": "Idea of the Day: AI Feedback Triage Widget",
+      "publishedAt": "2026-04-22",
+      "edition": "am",
+      "description": "'CRM tools for customer service' broke out +4,525%. Here's the one-snippet $1K/mo version for solo devs.",
+      "og": {
+        "subject": "A kettle on a dark stovetop, single mint flame visible at the base, a folded sheet of paper resting against its side, deep shadow surrounding",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-22-pm",
+      "title": "Builder Brief: AI Content Repurposing Tool (deep dive)",
+      "publishedAt": "2026-04-22",
+      "edition": "pm",
+      "description": "One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.",
+      "og": {
+        "subject": "A journal open under a single lavender lamp on a dark desk, half-drawn curtain catching the lavender bleed, late evening atmosphere",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-23-am",
+      "title": "Idea of the Day: AI Nutrition Planner for Trainers",
+      "publishedAt": "2026-04-23",
+      "edition": "am",
+      "description": "'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.",
+      "og": {
+        "subject": "A breakfast bowl on a near-black counter, single mint light from a phone screen catching the spoon, deep shadow elsewhere",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-23-pm",
+      "title": "Builder Brief: How to build AI Content Repurposing Tool",
+      "publishedAt": "2026-04-23",
+      "edition": "pm",
+      "description": "The exact Cursor + Claude stack, hour by hour. One blog in, five platforms out, by Sunday night.",
+      "og": {
+        "subject": "A folded letter on a dark surface beside a small lavender wax-seal stamp, single overhead lamp catching the seal's edge, deep shadow elsewhere",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-04-24-pm",
+      "title": "This week in AI: 8 things you may have missed",
+      "publishedAt": "2026-04-24",
+      "edition": "pm",
+      "description": "Opus 4.7, GPT-5.5, Claude Design, Images 2.0 — a fast recap of what shipped this week.",
+      "og": {
+        "subject": "A stack of folded letters bound with a lavender ribbon on a dark desk, single overhead lamp warming the topmost envelope, deep shadow surrounding",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "2026-05-01-pm",
+      "title": "This week in AI: 8 things you may have missed",
+      "publishedAt": "2026-05-01",
+      "edition": "pm",
+      "description": "Codex everywhere, Claude creative connectors, GPT-5.5 Thinking, Claude Security beta — a fast recap.",
+      "og": {
+        "subject": "A postcard leaning against a coffee mug on a near-black surface, single lavender light glancing across the postcard's edge, late evening",
+        "status": "pending"
+      }
+    }
+  ]
+}
