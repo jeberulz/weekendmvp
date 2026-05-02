@@ -5,16 +5,19 @@ import { loadFonts } from '../../lib/og/fonts.mjs';
 test('loadFonts returns Satori-compatible font array', async () => {
   const fonts = await loadFonts();
   assert.ok(Array.isArray(fonts), 'returns an array');
-  assert.equal(fonts.length, 2, 'returns regular + bold');
+  assert.equal(fonts.length, 4, 'returns Geist regular+bold + GeistMono regular+bold');
 
-  const regular = fonts.find((f) => f.weight === 400);
-  const bold = fonts.find((f) => f.weight === 700);
+  const geistRegular = fonts.find((f) => f.name === 'Geist' && f.weight === 400);
+  const geistBold = fonts.find((f) => f.name === 'Geist' && f.weight === 700);
+  const monoRegular = fonts.find((f) => f.name === 'GeistMono' && f.weight === 400);
+  const monoBold = fonts.find((f) => f.name === 'GeistMono' && f.weight === 700);
 
-  assert.ok(regular, 'has regular weight');
-  assert.ok(bold, 'has bold weight');
+  assert.ok(geistRegular, 'has Geist regular');
+  assert.ok(geistBold, 'has Geist bold');
+  assert.ok(monoRegular, 'has GeistMono regular');
+  assert.ok(monoBold, 'has GeistMono bold');
 
   for (const f of fonts) {
-    assert.equal(f.name, 'Geist');
     assert.equal(f.style, 'normal');
     assert.ok(Buffer.isBuffer(f.data) || f.data instanceof ArrayBuffer, 'data is a buffer');
     assert.ok(f.data.byteLength > 1000, 'font file is non-trivial');
