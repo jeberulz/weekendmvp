@@ -1,0 +1,31 @@
+{
+  "newsletters": [
+    {
+      "slug": "2026-05-01-am",
+      "title": "AM Sample Title",
+      "publishedAt": "2026-05-01",
+      "edition": "am",
+      "description": "AM fallback description.",
+      "og": {
+        "subject": "An AM-specific director's note"
+      }
+    },
+    {
+      "slug": "2026-05-01-pm",
+      "title": "PM Sample Title",
+      "publishedAt": "2026-05-01",
+      "edition": "pm",
+      "description": "PM fallback description."
+    },
+    {
+      "slug": "2026-05-02-am",
+      "title": "Bare AM Title Only"
+    },
+    {
+      "slug": "2026-05-03-pm",
+      "title": "PM With Manual Accent Override",
+      "edition": "pm",
+      "og": { "accent": "lime" }
+    }
+  ]
+}
