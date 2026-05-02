@@ -8,7 +8,8 @@
       "description": "'Recruit me' searches jumped 10,178% this month — here's the $1K/mo weekend build that rides the wave.",
       "og": {
         "subject": "A coffee mug on a near-black counter with a single mint LED clock glow catching the rim, very early morning, deep shadow elsewhere",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -19,7 +20,8 @@
       "description": "Micro-SaaS is heading from $15.7B to $59.6B by 2030. Seven focused ideas you can start this weekend.",
       "og": {
         "subject": "A reading lamp on a dark desk, single lavender bulb warm-lighting a closed notebook, deep shadow surrounding",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -30,7 +32,8 @@
       "description": "'Automated email response examples' just broke out +238%. Here's the $1K/mo weekend build on the other side of the surrender.",
       "og": {
         "subject": "An alarm clock on a bedside table with a mint LED display lit, a folded note beside it, the rest of the room in deep shadow",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -41,7 +44,8 @@
       "description": "Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend.",
       "og": {
         "subject": "An evening tea cup beside a closed laptop on a near-black desk, single lavender light from a phone screen catching the rim, late evening",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -52,7 +56,8 @@
       "description": "'CRM tools for customer service' broke out +4,525%. Here's the one-snippet $1K/mo version for solo devs.",
       "og": {
         "subject": "A kettle on a dark stovetop, single mint flame visible at the base, a folded sheet of paper resting against its side, deep shadow surrounding",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -63,7 +68,8 @@
       "description": "One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine.",
       "og": {
         "subject": "A journal open under a single lavender lamp on a dark desk, half-drawn curtain catching the lavender bleed, late evening atmosphere",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -74,7 +80,8 @@
       "description": "'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it.",
       "og": {
         "subject": "A breakfast bowl on a near-black counter, single mint light from a phone screen catching the spoon, deep shadow elsewhere",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -85,7 +92,8 @@
       "description": "The exact Cursor + Claude stack, hour by hour. One blog in, five platforms out, by Sunday night.",
       "og": {
         "subject": "A folded letter on a dark surface beside a small lavender wax-seal stamp, single overhead lamp catching the seal's edge, deep shadow elsewhere",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -96,7 +104,8 @@
       "description": "Opus 4.7, GPT-5.5, Claude Design, Images 2.0 — a fast recap of what shipped this week.",
       "og": {
         "subject": "A stack of folded letters bound with a lavender ribbon on a dark desk, single overhead lamp warming the topmost envelope, deep shadow surrounding",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     },
     {
@@ -107,7 +116,8 @@
       "description": "Codex everywhere, Claude creative connectors, GPT-5.5 Thinking, Claude Security beta — a fast recap.",
       "og": {
         "subject": "A postcard leaning against a coffee mug on a near-black surface, single lavender light glancing across the postcard's edge, late evening",
-        "status": "ready"
+        "status": "ready",
+        "emailStatus": "ready"
       }
     }
   ]
