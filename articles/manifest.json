@@ -1,0 +1,184 @@
+{
+  "articles": [
+    {
+      "slug": "5-claude-code-skills-for-solo-founders",
+      "title": "5 Claude Code Skills Every Solo Founder Should Install First",
+      "description": "Claude Code Skills are the most under-used feature for solo founders. Here are five worth installing on day one—each one removes a category of decisions you don't want to make.",
+      "wordCount": 1076,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A neat row of small labeled index cards on a near-black surface, the front card lit by a single lavender beam, the rest fading into shadow",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "5-side-projects-that-make-money",
+      "title": "5 Side Projects That Actually Make Money (From People Who Built Them)",
+      "description": "Real side projects making $500-$10K/month in 2026. No generic advice—just proven models with actual revenue numbers from people who built them.",
+      "wordCount": 1365,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A stack of weathered paper receipts on a dark desk, the topmost receipt lit by a single lime light from the side, deep shadow filling the background",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "7-micro-saas-ideas-solo-2026",
+      "title": "7 Micro-SaaS Ideas You Can Build Solo in 2026",
+      "description": "Profitable micro-SaaS ideas you can build alone with AI tools. No co-founder needed. Each idea includes revenue potential and how to start this weekend.",
+      "wordCount": 1406,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A folded sheet of paper on a near-black surface with seven small bullet marks visible in single mint side-lighting, very shallow focus",
+        "accent": "mint",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "7-things-to-build-with-claude-code-this-weekend",
+      "title": "7 Things You Can Build This Weekend with Claude Code",
+      "description": "Seven shippable project ideas you can build with Claude Code in a single weekend, even if you've never coded. Each comes with a starter prompt you can paste straight in.",
+      "wordCount": 1217,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A small notecard on a dark desk showing a numbered list with one item checked off in lime, single overhead lamp catching the checked line, deep shadow elsewhere",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "claude-code-48-hour-workflow",
+      "title": "The Claude Code Workflow: From Idea to Live App in 48 Hours",
+      "description": "An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints.",
+      "wordCount": 1328,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open daily planner on a near-black desk, a single date circled in mint marker, single overhead lamp lighting just that page, deep shadows beyond",
+        "accent": "mint",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "claude-code-for-non-technical-founders",
+      "title": "Claude Code for Non-Technical Founders: The Complete 2026 Guide",
+      "description": "A plain-English guide to Claude Code, Anthropic's terminal AI agent. What it is, how to install it, and how non-technical founders ship real apps with it in 2026.",
+      "wordCount": 1479,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open paperback book on a near-black desk, a lavender bookmark protruding from the spine, single overhead lamp catching the lifted corner of a page, deep shadow elsewhere",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "claude-code-on-your-phone",
+      "title": "Claude Code on Your Phone: How to Ship MVPs from Anywhere",
+      "description": "Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch.",
+      "wordCount": 1214,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A small leather-bound pocket notebook open on a dark surface, a lime ribbon-marker draped across a half-written page, shallow focus, single side light",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "how-to-build-your-first-app-in-a-weekend",
+      "title": "How to Build Your First App in a Weekend (Even If You Can't Code)",
+      "description": "You don't need to learn to code. With AI tools like Cursor and Bolt, you can build a working app in one weekend. Here's the step-by-step framework.",
+      "wordCount": 1327,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A brand-new notebook on a dark surface, cover slightly open, single lavender light from the side glancing off the smooth blank paper edge, deep shadow surrounding",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "stop-overthinking-start-building",
+      "title": "Stop Overthinking, Start Building",
+      "description": "You don't need a better idea. You need a smaller one. Pick a research-backed startup idea and ship it this weekend.",
+      "wordCount": 1056,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A single sticky note pinned at the corner of a dark desk, one short word visible lit by an emerald glow from a phone screen beside it, the rest of the note in deep shadow",
+        "accent": "emerald",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "the-1k-month-idea",
+      "title": "The $1K/Month Idea: Why You Don't Need a Billion-Dollar Startup",
+      "description": "75% of VC-backed startups fail. 90% of profitable startups are bootstrapped. Here's why chasing $1K/month beats chasing unicorns.",
+      "wordCount": 1255,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A torn corner of dark paper on a near-black desk with a single hand-written number visible in mint ink, single overhead lamp catching just that corner, deep shadow elsewhere",
+        "accent": "mint",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "the-3-screen-mvp-framework",
+      "title": "The 3-Screen MVP: Ship This Weekend",
+      "description": "Stop drawing 14 screens in Figma. The 3-screen MVP—Landing → Input → Output—is enough to validate demand, ship in a weekend, and learn what to build next.",
+      "wordCount": 876,
+      "readMinutes": 4,
+      "og": {
+        "subject": "Three small blank index cards arranged in a row on a dark surface, single lavender light glancing across the leftmost card, the other two fading into shadow",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "validate-startup-idea-48-hours",
+      "title": "How to Validate a Startup Idea in 48 Hours (Before Writing Any Code)",
+      "description": "42% of startups fail because they don't solve a real problem. Here's how to test your idea in 48 hours using landing pages, fake door tests, and customer interviews.",
+      "wordCount": 1778,
+      "readMinutes": 9,
+      "og": {
+        "subject": "A clipboard on a dark desk with a checklist visible, the topmost item ticked in mint marker, single overhead lamp lighting the clip and the first line, deep shadow surrounding",
+        "accent": "mint",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "vibe-coding-101",
+      "title": "Vibe Coding 101: Build Real Apps with Claude, Cursor, and Bolt",
+      "description": "Learn vibe coding in 2026. A step-by-step guide to building real apps with Claude Code, Cursor, and Bolt.new—even if you've never written a line of code.",
+      "wordCount": 1784,
+      "readMinutes": 9,
+      "og": {
+        "subject": "An old hardcover guidebook lying closed on a near-black desk, a single lime tassel-bookmark draped across the cover, single overhead lamp warming the leather, deep shadow elsewhere",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "when-to-quit-your-job",
+      "title": "When to Quit Your Job for Your Side Project (5 Signs You're Ready)",
+      "description": "Not sure if it's time to go full-time on your side project? Here are 5 concrete signs you're ready—plus the financial and emotional checklist most people skip.",
+      "wordCount": 1301,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A coffee mug at the edge of a dark desk, single lavender glow from a phone screen catching the rim, the rest of the desk falling into deep shadow",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "why-chatgpt-cant-give-good-startup-ideas",
+      "title": "Why ChatGPT Can't Give You Good Startup Ideas (And What Actually Works)",
+      "description": "ChatGPT optimizes for plausible answers—not your market. Here's why AI brainstorms feel generic, and the problem-first workflow that produces real ideas.",
+      "wordCount": 941,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A crumpled ball of paper at the edge of a dark desk beside a fresh closed notebook, single emerald light glancing off the smooth notebook cover, the crumpled paper falling into deep shadow",
+        "accent": "emerald",
+        "status": "pending"
+      }
+    }
+  ]
+}
