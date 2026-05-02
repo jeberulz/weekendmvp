@@ -19,6 +19,7 @@
     "og:generate:articles": "node scripts/generate-og-cards.mjs --surface article",
     "og:generate:newsletter": "node scripts/generate-og-cards.mjs --surface newsletter",
     "og:generate:email-newsletter": "node scripts/generate-og-cards.mjs --surface email-newsletter",
+    "og:generate:carousel-hero": "node scripts/generate-og-cards.mjs --surface carousel-hero",
     "test:og": "node --test tests/og/"
   },
   "keywords": [],
