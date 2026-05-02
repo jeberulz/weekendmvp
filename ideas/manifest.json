@@ -17,6 +17,10 @@
         "solo-founders"
       ],
       "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
+      "og": {
+        "subject": "A wristwatch face glowing in mint light on a dark wooden surface, a closed laptop just out of focus behind it, pre-dawn atmosphere",
+        "accent": "mint"
+      },
       "researchLevel": "deep",
       "source": "ideabrowser:2161-adjacent+web-research",
       "provenance": {
@@ -48,6 +52,10 @@
         "weekend-builders"
       ],
       "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
+      "og": {
+        "subject": "A small open notebook on a black surface with a single lavender highlighter beside it, single-light side lighting, very shallow focus, no visible writing",
+        "accent": "lavender"
+      },
       "researchLevel": "deep",
       "source": "web-research+category-knowledge",
       "provenance": {
@@ -79,6 +87,10 @@
         "side-hustlers"
       ],
       "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
+      "og": {
+        "subject": "A phone face-up on a dark desk showing a single notification dot in lime, paper sticky note crumpled beside it, low key lighting, late evening",
+        "accent": "lime"
+      },
       "researchLevel": "deep",
       "source": "web-research+category-knowledge",
       "provenance": {
@@ -1082,6 +1094,10 @@
         "side-hustlers"
       ],
       "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
+      "og": {
+        "subject": "A stack of paper documents lit by a single overhead lamp on a near-black desk, lime accent glow from a phone screen beside them, shallow focus",
+        "accent": "lime"
+      },
       "source": "ideabrowser:1175",
       "scores": {
         "opportunity": 9,
@@ -1126,6 +1142,10 @@
         "side-hustlers"
       ],
       "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
+      "og": {
+        "subject": "A single glowing laptop screen on a dark counter, lavender backlight, a cluster of small product cards floating in shallow depth above the keyboard, late night",
+        "accent": "lavender"
+      },
       "source": "ideabrowser:5995",
       "scores": {
         "opportunity": 9,
