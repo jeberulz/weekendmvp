@@ -3,6 +3,11 @@
 
 User-agent: *
 Allow: /
+# Block render-only assets not intended for indexing
+Disallow: /content/social/
+Disallow: /content/video/
+# Block API routes — /ideas/today rewrite serves content at the clean URL
+Disallow: /api/
 
 # AI Crawlers - Explicitly allow for AEO (Answer Engine Optimization)
 User-agent: GPTBot
