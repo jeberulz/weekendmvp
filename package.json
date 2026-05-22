@@ -10,6 +10,8 @@
     "watch:css": "tailwindcss -i ./src/input.css -o ./styles.css --watch",
     "check:nav": "node scripts/sync-nav.js",
     "check:idea-nav": "node scripts/sync-idea-nav.js",
+    "check:reading-nav": "node scripts/sync-reading-nav.js",
+    "check:starter-kit-nav": "node scripts/sync-starter-kit-nav.js",
     "check:links": "node scripts/check-internal-links.js",
     "check:stylesheets": "node scripts/report-missing-stylesheets.js",
     "check:og-cards": "node scripts/check-og-cards.js",

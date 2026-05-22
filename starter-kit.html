@@ -205,29 +205,46 @@
 </head>
 <body class="selection:bg-black/10 selection:text-black">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <!-- Mobile Header -->
-        <div class="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-            <a href="index.html">
-                <div class="logo h-4 w-32 text-black"></div>
-            </a>
-            <button id="mobile-menu-open" class="text-black p-2 -mr-2">
-                <iconify-icon icon="lucide:menu" width="24"></iconify-icon>
+        <!-- wmvp:starter-kit-nav:start -->
+<header id="starter-kit-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
+            <a href="index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
+        <div class="flex items-center gap-6">
+            <a href="startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block focus:outline-none focus:ring-2 focus:ring-black/30 rounded">All Ideas</a>
+            <span class="text-sm font-medium text-black" aria-current="page">Starter Kit</span>
+        </div>
+    </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap max-w-7xl mx-auto" aria-label="Explore Weekend MVP">
+        <a href="startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="newsletter.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Newsletter</a>
+    </nav>
+</header>
+<!-- wmvp:starter-kit-nav:end -->
 
         <!-- Mobile Sidebar Backdrop -->
         <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-        <div class="flex flex-col lg:flex-row gap-12 pt-24 lg:pt-24 pb-32">
+        <div class="flex flex-col lg:flex-row gap-12 pt-[7.5rem] lg:pt-28 pb-32">
             
             <!-- Sidebar -->
-            <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-12 lg:flex-shrink-0">
-                <div class="flex items-center justify-between mb-12 lg:mb-12">
-                    <a href="index.html">
-                        <div class="logo h-4 w-32 md:h-5 md:w-40 text-black"></div>
-                    </a>
-                    <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors">
-                        <iconify-icon icon="lucide:x" width="24"></iconify-icon>
+            <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
+                <div class="flex items-center justify-end mb-8 lg:hidden">
+                    <button id="mobile-menu-close" class="text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                        <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
                     </button>
                 </div>
                 
@@ -250,7 +267,7 @@
             <main class="flex-1 max-w-2xl mx-auto lg:mx-0">
                 
                 <!-- Hero -->
-                <header id="intro" class="mb-20 scroll-mt-32 lg:scroll-mt-12">
+                <header id="intro" class="mb-20 scroll-mt-[7.5rem] lg:scroll-mt-12">
                     <h1 class="text-4xl md:text-6xl font-medium tracking-tight mb-8">Weekend MVP Starter Kit</h1>
                     <p class="text-xl text-neutral-500 font-light leading-relaxed mb-10">
                         Ship a tiny product in 48 hours that you can <span class="text-black font-medium underline decoration-neutral-200">demo</span>, 
@@ -287,7 +304,7 @@
 
                 <div class="space-y-40">
                     <!-- The Rules -->
-                    <section id="rules" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="rules" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <h2 class="text-3xl font-medium mb-8">The rules (this is what makes it shippable)</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div>
@@ -353,7 +370,7 @@
                     </section>
 
                     <!-- Step 1 -->
-                    <section id="step-1" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="step-1" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <div class="flex items-center gap-4 mb-6">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Step 1</span>
                             <h2 class="text-3xl font-medium tracking-tight">Pick a shippable idea</h2>
@@ -396,7 +413,7 @@
                     </section>
 
                     <!-- Step 2 -->
-                    <section id="step-2" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="step-2" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <div class="flex items-center gap-4 mb-6">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Step 2</span>
                             <h2 class="text-3xl font-medium tracking-tight">Write a one-page MVP spec</h2>
@@ -457,7 +474,7 @@
                     </section>
 
                     <!-- Step 3 -->
-                    <section id="step-3" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="step-3" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <div class="flex items-center gap-4 mb-6">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Step 3</span>
                             <h2 class="text-3xl font-medium tracking-tight">The 48-hour plan</h2>
@@ -507,7 +524,7 @@
                     </section>
 
                     <!-- Step 4 -->
-                    <section id="step-4" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="step-4" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <div class="flex items-center gap-4 mb-6">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Step 4</span>
                             <h2 class="text-3xl font-medium tracking-tight">10 shippable MVP ideas</h2>
@@ -558,7 +575,7 @@
                     </section>
 
                     <!-- Step 5 -->
-                    <section id="step-5" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="step-5" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <div class="flex items-center gap-4 mb-6">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">Step 5</span>
                             <h2 class="text-3xl font-medium tracking-tight">10 Build Prompts</h2>
@@ -679,7 +696,7 @@
                     </section>
 
                     <!-- Templates -->
-                    <section id="templates" class="scroll-mt-32 lg:scroll-mt-12">
+                    <section id="templates" class="scroll-mt-[7.5rem] lg:scroll-mt-12">
                         <h2 class="text-3xl font-medium mb-12">Templates & Scripts</h2>
                         
                         <div class="space-y-20">

@@ -19,6 +19,10 @@ const root = path.resolve(__dirname, '..');
 const partialPath = path.join(root, 'partials/nav-mega.html');
 const NAV_START = '<!-- wmvp:nav:start -->';
 const NAV_END = '<!-- wmvp:nav:end -->';
+const MODAL_START = '<!-- wmvp:signup-modal:start -->';
+const MODAL_END = '<!-- wmvp:signup-modal:end -->';
+const modalPartialPath = path.join(root, 'partials/signup-modal.html');
+const MODAL_SKIP = new Set(['index.html', 'starter-kit.html']);
 
 /** @type {{ glob: string; prefix: string }[]} */
 const NAV_TARGETS = [
@@ -27,7 +31,6 @@ const NAV_TARGETS = [
   { glob: 'articles.html', prefix: '' },
   { glob: 'privacy-policy.html', prefix: '' },
   { glob: 'newsletter.html', prefix: '' },
-  { glob: 'newsletter/*.html', prefix: '../' },
   { glob: 'articles/*.html', prefix: '../' },
   { glob: 'build-with/*/index.html', prefix: '../../' },
   { glob: 'solve/*/index.html', prefix: '../../' },
@@ -48,11 +51,11 @@ const UNCOMMENTED_NAV_RE = new RegExp(
 const NAV_ACTIVE_BY_GLOB = {
   'startup-ideas.html': 'startup-ideas',
   'newsletter.html': 'newsletter',
-  'newsletter/*.html': 'newsletter',
   'articles.html': 'articles',
   'articles/*.html': 'articles',
 };
 const MARKED_NAV_RE = /<!-- wmvp:nav:start -->[\s\S]*?<!-- wmvp:nav:end -->\n*/;
+const MARKED_MODAL_RE = /<!-- wmvp:signup-modal:start -->[\s\S]*?<!-- wmvp:signup-modal:end -->\n*/;
 const INLINE_MOBILE_MENU_RE =
   /\n\s*\/\/ Mobile Menu(?: Toggle)?\n\s*\(function initMobileMenu\(\) \{[\s\S]*?\}\)\(\);\n/;
 
@@ -142,6 +145,29 @@ function ensureScriptsJs(content, prefix) {
     throw new Error('Missing </body>');
   }
   return updated.replace('</body>', `    ${tag}\n</body>`);
+}
+
+function renderSignupModal() {
+  const template = fs.readFileSync(modalPartialPath, 'utf8').trim();
+  return `${MODAL_START}\n${template}\n${MODAL_END}\n`;
+}
+
+function ensureSignupModal(content, rel) {
+  if (MODAL_SKIP.has(rel)) {
+    return content;
+  }
+
+  const block = `${renderSignupModal()}\n`;
+
+  if (content.includes(MODAL_START)) {
+    return content.replace(MARKED_MODAL_RE, block);
+  }
+
+  if (content.includes('id="signup-modal"')) {
+    return content;
+  }
+
+  return content.replace('</body>', `${block}</body>`);
 }
 
 function replaceNavBlock(content, newNav) {
@@ -258,6 +284,7 @@ async function main() {
         content = replaceNavBlock(content, expectedNav);
         if (hasMegaNav(content) || content.includes(NAV_START)) {
           content = ensureScriptsJs(content, prefix);
+          content = ensureSignupModal(content, rel);
         }
         fs.writeFileSync(filePath, content);
         console.log(`Updated ${rel}`);
@@ -272,6 +299,18 @@ async function main() {
 
       if (content.includes('nav-dropdown') && !content.includes('scripts.js')) {
         issues.push({ file: rel, reason: 'missing scripts.js' });
+      }
+
+      if (!MODAL_SKIP.has(rel) && (content.includes(NAV_START) || hasMegaNav(content))) {
+        const expectedModal = renderSignupModal().trim();
+        if (!content.includes(MODAL_START) && !content.includes('id="signup-modal"')) {
+          issues.push({ file: rel, reason: 'missing signup modal (run: node scripts/sync-nav.js --write)' });
+        } else if (content.includes(MODAL_START)) {
+          const currentModal = content.match(MARKED_MODAL_RE)?.[0] || '';
+          if (normalizeNav(currentModal) !== normalizeNav(expectedModal)) {
+            issues.push({ file: rel, reason: 'signup modal drift (run: node scripts/sync-nav.js --write)' });
+          }
+        }
       }
     } catch (error) {
       issues.push({ file: rel, reason: error.message });

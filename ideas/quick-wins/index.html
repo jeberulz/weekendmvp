@@ -777,5 +777,50 @@
         document.getElementById('year').textContent = new Date().getFullYear();
     </script>
     <script src="../../scripts.js"></script>
+<!-- wmvp:signup-modal:start -->
+<!-- Modal for Beehiiv Signup -->
+<div id="signup-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+        <button id="close-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors" aria-label="Close modal">
+            <iconify-icon icon="lucide:x" width="20" aria-hidden="true"></iconify-icon>
+        </button>
+
+        <div class="mb-8">
+            <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Get the Starter Kit</h3>
+            <p class="text-neutral-400 text-sm">Enter your details and we'll send the kit right over.</p>
+        </div>
+
+        <form id="beehiiv-form" class="space-y-4">
+            <div>
+                <label for="first-name" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">First Name</label>
+                <input type="text" id="first-name" name="first_name" required placeholder="Jane"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
+            </div>
+            <div>
+                <label for="email" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="jane@example.com"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
+            </div>
+
+            <button type="submit" class="group relative w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all mt-4">
+                <span>Send me the kit</span>
+                <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+            </button>
+
+            <p class="text-[10px] text-neutral-600 text-center mt-6">By joining, you agree to receive the kit and occasional updates.</p>
+        </form>
+
+        <div id="success-state" class="hidden flex flex-col items-center text-center py-8">
+            <div class="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mb-6">
+                <iconify-icon icon="lucide:check-circle" width="32" aria-hidden="true"></iconify-icon>
+            </div>
+            <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Check your inbox!</h3>
+            <p class="text-neutral-400 text-sm mb-8">The Weekend MVP Starter Kit is on its way to you.</p>
+            <button id="success-close" class="text-sm font-semibold text-white hover:underline decoration-white/30 underline-offset-4">Close</button>
+        </div>
+    </div>
+</div>
+<!-- wmvp:signup-modal:end -->
+
 </body>
 </html>

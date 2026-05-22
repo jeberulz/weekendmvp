@@ -32,3 +32,9 @@ jobs:
 
       - name: Check idea nav sync (strict)
         run: STRICT=1 npm run check:idea-nav
+
+      - name: Check reading nav sync (strict)
+        run: STRICT=1 npm run check:reading-nav
+
+      - name: Check starter kit nav sync (strict)
+        run: STRICT=1 npm run check:starter-kit-nav
