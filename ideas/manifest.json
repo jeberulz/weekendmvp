@@ -1194,6 +1194,54 @@
         "auditRunAt": "2026-05-01T08:23:00.000Z"
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "sms-time-tracker",
+      "title": "SMS Time Tracker for Side-Hustlers",
+      "publishedAt": "2026-05-07",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "side-hustlers",
+        "solo-founders",
+        "non-technical"
+      ],
+      "description": "A two-command SMS time tracker for gig workers, drivers, and weekend consultants who'll never open another app—text \"start\" and \"stop\", get an invoice-ready weekly summary.",
+      "og": {
+        "subject": "A single glowing phone screen on a dark wooden bar, the screen showing a small text bubble with the word 'start', a coffee mug just out of focus, emerald accent backlight, late evening, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "source": "ideabrowser:1241",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "execution_plan"
+        ],
+        "citations": 10,
+        "wordCount": 2729,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-07T00:00:00.000Z"
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
