@@ -14,7 +14,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "designers"
       ],
       "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
       "og": {
@@ -50,7 +51,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "weekend-builders"
+        "weekend-builders",
+        "designers"
       ],
       "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
       "og": {
@@ -86,7 +88,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "designers"
       ],
       "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
       "og": {
@@ -121,7 +124,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "designers"
       ],
       "description": "Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.",
       "researchLevel": "deep",
@@ -157,7 +161,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "weekend-builders"
+        "weekend-builders",
+        "designers"
       ],
       "description": "Deep-work Pomodoro timer with analytics, website blocking, calendar sync. Flat annual pricing under Forest/Flow. Weekend MVP guide + prompts.",
       "researchLevel": "deep",
@@ -810,7 +815,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "weekend-builders"
+        "weekend-builders",
+        "designers"
       ],
       "description": "Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI build prompts.",
       "source": "mode-b:backfill",
@@ -908,7 +914,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "designers"
       ],
       "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
       "source": "mode-b:backfill",

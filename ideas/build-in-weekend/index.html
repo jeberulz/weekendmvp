@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- DYNAMIC: Update for each category -->
+    <title>Apps You Can Build in a Weekend | Weekend MVP</title>
+    <meta name="description" content="Discover 27 startup ideas you can build in weekend. Each includes AI build prompts, market research, and step-by-step guides.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/build-in-weekend/">
+    <meta property="og:title" content="Apps You Can Build in a Weekend | Weekend MVP">
+    <meta property="og:description" content="Discover 27 startup ideas you can build in weekend. Each includes AI build prompts, market research, and step-by-step guides.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:type" content="image/png">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Apps You Can Build in a Weekend | Weekend MVP">
+    <meta property="twitter:description" content="Discover 27 startup ideas you can build in weekend. Each includes AI build prompts, market research, and step-by-step guides.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/build-in-weekend/">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                  // Track category page view
+                  gtag('event', 'view_category', {
+                    'category_name': 'Weekend',
+                    'idea_count': 27
+                  });
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) {
+          console.error('Error checking consent:', e);
+        }
+        window.analyticsConsent = false;
+      })();
+      
+      if (!window.analyticsConsent) {
+        window.gtag = function() {
+          if (window.analyticsConsent === true) {
+            dataLayer.push(arguments);
+          }
+        };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+    
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../image/favicon.png">
+    <link rel="apple-touch-icon" href="../../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../../styles.css">
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://weekendmvp.app/#website",
+          "url": "https://weekendmvp.app/",
+          "name": "Weekend MVP",
+          "publisher": { "@id": "https://weekendmvp.app/#person" }
+        },
+        {
+          "@type": "CollectionPage",
+          "name": "Apps You Can Build in a Weekend",
+          "description": "The classic weekend project. 16-20 hours of focused building across Saturday and Sunday.",
+          "url": "https://weekendmvp.app/ideas/build-in-weekend/",
+          "isPartOf": { "@id": "https://weekendmvp.app/#website" },
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "mainEntity": {
+            "@type": "ItemList",
+            "numberOfItems": 27,
+            "itemListElement": [
+                            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Smart Meeting Scheduler",
+                "url": "https://weekendmvp.app/ideas/meeting-scheduler.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Minimalist Habit Tracker",
+                "url": "https://weekendmvp.app/ideas/habit-tracker.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "Email to Todo Converter",
+                "url": "https://weekendmvp.app/ideas/email-to-todo.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 4,
+                "name": "Async Standup Bot",
+                "url": "https://weekendmvp.app/ideas/daily-standup-bot.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 5,
+                "name": "Notion Backup Tool",
+                "url": "https://weekendmvp.app/ideas/notion-backup-tool.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 6,
+                "name": "Feature Voting Board",
+                "url": "https://weekendmvp.app/ideas/feature-voting-board.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 7,
+                "name": "AI Nutrition Planner for Trainers",
+                "url": "https://weekendmvp.app/ideas/ai-nutrition-planner-trainers.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 8,
+                "name": "AI Expense Report Generator",
+                "url": "https://weekendmvp.app/ideas/expense-report-generator.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 9,
+                "name": "Vehicle Recall Alert Service",
+                "url": "https://weekendmvp.app/ideas/vehicle-recall-alert-service.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 10,
+                "name": "Conversational Analytics Digest",
+                "url": "https://weekendmvp.app/ideas/conversational-analytics-digest.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 11,
+                "name": "AI Feedback Triage Widget",
+                "url": "https://weekendmvp.app/ideas/ai-feedback-triage-widget.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 12,
+                "name": "Brakes Maintenance Tracker App that Automates Reminders and Records for Vehicle Owners ([$1M+ ARR Potential])",
+                "url": "https://weekendmvp.app/ideas/brakes-maintenance-tracker-app.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 13,
+                "name": "AI RFP Response Assistant for SMB Sales Teams",
+                "url": "https://weekendmvp.app/ideas/ai-rfp-response-assistant.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 14,
+                "name": "AI Landing Page Generator for E-commerce",
+                "url": "https://weekendmvp.app/ideas/ai-landing-page-generator-ecommerce.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 15,
+                "name": "Subscription Analytics Dashboard",
+                "url": "https://weekendmvp.app/ideas/subscription-analytics-dashboard.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 16,
+                "name": "Customer Feedback Aggregator",
+                "url": "https://weekendmvp.app/ideas/customer-feedback-aggregator.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 17,
+                "name": "Waitlist & Launch Manager",
+                "url": "https://weekendmvp.app/ideas/waitlist-manager.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 18,
+                "name": "AI Code Reviewer",
+                "url": "https://weekendmvp.app/ideas/ai-code-reviewer.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 19,
+                "name": "AI Resume Tailorer",
+                "url": "https://weekendmvp.app/ideas/ai-resume-tailorer.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 20,
+                "name": "AI API Documentation Generator",
+                "url": "https://weekendmvp.app/ideas/api-documentation-generator.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 21,
+                "name": "Expense Splitter App",
+                "url": "https://weekendmvp.app/ideas/expense-splitter-app.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 22,
+                "name": "AI Content Repurposing Tool",
+                "url": "https://weekendmvp.app/ideas/content-repurposing-tool.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 23,
+                "name": "Abandoned Cart Recovery Tool",
+                "url": "https://weekendmvp.app/ideas/abandoned-cart-recovery.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 24,
+                "name": "AI Accountability Coach",
+                "url": "https://weekendmvp.app/ideas/ai-accountability-coach.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 25,
+                "name": "AI Contract Decoder for Non-Lawyers",
+                "url": "https://weekendmvp.app/ideas/contract-analyzer.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 26,
+                "name": "Storefront for Custom AI Agents",
+                "url": "https://weekendmvp.app/ideas/agent-storefront-platform.html"
+              },
+              {
+                "@type": "ListItem",
+                "position": 27,
+                "name": "SMS Time Tracker for Side-Hustlers",
+                "url": "https://weekendmvp.app/ideas/sms-time-tracker.html"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "Weekend", "item": "https://weekendmvp.app/ideas/build-in-weekend/" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+                        {
+              "@type": "Question",
+              "name": "What can I realistically ship in weekend?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Focus on one core workflow, skip nice-to-have integrations, and launch with manual onboarding if needed. These 27 ideas are scoped for that constraint."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do I need a team to build these?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Every idea here is designed for solo builders using AI-assisted coding tools like Cursor or Claude."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-2.5 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full">
+            <a href="../../index.html">
+                <div class="logo h-4 w-24 md:w-32 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-1">
+                <a href="../../startup-ideas.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Startup Ideas</a>
+                <a href="../../articles.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Articles</a>
+                <a href="../../starter-kit.html" class="px-4 py-2 text-xs font-medium text-neutral-400 hover:text-white transition-colors rounded-full hover:bg-white/5">Starter Kit</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="../../starter-kit.html" class="hidden md:inline-flex gradient-border-button px-5 py-2 text-xs font-semibold text-white rounded-full hover:bg-white/10 transition-colors">
+                    Get the Kit
+                </a>
+                <button id="mobile-menu-open" class="md:hidden p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                    <iconify-icon icon="lucide:menu" width="20" aria-hidden="true"></iconify-icon>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-72 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../../index.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Home</a>
+            <a href="../../startup-ideas.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Startup Ideas</a>
+            <a href="../../articles.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Articles</a>
+            <a href="../../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
+        
+        <!-- Breadcrumb -->
+        <nav class="mb-8" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-2 text-sm">
+                <li><a href="../../index.html" class="text-neutral-500 hover:text-white transition-colors">Home</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><a href="../../startup-ideas.html" class="text-neutral-500 hover:text-white transition-colors">Startup Ideas</a></li>
+                <li><span class="text-neutral-600">/</span></li>
+                <li><span class="text-white">Weekend</span></li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+                    <iconify-icon icon="lucide:calendar" class="text-blue-400" width="28" aria-hidden="true"></iconify-icon>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-medium text-white tracking-tight">Apps You Can Build in a Weekend</h1>
+                </div>
+            </div>
+            <p class="text-xl text-neutral-400 font-light max-w-3xl leading-relaxed">
+                The classic weekend project. 16-20 hours of focused building across Saturday and Sunday.
+            </p>
+            <div class="flex items-center gap-4 mt-6">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                    <span class="sr-only">Total:</span>27 ideas
+                </span>
+            </div>
+        </header>
+
+        <!-- Ideas Grid -->
+        <section aria-label="Weekend startup ideas">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <a href="../meeting-scheduler.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Smart Meeting Scheduler</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. ...</p>
+                </a>
+
+                <a href="../habit-tracker.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Minimalist Habit Tracker</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica....</p>
+                </a>
+
+                <a href="../email-to-todo.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Email to Todo Converter</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. ...</p>
+                </a>
+
+                <a href="../daily-standup-bot.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Async Standup Bot</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weeke...</p>
+                </a>
+
+                <a href="../notion-backup-tool.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Notion Backup Tool</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Automated Notion workspace backup with version history and point-in-time restore. Indie-priced under Rewind. Weekend ...</p>
+                </a>
+
+                <a href="../feature-voting-board.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Feature Voting Board</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Public roadmap + feature voting for indie SaaS. Flat pricing, embeddable widget, AI dedup. Undercuts Canny. Weekend M...</p>
+                </a>
+
+                <a href="../ai-nutrition-planner-trainers.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase rounded-full">Health</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Nutrition Planner for Trainers</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">B2B tool for personal trainers. Generate macro-matched meal plans per client in seconds, priced per-trainer not per-c...</p>
+                </a>
+
+                <a href="../expense-report-generator.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase rounded-full">Automation</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Expense Report Generator</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced u...</p>
+                </a>
+
+                <a href="../vehicle-recall-alert-service.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Vehicle Recall Alert Service</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">VIN-based recall alerts for used car owners. Enter your VIN once, get lifetime SMS and email alerts the moment NHTSA ...</p>
+                </a>
+
+                <a href="../conversational-analytics-digest.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Conversational Analytics Digest</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">One weekly email that translates GA4, Mixpanel, and Plausible data into plain-English insights. Each insight ends wit...</p>
+                </a>
+
+                <a href="../ai-feedback-triage-widget.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-full">Developer Tools</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Feedback Triage Widget</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Embed-in-seconds widget that auto-categorizes user feedback into bugs, features, and praise, then ranks the top 3 pri...</p>
+                </a>
+
+                <a href="../brakes-maintenance-tracker-app.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Brakes Maintenance Tracker App that Automates Reminders and Records for Vehicle Owners ([$1M+ ARR Potential])</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Niche vehicle app: log brake service, pad wear, and inspections with mileage- and time-based reminders—without fighti...</p>
+                </a>
+
+                <a href="../ai-rfp-response-assistant.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI RFP Response Assistant for SMB Sales Teams</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $...</p>
+                </a>
+
+                <a href="../ai-landing-page-generator-ecommerce.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase rounded-full">Ai Tools</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Landing Page Generator for E-commerce</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build conversion-focused landing pages in minutes with AI. A Pagely-style tool that integrates with Shopify and WordP...</p>
+                </a>
+
+                <a href="../subscription-analytics-dashboard.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Subscription Analytics Dashboard</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build a SaaS dashboard that tracks MRR, churn, LTV, and key subscription metrics. Full breakdown with AI prompts to b...</p>
+                </a>
+
+                <a href="../customer-feedback-aggregator.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Customer Feedback Aggregator</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build a tool that aggregates customer reviews from G2, Capterra, Trustpilot, and app stores into one dashboard. AI pr...</p>
+                </a>
+
+                <a href="../waitlist-manager.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Waitlist &amp; Launch Manager</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build a waitlist tool with referral mechanics that helps startups go viral before launch. Full breakdown with AI buil...</p>
+                </a>
+
+                <a href="../ai-code-reviewer.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-full">Developer Tools</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Code Reviewer</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build an AI-powered GitHub bot that automatically reviews pull requests, catches bugs, and suggests improvements. Ful...</p>
+                </a>
+
+                <a href="../ai-resume-tailorer.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase rounded-full">Ai Tools</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Resume Tailorer</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build an AI tool that customizes resumes for specific job descriptions, optimizing for ATS systems and keywords. Full...</p>
+                </a>
+
+                <a href="../api-documentation-generator.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-full">Developer Tools</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI API Documentation Generator</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build a tool that auto-generates API documentation from your code. Point it at your codebase and get beautiful, inter...</p>
+                </a>
+
+                <a href="../expense-splitter-app.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] font-bold uppercase rounded-full">Fintech</span>
+                        <span class="text-neutral-600 text-xs">~8 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Expense Splitter App</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build an app that splits group expenses fairly, tracks who owes whom, and settles with a single payment. Perfect for ...</p>
+                </a>
+
+                <a href="../content-repurposing-tool.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-violet-500/10 text-violet-400 text-[10px] font-bold uppercase rounded-full">Ai Tools</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Content Repurposing Tool</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to...</p>
+                </a>
+
+                <a href="../abandoned-cart-recovery.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-pink-500/10 text-pink-400 text-[10px] font-bold uppercase rounded-full">Ecommerce</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Abandoned Cart Recovery Tool</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers ...</p>
+                </a>
+
+                <a href="../ai-accountability-coach.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Accountability Coach</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">A $19/month AI coach that learns what motivates you, checks in daily on your goals, and calls you out when you drift....</p>
+                </a>
+
+                <a href="../contract-analyzer.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">AI Contract Decoder for Non-Lawyers</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clau...</p>
+                </a>
+
+                <a href="../agent-storefront-platform.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase rounded-full">Saas</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">Storefront for Custom AI Agents</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle meter...</p>
+                </a>
+
+                <a href="../sms-time-tracker.html" class="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold uppercase rounded-full">Productivity</span>
+                        <span class="text-neutral-600 text-xs">~10 hours</span>
+                    </div>
+                    <h3 class="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">SMS Time Tracker for Side-Hustlers</h3>
+                    <p class="text-neutral-500 text-sm line-clamp-2">A two-command SMS time tracker for gig workers, drivers, and weekend consultants who&#39;ll never open another app—text &quot;...</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Other Build Times -->
+        <section class="mt-24" aria-labelledby="related-build-times-heading">
+            <h2 id="related-build-times-heading" class="text-2xl font-medium text-white mb-8">Other Build Times</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <a href="../build-in-8-hours/" class="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-all text-center">
+                    <div class="w-10 h-10 mx-auto mb-3 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                        <iconify-icon icon="lucide:zap" class="text-orange-400" width="20" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <span class="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">8 Hours</span>
+                </a>
+                <a href="../build-in-1-week/" class="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 transition-all text-center">
+                    <div class="w-10 h-10 mx-auto mb-3 bg-violet-500/10 rounded-lg flex items-center justify-center">
+                        <iconify-icon icon="lucide:calendar-days" class="text-violet-400" width="20" aria-hidden="true"></iconify-icon>
+                    </div>
+                    <span class="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">1 Week</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="mt-24" aria-labelledby="faq-heading">
+            <h2 id="faq-heading" class="text-2xl font-medium text-white mb-8">Build Time FAQ</h2>
+            <div class="space-y-4">
+                                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <h3 class="text-white font-medium mb-3">What can I realistically ship in weekend?</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Focus on one core workflow, skip nice-to-have integrations, and launch with manual onboarding if needed. These 27 ideas are scoped for that constraint.</p>
+                </div>
+
+                <div class="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <h3 class="text-white font-medium mb-3">Do I need a team to build these?</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">No. Every idea here is designed for solo builders using AI-assisted coding tools like Cursor or Claude.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="mt-24">
+            <div class="p-12 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-[3rem] text-center">
+                <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Ready to ship something in weekend?</h2>
+                <p class="text-neutral-400 mb-8 max-w-xl mx-auto">Get the Weekend MVP Starter Kit with templates, prompts, and everything you need to ship by Sunday.</p>
+                <a href="../../starter-kit.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Get the Starter Kit</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 mt-32 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../../index.html">
+                        <div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div>
+                    </a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Browse Ideas</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../saas/" class="text-neutral-500 hover:text-white transition-colors">SaaS Ideas</a></li>
+                        <li><a href="../ai-tools/" class="text-neutral-500 hover:text-white transition-colors">AI Tool Ideas</a></li>
+                        <li><a href="../productivity/" class="text-neutral-500 hover:text-white transition-colors">Productivity</a></li>
+                        <li><a href="../automation/" class="text-neutral-500 hover:text-white transition-colors">Automation</a></li>
+                        <li><a href="../../startup-ideas.html" class="text-neutral-400 hover:text-white transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Build With</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../build-with/cursor/" class="text-neutral-500 hover:text-white transition-colors">Cursor</a></li>
+                        <li><a href="../../build-with/claude/" class="text-neutral-500 hover:text-white transition-colors">Claude</a></li>
+                        <li><a href="../../build-with/bolt/" class="text-neutral-500 hover:text-white transition-colors">Bolt.new</a></li>
+                        <li><a href="../../build-with/no-code/" class="text-neutral-500 hover:text-white transition-colors">No-Code</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Ideas For</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../ideas-for/developers/" class="text-neutral-500 hover:text-white transition-colors">Developers</a></li>
+                        <li><a href="../../ideas-for/non-technical/" class="text-neutral-500 hover:text-white transition-colors">Non-Technical</a></li>
+                        <li><a href="../../ideas-for/solo-founders/" class="text-neutral-500 hover:text-white transition-colors">Solo Founders</a></li>
+                        <li><a href="../../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-white transition-colors">Side Hustlers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                        <li><a href="../../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu
+        (function initMobileMenu() {
+            const openBtn = document.getElementById('mobile-menu-open');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const menu = document.getElementById('mobile-menu');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+
+            if (!menu) return;
+
+            const toggleMenu = (show) => {
+                if (show) {
+                    menu.classList.remove('translate-x-full');
+                    backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    menu.classList.add('translate-x-full');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    document.body.style.overflow = '';
+                }
+            };
+
+            openBtn?.addEventListener('click', () => toggleMenu(true));
+            closeBtn?.addEventListener('click', () => toggleMenu(false));
+            backdrop?.addEventListener('click', () => toggleMenu(false));
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !menu.classList.contains('translate-x-full')) {
+                    toggleMenu(false);
+                }
+            });
+
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => toggleMenu(false));
+            });
+        })();
+
+        // Track internal link clicks
+        document.querySelectorAll('a[href*="/ideas/"]').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.gtag && window.analyticsConsent) {
+                    gtag('event', 'internal_link_click', {
+                        'link_type': 'category_to_idea',
+                        'destination': link.getAttribute('href')
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
