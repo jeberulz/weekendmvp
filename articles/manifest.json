@@ -191,6 +191,18 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "build-in-public-2026",
+      "title": "Build in Public in 2026: What's Changed (And What Still Works)",
+      "description": "Build in public isn't dead in 2026 — the MRR-screenshot version is. Here's what still works, what changed, and when smart founders go quiet.",
+      "wordCount": 1150,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A laptop on a dark desk showing a blurred social feed beside a sticky note that reads Ship first, single lavender desk lamp catching the note edge, deep shadow elsewhere",
+        "accent": "lavender",
+        "status": "ready"
+      }
     }
   ]
 }
