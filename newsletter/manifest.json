@@ -119,6 +119,18 @@
         "status": "ready",
         "emailStatus": "ready"
       }
+    },
+    {
+      "slug": "2026-05-22-pm",
+      "title": "This week in AI: 8 things you may have missed",
+      "publishedAt": "2026-05-22",
+      "edition": "pm",
+      "description": "Code with Claude 2026, GPT-5.5 Instant, Personal Finance, Remote Agents — a fast catchup.",
+      "og": {
+        "subject": "A folded letter resting beside a closed laptop on a near-black desk, single lavender lamp glow catching the letter's edge, late evening",
+        "status": "ready",
+        "emailStatus": "ready"
+      }
     }
   ]
 }
