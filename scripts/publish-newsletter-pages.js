@@ -177,6 +177,14 @@ function mdToHtml(md) {
       continue;
     }
 
+    // Standalone image line ![alt](url) — email-only hero, omit from web
+    if (/^!\[[^\]]*\]\([^)]+\)\s*$/.test(line)) {
+      flushPara();
+      flushList();
+      flushQuote();
+      continue;
+    }
+
     // Headings
     const h = line.match(/^(#{1,6})\s+(.*)$/);
     if (h) {
