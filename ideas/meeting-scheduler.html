@@ -50,12 +50,39 @@
     }</script>
 </head>
 <body class="selection:bg-black/10">
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:inline">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Smart Meeting Scheduler</h1>
             <p class="text-lg text-neutral-500 mb-10">Cross-timezone booking that respects working hours.</p>
@@ -72,7 +99,7 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
+        <div class="pt-[7.5rem] pb-16 px-6">
             <div class="max-w-2xl mx-auto">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
 
@@ -85,14 +112,14 @@
                     <p class="text-xl text-neutral-500 font-light">Cross-timezone slots that respect working hours. Team round-robin without per-user pricing.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Global teams lose <strong>7+ hours a week</strong> (Ideabrowser #2161 TimeSync market signal) to cross-timezone scheduling. A sales rep in New York trying to schedule a prospect in Sydney. A design team coordinating a cross-functional review across EMEA, APAC, and the Americas. A founder hiring their first engineer in Europe. Current tools either show "everyone's availability" as a raw union (Calendly group polls, When2Meet) or pick a slot without considering that 6am for Singapore is a terrible time to think clearly.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Calendly dominates the scheduling-link category with <strong>20M+ users</strong> and a $3B+ valuation, but charges <strong>$10&ndash;$20 per user per month</strong>. For a 10-person team that's $1,200&ndash;$2,400/year just for booking links. SavvyCal and Cal.com chip at the edges with better UX and lower pricing, but the "AI conflict resolver that understands working hours" is not yet a standard feature. The wedge is opinionated defaults: never suggest outside a person's working hours, never suggest back-to-back meetings, always prefer slots after lunch.</p>
                     <p class="text-neutral-600 leading-relaxed">The second wedge is flat-team pricing. Calendly charges per user even for a round-robin routing group where technically only one person takes the meeting. For a growing company that's pricing friction. Charging $49/mo flat up to 10 team members undercuts Calendly by 80% at team size 10. Cal.com's self-hosted angle is technical overhead that most teams don't want; managed hosted + AI features + flat pricing is the sweet spot.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A Calendly-class scheduling SaaS with three opinionated improvements. One: AI slot suggestion that respects working hours by timezone (never shows 6am Sydney as a "free" slot even if the calendar is empty). Two: team round-robin that distributes incoming bookings across configured teammates based on load balance (not just availability). Three: embeddable widget that drops into any website without iframe hell. Flat pricing: free solo, $19 Solo Pro, $49 Team up to 10 members.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -118,7 +145,7 @@
                     <p class="text-neutral-600 leading-relaxed">The AI conflict resolver uses a simple rule engine + LLM judgment. Rules: within working hours, not back-to-back, not 30 minutes before end-of-day. LLM: for hard cases, "suggest 3 slots where both attendees will have reasonable energy." Over time, user feedback tunes the system ("never Mondays before 10am" as learned preference). This is a genuine differentiator that the incumbents haven't shipped because they optimize for enterprise compliance, not individual ergonomics.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>online scheduling software market is $5.5B in 2024, projected to $13B by 2030 at 15.6% CAGR</strong> (Grand View Research). Calendly is the clear category leader with a <strong>$3B+ valuation</strong> (2021 Series B at $3B). Cal.com raised <strong>$32M Series A+</strong> (2023) as the open-source challenger. The market validates big outcomes; the question is whether a focused AI + flat-pricing entrant can carve out 1&ndash;2% share.</p>
                     <ul class="space-y-3 mb-4">
@@ -131,7 +158,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>mature but AI-disrupted</em>. Calendly is entrenched. SavvyCal serves power users. Cal.com serves developers. Motion and Reclaim focus on calendar defragmentation (related but different). A flat-priced, AI-conflict-aware entrant has a 12&ndash;18 month window before Calendly bolts in AI suggestions as table stakes.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Five competitor classes: Calendly + Cal.com (category leaders), SavvyCal (premium UX), Motion + Reclaim (AI calendar defrag adjacent), native calendar group-find-time (Google/Outlook built-in), and Doodle/When2Meet (legacy polls). None combine AI slot suggestions with flat-team pricing and an embeddable widget.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +189,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat pricing, not per-user. Free tier for solo indie; Solo Pro for single users who need the advanced AI; Team for small companies. LLM cost per booking is minimal (&lt;$0.005); infra dominated by calendar API quota. Gross margin stays above 93% at scale.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -206,7 +233,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 200 Solo + 30 Team = $5.3K/mo. 1K Solo + 150 Team = $26.4K/mo. At 4K Solo + 600 Team = $105.4K/mo ($1.26M ARR). Switching costs are high once users bake the scheduling link into email signatures, website footers, and CRM workflows.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Calendar OAuth + slot computation + AI layer. The hardest part is handling calendar API quotas and correctly computing free/busy across attendees in different timezones. Rest is SaaS plumbing.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

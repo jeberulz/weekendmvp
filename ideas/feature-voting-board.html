@@ -74,12 +74,39 @@
     }</script>
 </head>
 <body class="selection:bg-black/10">
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:inline">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Feature Voting Board</h1>
             <p class="text-lg text-neutral-500 mb-10">Build what your customers actually want.</p>
@@ -96,7 +123,7 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
+        <div class="pt-[7.5rem] pb-16 px-6">
             <div class="max-w-2xl mx-auto">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
 
@@ -109,14 +136,14 @@
                     <p class="text-xl text-neutral-500 font-light">The Canny alternative priced like a Notion template. Embeddable widget included.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">A SaaS founder gets feature requests in every channel at once. Twitter DMs. Intercom. Slack Connect threads. Email forwards from the CEO. Postmortem docs from customer interviews. One engineer maintains a Notion page called "Roadmap Ideas (actual)" that nobody trusts. By the time the team picks a quarterly theme, half the requests have gone stale and the other half were from one loud user who never actually upgrades.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">The incumbent answer is Canny at $360/month plus per-member pricing. That is a rounding error for a Series A company and a deal-breaker for the indie SaaS at $3K MRR. Founders who cannot justify Canny's price end up hand-building a Trello board, inheriting a dusty UserVoice subscription, or maintaining a GitHub issues repo labeled "public." None of these surface signal. None of them do status updates well. None of them close the loop with the original requester when the feature ships.</p>
                     <p class="text-neutral-600 leading-relaxed">The consequence is an identity mismatch. Customer-facing companies say they are "customer-driven." Their product decisions do not show it because the feedback never consolidates into a ranked list. Shipping the wrong features is the number-two cause of churn after onboarding friction. For a $3K&ndash;$30K MRR SaaS, a better feature-voting surface is a direct retention lever, and the tool needs to cost like an indie spent $19, not an enterprise spent $720.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A multi-tenant feature-voting SaaS priced for the indie and small-team segment. Each customer gets a public board at their own subdomain (or custom domain on paid tiers), an embeddable widget they paste into their app, and a simple admin for triage. <strong>AI dedup</strong> is the headline feature &mdash; when a user submits "dark mode pls," Claude compares against existing submissions and suggests voting on the existing "Dark theme support" instead of creating a duplicate. That one feature solves 40% of the mess that plagues every incumbent.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -142,7 +169,7 @@
                     <p class="text-neutral-600 leading-relaxed">The retention loop is the auto-notify on status change. When a requested feature ships, every voter gets an email: "Remember when you asked for dark mode 4 months ago? It is live today." That email is free re-engagement, it proves the founder is shipping, and it often converts dormant trials into paid. Canny charges for this. You do not.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>customer feedback management software market is $12B+ globally in 2024, growing at 16&ndash;20% CAGR</strong> (Grand View, MarketsAndMarkets). The product-led growth wave makes a feature voting surface effectively table-stakes for every new SaaS launched after 2022. Meanwhile, the indie-SaaS segment &mdash; founders with $1K&ndash;$50K MRR &mdash; has roughly <strong>20K&ndash;40K active companies</strong> in the Indie Hackers / MicroConf / r/SaaS ecosystem alone, all priced out of Canny's per-user tier structure.</p>
                     <ul class="space-y-3 mb-4">
@@ -155,7 +182,7 @@
                     <p class="text-neutral-600 leading-relaxed">Market stage is <em>mature at the top, fragmented at the bottom</em>. Canny, ProductBoard, Aha!, and UserVoice dominate enterprise. Nolt and Frill serve the indie layer &mdash; but both are 2017&ndash;2019 vintage UIs with no AI features. A 2026 entrant with semantic dedup, embeddable widget, flat pricing, and custom domain on the first paid tier has 12&ndash;18 months before incumbents bolt AI onto their existing products.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four classes of competitor, split cleanly by price point and positioning. The enterprise tier is saturated; the indie tier is stale. Your wedge: 2026 UX, AI dedup, flat pricing, widget + hosted + custom domain all included on the first paid tier.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -186,7 +213,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced for the indie segment. Free tier captures new SaaS founders in month 1&ndash;3 and earns the trademark footer placement. Pro is the default for $5K&ndash;$50K MRR companies. Team covers multi-brand agencies and mid-market. Infrastructure cost per tenant is dominated by storage (negligible) and LLM inference for dedup (bounded per submission); gross margin sits above 90% at the Pro price point.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -230,7 +257,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Pro = $1.9K/mo. 500 Pro + 30 Team = $11K/mo. At 2K Pro + 200 Team = $47.8K/mo ($574K ARR). The Team tier is the agency/multi-brand upsell lane; expect it to be ~10% of total customers but ~25% of revenue. Canny's 1K+ teams at ~$500&ndash;$700 blended ARPU is the ceiling proof; capturing 10% of the sub-enterprise segment lands a $2M+ ARR business without touching enterprise.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Multi-tenant SaaS basics plus two non-obvious details: vote-rate-limiting (prevent spam) via Upstash, and embeddable widget via sandboxed iframe with postMessage for auth handoff. Everything else is stock.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -80,17 +80,43 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Expense Report Generator</h1>
             <p class="text-lg text-neutral-500 mb-10">Snap receipts. Generate reports. Done.</p>
@@ -108,10 +134,10 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -149,14 +175,14 @@
                     <p class="text-xl text-neutral-500 font-light">End-of-month expense reports in minutes, not hours. Priced for freelancers, not Fortune 500.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Small businesses waste <strong>40+ hours a month</strong> on expense tracking, and <strong>68% miss legitimate tax deductions</strong> because receipts live in glove compartments, jacket pockets, and the junk drawer. Freelancers and micro-SMB owners are not lazy. They just lose the race between a faded thermal receipt and Tuesday night. By April, the shoebox wins.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">The incumbents do not fix this for the smallest customer. Expensify is built for finance teams with approval chains and corporate card programs. SAP Concur is enterprise-priced. Dext targets accountants, not the solo contractor doing his own books. QuickBooks and Xero attach receipts to transactions but the categorization is rules-based, manual, and breaks the second a vendor name changes. None of them solve the actual freelancer workflow: photo, done.</p>
                     <p class="text-neutral-600 leading-relaxed">Consequences compound. A plumber writes off $12K of tools and mileage instead of $18K because the Home Depot receipts are gone. A freelance designer books three meal deductions and forgets the other fourteen. The IRS standard deduction is the lazy backstop, but that is money walking out the door. Every missed receipt is taxable income you already spent. This is a cash-recovery tool disguised as an expense app, and the pain is annual, acute, and quantifiable.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A mobile-first PWA that treats the camera as the primary input. Snap any receipt, AI extracts vendor, amount, date, and category in under two seconds. End of month, one tap generates a tax-ready PDF with category totals, receipt thumbnails, and mileage. Priced at <strong>$19&ndash;$49/month flat</strong>, not per-seat-per-month like Expensify. The wedge is ruthless simplicity: no approval workflows, no corporate card integration, no finance-team plumbing. Just the four things a solo business actually needs.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -182,7 +208,7 @@
                     <p class="text-neutral-600 leading-relaxed">The behavioral edge: the AI learns from every correction. Tag one Starbucks visit as "Client Entertainment" and it auto-suggests the same for future Starbucks near the same client's zip code. Over three months the app writes 95% of categorizations without a touch. That is a data moat the incumbents cannot backfill easily because their training data is finance-team workflows, not a freelancer's actual vendors.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The cloud receipt-management market hit <strong>$1.52B in North America (2024)</strong> and is projected to reach <strong>$11.36B globally by 2034 at 10.7% CAGR</strong>. Digital receipts as a sub-segment track to $5.1B by 2033 at 11.5% CAGR. Sector funding since 2021 tops <strong>$1.3B</strong>, with Emburse's $60M round in April 2025 and MakeMyTrip's acquisition of Happay in late 2024 signaling that giants want this category locked down before AI-first challengers take it.</p>
                     <ul class="space-y-3 mb-4">
@@ -195,7 +221,7 @@
                     <p class="text-neutral-600 leading-relaxed">Market stage is <em>competitive, not saturated</em>. Expensify and Dext own enterprise and accountant channels respectively; SMB and freelancer white space remains open because the incumbent pricing model (per-seat-per-month with approval workflows) is a poor fit for a single-user app. The inflection window is now. Once a conversational/mobile-first leader proves out SMB traction, one of Intuit, SAP, or a neobank acquires them and the window closes.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Every incumbent is built for a persona you are explicitly not targeting: finance teams, accountants, or enterprise procurement. Your whitespace is the 57M US freelancer and the 33M micro-SMB owner who wants <em>one</em> screen, <em>one</em> button, <em>one</em> monthly PDF.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,7 +252,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced for the freelancer and micro-SMB. Free tier captures price-sensitive users during their first tax year (high word-of-mouth for a tool that saved them real money in April). Pro is the default steady-state tier. Team unlocks small businesses with 2&ndash;5 contractors. LLM inference is the only meaningful variable cost, and GPT-4 Vision receipt extraction holds a 90%+ gross margin at the $19 price point.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -270,7 +296,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 50 Pro subs = $950/mo. 500 Pro + 20 Team = $10.4K/mo. At 2,500 Pro + 150 Team = $54.9K/mo ($659K ARR), well inside the $5M ARR ceiling Ideabrowser models for this category. Tax-season seasonality (Jan&ndash;April) spikes signups 3&ndash;4x; the retention story is whether users keep scanning in May.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">This is a mobile-first PWA, not a native app. PWAs get camera access via <code class="text-xs bg-neutral-100 px-1 rounded">getUserMedia</code>, install-to-homescreen on iOS/Android, and skip app-store review. Ship on day one without waiting for Apple. Everything else is opinionated but swap-friendly.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

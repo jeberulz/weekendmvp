@@ -9,6 +9,7 @@
     "build:css": "tailwindcss -i ./src/input.css -o ./styles.css --minify",
     "watch:css": "tailwindcss -i ./src/input.css -o ./styles.css --watch",
     "check:nav": "node scripts/sync-nav.js",
+    "check:idea-nav": "node scripts/sync-idea-nav.js",
     "check:links": "node scripts/check-internal-links.js",
     "check:stylesheets": "node scripts/report-missing-stylesheets.js",
     "check:og-cards": "node scripts/check-og-cards.js",

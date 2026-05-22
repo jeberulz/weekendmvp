@@ -80,17 +80,43 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">AI Nutrition Planner for Trainers</h1>
             <p class="text-lg text-neutral-500 mb-10">A week of macro-matched meals per client, in seconds.</p>
@@ -108,10 +134,10 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -149,14 +175,14 @@
                     <p class="text-xl text-neutral-500 font-light">One client profile. One click. A week of meals, priced per-trainer, not per-client.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Personal trainers and online coaches sell results. Nutrition drives 70&ndash;80% of those results. Yet almost every trainer delivers nutrition the same broken way: a Google Doc with a generic 2,000-calorie template, copy-pasted from a certification manual, with a sticky note that says "adjust macros to your client." The client reads it once, ignores it, and the trainer eats the complaint when results lag.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">The alternatives are worse. Trainerize has nutrition as an afterthought bolted onto workouts. That Clean Life is priced at $39&ndash;$119/month and aimed at dietitians, not NASM-certified PTs serving 10&ndash;30 clients. MyFitnessPal is consumer, not B2B, so the trainer has no way to scope or push plans. The NASM-certified trainer with a $150/month client roster ends up writing meal plans by hand in Notion on Sunday nights. That is 45 minutes per client, every week, forever.</p>
                     <p class="text-neutral-600 leading-relaxed">The pain compounds. A trainer with 20 clients loses 15 hours a week to meal-plan copy-paste. Cut that to 15 minutes and they reclaim Sundays AND price their package $50 higher because the nutrition feels custom. Clients stick longer because they see a plan with their name on it, their allergies respected, their preferred groceries, tied to this week's training block. The trainer's retention metric moves, and with it their annual revenue.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A trainer-first, multi-tenant SaaS where one client profile produces a week of macro-matched meals in under 20 seconds. The trainer fills in a client's goal (cut, bulk, recomp, maintain), target macros, allergies, preferred cuisines, and weekly budget. The AI writes the plan, validates macros against the USDA food database, and generates a branded PDF or portal link the trainer sends to the client in their own voice. Pricing is per-trainer flat, never per-client, so serving 30 clients costs the same as serving 3.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -182,7 +208,7 @@
                     <p class="text-neutral-600 leading-relaxed">The defaults do the work. Every generated plan includes a grocery list grouped by store section, a prep schedule (Sunday cook, Wednesday refresh), and adherence check-boxes the client fills from their phone. The trainer sees live adherence in their dashboard. When a client misses three meals in a row, the trainer gets a Slack notification and can adjust before the next session. This is the "the trainer looks like they actually paid attention" moment that justifies the $200/month package.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>global coaching platform market</strong> grows from <strong>$3.8B in 2025 to $11.1B by 2035 at an 11.2% CAGR</strong>. The wellness/fitness-coaching sub-segment is a significant slice and growing faster than the mean, driven by two trends: remote/online coaching replacing in-person-only models post-2020, and AI tooling collapsing per-client admin time for solo practitioners. Meal-planning SaaS specifically saw <strong>FamilyFeast-class B2C apps validate at $9.99/month with 40M+ addressable families</strong>; the B2B trainer variant is structurally higher-ticket because the buyer is a business.</p>
                     <ul class="space-y-3 mb-4">
@@ -195,7 +221,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>emerging</em>. Trainerize (2012, owned by ABC Fitness since 2022) is the dominant all-in-one, but nutrition is a secondary module. That Clean Life serves dietitians upmarket. No B2B SaaS is built <em>specifically</em> for the NASM-certified PT running 10&ndash;30 clients, with AI as the core generator and macro validation as the trust layer. The 12&ndash;18 month window to own this positioning is open before Trainerize or TrueCoach bolt on equivalent AI features.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four classes of incumbent, none positioned exactly where you are. Trainer-all-in-ones have weak nutrition. Nutrition-specific tools target dietitians. Consumer apps are consumer. Spreadsheet templates are free but invisible. Your wedge is "macro-matched AI nutrition that feels like the trainer wrote it," sold to trainers on a flat per-trainer plan.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,7 +252,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate per-trainer pricing. Free tier captures curious solo trainers and seeds the community channel. Pro is the steady-state tier for a trainer running 5&ndash;30 paying clients. Studio tier unlocks gym-owner purchases covering 3&ndash;10 trainers on one bill. The only meaningful variable cost is LLM inference per generated plan (one 7-day plan &asymp; 5K output tokens &asymp; $0.05&ndash;$0.15 depending on model). At $29/mo per trainer with 30 client plans generated weekly, unit economics are ~88% gross margin.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -270,7 +296,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Pro trainers = $2.9K/mo. 500 Pro + 20 Studio = $16.1K/mo. At 2K Pro + 150 Studio = $69.9K/mo ($839K ARR). Retention is the key lever: trainers who survive month 3 (second client re-plan) tend to renew annually. Distribution angle: sponsor NASM recertification content and partner with certification bodies on trainer-onboarding bundles.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">LLM is the hero, but the trust layer is the USDA macro validation loop. Generated plans must match target macros within ~5% or the trainer does not trust them. Structured JSON output + a post-generation validation pass is the difference between "useful tool" and "another GPT wrapper."</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

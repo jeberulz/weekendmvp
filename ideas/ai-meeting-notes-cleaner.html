@@ -145,7 +145,9 @@
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
@@ -159,8 +161,28 @@
             <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
         </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -194,9 +216,9 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -230,13 +252,13 @@
                         <p class="text-xl text-neutral-500 font-light">Paste a messy transcript—or pull from Zoom—and get structured notes with action items, decisions, and follow-ups your team will actually read.</p>
                     </div>
 
-                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">Remote teams drown in meeting artifacts. Zoom and Microsoft Teams ship auto-transcripts full of false starts, crosstalk, and &ldquo;can you hear me?&rdquo;—but turning that blob into accountable action items still takes 20–30 minutes per call. Otter and Fireflies record everything yet overwhelm users with word dumps; managers want a <strong>clean decision log</strong>, not another searchable archive nobody opens.</p>
                         <p class="text-neutral-600 leading-relaxed mt-4">Product leads describe the same failure mode: &ldquo;We have notes in three places and still miss follow-ups.&rdquo; Granola and Fathom nail live capture for executives, but indie teams and consultants need a <strong>weekend-buildable cleaner</strong>—upload transcript, pick output format (standup summary, client recap, RACI actions), export to Notion or email. No bot joining calls required for v1.</p>
                     </div>
 
-                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-8">MVP: paste-or-upload transcript UI, LLM pipeline that extracts attendees, decisions, risks, and action items with suggested owners, plus one-click Markdown/Notion export. Optional Zoom webhook in v2. Focus on <em>clarity</em> over storage—one screen in, structured doc out.</p>
                         <div class="p-8 bg-neutral-100 rounded-3xl">
@@ -266,7 +288,7 @@
                         </div>
                     </div>
 
-                    <div id="section-market" class="mb-12 scroll-mt-24">
+                    <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Meeting intelligence is crowded at the top but thin in the &ldquo;transcript janitor&rdquo; wedge for small teams:</p>
                         <ul class="space-y-3">
@@ -289,7 +311,7 @@
                         </ul>
                     </div>
 
-                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Incumbents capture recordings; you win on post-processing simplicity and template depth:</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,7 +342,7 @@
                         </div>
                     </div>
 
-                    <div id="section-business" class="mb-12 scroll-mt-24">
+                    <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Usage-based free tier drives viral loops inside Slack communities. Target <strong>$1k MRR</strong> at ~85 Pro users or a mix of Pro + small team plans.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -346,7 +368,7 @@
                         </div>
                     </div>
 
-                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Keep v1 serverless: upload → queue → LLM → structured JSON → render. No call bot infrastructure required.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -395,7 +417,7 @@
                         </div>
                     </div>
 
-                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                    <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
                         <div class="space-y-6">
@@ -430,7 +452,7 @@
                         </div>
                     </div>
 
-                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                    <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Sources</h2>
                         <p class="text-neutral-500 text-sm mb-4">Signals compiled from public research and vendor positioning (May 2026). Verify figures before financial projections.</p>
                         <ul class="space-y-2 text-sm">
@@ -457,7 +479,7 @@
                         </ul>
                     </div>
 
-                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                    <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Explore More</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <a href="productivity/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">

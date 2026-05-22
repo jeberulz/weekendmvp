@@ -80,17 +80,43 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Client Portal Builder</h1>
             <p class="text-lg text-neutral-500 mb-10">Professional client portals in minutes, not hours.</p>
@@ -108,10 +134,10 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -149,14 +175,14 @@
                     <p class="text-xl text-neutral-500 font-light">Look like a 10-person agency when it's just you. Priced for solo, not enterprise.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Freelancers and small agencies invest serious money in front-of-house brand: a clean site, polished proposals, tight case studies. Then the client signs and the experience immediately collapses into Google Drive shared links, a Slack channel, a Loom inbox, and a Notion page. Five tools, four logins, zero cohesion. The perception of professionalism ends the second onboarding starts.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">The workarounds are worse than they look. Clients forward files to the wrong email. The designer sends a Figma link to a client who does not have Figma. Invoice status lives in Stripe, project timeline lives in a spreadsheet, and revision comments live in whoever's DMs were loudest that week. Every missed file is a billable hour of "where is this?" Every confused client is a reference that does not happen.</p>
                     <p class="text-neutral-600 leading-relaxed">The incumbent portals exist but they are built for creatives who are willing to spend a weekend building automations in Dubsado or mapping workflows in HoneyBook. A freelance consultant landing a $15K engagement on Monday does not have six hours to study tutorial videos before their client experience looks professional. They want: upload a logo, paste a domain, invite a client, done. Nobody ships that today.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A white-label, multi-tenant client portal where the setup is 60 seconds and every pixel is brandable. Freelancer signs up, picks a service-type template (design, consulting, marketing, coaching, development), uploads a logo, points their domain, and invites their first client. The client sees a portal that lives on <code class="text-xs bg-neutral-100 px-1 rounded">projects.agencyname.com</code>, not <code class="text-xs bg-neutral-100 px-1 rounded">agencyname.honeybook.com</code>. Every client sees only their own projects via row-level security.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -182,7 +208,7 @@
                     <p class="text-neutral-600 leading-relaxed">Five service-type templates define the MVP. A design consultant's portal surfaces deliverable approvals and Figma embeds. A marketing agency's portal shows campaign status and metric dashboards. A coach's portal tracks session notes and goals. A dev shop's portal shows sprint status and PR links. Each template maps the five things that matter for that vertical — nothing more. The moat is not the portal, it is the defaults. Every freelancer signup trains the template, and the template becomes the product.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The global client portal software market is <strong>$5.8B in 2025 and projected to reach $16.2B by 2035 at an 11.4% CAGR</strong>. SMEs hold 49% of spend, and the segment is still fragmented across 15+ known tools with no conversational-AI leader. Adjacent: the AI website builder market sits at $3.41B (2026) growing to $14.78B by 2035 (17.7% CAGR), and custom AI code generation grows 22.3% CAGR. Clients expect the front-of-house polish of Framer-built sites; freelancers are behind the back-of-house curve.</p>
                     <ul class="space-y-3 mb-4">
@@ -195,7 +221,7 @@
                     <p class="text-neutral-600 leading-relaxed">Market stage is <em>emerging</em>, not saturated. Dubsado (2015) and HoneyBook (2013) are 10+ years old and built around workflow-automation setup as the value prop. That is exactly the pain, not the feature. The 12&ndash;18 month window before incumbents bolt on AI-generated portals is open. Capture network effects (template library grows with each signup) before HoneyBook pushes a feature release.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four direct incumbents, all weighted toward creatives and all requiring significant setup. Beneath them, the workarounds (Notion, shared Drives, custom WordPress) are where most freelancers actually live today. Your wedge is speed and specificity: a generated portal tuned to one of five service types, running on the freelancer's own domain, in 60 seconds.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,7 +252,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat-rate SaaS priced below HoneyBook Essentials. Free tier captures skeptical freelancers with their first real client; Solo is the steady state; Agency unlocks team seats and multi-brand. Stripe Connect fees are pass-through, so you are not taking a payment cut. The only meaningful cost beyond infra is the custom-domain SSL automation; Vercel absorbs that.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -270,7 +296,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 50 Solo subs = $1.45K/mo. 500 Solo + 30 Agency = $17.4K/mo. At 2K Solo + 150 Agency = $72.85K/mo ($874K ARR). Switching costs compound: by client #10, the agency has 10 portals of project history, files, and threads. Rebuilding from blank is the moat.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Multi-tenant is the spine. Every portal is a row; every route resolves via subdomain or custom domain to a tenant, not a path. Supabase Row Level Security does the hard isolation work. Vercel handles the custom-domain SSL. Stripe Connect keeps you out of the payment flow.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

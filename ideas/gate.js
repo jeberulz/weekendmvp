@@ -162,7 +162,8 @@
                 const targetId = link.getAttribute('href');
                 const target = targetId ? document.querySelector(targetId) : null;
                 if (target) {
-                    const offset = window.innerWidth < 1024 ? 80 : 24;
+                    const header = document.getElementById('idea-site-header');
+                    const offset = header ? header.offsetHeight + 8 : (window.innerWidth < 1024 ? 120 : 32);
                     const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
                     window.scrollTo({ top: targetPosition, behavior: 'smooth' });
                     document.querySelectorAll('.sidebar-link').forEach((l) => l.classList.remove('active'));

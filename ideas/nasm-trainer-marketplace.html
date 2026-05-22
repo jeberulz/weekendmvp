@@ -80,17 +80,43 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">NASM Trainer Marketplace</h1>
             <p class="text-lg text-neutral-500 mb-10">Verified certifications. Escrow bookings. Trainers you can trust.</p>
@@ -108,10 +134,10 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -149,14 +175,14 @@
                     <p class="text-xl text-neutral-500 font-light">Verified certifications. Escrow bookings. The trainer you hired is the trainer who shows up.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Someone searches "personal trainer near me" and lands on Thumbtack. Ten generalists pop up, most with no verifiable credentials, pricing that ranges from $25 to $200 per session with no explanation. The client picks one mostly on profile photo and vibes, books it, and finds out two sessions in that the trainer is self-taught from YouTube. The trainer may be good, may be terrible. The <em>buyer has no prior signal</em>. And Thumbtack's fee structure rewards whoever spams the most requests, not whoever is actually qualified.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Meanwhile, the NASM-certified trainer who spent <strong>$700 on the certification exam</strong> and $300/year on continuing education has no good place to surface that credential. Mindbody is for studios that already own the client relationship. ClassPass is for group classes at gyms, not 1:1 bookings. Trainerize is a client-management tool, not a discovery surface. There is no Houzz-for-trainers, no Upwork-for-fitness, where "I am NASM CPT certified, here is the photo of my card" is the first thing a prospective client sees.</p>
                     <p class="text-neutral-600 leading-relaxed">The consequence is a trust vacuum. <strong>85% of personal-training bookings in the US happen through word-of-mouth or a gym membership</strong>; the independent trainer without a physical gym has almost no way to reach the next tier of serious clients. And serious clients &mdash; the ones paying $100&ndash;$250/session &mdash; know they're overpaying by trial-and-error. A credential-verified marketplace converts that trust cost into a marketplace liquidity event.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A two-sided marketplace where <em>every trainer's certification is verified before they can take a paid booking</em>. The client searches by location (in-person radius or virtual), specialty (weight loss, strength, rehab, pre/postnatal, mobility, etc.), credential (NASM, ACE, ISSA, NSCA), and budget. The trainer profile surfaces the verified badge like an eBay "Top Rated Seller" &mdash; non-gameable, explicitly priced. Payments are held in escrow; the trainer is paid out 24 hours after the session happens. If the session is canceled by trainer, automatic full refund. This is the trust layer Thumbtack never built.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -182,7 +208,7 @@
                     <p class="text-neutral-600 leading-relaxed">The network effect is credentials, not volume. Airbnb's moat is "I trust the reviews." This marketplace's moat is "I trust the badge was actually verified by the platform." Once the platform has 2,000+ verified NASM trainers, NASM itself becomes an inbound partner &mdash; because the platform becomes the most reliable job board for their certification holders. That converts a B2C marketplace into an officially-endorsed one, closing the door on open competitors.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>online fitness market sits at $7.5B in 2024 and is projected to reach $24B by 2030 at 21.3% CAGR</strong> (Grand View Research). The broader <strong>US health club and personal training industry is $35B; global $97B</strong> (IHRSA 2023). Personal training specifically grew 14% in the five years pre-pandemic and re-accelerated post-2022 as hybrid models (in-person + virtual) displaced pure gym memberships. The marketplace window sits on top of the hybrid shift.</p>
                     <ul class="space-y-3 mb-4">
@@ -196,7 +222,7 @@
                     <p class="text-neutral-600 leading-relaxed">Market stage is <em>fragmented but maturing</em>. The incumbents either serve the supply side (Trainerize, Mindbody, TrueCoach) or the broad services category (Thumbtack, Fiverr Pro) without verification. No one owns "verified NASM-CPT marketplace with escrow." The category is ripe for a trust-layer entrant. Partnership-first go-to-market with NASM, ACE, and ISSA is plausible; they have incentive to make their certifications more economically useful to holders.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Five classes of competitor, each with a structural gap you can exploit. Nobody is doing verified-credential + escrow + specialty + hybrid-format at the same time for the independent trainer segment.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -227,7 +253,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Marketplace take-rate model, tiered to reward retention. Client-side is free to search and book. Trainer-side has optional subscription for premium visibility. Verification badge is a one-time fee that covers the manual cross-check. The 15&rarr;8% take-rate step on repeat bookings is the key retention lever: trainers stop churning off-platform once they have 5+ repeat clients.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -271,7 +297,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">GMV path: 100 trainers &times; 8 sessions/mo &times; $75 = $60K GMV/mo &rarr; $6K platform rev + verification fees. 500 trainers &times; 10 sessions/mo &times; $75 = $375K GMV/mo &rarr; $37.5K platform + $5K Pro subs. At 2K trainers + 100K monthly sessions: $750K GMV + sub revenue = ~$90K MRR (~$1.1M ARR) with long-tail upside as NASM partnership lifts supply conversion. Mindbody's $1.9B outcome shows the multiple this category can support at scale.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Marketplace basics plus a verification/escrow trust layer. The expensive piece is credential verification &mdash; outsource the ID check to Persona, keep the cert cross-check manual at first. Escrow via Stripe Connect <code class="text-xs bg-neutral-100 px-1 rounded">manual_capture</code> is the one non-obvious pattern worth highlighting.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

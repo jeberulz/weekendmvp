@@ -50,12 +50,39 @@
     }</script>
 </head>
 <body class="selection:bg-black/10">
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:inline">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Focus Session Timer</h1>
             <p class="text-lg text-neutral-500 mb-10">Deep work, tracked and protected.</p>
@@ -72,7 +99,7 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
+        <div class="pt-[7.5rem] pb-16 px-6">
             <div class="max-w-2xl mx-auto">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
 
@@ -85,14 +112,14 @@
                     <p class="text-xl text-neutral-500 font-light">Pomodoro that adapts. Website blocker, deep-work heatmap, calendar write-back. $29/year flat.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Knowledge workers lose hours per day to context switching. Research from the University of California suggests it takes <strong>23 minutes to re-enter deep focus</strong> after an interruption. The average knowledge worker is interrupted every 3 minutes, half of which is self-inflicted (tabs, Slack, Twitter). The Pomodoro technique works &mdash; but the tools built around it either look like 2012 Android apps or charge premium prices for analytics a spreadsheet could do.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Free Pomodoro timers are everywhere, but they stop at "timer that rings." They don't block websites. They don't integrate with calendars. They don't show a heatmap of when the user is actually productive. They don't adapt session lengths to the user's proven rhythm. The upgrade path forces users into $9&ndash;$15/mo subscription apps (Forest Premium, Flow Pro, Sessions) that bundle features most people won't use.</p>
                     <p class="text-neutral-600 leading-relaxed">The wedge is a clean, indie-priced timer with the <em>three</em> features casual users actually want as paid upgrades: website blocking during sessions, streak and heatmap analytics, and calendar write-back so "I did 4 hours of deep work Tuesday" shows up next to meetings. Flat annual pricing beats subscription fatigue. Build once, ship a PWA + browser extension, own the category below the $9/mo price floor.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A PWA Pomodoro timer paired with a lightweight browser extension. User picks a task, sets a session (default 25 min work / 5 min break, adaptive after 2 weeks of data), starts the timer. The extension blocks a user-configurable distraction list during work intervals. Ambient sound library plays optional focus audio. At session end, the completed block is logged and optionally written to Google Calendar as a "Deep Work: {task}" event. Weekly email summarizes total focused hours, best day, longest streak.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -118,7 +145,7 @@
                     <p class="text-neutral-600 leading-relaxed">The adaptive-session feature is the long-term moat. After two weeks of data, the app computes each user's average productive session length (measured by self-reported focus quality + session-completion rate) and suggests tuned intervals. A user who reliably focuses for 48 minutes gets prompted "try 50/10 this week." That one insight turns a free timer into a $29/year upgrade because it feels personalized.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>brain training and focus app market is projected to reach $130B by 2035</strong> (multiple market reports, Ideabrowser #4076 synthesis). The productivity-app segment inside that is fragmented: Forest has <strong>10M+ downloads</strong> on App Store, Flow has 1M+, Be Focused has 500K+. Distribution is app-store discovery plus productivity YouTubers; the TAM includes knowledge workers, students, and creators.</p>
                     <ul class="space-y-3 mb-4">
@@ -131,7 +158,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>mature but polarized</em>. Free tier is saturated with minimum-viable timers. Premium tier ($9&ndash;$15/mo) is crowded by Forest, Flow, Sessions, Session, Focus Keeper Pro. The open lane is the <em>mid-tier</em> &mdash; $29/year flat with serious analytics + blocker + calendar integration, priced to feel like a one-time purchase with ongoing updates. That SKU is under-served.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four tiers. Free apps (Focus Keeper, Be Focused free) cap at basic timer. One-time-purchase apps (Forest $3.99) lock advanced features. Subscription apps (Flow, Sessions) bundle analytics + blocker at $9&ndash;$15/mo. Toggl Track does time tracking but not focus. Your slot: flat $29/year with the three paid features unbundled.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +189,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat annual pricing. Free tier earns the discovery and "tell a friend" engine. Pro covers individuals. Team handles small co-working groups and study squads (a growing Gen Z niche). Annual-billed avoids subscription fatigue; lifetime tier captures one-time-purchase preferences. Costs are tiny &mdash; Supabase + Vercel at indie scale runs <$0.10/user/month.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -206,7 +233,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">ARR path: 1K Pro + 100 Lifetime = $36.9K ARR. 5K Pro + 500 Lifetime = $184.5K ARR. At 20K Pro + 2K Lifetime the business is at $738K ARR &mdash; achievable via YouTube partnership and productivity-community distribution within 24 months. Lifetime revenue amortized over 3 years; effectively ~$26/year equivalent.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">PWA + browser extension + minimal backend. No fancy infra &mdash; this is a local-first app with cloud sync. Service worker keeps the timer ticking when the tab backgrounds. Browser extension does the blocking.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

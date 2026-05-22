@@ -38,17 +38,43 @@
 <body class="selection:bg-black/10">
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Corporate Knowledge AI Assistant</h1>
             <p class="text-lg text-neutral-500 mb-10">Your wiki is a graveyard. Ask it instead.</p>
@@ -66,8 +92,8 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -103,14 +129,14 @@
                     <p class="text-xl text-neutral-500 font-light">Connect Notion, Confluence, Slack, and Drive—get cited answers with permissions intact, without a six-figure Glean contract.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Internal knowledge is scattered across Notion workspaces, Confluence spaces, Google Drive folders, and three years of Slack threads. New hires ask the same questions in #general. Tenured employees become human search engines. When someone asks "What's our SOC 2 scope?" the correct answer exists—in a PDF, a Notion page from 2023, and a Slack thread where legal clarified an exception. Nobody has time to stitch it together.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Notion AI and Confluence AI help <em>inside</em> their silo. They do not answer across systems with unified permissions. Enterprise buyers with budget buy <strong>Glean</strong> or similar six-figure deployments. Mid-market teams (80–500 employees) are priced out but still drown in duplicate documentation and stale wikis.</p>
                     <p class="text-neutral-600 leading-relaxed">The recurring complaint from ops leaders: <em>"We bought a knowledge base, but people still ping me because search returns twelve conflicting pages."</em> The opportunity is a permissions-aware RAG layer that cites sources and respects doc-level ACLs—shipped in a weekend-sized stack, sold at $500–$2K/mo instead of enterprise minimums.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A web app that connects to Notion, Confluence, Slack (public channels), and Google Drive via OAuth. Nightly (or hourly) ingestion chunks documents, stores embeddings in pgvector, and maps each chunk to the viewer's access rights. Employees ask questions in a chat UI; responses include <strong>inline citations</strong> with links back to source pages. Admins see query logs, stale-source flags, and "unanswered question" queues to prompt doc updates.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -125,7 +151,7 @@
                     <p class="text-neutral-600 leading-relaxed">Complements <a href="ai-knowledge-transfer-platform.html" class="underline hover:text-black">AI Knowledge Transfer</a> (creates knowledge on exit) and <a href="virtual-knowledge-hub.html" class="underline hover:text-black">Virtual Knowledge Hub</a> (human expertise). This product is <em>retrieval</em> across systems of record.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Enterprise search and "work AI" budgets exploded post-ChatGPT. Analysts size the <strong>enterprise search market around $7–8B in 2025</strong> with double-digit CAGR as copilots move from pilot to production. Mid-market SaaS companies are the underserved segment: too big for "just use Notion AI," too small for Glean's sales motion.</p>
                     <ul class="space-y-3 mb-4">
@@ -136,7 +162,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>crowded at enterprise, open in mid-market</em>. Win on speed to deploy (OAuth Friday, answers Monday) and transparent per-seat pricing.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Every player searches documents; few ship in a week with mid-market pricing and citation-first UX.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,7 +192,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat workspace fee by employee band + optional premium connectors. Land with one integration (Notion) and expand.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -188,7 +214,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 4 Scale accounts ≈ $5.2K/mo. Or 10 Growth accounts. Expansion revenue from extra query packs and Confluence connector. Churn fight: weekly &quot;unanswered questions&quot; email to doc owners drives habit.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Connector workers + vector store + chat UI. Hardest part is permission mapping, not the LLM.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -210,7 +236,7 @@
                         </div></div>
                 </div>
 
-                <div id="section-prompts" class="mb-12 scroll-mt-24">
+                <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                     <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
                     <div class="space-y-6">
@@ -242,7 +268,7 @@ Never return chunks user cannot access—filter in SQL, not post-hoc.</p>
                         </div></div>
                 </div>
 
-                <div id="section-sources" class="mb-12 scroll-mt-24">
+                <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-4">Sources</h2>
                     <ul class="space-y-2 text-sm text-neutral-500">
                         <li>&bull; <a href="https://www.marketsandmarkets.com/Market-Reports/enterprise-search-market-134919031.html" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">MarketsandMarkets — enterprise search market snapshot<span class="sr-only"> (opens in new tab)</span></a></li>
@@ -252,7 +278,7 @@ Never return chunks user cannot access—filter in SQL, not post-hoc.</p>
                     <p class="text-xs text-neutral-400 mt-4 italic">Verify competitor pricing on live product pages; packaging changes frequently.</p>
                 </div>
 
-                <div id="section-explore" class="mb-12 scroll-mt-24">
+                <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Explore More</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <a href="saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">

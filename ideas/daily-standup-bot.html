@@ -50,12 +50,39 @@
     }</script>
 </head>
 <body class="selection:bg-black/10">
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:inline">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Async Standup Bot</h1>
             <p class="text-lg text-neutral-500 mb-10">Kill the daily meeting. Keep the signal.</p>
@@ -72,7 +99,7 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
+        <div class="pt-[7.5rem] pb-16 px-6">
             <div class="max-w-2xl mx-auto">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
 
@@ -85,14 +112,14 @@
                     <p class="text-xl text-neutral-500 font-light">Slack DM answers, AI-summarized digest, blockers surfaced. $29/mo flat up to 20 users.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">The daily standup meeting is the most universally hated 15 minutes in software. Time-zone-spread teams schedule it at 9am somewhere, which means 2am for someone. Every engineer answers the same three questions out loud that could have been written in 60 seconds. The manager takes notes nobody reads. Blockers get buried behind "mostly fine, working on the thing." The meeting ends with everyone nodding and then Slacking each other privately to ask "wait, what did X actually say?"</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Async tooling exists. Geekbot has ~<strong>20K+ teams</strong> paying $2.50&ndash;$4/user/mo. Standuply, Status Hero, Troopr, Range, Friday &mdash; at least 10 products in this category. The problem is they all charge per-seat, so a 10-person team is at $25&ndash;$40/mo before considering overhead. Worse, most of them post raw dumps of everyone's answers to #standup with no summary, so a busy team lead scrolls past 10 identical-looking messages and misses the two blockers buried inside.</p>
                     <p class="text-neutral-600 leading-relaxed">The AI opportunity is obvious: read the full dump, extract blockers in one line each, summarize shared themes, surface who's been skipping. A small team does not need Geekbot's fancy dashboards. They need DMs that go out on schedule, responses that get intelligently summarized, and a single digest in the team channel they'll actually read. Priced flat so the <em>third</em> engineer doesn't increase the bill.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A Slack bot that installs in one click. Each user configures their personal standup time (defaults to 10am user-local). Bot DMs three questions: "What did you ship yesterday? What's the plan today? Anything blocking you?" User replies in thread; bot acknowledges with a smile. At the team's configured digest time (default 10:30am team-local), Claude reads all responses and posts a single structured summary to #standup: top themes, individual one-liners, and a clearly flagged <strong>Blockers</strong> section that @mentions the owner and any relevant teammate.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -118,7 +145,7 @@
                     <p class="text-neutral-600 leading-relaxed">The blocker surfacing is the killer feature. Claude reads "waiting for review on PR #742" and automatically writes "Blocker: PR #742 review &mdash; @reviewers-of-that-PR." Nobody has to scroll. Managers see blockers at the top. Engineers see their own blockers get acted on, which creates positive feedback and increases standup completion rate &mdash; the metric every tool in this category fights over.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Slack has <strong>38M+ daily active users</strong> (Salesforce earnings 2024) across hundreds of thousands of paid workspaces. Geekbot's public stats claim <strong>20K+ teams</strong>. The async-standup category alone is a $50M+ revenue slice of the broader "meeting reduction" market projected at <strong>$5B+ by 2030</strong> (various analyst reports on remote-work tooling).</p>
                     <ul class="space-y-3 mb-4">
@@ -131,7 +158,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>mature, per-seat entrenched</em>. Geekbot (acquired by Spectrum Labs 2023) and Standuply dominate the paid tier. Slack Workflow Builder offers a free DIY version that loses signal (no AI summary). Your wedge: AI digest as the differentiator, flat-team pricing (not per-seat) as the pricing hack. Slack App Directory listing + AI-summary demo GIF in the listing header converts.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four competitor classes: dedicated async standup bots (Geekbot, Standuply), broader remote-management suites (Range, Friday, Status Hero), free Slack Workflow Builder, and "just use a channel" DIY. Your wedge is AI blocker surfacing + flat pricing, neither of which is bundled together elsewhere.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +189,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat per-team pricing. Free tier captures trials and very small teams. Team tier covers the vast majority of paying customers. Growth tier for larger teams with multiple squads. LLM inference cost per team is bounded (&lt;10 messages/day &times; ~1K tokens each &times; Haiku pricing) and trivial compared to ARPU.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -206,7 +233,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 100 Team + 10 Growth = $3.7K/mo. 500 Team + 50 Growth = $18.45K/mo. At 2K Team + 200 Growth = $73.8K/mo ($886K ARR). Slack directory listing with 4.8+ stars drives organic discovery; target CAC stays low because the install is frictionless.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Slack bot + cron + LLM. No UI except a thin settings page. Most of the product lives inside Slack DMs and channels.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

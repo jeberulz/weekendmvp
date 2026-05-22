@@ -50,12 +50,39 @@
     }</script>
 </head>
 <body class="selection:bg-black/10">
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
-        <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <a href="../index.html">
+            <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+        </a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:inline">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Minimalist Habit Tracker</h1>
             <p class="text-lg text-neutral-500 mb-10">Streaks, not notifications. Tracking, not shame.</p>
@@ -72,7 +99,7 @@
     </section>
 
     <section id="idea-content">
-        <div class="pt-24 pb-16 px-6">
+        <div class="pt-[7.5rem] pb-16 px-6">
             <div class="max-w-2xl mx-auto">
                 <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors"><iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon> All Startup Ideas</a>
 
@@ -85,14 +112,14 @@
                     <p class="text-xl text-neutral-500 font-light">Beautiful, quiet, effective. Streaks, Apple Health sync, partner accountability. $29/year flat.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Behavior change works when it's simple. Atomic Habits sold <strong>20M+ copies</strong> because James Clear reduced the entire field to "make it obvious, easy, attractive, satisfying." Yet the habit-tracking app market is full of gamification-overloaded products that turn exercise and meditation into RPGs. Habitica has leveling up, equipment, party raids. Streaks is cleaner but locked to Apple ecosystem and $4.99 one-time. Way of Life and HabitBull look like 2014 Android apps. Nothing hits the sweet spot of Notion-level aesthetic + genuine behavior science.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">The friction is daily. Open app. Find habit. Tap checkmark. Close app. Multiply by 3&ndash;6 habits, 365 days. Most users abandon within <strong>30 days</strong> (Flurry Analytics on productivity-app retention). The apps that survive are the ones that reduce friction aggressively: widgets on home screen, Apple Watch taps, Siri voice logs. These are the table stakes nobody at indie pricing is currently executing well.</p>
                     <p class="text-neutral-600 leading-relaxed">The wedge is taste + integration + accountability. A PWA-native tracker that looks like Linear, syncs with Apple Health / Google Fit (so running shows up without logging), lets users optionally share specific habits with an accountability partner (partner gets a gentle nudge if streak breaks), and charges <strong>$29/year flat</strong>. Undercuts Streaks/Habitica subscription math. Ships on web-first, so Android parity is free.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">A PWA habit tracker priced $29/year with three differentiators: Apple Health / Google Fit auto-log (the habit "Ran 3 miles" gets ticked automatically if HealthKit records a run), optional accountability partner (share a specific habit with one friend; they see your streak; notify on break), and a minimalist design inspired by Linear + Notion + Things. Streak heatmap, clean typography, no gamification dopamine tricks.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -118,7 +145,7 @@
                     <p class="text-neutral-600 leading-relaxed">The retention engineering is the accountability partner loop. Research from Dominican University shows people with accountability partners are <strong>95% more likely to achieve goals</strong> than solo attempters. Most habit apps monetize via gamification; we monetize via social accountability, which is both more effective and less cringe. Partner notifications are rate-limited to one per week max to avoid spam.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">The <strong>mobile health and fitness app market is $58B in 2024, projected to $142B by 2030 at 15.7% CAGR</strong> (Grand View Research). Habit-tracking as a sub-segment is estimated at <strong>$2B+</strong> with double-digit growth. Atomic Habits has been a sustained top-10 Amazon business book since 2018, showing cultural durability.</p>
                     <ul class="space-y-3 mb-4">
@@ -131,7 +158,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>mature mobile, fragmented web</em>. iOS-first habit apps dominate but web/Android is weaker. PWA approach plus Apple Health auto-log via iOS Shortcuts (a user-installable bridge) captures Apple users without App Store tax (30% cut). Android Google Fit integration is native-easy. 18-month window to establish brand before an AI-first Atomic-Habits-branded app launches.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Four competitor classes: premium iOS one-time purchases (Streaks), freemium gamified (Habitica, HabitNow), legacy utility apps (Way of Life, HabitBull), and Notion templates / paper (Atomic Habits branded). Your wedge: beautiful PWA + health integration + accountability partner at flat annual price.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +189,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Flat annual. Free tier is generous to earn PWA installs and Apple/Google Fit integration users. Pro annual or lifetime covers the monetization. Family tier unlocks partner sharing across multiple paid accounts (parents + teens, couples building shared habits). Zero App Store tax by shipping PWA.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -206,7 +233,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">ARR path: 2K Pro + 200 Lifetime = $73.8K ARR. 10K Pro + 1K Lifetime = $369K ARR. At 30K Pro + 3K Lifetime = $1.1M ARR. Retention rate for paid habit apps is strong (~60% annual renewal vs 40% in productivity broadly) because users who paid upfront are more committed. Brand-building via productivity YouTube + Atomic Habits-adjacent content.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">PWA with offline-first sync. Mobile widgets via iOS Shortcuts (for HealthKit bridge) and Android native app widgets. Minimal backend: auth + sync + partner notifications.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

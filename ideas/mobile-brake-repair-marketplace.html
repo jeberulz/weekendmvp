@@ -184,7 +184,9 @@
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
@@ -198,8 +200,28 @@
             <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
         </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -233,9 +255,9 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -269,7 +291,7 @@
                         <p class="text-xl text-neutral-500 font-light">A Thumbtack-style wedge for brake jobs only: vetted mobile technicians, instant quotes, and driveway service—not another generic &ldquo;find a mechanic&rdquo; app.</p>
                     </div>
 
-                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">
                             Brake work is the highest-anxiety, highest-urgency repair most commuters face—and the least convenient to schedule. Shops keep 9–5 hours; tow trucks add $150+ before a wrench turns. National mobile-mechanic brands exist, but discovery is noisy: Thumbtack quotes vary 3× for the same pad job, YourMechanic bundles every service under one brand, and indie mobile techs live on Instagram DMs without insurance verification or standardized brake SKUs.
@@ -282,7 +304,7 @@
                         </p>
                     </div>
 
-                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-4">
                             Launch a two-sided marketplace where consumers book standardized brake packages (front pads, rear pads, pad+rotor, fluid flush) from verified mobile techs within a configurable radius. VIN or year/make/model drives parts compatibility hints; symptom checklist (squeal, vibration, ABS light) routes to the right SKU. Upfront pricing pulls from a regional rate card you tune with early supply partners—not infinite custom quotes on day one.
@@ -317,7 +339,7 @@
                         </div>
                     </div>
 
-                    <div id="section-market" class="mb-12 scroll-mt-24">
+                    <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Mobile vehicle repair is moving from novelty to expectation as fleet age rises and convenience apps train consumers for on-demand everything:</p>
                         <ul class="space-y-3">
@@ -340,7 +362,7 @@
                         </ul>
                     </div>
 
-                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
@@ -370,7 +392,7 @@
                         </div>
                     </div>
 
-                    <div id="section-business" class="mb-12 scroll-mt-24">
+                    <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                         <p class="text-neutral-600 leading-relaxed">Marketplace monetization on day one: take rate per completed brake job plus optional priority placement for techs. Avoid discount wars—compete on convenience and price transparency.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 mt-6">
@@ -401,7 +423,7 @@
                         </div>
                     </div>
 
-                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Next.js for SEO city pages, Supabase + PostGIS for geo queries, Stripe Connect for marketplace payments. Keep dispatch rules simple before building Uber-grade routing.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -450,7 +472,7 @@
                         </div>
                     </div>
 
-                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                    <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
                         <div class="space-y-6">
@@ -496,7 +518,7 @@
                         </div>
                     </div>
 
-                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                    <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Sources</h2>
                         <p class="text-neutral-500 text-sm mb-4">Signals compiled from public research (verify before financial projections).</p>
                         <ul class="space-y-2 text-sm">
@@ -523,7 +545,7 @@
                         </ul>
                     </div>
 
-                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                    <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Explore More</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <a href="5k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">

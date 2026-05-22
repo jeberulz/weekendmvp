@@ -38,17 +38,43 @@
 <body class="selection:bg-black/10">
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
             </button>
-            <a href="../index.html"><div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div></a>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
         </div>
-        <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors">All Ideas</a>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
 
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+
+
+
+
+
+
+
+
+<section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight mb-4">Personal Wellness Coach</h1>
             <p class="text-lg text-neutral-500 mb-10">Your pocket coach, not your therapist.</p>
@@ -66,8 +92,8 @@
 
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -103,14 +129,14 @@
                     <p class="text-xl text-neutral-500 font-light">Daily habit loops, meal-aware nudges, and posture reminders with optional human coach sessions—lighter than Noom, more actionable than generic fitness trackers.</p>
                 </div>
 
-                <div id="section-problem" class="mb-12 scroll-mt-24">
+                <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                     <p class="text-neutral-600 leading-relaxed mb-4">Most people do not need a hospital—they need consistency. They download a fitness app, log meals for four days, then ghost. <strong>Noom</strong> charges premium prices for psychology-driven weight programs but locks users into long subscriptions. <strong>BetterHelp</strong> solves mental health, not "drink water, fix desk posture, eat protein at breakfast." <strong>WHOOP</strong> sells recovery scores to athletes willing to pay $30/mo but does not tell you <em>what to do today</em> in plain language.</p>
                     <p class="text-neutral-600 leading-relaxed mb-4">Wearables generate data; users lack coaching narrative. Nutrition apps count calories without connecting to energy crashes at 3pm. Remote workers want posture and movement nudges tied to calendar gaps, not generic "stand up" alarms.</p>
                     <p class="text-neutral-600 leading-relaxed">The wedge: an AI coach that runs a <strong>daily 2-minute check-in</strong>, synthesizes habits + optional Apple Health steps + photo meal notes, and outputs one prioritized action. Optional human coach video for accountability at $49/session. Not medical advice—wellness coaching with clear disclaimers.</p>
                 </div>
 
-                <div id="section-solution" class="mb-12 scroll-mt-24">
+                <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Mobile-first PWA: morning check-in (sleep, mood, energy), habit streaks (water, steps, stretch), meal snap or text log with macro estimates, and desk posture reminders via scheduled notifications (camera-free MVP uses timer + ergonomic tips). Claude generates a <strong>daily plan card</strong> with one focus habit. Weekly review summarizes trends. Upsell: book a certified wellness coach for 30 minutes via Stripe.</p>
                     <div class="p-8 bg-neutral-100 rounded-3xl mb-6">
@@ -126,7 +152,7 @@
                     <p class="text-neutral-600 leading-relaxed">Knowledge-transfer angle: optional library of coach tips (like a lightweight <a href="virtual-knowledge-hub.html" class="underline hover:text-black">Virtual Knowledge Hub</a> for wellness micro-lessons). Keeps SEO cluster connected without competing positioning.</p>
                 </div>
 
-                <div id="section-market" class="mb-12 scroll-mt-24">
+                <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Digital health and fitness apps exceed <strong>$10B+ globally</strong>; habit and coaching subsegments grow fastest among millennials and remote workers. GLP-1 headlines increased interest in nutrition coaching adjacently. Your SKU is sub-clinical—avoid FDA claims, target motivation and adherence.</p>
                     <ul class="space-y-3 mb-4">
@@ -137,7 +163,7 @@
                     <p class="text-neutral-600 leading-relaxed">Stage: <em>crowded headline category, open wedge in unified habit+nutrition+posture AI narrative</em>. Win on tone (non-judgmental, one daily action) not feature breadth.</p>
                 </div>
 
-                <div id="section-competitive" class="mb-12 scroll-mt-24">
+                <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">Incumbents own single verticals (weight psychology, therapy, recovery scores). Bundle daily adherence with optional human coach.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,7 +193,7 @@
                     </div>
                 </div>
 
-                <div id="section-business" class="mb-12 scroll-mt-24">
+                <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">B2C subscription primary; take rate on human coach sessions secondary. Keep CAC low via TikTok/SEO &quot;desk posture&quot; content.</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -189,7 +215,7 @@
                     <p class="text-neutral-600 leading-relaxed text-sm">MRR path: 80 Core subscribers = $1.12K/mo; add 20 Plus + 10 coach sessions/mo ≈ $1.5K+. Target $1K/mo with ~70 paying users—achievable with one viral short-form content loop.</p>
                 </div>
 
-                <div id="section-tech" class="mb-12 scroll-mt-24">
+                <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                     <p class="text-neutral-600 leading-relaxed mb-6">PWA + Supabase + Claude + Stripe. HealthKit is iOS-only stretch; ship web-first check-ins.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,7 +237,7 @@
                         </div></div>
                 </div>
 
-                <div id="section-prompts" class="mb-12 scroll-mt-24">
+                <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                     <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
                     <div class="space-y-6">
@@ -234,7 +260,7 @@ Page /today shows AI plan card generated server-side. Include disclaimer footer:
                         </div></div>
                 </div>
 
-                <div id="section-sources" class="mb-12 scroll-mt-24">
+                <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-4">Sources</h2>
                     <ul class="space-y-2 text-sm text-neutral-500">
                         <li>&bull; <a href="https://www.grandviewresearch.com/industry-analysis/digital-health-market" target="_blank" rel="noopener noreferrer" class="underline hover:text-black">Grand View Research — digital health market<span class="sr-only"> (opens in new tab)</span></a></li>
@@ -244,7 +270,7 @@ Page /today shows AI plan card generated server-side. Include disclaimer footer:
                     <p class="text-xs text-neutral-400 mt-4 italic">Verify competitor pricing on live product pages; packaging changes frequently.</p>
                 </div>
 
-                <div id="section-explore" class="mb-12 scroll-mt-24">
+                <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                     <h2 class="text-2xl font-medium mb-6">Explore More</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <a href="1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">

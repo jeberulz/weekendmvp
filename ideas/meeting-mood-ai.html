@@ -158,8 +158,9 @@
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
-    <!-- Navigation -->
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
@@ -173,9 +174,29 @@
             <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
         </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
+
+
+
+
+
+
+
+
+
 
     <!-- Email Gate Section (hidden by default for SEO) -->
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -209,10 +230,10 @@
     <!-- Idea Content Section (visible by default for SEO) -->
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -252,7 +273,7 @@
                     </div>
 
                     <!-- The Problem -->
-                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">
                             Remote and hybrid workers have inherited the worst part of the office &mdash; a packed calendar &mdash; without any of the social signals that used to tell them which parts of their week were actually working. Friday hits and the week feels &ldquo;off,&rdquo; but the cause sits buried in twenty back-to-back tiles. People can name the symptoms (burnout, decision fatigue, &ldquo;meeting hangover&rdquo;) but they cannot point at the specific meeting, person, or recurring series that is leaking their energy. Manager-level workers, working parents, and senior individual contributors get the worst of it, because their calendars are densest and their context-switching cost is highest.
@@ -263,7 +284,7 @@
                     </div>
 
                     <!-- The Solution -->
-                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-8">
                             MeetingMood AI is a calendar-connected mood tracker built around a single ritual: every Sunday (or post-meeting, if you want richer data), you swipe through cards representing each meeting from the last week. Right means &ldquo;liked it,&rdquo; down means &ldquo;meh,&rdquo; left means &ldquo;drained me.&rdquo; The whole interaction takes 3&ndash;5 minutes. The app reads your Google Calendar or Microsoft 365 calendar, pulls events plus attendees and recurring series IDs, and feeds your reactions into a personal pattern model. Over four to six weeks the dashboard surfaces things that are otherwise invisible: which days of the week sap you, which recurring 1:1 should probably move to async, whether marketing syncs actually energize you (some people they do), and how much recovery time you need after client calls. Paul Graham&rsquo;s &ldquo;maker schedule, manager schedule&rdquo; framing is built into the report so you get advice in your own work-style language, not generic wellness pablum. Managers get an opt-in, anonymized team rollup &mdash; &ldquo;the team is averaging 6/10 on Wednesdays&rdquo; &mdash; without ever seeing individual reactions.
@@ -297,7 +318,7 @@
                     </div>
 
                     <!-- Market Research -->
-                    <div id="section-market" class="mb-12 scroll-mt-24">
+                    <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">
                             Three adjacent markets are growing at once &mdash; mood tracking, mental-health apps, and workplace emotion analytics &mdash; and none of the leaders has claimed the &ldquo;work calendar mood&rdquo; intersection. The figures below are directional, pulled from public market reports; triangulate before quoting in a deck:
@@ -327,7 +348,7 @@
                     </div>
 
                     <!-- Competitive Landscape -->
-                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">
                             Mood tracking is crowded; <strong>meeting-mood</strong> tracking is empty. The general players have the audience and the habit-forming UI, but none of them connects to a calendar or returns answers about specific recurring meetings. Pricing below is from each vendor&rsquo;s live page in May 2026 unless noted.
@@ -371,7 +392,7 @@
                     </div>
 
                     <!-- Business Model -->
-                    <div id="section-business" class="mb-12 scroll-mt-24">
+                    <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">
                             Three-tier SaaS with a B2C beachhead and a B2B expansion path. Anchor at $9/month for individuals (matches Daylio and Moodfit), then sell team seats once a few employees inside the same workspace are paying and ask their manager for a rollup. Corporate wellness budgets are the long game and they price into five figures, so do not under-charge there.
@@ -420,7 +441,7 @@
                     </div>
 
                     <!-- Tech Stack -->
-                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Calendar OAuth + Postgres + a careful privacy posture is the whole product. Keep emotional data off third-party LLM logs by doing pattern detection with classical stats first; reserve LLM calls for the natural-language weekly digest.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -484,7 +505,7 @@
                     </div>
 
                     <!-- AI Build Prompts -->
-                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                    <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
 
@@ -532,7 +553,7 @@
                     </div>
 
                     <!-- Sources -->
-                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                    <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Sources</h2>
                         <p class="text-neutral-500 text-sm mb-4">Market sizing, growth rates, and competitive pricing pulled from public research summaries and vendor pages in May 2026 via Ideabrowser MCP (idea_id 1297). Triangulate before quoting in investor materials.</p>
                         <ul class="space-y-2 text-sm">
@@ -560,7 +581,7 @@
                     </div>
 
                     <!-- Explore More -->
-                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                    <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Explore More</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <a href="saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">

@@ -190,8 +190,9 @@
 </head>
 <body class="selection:bg-black/10 selection:text-black">
 
-    <!-- Navigation -->
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center gap-4">
             <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
                 <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
@@ -205,9 +206,29 @@
             <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
         </div>
     </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
+
+
+
+
+
+
+
+
+
 
     <!-- Email Gate Section -->
-    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
                 <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -250,10 +271,10 @@
     <!-- Idea Content Section -->
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
 
                 <!-- Sidebar -->
-                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
                             <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
@@ -293,7 +314,7 @@
                     </div>
 
                     <!-- The Problem -->
-                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                    <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">
                             Mid-market sales and solutions engineers live inside 200-row spreadsheets called security questionnaires, vendor RFPs, and DDQs. Each deal duplicates work: hunt through old proposals, Slack threads, and PDFs for the one paragraph that proves SOC 2 coverage or data residency. Miss a deadline and the deal stalls; copy-paste the wrong year and you erode trust. Generic ChatGPT answers sound confident but hallucinate policies your company does not have—legal and security teams will not sign off.
@@ -304,7 +325,7 @@
                     </div>
 
                     <!-- The Solution -->
-                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                    <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-8">
                             A web app where the AE or solutions consultant uploads the RFP (PDF, Word, or portal export), maps sections to owners, and connects a &ldquo;win library&rdquo; of past proposals, security docs, and release notes. Embeddings index every chunk; each question pulls the top-k evidence spans before the model writes. Output is structured: proposed answer, bullet citations back to source files, and explicit &ldquo;needs human&rdquo; flags when similarity scores drop. Export to Word or Google Docs preserves tables procurement teams expect. You are selling speed with auditability—not fully autonomous compliance fiction.
@@ -338,7 +359,7 @@
                     </div>
 
                     <!-- Market Research -->
-                    <div id="section-market" class="mb-12 scroll-mt-24">
+                    <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Procurement and vendor security reviews are formalizing across industries, which keeps demand for faster, auditable RFP workflows structurally high. Third-party sizing varies by segment definition, but directional signals are consistent:</p>
                         <ul class="space-y-3">
@@ -362,7 +383,7 @@
                     </div>
 
                     <!-- Competitive Landscape -->
-                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                    <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Incumbents own the enterprise narrative; almost everything is &ldquo;contact sales&rdquo; pricing. That creates a clean undercut story for teams with &lt;50 seats:</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,7 +415,7 @@
                     </div>
 
                     <!-- Business Model -->
-                    <div id="section-business" class="mb-12 scroll-mt-24">
+                    <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Business Model</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Seat-based SaaS with usage caps on embedded pages and monthly LLM tokens keeps COGS predictable. Anchor against DIY spend (~$50–150/mo per rep in tools) while staying an order of magnitude under Loopio&rsquo;s published floor.</p>
 
@@ -440,7 +461,7 @@
                     </div>
 
                     <!-- Tech Stack -->
-                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                    <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
                         <p class="text-neutral-600 leading-relaxed mb-6">Optimize for ingestion → chunk → embed → retrieve → generate. Supabase pgvector keeps you on one Postgres; Vercel AI SDK streams answers back to the browser while you log citations.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -490,7 +511,7 @@
                     </div>
 
                     <!-- AI BUILD PROMPTS -->
-                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                    <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
 
@@ -538,7 +559,7 @@
                     </div>
 
                     <!-- Sources -->
-                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                    <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Sources</h2>
                         <p class="text-neutral-500 text-sm mb-4">Market sizing and competitive pricing signals collated from public research summaries and vendor pages (April 2026). Triangulate before you cite in investor materials.</p>
                         <ul class="space-y-2 text-sm">
@@ -563,7 +584,7 @@
                     </div>
 
                     <!-- Explore More -->
-                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                    <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Explore More</h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
