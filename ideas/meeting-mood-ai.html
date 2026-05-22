@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeetingMood AI: Calendar-Based Emotional Intelligence Dashboard | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="A weekend-buildable SaaS that turns 5-second post-meeting check-ins into a personal emotional-intelligence dashboard for remote workers. Cited market sizing, pricing, and a full build plan.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/meeting-mood-ai.html">
+    <meta property="og:title" content="MeetingMood AI: Calendar-Based Emotional Intelligence Dashboard | Startup Ideas">
+    <meta property="og:description" content="Turn calendar fatigue into actionable mood patterns. Full research-backed playbook: $1.5B → $4.2B mood-tracker market, $9/mo to $5k corporate ladder, weekend MVP stack.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og/idea/meeting-mood-ai.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="MeetingMood AI — calendar mood analytics for remote workers">
+    <meta property="og:image:type" content="image/png">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="MeetingMood AI: Calendar-Based Emotional Intelligence Dashboard | Startup Ideas">
+    <meta property="twitter:description" content="Turn calendar fatigue into actionable mood patterns. Full research-backed playbook with citations, competitor pricing, and a full build plan.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og/idea/meeting-mood-ai.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/meeting-mood-ai.html">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', 'Inter', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+        .sidebar-link.active { color: #000; font-weight: 600; }
+        #sidebar { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto; }
+        #sidebar::-webkit-scrollbar { display: none; }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "MeetingMood AI: Calendar-Based Emotional Intelligence Dashboard",
+          "description": "A weekend-buildable SaaS that turns 5-second post-meeting check-ins into a personal emotional-intelligence dashboard for remote workers. Cited market sizing, pricing, and a full build plan.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-05-22",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/meeting-mood-ai.html",
+          "image": "https://weekendmvp.app/image/og/idea/meeting-mood-ai.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "MeetingMood AI",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Calendar-integrated mood analytics that reveal which meetings and people drain or fuel your energy.",
+          "offers": { "@type": "Offer", "price": "9", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build MeetingMood AI MVP",
+          "description": "Step-by-step guide to building a calendar-mood dashboard in a weekend.",
+          "totalTime": "PT12H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Calendar sync", "text": "Connect Google Calendar via OAuth and ingest the last 14 days of meetings as the cold-start corpus." },
+            { "@type": "HowToStep", "position": 2, "name": "Swipe-card check-ins", "text": "Build a five-card weekly review where users react like/meh/drain to each meeting." },
+            { "@type": "HowToStep", "position": 3, "name": "Pattern dashboard", "text": "Aggregate signals by day, attendee, meeting type, and recurring series to surface drains." },
+            { "@type": "HowToStep", "position": 4, "name": "Weekly digest", "text": "Email a personal pattern report every Monday with one suggested calendar change." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "MeetingMood AI", "item": "https://weekendmvp.app/ideas/meeting-mood-ai.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- Navigation -->
+    <div class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+
+    <!-- Email Gate Section (hidden by default for SEO) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">MeetingMood AI</h1>
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">Calendar-based emotional intelligence dashboard for remote workers who want data, not vibes, on what drains them.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" aria-label="First name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address" aria-label="Email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (visible by default for SEO) -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-24 lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                        <a href="#section-sources" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Sources</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
+                            <span class="text-neutral-400 text-xs">~10&ndash;12 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">MeetingMood AI</h1>
+                        <p class="text-xl text-neutral-500 font-light">Calendar-based emotional intelligence dashboard for remote workers who want data, not vibes, on what drains them.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Remote and hybrid workers have inherited the worst part of the office &mdash; a packed calendar &mdash; without any of the social signals that used to tell them which parts of their week were actually working. Friday hits and the week feels &ldquo;off,&rdquo; but the cause sits buried in twenty back-to-back tiles. People can name the symptoms (burnout, decision fatigue, &ldquo;meeting hangover&rdquo;) but they cannot point at the specific meeting, person, or recurring series that is leaking their energy. Manager-level workers, working parents, and senior individual contributors get the worst of it, because their calendars are densest and their context-switching cost is highest.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            The community signal here is unusually loud. <strong>r/productivity</strong> sits at <strong>3.8M+ subscribers</strong> and the threads about &ldquo;AI tools that saved me from burning out&rdquo; routinely climb into four-digit upvote territory. <strong>r/Adulting</strong> (1.4M) and <strong>r/worklifebalance</strong> run parallel conversations &mdash; people swapping spreadsheets and Notion templates to manually track which days drained them. On the corporate side, Facebook groups like &ldquo;AI Tools 101&rdquo; (222K members) and &ldquo;The Ultimate Work-Life Balance&rdquo; are full of HR leads asking the same question from the other side of the org chart: <em>how do I measure team wellbeing without invading privacy?</em> The pain is acute, the workarounds are manual, and nobody has plugged the two ends together. That is the gap MeetingMood AI fills: turning a vague &ldquo;this week felt heavy&rdquo; into &ldquo;Tuesday triple-meeting days drop your mood 38% &mdash; here is the one recurring you can kill.&rdquo;
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            MeetingMood AI is a calendar-connected mood tracker built around a single ritual: every Sunday (or post-meeting, if you want richer data), you swipe through cards representing each meeting from the last week. Right means &ldquo;liked it,&rdquo; down means &ldquo;meh,&rdquo; left means &ldquo;drained me.&rdquo; The whole interaction takes 3&ndash;5 minutes. The app reads your Google Calendar or Microsoft 365 calendar, pulls events plus attendees and recurring series IDs, and feeds your reactions into a personal pattern model. Over four to six weeks the dashboard surfaces things that are otherwise invisible: which days of the week sap you, which recurring 1:1 should probably move to async, whether marketing syncs actually energize you (some people they do), and how much recovery time you need after client calls. Paul Graham&rsquo;s &ldquo;maker schedule, manager schedule&rdquo; framing is built into the report so you get advice in your own work-style language, not generic wellness pablum. Managers get an opt-in, anonymized team rollup &mdash; &ldquo;the team is averaging 6/10 on Wednesdays&rdquo; &mdash; without ever seeing individual reactions.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Connect</p>
+                                    <p class="text-xs text-neutral-500 mt-1">OAuth into Google Calendar or Microsoft 365; we read events, never write.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Swipe</p>
+                                    <p class="text-xs text-neutral-500 mt-1">5-minute Sunday review of last week&rsquo;s meetings, like / meh / drain.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Analyze</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Patterns by day, attendee, meeting type, and recurring series.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Act</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Monday digest with one concrete calendar change to try this week.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Three adjacent markets are growing at once &mdash; mood tracking, mental-health apps, and workplace emotion analytics &mdash; and none of the leaders has claimed the &ldquo;work calendar mood&rdquo; intersection. The figures below are directional, pulled from public market reports; triangulate before quoting in a deck:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Global mood tracker app market: $1.5B in 2024 &rarr; $4.2B by 2033</strong> at a 15.3% CAGR (Market Research Intellect). The forecast assumes mood tracking moves from consumer journaling into productivity and corporate-wellness contexts &mdash; which is exactly where MeetingMood AI sits.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Broader mental-health apps market: $7.03B in 2024 &rarr; $15.69B by 2033</strong> (~10% CAGR, OpenPR / market research syndicate). Corporate wellness budgets are the fastest-growing slice, which lines up with the $49/seat team tier in the pricing ladder below.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Emotion analytics: $4.44B in 2025 &rarr; $7.61B by 2030</strong> at 11.46% CAGR (360iResearch). This is the supplier side &mdash; the maturing tech that makes pattern detection across small per-user datasets actually feasible without a research team.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Demand signals on Reddit and Facebook</strong> are dense and unambiguous: r/productivity (3.8M), r/Adulting (1.4M), r/worklifebalance, AI Tools 101 FB group (222K). Burnout and meeting-fatigue threads keep four-digit comment counts, which is the cleanest validation cheap money can buy.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>SMB wedge</strong>: 10&ndash;200 person remote-first SaaS companies that already pay for Officevibe or Lattice but cannot get individual-level energy data without privacy blowback. Opt-in anonymized rollups solve the politics; that is the seat-expansion story.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Mood tracking is crowded; <strong>meeting-mood</strong> tracking is empty. The general players have the audience and the habit-forming UI, but none of them connects to a calendar or returns answers about specific recurring meetings. Pricing below is from each vendor&rsquo;s live page in May 2026 unless noted.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Wysa</h4>
+                                <p class="text-xs text-neutral-500 mb-2">AI mental-health chatbot with mood tracking, journaling, and CBT exercises. Clinically validated, broad EAP distribution, B2B-friendly.</p>
+                                <p class="text-xs text-neutral-400">Freemium with $5&ndash;$29/month consumer tiers; enterprise quotes for EAPs</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Daylio</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Lightweight mood + activity journal, 10M+ downloads. Best-in-class one-tap UX but no calendar integration and zero work context.</p>
+                                <p class="text-xs text-neutral-400">Freemium; ~$4/month premium</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Moodfit</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Mood logs + gratitude + meditation in one stack. Strong analytics for personal wellness; no team layer, no calendar hooks.</p>
+                                <p class="text-xs text-neutral-400">$9.99/month or $47.99/year</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Officevibe / Lattice / TinyPulse</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise pulse surveys for HR. Anonymized team mood at quarterly cadence, but no individual self-awareness loop and no calendar correlation.</p>
+                                <p class="text-xs text-neutral-400">$3&ndash;$11/user/mo (Officevibe Pro); Lattice quote-based</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Clockwise / Reclaim.ai</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Calendar optimizers that move meetings to protect focus time. They touch the calendar but treat it as a logistics problem, not an emotional one.</p>
+                                <p class="text-xs text-neutral-400">Clockwise: free / $6.75 / $11.50/user/mo</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">DIY (Notion + spreadsheets)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">A surprising number of senior ICs already do this manually every Friday. Cheap, but it collapses the moment a week is missed.</p>
+                                <p class="text-xs text-neutral-400">$10&ndash;20/user/mo in tooling already paid for</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Own &ldquo;calendar mood&rdquo; before the wellness suites and the calendar optimizers race to bolt it on. Swipe-card UI keeps weekly engagement above 60%; calendar grounding makes every insight actionable (&ldquo;kill this 30-min sync&rdquo;) instead of generic (&ldquo;take a walk&rdquo;). Privacy-by-design &mdash; data stays per-user, manager view is opt-in and aggregated &mdash; turns the political risk that scares HR buyers into a feature.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Three-tier SaaS with a B2C beachhead and a B2B expansion path. Anchor at $9/month for individuals (matches Daylio and Moodfit), then sell team seats once a few employees inside the same workspace are paying and ask their manager for a rollup. Corporate wellness budgets are the long game and they price into five figures, so do not under-charge there.
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Personal</h4>
+                                <p class="text-2xl font-bold mb-2">$9/mo</p>
+                                <p class="text-xs text-neutral-500">Calendar sync, weekly swipe review, personal dashboard, Monday digest email</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Team</h4>
+                                <p class="text-2xl font-bold mb-2">$49/seat/mo</p>
+                                <p class="text-xs text-neutral-500">Anonymized team rollup, recurring-meeting cost-benefit, Slack/Teams nudges, SSO</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Corporate</h4>
+                                <p class="text-2xl font-bold mb-2">$500&ndash;$5k/mo</p>
+                                <p class="text-xs text-neutral-500">Org-wide analytics, custom retention, HRIS export, dedicated success manager</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-xs text-neutral-500">Target CAC</p>
+                                    <p class="font-semibold">$24</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">ARPU (blended)</p>
+                                    <p class="font-semibold">$14/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Est. churn</p>
+                                    <p class="font-semibold">6%/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">LTV (16 mo)</p>
+                                    <p class="font-semibold">$224</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-neutral-500 text-xs mt-4">Path to $10k MRR: ~750 paying personal users <em>or</em> 20 small team accounts. Hormozi value-ladder math says the team tier is the leverage point &mdash; bait with the personal plan, expand to teams once managers see real mood data on a calendar they recognize.</p>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Calendar OAuth + Postgres + a careful privacy posture is the whole product. Keep emotional data off third-party LLM logs by doing pattern detection with classical stats first; reserve LLM calls for the natural-language weekly digest.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Next.js 15 + TypeScript</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">App Router for the dashboard, server actions for swipe submissions, a single route for the Monday digest cron.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:googlecalendar" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Google Calendar API + Microsoft Graph</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Read-only OAuth scopes for events and attendees. Cache event metadata locally so revoking access never strands the user&rsquo;s history.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase (Postgres + RLS)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Tables for users, events, reactions, recurring_series, weekly_reports. Row-level security on every reaction; no admin read path.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Org model maps to team accounts cleanly; SAML on the corporate tier without rewriting auth.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Vercel (Fluid Compute) + cron</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Sunday-night refresh job pulls new events; Monday-morning cron renders the digest. Both are well under the 300s function timeout.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Anthropic Claude (digest only)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Convert numeric patterns into a friendly weekly note. Strip names; pass only aggregated counts and tags so private data never leaves Postgres.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Stripe Billing</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Personal + Team plans on subscriptions; corporate as manual invoicing through Stripe Billing for the first ten customers.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Resend + React Email</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Monday digest emails as React components. Re-use the same component for the in-app weekly summary view.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a new Next.js 15 project with TypeScript, Tailwind CSS, and shadcn/ui for &ldquo;MeetingMood AI&rdquo;. Set up Supabase (Postgres + RLS) with tables: users, calendar_connections (provider, refresh_token_encrypted), events (external_id, start_at, end_at, attendees JSONB, recurring_series_id, title_hash), reactions (event_id, user_id, sentiment enum [like, meh, drain], created_at), weekly_reports (user_id, week_start, summary_markdown, top_drain_series_id). Add Clerk for org-aware auth, Stripe for Personal/Team/Corporate plans, and environment variables for Google OAuth, Microsoft Graph, Anthropic, and Resend. Enable RLS so users can only read their own rows; no admin read path exists.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the weekly swipe-review flow. (1) Sunday-night cron pulls last 7 days of events from Google Calendar / Microsoft Graph for every connected user and inserts into events. (2) UI presents a stack of swipeable cards (Framer Motion) &mdash; one per meeting &mdash; with right = like, down = meh, left = drain. (3) Submissions write to reactions and update aggregate views: by weekday, by recurring_series_id, by primary attendee. (4) Pattern detector (plain SQL + a simple regression) flags the top drain series and the best-performing day. Return a JSON dashboard payload {by_day, by_series, top_drain_series, top_energy_series, recovery_minutes_needed} to the front-end. Stream tokens for the Monday digest only.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Marketing site for MeetingMood AI &mdash; calendar-based mood analytics for remote workers. Hero: &ldquo;Find out which meetings are draining you. With data.&rdquo; Sections: the burnout-without-cause problem, the swipe-card solution (animated demo), a sample weekly digest with redacted names, a comparison block vs Daylio / Wysa / Officevibe, pricing for Personal / Team / Corporate, a privacy section (read-only calendar scope, no manager sees individual reactions, no LLM training on customer data), and an email capture for the waitlist. Palette: ink near-black, warm paper background #fcfaf7, lavender accent #b6a4f6 for the &ldquo;drain&rdquo; spark line. Voice: calm, data-savvy, slightly dry.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Branding for MeetingMood AI: wordmark with a small swipe-arc curving under the &ldquo;M,&rdquo; readable at 18px. Colors &mdash; ink #0F1115, paper #FCFAF7, lavender accent #B6A4F6 for &ldquo;drain&rdquo; charts, sage #9BC5A8 for &ldquo;energy.&rdquo; Typography: Geist Sans for UI, Geist Mono for chart labels and citation chips. Deliverables: favicon, login/empty states (&ldquo;your first week starts Sunday&rdquo;), swipe-card illustration set (cardstock paper feel, soft shadows, no faces), Monday digest email header, and a single LinkedIn launch post graphic.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sources -->
+                    <div id="section-sources" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Sources</h2>
+                        <p class="text-neutral-500 text-sm mb-4">Market sizing, growth rates, and competitive pricing pulled from public research summaries and vendor pages in May 2026 via Ideabrowser MCP (idea_id 1297). Triangulate before quoting in investor materials.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.marketresearchintellect.com/product/mood-tracker-app-market/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Market Research Intellect &mdash; Mood Tracker App Market ($1.5B &rarr; $4.2B, 15.3% CAGR)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.openpr.com/news/4039854/mental-health-apps-market-2025-2033-teens-adults" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">OpenPR / Mental Health Apps Market &mdash; $7.03B (2024) &rarr; $15.69B (2033)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.360iresearch.com/library/intelligence/emotion-analytics" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">360iResearch &mdash; Emotion Analytics ($4.44B &rarr; $7.61B by 2030)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.biz4group.com/blog/mood-tracking-app-development-cost" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Biz4Group &mdash; Mood tracking app development cost (~$35K&ndash;$200K to V1)<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.precedenceresearch.com/wellness-apps-market" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Precedence Research &mdash; Wellness apps market context<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Explore More -->
+                    <div id="section-explore" class="mb-12 scroll-mt-24">
+                        <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <a href="saas/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:cloud" class="text-sky-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More SaaS Ideas</span>
+                                    <p class="text-xs text-neutral-500">Browse similar ideas</p>
+                                </div>
+                            </a>
+                            <a href="1k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$1K/Month Ideas</span>
+                                    <p class="text-xs text-neutral-500">By revenue potential</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Cursor
+                                </a>
+                                <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Claude
+                                </a>
+                                <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:lightning" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Bolt.new
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">Solo Founders</a>
+                                <a href="../ideas-for/developers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">Developers</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let&rsquo;s turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                    <div class="col-span-2 md:col-span-1">
+                        <a href="../index.html">
+                            <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
+                        </a>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you&rsquo;re non-technical.</p>
+                        <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                            <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                            <li><a href="../ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
+                            <li><a href="../ideas/1k-month/" class="text-neutral-500 hover:text-neutral-900 transition-colors">$1K/Month Ideas</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All &rarr;</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                            <li><a href="../build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                            <li><a href="../build-with/bolt/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Bolt.new</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas-for/developers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Developers</a></li>
+                            <li><a href="../ideas-for/solo-founders/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Solo Founders</a></li>
+                            <li><a href="../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                            <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-neutral-900 transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                    <div class="flex items-center gap-6">
+                        <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                            <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                            <span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+      function copyPrompt(btn) {
+        const text = btn.parentElement.querySelector('p').innerText;
+        navigator.clipboard.writeText(text);
+        const original = btn.innerHTML;
+        btn.innerHTML = '<iconify-icon icon="lucide:check" width="18" aria-hidden="true"></iconify-icon>';
+        setTimeout(() => { btn.innerHTML = original; }, 1500);
+      }
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script src="/ideas/gate.js" defer></script>
+</body>
+</html>

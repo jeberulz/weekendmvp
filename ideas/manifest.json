@@ -1634,6 +1634,53 @@
         "accent": "lime",
         "status": "pending"
       }
+    },
+    {
+      "slug": "meeting-mood-ai",
+      "title": "MeetingMood AI",
+      "publishedAt": "2026-05-22",
+      "category": "saas",
+      "buildTime": "10-12",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "description": "A weekend-buildable SaaS that turns 5-second post-meeting check-ins into a personal emotional-intelligence dashboard for remote workers. Cited market sizing, pricing, and a full build plan.",
+      "researchLevel": "deep",
+      "source": "ideabrowser:1297",
+      "og": {
+        "subject": "A glowing calendar grid floating above a quiet wooden desk at dusk, lavender light spilling from the screen, one ceramic mug, shallow depth of field, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "why_now_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 2069,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T10:28:10.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      }
     }
   ],
   "categories": [
