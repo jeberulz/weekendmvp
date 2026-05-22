@@ -10,6 +10,8 @@ slug: "stop-overthinking-start-building"
 
 Pick an Idea and Ship It This Weekend
 
+
+![Sticky note on a dark desk with one word lit by emerald glow from a phone screen](https://weekendmvp.app/image/og/article/stop-overthinking-start-building.png)
 ---
 
 ## Can You Answer "Yes" To Any of These?

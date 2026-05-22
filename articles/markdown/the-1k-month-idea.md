@@ -20,6 +20,8 @@ Meanwhile, **90% of profitable startups are bootstrapped**.
 
 And yet, the startup world keeps telling you to chase unicorns.
 
+
+![torn corner of dark paper on a near-black desk with a single hand-written number visible in mint ink](https://weekendmvp.app/image/og/article/the-1k-month-idea.png)
 ---
 
 ## 5 Lies About What Makes a "Real" Startup

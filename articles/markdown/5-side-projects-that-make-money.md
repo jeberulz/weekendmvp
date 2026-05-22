@@ -10,6 +10,8 @@ slug: "5-side-projects-that-make-money"
 
 From people who built them. With real numbers.
 
+
+![stack of weathered paper receipts on a dark desk, the topmost receipt lit by a single lime light from the side](https://weekendmvp.app/image/og/article/5-side-projects-that-make-money.png)
 ---
 
 The internet is flooded with "100 side hustle ideas" articles written by people who've never made a dollar from any of them.

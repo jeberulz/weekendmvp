@@ -10,6 +10,8 @@ slug: "how-to-build-your-first-app-in-a-weekend"
 
 Even If You Can't Code
 
+
+![New notebook slightly open on a dark surface with lavender light on the blank paper edge](https://weekendmvp.app/image/og/article/how-to-build-your-first-app-in-a-weekend.png)
 ---
 
 ## Can You Answer "Yes" To Any of These?

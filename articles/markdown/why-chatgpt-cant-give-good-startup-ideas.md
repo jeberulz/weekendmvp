@@ -10,6 +10,8 @@ slug: "why-chatgpt-cant-give-good-startup-ideas"
 
 It's not you. It's what the model is optimized to do.
 
+
+![Crumpled paper beside a fresh notebook on a dark desk, emerald light on the cover](https://weekendmvp.app/image/og/article/why-chatgpt-cant-give-good-startup-ideas.png)
 ---
 
 You open ChatGPT, type "give me 10 startup ideas," and get a neat list. CRM for dentists. AI resume coach. Niche newsletter tool. It feels productive.

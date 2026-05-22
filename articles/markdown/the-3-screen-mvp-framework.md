@@ -10,6 +10,8 @@ slug: "the-3-screen-mvp-framework"
 
 Landing → Input → Output. That's the whole product—until you earn the right to build more.
 
+
+![Three blank index cards in a row on a dark surface, lavender light on the leftmost card](https://weekendmvp.app/image/og/article/the-3-screen-mvp-framework.png)
 ---
 
 Can you answer **yes** to any of these?

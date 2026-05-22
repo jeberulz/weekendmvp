@@ -10,6 +10,8 @@ slug: "when-to-quit-your-job"
 
 5 signs you're ready. And the checklist most people skip.
 
+
+![Coffee mug at a desk edge with lavender glow from a phone screen on the rim](https://weekendmvp.app/image/og/article/when-to-quit-your-job.png)
 ---
 
 Most people don't quit overnight.

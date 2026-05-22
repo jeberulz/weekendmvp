@@ -10,6 +10,8 @@ slug: "vibe-coding-101"
 
 The complete beginner's guide to building apps with AI in 2026.
 
+
+![Closed hardcover guidebook with a lime tassel bookmark on a near-black desk](https://weekendmvp.app/image/og/article/vibe-coding-101.png)
 ---
 
 ## Is This You?

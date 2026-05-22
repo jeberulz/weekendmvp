@@ -10,6 +10,8 @@ slug: "5-claude-code-skills-for-solo-founders"
 
 The most under-used feature in Claude Code. Each one removes a category of decisions you don't want to make.
 
+
+![neat row of small labeled index cards on a near-black surface, the front card lit by a single lavender beam](https://weekendmvp.app/image/og/article/5-claude-code-skills-for-solo-founders.png)
 ---
 
 ## What Is a Skill?

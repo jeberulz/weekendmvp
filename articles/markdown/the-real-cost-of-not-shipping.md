@@ -10,6 +10,8 @@ slug: "the-real-cost-of-not-shipping"
 
 A Founder's Calculation
 
+
+![pencil mid-stroke on a dark desk beside an open planner with one circled date, late-night atmosphere](https://weekendmvp.app/image/og/article/the-real-cost-of-not-shipping.png)
 ---
 
 ## Before: The Planning Trap

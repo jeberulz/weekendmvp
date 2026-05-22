@@ -10,6 +10,8 @@ slug: "claude-code-for-non-technical-founders"
 
 The complete 2026 guide to the AI agent that builds apps from your terminal—even if you've never written a line of code.
 
+
+![Open paperback book with a lavender bookmark on a near-black desk](https://weekendmvp.app/image/og/article/claude-code-for-non-technical-founders.png)
 ---
 
 ## Is This You?

@@ -10,6 +10,8 @@ slug: "claude-code-on-your-phone"
 
 Four real workflows for shipping MVPs from your iPhone, iPad, or Android—without sitting in front of your laptop.
 
+
+![small leather-bound pocket notebook open on a dark surface, a lime ribbon-marker draped across a half-written page](https://weekendmvp.app/image/og/article/claude-code-on-your-phone.png)
 ---
 
 ## Why You'd Want This

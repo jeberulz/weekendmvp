@@ -10,6 +10,8 @@ slug: "claude-code-48-hour-workflow"
 
 Friday night planning. Saturday building. Sunday shipping.
 
+
+![Open daily planner with a date circled in mint marker under a single overhead lamp](https://weekendmvp.app/image/og/article/claude-code-48-hour-workflow.png)
 ---
 
 ## Why "48 Hours" Beats "Someday"

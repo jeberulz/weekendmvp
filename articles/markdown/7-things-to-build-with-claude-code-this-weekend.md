@@ -10,6 +10,8 @@ slug: "7-things-to-build-with-claude-code-this-weekend"
 
 Each one is shippable in a single weekend. Each comes with a starter prompt you can paste straight in.
 
+
+![small notecard on a dark desk showing a numbered list with one item checked off in lime](https://weekendmvp.app/image/og/article/7-things-to-build-with-claude-code-this-weekend.png)
 ---
 
 "What should I build?" is the wrong question. You don't need a big idea. You need a small one you can finish.

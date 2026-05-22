@@ -10,6 +10,8 @@ slug: "7-micro-saas-ideas-solo-2026"
 
 No co-founder. No funding. Just you, AI tools, and a weekend.
 
+
+![folded sheet of paper on a near-black surface with seven small bullet marks visible in single mint side-lighting](https://weekendmvp.app/image/og/article/7-micro-saas-ideas-solo-2026.png)
 ---
 
 The micro-SaaS market is projected to grow from $15.7 billion to $59.6 billion by 2030. That's 30% growth every year.
