@@ -28,13 +28,15 @@ const SITE_ORIGIN = 'https://weekendmvp.app';
 const GRID_START = '<!-- newsletter-cards-start -->';
 const GRID_END = '<!-- newsletter-cards-end -->';
 
-function runSyncNav() {
-  const result = spawnSync(process.execPath, [path.join(__dirname, 'sync-nav.js'), '--write'], {
-    cwd: ROOT,
-    stdio: 'inherit',
-  });
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
+function runNavSync() {
+  for (const script of ['sync-nav.js', 'sync-reading-nav.js']) {
+    const result = spawnSync(process.execPath, [path.join(__dirname, script), '--write'], {
+      cwd: ROOT,
+      stdio: 'inherit',
+    });
+    if (result.status !== 0) {
+      process.exit(result.status ?? 1);
+    }
   }
 }
 
@@ -230,7 +232,7 @@ ${sends.map(renderCard).join('\n')}
 
   fs.writeFileSync(FEED_PATH, feed);
 
-  runSyncNav();
+  runNavSync();
 
   console.log(`✅ newsletter.html updated`);
   console.log(`   ${sends.length} send(s) in archive`);

@@ -679,7 +679,7 @@ function tagDesignersInManifest() {
 }
 
 function runSyncNav() {
-  const result = spawnSync(process.execPath, [path.join(__dirname, 'sync-nav.js'), '--write'], {
+  const result = spawnSync(process.execPath, [path.join(__dirname, 'sync-all-nav.js'), '--write'], {
     cwd: ROOT,
     stdio: 'inherit',
   });

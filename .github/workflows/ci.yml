@@ -27,14 +27,5 @@ jobs:
       - name: Check stylesheets (strict)
         run: STRICT=1 npm run check:stylesheets
 
-      - name: Check nav sync (strict)
-        run: STRICT=1 npm run check:nav
-
-      - name: Check idea nav sync (strict)
-        run: STRICT=1 npm run check:idea-nav
-
-      - name: Check reading nav sync (strict)
-        run: STRICT=1 npm run check:reading-nav
-
-      - name: Check starter kit nav sync (strict)
-        run: STRICT=1 npm run check:starter-kit-nav
+      - name: Check all nav sync (strict)
+        run: npm run check:all-nav
