@@ -177,11 +177,19 @@ function mdToHtml(md) {
       continue;
     }
 
-    // Standalone image line ![alt](url) — email-only hero, omit from web
-    if (/^!\[[^\]]*\]\([^)]+\)\s*$/.test(line)) {
+    // Standalone image line ![alt](url) — render as full-width figure on the web
+    const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)\s*$/);
+    if (imgMatch) {
       flushPara();
       flushList();
       flushQuote();
+      const alt = escapeAttr(imgMatch[1]);
+      const src = imgMatch[2];
+      if (/^(https?:|\/)/.test(src)) {
+        out.push(
+          `<figure class="my-8"><img src="${src}" alt="${alt}" loading="lazy" class="w-full rounded-2xl border border-white/10"></figure>`
+        );
+      }
       continue;
     }
 
