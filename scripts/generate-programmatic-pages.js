@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const manifestPath = path.join(ROOT, 'ideas/manifest.json');
@@ -677,6 +678,16 @@ function tagDesignersInManifest() {
   }
 }
 
+function runSyncNav() {
+  const result = spawnSync(process.execPath, [path.join(__dirname, 'sync-nav.js'), '--write'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
 function main() {
   console.log('Generating missing programmatic landing pages...\n');
   tagDesignersInManifest();
@@ -704,6 +715,8 @@ function main() {
   }
 
   updateSitemap(results.map((r) => r.url));
+
+  runSyncNav();
 
   console.log('\nSummary:');
   for (const r of results) {

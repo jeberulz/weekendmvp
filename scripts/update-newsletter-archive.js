@@ -18,6 +18,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const cheerio = require('cheerio');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -26,6 +27,16 @@ const FEED_PATH = path.join(ROOT, 'newsletter.html');
 const SITE_ORIGIN = 'https://weekendmvp.app';
 const GRID_START = '<!-- newsletter-cards-start -->';
 const GRID_END = '<!-- newsletter-cards-end -->';
+
+function runSyncNav() {
+  const result = spawnSync(process.execPath, [path.join(__dirname, 'sync-nav.js'), '--write'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
 
 function escapeHtmlAttr(s) {
   return String(s || '')
@@ -218,6 +229,8 @@ ${sends.map(renderCard).join('\n')}
   );
 
   fs.writeFileSync(FEED_PATH, feed);
+
+  runSyncNav();
 
   console.log(`✅ newsletter.html updated`);
   console.log(`   ${sends.length} send(s) in archive`);

@@ -44,8 +44,9 @@ const UNCOMMENTED_NAV_RE = new RegExp(
   `<div class="fixed top-6 left-0 right-0 z-50[\\s\\S]*?${NAV_BOUNDARY}`
 );
 
-/** @type {Record<string, 'newsletter' | 'articles'>} */
+/** @type {Record<string, 'newsletter' | 'articles' | 'startup-ideas'>} */
 const NAV_ACTIVE_BY_GLOB = {
+  'startup-ideas.html': 'startup-ideas',
   'newsletter.html': 'newsletter',
   'newsletter/*.html': 'newsletter',
   'articles.html': 'articles',
@@ -90,6 +91,17 @@ function applyNavActive(html, active) {
     html = html.replace(
       /<a href="([^"]*)articles\.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white\/5 rounded-lg transition-colors">Articles<\/a>/,
       '<a href="$1articles.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors" aria-current="page">Articles</a>'
+    );
+  }
+
+  if (active === 'startup-ideas') {
+    html = html.replace(
+      /<button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">\s*\n\s*Browse Ideas/,
+      '<button class="nav-dropdown-trigger flex items-center gap-1 text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true" aria-current="page">\n                        Browse Ideas'
+    );
+    html = html.replace(
+      /<button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white\/5 rounded-lg transition-colors" aria-expanded="false">\s*\n\s*<span>Browse Ideas<\/span>/,
+      '<button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-white bg-white/5 rounded-lg transition-colors" aria-current="page" aria-expanded="false">\n                    <span>Browse Ideas</span>'
     );
   }
 
