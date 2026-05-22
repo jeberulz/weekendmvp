@@ -1249,6 +1249,391 @@
         "auditRunAt": "2026-05-07T00:00:00.000Z"
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-meeting-notes-cleaner",
+      "title": "AI Meeting Notes Cleaner",
+      "publishedAt": "2025-01-20",
+      "category": "productivity",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "Build an AI tool that transforms messy Zoom and Teams transcripts into clean summaries, decisions, and action items with owners and due dates.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "invoice-reminder-bot",
+      "title": "Invoice Reminder Bot",
+      "publishedAt": "2026-01-21",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "Invoice Reminder Bot helps freelancers and small businesses get paid faster with automated, escalating payment reminders. Connect Stripe or QuickBooks and let the bot handle awkward follow-ups.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "personal-wellness-coach",
+      "title": "Personal Wellness Coach",
+      "publishedAt": "2026-01-21",
+      "category": "health",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "description": "AI habit, nutrition, and posture coaching in one mobile-friendly app. Daily check-ins, wearable sync, and human coach upsell—positioned below Noom and therapy-grade platforms.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "ai-knowledge-transfer-platform",
+      "title": "AI-Driven Knowledge Transfer Platform",
+      "publishedAt": "2026-01-22",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Capture tacit knowledge before employees leave. AI-guided offboarding interviews, searchable handoff packs, and onboarding briefs for teams losing institutional know-how.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "corporate-knowledge-ai-assistant",
+      "title": "Corporate Knowledge Base AI Assistant",
+      "publishedAt": "2026-01-22",
+      "category": "b2b",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "RAG assistant over Notion, Confluence, Slack, and Google Drive. Cited answers for internal teams—priced below Glean for mid-market companies.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "expert-mentorship-marketplace",
+      "title": "Expert Mentorship Marketplace",
+      "publishedAt": "2026-01-23",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "description": "Two-sided marketplace matching vetted experts to learners. Stripe payouts, semantic matching, and async advice—positioned between free ADPList and premium MentorCruise.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "remote-team-documentation-tool",
+      "title": "Automated Documentation Tool for Remote Teams",
+      "publishedAt": "2026-01-23",
+      "category": "productivity",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "AI-powered documentation tool that automatically turns meetings, Slack threads, and project updates into a searchable team wiki for async remote teams.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "mobile-brake-repair-marketplace",
+      "title": "Marketplace for Mobile Brake Repair Services",
+      "publishedAt": "2026-01-27",
+      "category": "marketplace",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "description": "Build a marketplace connecting vehicle owners with mobile brake repair technicians. Tap into the $4.27B mobile vehicle repair market with on-demand convenience.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "brake-repair-cost-estimator",
+      "title": "Automated Brake Repair Cost Estimator",
+      "publishedAt": "2026-01-27",
+      "category": "automation",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "non-technical",
+        "weekend-builders"
+      ],
+      "description": "Build a consumer-focused web tool that provides instant brake repair cost estimates, helps users avoid overpaying, and includes local shop reviews. A $170B market opportunity.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "brake-safety-education-platform",
+      "title": "Brake Safety Education Platform",
+      "publishedAt": "2026-01-27",
+      "category": "education",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "bolt",
+        "no-code"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "description": "A SaaS education platform offering online courses and certification programs focused on brake repair, helping automotive technicians stay updated on safety protocols and modern braking systems.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "ai-brake-inspection-analyser",
+      "title": "AI-Powered Brake Inspection Analyser",
+      "publishedAt": "2026-01-27",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "description": "Help mechanics diagnose brake issues faster with AI-powered image analysis that detects wear, damage, and provides repair recommendations. Build this SaaS tool in a weekend.",
+      "researchLevel": "deep",
+      "source": "stub-backfill+web-research",
+      "provenance": {
+        "researchCalls": [
+          "web-research:category+competitors+market"
+        ],
+        "citations": 6,
+        "auditPassed": true,
+        "auditRunAt": "2026-05-22T09:27:48.174Z",
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+      },
+      "og": {
+        "subject": "",
+        "accent": "lime",
+        "status": "pending"
+      }
     }
   ],
   "categories": [

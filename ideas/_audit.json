@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-05-01T08:23:39.020Z",
+  "generatedAt": "2026-05-22T09:27:52.352Z",
   "totals": {
-    "PASS": 34,
-    "total": 34,
-    "passing": 34,
+    "PASS": 46,
+    "total": 46,
+    "passing": 46,
     "failing": 0
   },
   "ideas": [
     {
       "slug": "meeting-scheduler",
       "status": "PASS",
-      "bytes": 38111,
+      "bytes": 38162,
       "wordCount": 2021,
       "h2Count": 9,
       "description": "Cross-timezone meeting scheduler with AI conflict resolution and team round-robin. Flat-team pricing under Calendly. Weekend MVP guide + prompts.",
@@ -30,7 +30,7 @@
     {
       "slug": "habit-tracker",
       "status": "PASS",
-      "bytes": 37527,
+      "bytes": 37566,
       "wordCount": 2003,
       "h2Count": 9,
       "description": "Beautiful habit tracker with streaks, Apple Health sync, shared partners. Flat annual pricing under Streaks/Habitica. Weekend MVP guide + prompts.",
@@ -50,7 +50,7 @@
     {
       "slug": "email-to-todo",
       "status": "PASS",
-      "bytes": 38865,
+      "bytes": 38904,
       "wordCount": 2154,
       "h2Count": 9,
       "description": "AI extracts actionable tasks from emails, routes to Todoist/Notion/Linear. Flat pricing, natural priority detection. Weekend MVP guide + prompts.",
@@ -70,7 +70,7 @@
     {
       "slug": "daily-standup-bot",
       "status": "PASS",
-      "bytes": 37397,
+      "bytes": 37448,
       "wordCount": 2038,
       "h2Count": 9,
       "description": "Slack bot that collects async standups, summarizes with AI, surfaces blockers. Flat team pricing under Geekbot. Weekend MVP guide + prompts.",
@@ -90,7 +90,7 @@
     {
       "slug": "focus-session-timer",
       "status": "PASS",
-      "bytes": 37112,
+      "bytes": 37169,
       "wordCount": 1949,
       "h2Count": 9,
       "description": "Deep-work Pomodoro timer with analytics, website blocking, calendar sync. Flat annual pricing under Forest/Flow. Weekend MVP guide + prompts.",
@@ -110,7 +110,7 @@
     {
       "slug": "notion-backup-tool",
       "status": "PASS",
-      "bytes": 37883,
+      "bytes": 37937,
       "wordCount": 2103,
       "h2Count": 9,
       "description": "Automated Notion workspace backup with version history and point-in-time restore. Indie-priced under Rewind. Weekend MVP guide + prompts.",
@@ -130,7 +130,7 @@
     {
       "slug": "user-onboarding-builder",
       "status": "PASS",
-      "bytes": 38601,
+      "bytes": 38670,
       "wordCount": 2058,
       "h2Count": 9,
       "description": "No-code product tour and onboarding flow builder. AI generates flows from screenshots. Indie-priced under Appcues. Weekend MVP guide + prompts.",
@@ -650,7 +650,7 @@
     {
       "slug": "contract-analyzer",
       "status": "PASS",
-      "bytes": 67492,
+      "bytes": 67543,
       "wordCount": 2107,
       "h2Count": 10,
       "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
@@ -670,10 +670,250 @@
     {
       "slug": "agent-storefront-platform",
       "status": "PASS",
-      "bytes": 68382,
+      "bytes": 68457,
       "wordCount": 2142,
       "h2Count": 10,
       "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "sms-time-tracker",
+      "status": "PASS",
+      "bytes": 73629,
+      "wordCount": 2729,
+      "h2Count": 10,
+      "description": "A two-command SMS time tracker for gig workers, drivers, and weekend consultants who'll never open another app—text \"start\" and \"stop\", get an invoice-ready weekly summary.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-meeting-notes-cleaner",
+      "status": "PASS",
+      "bytes": 48634,
+      "wordCount": 1043,
+      "h2Count": 10,
+      "description": "Build an AI tool that transforms messy Zoom and Teams transcripts into clean summaries, decisions, and action items with owners and due dates.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "invoice-reminder-bot",
+      "status": "PASS",
+      "bytes": 49995,
+      "wordCount": 1195,
+      "h2Count": 10,
+      "description": "Invoice Reminder Bot helps freelancers and small businesses get paid faster with automated, escalating payment reminders. Connect Stripe or QuickBooks and let the bot handle awkward follow-ups.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "personal-wellness-coach",
+      "status": "PASS",
+      "bytes": 34118,
+      "wordCount": 1104,
+      "h2Count": 10,
+      "description": "AI habit, nutrition, and posture coaching in one mobile-friendly app. Daily check-ins, wearable sync, and human coach upsell—positioned below Noom and therapy-grade platforms.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-knowledge-transfer-platform",
+      "status": "PASS",
+      "bytes": 36944,
+      "wordCount": 1469,
+      "h2Count": 10,
+      "description": "Capture tacit knowledge before employees leave. AI-guided offboarding interviews, searchable handoff packs, and onboarding briefs for teams losing institutional know-how.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "corporate-knowledge-ai-assistant",
+      "status": "PASS",
+      "bytes": 34757,
+      "wordCount": 1230,
+      "h2Count": 10,
+      "description": "RAG assistant over Notion, Confluence, Slack, and Google Drive. Cited answers for internal teams—priced below Glean for mid-market companies.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "expert-mentorship-marketplace",
+      "status": "PASS",
+      "bytes": 34389,
+      "wordCount": 1122,
+      "h2Count": 10,
+      "description": "Two-sided marketplace matching vetted experts to learners. Stripe payouts, semantic matching, and async advice—positioned between free ADPList and premium MentorCruise.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "remote-team-documentation-tool",
+      "status": "PASS",
+      "bytes": 48613,
+      "wordCount": 991,
+      "h2Count": 10,
+      "description": "AI-powered documentation tool that automatically turns meetings, Slack threads, and project updates into a searchable team wiki for async remote teams.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "mobile-brake-repair-marketplace",
+      "status": "PASS",
+      "bytes": 52307,
+      "wordCount": 1262,
+      "h2Count": 10,
+      "description": "Build a marketplace connecting vehicle owners with mobile brake repair technicians. Tap into the $4.27B mobile vehicle repair market with on-demand convenience.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "brake-repair-cost-estimator",
+      "status": "PASS",
+      "bytes": 51340,
+      "wordCount": 1163,
+      "h2Count": 10,
+      "description": "Build a consumer-focused web tool that provides instant brake repair cost estimates, helps users avoid overpaying, and includes local shop reviews. A $170B market opportunity.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "brake-safety-education-platform",
+      "status": "PASS",
+      "bytes": 50922,
+      "wordCount": 1058,
+      "h2Count": 10,
+      "description": "A SaaS education platform offering online courses and certification programs focused on brake repair, helping automotive technicians stay updated on safety protocols and modern braking systems.",
+      "sections": {
+        "problem": true,
+        "solution": true,
+        "market": true,
+        "competitive": true,
+        "business": true,
+        "stack": true,
+        "prompts": true
+      },
+      "missingSections": [],
+      "hasPlaceholderLeak": false,
+      "reasons": []
+    },
+    {
+      "slug": "ai-brake-inspection-analyser",
+      "status": "PASS",
+      "bytes": 50822,
+      "wordCount": 1083,
+      "h2Count": 10,
+      "description": "Help mechanics diagnose brake issues faster with AI-powered image analysis that detects wear, damage, and provides repair recommendations. Build this SaaS tool in a weekend.",
       "sections": {
         "problem": true,
         "solution": true,
