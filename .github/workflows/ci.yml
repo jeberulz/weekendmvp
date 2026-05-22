@@ -26,3 +26,6 @@ jobs:
 
       - name: Check stylesheets (strict)
         run: STRICT=1 npm run check:stylesheets
+
+      - name: Check nav sync (strict)
+        run: STRICT=1 npm run check:nav

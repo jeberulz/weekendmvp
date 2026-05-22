@@ -467,6 +467,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const successState = document.getElementById('success-state');
 
     const openModal = () => {
+        if (!modal || !modalContent) {
+            return;
+        }
         modal.classList.remove('opacity-0', 'pointer-events-none');
         modalContent.classList.remove('scale-95');
         modalContent.classList.add('scale-100');
@@ -476,6 +479,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const closeModal = () => {
+        if (!modal || !modalContent) {
+            return;
+        }
         modal.classList.add('opacity-0', 'pointer-events-none');
         modalContent.classList.remove('scale-100');
         modalContent.classList.add('scale-95');
