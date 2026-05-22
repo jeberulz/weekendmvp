@@ -10,6 +10,8 @@ slug: "build-in-public-2026"
 
 What's Changed (And What Still Works)
 
+![Laptop on a dark desk beside a sticky note that reads Ship first, lit by a lavender desk lamp](https://weekendmvp.app/image/og/article/build-in-public-2026.png)
+
 ---
 
 Scroll Indie Hackers or X for five minutes and you'll see the same headline: **build in public is dead.**
