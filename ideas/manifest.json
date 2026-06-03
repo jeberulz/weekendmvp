@@ -1728,6 +1728,53 @@
         "timing": 9,
         "builder_confidence": 8
       }
+    },
+    {
+      "slug": "vibe-coders-for-hire",
+      "title": "Vibe Coders for Hire",
+      "publishedAt": "2026-06-03",
+      "category": "saas",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "Connect with elite AI-native developers who ship production-ready MVPs at startup speed. No agency slowness, no freelancer roulette — just vetted vibe coders with real delivery track records.",
+      "source": "ideabrowser:1249",
+      "og": {
+        "subject": "A glowing laptop screen with Cursor IDE open, dark room, lime green code reflections on a minimal desk surface, shallow focus, no people or faces",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 5,
+        "wordCount": 2204,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-03T12:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      }
     }
   ],
   "categories": [
