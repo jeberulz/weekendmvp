@@ -1,6 +1,53 @@
 {
   "ideas": [
     {
+      "slug": "saas-financial-toolkit",
+      "title": "Financial Toolkit for Bootstrapped SaaS Founders",
+      "publishedAt": "2026-06-03",
+      "category": "saas",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "side-hustlers"
+      ],
+      "description": "One dashboard for MRR, burn rate, runway, and pricing experiments—built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag.",
+      "og": {
+        "subject": "A dark wooden desk with a glowing laptop screen showing financial charts in green, no people, shallow focus, emerald accent light from the side",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "source": "ideabrowser:1454",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 2031,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-03T00:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      }
+    },
+    {
       "slug": "ai-travel-planner",
       "title": "AI Personal Travel Planner",
       "publishedAt": "2026-06-03",

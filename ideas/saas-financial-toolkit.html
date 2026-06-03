@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI RFP Response Assistant for SMB Sales Teams | Startup Ideas | Weekend MVP</title>
-    <meta name="description" content="Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.">
+    <meta name="robots" content="noindex,follow">
+    <title>Financial Toolkit for Bootstrapped SaaS Founders | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="One dashboard for MRR, burn rate, runway, and pricing experiments—built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag. Weekend build guide + AI prompts.">
     <meta name="author" content="John Iseghohi">
 
     <!-- Open Graph -->
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://weekendmvp.app/ideas/ai-rfp-response-assistant.html">
-    <meta property="og:title" content="AI RFP Response Assistant for SMB Sales Teams | Startup Ideas">
-    <meta property="og:description" content="Turn security questionnaires and RFPs into first-draft answers using your past wins. Vector search + LLM workflow for teams priced out of Loopio and Responsive.">
-    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/saas-financial-toolkit.html">
+    <meta property="og:title" content="Financial Toolkit for Bootstrapped SaaS Founders | Startup Ideas">
+    <meta property="og:description" content="MRR, burn rate, runway, and pricing scenario modeling in one dashboard—priced for solo founders, not CFOs. Weekend build guide + AI prompts.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og/idea/saas-financial-toolkit.png">
 
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Weekend MVP — ship your product in 48 hours">
+    <meta property="og:image:alt" content="Financial Toolkit for Bootstrapped SaaS Founders — Weekend MVP">
     <meta property="og:image:type" content="image/png">
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="AI RFP Response Assistant for SMB Sales Teams | Startup Ideas">
-    <meta property="twitter:description" content="Turn security questionnaires and RFPs into first-draft answers using your past wins. Vector search + LLM workflow for teams priced out of enterprise RFP suites.">
-    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:title" content="Financial Toolkit for Bootstrapped SaaS Founders | Startup Ideas">
+    <meta property="twitter:description" content="MRR, burn rate, runway, and pricing scenario modeling in one dashboard—priced for solo founders, not CFOs.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og/idea/saas-financial-toolkit.png">
 
-    <link rel="canonical" href="https://weekendmvp.app/ideas/ai-rfp-response-assistant.html">
+    <link rel="canonical" href="https://weekendmvp.app/ideas/saas-financial-toolkit.html">
 
     <!-- Google Analytics - Loaded conditionally after consent -->
     <script>
@@ -149,31 +150,45 @@
         },
         {
           "@type": "Article",
-          "headline": "AI RFP Response Assistant for SMB Sales Teams",
-          "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites.",
+          "headline": "Financial Toolkit for Bootstrapped SaaS Founders",
+          "description": "One dashboard for MRR, burn rate, runway, and pricing experiments—built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag.",
           "author": { "@id": "https://weekendmvp.app/#person" },
-          "publisher": { "@id": "https://weekendmvp.app/#person" },
-          "datePublished": "2026-04-20",
-          "mainEntityOfPage": "https://weekendmvp.app/ideas/ai-rfp-response-assistant.html",
-          "image": "https://weekendmvp.app/image/og-image.png"
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-06-03",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/saas-financial-toolkit.html",
+          "image": "https://weekendmvp.app/image/og/idea/saas-financial-toolkit.png"
         },
         {
           "@type": "SoftwareApplication",
-          "name": "AI RFP Response Assistant for SMB Sales Teams",
+          "name": "Financial Toolkit for Bootstrapped SaaS Founders",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
-          "description": "Ingest RFPs and security questionnaires, retrieve proof points from a vector-indexed win library, and generate section-level drafts with source citations for sales and solutions teams."
+          "description": "Integrated financial dashboard connecting Stripe and bank data to give bootstrapped SaaS founders real-time MRR, burn rate, runway calculations, and AI-powered cash flow forecasting."
         },
         {
           "@type": "HowTo",
-          "name": "Build an AI RFP Response Assistant MVP",
-          "description": "Step-by-step guide to building an AI RFP response assistant in a weekend.",
-          "totalTime": "PT10H",
+          "name": "Build Financial Toolkit for Bootstrapped SaaS Founders MVP",
+          "description": "Step-by-step guide to building a SaaS financial dashboard in a weekend.",
+          "totalTime": "PT8H",
           "step": [
-            { "@type": "HowToStep", "position": 1, "name": "Ingest", "text": "Upload the RFP or questionnaire, chunk it into sections, and connect collateral from Drive, Notion, or past proposals." },
-            { "@type": "HowToStep", "position": 2, "name": "Retrieve", "text": "Embed questions and library documents; use vector search to pull the top matching proof points and policies per section." },
-            { "@type": "HowToStep", "position": 3, "name": "Draft", "text": "Call an LLM with structured outputs to write answers that cite specific source snippets and flag gaps where human review is required." },
-            { "@type": "HowToStep", "position": 4, "name": "Export", "text": "Let the rep edit in-app, then export to Word or Google Docs with a compliance checklist of unanswered or low-confidence items." }
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Project Setup",
+              "text": "Create a Next.js 15 project with Supabase, Clerk authentication, and Stripe integration. Set up the database schema for users, connected accounts, transactions, and monthly snapshots."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Core Feature",
+              "text": "Build the Stripe data sync that calculates real-time MRR, ARR, churn rate, LTV, and new-vs-expansion-vs-contraction revenue. Add bank sync via Plaid for expense tracking and burn rate."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Landing Page",
+              "text": "Create a landing page targeting bootstrapped SaaS founders, showcasing the unified dashboard, runway calculator, and pricing scenario modeler."
+            }
           ]
         },
         {
@@ -181,7 +196,7 @@
           "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
             { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
-            { "@type": "ListItem", "position": 3, "name": "AI RFP Response Assistant for SMB Sales Teams", "item": "https://weekendmvp.app/ideas/ai-rfp-response-assistant.html" }
+            { "@type": "ListItem", "position": 3, "name": "Financial Toolkit for Bootstrapped SaaS Founders", "item": "https://weekendmvp.app/ideas/saas-financial-toolkit.html" }
           ]
         }
       ]
@@ -219,48 +234,34 @@
 <!-- wmvp:idea-nav:end -->
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- Email Gate Section -->
+    <!-- Email Gate Section (hidden by default for SEO - shown via JS for non-subscribers) -->
     <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
         <div class="text-center max-w-2xl mx-auto">
             <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
-                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                 All Startup Ideas
             </a>
 
             <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">
-                AI RFP Response Assistant for SMB Sales Teams
+                Financial Toolkit for Bootstrapped SaaS Founders
             </h1>
 
             <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">
-                Turn security questionnaires and RFPs into first-draft answers using your past wins—without buying a $20K/year enterprise response suite.
+                One dashboard for MRR, burn rate, runway, and pricing experiments&mdash;built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag.
             </p>
 
+            <!-- Email Form -->
             <div class="max-w-md mx-auto">
                 <form id="ideas-email-form" class="space-y-4">
                     <div class="flex flex-col gap-3">
-                        <label for="gate-first-name" class="sr-only">First name</label>
-                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name"
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" aria-label="First name"
                             class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <label for="gate-email" class="sr-only">Email address</label>
-                            <input type="email" id="gate-email" name="email" required placeholder="Your email address"
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address" aria-label="Email address"
                                 class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
                             <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
                                 <span>Unlock Idea</span>
-                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                                <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
                             </button>
                         </div>
                     </div>
@@ -273,7 +274,7 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
 
-    <!-- Idea Content Section -->
+    <!-- Idea Content Section (Visible by default for SEO - hidden via JS for non-subscribers) -->
     <section id="idea-content">
         <div class="max-w-6xl mx-auto px-6 lg:px-8">
             <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
@@ -282,7 +283,7 @@
                 <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
                     <div class="flex items-center justify-between mb-8 lg:mb-6">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
-                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                             All Ideas
                         </a>
                         <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
@@ -312,20 +313,23 @@
                     <div class="mb-12">
                         <div class="flex items-center gap-3 mb-4 flex-wrap">
                             <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">SaaS</span>
-                            <span class="text-neutral-400 text-xs">~10 hours to build</span>
+                            <span class="text-neutral-400 text-xs">~8 hours to build</span>
                         </div>
-                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">AI RFP Response Assistant for SMB Sales Teams</h1>
-                        <p class="text-xl text-neutral-500 font-light">Ingest the RFP, pull proof from your win library with vector search, and ship credible first drafts your team can finalize—priced for teams that will never buy Loopio.</p>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">Financial Toolkit for Bootstrapped SaaS Founders</h1>
+                        <p class="text-xl text-neutral-500 font-light">Connect Stripe and your bank account once. Get MRR, burn rate, runway, and pricing scenario models that enterprise CFO software charges four figures a year to produce.</p>
                     </div>
 
                     <!-- The Problem -->
                     <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Problem</h2>
                         <p class="text-neutral-600 leading-relaxed">
-                            Mid-market sales and solutions engineers live inside 200-row spreadsheets called security questionnaires, vendor RFPs, and DDQs. Each deal duplicates work: hunt through old proposals, Slack threads, and PDFs for the one paragraph that proves SOC 2 coverage or data residency. Miss a deadline and the deal stalls; copy-paste the wrong year and you erode trust. Generic ChatGPT answers sound confident but hallucinate policies your company does not have—legal and security teams will not sign off.
+                            Bootstrapped SaaS founders navigate by feel. They check Stripe for revenue, the bank for cash, and a spreadsheet for burn&mdash;and none of those three numbers talk to each other. Monthly MRR is guesswork when you're manually counting upgrades, downgrades, and failed charges. Runway is a rough mental calculation that's usually optimistic. Pricing experiments live in someone&rsquo;s head. This isn&rsquo;t a knowledge problem; it&rsquo;s a tooling problem.
                         </p>
                         <p class="text-neutral-600 leading-relaxed mt-4">
-                            Incumbent response-management platforms are built for enterprises with dedicated proposal ops. Public pricing for category leaders starts around five figures annually with annual contracts, which rules out the 10–200 person SaaS vendors winning an outsized share of new RFP volume. Spreadsheets plus manual search do not scale; enterprise suites do not fit the budget. The wedge is a focused assistant that combines retrieval over your own documents with tight human-in-the-loop review—not another bloated content library nobody maintains.
+                            The category divide is brutal. At the bottom, Baremetrics and ChartMogul handle subscription analytics but ignore operating expenses entirely&mdash;you know your MRR but still don&rsquo;t know if you&rsquo;re profitable. Xero and QuickBooks nail the accounting side but treat SaaS-specific metrics like MRR cohorts and expansion revenue as afterthoughts. At the top, enterprise financial planning software from eMoney and its peers starts at several thousand dollars a year and is designed for advisory firms and CFO teams, not solo founders sleeping on a Stripe dashboard. The gap between &ldquo;I track everything in a spreadsheet&rdquo; and &ldquo;I have a real-time financial command center&rdquo; has never had a product designed specifically to close it.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            The communities where bootstrapped founders congregate&mdash;r/SaaS (317K members), Indie Hackers, MicroConf, SaaStr&mdash;surface the same frustrations weekly: &ldquo;How do I calculate churn correctly?&rdquo;, &ldquo;What&rsquo;s the right way to track MRR when annual plans are involved?&rdquo;, &ldquo;I think my runway is eight months but I&rsquo;m not sure.&rdquo; These aren&rsquo;t edge cases; they&rsquo;re the default state of early-stage SaaS.
                         </p>
                     </div>
 
@@ -333,7 +337,7 @@
                     <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">The Solution</h2>
                         <p class="text-neutral-600 leading-relaxed mb-8">
-                            A web app where the AE or solutions consultant uploads the RFP (PDF, Word, or portal export), maps sections to owners, and connects a &ldquo;win library&rdquo; of past proposals, security docs, and release notes. Embeddings index every chunk; each question pulls the top-k evidence spans before the model writes. Output is structured: proposed answer, bullet citations back to source files, and explicit &ldquo;needs human&rdquo; flags when similarity scores drop. Export to Word or Google Docs preserves tables procurement teams expect. You are selling speed with auditability—not fully autonomous compliance fiction.
+                            A financial command center that pulls Stripe subscription events and bank transaction data into a single dashboard built around the metrics bootstrapped founders actually track. MRR is decomposed automatically: new, expansion, contraction, churn, and reactivation break out without manual calculation. A runway calculator combines Stripe revenue trends with operating expenses pulled from the bank sync. A pricing scenario modeler lets founders run &ldquo;what if I raise prices 20%?&rdquo; against their actual churn data before committing. Monthly snapshots produce the investor-ready P&amp;L summary that used to require a bookkeeper. The AI layer surfaces anomalies and narrates the numbers&mdash;explaining why MRR declined even though new signups were up, or flagging an expense category that doubled quarter-over-quarter.
                         </p>
 
                         <div class="p-8 bg-neutral-100 rounded-3xl">
@@ -341,23 +345,23 @@
                             <div class="flex flex-col md:flex-row gap-4">
                                 <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
                                     <span class="text-xs font-bold text-neutral-400">1</span>
-                                    <p class="text-sm font-medium mt-1">Ingest</p>
-                                    <p class="text-xs text-neutral-500 mt-1">Upload the RFP, split into sections, sync collateral from Drive or Notion</p>
+                                    <p class="text-sm font-medium mt-1">Connect</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Link Stripe with OAuth; connect bank accounts via Plaid. Setup takes under five minutes.</p>
                                 </div>
                                 <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
                                     <span class="text-xs font-bold text-neutral-400">2</span>
-                                    <p class="text-sm font-medium mt-1">Retrieve</p>
-                                    <p class="text-xs text-neutral-500 mt-1">Vector search surfaces the best past answers, policies, and metrics</p>
+                                    <p class="text-sm font-medium mt-1">Analyze</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Dashboard auto-calculates MRR, ARR, churn, LTV, burn rate, and runway from live data—no spreadsheet required.</p>
                                 </div>
                                 <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
                                     <span class="text-xs font-bold text-neutral-400">3</span>
-                                    <p class="text-sm font-medium mt-1">Draft</p>
-                                    <p class="text-xs text-neutral-500 mt-1">LLM writes section replies with citations and gap warnings</p>
+                                    <p class="text-sm font-medium mt-1">Model</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Run pricing experiments and growth scenarios before making changes. Stress-test runway against different churn assumptions.</p>
                                 </div>
                                 <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
                                     <span class="text-xs font-bold text-neutral-400">4</span>
-                                    <p class="text-sm font-medium mt-1">Export</p>
-                                    <p class="text-xs text-neutral-500 mt-1">Review in-app, resolve flags, export to Docx with a compliance checklist</p>
+                                    <p class="text-sm font-medium mt-1">Report</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Export monthly P&amp;L summaries, investor-ready reports, and anomaly alerts straight to your inbox.</p>
                                 </div>
                             </div>
                         </div>
@@ -366,23 +370,27 @@
                     <!-- Market Research -->
                     <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Market Research</h2>
-                        <p class="text-neutral-600 leading-relaxed mb-6">Procurement and vendor security reviews are formalizing across industries, which keeps demand for faster, auditable RFP workflows structurally high. Third-party sizing varies by segment definition, but directional signals are consistent:</p>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The financial planning software category is growing fast, and SaaS is the segment driving the most tooling demand. Bootstrapped founders represent a systemically underserved slice of a large and expanding market:</p>
                         <ul class="space-y-3">
                             <li class="flex items-start gap-3 text-sm">
                                 <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span><strong>High-teens CAGR</strong> appears repeatedly in analyst forecasts for RFP / proposal-automation software through the mid-2030s as teams replace spreadsheets with cloud workflows (Industry Research Biz summary of the broader RFP software market).</span>
+                                <span><strong>Financial planning software market</strong> is valued at $5.74B in 2024 and projected to reach $10.92B by 2029, growing at a 17.5% CAGR&mdash;one of the faster-growing software verticals (The Business Research Company).</span>
                             </li>
                             <li class="flex items-start gap-3 text-sm">
                                 <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span><strong>AI-augmented response workflows</strong> are called out as a distinct fast-growing sub-segment—multiple research shops size the &ldquo;RFP response automation AI&rdquo; market around low single-digit billions USD in the 2024 window with double-digit growth into the next decade (e.g., DataIntelo / Growth Market Reports style estimates—treat as directional, not gospel).</span>
+                                <span><strong>SaaS market expansion</strong> from $408.21B in 2024 to $1.25T by 2034 means more founders are building subscription businesses that need subscription-specific financial tooling (Precedence Research).</span>
                             </li>
                             <li class="flex items-start gap-3 text-sm">
                                 <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span><strong>Cloud-first adoption</strong> shows up across buyer surveys bundled with these reports—enterprises bias toward SaaS libraries, which validates a multi-tenant product you can host on Vercel + Supabase instead of shipping on-prem.</span>
+                                <span><strong>eMoney holds 28% advisory market share</strong> but is priced and structured for financial advisory firms&mdash;not the bootstrapped founder segment, which remains largely unserved by purpose-built tools (Statista).</span>
                             </li>
                             <li class="flex items-start gap-3 text-sm">
                                 <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
-                                <span><strong>SMB wedge</strong>: the same tailwinds lift mid-market SaaS vendors (50–500 employees) that must answer enterprise security reviews but cannot justify dedicated proposal operations—your ideal first 50 accounts.</span>
+                                <span><strong>Cash flow forecasting</strong> is the highest-volume keyword with LOW competition at 18,100 searches per month and a $11.36 CPC&mdash;meaning buyers actively search for a solution and few advertisers are targeting them.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Community demand signal</strong>: r/SaaS (317K members), Indie Hackers, and MicroConf consistently surface founders struggling with financial visibility as a top operational pain, validating real purchase intent beyond search data.</span>
                             </li>
                         </ul>
                     </div>
@@ -390,56 +398,71 @@
                     <!-- Competitive Landscape -->
                     <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
-                        <p class="text-neutral-600 leading-relaxed mb-6">Incumbents own the enterprise narrative; almost everything is &ldquo;contact sales&rdquo; pricing. That creates a clean undercut story for teams with &lt;50 seats:</p>
+                        <p class="text-neutral-600 leading-relaxed mb-6">The market splits cleanly into two camps: SaaS metrics tools that ignore expenses, and accounting tools that ignore SaaS metrics. Nothing bridges them at bootstrapper-friendly pricing:</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <h4 class="font-medium text-sm mb-1">Loopio</h4>
-                                <p class="text-xs text-neutral-500 mb-2">Mature content library, review workflows, and AI-assisted drafting aimed at proposal teams. Strong in regulated and mid-market/enterprise accounts.</p>
-                                <p class="text-xs text-neutral-400">Public pricing lists Foundations from ~$20,000/year (10 seats) — custom tiers above that</p>
+                                <h4 class="font-medium text-sm mb-1">Baremetrics</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Strong MRR and churn analytics for Stripe businesses. Clean dashboard, good cohort analysis. But expenses and burn rate are entirely outside scope&mdash;you still need a separate tool for the other half of the picture.</p>
+                                <p class="text-xs text-neutral-400">From $108/mo for up to 100 customers; pricing scales steeply with revenue</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <h4 class="font-medium text-sm mb-1">Responsive (ex-RFPIO)</h4>
-                                <p class="text-xs text-neutral-500 mb-2">Full response-management platform with deep integrations and enterprise SSO. Breadth is the product; complexity and price follow.</p>
-                                <p class="text-xs text-neutral-400">Quote-based; list pricing not published — plan for enterprise sales cycles</p>
+                                <h4 class="font-medium text-sm mb-1">ChartMogul</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Solid subscription analytics with multi-source data connectors and investor-facing reporting. Positioned toward growth-stage teams and enterprise; UI complexity and pricing reflect that.</p>
+                                <p class="text-xs text-neutral-400">Starts at $99/mo; meaningful features gated behind higher tiers</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <h4 class="font-medium text-sm mb-1">Qvidian (Upland)</h4>
-                                <p class="text-xs text-neutral-500 mb-2">Long-standing player for large proposal shops and financial services. Heavy on governance, lighter on modern AI-native UX.</p>
-                                <p class="text-xs text-neutral-400">Enterprise contracts — typically 5-figure annual minimums</p>
+                                <h4 class="font-medium text-sm mb-1">ProfitWell (Paddle)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Free MRR analytics that built a loyal audience before Paddle acquired it. Useful baseline tool but now tightly integrated into the Paddle ecosystem, limiting appeal for Stripe-native businesses.</p>
+                                <p class="text-xs text-neutral-400">Free tier; advanced features require Paddle billing adoption</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <h4 class="font-medium text-sm mb-1">DIY stack</h4>
-                                <p class="text-xs text-neutral-500 mb-2">Notion/Drive + ChatGPT. Cheap and flexible, but no retrieval citations, no section-level audit trail, and compliance teams hate it.</p>
-                                <p class="text-xs text-neutral-400">$20–60/user/mo in productivity tools + unpredictable model spend</p>
+                                <h4 class="font-medium text-sm mb-1">Xero / QuickBooks</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Best-in-class accounting tools for small businesses. Excellent at tracking expenses and generating P&amp;L statements. MRR, churn, LTV, and cohort analysis are absent&mdash;these are general-purpose tools wearing a SaaS hat.</p>
+                                <p class="text-xs text-neutral-400">Xero from $15/mo; QuickBooks from $35/mo — accounting-only</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">eMoney / MoneyGuidePro</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise financial planning platforms with 28% advisory market share. Comprehensive but priced for RIA firms and wealth advisors&mdash;complex onboarding, four-figure annual contracts, and a feature set designed for a completely different customer profile.</p>
+                                <p class="text-xs text-neutral-400">Enterprise pricing; typically four figures per year, custom contracts</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Custom Spreadsheets</h4>
+                                <p class="text-xs text-neutral-500 mb-2">The current default for most bootstrapped founders. Flexible, free, and already familiar. Also manual, error-prone, always out of date, and incapable of scenario modeling at any meaningful scale.</p>
+                                <p class="text-xs text-neutral-400">$0 but high maintenance cost&mdash;fragile, not real-time, doesn&rsquo;t scale</p>
                             </div>
                         </div>
                         <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
                             <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
-                            <p class="text-sm text-green-700">Sell &ldquo;credible first drafts with receipts&rdquo; to SaaS companies that outgrew DIY but will never buy Loopio. Retrieval-grounded answers, explicit citations, and export to Word beat raw ChatGPT for security questionnaires—price 10× below enterprise suites and win on speed-to-ROI.</p>
+                            <p class="text-sm text-green-700">Build the one tool that merges SaaS metrics (Baremetrics&rsquo; domain) with expense tracking (Xero&rsquo;s domain) and adds AI-powered forecasting&mdash;priced at $49&ndash;$100/mo instead of the combined $150&ndash;$200/mo founders currently spend on two tools that still leave gaps. The cash flow forecasting keyword alone (18,100 searches/mo, LOW competition) is practically an unlocked acquisition channel waiting for a focused product.</p>
                         </div>
                     </div>
 
                     <!-- Business Model -->
                     <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Business Model</h2>
-                        <p class="text-neutral-600 leading-relaxed mb-6">Seat-based SaaS with usage caps on embedded pages and monthly LLM tokens keeps COGS predictable. Anchor against DIY spend (~$50–150/mo per rep in tools) while staying an order of magnitude under Loopio&rsquo;s published floor.</p>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Tiered SaaS with a free entry point to capture founders pre-revenue or early-stage. Each paid tier removes a meaningful constraint rather than just adding features&mdash;the jump from free to paid is always triggered by a real pain point hitting a limit. Anchor pricing against the $150&ndash;$200/mo founders currently spend across separate tools for half the functionality.</p>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
-                                <h4 class="font-medium text-sm mb-1">Team</h4>
-                                <p class="text-2xl font-bold mb-2">$79/mo</p>
-                                <p class="text-xs text-neutral-500">3 seats, 3 active RFPs, 2k library pages, Slack alerts</p>
+                                <h4 class="font-medium text-sm mb-1">Free</h4>
+                                <p class="text-2xl font-bold mb-2">$0</p>
+                                <p class="text-xs text-neutral-500">Cash flow spreadsheet template + MRR tracker download. No login required&mdash;designed as a top-of-funnel lead magnet.</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
-                                <h4 class="font-medium text-sm mb-1">Growth</h4>
-                                <p class="text-2xl font-bold mb-2">$199/mo</p>
-                                <p class="text-xs text-neutral-500">10 seats, unlimited RFPs, SSO-ready, priority vector indexing</p>
+                                <h4 class="font-medium text-sm mb-1">Starter Pack</h4>
+                                <p class="text-2xl font-bold mb-2">$49/mo</p>
+                                <p class="text-xs text-neutral-500">Stripe integration, live MRR/churn dashboard, monthly email digest, runway calculator. Up to $50K MRR tracked.</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
-                                <h4 class="font-medium text-sm mb-1">Scale</h4>
-                                <p class="text-2xl font-bold mb-2">$399/mo</p>
-                                <p class="text-xs text-neutral-500">25 seats, audit log export, custom data retention, shared workspaces</p>
+                                <h4 class="font-medium text-sm mb-1">Complete Finances</h4>
+                                <p class="text-2xl font-bold mb-2">$100/mo</p>
+                                <p class="text-xs text-neutral-500">Everything in Starter + bank sync via Plaid, burn rate tracking, cohort analysis, and AI anomaly alerts.</p>
                             </div>
+                        </div>
+
+                        <div class="p-4 bg-neutral-100 rounded-xl mb-4">
+                            <h4 class="text-sm font-semibold mb-3">Enhanced Analytics Add-on</h4>
+                            <p class="text-sm text-neutral-600">$200/mo: pricing scenario modeler, investor-ready P&amp;L export, custom metric dashboards, and priority support. Targeted at founders actively fundraising or managing a board.</p>
                         </div>
 
                         <div class="p-4 bg-neutral-100 rounded-xl">
@@ -447,19 +470,19 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                                 <div>
                                     <p class="text-xs text-neutral-500">Target CAC</p>
-                                    <p class="font-semibold">$400</p>
+                                    <p class="font-semibold">$180</p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-neutral-500">Avg. Revenue/Account</p>
-                                    <p class="font-semibold">$180/mo</p>
+                                    <p class="font-semibold">$90/mo</p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-neutral-500">Est. Churn</p>
-                                    <p class="font-semibold">4%/mo</p>
+                                    <p class="font-semibold">5%/mo</p>
                                 </div>
                                 <div>
                                     <p class="text-xs text-neutral-500">LTV (18 mo)</p>
-                                    <p class="font-semibold">$2.9k</p>
+                                    <p class="font-semibold">$1.1k</p>
                                 </div>
                             </div>
                         </div>
@@ -468,54 +491,54 @@
                     <!-- Tech Stack -->
                     <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
-                        <p class="text-neutral-600 leading-relaxed mb-6">Optimize for ingestion → chunk → embed → retrieve → generate. Supabase pgvector keeps you on one Postgres; Vercel AI SDK streams answers back to the browser while you log citations.</p>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Optimize for fast data ingestion and real-time aggregation. Stripe webhooks feed MRR calculations as events happen; Plaid handles bank sync; Supabase powers both the relational data model and per-user RLS. The AI layer is lightweight&mdash;you&rsquo;re narrating structured numbers, not generating freeform text.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
                                 <div class="flex items-center gap-2 mb-2">
                                     <iconify-icon icon="simple-icons:nextdotjs" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
                                     <h4 class="font-medium text-sm">Next.js 15 + TypeScript</h4>
                                 </div>
-                                <p class="text-xs text-neutral-500">App Router for the RFP workspace, server actions for uploads, streaming UI for section-by-section drafts.</p>
-                            </div>
-                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
-                                    <h4 class="font-medium text-sm">OpenAI (embeddings + GPT-4.1 mini / 4o)</h4>
-                                </div>
-                                <p class="text-xs text-neutral-500">text-embedding-3-small for vectors; structured outputs for {answer, citations[], confidence, needs_human} per section.</p>
-                            </div>
-                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
-                                    <h4 class="font-medium text-sm">Supabase + pgvector</h4>
-                                </div>
-                                <p class="text-xs text-neutral-500">Store documents, chunks, embeddings, and RFP projects; RLS per workspace; edge functions for async re-index jobs.</p>
-                            </div>
-                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
-                                    <h4 class="font-medium text-sm">Clerk</h4>
-                                </div>
-                                <p class="text-xs text-neutral-500">Org + user model maps cleanly to multi-seat billing; SAML hooks when you graduate Growth → Scale.</p>
+                                <p class="text-xs text-neutral-500">App Router for the dashboard workspace; server actions for Stripe webhook processing; streaming for real-time chart updates on data refresh.</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
                                 <div class="flex items-center gap-2 mb-2">
                                     <iconify-icon icon="simple-icons:stripe" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
-                                    <h4 class="font-medium text-sm">Stripe Billing</h4>
+                                    <h4 class="font-medium text-sm">Stripe API</h4>
                                 </div>
-                                <p class="text-xs text-neutral-500">Metered component for token overages; customer portal for seat changes.</p>
+                                <p class="text-xs text-neutral-500">OAuth Connect for multi-account support; Stripe Sigma or raw event webhook replay to backfill historical MRR. Subscriptions, invoices, and charges parsed into standardized MRR events.</p>
                             </div>
                             <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
-                                    <h4 class="font-medium text-sm">Vercel + Inngest (or Trigger.dev)</h4>
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase</h4>
                                 </div>
-                                <p class="text-xs text-neutral-500">Background jobs for PDF parsing, OCR fallbacks, and re-embedding when the library updates.</p>
+                                <p class="text-xs text-neutral-500">Postgres for users, connected accounts, monthly snapshots, and transaction records. Row-level security ensures each founder sees only their own data. Edge functions for nightly bank sync jobs.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="lucide:landmark" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Plaid API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Bank account linking for expense tracking and cash position. Plaid Transactions for categorized spend; combines with Stripe revenue for accurate burn-rate calculations.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:anthropic" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Claude API</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Generates plain-language financial narratives: explains anomalies, summarizes monthly performance, and produces the investor-ready digest. Structured output schema keeps hallucinations out of the numbers.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:clerk" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Clerk + Recharts</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Clerk handles auth and billing tier enforcement. Recharts (or Tremor) powers the MRR waterfall, burn rate area chart, and cohort retention heatmap with clean, composable React components.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- AI BUILD PROMPTS -->
+                    <!-- AI Build Prompts -->
                     <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
                         <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
@@ -527,7 +550,7 @@
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-                                    Create a new Next.js 15 project with TypeScript, Tailwind CSS, and the Vercel AI SDK for an &ldquo;AI RFP Response Assistant&rdquo;. Set up Supabase (Postgres + pgvector + storage buckets) with tables: workspaces, members, rfps, rfp_sections, documents, document_chunks (embedding vector(1536), metadata JSONB), generation_runs, and citations. Add Clerk for org-based auth, Stripe subscriptions for Team/Growth/Scale tiers, and environment variables for OpenAI + Supabase service role. Include PDF text extraction via pdf-parse with a TODO hook for unstructured.io if layout is messy.
+                                    Create a new Next.js 15 project with TypeScript and Tailwind CSS for a &ldquo;SaaS Financial Toolkit&rdquo; targeting bootstrapped founders. Set up Supabase with tables: users, connected_stripe_accounts (stripe_account_id, access_token, live_mode), mrr_events (account_id, month, new_mrr, expansion_mrr, contraction_mrr, churn_mrr, reactivation_mrr), monthly_snapshots (account_id, month, total_mrr, arr, active_customers, churn_rate, ltv), bank_transactions (account_id, date, amount, category, plaid_transaction_id). Add Clerk for auth, row-level security policies per user, and environment variables for Stripe, Plaid, Anthropic, and Supabase service role. Include Stripe webhook handler skeleton and a Plaid Link component stub.
                                 </p>
                             </div>
 
@@ -537,7 +560,7 @@
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-                                    Build the RFP drafting pipeline: (1) Upload flow that splits PDFs/DOCX into sections using heading heuristics + manual override grid, (2) Background job that chunks library docs to ~800 tokens with overlap, embeds with text-embedding-3-small, stores in pgvector, (3) For each section, run similarity search (top 8 chunks), then call GPT-4o with JSON schema {answer_markdown, citations:[{doc_id, chunk_id, quote}], confidence_0_1, needs_human_reason}, refusing to invent policies not present in citations, (4) UI with side-by-side source viewer and accept/edit/export to DOCX using a server-generated template. Stream tokens to the UI for perceived speed.
+                                    Build the Stripe MRR calculation engine: (1) Stripe OAuth Connect flow to link the founder&rsquo;s account, (2) Historical sync that replays all subscription and invoice events to populate mrr_events with correct new/expansion/contraction/churn/reactivation breakdown per month using standard SaaS MRR movement logic, (3) Webhook handler for customer.subscription.updated, invoice.payment_succeeded, and invoice.payment_failed events to keep data real-time, (4) A React dashboard with a MRR waterfall chart (Recharts), ARR counter, active customer count, churn percentage, and a Stripe-source attribution table. Handle annual plan proration correctly&mdash;recognize revenue monthly, not at invoice date.
                                 </p>
                             </div>
 
@@ -547,7 +570,7 @@
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-                                    Marketing site for &ldquo;Receipt&rdquo; (placeholder name) — AI RFP assistant for SaaS sales teams. Hero: &ldquo;Answer enterprise security questionnaires with receipts, not vibes.&rdquo; Include: problem (DIY ChatGPT vs $20K suites), solution diagram (ingest → retrieve → cite → export), interactive sample showing a SOC2 question with highlighted source quotes, comparison table vs Loopio/Responsive/DIY, pricing for Team/Growth/Scale, security section (data retention, zero training on customer data), and email capture. Palette: ink navy, warm paper background, electric blue accents — credible not flashy.
+                                    Build a landing page for &ldquo;Runway&rdquo; (working name)&mdash;a financial toolkit for bootstrapped SaaS founders. Hero: &ldquo;Your MRR, burn rate, and runway. In one place. Finally.&rdquo; Include: problem section showing the spreadsheet + two-tool gap, interactive dashboard screenshot with annotated MRR waterfall, features list (live MRR breakdown, bank sync burn rate, runway calculator, pricing scenario modeler, monthly investor digest), comparison table vs. Baremetrics + Xero combo vs. spreadsheets, three pricing tiers (Free template / $49 Starter / $100 Complete), and email capture with &ldquo;Get 14 days free&rdquo; CTA. Palette: warm off-white background, deep charcoal headers, emerald green for positive metrics, muted red for churn. Tone: direct, founder-to-founder, no corporate fluff.
                                 </p>
                             </div>
 
@@ -557,7 +580,7 @@
                                 </button>
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
                                 <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
-                                    Branding for Receipt: logo mark combining a checkmark with a document fold (works at 24px), colors — primary #0F172A, secondary #F8FAFC, accent #2563EB, caution #F59E0B for &ldquo;needs review&rdquo; states. Typography: Geist Sans for UI, IBM Plex Mono for citation chips. Deliverables: favicon, app sidebar wordmark, empty-library illustration, and LinkedIn banner for outbound to VP Sales Ops.
+                                    Create a branding package for &ldquo;Runway&rdquo;, a financial toolkit for bootstrapped SaaS founders. Logo concept: a clean upward-trending line chart that doubles as a runway strip&mdash;simple enough to work at 20px favicon size. Colors: primary #0F1729 (deep navy), background #FAFAF8 (warm white), positive metric accent #10B981 (emerald), negative metric accent #EF4444 (muted red), neutral #6B7280. Typography: Geist Sans for UI numbers and labels (crisp at small sizes), Inter for body text. Deliverables: favicon, sidebar wordmark, empty-state illustration for the &ldquo;connect your Stripe&rdquo; screen, and a Twitter/X profile banner targeting the Indie Hackers / MicroConf audience.
                                 </p>
                             </div>
                         </div>
@@ -566,26 +589,34 @@
                     <!-- Sources -->
                     <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
                         <h2 class="text-2xl font-medium mb-6">Sources</h2>
-                        <p class="text-neutral-500 text-sm mb-4">Market sizing and competitive pricing signals collated from public research summaries and vendor pages (April 2026). Triangulate before you cite in investor materials.</p>
+                        <p class="text-neutral-500 text-sm mb-4">Market sizing and competitive pricing signals sourced from public research and vendor pages (June 2026). Triangulate before citing in investor materials.</p>
                         <ul class="space-y-2 text-sm">
                             <li class="flex items-start gap-2 text-neutral-600">
                                 <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
-                                <a href="https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Industry Research Biz — RFP software market overview (CAGR context)<span class="sr-only"> (opens in new tab)</span></a>
+                                <a href="https://www.thebusinessresearchcompany.com/report/financial-planning-software-global-market-report" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">The Business Research Company &mdash; Financial Planning Software Global Market Report (2024&ndash;2029 CAGR)<span class="sr-only"> (opens in new tab)</span></a>
                             </li>
                             <li class="flex items-start gap-2 text-neutral-600">
                                 <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
-                                <a href="https://dataintelo.com/report/rfp-response-automation-ai-market" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">DataIntelo — RFP response automation AI market snapshot<span class="sr-only"> (opens in new tab)</span></a>
+                                <a href="https://www.precedenceresearch.com/saas-market" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Precedence Research &mdash; SaaS Market Size, Share, and Forecast 2024&ndash;2034<span class="sr-only"> (opens in new tab)</span></a>
                             </li>
                             <li class="flex items-start gap-2 text-neutral-600">
                                 <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
-                                <a href="https://loopio.com/pricing/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Loopio — public Foundations pricing<span class="sr-only"> (opens in new tab)</span></a>
+                                <a href="https://www.statista.com/topics/3953/financial-planning-software/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Statista &mdash; Financial planning software market share (eMoney 28% advisory segment)<span class="sr-only"> (opens in new tab)</span></a>
                             </li>
                             <li class="flex items-start gap-2 text-neutral-600">
                                 <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
-                                <a href="https://www.responsive.io/pricing/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Responsive — plan structure (quote-based)<span class="sr-only"> (opens in new tab)</span></a>
+                                <a href="https://www.pigment.com/blog/financial-planning-software" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Pigment &mdash; Financial planning software trends and buyer signals<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://baremetrics.com/pricing" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Baremetrics &mdash; current public pricing<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://chartmogul.com/pricing/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">ChartMogul &mdash; current public pricing<span class="sr-only"> (opens in new tab)</span></a>
                             </li>
                         </ul>
-                        <p class="text-neutral-400 text-xs mt-4">Ideabrowser MCP was unavailable in this workspace; this page was researched via open web sources.</p>
+                        <p class="text-neutral-400 text-xs mt-4">Research via Ideabrowser MCP (idea_id: 1454). Opportunity score 9/10, pain score 9/10, timing score 9/10.</p>
                     </div>
 
                     <!-- Explore More -->
@@ -625,7 +656,7 @@
                                     Claude
                                 </a>
                                 <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <iconify-icon icon="lucide:zap" class="text-amber-500" width="14" aria-hidden="true"></iconify-icon>
+                                    <iconify-icon icon="lucide:zap" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
                                     Bolt.new
                                 </a>
                             </div>
@@ -634,39 +665,17 @@
                         <div class="mb-6">
                             <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
                             <div class="flex flex-wrap gap-2">
-                                <a href="../ideas-for/developers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <iconify-icon icon="lucide:terminal" class="text-emerald-500" width="14" aria-hidden="true"></iconify-icon>
-                                    Developers
-                                </a>
                                 <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <iconify-icon icon="lucide:user" class="text-blue-500" width="14" aria-hidden="true"></iconify-icon>
+                                    <iconify-icon icon="lucide:user" class="text-neutral-500" width="14" aria-hidden="true"></iconify-icon>
                                     Solo Founders
                                 </a>
+                                <a href="../ideas-for/developers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="lucide:code-2" class="text-neutral-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Developers
+                                </a>
                                 <a href="../ideas-for/side-hustlers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <iconify-icon icon="lucide:briefcase" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                    <iconify-icon icon="lucide:briefcase" class="text-neutral-500" width="14" aria-hidden="true"></iconify-icon>
                                     Side Hustlers
-                                </a>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Related ideas</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <a href="proposal-generator.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Proposal Generator</span>
-                                    <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
-                                </a>
-                                <a href="contract-analyzer.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">AI Contract Analyzer</span>
-                                    <p class="text-xs text-neutral-500 mt-0.5">~10 hours</p>
-                                </a>
-                                <a href="corporate-knowledge-ai-assistant.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Corporate Knowledge Base AI Assistant</span>
-                                    <p class="text-xs text-neutral-500 mt-0.5">~12 hours</p>
-                                </a>
-                                <a href="client-portal.html" class="group p-3 bg-neutral-100 border border-neutral-200 rounded-xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
-                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">Client Portal Builder</span>
-                                    <p class="text-xs text-neutral-500 mt-0.5">~12 hours</p>
                                 </a>
                             </div>
                         </div>
@@ -675,15 +684,16 @@
                     <!-- CTA -->
                     <div class="p-12 bg-black rounded-[3rem] text-center">
                         <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
-                        <p class="text-neutral-400 mb-8">Book a consult and let's turn this idea into your MVP.</p>
+                        <p class="text-neutral-400 mb-8">Book a consult and let&rsquo;s turn this idea into your MVP.</p>
                         <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
                             <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
                         </a>
                     </div>
 
+                    <!-- Back to all ideas -->
                     <div class="mt-12 text-center">
                         <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
-                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                             See all startup ideas
                         </a>
                     </div>
@@ -695,14 +705,20 @@
         <!-- Footer -->
         <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
             <div class="max-w-7xl mx-auto px-6 py-16">
+
+                <!-- Main Footer Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+
+                    <!-- Brand Column -->
                     <div class="col-span-2 md:col-span-1">
                         <a href="../index.html">
                             <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
                         </a>
-                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you&rsquo;re non-technical.</p>
                         <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
                     </div>
+
+                    <!-- Browse Ideas Column -->
                     <div>
                         <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
                         <ul class="space-y-2 text-sm">
@@ -710,9 +726,12 @@
                             <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
                             <li><a href="../ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
                             <li><a href="../ideas/automation/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Automation</a></li>
-                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                            <li><a href="../ideas/1k-month/" class="text-neutral-500 hover:text-neutral-900 transition-colors">$1K/Month Ideas</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All &rarr;</a></li>
                         </ul>
                     </div>
+
+                    <!-- Build With Column -->
                     <div>
                         <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
                         <ul class="space-y-2 text-sm">
@@ -722,6 +741,8 @@
                             <li><a href="../build-with/no-code/" class="text-neutral-500 hover:text-neutral-900 transition-colors">No-Code</a></li>
                         </ul>
                     </div>
+
+                    <!-- Ideas For Column -->
                     <div>
                         <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
                         <ul class="space-y-2 text-sm">
@@ -731,6 +752,8 @@
                             <li><a href="../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
                         </ul>
                     </div>
+
+                    <!-- Resources Column -->
                     <div>
                         <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
                         <ul class="space-y-2 text-sm">
@@ -740,9 +763,12 @@
                             <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
                         </ul>
                     </div>
+
                 </div>
+
+                <!-- Bottom Bar -->
                 <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                    <p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
                     <div class="flex items-center gap-6">
                         <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
                             <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
@@ -750,6 +776,7 @@
                         </a>
                     </div>
                 </div>
+
             </div>
         </footer>
     </section>
