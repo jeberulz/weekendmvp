@@ -1681,6 +1681,53 @@
         "timing": 9,
         "builder_confidence": 8
       }
+    },
+    {
+      "slug": "tiktok-trend-predictor-creators",
+      "title": "TrendScout",
+      "publishedAt": "2026-06-03",
+      "category": "creator-tools",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "AI TikTok trend predictor for creators: catch sounds and challenges 24–48h before they peak. Cited market data, competitor pricing, and a weekend MVP build plan.",
+      "researchLevel": "deep",
+      "source": "ideabrowser:1173",
+      "og": {
+        "subject": "A smartphone lying face-up on a matte black desk, mint-green notification glow on the screen edge, shallow depth of field, no faces or readable text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "research_trend:topic"
+        ],
+        "citations": 5,
+        "wordCount": 1684,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-03T12:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      }
     }
   ],
   "categories": [
