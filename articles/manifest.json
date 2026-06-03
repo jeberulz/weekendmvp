@@ -1,6 +1,18 @@
 {
   "articles": [
     {
+      "slug": "non-technical-founder-stack-2026",
+      "title": "The Non-Technical Founder's Stack in 2026",
+      "description": "Seven tools that cover everything a non-technical founder needs to build, ship, and grow a real product in 2026. Cost breakdown included — you can start for under $40/month.",
+      "wordCount": 1350,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A neat row of small labeled index cards on a dark surface beside an open toolbox lid, the front card lit by a single mint beam from the side, the others fading into deep shadow",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
       "slug": "5-claude-code-skills-for-solo-founders",
       "title": "5 Claude Code Skills Every Solo Founder Should Install First",
       "description": "Claude Code Skills are the most under-used feature for solo founders. Here are five worth installing on day one—each one removes a category of decisions you don't want to make.",
