@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReviewIQ: AI Review Intelligence for Shopify | Startup Ideas | Weekend MVP</title>
+    <meta name="description" content="AI review intelligence for Shopify: auto-summarize PDP reviews, track weekly sentiment themes, and benchmark competitor narratives. Cited market data, competitor pricing, and a weekend MVP build plan.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/ideas/shopify-review-intelligence.html">
+    <meta property="og:title" content="ReviewIQ: AI Review Intelligence for Shopify | Startup Ideas">
+    <meta property="og:description" content="Turn review walls into conversion copy. Research-backed playbook: $16.8B ratings market, Yotpo vs Loox vs Judge.me, $29/mo Starter tier, Shopify app weekend MVP.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og/idea/shopify-review-intelligence.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ReviewIQ — AI review intelligence for Shopify merchants">
+    <meta property="og:image:type" content="image/png">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="ReviewIQ: AI Review Intelligence for Shopify | Startup Ideas">
+    <meta property="twitter:description" content="AI summaries on product pages plus competitor review intel. Full research-backed playbook with citations, competitor pricing, and a weekend MVP build plan.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og/idea/shopify-review-intelligence.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/ideas/shopify-review-intelligence.html">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body { font-family: 'Geist', 'Inter', sans-serif; background-color: #fcfaf7; color: #1a1a1a; }
+        .prompt-box { background-color: #f5f2ed; border: 1px solid #e5e0d8; }
+        .logo { display: inline-block; background-color: currentColor; -webkit-mask-image: url('/image/weekendmvp-logo.svg'); mask-image: url('/image/weekendmvp-logo.svg'); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; }
+        .sidebar-link.active { color: #000; font-weight: 600; }
+        #sidebar { -ms-overflow-style: none; scrollbar-width: none; overflow-y: auto; }
+        #sidebar::-webkit-scrollbar { display: none; }
+    </style>
+
+    <!-- Structured Data for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Product Builder & MVP Specialist",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Article",
+          "headline": "ReviewIQ: AI Review Intelligence for Shopify",
+          "description": "AI review intelligence for Shopify: auto-summarize PDP reviews, track weekly sentiment themes, and benchmark competitor narratives. Cited market data, competitor pricing, and a weekend MVP build plan.",
+          "author": { "@id": "https://weekendmvp.app/#person" },
+          "publisher": { "@id": "https://weekendmvp.app/#website" },
+          "datePublished": "2026-06-03",
+          "mainEntityOfPage": "https://weekendmvp.app/ideas/shopify-review-intelligence.html",
+          "image": "https://weekendmvp.app/image/og/idea/shopify-review-intelligence.png"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "ReviewIQ",
+          "applicationCategory": "ShoppingApplication",
+          "operatingSystem": "Web",
+          "description": "Summarize Shopify product reviews into PDP-ready insight blocks and weekly sentiment themes with competitor benchmarking.",
+          "offers": { "@type": "Offer", "price": "29", "priceCurrency": "USD" }
+        },
+        {
+          "@type": "HowTo",
+          "name": "Build ReviewIQ MVP",
+          "description": "Step-by-step guide to building a Shopify review intelligence app in a weekend.",
+          "totalTime": "PT10H",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Connect store", "text": "OAuth into Shopify, sync product reviews via Admin API into Postgres with store and SKU metadata." },
+            { "@type": "HowToStep", "position": 2, "name": "Summarize reviews", "text": "Cluster review text by theme, run LLM summarization for pros/cons blocks, and score sentiment drift week over week." },
+            { "@type": "HowToStep", "position": 3, "name": "Merchant dashboard", "text": "Show PDP summary widgets, theme breakdowns, and competitor review narratives in a filterable admin UI." },
+            { "@type": "HowToStep", "position": 4, "name": "Embed + billing", "text": "Publish Theme App Extension blocks to product pages; bill via Shopify Billing at $29/mo Starter." }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "Startup Ideas", "item": "https://weekendmvp.app/startup-ideas.html" },
+            { "@type": "ListItem", "position": 3, "name": "ReviewIQ", "item": "https://weekendmvp.app/ideas/shopify-review-intelligence.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="selection:bg-black/10 selection:text-black">
+
+    <!-- wmvp:idea-nav:start -->
+<header id="idea-site-header" class="fixed top-0 left-0 right-0 z-40 bg-[#fcfaf7]/80 backdrop-blur-md border-b border-neutral-200">
+    <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-4">
+            <button id="mobile-menu-open" class="lg:hidden text-black p-1 -ml-1" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+            <a href="../index.html">
+                <div class="logo h-4 w-32 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="../startup-ideas.html" class="text-sm text-neutral-500 hover:text-black transition-colors hidden sm:block">All Ideas</a>
+            <a href="../starter-kit.html" class="text-sm text-neutral-500 hover:text-black transition-colors">Starter Kit</a>
+        </div>
+    </div>
+    <nav class="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap" aria-label="Explore Weekend MVP">
+        <a href="../startup-ideas.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Browse Ideas</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../build-with/cursor/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Build With</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../ideas-for/solo-founders/index.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Ideas For</a>
+        <span class="text-neutral-300 select-none" aria-hidden="true">·</span>
+        <a href="../articles.html" class="text-xs font-medium text-neutral-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-black/30 rounded px-1">Articles</a>
+    </nav>
+</header>
+<!-- wmvp:idea-nav:end -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Email Gate Section (hidden by default for SEO) -->
+    <section id="email-gate" class="hidden min-h-screen flex items-center justify-center px-6 pt-[7.5rem] pb-16">
+        <div class="text-center max-w-2xl mx-auto">
+            <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm mb-8 hover:text-black transition-colors">
+                <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                All Startup Ideas
+            </a>
+            <h1 class="text-3xl md:text-5xl font-medium text-black tracking-tight leading-[1.1] mb-4">ReviewIQ</h1>
+            <p class="text-lg text-neutral-500 font-light tracking-tight max-w-xl mx-auto leading-relaxed mb-10">Turn hundreds of Shopify reviews into PDP-ready summaries and competitor intel—refreshed weekly, not manually curated once a quarter.</p>
+            <div class="max-w-md mx-auto">
+                <form id="ideas-email-form" class="space-y-4">
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="gate-first-name" name="first_name" required placeholder="Your first name" aria-label="First name"
+                            class="bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="email" id="gate-email" name="email" required placeholder="Your email address" aria-label="Email address"
+                                class="flex-1 bg-white border border-neutral-200 rounded-xl px-4 py-3.5 text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black/30 transition-all text-sm">
+                            <button type="submit" id="gate-submit-btn" class="group relative inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-black text-white rounded-xl text-sm font-semibold hover:bg-neutral-800 transition-all whitespace-nowrap">
+                                <span>Unlock Idea</span>
+                                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-neutral-400">Free access. No spam.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden"></div>
+
+    <!-- Idea Content Section (visible by default for SEO) -->
+    <section id="idea-content">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
+
+                <!-- Sidebar -->
+                <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-[#fcfaf7] px-8 py-12 transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-56 lg:p-0 lg:z-auto lg:h-fit lg:sticky lg:top-[7.5rem] lg:flex-shrink-0">
+                    <div class="flex items-center justify-between mb-8 lg:mb-6">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            All Ideas
+                        </a>
+                        <button id="mobile-menu-close" class="lg:hidden text-neutral-400 hover:text-black transition-colors" aria-label="Close menu">
+                            <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+                        </button>
+                    </div>
+
+                    <nav id="sidebar-nav" class="space-y-1">
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-4 ml-3">Overview</p>
+                        <a href="#section-problem" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Problem</a>
+                        <a href="#section-solution" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">The Solution</a>
+                        <a href="#section-market" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Market Research</a>
+                        <a href="#section-competitive" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Competitive Landscape</a>
+
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-8 mb-4 ml-3">Build Details</p>
+                        <a href="#section-business" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Business Model</a>
+                        <a href="#section-tech" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Tech Stack</a>
+                        <a href="#section-prompts" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">AI Build Prompts</a>
+                        <a href="#section-sources" class="sidebar-link block px-3 py-2 text-sm text-neutral-500 hover:text-black transition-colors">Sources</a>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="flex-1 max-w-2xl">
+
+                    <!-- Header -->
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest rounded-full">E-commerce</span>
+                            <span class="text-neutral-400 text-xs">~8&ndash;10 hours to build</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-medium text-black tracking-tight mb-4">ReviewIQ</h1>
+                        <p class="text-xl text-neutral-500 font-light">AI review intelligence for Shopify&mdash;auto-summarize product reviews on PDPs, surface sentiment themes weekly, and benchmark what competitors&rsquo; customers actually say.</p>
+                    </div>
+
+                    <!-- The Problem -->
+                    <div id="section-problem" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">The Problem</h2>
+                        <p class="text-neutral-600 leading-relaxed">
+                            Shopify merchants live and die by product page conversion. Reviews are the highest-trust social proof on a PDP&mdash;yet most stores either dump a 200-review wall on shoppers or hide reviews behind tabs nobody opens. DTC operators ($500K&ndash;$5M GMV) feel this acutely: big enough that a 0.3% conversion lift pays for software, too small to employ a CX analyst who manually reads every new review and rewrites summary copy each quarter.
+                        </p>
+                        <p class="text-neutral-600 leading-relaxed mt-4">
+                            The pain is chronic, not one-off. Ideabrowser community signals show recurring threads in <strong>r/ecommerce</strong> and <strong>r/Shopify</strong> asking how to &ldquo;summarize reviews on product pages&rdquo; and whether AI review widgets hurt SEO. Merchants already pay for Yotpo, Loox, or Judge.me&mdash;those tools excel at collection and display, not at turning review text into refreshed, theme-aware summary blocks and competitor narrative benchmarks. Manual curation breaks at scale: a catalog refresh means re-reading hundreds of SKUs. That gap is ReviewIQ&rsquo;s wedge: <em>intelligent</em> review synthesis with weekly sentiment drift and competitor intel, not another star-rating widget.
+                        </p>
+                    </div>
+
+                    <!-- The Solution -->
+                    <div id="section-solution" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">The Solution</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-8">
+                            ReviewIQ is an AI review intelligence layer for Shopify. It ingests your product reviews via the Shopify Admin API, clusters them by theme (fit, durability, shipping, value), and generates PDP-ready summary blocks&mdash;pros, cons, and &ldquo;most mentioned&rdquo; phrases&mdash;refreshed on a weekly cron. The admin dashboard flags sentiment shifts (&ldquo;shipping complaints up 18% this week&rdquo;), compares your review narrative against competitor URLs you track, and exports Theme App Extension blocks merchants embed above the review list. Beta positioning from Ideabrowser research targets 5&ndash;15% PDP engagement lifts when shoppers scan AI summaries before scrolling raw reviews. Agencies get multi-store workspaces and white-label PDF review briefs for $99/month.
+                        </p>
+
+                        <div class="p-8 bg-neutral-100 rounded-3xl">
+                            <h4 class="text-sm font-semibold mb-6">How it works:</h4>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">1</span>
+                                    <p class="text-sm font-medium mt-1">Connect store</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Install the Shopify app, OAuth in, and sync products + reviews from your existing review provider or native Shopify reviews.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">2</span>
+                                    <p class="text-sm font-medium mt-1">Summarize themes</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Weekly job clusters review text, runs LLM summarization, and scores sentiment drift vs. prior period.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">3</span>
+                                    <p class="text-sm font-medium mt-1">Embed on PDP</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Publish Theme App Extension blocks with editable summary copy; merchant approves before live.</p>
+                                </div>
+                                <div class="flex-1 p-4 bg-white rounded-xl border border-neutral-200">
+                                    <span class="text-xs font-bold text-neutral-400">4</span>
+                                    <p class="text-sm font-medium mt-1">Benchmark rivals</p>
+                                    <p class="text-xs text-neutral-500 mt-1">Add competitor product URLs; compare what their customers praise vs. complain about on the same category.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Research -->
+                    <div id="section-market" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Market Research</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Online ratings and reviews infrastructure is a mature, growing category&mdash;not a nice-to-have widget. The stats below come from Ideabrowser why-now and competitive analysis (June 2026). Triangulate before quoting in investor decks:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>$16.8B global online ratings &amp; reviews market in 2025</strong>, projected to reach <strong>$31.5B by 2029</strong> at ~17.3% CAGR (Mintel / The Business Research Company via Ideabrowser).</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>93% of consumers</strong> say online reviews influence purchase decisions; summarized review content on PDPs reduces bounce on review-heavy categories (Deloitte consumer research cited in Ideabrowser why-now analysis).</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Shopify ecosystem scale:</strong> millions of merchants; review apps are among the highest-install categories in the App Store&mdash;merchants already budget $15&ndash;40/mo for review tooling before adding intelligence.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Search demand:</strong> &ldquo;AI review summarizer&rdquo; and &ldquo;Shopify review widget&rdquo; clusters rising; Ideabrowser keyword research surfaces mattress-review and PDP-summary long-tail terms with commercial intent.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black mt-2"></div>
+                                <span><strong>Enterprise AI precedent:</strong> Amazon&rsquo;s FARSum and internal review-summarization research (Amazon Science) validates shopper appetite for AI-generated review digests&mdash;independent merchants lack equivalent tooling at SMB price points.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Competitive Landscape -->
+                    <div id="section-competitive" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Competitive Landscape</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Review tooling is crowded on collection and display, thin on intelligence. Incumbents optimize stars and UGC photos; almost none combine weekly AI summaries, sentiment drift alerts, and competitor narrative benchmarks in one Shopify-native app. Pricing from Ideabrowser competitive analysis unless noted:
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Yotpo</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Enterprise-grade reviews, loyalty, and SMS; strong at collection and syndication, weak at merchant-facing AI summary blocks refreshed on a schedule.</p>
+                                <p class="text-xs text-neutral-400">From ~$15&ndash;29/month (tiered by order volume)</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Loox</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Photo-review specialist with beautiful widgets; optimized for visual UGC, not thematic text summarization or competitor benchmarking.</p>
+                                <p class="text-xs text-neutral-400">~$9.99&ndash;39.99/month by order band</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Judge.me</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Popular budget review app with solid widgets and Q&amp;A; no native weekly AI digest or cross-competitor narrative analysis.</p>
+                                <p class="text-xs text-neutral-400">~$15/month Awesome plan</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">Amazon FARSum (enterprise)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Research-grade abstractive summarization on Amazon PDPs; proves demand, unavailable to independent Shopify merchants.</p>
+                                <p class="text-xs text-neutral-400">Platform-internal; not licensable to SMBs</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">ChatGPT / manual copy</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Merchants paste reviews into ChatGPT once; output stale within days, no drift alerts, no embed workflow, no competitor sync.</p>
+                                <p class="text-xs text-neutral-400">$20/mo Plus + operator time</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <h4 class="font-medium text-sm mb-1">DIY (spreadsheet curation)</h4>
+                                <p class="text-xs text-neutral-500 mb-2">Free but costs hours per SKU refresh; breaks when catalog exceeds ~50 active products.</p>
+                                <p class="text-xs text-neutral-400">$0 direct cost; high opportunity cost</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                            <h4 class="text-sm font-semibold text-green-800 mb-2">Your Opportunity</h4>
+                            <p class="text-sm text-green-700">Own the &ldquo;review intelligence&rdquo; layer on top of collection apps merchants already pay for. Win on three axes incumbents won&rsquo;t combine: (1) weekly-refreshed AI summaries merchants approve before publish, not one-time ChatGPT paste; (2) sentiment drift alerts when themes spike (&ldquo; sizing runs small&rdquo; trending up); (3) competitor URL benchmarking so a mattress brand sees how their review narrative differs from Casper&rsquo;s. One avoided return spike or conversion lift pays for a year at $29/month.</p>
+                        </div>
+                    </div>
+
+                    <!-- Business Model -->
+                    <div id="section-business" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Business Model</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">
+                            Free demo &rarr; Starter subscription &rarr; Advanced intelligence &rarr; agency / enterprise seats. Anchor at $29/month for single-store merchants (matches Judge.me/Yotpo entry bands while adding AI summaries incumbents lack). Expand to multi-store agencies, then $499/month enterprise with custom models and SLA from the Ideabrowser value ladder.
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Starter</h4>
+                                <p class="text-2xl font-bold mb-2">$29/mo</p>
+                                <p class="text-xs text-neutral-500">Up to 3 stores, weekly AI summaries, Theme App Extension embed, email drift alerts</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Advanced</h4>
+                                <p class="text-2xl font-bold mb-2">$99/mo</p>
+                                <p class="text-xs text-neutral-500">Unlimited SKUs, competitor benchmarking, priority refresh, white-label PDF briefs</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 text-center">
+                                <h4 class="font-medium text-sm mb-1">Enterprise</h4>
+                                <p class="text-2xl font-bold mb-2">$499/mo</p>
+                                <p class="text-xs text-neutral-500">Multi-brand rollups, custom sentiment models, dedicated onboarding, API access</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-neutral-100 rounded-xl">
+                            <h4 class="text-sm font-semibold mb-3">Unit Economics</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p class="text-xs text-neutral-500">Target CAC</p>
+                                    <p class="font-semibold">$45</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">ARPU (blended)</p>
+                                    <p class="font-semibold">$38/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">Est. churn</p>
+                                    <p class="font-semibold">6%/mo</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500">LTV (12 mo)</p>
+                                    <p class="font-semibold">$456</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-neutral-500 text-xs mt-4">Path to $5k MRR: ~130 Starter accounts <em>or</em> ~50 Advanced accounts. Value ladder also supports a $49/mo competitor-intel add-on and free interactive demo (one product URL) as lead magnet per Ideabrowser go-to-market research.</p>
+                    </div>
+
+                    <!-- Tech Stack -->
+                    <div id="section-tech" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Recommended Tech Stack</h2>
+                        <p class="text-neutral-600 leading-relaxed mb-6">Shopify-native app shell + review sync + LLM summarization pipeline + Theme App Extension for PDP embeds. Bill through Shopify Billing API so merchants stay in one invoice; cache LLM outputs aggressively to keep COGS under 20% of ARPU.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:shopify" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Shopify App (Remix + Polaris)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Official app template: OAuth, Admin API review sync, Billing API for $29/$99 tiers, Theme App Extension for summary blocks.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:supabase" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Supabase (Postgres + RLS)</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Tables: shops, products, reviews, themes, summaries, competitor_urls, drift_events. pgvector optional for theme clustering.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:openai" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">OpenAI / Anthropic</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Abstractive summarization + theme extraction; batch weekly jobs; store hashed review IDs to skip unchanged text.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:vercel" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Vercel + Cron</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Host Remix app; scheduled sync + summarization workers; edge-cache public demo pages.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:redis" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Upstash Redis</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Rate-limit Shopify webhooks, queue summarization jobs, cache latest summary JSON for Theme Extension API.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:resend" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">Resend</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Weekly drift alert emails (&ldquo;3 new shipping complaints this week&rdquo;) with deep links back to admin approval queue.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:posthog" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">PostHog</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Track install&rarr;first summary&rarr;embed&rarr;paid conversion; correlate summary views with merchant-reported PDP metrics.</p>
+                            </div>
+                            <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <iconify-icon icon="simple-icons:typescript" width="20" class="text-neutral-600" aria-hidden="true"></iconify-icon>
+                                    <h4 class="font-medium text-sm">TypeScript end-to-end</h4>
+                                </div>
+                                <p class="text-xs text-neutral-500">Shared types between admin UI, worker, and Theme Extension liquid/JS bridge for summary payloads.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Build Prompts -->
+                    <div id="section-prompts" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-4">AI Prompts to Build This</h2>
+                        <p class="text-neutral-500 text-sm mb-8">Copy and paste these into Claude, Cursor, or your favorite AI tool.</p>
+
+                        <div class="space-y-6">
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">1. Project Setup</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Create a Shopify Remix app called &ldquo;ReviewIQ&rdquo; with TypeScript, Polaris, and Prisma on Supabase Postgres. Tables: shops (shop_domain, plan_tier, billing_id), products (shopify_product_id, title), reviews (product_id, body, rating, created_at, external_id), summary_versions (product_id, pros_json, cons_json, themes_json, approved_at), competitor_targets (shop_id, url, last_scraped_at), drift_events (product_id, theme, delta_pct, week_of). Wire Shopify OAuth, Billing API plans at $29 Starter and $99 Advanced, webhook handlers for products/update, and env vars for OpenAI + Resend. Enable RLS scoped by shop_id.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">2. Core Feature</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Build the review intelligence pipeline. (1) Weekly cron pulls new reviews via Shopify Admin API (or Yotpo/Judge.me webhook if present). (2) Cluster review sentences by theme with LLM; output pros (3 bullets), cons (3 bullets), and top quoted phrases. (3) Compare theme weights vs. prior week; create drift_events when any theme moves &gt;15%. (4) Admin UI: product list with pending summaries, approve/edit before publish, competitor side-by-side panel. (5) Theme App Extension block reads latest approved summary JSON from app proxy endpoint. (6) Optional competitor scraper: fetch public review text from merchant-supplied URLs, summarize narrative differences.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">3. Landing Page</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Marketing site for ReviewIQ. Hero: &ldquo;Turn 200 reviews into 3 sentences shoppers actually read.&rdquo; Sections: the review-wall problem, live demo (paste product URL &rarr; mock summary), case study block (&ldquo;+12% PDP scroll depth in beta&rdquo;), comparison vs Yotpo / Loox / Judge.me on intelligence features, pricing Starter $29 / Advanced $99, FAQ on Shopify Billing and review provider compatibility, email capture for free one-product summary. Palette: ink #0F1115, paper #FCFAF7, emerald accent #10B981 for trust/summary chips. Voice: merchant-practical, revenue-focused, no agency fluff.
+                                </p>
+                            </div>
+
+                            <div class="prompt-box rounded-3xl p-6 relative group">
+                                <button onclick="copyPrompt(this)" class="absolute top-4 right-4 text-neutral-400 hover:text-black transition-colors" aria-label="Copy prompt to clipboard">
+                                    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
+                                </button>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest mb-3 text-neutral-400">4. Branding Package</h4>
+                                <p class="text-xs font-mono text-neutral-600 leading-relaxed italic pr-8">
+                                    Branding for ReviewIQ: speech-bubble + star mark readable at 16px. Colors &mdash; ink #0F1115, paper #FCFAF7, emerald #10B981 (positive themes), amber #F59E0B (drift warnings). Typography: Geist Sans UI, Geist Mono for theme percentages. Deliverables: favicon, empty-state illustration (&ldquo;Reading 847 reviews&hellip;&rdquo;), summary block mockup for PDP, drift alert email template, Shopify App Store icon set (1200&times;1200).
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sources -->
+                    <div id="section-sources" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Sources</h2>
+                        <p class="text-neutral-500 text-sm mb-4">Market sizing, competitive landscape, and community signals from Ideabrowser MCP (idea_id 1396). Triangulate before quoting in investor materials.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.mintel.com/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Mintel &mdash; online ratings &amp; reviews market sizing<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.thebusinessresearchcompany.com/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">The Business Research Company &mdash; ratings/reviews CAGR forecasts<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.datainsightsmarket.com/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Data Insights Market &mdash; review platform market reports<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www.amazon.science/publications/farsum" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Amazon Science &mdash; FARSum abstractive review summarization<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                            <li class="flex items-start gap-2 text-neutral-600">
+                                <iconify-icon icon="lucide:external-link" width="14" class="text-neutral-400 mt-1" aria-hidden="true"></iconify-icon>
+                                <a href="https://www2.deloitte.com/" target="_blank" rel="noopener noreferrer" class="hover:text-black underline decoration-neutral-300 underline-offset-2">Deloitte &mdash; consumer trust in online reviews<span class="sr-only"> (opens in new tab)</span></a>
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <!-- Explore More -->
+                    <div id="section-explore" class="mb-12 scroll-mt-[7.5rem]">
+                        <h2 class="text-2xl font-medium mb-6">Explore More</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <a href="ecommerce/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:sparkles" class="text-violet-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">More E-commerce Ideas</span>
+                                    <p class="text-xs text-neutral-500">Shopify &amp; DTC tools</p>
+                                </div>
+                            </a>
+                            <a href="5k-month/" class="group flex items-center gap-4 p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                    <iconify-icon icon="lucide:dollar-sign" class="text-green-500" width="20" aria-hidden="true"></iconify-icon>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-neutral-900 group-hover:text-black transition-colors">$5K/Month Ideas</span>
+                                    <p class="text-xs text-neutral-500">Subscription revenue targets</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Build with</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../build-with/cursor/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:cursor" class="text-violet-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Cursor
+                                </a>
+                                <a href="../build-with/claude/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:anthropic" class="text-orange-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Claude
+                                </a>
+                                <a href="../build-with/bolt/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">
+                                    <iconify-icon icon="simple-icons:lightning" class="text-yellow-500" width="14" aria-hidden="true"></iconify-icon>
+                                    Bolt.new
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Perfect for</p>
+                            <div class="flex flex-wrap gap-2">
+                                <a href="../ideas-for/side-hustlers/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">Side Hustlers</a>
+                                <a href="../ideas-for/solo-founders/" class="inline-flex items-center gap-2 px-3 py-2 bg-neutral-100 border border-neutral-200 rounded-xl text-sm text-neutral-700 hover:bg-neutral-200/50 hover:border-neutral-300 transition-all">Solo Founders</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="p-12 bg-black rounded-[3rem] text-center">
+                        <h2 class="text-2xl font-medium text-white tracking-tight mb-4">Want me to build this for you?</h2>
+                        <p class="text-neutral-400 mb-8">Book a consult and let&rsquo;s turn this idea into your MVP.</p>
+                        <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                            <span>Book a Consult</span><span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <a href="../startup-ideas.html" class="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors">
+                            <iconify-icon icon="lucide:arrow-left" width="16" aria-hidden="true"></iconify-icon>
+                            See all startup ideas
+                        </a>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="relative z-10 mt-32 border-t border-neutral-200 bg-neutral-50">
+            <div class="max-w-7xl mx-auto px-6 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                    <div class="col-span-2 md:col-span-1">
+                        <a href="../index.html">
+                            <div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div>
+                        </a>
+                        <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you&rsquo;re non-technical.</p>
+                        <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                            <li><a href="../ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                            <li><a href="../ideas/productivity/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Productivity</a></li>
+                            <li><a href="../ideas/1k-month/" class="text-neutral-500 hover:text-neutral-900 transition-colors">$1K/Month Ideas</a></li>
+                            <li><a href="../startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All &rarr;</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Build With</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../build-with/cursor/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Cursor</a></li>
+                            <li><a href="../build-with/claude/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Claude</a></li>
+                            <li><a href="../build-with/bolt/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Bolt.new</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Ideas For</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../ideas-for/developers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Developers</a></li>
+                            <li><a href="../ideas-for/solo-founders/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Solo Founders</a></li>
+                            <li><a href="../ideas-for/side-hustlers/" class="text-neutral-500 hover:text-neutral-900 transition-colors">Side Hustlers</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-neutral-900 font-medium text-sm mb-4">Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                            <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-neutral-900 transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                            <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p class="text-neutral-400 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                    <div class="flex items-center gap-6">
+                        <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                            <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                            <span class="sr-only"> (opens in new tab)</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <script>
+      function copyPrompt(btn) {
+        const text = btn.parentElement.querySelector('p').innerText;
+        navigator.clipboard.writeText(text);
+        const original = btn.innerHTML;
+        btn.innerHTML = '<iconify-icon icon="lucide:check" width="18" aria-hidden="true"></iconify-icon>';
+        setTimeout(() => { btn.innerHTML = original; }, 1500);
+      }
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script src="/ideas/gate.js" defer></script>
+</body>
+</html>

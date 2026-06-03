@@ -1730,6 +1730,53 @@
       }
     },
     {
+      "slug": "shopify-review-intelligence",
+      "title": "ReviewIQ",
+      "publishedAt": "2026-06-03",
+      "category": "ecommerce",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "AI review intelligence for Shopify: auto-summarize PDP reviews, track weekly sentiment themes, and benchmark competitor narratives. Cited market data, competitor pricing, and a weekend MVP build plan.",
+      "researchLevel": "deep",
+      "source": "ideabrowser:1396",
+      "og": {
+        "subject": "A star-rating widget glowing on a dark checkout counter, emerald accent light, shallow focus, no people or readable text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "research_trend:topic"
+        ],
+        "citations": 5,
+        "wordCount": 1736,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-03T18:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 10,
+        "builder_confidence": 8
+      }
+    },
+    {
       "slug": "vibe-coders-for-hire",
       "title": "Vibe Coders for Hire",
       "publishedAt": "2026-06-03",
