@@ -2359,12 +2359,12 @@
                     
                     // Update active state
                     filterButtons.forEach(b => {
-                        b.classList.remove('active', 'bg-white', 'text-black');
-                        b.classList.add('bg-white/5', 'border', 'border-white/10', 'text-neutral-400');
+                        b.classList.remove('active', 'bg-white', 'text-black', 'font-medium');
+                        b.classList.add('bg-white/5', 'border', 'border-white/10', 'text-neutral-400', 'hover:text-white');
                         b.setAttribute('aria-pressed', 'false');
                     });
-                    btn.classList.add('active', 'bg-white', 'text-black');
-                    btn.classList.remove('bg-white/5', 'border', 'border-white/10', 'text-neutral-400');
+                    btn.classList.add('active', 'bg-white', 'text-black', 'font-medium');
+                    btn.classList.remove('bg-white/5', 'border', 'border-white/10', 'text-neutral-400', 'hover:text-white');
                     btn.setAttribute('aria-pressed', 'true');
                     
                     filterIdeas();
