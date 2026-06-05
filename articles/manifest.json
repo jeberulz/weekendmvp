@@ -215,6 +215,18 @@
         "accent": "lavender",
         "status": "ready"
       }
+    },
+    {
+      "slug": "ship-it-saturday-framework",
+      "title": "Ship It Saturday: A Framework for Weekend Builders",
+      "description": "The Ship It Saturday framework: Friday plan, Saturday build, Sunday ship. A repeatable weekend ritual for founders with day jobs—one idea, one MVP, one lesson.",
+      "wordCount": 1280,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A clipboard checklist on a dark desk with Saturday circled in lime highlighter, single warm desk lamp, very shallow focus, no people or readable text",
+        "accent": "lime",
+        "status": "ready"
+      }
     }
   ]
 }

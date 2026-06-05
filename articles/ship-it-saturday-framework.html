@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ship It Saturday: A Framework for Weekend Builders | Weekend MVP</title>
+    <meta name="description" content="The Ship It Saturday framework: Friday plan, Saturday build, Sunday ship. A repeatable weekend ritual for founders with day jobs—one idea, one MVP, one lesson.">
+    <meta name="author" content="John Iseghohi">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://weekendmvp.app/articles/ship-it-saturday-framework.html">
+    <meta property="og:title" content="Ship It Saturday: A Framework for Weekend Builders | Weekend MVP">
+    <meta property="og:description" content="The Ship It Saturday framework: Friday plan, Saturday build, Sunday ship. A repeatable weekend ritual for founders with day jobs—one idea, one MVP, one lesson.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og/article/ship-it-saturday-framework.png">
+    <meta property="og:image:alt" content="Clipboard checklist on a dark desk with Saturday circled in lime marker">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/articles/ship-it-saturday-framework.html">
+    <meta property="twitter:title" content="Ship It Saturday: A Framework for Weekend Builders | Weekend MVP">
+    <meta property="twitter:description" content="The Ship It Saturday framework: Friday plan, Saturday build, Sunday ship. A repeatable weekend ritual for founders with day jobs—one idea, one MVP, one lesson.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og/article/ship-it-saturday-framework.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/articles/ship-it-saturday-framework.html">
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <link rel="icon" type="image/png" href="../image/favicon.png">
+    <link rel="apple-touch-icon" href="../image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Ship It Saturday: A Framework for Weekend Builders",
+      "description": "The Ship It Saturday framework: Friday plan, Saturday build, Sunday ship. A repeatable weekend ritual for founders with day jobs—one idea, one MVP, one lesson.",
+      "author": {
+        "@type": "Person",
+        "name": "John Iseghohi",
+        "url": "https://cal.com/switchtoux"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Weekend MVP",
+        "url": "https://weekendmvp.app"
+      },
+      "datePublished": "2026-06-03",
+      "dateModified": "2026-06-03",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://weekendmvp.app/articles/ship-it-saturday-framework.html"
+      },
+      "image": "https://weekendmvp.app/image/og/article/ship-it-saturday-framework.png"
+    }
+    </script>
+</head>
+<body class="relative min-h-screen overflow-x-hidden selection:bg-white/20 selection:text-white bg-[#050505]">
+
+    <div class="fixed inset-0 pointer-events-none z-0 grid-lines"></div>
+
+    <!-- wmvp:nav:start -->
+<!-- Navigation -->
+    <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 animate-enter">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-neutral-950/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
+            <a href="../index.html" class="flex items-center gap-2">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-white" role="img" aria-label="Weekend MVP"></div>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+                <!-- Browse Ideas Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Browse Ideas
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[480px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <!-- By Category -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Category</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../ideas/saas/" class="text-neutral-400 hover:text-white transition-colors text-sm">SaaS</a></li>
+                                        <li><a href="../ideas/ai-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">AI Tools</a></li>
+                                        <li><a href="../ideas/productivity/" class="text-neutral-400 hover:text-white transition-colors text-sm">Productivity</a></li>
+                                        <li><a href="../ideas/automation/" class="text-neutral-400 hover:text-white transition-colors text-sm">Automation</a></li>
+                                        <li><a href="../ideas/developer-tools/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developer Tools</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Revenue -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Revenue</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../ideas/1k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$1K/month</a></li>
+                                        <li><a href="../ideas/5k-month/" class="text-neutral-400 hover:text-white transition-colors text-sm">$5K/month</a></li>
+                                        <li><a href="../ideas/passive-income/" class="text-neutral-400 hover:text-white transition-colors text-sm">Passive Income</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Time -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Time</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../ideas/build-in-8-hours/" class="text-neutral-400 hover:text-white transition-colors text-sm">8 Hours</a></li>
+                                        <li><a href="../ideas/build-in-weekend/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend</a></li>
+                                        <li><a href="../ideas/build-in-1-week/" class="text-neutral-400 hover:text-white transition-colors text-sm">1 Week</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    View All Ideas
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Build With Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Build With
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[400px]">
+                            <div class="grid grid-cols-3 gap-6">
+                                <!-- AI Code Editors -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">AI Code Editors</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../build-with/cursor/" class="text-neutral-400 hover:text-white transition-colors text-sm">Cursor</a></li>
+                                        <li><a href="../build-with/windsurf/" class="text-neutral-400 hover:text-white transition-colors text-sm">Windsurf</a></li>
+                                        <li><a href="../build-with/claude/" class="text-neutral-400 hover:text-white transition-colors text-sm">Claude</a></li>
+                                    </ul>
+                                </div>
+                                <!-- No-Code -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">No-Code</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../build-with/bolt/" class="text-neutral-400 hover:text-white transition-colors text-sm">Bolt.new</a></li>
+                                        <li><a href="../build-with/lovable/" class="text-neutral-400 hover:text-white transition-colors text-sm">Lovable</a></li>
+                                    </ul>
+                                </div>
+                                <!-- Other -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">Other</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../build-with/replit/" class="text-neutral-400 hover:text-white transition-colors text-sm">Replit</a></li>
+                                        <li><a href="../build-with/v0/" class="text-neutral-400 hover:text-white transition-colors text-sm">v0</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../build-with/no-code/" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    All Tools
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ideas For Dropdown -->
+                <div class="nav-dropdown relative">
+                    <button class="nav-dropdown-trigger flex items-center gap-1 hover:text-white transition-colors focus:outline-none focus:text-white" aria-expanded="false" aria-haspopup="true">
+                        Ideas For
+                        <iconify-icon icon="lucide:chevron-down" width="14" class="nav-dropdown-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                    </button>
+                    <div class="nav-dropdown-menu absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible transition-all duration-200">
+                        <div class="bg-neutral-950/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl min-w-[320px]">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- By Skill Level -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Skill Level</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../ideas-for/developers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Developers</a></li>
+                                        <li><a href="../ideas-for/designers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Designers</a></li>
+                                        <li><a href="../ideas-for/non-technical/" class="text-neutral-400 hover:text-white transition-colors text-sm">Non-Technical</a></li>
+                                    </ul>
+                                </div>
+                                <!-- By Situation -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-3">By Situation</h4>
+                                    <ul class="space-y-2">
+                                        <li><a href="../ideas-for/solo-founders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Solo Founders</a></li>
+                                        <li><a href="../ideas-for/side-hustlers/" class="text-neutral-400 hover:text-white transition-colors text-sm">Side Hustlers</a></li>
+                                        <li><a href="../ideas-for/weekend-builders/" class="text-neutral-400 hover:text-white transition-colors text-sm">Weekend Builders</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <a href="../startup-ideas.html" class="flex items-center gap-1 text-sm text-neutral-400 hover:text-white transition-colors">
+                                    View All Ideas
+                                    <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="../articles.html" class="text-white" aria-current="page">Articles</a>
+                <a href="../newsletter.html" class="hover:text-white transition-colors">Newsletter</a>
+            </div>
+
+            <a href="../starter-kit.html" class="group relative inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black transition-transform active:scale-95">
+                <span class="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
+                <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+                    Get the Kit
+                </span>
+            </a>
+
+            <button id="mobile-menu-open" class="md:hidden ml-2 p-2 text-white hover:text-neutral-300 transition-colors" aria-label="Open menu">
+                <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Mobile Menu Backdrop -->
+    <div id="mobile-menu-backdrop" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 z-[70] w-80 bg-neutral-950 border-l border-white/10 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <div class="logo h-4 w-24 text-white" role="img" aria-label="Weekend MVP"></div>
+            <button id="mobile-menu-close" class="text-neutral-400 hover:text-white transition-colors" aria-label="Close menu">
+                <iconify-icon icon="lucide:x" width="24" aria-hidden="true"></iconify-icon>
+            </button>
+        </div>
+        <nav class="p-6 space-y-1">
+            <a href="../index.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors">Home</a>
+            
+            <!-- Browse Ideas Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Browse Ideas</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Category</p>
+                    <a href="../ideas/saas/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">SaaS</a>
+                    <a href="../ideas/ai-tools/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">AI Tools</a>
+                    <a href="../ideas/productivity/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Productivity</a>
+                    <a href="../ideas/automation/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Automation</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">By Revenue</p>
+                    <a href="../ideas/1k-month/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">$1K/month</a>
+                    <a href="../ideas/passive-income/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Passive Income</a>
+                    <a href="../startup-ideas.html" class="block px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">View All Ideas →</a>
+                </div>
+            </div>
+            
+            <!-- Build With Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Build With</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <p class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-neutral-600">AI Code Editors</p>
+                    <a href="../build-with/cursor/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Cursor</a>
+                    <a href="../build-with/claude/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Claude</a>
+                    <a href="../build-with/windsurf/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Windsurf</a>
+                    <p class="px-4 py-2 pt-3 text-[10px] font-bold uppercase tracking-widest text-neutral-600">No-Code</p>
+                    <a href="../build-with/bolt/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Bolt.new</a>
+                    <a href="../build-with/lovable/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Lovable</a>
+                </div>
+            </div>
+            
+            <!-- Ideas For Collapsible -->
+            <div class="mobile-nav-section">
+                <button class="mobile-nav-toggle w-full flex items-center justify-between px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-expanded="false">
+                    <span>Ideas For</span>
+                    <iconify-icon icon="lucide:chevron-down" width="16" class="mobile-nav-chevron transition-transform duration-200" aria-hidden="true"></iconify-icon>
+                </button>
+                <div class="mobile-nav-submenu hidden pl-4 mt-1 space-y-1">
+                    <a href="../ideas-for/developers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Developers</a>
+                    <a href="../ideas-for/designers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Designers</a>
+                    <a href="../ideas-for/non-technical/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Non-Technical</a>
+                    <a href="../ideas-for/solo-founders/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Solo Founders</a>
+                    <a href="../ideas-for/side-hustlers/" class="block px-4 py-2 text-sm text-neutral-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Side Hustlers</a>
+                </div>
+            </div>
+            
+            <a href="../articles.html" class="block px-4 py-3 text-white bg-white/5 rounded-lg transition-colors" aria-current="page">Articles</a>
+            <a href="../newsletter.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Newsletter</a>
+            <a href="../starter-kit.html" class="block px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Starter Kit</a>
+        </nav>
+    </div>
+<!-- wmvp:nav:end -->
+
+<article class="relative z-10 pt-32 pb-24">
+        <div class="max-w-2xl mx-auto px-6">
+
+            <nav class="mb-8 text-xs text-neutral-500" aria-label="Breadcrumb">
+                <a href="../index.html" class="hover:text-white transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="../articles.html" class="hover:text-white transition-colors">Articles</a>
+                <span class="mx-2">/</span>
+                <span class="text-neutral-400">Ship It Saturday</span>
+            </nav>
+
+            <header class="mb-16">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="px-2 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">Tutorial</span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">By <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></span>
+                    <span class="text-neutral-600 text-xs">&bull;</span>
+                    <span class="text-neutral-600 text-xs">Jun 3, 2026</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-[1.1] mb-6">
+                    Ship It Saturday: A Framework for Weekend Builders
+                </h1>
+                <p class="text-xl md:text-2xl text-neutral-400 font-light leading-relaxed">
+                    One idea. One MVP. One lesson—every weekend until something sticks. The ritual, not the side project graveyard.
+                </p>
+            </header>
+            <!-- Hero (same asset as og:image) -->
+            <figure class="mb-16">
+                <img
+                    src="../image/og/article/ship-it-saturday-framework.png"
+                    alt="Clipboard checklist on a dark desk with Saturday circled in lime marker under a single desk lamp"
+                    width="1200"
+                    height="630"
+                    loading="eager"
+                    decoding="async"
+                    class="w-full rounded-2xl border border-white/10 aspect-[1200/630] object-cover"
+                >
+            </figure>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Is This You?</h2>
+                <p class="text-neutral-300 leading-relaxed mb-6">You have a day job. You have a notes app full of ideas. You have three half-finished repos from weekends that "didn't quite work out."</p>
+                <p class="text-neutral-300 leading-relaxed mb-6">Can you answer yes to any of these?</p>
+                <ul class="space-y-3 text-neutral-400 text-sm mb-6">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:circle" width="8" class="text-[#CC5500] mt-1.5 shrink-0" aria-hidden="true"></iconify-icon><span>You've been "about to start" the same project for three months.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:circle" width="8" class="text-[#CC5500] mt-1.5 shrink-0" aria-hidden="true"></iconify-icon><span>Your last side project died because scope crept on Sunday afternoon.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:circle" width="8" class="text-[#CC5500] mt-1.5 shrink-0" aria-hidden="true"></iconify-icon><span>You need a system, not more motivation videos.</span></li>
+                </ul>
+                <p class="text-neutral-300 leading-relaxed">Ship It Saturday is that system. Not a hackathon sprint. A <em>repeatable ritual</em> you run every month until one idea earns the right to become your main thing.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Why "Another Weekend" Isn't a Strategy</h2>
+                <p class="text-neutral-300 leading-relaxed mb-6">Open-ended side projects have no deadline. Weekends do. Monday morning forces a decision: ship something ugly, or carry guilt into your standup.</p>
+                <p class="text-neutral-300 leading-relaxed mb-6">The data backs the urgency. Solo founders using no-code and AI tools average about <a href="https://houseofmvps.com/blog/solo-founder-mvp-timeline" target="_blank" rel="noopener noreferrer" class="text-white hover:underline">7 weeks to first deploy<span class="sr-only"> (opens in new tab)</span></a>—but the median time from idea to first paying customer is still <a href="https://houseofmvps.com/blog/solo-founder-mvp-timeline" target="_blank" rel="noopener noreferrer" class="text-white hover:underline">14 weeks<span class="sr-only"> (opens in new tab)</span></a>. Every weekend you spend planning instead of shipping pushes you toward that median.</p>
+                <p class="text-neutral-300 leading-relaxed">Worse: <a href="https://fluenta.com/blog/micro-saas-failure-statistics" target="_blank" rel="noopener noreferrer" class="text-white hover:underline">68% of failed micro-SaaS ideas<span class="sr-only"> (opens in new tab)</span></a> never shipped because the MVP took six months or longer. Ship It Saturday exists to make six-month MVPs impossible by design.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">What You Need (Keep It Boring)</h2>
+                <ul class="space-y-3 text-neutral-400 text-sm">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 shrink-0" aria-hidden="true"></iconify-icon><span><span class="text-white">One idea</span> scoped to a <a href="the-3-screen-mvp-framework.html" class="text-white hover:underline">3-screen MVP</a>—landing, input, output.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 shrink-0" aria-hidden="true"></iconify-icon><span><span class="text-white">One builder tool</span> you're already comfortable with (Cursor, Claude Code, Bolt, v0—pick one, not five).</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 shrink-0" aria-hidden="true"></iconify-icon><span><span class="text-white">One deploy target</span> (Vercel is fine). If it's not on the public internet Sunday night, it didn't ship.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 shrink-0" aria-hidden="true"></iconify-icon><span><span class="text-white">One accountability line</span> you'll text a friend: "Here's the URL. 60 seconds. What's broken?"</span></li>
+                </ul>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">The Three-Phase Ritual</h2>
+                <p class="text-neutral-300 leading-relaxed mb-8">Ship It Saturday isn't a single heroic sprint. It's the same calendar every month: <span class="text-white">Friday plan</span>, <span class="text-white">Saturday build</span>, <span class="text-white">Sunday ship</span>. Miss a phase and you slip back into "someday" mode.</p>
+                <div class="grid gap-4">
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-[10px] font-mono uppercase tracking-wider text-[#CC5500] mb-2">Phase 1</p>
+                        <h3 class="text-white font-medium mb-2">Friday Night — Plan</h3>
+                        <p class="text-neutral-400 text-sm">Pick one idea. Sketch three screens. Scaffold the repo. Write a one-page brief that says what you're <em>not</em> building.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-[#CC5500]/20 rounded-xl">
+                        <p class="text-[10px] font-mono uppercase tracking-wider text-[#CC5500] mb-2">Phase 2</p>
+                        <h3 class="text-white font-medium mb-2">Saturday — Ship It Saturday</h3>
+                        <p class="text-neutral-400 text-sm">Build only what's on the sketch. No new features after 6pm. End the day with a working localhost demo.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <p class="text-[10px] font-mono uppercase tracking-wider text-[#CC5500] mb-2">Phase 3</p>
+                        <h3 class="text-white font-medium mb-2">Sunday — Ship</h3>
+                        <p class="text-neutral-400 text-sm">Polish, deploy, friend-test, fix, launch once. The URL is the scorecard.</p>
+                    </div>
+                </div>
+                <p class="text-neutral-500 text-sm mt-6">Want hour-by-hour prompts? Use the <a href="claude-code-48-hour-workflow.html" class="text-white hover:underline">48-hour workflow</a> as your Saturday/Sunday playbook. This article is the ritual around it.</p>
+            </section>
+
+            <!-- Friday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-8 tracking-tight">Friday Night: Plan (90 Minutes Max)</h2>
+
+                <div class="mb-8">
+                    <h3 class="text-lg text-white font-medium mb-3">1. Pick the idea — 15 minutes</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Don't pick on Saturday. You'll burn your best hours debating. Browse <a href="../startup-ideas.html" class="text-white hover:underline">startup ideas</a> or your backlog. Commit to one sentence you can text a friend.</p>
+                    <p class="text-neutral-500 text-xs">Filter: Can you explain the value in 10 seconds? Can you build it in three screens?</p>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg text-white font-medium mb-3">2. Define the 3 screens — 30 minutes</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Use the <a href="the-3-screen-mvp-framework.html" class="text-white hover:underline">3-Screen MVP framework</a>: Landing &rarr; Input &rarr; Output. Paper sketch is fine. Name every button and field.</p>
+                    <p class="text-neutral-500 text-xs">If you need a fourth screen, you're building two products. Cut one.</p>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg text-white font-medium mb-3">3. Scaffold + brief — 45 minutes</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Create the repo, empty routes, deploy hook ready. Write a project brief (AGENTS.md, CLAUDE.md, or a README section) listing: one-liner, three screens, stack, and explicit <span class="text-white">out-of-scope</span> list—no auth, no Stripe, no admin panel this weekend.</p>
+                    <p class="text-neutral-500 text-xs">Output: runnable scaffold + brief file a stranger could follow.</p>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Friday checkpoint</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Idea committed (one sentence).</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Three screens sketched.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Scaffold runs locally.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Out-of-scope list written.</span></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <div class="my-16 p-8 bg-white/[0.02] border border-white/10 rounded-2xl text-center">
+                <p class="text-neutral-400 text-sm mb-4">Don't have an idea yet? Don't waste Friday.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- Saturday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-4 tracking-tight">Ship It Saturday: Build</h2>
+                <p class="text-neutral-400 text-sm mb-8 leading-relaxed">Saturday is the brand name for a simple rule: <span class="text-white">build the sketch, nothing else.</span> Treat it like a recurring event on your calendar—the same way you'd block time for a workout.</p>
+
+                <div class="mb-8 p-6 bg-[#CC5500]/5 border border-[#CC5500]/20 rounded-xl">
+                    <h3 class="text-white font-medium mb-4 text-sm">The four Ship It Saturday rules</h3>
+                    <ol class="space-y-3 text-neutral-400 text-sm list-decimal list-inside">
+                        <li><span class="text-white">One screen at a time</span> — landing, then input, then output. No parallel threads.</li>
+                        <li><span class="text-white">Screenshot feedback</span> — when UI looks wrong, paste a screenshot to your AI tool. Don't describe vibes.</li>
+                        <li><span class="text-white">Hard stop at 6pm</span> — no new features after that. Only bug fixes and flow testing.</li>
+                        <li><span class="text-white">Dogfood before dinner</span> — you must complete the flow yourself once before calling Saturday done.</li>
+                    </ol>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg text-white font-medium mb-3">Morning → afternoon: three screens</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed mb-3">Build in order. Landing is marketing; input is the product; output is the payoff. If you're stuck on copy, ship placeholder text and fix Sunday.</p>
+                    <p class="text-neutral-400 text-sm leading-relaxed">Take a real lunch break. Walk without your laptop. The bugs you notice at 6pm are cheaper than the features you'd add at 9pm.</p>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Ship It Saturday checkpoint</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>All 3 screens work on localhost.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>You completed the flow as user #1.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Top bugs logged—not hidden—for Sunday morning.</span></li>
+                    </ul>
+                    <p class="text-neutral-500 text-xs mt-3">Close the laptop. Sunday is for the internet, not localhost.</p>
+                </div>
+            </section>
+
+            <!-- CTA mid -->
+            <div class="my-16 p-8 bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 rounded-2xl text-center">
+                <h3 class="text-xl text-white font-medium mb-3">Need an idea before Friday night?</h3>
+                <p class="text-neutral-400 text-sm mb-6">Browse 50+ research-backed startup ideas scoped for a single weekend.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <!-- Sunday -->
+            <section class="mb-16">
+                <h2 class="text-3xl font-medium text-white mb-8 tracking-tight">Sunday: Ship</h2>
+                <p class="text-neutral-400 text-sm mb-8 leading-relaxed">Sunday is not for new features. It's for loading states, deploy keys, friend texts, and one public post. The definition of "shipped" is a URL your mom could open on her phone.</p>
+
+                <div class="space-y-6 mb-8">
+                    <div>
+                        <h3 class="text-lg text-white font-medium mb-2">Morning: polish + deploy</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Fix Saturday's bug list. Add favicon, meta tags, human-readable errors. Push to production before lunch—if it's not live by noon, you're behind.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg text-white font-medium mb-2">Afternoon: five friends, one channel</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed">Text five specific people the live link. Fix what breaks. Then post once—problem, solution, link. Not a thread, not a manifesto.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                    <p class="text-white font-medium mb-2 text-sm">Sunday checkpoint — the One Shipment Rule</p>
+                    <ul class="space-y-1 text-neutral-400 text-sm">
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Live URL works on mobile data (not just Wi‑Fi).</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Five humans besides you completed the core flow.</span></li>
+                        <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-green-500 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>One public post with the link exists.</span></li>
+                    </ul>
+                    <p class="text-neutral-500 text-xs mt-3">Monday: write three sentences—what worked, what confused people, what you'd cut next time. That's your lesson.</p>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Example: Waitlist MVP in One Weekend</h2>
+                <p class="text-neutral-300 leading-relaxed mb-6">Friday: pick "AI receipt scanner for freelancers" from <a href="../startup-ideas.html" class="text-white hover:underline">startup ideas</a>. Three screens—landing with email capture, upload form, parsed receipt summary.</p>
+                <p class="text-neutral-300 leading-relaxed mb-6">Saturday: build landing + upload + summary on localhost. Stop at 6pm with a working demo.</p>
+                <p class="text-neutral-300 leading-relaxed">Sunday: deploy to Vercel, wire Beehiiv or a simple Supabase table for emails, text five freelancer friends, post in one indie hacking channel.</p>
+                <p class="text-neutral-400 text-sm">You didn't validate product-market fit. You validated <em>whether you can ship on command</em>—which is the skill every other founder skill depends on.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">Run It Again Next Month</h2>
+                <p class="text-neutral-300 leading-relaxed mb-6">One weekend teaches you one lesson. Twelve Ship It Saturdays teach you pattern recognition—which ideas feel alive after launch and which were fantasy.</p>
+                <p class="text-neutral-300 leading-relaxed mb-6">Block the first Saturday of every month. Tell one friend you'll send them a URL by Sunday night. Public accountability beats private motivation.</p>
+                <p class="text-neutral-400 text-sm">When an idea gets traction—repeat signups, replies, someone asking to pay—<em>then</em> it graduates from weekend experiment to weeknight maintenance. Not before.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">When You're Stuck</h2>
+                <ul class="space-y-4 text-neutral-400 text-sm">
+                    <li><span class="text-white">No idea?</span> Spend Friday browsing ideas, not building. Pick the smallest scope that still solves one pain.</li>
+                    <li><span class="text-white">Scope exploding?</span> Re-read your out-of-scope list. Delete a screen if you must—two screens shipped beats three screens localhost.</li>
+                    <li><span class="text-white">Deploy failing?</span> Ship a static landing + Tally form as fallback. Ugly and live beats beautiful and local.</li>
+                    <li><span class="text-white">Zero friend replies?</span> You still shipped. Log the lesson. Next month's idea might be the one.</li>
+                </ul>
+            </section>
+
+            <!-- Common detours -->
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-8 tracking-tight">Weekend Detours (and How to Avoid Them)</h2>
+                <div class="space-y-6">
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "I should add real auth"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> Magic-link only. Or skip auth until week two. Your Friday brief should explicitly say "no auth this weekend."</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "Let me redesign the landing"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> Pick a reference site at the start (Linear, Vercel, Posthog). Tell Claude "make it feel like X." Don't redesign mid-build.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "I need to add Stripe"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> A Stripe Payment Link is enough for v1. Real billing is a week-2 problem.</p>
+                    </div>
+                    <div class="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                        <h3 class="text-white font-medium mb-3 text-sm">Detour: "What if it doesn't scale?"</h3>
+                        <p class="text-neutral-400 text-sm leading-relaxed"><span class="text-white">Avoid by:</span> If you have to scale, you've already won. Focus on shipping.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-16 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                <h2 class="text-lg font-medium text-white mb-4">TL;DR</h2>
+                <ul class="space-y-2 text-neutral-400 text-sm">
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Friday:</span> one idea, three screens, scaffold + out-of-scope brief (~90 min).</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Ship It Saturday:</span> build the sketch only; hard stop at 6pm; dogfood once.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span><span class="text-white">Sunday:</span> deploy, five friends, one public post—the URL is the score.</span></li>
+                    <li class="flex items-start gap-2"><iconify-icon icon="lucide:check" class="text-neutral-600 mt-0.5 min-w-[16px]" aria-hidden="true"></iconify-icon><span>Repeat monthly until one idea earns weeknight attention.</span></li>
+                </ul>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-2xl font-medium text-white mb-6 tracking-tight">FAQ</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-white font-medium text-sm mb-2">Do I have to ship every Saturday?</h3>
+                        <p class="text-neutral-400 text-sm">Block the first Saturday of the month if weekly is too much. Consistency beats intensity.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-medium text-sm mb-2">What if I already have a side project?</h3>
+                        <p class="text-neutral-400 text-sm">Run Ship It Saturday on a <em>new</em> scoped slice—one feature, one landing test—not the whole backlog. Or use the ritual to finally deploy what you've been localhosting for months.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-medium text-sm mb-2">Is this only for developers?</h3>
+                        <p class="text-neutral-400 text-sm">No. Non-technical founders use AI builders the same way—Friday plan, Saturday build, Sunday ship. See <a href="how-to-build-your-first-app-in-a-weekend.html" class="text-white hover:underline">how to build your first app in a weekend</a>.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MVP Sprint -->
+            <div class="my-16 p-8 bg-gradient-to-br from-[#CC5500]/10 to-[#CC5500]/[0.02] border border-[#CC5500]/30 rounded-2xl">
+                <div class="flex items-center gap-2 mb-3">
+                    <iconify-icon icon="lucide:sparkles" width="14" class="text-[#CC5500]" aria-hidden="true"></iconify-icon>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-[#CC5500]">1:1 Sprint</span>
+                </div>
+                <h3 class="text-xl text-white font-medium mb-3">Want accountability for your first Ship It Saturday?</h3>
+                <p class="text-neutral-400 text-sm mb-6 leading-relaxed">Book a pre-weekend session. We'll pick the idea, scope the three screens, and set up your stack so Saturday morning is pure building.</p>
+                <a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-[#CC5500] text-white rounded-full text-sm font-semibold hover:bg-[#CC5500]/90 transition-all shadow-[0_0_30px_-10px_rgba(204,85,0,0.5)] focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-black">
+                    <span>Book an MVP Sprint</span>
+                    <iconify-icon icon="lucide:arrow-up-right" width="16" aria-hidden="true"></iconify-icon>
+                    <span class="sr-only"> (opens in new tab)</span>
+                </a>
+            </div>
+
+            <section class="text-center py-12">
+                <h2 class="text-3xl md:text-4xl font-medium text-white tracking-tight mb-4">
+                    Your next Ship It Saturday<br>starts Friday night.
+                </h2>
+                <p class="text-neutral-400 mb-8">Pick the idea before the week steals your attention.</p>
+                <a href="../startup-ideas.html" class="inline-flex items-center gap-2 px-10 py-4 bg-white text-black rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
+                    <span>Browse Startup Ideas</span>
+                    <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                </a>
+            </section>
+
+        </div>
+    </article>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#050505]">
+        <div class="max-w-7xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="../index.html"><div class="logo h-5 w-32 text-white mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-400 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Explore</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="../startup-ideas.html" class="text-neutral-500 hover:text-white transition-colors">Startup Ideas</a></li>
+                        <li><a href="../articles.html" class="text-neutral-500 hover:text-white transition-colors">Articles</a></li>
+                        <li><a href="../starter-kit.html" class="text-neutral-500 hover:text-white transition-colors">Starter Kit</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">More Weekend Frameworks</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="claude-code-48-hour-workflow.html" class="text-neutral-500 hover:text-white transition-colors">48-Hour Workflow</a></li>
+                        <li><a href="the-3-screen-mvp-framework.html" class="text-neutral-500 hover:text-white transition-colors">3-Screen MVP</a></li>
+                        <li><a href="how-to-build-your-first-app-in-a-weekend.html" class="text-neutral-500 hover:text-white transition-colors">First App in a Weekend</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-medium text-sm mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://cal.com/switchtoux/mvp-sprint" target="_blank" rel="noopener noreferrer" class="text-neutral-500 hover:text-white transition-colors">Book a Sprint<span class="sr-only"> (opens in new tab)</span></a></li>
+                        <li><a href="../privacy-policy.html" class="text-neutral-500 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">&copy; <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <div class="flex items-center gap-6">
+                    <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-white transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                        <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                        <span class="sr-only"> (opens in new tab)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../scripts.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<!-- wmvp:signup-modal:start -->
+<!-- Modal for Beehiiv Signup -->
+<div id="signup-modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+        <button id="close-modal" class="absolute top-6 right-6 text-neutral-500 hover:text-white transition-colors" aria-label="Close modal">
+            <iconify-icon icon="lucide:x" width="20" aria-hidden="true"></iconify-icon>
+        </button>
+
+        <div class="mb-8">
+            <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Get the Starter Kit</h3>
+            <p class="text-neutral-400 text-sm">Enter your details and we'll send the kit right over.</p>
+        </div>
+
+        <form id="beehiiv-form" class="space-y-4">
+            <div>
+                <label for="first-name" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">First Name</label>
+                <input type="text" id="first-name" name="first_name" required placeholder="Jane"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
+            </div>
+            <div>
+                <label for="email" class="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 ml-1">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="jane@example.com"
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
+            </div>
+
+            <button type="submit" class="group relative w-full inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-xl text-sm font-semibold tracking-tight hover:bg-neutral-200 transition-all mt-4">
+                <span>Send me the kit</span>
+                <iconify-icon icon="lucide:arrow-right" width="16" height="16" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+            </button>
+
+            <p class="text-[10px] text-neutral-600 text-center mt-6">By joining, you agree to receive the kit and occasional updates.</p>
+        </form>
+
+        <div id="success-state" class="hidden flex flex-col items-center text-center py-8">
+            <div class="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 mb-6">
+                <iconify-icon icon="lucide:check-circle" width="32" aria-hidden="true"></iconify-icon>
+            </div>
+            <h3 class="text-2xl font-medium text-white tracking-tight mb-2">Check your inbox!</h3>
+            <p class="text-neutral-400 text-sm mb-8">The Weekend MVP Starter Kit is on its way to you.</p>
+            <button id="success-close" class="text-sm font-semibold text-white hover:underline decoration-white/30 underline-offset-4">Close</button>
+        </div>
+    </div>
+</div>
+<!-- wmvp:signup-modal:end -->
+
+</body>
+</html>
