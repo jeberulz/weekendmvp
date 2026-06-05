@@ -1,6 +1,53 @@
 {
   "ideas": [
     {
+      "slug": "ai-zoning-intelligence",
+      "title": "AI Zoning Intelligence for Real Estate Developers",
+      "publishedAt": "2026-06-05",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "Scan hundreds of municipal databases for zoning changes and permit filings before your competitors. Real-time alerts for property investors at $49/month—no enterprise contract required.",
+      "og": {
+        "subject": "A dark desk with a glowing laptop showing a property map with highlighted zones, no people, shallow focus, mint accent light",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "source": "ideabrowser:1327",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 5,
+        "wordCount": 2287,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-05T00:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      }
+    },
+    {
       "slug": "saas-financial-toolkit",
       "title": "Financial Toolkit for Bootstrapped SaaS Founders",
       "publishedAt": "2026-06-03",

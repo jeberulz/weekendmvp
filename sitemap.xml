@@ -203,6 +203,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://weekendmvp.app/articles/ship-it-saturday-framework.html</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://weekendmvp.app/articles/non-technical-founder-stack-2026.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
@@ -832,6 +838,13 @@
   <url>
     <loc>https://weekendmvp.app/ideas/saas-financial-toolkit.html</loc>
     <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://weekendmvp.app/ideas/ai-zoning-intelligence.html</loc>
+    <lastmod>2026-06-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
