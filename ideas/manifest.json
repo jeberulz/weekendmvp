@@ -11,7 +11,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -58,7 +63,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -105,7 +115,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -151,7 +166,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -187,7 +207,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -224,7 +249,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -261,7 +291,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -297,7 +332,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -334,7 +374,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -373,7 +418,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -412,7 +462,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -447,7 +502,12 @@
       "applicationCategory": "HealthApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -482,7 +542,12 @@
       "applicationCategory": "EducationalApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -513,7 +578,12 @@
       "applicationCategory": "HealthApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -547,7 +617,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -588,7 +663,11 @@
       "applicationCategory": "FinanceApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -630,7 +709,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -666,7 +750,12 @@
       "applicationCategory": "MobileApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -703,7 +792,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -740,7 +834,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -776,7 +875,9 @@
       "applicationCategory": "DeveloperApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit"
       ],
       "audiences": [
         "developers",
@@ -816,7 +917,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -838,7 +944,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -859,7 +970,11 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0"
       ],
       "audiences": [
         "developers",
@@ -885,7 +1000,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -917,7 +1037,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -951,7 +1076,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -985,7 +1115,9 @@
       "applicationCategory": "DeveloperApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit"
       ],
       "audiences": [
         "developers",
@@ -1018,7 +1150,11 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0"
       ],
       "audiences": [
         "developers",
@@ -1051,7 +1187,12 @@
       "applicationCategory": "MultimediaApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1084,7 +1225,9 @@
       "applicationCategory": "DeveloperApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit"
       ],
       "audiences": [
         "developers",
@@ -1116,7 +1259,12 @@
       "applicationCategory": "FinanceApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1149,7 +1297,11 @@
       "applicationCategory": "MultimediaApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0"
       ],
       "audiences": [
         "developers",
@@ -1182,7 +1334,12 @@
       "applicationCategory": "ShoppingApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1215,7 +1372,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -1257,7 +1419,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -1306,7 +1473,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1354,7 +1526,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "side-hustlers",
@@ -1402,7 +1579,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1438,7 +1620,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1474,7 +1661,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -1509,7 +1701,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1543,7 +1740,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1577,7 +1779,12 @@
       "applicationCategory": "EducationalApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -1611,7 +1818,12 @@
       "applicationCategory": "ProductivityApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1646,7 +1858,12 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "non-technical",
@@ -1681,7 +1898,11 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "no-code"
       ],
       "audiences": [
         "developers",
@@ -1717,7 +1938,11 @@
       "tools": [
         "cursor",
         "bolt",
-        "no-code"
+        "no-code",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0"
       ],
       "audiences": [
         "non-technical",
@@ -1752,7 +1977,11 @@
       "applicationCategory": "BusinessApplication",
       "tools": [
         "cursor",
-        "claude"
+        "claude",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0"
       ],
       "audiences": [
         "developers",
@@ -1787,7 +2016,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -1834,7 +2068,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -1881,7 +2120,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
@@ -1928,7 +2172,12 @@
       "tools": [
         "cursor",
         "claude",
-        "bolt"
+        "bolt",
+        "windsurf",
+        "replit",
+        "lovable",
+        "v0",
+        "no-code"
       ],
       "audiences": [
         "developers",
