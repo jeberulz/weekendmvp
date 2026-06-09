@@ -1,6 +1,182 @@
 {
   "ideas": [
     {
+      "slug": "ai-code-coach-tutor",
+      "title": "Code Coach: AI That Teaches You As You Build",
+      "publishedAt": "2026-06-09",
+      "category": "developer-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "windsurf",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4060",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "description": "An in-editor AI tutor that explains your code line by line as you write it, so self-taught devs and bootcamp grads finally understand what they shipped, not just that it works.",
+      "og": {
+        "subject": "A laptop in a dim room showing a code editor with one function gently highlighted and a soft margin note, no people, shallow focus, emerald accent light",
+        "accent": "emerald",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__get_idea_research:base"
+        ],
+        "citations": 0,
+        "wordCount": 1555,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-09T00:00:00.000Z",
+        "publishNotes": "Phase 2 fresh idea published via scripts/publish-idea-page.js from ideas/_template.html. Tagged for the build-with Claude/dev-tool pages."
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-agent-error-translator",
+      "title": "Doctor Debug: Plain-English Errors for AI Agents",
+      "publishedAt": "2026-06-09",
+      "category": "developer-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "windsurf",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "non-technical"
+      ],
+      "source": "ideabrowser:7458",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "description": "A watchdog that catches when a no-code AI agent breaks and explains the failure in plain English with a fix path, so marketers and operators can unstick their own automations.",
+      "og": {
+        "subject": "A calm dashboard on a dark screen turning a cryptic error into a plain sentence, no people, shallow focus, lavender accent light",
+        "accent": "lavender",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__browse_ideas"
+        ],
+        "citations": 0,
+        "wordCount": 1417,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-09T00:00:00.000Z",
+        "publishNotes": "Phase 2 fresh idea published via scripts/publish-idea-page.js from ideas/_template.html. Tagged for the build-with Claude/dev-tool pages."
+      },
+      "researchLevel": "summary"
+    },
+    {
+      "slug": "ai-coding-classroom-assistant",
+      "title": "Handraised: AI Teaching Assistant for Coding Classrooms",
+      "publishedAt": "2026-06-09",
+      "category": "ai-tools",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "windsurf",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:7149",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "description": "An in-editor AI assistant that flags stuck students on a live instructor dashboard and nudges them with hints, so coding bootcamps catch dropouts before they fall behind.",
+      "og": {
+        "subject": "A dark instructor dashboard showing a grid of student tiles, a few glowing amber, no people, shallow focus, mint accent light",
+        "accent": "mint",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__browse_ideas"
+        ],
+        "citations": 0,
+        "wordCount": 1412,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-09T00:00:00.000Z",
+        "publishNotes": "Phase 2 fresh idea published via scripts/publish-idea-page.js from ideas/_template.html. Tagged for the build-with Claude/dev-tool pages."
+      },
+      "researchLevel": "summary"
+    },
+    {
+      "slug": "last-20-builder-rescue",
+      "title": "Last 20: Phone-a-Friend for Stuck Builders",
+      "publishedAt": "2026-06-09",
+      "category": "saas",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "lovable",
+        "replit",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "non-technical",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:4150",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 5
+      },
+      "description": "An on-demand network that matches vibe coders stuck on the last 20 percent of a build with an expert who has hit that exact wall, for a 15-minute screen-share rescue.",
+      "og": {
+        "subject": "A laptop showing a screen-share between two code windows with a progress bar near full, no people, shallow focus, lime accent light",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "mcp__ideabrowser__browse_ideas"
+        ],
+        "citations": 0,
+        "wordCount": 1465,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-09T00:00:00.000Z",
+        "publishNotes": "Phase 2 fresh idea published via scripts/publish-idea-page.js from ideas/_template.html. Tagged for the build-with Claude/dev-tool pages."
+      },
+      "researchLevel": "summary"
+    },
+    {
       "slug": "ai-zoning-intelligence",
       "title": "AI Zoning Intelligence for Real Estate Developers",
       "publishedAt": "2026-06-05",
