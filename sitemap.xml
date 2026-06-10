@@ -20,6 +20,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- ship·able Workshop -->
+  <url>
+    <loc>https://weekendmvp.app/shipable.html</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- Articles Index -->
   <url>
     <loc>https://weekendmvp.app/articles.html</loc>

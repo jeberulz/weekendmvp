@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ship·able | Build your MVP live in 90 minutes — Weekend MVP Workshop</title>
+    <meta name="description" content="A 90-minute live workshop where you turn the idea you've been sitting on into a real, live MVP people can use — before the weekend's over. $9. Live on Zoom. Replay included.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- ============================================================= -->
+    <!-- PLACEHOLDERS TO REPLACE BEFORE LAUNCH (search for [[ ):       -->
+    <!--  [[WORKSHOP_DATE_ISO]]  data-deadline on countdown (line ~)   -->
+    <!--  [[DATE]] [[TIME]] [[TZ]]  human-readable schedule            -->
+    <!--  [[STAT_*]]  credibility numbers                              -->
+    <!--  [[PROOF_*]]  real testimonials / wins                        -->
+    <!--  [[CHECKOUT_URL]]  payment link (currently captures seat      -->
+    <!--    via Beehiiv /api/subscribe waitlist)                       -->
+    <!--  [[TZ_*]]  local-time conversions                            -->
+    <!-- ============================================================= -->
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/shipable.html">
+    <meta property="og:title" content="ship·able | Build your MVP live in 90 minutes">
+    <meta property="og:description" content="Turn the idea you've been sitting on into a real, live MVP — in 90 minutes, live on Zoom. $9. Replay included.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:alt" content="ship·able — a Weekend MVP workshop">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/shipable.html">
+    <meta property="twitter:title" content="ship·able | Build your MVP live in 90 minutes">
+    <meta property="twitter:description" content="Turn the idea you've been sitting on into a real, live MVP — in 90 minutes, live on Zoom. $9. Replay included.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/shipable.html">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="image/favicon.png">
+    <link rel="apple-touch-icon" href="image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .font-mono-eyebrow {
+            font-family: 'Geist Mono', ui-monospace, monospace;
+            letter-spacing: 0.18em;
+        }
+        .accent-italic {
+            font-family: 'Newsreader', Georgia, serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .ticket-perf {
+            background-image: radial-gradient(circle at center, transparent 0, transparent 6px, #1a1a1a 6px, #1a1a1a 7px, transparent 7px);
+            background-size: 18px 1px;
+            background-repeat: repeat-x;
+            background-position: center;
+            height: 1px;
+            opacity: 0.18;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+            .reveal.is-in { opacity: 1; transform: none; }
+        }
+    </style>
+
+    <!-- JSON-LD: Event + Breadcrumb for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Founder, Weekend MVP",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Event",
+          "name": "ship·able — Build your MVP live in 90 minutes",
+          "description": "A 90-minute live workshop where you turn an idea into a real, deployed MVP with a live URL — non-technical welcome, built with AI tools.",
+          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "startDate": "[[WORKSHOP_DATE_ISO]]",
+          "organizer": { "@id": "https://weekendmvp.app/#person" },
+          "location": {
+            "@type": "VirtualLocation",
+            "url": "https://weekendmvp.app/shipable.html"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "9",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://weekendmvp.app/shipable.html"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "ship·able Workshop", "item": "https://weekendmvp.app/shipable.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- ===================== TOP NAV ===================== -->
+    <div class="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-[#fcfaf7]/85 backdrop-blur-xl border border-black/10 rounded-full shadow-lg">
+            <a href="index.html" class="flex items-center gap-2" aria-label="Weekend MVP home">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-600">
+                <a href="startup-ideas.html" class="hover:text-black transition-colors">Ideas</a>
+                <a href="starter-kit.html" class="hover:text-black transition-colors">Starter Kit</a>
+                <a href="newsletter.html" class="hover:text-black transition-colors">Newsletter</a>
+            </div>
+            <a href="#seat" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#1a1a1a] px-5 py-2 text-xs font-semibold text-white hover:bg-black transition-all focus:outline-none focus:ring-2 focus:ring-black/30 focus:ring-offset-2 focus:ring-offset-[#fcfaf7] active:scale-95">
+                Save my seat · $9
+            </a>
+        </nav>
+    </div>
+
+    <main>
+        <!-- ===================== HERO ===================== -->
+        <section class="relative px-5 pt-32 pb-16 md:pt-40 md:pb-24 max-w-5xl mx-auto">
+            <div class="inline-flex items-center gap-2 mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#CC5500] animate-pulse" aria-hidden="true"></span>
+                <span class="sr-only">Live:</span>
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-600">Live Workshop</span>
+            </div>
+
+            <h1 class="text-[15vw] leading-[0.9] md:text-[7.5rem] font-semibold tracking-tight text-[#1a1a1a]">
+                ship<span class="text-[#CC5500]">·</span>able<span class="text-[#CC5500]">.</span>
+            </h1>
+
+            <p class="mt-8 max-w-2xl text-xl md:text-2xl leading-snug text-neutral-700">
+                In this 90-minute live workshop you'll turn the idea you've been sitting on into
+                <span class="accent-italic text-[#CC5500]">a real MVP people can actually use</span>
+                — before the weekend's over.
+            </p>
+
+            <div class="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <a href="#seat" class="group inline-flex items-center gap-3 rounded-2xl bg-[#1a1a1a] pl-7 pr-5 py-4 text-base font-semibold text-white hover:bg-black transition-all focus:outline-none focus:ring-2 focus:ring-black/30 focus:ring-offset-2 focus:ring-offset-[#fcfaf7] active:scale-[0.98]">
+                    <span>Save my seat</span>
+                    <span class="h-5 w-px bg-white/25" aria-hidden="true"></span>
+                    <span class="text-[#e9a06a]">$9</span>
+                    <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                </a>
+            </div>
+
+            <p class="mt-6 font-mono-eyebrow text-[11px] uppercase text-neutral-500">
+                90 Minutes · Live on Zoom · Replay Included
+            </p>
+
+            <!-- Date / countdown card -->
+            <div class="mt-14 rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 max-w-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="inline-flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#CC5500]" aria-hidden="true"></span>
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Workshop starts in</span>
+                    </div>
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[TZ]]</span>
+                </div>
+                <p class="text-3xl md:text-4xl font-semibold tracking-tight">
+                    [[DATE]] <span class="accent-italic text-[#e9a06a]">[[TIME]]</span>
+                </p>
+                <p class="mt-2 text-sm text-neutral-400">90 minutes live · Q&amp;A after</p>
+                <!-- Countdown: edit data-deadline (ISO 8601 with timezone offset) -->
+                <div id="countdown" data-deadline="[[WORKSHOP_DATE_ISO]]" class="mt-6 grid grid-cols-4 gap-3 max-w-sm" role="timer" aria-label="Time remaining until the workshop">
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="days" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-500">Days</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="hours" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-500">Hrs</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="minutes" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-500">Min</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="seconds" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-500">Sec</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== DELIVERABLE TEASER ===================== -->
+        <section class="px-5 py-12 max-w-5xl mx-auto reveal">
+            <div class="rounded-3xl border border-black/10 bg-white p-8 md:p-10 flex flex-col md:flex-row items-start gap-8">
+                <div class="shrink-0 w-28 h-36 rounded-xl bg-[#f5f2ed] border border-black/10 p-3 flex flex-col gap-2" aria-hidden="true">
+                    <div class="h-2 w-10 rounded-full bg-[#CC5500]/70"></div>
+                    <div class="h-1.5 w-full rounded-full bg-neutral-200"></div>
+                    <div class="h-1.5 w-full rounded-full bg-neutral-200"></div>
+                    <div class="h-1.5 w-3/4 rounded-full bg-neutral-200"></div>
+                    <div class="h-1.5 w-full rounded-full bg-neutral-200"></div>
+                    <div class="h-1.5 w-2/3 rounded-full bg-neutral-200"></div>
+                </div>
+                <div>
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500]">The Ship Sheet</span>
+                    <h2 class="mt-3 text-3xl md:text-4xl font-semibold tracking-tight">You fill it in live.</h2>
+                    <p class="mt-3 text-lg text-neutral-600 max-w-xl">It becomes your finished 48-hour build plan — and a live URL — by the end of the call.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== WHY LISTEN (stats) ===================== -->
+        <section class="px-5 py-16 md:py-24 bg-[#1a1a1a] text-white">
+            <div class="max-w-5xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 mb-12">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-400">// Why listen to me</span>
+                </div>
+                <dl class="divide-y divide-white/10">
+                    <!-- [[STAT_*]] replace with real numbers -->
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_1]]<span class="accent-italic text-[#e9a06a] text-3xl"> shipped</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-500 text-right">MVPs launched by builders</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_2]]<span class="accent-italic text-[#e9a06a] text-3xl">+</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-500 text-right">Weekend builders</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_3]]<span class="accent-italic text-[#e9a06a] text-3xl"> hrs</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-500 text-right">Average idea → live</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">78<span class="accent-italic text-[#e9a06a] text-3xl"> ideas</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-500 text-right">Broken down on the site</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <!-- ===================== THE REAL PROBLEM ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-3xl mx-auto reveal">
+            <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// The real problem</span>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02]">
+                Your idea's still in your head…
+                <span class="accent-italic text-[#CC5500] font-normal">and that's exactly why it's worth nothing.</span>
+            </h2>
+            <div class="mt-10 space-y-6 text-lg text-neutral-700">
+                <p>I've watched thousands of would-be builders, and the #1 thing keeping them stuck isn't talent or time. It's that they never ship.</p>
+                <p>They usually fall into one of two camps:</p>
+                <ul class="space-y-4">
+                    <li class="flex gap-4">
+                        <span class="mt-3 h-px w-6 bg-[#CC5500] shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold">They've got a "someday" idea</strong> they keep researching, tweaking, and talking about — but never build.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="mt-3 h-px w-6 bg-[#CC5500] shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold">They've got a half-built project</strong> rotting in a folder because they scoped it way too big to ever finish.</span>
+                    </li>
+                </ul>
+                <p class="text-neutral-500">Either way, real people have never touched it.</p>
+                <p>All you need to change that is <span class="accent-italic text-[#1a1a1a]">one small thing, live, that someone can actually use this weekend.</span> That's what we build in ship·able.</p>
+            </div>
+        </section>
+
+        <!-- ===================== TL;DR ===================== -->
+        <section class="px-5 py-16 bg-[#f5f2ed]">
+            <div class="max-w-3xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// The TL;DR</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+                    Everything you need to know, <span class="accent-italic text-[#CC5500] font-normal">in ten seconds.</span>
+                </h2>
+                <ul class="space-y-6">
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's $9.</strong> One-time. Less than your weekend coffee run — and you walk out with a live MVP.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's a 90-minute live workshop</strong> on [[DATE]], [[TIME]] [[TZ]], on Zoom. Can't make it live? You get the full replay.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's for anyone with an idea they haven't shipped.</strong> Non-technical totally welcome — we build with AI tools, no code required.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">You walk out with a live, shareable URL</strong> plus a locked 48-hour build plan you can finish this weekend.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It works for any idea</strong> — SaaS, a tool, a marketplace, a side project. We've broken down 78 of them.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">Live attendees get 2 bonuses:</strong> the AI MVP Builder + the Weekend MVP Starter Kit. Combined value <strong class="font-semibold text-[#1a1a1a]">$348</strong>.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ===================== WHAT WE'LL DO ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-4xl mx-auto">
+            <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// Here's what we'll do</span>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-14">
+                Three moves. <span class="accent-italic text-[#CC5500] font-normal">Shipped on the call.</span>
+            </h2>
+
+            <div class="border-t border-black/10">
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-neutral-200 leading-none">01</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Your <span class="accent-italic text-[#CC5500] font-normal">sharpest</span> idea</h3>
+                        <p class="mt-3 text-lg text-neutral-600">One buyer, one painful problem. We cut your idea down from "cool concept" to the one specific thing one specific person will use on day one.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~25 min</span>
+                    </div>
+                </article>
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-neutral-200 leading-none">02</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Your <span class="accent-italic text-[#CC5500] font-normal">weekend</span> cut</h3>
+                        <p class="mt-3 text-lg text-neutral-600">The smallest version you can actually ship by Sunday. Not the dream app — the one screen that proves it. We scope it so it fits in a weekend, not a quarter.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~30 min</span>
+                    </div>
+                </article>
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-neutral-200 leading-none">03</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Your <span class="accent-italic text-[#CC5500] font-normal">live</span> launch page</h3>
+                        <p class="mt-3 text-lg text-neutral-600">Built live with AI: a deployed page with a real URL and a way to capture your first users — so you're validating demand before you sink a weekend into building.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~35 min</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ===================== WHAT'S INCLUDED (value stack) ===================== -->
+        <section class="px-5 py-20 md:py-28 bg-[#f5f2ed]">
+            <div class="max-w-4xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// What's included</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                    Six things in your seat. <span class="accent-italic text-[#CC5500] font-normal">$738 of value.</span>
+                </h2>
+
+                <div class="rounded-3xl bg-white border border-black/10 overflow-hidden">
+                    <!-- Item -->
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">01</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">90-minute live build workshop</h3>
+                            <p class="mt-1 text-neutral-600">Working session with John on Zoom. Bring your laptop and the Ship Sheet.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$97 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">02</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Ship Sheet <span class="accent-italic text-neutral-500 font-normal">worksheet</span></h3>
+                            <p class="mt-1 text-neutral-600">Fill it in live. By the end of the 90 minutes you walk out with a finished build plan.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$47 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">03</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Lifetime replay</h3>
+                            <p class="mt-1 text-neutral-600">Can't make it live? Full recording, yours forever. Rewatch the parts you need.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$47 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">04</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">48-Hour Build Plan</h3>
+                            <p class="mt-1 text-neutral-600">Your exact idea, scoped and sequenced to ship by Sunday night.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$199 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10 bg-[#fcfaf7]">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">05</span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-semibold">AI <span class="accent-italic text-neutral-500 font-normal">MVP Builder</span></h3>
+                                <span class="rounded-full border border-[#CC5500]/30 text-[#CC5500] px-2.5 py-0.5 font-mono-eyebrow text-[9px] uppercase">Bonus · Live only</span>
+                            </div>
+                            <p class="mt-1 text-neutral-600">Drop in your idea. The prompt pack scaffolds your build instantly, so you've got a v1 to refine.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$199 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 bg-[#fcfaf7]">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">06</span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-semibold">Weekend MVP <span class="accent-italic text-neutral-500 font-normal">Starter Kit</span></h3>
+                                <span class="rounded-full border border-[#CC5500]/30 text-[#CC5500] px-2.5 py-0.5 font-mono-eyebrow text-[9px] uppercase">Bonus · Live only</span>
+                            </div>
+                            <p class="mt-1 text-neutral-600">The full 48-hour plan, templates &amp; AI prompts. A worked playbook, not a blank page.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$149 value</span>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="bg-[#1a1a1a] text-white p-8 md:p-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 block mb-1">Total value</span>
+                                <span class="text-3xl font-semibold text-neutral-400 line-through decoration-[#CC5500]/70">$738</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 block mb-1">You pay today</span>
+                                <span class="text-4xl font-semibold"><span class="text-[#e9a06a]">$</span>9</span>
+                            </div>
+                        </div>
+                        <a href="#seat" class="group flex items-center justify-center gap-2 w-full rounded-xl bg-white text-[#1a1a1a] px-6 py-4 text-base font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-[0.99]">
+                            <span>Save my seat</span>
+                            <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== PROOF ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-4xl mx-auto">
+            <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// Proof it works</span>
+            </div>
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                Different ideas. <span class="accent-italic text-[#CC5500] font-normal">Different builders.</span> Same result.
+            </h2>
+
+            <!-- [[PROOF_*]] Replace bracketed text with REAL wins/testimonials before launch -->
+            <div class="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 mb-6 reveal">
+                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Featured win</span>
+                <p class="mt-4 text-5xl md:text-6xl font-semibold tracking-tight">[[PROOF_HEADLINE]]</p>
+                <p class="accent-italic text-[#e9a06a] text-xl mt-1">[[PROOF_SUBHEAD]]</p>
+                <p class="mt-6 text-neutral-300 leading-relaxed max-w-2xl">[[PROOF_QUOTE — e.g. "Sat on a Notes-app idea for a year. Shipped a live page that night, had my first signups by Monday."]]</p>
+                <div class="mt-8 flex items-center gap-3 pt-6 border-t border-white/10">
+                    <div class="w-10 h-10 rounded-full bg-white/10" aria-hidden="true"></div>
+                    <div>
+                        <p class="font-semibold text-sm">[[PROOF_NAME]]</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[PROOF_HANDLE]]</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-6">
+                <blockquote class="rounded-3xl bg-white border border-black/10 p-8 reveal">
+                    <p class="text-3xl font-semibold tracking-tight">[[PROOF_2_STAT]]</p>
+                    <p class="accent-italic text-[#CC5500] mb-4">[[PROOF_2_LABEL]]</p>
+                    <p class="text-neutral-600 italic">"[[PROOF_2_QUOTE]]"</p>
+                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[PROOF_2_NAME]]</footer>
+                </blockquote>
+                <blockquote class="rounded-3xl bg-white border border-black/10 p-8 reveal">
+                    <p class="text-3xl font-semibold tracking-tight">[[PROOF_3_STAT]]</p>
+                    <p class="accent-italic text-[#CC5500] mb-4">[[PROOF_3_LABEL]]</p>
+                    <p class="text-neutral-600 italic">"[[PROOF_3_QUOTE]]"</p>
+                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[PROOF_3_NAME]]</footer>
+                </blockquote>
+            </div>
+        </section>
+
+        <!-- ===================== TICKET ===================== -->
+        <section class="px-5 py-20 md:py-28 bg-[#f5f2ed]">
+            <div class="max-w-2xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// Here's your ticket</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                    90 minutes. <span class="accent-italic text-[#CC5500] font-normal">$9.</span> Walk out shipped.
+                </h2>
+
+                <div class="rounded-3xl overflow-hidden border border-black/10 shadow-sm">
+                    <!-- Stub header -->
+                    <div class="bg-[#1a1a1a] text-white px-6 md:px-8 py-4 flex items-center justify-between">
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Admission · Workshop №01</span>
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">WMVP·26·S0001</span>
+                    </div>
+                    <!-- Body -->
+                    <div class="bg-white px-6 md:px-8 py-8">
+                        <p class="text-4xl font-semibold tracking-tight">ship<span class="text-[#CC5500]">·</span>able<span class="text-[#CC5500]">.</span></p>
+                        <p class="mt-2 text-neutral-600">A 90-minute working session with John Iseghohi. <span class="accent-italic text-[#CC5500]">Build your MVP, live.</span></p>
+
+                        <dl class="grid grid-cols-2 gap-y-6 mt-8 pt-8 border-t border-black/10">
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Date</dt>
+                                <dd class="mt-1 font-semibold">[[DATE]]</dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Start</dt>
+                                <dd class="mt-1 font-semibold">[[TIME]] <span class="accent-italic text-neutral-500">[[TZ]]</span></dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Length</dt>
+                                <dd class="mt-1 font-semibold">90 min + Q&amp;A</dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Format</dt>
+                                <dd class="mt-1 font-semibold">Live on Zoom</dd>
+                            </div>
+                        </dl>
+
+                        <div class="ticket-perf my-8"></div>
+
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">What's included</span>
+                            <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-400">Value</span>
+                        </div>
+                        <ul class="mt-3 space-y-2 text-sm">
+                            <li class="flex justify-between"><span>Live workshop</span><span class="font-semibold">$97</span></li>
+                            <li class="flex justify-between"><span>Ship Sheet worksheet</span><span class="font-semibold">$47</span></li>
+                            <li class="flex justify-between"><span>Lifetime replay</span><span class="font-semibold">$47</span></li>
+                            <li class="flex justify-between"><span>48-Hour Build Plan</span><span class="font-semibold">$199</span></li>
+                            <li class="flex justify-between text-[#CC5500]"><span>Bonus · AI MVP Builder</span><span class="font-semibold">$199</span></li>
+                            <li class="flex justify-between text-[#CC5500]"><span>Bonus · Starter Kit</span><span class="font-semibold">$149</span></li>
+                        </ul>
+                    </div>
+                    <!-- Stub footer -->
+                    <div class="bg-[#1a1a1a] text-white px-6 md:px-8 py-8 text-center">
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 block mb-2">One-time · Seat</span>
+                        <p class="text-5xl font-semibold tracking-tight"><span class="text-[#e9a06a]">$</span>9</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-2 mb-6"><span class="line-through">$738</span> value · 2 bonuses (live)</p>
+                        <a href="#seat" class="group flex items-center justify-center gap-2 w-full rounded-xl bg-white text-[#1a1a1a] px-6 py-4 text-base font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-[0.99]">
+                            <span>Save my seat</span>
+                            <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                        </a>
+                        <p class="font-mono-eyebrow text-[9px] uppercase text-neutral-600 mt-5">WMVP·26·S0001 · Bring to Zoom</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TIMEZONES ===================== -->
+        <section class="px-5 py-20 md:py-24 max-w-3xl mx-auto reveal">
+            <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// Outside your timezone</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.04] mb-6">
+                Here's when it lands <span class="accent-italic text-[#CC5500] font-normal">where you are.</span>
+            </h2>
+            <p class="text-lg text-neutral-600 mb-10">Workshop runs <strong class="font-semibold text-[#1a1a1a]">[[TIME]] [[TZ]]</strong> on [[DATE]]. Set a reminder for your local time below.</p>
+            <!-- [[TZ_*]] swap in your audience's top regions (your newsletter analytics will tell you which) -->
+            <div class="rounded-3xl border border-black/10 overflow-hidden divide-y divide-black/10">
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500]">New York</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_NYC_DATE]] · EDT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_NYC_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500]">London</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LON_DATE]] · BST</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LON_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500]">Lagos</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LAG_DATE]] · WAT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LAG_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500]">Los Angeles</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LA_DATE]] · PDT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LA_TIME]]</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== MEET YOUR TEACHER ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-3xl mx-auto">
+            <!-- Replace src with a real photo of John; alt describes him -->
+            <img src="image/og-image.png" alt="John Iseghohi, founder of Weekend MVP" class="w-full rounded-3xl object-cover aspect-[4/3] bg-[#f5f2ed] mb-10">
+            <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-6">
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-500">// Meet your teacher</span>
+            </div>
+            <h2 class="text-5xl font-semibold tracking-tight">John Iseghohi.</h2>
+            <p class="font-mono-eyebrow text-[11px] uppercase text-[#CC5500] mt-2">Founder · Weekend MVP</p>
+            <div class="mt-8 space-y-5 text-lg text-neutral-700">
+                <p>I've watched people who were sure they needed more time, a co-founder, or to "learn to code first" come in, change almost nothing, scope one tiny version of what they already had, and ship it in a weekend — then get their first real users for the first time ever.</p>
+                <p>The workshop is the 90-minute version of how we start that.</p>
+            </div>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">[[STAT_2]]+ builders</span>
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">78 ideas broken down</span>
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">New ideas daily at weekendmvp.app</span>
+            </div>
+        </section>
+
+        <!-- ===================== SEAT / EMAIL CAPTURE ===================== -->
+        <section id="seat" class="px-5 py-20 md:py-28 bg-[#1a1a1a] text-white scroll-mt-24">
+            <div class="max-w-xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#CC5500] animate-pulse" aria-hidden="true"></span>
+                    <span class="sr-only">Live:</span>
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-400">Save your seat</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-semibold tracking-tight">90 minutes from now, <span class="accent-italic text-[#e9a06a] font-normal">it's live.</span></h2>
+                <p class="mt-4 text-neutral-400">Enter your email to grab your $9 seat. We'll send your Zoom link, the Ship Sheet, and your bonuses.</p>
+
+                <form data-newsletter-subscribe
+                      data-utm-campaign="shipable-workshop"
+                      class="mt-8 flex flex-col sm:flex-row gap-3"
+                      novalidate>
+                    <label for="seat-email" class="sr-only">Email address</label>
+                    <input
+                        type="email"
+                        id="seat-email"
+                        name="email"
+                        required
+                        placeholder="you@example.com"
+                        aria-label="Email address"
+                        class="flex-1 bg-white/[0.04] border border-white/10 rounded-full px-5 py-4 text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/30 transition-all">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white text-[#1a1a1a] rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span data-label-default>Save my seat · $9</span>
+                        <span data-label-loading class="hidden">Saving…</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </button>
+                </form>
+                <p data-form-message class="mt-4 text-xs text-neutral-500" role="status" aria-live="polite">
+                    One-time $9 · Live on Zoom · Replay included · Unsubscribe anytime.
+                </p>
+                <!-- NOTE: This captures the lead via Beehiiv (/api/subscribe). Wire [[CHECKOUT_URL]]
+                     (Stripe/Gumroad) for live payment once your checkout is ready. -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="px-5 border-t border-black/10">
+        <div class="max-w-5xl mx-auto py-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="index.html"><div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                    <p class="text-neutral-500 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-400 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-600 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                        <li><a href="ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                        <li><a href="startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Resources</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                        <li><a href="articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                        <li><a href="newsletter.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Newsletter</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Workshop</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#seat" class="text-neutral-500 hover:text-neutral-900 transition-colors">Save my seat</a></li>
+                        <li><a href="privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-400 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                    <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                    <span class="sr-only"> (opens in new tab)</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================== STICKY CTA BAR ===================== -->
+    <div class="fixed bottom-4 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+        <div class="pointer-events-auto flex items-center justify-between gap-4 w-full max-w-2xl rounded-2xl bg-[#1a1a1a] text-white pl-5 pr-2 py-2 shadow-2xl border border-white/10">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#CC5500] shrink-0" aria-hidden="true"></span>
+                <span id="sticky-countdown" class="font-mono-eyebrow text-[10px] sm:text-[11px] uppercase text-neutral-300 truncate" data-deadline="[[WORKSHOP_DATE_ISO]]">Seats open now</span>
+            </div>
+            <a href="#seat" class="inline-flex items-center gap-2 rounded-xl bg-[#e9a06a] text-[#1a1a1a] px-4 sm:px-5 py-3 text-xs sm:text-sm font-semibold hover:bg-[#f0b380] transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95 shrink-0">
+                Save your seat · $9
+                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+            </a>
+        </div>
+    </div>
+
+    <!-- ===================== SCRIPTS ===================== -->
+    <script>
+        // Year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Countdown — drives both the hero grid and the sticky bar.
+        (function () {
+            const grid = document.getElementById('countdown');
+            const sticky = document.getElementById('sticky-countdown');
+            const raw = (grid && grid.dataset.deadline) || (sticky && sticky.dataset.deadline) || '';
+            const deadline = raw && !raw.startsWith('[[') ? new Date(raw).getTime() : NaN;
+
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            function tick() {
+                if (isNaN(deadline)) {
+                    if (sticky) sticky.textContent = 'Seats open now';
+                    return; // placeholder date not set yet
+                }
+                let diff = Math.max(0, deadline - Date.now());
+                const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+                const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+                const m = Math.floor(diff / 60000); diff -= m * 60000;
+                const s = Math.floor(diff / 1000);
+                if (grid) {
+                    grid.querySelector('[data-cd="days"]').textContent = pad(d);
+                    grid.querySelector('[data-cd="hours"]').textContent = pad(h);
+                    grid.querySelector('[data-cd="minutes"]').textContent = pad(m);
+                    grid.querySelector('[data-cd="seconds"]').textContent = pad(s);
+                }
+                if (sticky) sticky.textContent = (deadline - Date.now() <= 0)
+                    ? 'Starting now'
+                    : pad(d) + 'd ' + pad(h) + 'h ' + pad(m) + 'm ' + pad(s) + 's left';
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+
+        // Scroll reveal
+        (function () {
+            if (!('IntersectionObserver' in window)) {
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-in'));
+                return;
+            }
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+            }, { threshold: 0.12 });
+            document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        })();
+
+        // Reusable subscribe handler (mirrors newsletter.html / api/subscribe)
+        document.querySelectorAll('form[data-newsletter-subscribe]').forEach((form) => {
+            const msg = form.parentElement.querySelector('[data-form-message]');
+            const btn = form.querySelector('button[type="submit"]');
+            const labelDefault = form.querySelector('[data-label-default]');
+            const labelLoading = form.querySelector('[data-label-loading]');
+            const campaign = form.dataset.utmCampaign || 'shipable-workshop';
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = form.querySelector('input[type="email"]').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#e9a06a]'); }
+                    return;
+                }
+                btn.disabled = true;
+                labelDefault?.classList.add('hidden');
+                labelLoading?.classList.remove('hidden');
+                if (msg) { msg.textContent = 'Saving…'; msg.classList.remove('text-[#e9a06a]'); msg.classList.add('text-neutral-500'); }
+                try {
+                    const res = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'shipable', utm_medium: 'website' })
+                    });
+                    if (!res.ok) throw new Error('Subscribe failed');
+                    form.reset();
+                    if (typeof window.gtag === 'function') { window.gtag('event', 'shipable_seat_saved'); }
+                    if (typeof window.fbq === 'function') { window.fbq('track', 'Lead'); }
+                    if (msg) { msg.textContent = "You're on the list — check your inbox to confirm your seat."; msg.classList.remove('text-[#e9a06a]'); msg.classList.add('text-white'); }
+                    labelLoading?.classList.add('hidden');
+                    labelDefault && (labelDefault.textContent = 'Seat saved ✓');
+                    labelDefault?.classList.remove('hidden');
+                } catch (err) {
+                    if (msg) { msg.textContent = 'Something went wrong. Try again in a moment.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#e9a06a]'); }
+                    btn.disabled = false;
+                    labelLoading?.classList.add('hidden');
+                    labelDefault?.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
