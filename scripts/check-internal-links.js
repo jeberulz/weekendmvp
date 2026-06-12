@@ -44,7 +44,16 @@ function resolveFrom(baseFile, target) {
 async function main() {
   const files = await glob('**/*.html', {
     cwd: root,
-    ignore: ['node_modules/**'],
+    // Skip non-page sources: nav/modal fragments are injected into pages at a
+    // different depth (their relative links resolve post-injection via
+    // sync-nav.js prefixing), idea templates are materialised at ideas/{slug}/,
+    // and content/social slides are standalone preview assets, not site pages.
+    ignore: [
+      'node_modules/**',
+      'partials/**',
+      '**/_template*.html',
+      'content/social/**',
+    ],
     nodir: true,
   });
 
