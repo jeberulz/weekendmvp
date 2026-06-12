@@ -1,0 +1,70 @@
+---
+slug: "2026-04-23-am"
+title: "Idea of the Day: AI Nutrition Planner for Trainers"
+description: "'Strength training gear' broke out +340%. The weekend build for the 340K trainers selling next to it."
+publishedAt: "2026-04-23"
+edition: "am"
+ctaUrl: "/startup-ideas"
+---
+
+"Strength training gear" just broke out +340% this week. That's not just lifters buying dumbbells — it's personal trainers, gym owners, and online coaches staffing up. Every one of them sells nutrition too. And almost none of them can build it.
+
+**IDEA OF THE DAY**
+
+## AI Nutrition Planner for Trainers
+
+Personal trainers sell results. Nutrition drives 70–80% of those results. Yet almost every trainer delivers nutrition the same broken way — a Google Doc with a generic 2,000-calorie template copy-pasted from a certification manual, with a sticky note that says "adjust to your client." That Clean Life is priced at $39–$119/mo for dietitians, not NASM-certified PTs serving 10–30 clients. Trainerize has nutrition as an afterthought bolted onto workouts. Result: the trainer with a $150/mo client roster writes meal plans by hand in Notion on Sunday nights, 45 minutes per client, forever.
+
+A trainer-first SaaS where one client profile produces a week of macro-matched meals in under 20 seconds. Trainer enters goal (cut / bulk / recomp / maintain), target macros, allergies, cuisine preferences, and weekly budget. The AI writes the plan, USDA FoodData Central validates the macros, and a branded PDF or client portal link ships in the trainer's voice. Pricing is per-trainer flat — $29/mo covers 3 clients or 30. The value is the trainer's time, not the client list length.
+
+**Why it's a weekend build:** ~8h to MVP, $1K/mo target. Stack: Cursor, Claude.
+
+<Cta href="/ideas/ai-nutrition-planner-trainers">Read the full teardown</Cta>
+
+---
+
+**TREND WATCH**
+
+"Strength training gear" jumped from quiet background noise to 4,400 monthly searches — a 340% breakout. Search curves for fitness gear tend to lead fitness-service adoption by 60–90 days. The 340,000 certified trainers in the U.S. (BLS, 14% projected job growth) are about to hit a demand wave, and their current tech stack is Google Docs plus MyFitnessPal. The weekend opportunity isn't selling them another gym app. It's selling them the one tool they need at the single biggest bottleneck in their week.
+
+**The hidden customer lives one step up.** The online coach running 15–50 clients remotely. Same pain, bigger willingness to pay. They'll happily pay $49/mo for a tool that hands back a full Sunday.
+
+> 📈 **"strength training gear"** — 4,400/mo volume · +340% growth · **BREAKOUT**
+
+Also trending: *nasm certification, online personal trainer, macro calculator.*
+
+---
+
+**FOUNDER PLAYBOOK**
+
+**Trainerize and That Clean Life have been dominant for a decade. The opening is the NASM-certified PT the incumbents priced out.**
+
+*Sell per-trainer, not per-client. The moment you charge by client count, you lose the plan.*
+
+- **USDA is the moat.** An AI that hallucinates macros is a lawsuit waiting to happen. Every generated plan runs through a USDA FoodData Central validation loop that checks calories, protein, carbs, and fat against real food. That validation step is the trust signal a certified PT will pay for — and the reason competitors can't ship this in a week.
+- **Brand the PDF, not the app.** Trainers don't want to push clients to another SaaS login. Generate branded PDFs the trainer attaches to email. Their logo, their voice — invisible infrastructure. You win by disappearing.
+- **Price flat at $29.** Not $29/month/client. $29/month. Serve 3 or 30 — same price. Trainerize at $75+ and That Clean Life at $39–$119 both price per-seat or per-client. That pricing-structure gap is the wedge.
+
+Read more on trainer SaaS pricing wedges → [SOURCE — add link before sending]
+
+---
+
+**🛠 STEAL THIS — The 90-minute "one-client meal plan" MVP**
+
+Build the slice, not the suite. Prove the plan quality before you build the billing.
+
+- **0–30 min:** Next.js + Supabase scaffold. One form: client goal, target macros, allergies, cuisine. Submit button only. No auth, no multi-tenancy — single user, local.
+- **30–60 min:** Claude call with a tight system prompt: *"generate a 7-day meal plan for \{goal}, \{macros}, avoiding \{allergies}, cuisine=\{cuisine}."* Return structured JSON with macros per meal.
+- **60–90 min:** Wire a basic USDA FoodData Central lookup that sanity-checks the total daily calories and macros against the target. Show the delta. That's your trust layer.
+
+Test it on yourself before anyone else. If the macros miss the target by more than 10% on the first try, the prompt is wrong — not the idea.
+
+---
+
+Sneak peek at tomorrow's idea…
+
+*A dashboard that turns scattered subscription metrics — MRR, churn, LTV — into a single weekly text even a non-technical investor actually reads.*
+
+---
+
+**PS** — What's your experience with Trainerize or That Clean Life? Hit reply — I'll compile a short competitive audit this weekend and share the best notes Friday.

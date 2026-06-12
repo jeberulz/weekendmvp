@@ -1,0 +1,68 @@
+---
+slug: "2026-04-22-am"
+title: "Idea of the Day: AI Feedback Triage Widget"
+description: "'CRM tools for customer service' broke out +4,525%. Here's the one-snippet $1K/mo version for solo devs."
+publishedAt: "2026-04-22"
+edition: "am"
+ctaUrl: "/startup-ideas"
+---
+
+The CRM market is quietly getting a facelift. "CRM tools for customer service" just broke out +4,525% in the last 90 days — someone's searching for a cheaper, lighter way to handle the customer messages piling up in every inbox. Solo devs don't need another Zendesk clone. They need a snippet.
+
+**IDEA OF THE DAY**
+
+## AI Feedback Triage Widget
+
+Solo developers gather feedback from five places: app reviews, emails, Discord pings, support tickets, and the occasional tweet. Responding to each feels productive. Sorting them into priorities does not. Feature requests pile up next to bug reports and thank-you notes, and the person who built the whole product now owns the second job of deciding what every piece of it means. Canny and UserVoice exist for this — priced and designed for teams with a dedicated PM. Solo devs bounce off them in the trial.
+
+A lightweight widget that embeds on any site or app with one script tag. Every submission gets AI-tagged — bug / feature / confusion / praise — clustered with similar messages, and rolled into a ranked top-3 priority view. A weekly email digest summarizes what changed so the dev sees what matters without reading every ping. One snippet covers Next.js, WordPress, and Framer.
+
+**Why it's a weekend build:** ~10h to MVP, $1K/mo target. Stack: Cursor, Claude.
+
+<Cta href="/ideas/ai-feedback-triage-widget">Read the full teardown</Cta>
+
+---
+
+**TREND WATCH**
+
+The search for "crm tools for customer service" jumped from background noise to 2,900 monthly searches in 90 days. That's not Fortune 500 procurement teams — they already own Salesforce. It's SMB owners, indie SaaS founders, and solopreneurs who've outgrown a shared Gmail inbox but look at Zendesk's $55/mo starter tier and flinch. The market signal: someone cheaper, lighter, AI-first is about to win this tier.
+
+**The hidden customer lives one door over.** The solo developer whose app is gaining real users and finding their feedback scattered across Discord, app reviews, and email. Same pain, different buyer — both willing to pay $9/mo for a widget that sorts the mess while they sleep.
+
+> 📈 **"crm tools for customer service"** — 2,900/mo volume · +4,525% growth · **BREAKOUT**
+
+Also trending: *improve client retention, customer feedback software, ticketing system small business.*
+
+---
+
+**FOUNDER PLAYBOOK**
+
+**Canny raised $15M chasing PM-led teams. The opening is the tier below them.**
+
+*Solve for the one-person product team, not the committee.*
+
+- **Price 3× under the category.** Canny starts at $79/mo. UserJot at $29/mo. Launch at $9/mo. Don't undercut by 10% — undercut by a decimal place. Solo devs decide in one coffee, not a procurement cycle.
+- **Ship the install before the dashboard.** The first thing a founder sees is the install friction. If it's not one script tag, copy-paste, they leave. Build a polished one-line install as v0. The dashboard can come next weekend.
+- **The digest is the retention hook.** The weekly top-3 email is what keeps them subscribed. The widget collects. The digest is the product they remember paying for.
+
+---
+
+**🛠 STEAL THIS — The 90-minute "widget v0" framework**
+
+Before writing a backend, prove the install flow. One focused evening, three time-boxed sprints.
+
+- **0–30 min:** Write the `<script>` tag install snippet. Drop it in a test Next.js app. Open the page. If a floating feedback button appears, you're halfway there.
+- **30–60 min:** Wire a Supabase table plus an insert endpoint. Submissions land in a row — no tagging, no AI, no ranking. Just capture.
+- **60–90 min:** Pipe each new row to a Claude Haiku call that returns a single tag (bug / feature / praise / confusion). Log the tag next to the submission. That's your MVP.
+
+The AI categorization is the demo moment. Ship one snippet that captures and tags before you build anything else — everything downstream is UX polish.
+
+---
+
+Sneak peek at tomorrow's idea…
+
+*A tool that turns one podcast episode into 10 days of social posts — no extra recording, no extra writing.*
+
+---
+
+**PS** — What feedback tool do you currently use as a solo dev? Hit reply with the name — I'll share the full list Friday.
