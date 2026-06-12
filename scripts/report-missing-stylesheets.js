@@ -12,7 +12,10 @@ const root = path.join(__dirname, '..');
 async function main() {
   const files = await glob('**/*.html', {
     cwd: root,
-    ignore: ['node_modules/**'],
+    // Fragments (partials) and content/social slides are not standalone site
+    // pages — they don't link the compiled styles.css (slides use _shared.css),
+    // so they're excluded from this check.
+    ignore: ['node_modules/**', 'partials/**', 'content/social/**'],
     nodir: true,
   });
 
