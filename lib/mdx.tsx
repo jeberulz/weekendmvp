@@ -161,30 +161,36 @@ export const defaultMdxComponents: MDXComponents = {
 /* Renderer                                                            */
 /* ------------------------------------------------------------------ */
 
-const MDX_OPTIONS: MDXRemoteOptions = {
-  parseFrontmatter: true,
-  mdxOptions: {
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [[rehypePrettyCode, { theme: "github-dark" }]],
-  },
-};
+function mdxOptions(codeTheme: string): MDXRemoteOptions {
+  return {
+    parseFrontmatter: true,
+    mdxOptions: {
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [[rehypePrettyCode, { theme: codeTheme }]],
+    },
+  };
+}
 
 /**
  * Server component rendering an MDX source string with the shared pipeline.
- * `components` overrides/extends the default prose map.
+ * `components` overrides/extends the default prose map. `codeTheme` selects
+ * the Shiki theme for fenced blocks — light surfaces (idea pages) pass
+ * "github-light" so code stays readable on cream.
  */
 export function Mdx({
   source,
   components,
+  codeTheme = "github-dark",
 }: {
   source: string;
   components?: MDXComponents;
+  codeTheme?: string;
 }) {
   return (
     <MDXRemote
       source={source}
       components={{ ...defaultMdxComponents, ...components }}
-      options={MDX_OPTIONS}
+      options={mdxOptions(codeTheme)}
     />
   );
 }

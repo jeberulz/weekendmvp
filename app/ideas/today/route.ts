@@ -10,10 +10,14 @@
  */
 
 import { NextResponse } from "next/server";
+import { connection } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
 export async function GET(request: Request) {
+  // Always resolve at request time — the latest idea changes daily and must
+  // never be baked into a prerender.
+  await connection();
   try {
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
     if (convexUrl) {
