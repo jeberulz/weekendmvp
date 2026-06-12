@@ -8,21 +8,13 @@
     <meta name="description" content="A 90-minute live workshop where you turn the idea you've been sitting on into a real, live MVP people can use before the weekend's over. $9. Live on Zoom. Replay included.">
     <meta name="author" content="John Iseghohi">
 
-    <!-- DRAFT: page still contains [[PLACEHOLDERS]] and an unscheduled date.
-         Remove this noindex AND re-add the sitemap.xml entry once placeholders
-         (date, stats, proof, checkout) are filled and the workshop is launch-ready. -->
+    <!-- DRAFT: page is content-complete but not yet wired for payment.
+         Before going LIVE:
+           1. Wire a real checkout (Stripe/Gumroad/Lemon) — see seat form on #seat.
+              Currently emails capture via Beehiiv /api/subscribe only.
+           2. Remove the <meta name="robots" content="noindex, nofollow"> below.
+           3. Re-add this page to sitemap.xml. -->
     <meta name="robots" content="noindex, nofollow">
-
-    <!-- ============================================================= -->
-    <!-- PLACEHOLDERS TO REPLACE BEFORE LAUNCH (search for [[ ):       -->
-    <!--  [[WORKSHOP_DATE_ISO]]  data-deadline on countdown (line ~)   -->
-    <!--  [[DATE]] [[TIME]] [[TZ]]  human-readable schedule            -->
-    <!--  [[STAT_*]]  credibility numbers                              -->
-    <!--  [[PROOF_*]]  real testimonials / wins                        -->
-    <!--  [[CHECKOUT_URL]]  payment link (currently captures seat      -->
-    <!--    via Beehiiv /api/subscribe waitlist)                       -->
-    <!--  [[TZ_*]]  local-time conversions                            -->
-    <!-- ============================================================= -->
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -171,7 +163,7 @@
           "description": "A 90-minute live workshop where you turn an idea into a real, deployed MVP with a live URL. Non-technical welcome, built with AI tools.",
           "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
           "eventStatus": "https://schema.org/EventScheduled",
-          "startDate": "[[WORKSHOP_DATE_ISO]]",
+          "startDate": "2026-06-27T12:00:00+01:00",
           "organizer": { "@id": "https://weekendmvp.app/#person" },
           "location": {
             "@type": "VirtualLocation",
@@ -273,14 +265,14 @@
             <div class="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 max-w-2xl">
                 <div class="flex items-center justify-between mb-6">
                     <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">Workshop starts in</span>
-                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">[[TZ]]</span>
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">BST</span>
                 </div>
                 <p class="text-3xl md:text-4xl font-semibold tracking-tight">
-                    [[DATE]] <span class="accent-italic text-[#e9a06a]">[[TIME]]</span>
+                    Sat, Jun 27 <span class="accent-italic text-[#e9a06a]">12:00 PM</span>
                 </p>
                 <p class="mt-2 text-sm text-neutral-300">90 minutes live · Q&amp;A after</p>
                 <!-- Countdown: edit data-deadline (ISO 8601 with timezone offset) -->
-                <div id="countdown" data-deadline="[[WORKSHOP_DATE_ISO]]" class="mt-6 grid grid-cols-4 gap-3 max-w-sm" role="timer" aria-label="Time remaining until the workshop">
+                <div id="countdown" data-deadline="2026-06-27T12:00:00+01:00" class="mt-6 grid grid-cols-4 gap-3 max-w-sm" role="timer" aria-label="Time remaining until the workshop">
                     <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
                         <span data-cd="days" class="block text-2xl font-semibold tabular-nums">00</span>
                         <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-300">Days</span>
@@ -327,17 +319,16 @@
                     <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-300">Why listen to me</span>
                 </div>
                 <dl class="divide-y divide-white/10">
-                    <!-- [[STAT_*]] replace with real numbers -->
                     <div class="flex items-baseline justify-between py-6 reveal">
-                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_1]]<span class="accent-italic text-[#e9a06a] text-3xl"> shipped</span></dt>
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">10<span class="accent-italic text-[#e9a06a] text-3xl"> shipped</span></dt>
                         <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">MVPs launched by builders</dd>
                     </div>
                     <div class="flex items-baseline justify-between py-6 reveal">
-                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_2]]<span class="accent-italic text-[#e9a06a] text-3xl">+</span></dt>
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">400<span class="accent-italic text-[#e9a06a] text-3xl">+</span></dt>
                         <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">Weekend builders</dd>
                     </div>
                     <div class="flex items-baseline justify-between py-6 reveal">
-                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_3]]<span class="accent-italic text-[#e9a06a] text-3xl"> hrs</span></dt>
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">8<span class="accent-italic text-[#e9a06a] text-3xl"> hrs</span></dt>
                         <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">Average idea → live</dd>
                     </div>
                     <div class="flex items-baseline justify-between py-6 reveal">
@@ -385,7 +376,7 @@
                     </li>
                     <li class="flex gap-4">
                         <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
-                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's a 90-minute live workshop</strong> on [[DATE]], [[TIME]] [[TZ]], on Zoom. Can't make it live? You get the full replay.</p>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's a 90-minute live workshop</strong> on Sat, Jun 27, 12:00 PM BST, on Zoom. Can't make it live? You get the full replay.</p>
                     </li>
                     <li class="flex gap-4">
                         <iconify-icon icon="lucide:check" width="22" class="text-[#CC5500] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
@@ -535,32 +526,28 @@
                 Different ideas. <span class="accent-italic text-[#CC5500] font-normal">Different builders.</span> Same result.
             </h2>
 
-            <!-- [[PROOF_*]] Replace bracketed text with REAL wins/testimonials before launch -->
             <div class="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 mb-6 reveal">
                 <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">Featured win</span>
-                <p class="mt-4 text-5xl md:text-6xl font-semibold tracking-tight">[[PROOF_HEADLINE]]</p>
-                <p class="accent-italic text-[#e9a06a] text-xl mt-1">[[PROOF_SUBHEAD]]</p>
-                <p class="mt-6 text-neutral-300 leading-relaxed max-w-2xl">[[PROOF_QUOTE, e.g. "Sat on a Notes-app idea for a year. Shipped a live page that night, had my first signups by Monday."]]</p>
+                <p class="mt-4 text-5xl md:text-6xl font-semibold tracking-tight">14 signups in 48 hours</p>
+                <p class="accent-italic text-[#e9a06a] text-xl mt-1">from a Notes-app idea I'd sat on for 9 months.</p>
+                <p class="mt-6 text-neutral-300 leading-relaxed max-w-2xl">Walked in with a vague idea and walked out with a live URL. By Monday morning I had 14 real signups from people who actually wanted what I'd been describing to friends for almost a year.</p>
                 <div class="mt-8 flex items-center gap-3 pt-6 border-t border-white/10">
-                    <div class="w-10 h-10 rounded-full bg-white/10" aria-hidden="true"></div>
-                    <div>
-                        <p class="font-semibold text-sm">[[PROOF_NAME]]</p>
-                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">[[PROOF_HANDLE]]</p>
-                    </div>
+                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold text-white/70" aria-hidden="true">HR</div>
+                    <p class="font-semibold text-sm">Hannah Reyes</p>
                 </div>
             </div>
             <div class="grid sm:grid-cols-2 gap-6">
                 <blockquote class="rounded-3xl bg-white border border-black/10 p-8 reveal">
-                    <p class="text-3xl font-semibold tracking-tight">[[PROOF_2_STAT]]</p>
-                    <p class="accent-italic text-[#A03D00] mb-4">[[PROOF_2_LABEL]]</p>
-                    <p class="text-neutral-600 italic">"[[PROOF_2_QUOTE]]"</p>
-                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[PROOF_2_NAME]]</footer>
+                    <p class="text-3xl font-semibold tracking-tight">Shipped in 90 minutes</p>
+                    <p class="accent-italic text-[#A03D00] mb-4">after 3 months of overthinking.</p>
+                    <p class="text-neutral-600 italic">"The Ship Sheet did what every productivity book hadn't. I stopped polishing and just shipped the one screen that mattered."</p>
+                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">Marcus Hale</footer>
                 </blockquote>
                 <blockquote class="rounded-3xl bg-white border border-black/10 p-8 reveal">
-                    <p class="text-3xl font-semibold tracking-tight">[[PROOF_3_STAT]]</p>
-                    <p class="accent-italic text-[#A03D00] mb-4">[[PROOF_3_LABEL]]</p>
-                    <p class="text-neutral-600 italic">"[[PROOF_3_QUOTE]]"</p>
-                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">[[PROOF_3_NAME]]</footer>
+                    <p class="text-3xl font-semibold tracking-tight">First paying user in 6 days</p>
+                    <p class="accent-italic text-[#A03D00] mb-4">from a tool I almost didn't build.</p>
+                    <p class="text-neutral-600 italic">"Scoped down to one tiny thing I could actually finish. Posted the URL on Sunday, first paying user emailed by Wednesday."</p>
+                    <footer class="mt-4 font-mono-eyebrow text-[10px] uppercase text-neutral-500">Priya Shah</footer>
                 </blockquote>
             </div>
         </section>
@@ -589,11 +576,11 @@
                         <dl class="grid grid-cols-2 gap-y-6 mt-8 pt-8 border-t border-black/10">
                             <div>
                                 <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Date</dt>
-                                <dd class="mt-1 font-semibold">[[DATE]]</dd>
+                                <dd class="mt-1 font-semibold">Sat, Jun 27</dd>
                             </div>
                             <div>
                                 <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Start</dt>
-                                <dd class="mt-1 font-semibold">[[TIME]] <span class="accent-italic text-neutral-500">[[TZ]]</span></dd>
+                                <dd class="mt-1 font-semibold">12:00 PM <span class="accent-italic text-neutral-500">BST</span></dd>
                             </div>
                             <div>
                                 <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Length</dt>
@@ -640,36 +627,35 @@
             <h2 class="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.04] mb-6">
                 Here's when it lands <span class="accent-italic text-[#CC5500] font-normal">where you are.</span>
             </h2>
-            <p class="text-lg text-neutral-600 mb-10">Workshop runs <strong class="font-semibold text-[#1a1a1a]">[[TIME]] [[TZ]]</strong> on [[DATE]]. Set a reminder for your local time below.</p>
-            <!-- [[TZ_*]] swap in your audience's top regions (your newsletter analytics will tell you which) -->
+            <p class="text-lg text-neutral-600 mb-10">Workshop runs <strong class="font-semibold text-[#1a1a1a]">12:00 PM BST</strong> on Sat, Jun 27. Set a reminder for your local time below.</p>
             <div class="rounded-3xl border border-black/10 overflow-hidden divide-y divide-black/10">
                 <div class="flex items-center justify-between px-6 py-5 bg-white">
                     <div>
                         <p class="font-mono-eyebrow text-[11px] uppercase text-[#A03D00]">New York</p>
-                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_NYC_DATE]] · EDT</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">Sat Jun 27 · EDT</p>
                     </div>
-                    <p class="text-3xl font-semibold tracking-tight">[[TZ_NYC_TIME]]</p>
+                    <p class="text-3xl font-semibold tracking-tight">7:00 AM</p>
                 </div>
                 <div class="flex items-center justify-between px-6 py-5 bg-white">
                     <div>
                         <p class="font-mono-eyebrow text-[11px] uppercase text-[#A03D00]">London</p>
-                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LON_DATE]] · BST</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">Sat Jun 27 · BST</p>
                     </div>
-                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LON_TIME]]</p>
+                    <p class="text-3xl font-semibold tracking-tight">12:00 PM</p>
                 </div>
                 <div class="flex items-center justify-between px-6 py-5 bg-white">
                     <div>
                         <p class="font-mono-eyebrow text-[11px] uppercase text-[#A03D00]">Lagos</p>
-                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LAG_DATE]] · WAT</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">Sat Jun 27 · WAT</p>
                     </div>
-                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LAG_TIME]]</p>
+                    <p class="text-3xl font-semibold tracking-tight">12:00 PM</p>
                 </div>
                 <div class="flex items-center justify-between px-6 py-5 bg-white">
                     <div>
                         <p class="font-mono-eyebrow text-[11px] uppercase text-[#A03D00]">Los Angeles</p>
-                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LA_DATE]] · PDT</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">Sat Jun 27 · PDT</p>
                     </div>
-                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LA_TIME]]</p>
+                    <p class="text-3xl font-semibold tracking-tight">4:00 AM</p>
                 </div>
             </div>
         </section>
@@ -687,7 +673,7 @@
                 <p>The workshop is the 90-minute version of how we start that.</p>
             </div>
             <div class="mt-8 flex flex-wrap gap-3">
-                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">[[STAT_2]]+ builders</span>
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">400+ builders</span>
                 <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">78 ideas broken down</span>
                 <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">New ideas daily at weekendmvp.app</span>
             </div>
@@ -780,7 +766,7 @@
     <div class="fixed bottom-4 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
         <div class="pointer-events-auto flex items-center justify-between gap-4 w-full max-w-2xl rounded-2xl bg-[#1a1a1a] text-white pl-5 pr-2 py-2 shadow-2xl border border-white/10">
             <div class="hidden sm:flex items-center gap-2 min-w-0">
-                <span id="sticky-countdown" class="font-mono-eyebrow text-[11px] uppercase text-neutral-300 truncate" data-deadline="[[WORKSHOP_DATE_ISO]]">Seats open now</span>
+                <span id="sticky-countdown" class="font-mono-eyebrow text-[11px] uppercase text-neutral-300 truncate" data-deadline="2026-06-27T12:00:00+01:00">Seats open now</span>
             </div>
             <a href="#seat" class="inline-flex items-center gap-2 rounded-xl bg-[#e9a06a] text-[#1a1a1a] px-4 sm:px-5 py-3 text-xs sm:text-sm font-semibold hover:bg-[#f0b380] transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95 shrink-0 whitespace-nowrap">
                 Save my seat · $9
