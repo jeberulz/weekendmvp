@@ -218,45 +218,52 @@
 
     <main>
         <!-- ===================== HERO ===================== -->
-        <!-- PLACEHOLDER COVER IMAGE: swap src on <img id="hero-cover"> with the real asset.
-             Recommended export: ~2400×1400 landscape for desktop. For mobile art direction,
-             replace <img> with <picture> + <source media="(max-width: 767px)"> portrait crop. -->
         <section class="relative overflow-hidden isolate bg-[#0a0a0a]">
-            <img
-                id="hero-cover"
-                src="https://picsum.photos/seed/shipable-hero/2400/1400"
-                alt=""
-                aria-hidden="true"
-                fetchpriority="high"
-                decoding="async"
-                class="absolute inset-0 -z-20 w-full h-full object-cover object-[72%_center] md:object-[right_center]">
-            <!-- Scrim: bottom-up on mobile (text sits at bottom), left-to-right on desktop (text sits on left) -->
-            <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-[#0a0a0a]/30 md:bg-gradient-to-r md:from-[#0a0a0a] md:via-[#0a0a0a]/80 md:to-[#0a0a0a]/10" aria-hidden="true"></div>
+            <picture>
+                <!-- Mobile portrait crop (1200×1600), WebP preferred -->
+                <source media="(max-width: 767px)" type="image/webp" srcset="image/hero-cover-mobile.webp">
+                <source media="(max-width: 767px)" type="image/jpeg" srcset="image/hero-cover-mobile.jpg">
+                <!-- Desktop 16:9 crop (2400×1350), WebP preferred -->
+                <source media="(min-width: 768px)" type="image/webp" srcset="image/hero-cover-desktop.webp">
+                <source media="(min-width: 768px)" type="image/jpeg" srcset="image/hero-cover-desktop.jpg">
+                <img
+                    id="hero-cover"
+                    src="image/hero-cover-desktop.jpg"
+                    alt=""
+                    aria-hidden="true"
+                    fetchpriority="high"
+                    decoding="async"
+                    class="absolute inset-0 -z-20 w-full h-full object-cover object-center">
+            </picture>
+            <!-- Scrim: bottom-up on mobile (text at bottom), right-to-left on desktop (text on right, subject visible on left) -->
+            <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/75 to-[#0a0a0a]/35 md:bg-gradient-to-l md:from-[#0a0a0a] md:via-[#0a0a0a]/80 md:to-[#0a0a0a]/15" aria-hidden="true"></div>
 
-            <div class="relative max-w-5xl mx-auto px-5 pt-32 pb-16 md:pt-40 md:pb-28 min-h-[640px] md:min-h-[760px] flex flex-col justify-end md:justify-center">
-                <div class="inline-flex items-center gap-2 mb-8">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#e9a06a] animate-pulse" aria-hidden="true"></span>
-                    <span class="sr-only">Live:</span>
-                    <span class="font-mono-eyebrow text-[11px] uppercase text-white/80">Live Workshop</span>
-                </div>
+            <div class="relative max-w-6xl mx-auto px-5 pt-32 pb-16 md:pt-40 md:pb-28 min-h-[640px] md:min-h-[760px] flex flex-col justify-end md:justify-center">
+                <div class="md:ml-auto md:max-w-xl">
+                    <div class="inline-flex items-center gap-2 mb-8">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#e9a06a] animate-pulse" aria-hidden="true"></span>
+                        <span class="sr-only">Live:</span>
+                        <span class="font-mono-eyebrow text-[11px] uppercase text-white/80">Live Workshop</span>
+                    </div>
 
-                <h1 class="text-[15vw] leading-[0.9] md:text-[7.5rem] font-semibold tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.4)]">
-                    ship<span class="text-[#e9a06a]">·</span>able<span class="text-[#e9a06a]">.</span>
-                </h1>
+                    <h1 class="text-[15vw] leading-[0.9] md:text-[7rem] font-semibold tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)]">
+                        ship<span class="text-[#e9a06a]">·</span>able<span class="text-[#e9a06a]">.</span>
+                    </h1>
 
-                <p class="mt-8 max-w-2xl text-xl md:text-2xl leading-snug text-white/85">
-                    In this 90-minute live workshop you'll turn the idea you've been sitting on into
-                    <span class="accent-italic text-[#e9a06a]">a real MVP people can actually use,</span>
-                    before the weekend's over.
-                </p>
+                    <p class="mt-8 max-w-xl text-xl md:text-2xl leading-snug text-white/85">
+                        In this 90-minute live workshop you'll turn the idea you've been sitting on into
+                        <span class="accent-italic text-[#e9a06a]">a real MVP people can actually use,</span>
+                        before the weekend's over.
+                    </p>
 
-                <div class="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                    <a href="#seat" class="group inline-flex items-center gap-3 rounded-2xl bg-white pl-7 pr-5 py-4 text-base font-semibold text-[#1a1a1a] hover:bg-neutral-100 transition-all focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] active:scale-[0.98] shadow-2xl">
-                        <span>Save my seat</span>
-                        <span class="h-5 w-px bg-[#1a1a1a]/20" aria-hidden="true"></span>
-                        <span class="text-[#A03D00]">$9</span>
-                        <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
-                    </a>
+                    <div class="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                        <a href="#seat" class="group inline-flex items-center gap-3 rounded-2xl bg-white pl-7 pr-5 py-4 text-base font-semibold text-[#1a1a1a] hover:bg-neutral-100 transition-all focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] active:scale-[0.98] shadow-2xl">
+                            <span>Save my seat</span>
+                            <span class="h-5 w-px bg-[#1a1a1a]/20" aria-hidden="true"></span>
+                            <span class="text-[#A03D00]">$9</span>
+                            <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
