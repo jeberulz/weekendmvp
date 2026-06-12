@@ -676,8 +676,10 @@
 
         <!-- ===================== MEET YOUR TEACHER ===================== -->
         <section class="px-5 py-20 md:py-28 max-w-3xl mx-auto">
-            <!-- Replace src with a real photo of John; alt describes him -->
-            <img src="image/og-image.png" alt="John Iseghohi, founder of Weekend MVP" class="w-full rounded-3xl object-cover aspect-[4/3] bg-[#f5f2ed] mb-10">
+            <picture>
+                <source type="image/webp" srcset="image/john-portrait.webp">
+                <img src="image/john-portrait.jpg" alt="John Iseghohi, founder of Weekend MVP" class="w-full rounded-3xl object-cover aspect-[4/5] bg-[#f5f2ed] mb-10" loading="lazy" decoding="async" width="1000" height="1250">
+            </picture>
             <h2 class="text-5xl font-semibold tracking-tight">John Iseghohi.</h2>
             <p class="font-mono-eyebrow text-[11px] uppercase text-[#A03D00] mt-2">Founder · Weekend MVP</p>
             <div class="mt-8 space-y-5 text-lg text-neutral-700">
