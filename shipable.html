@@ -948,11 +948,19 @@
                 }
 
                 // Best-effort waitlist subscribe; do not block checkout if it fails.
+                // automation_ids routes the subscriber into "Ship.able Workshop"
+                // (waitlist flow) instead of the default Weekend MVP automation.
                 try {
                     fetch('/api/subscribe', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'shipable', utm_medium: 'website' }),
+                        body: JSON.stringify({
+                            email,
+                            utm_campaign: 'shipable-workshop',
+                            utm_source: 'shipable',
+                            utm_medium: 'website',
+                            automation_ids: ['aut_b55c6b1e-330b-4768-b44a-30e9e07ae92a']
+                        }),
                         keepalive: true
                     }).catch(() => {});
                 } catch (_) {}

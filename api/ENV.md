@@ -4,7 +4,8 @@ Set these in the Vercel project **Settings → Environment Variables**. Never co
 
 | Variable | Required by | Purpose |
 |----------|-------------|---------|
-| `BEEHIIV_API_KEY` | [`subscribe.js`](subscribe.js), [`ideas-subscribe.js`](ideas-subscribe.js), [`subscribe/route.js`](subscribe/route.js) | Bearer token for Beehiiv API v2 |
+| `BEEHIIV_API_KEY` | [`subscribe.js`](subscribe.js), [`ideas-subscribe.js`](ideas-subscribe.js), [`subscribe/route.js`](subscribe/route.js), [`stripe-webhook.js`](stripe-webhook.js) | Bearer token for Beehiiv API v2 |
+| `STRIPE_WEBHOOK_SECRET` | [`stripe-webhook.js`](stripe-webhook.js) | Signing secret (whsec_...) from Stripe Dashboard → Developers → Webhooks. Used to verify webhook payloads. |
 
 [`ideas-today.js`](ideas-today.js) uses no environment variables (reads `ideas/manifest.json` from the same deployment).
 
