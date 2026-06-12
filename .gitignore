@@ -60,3 +60,10 @@ test-api.html
 BEEHIIV_SETUP.md
 BEEHIIV_CURSOR_RULES.md
 *-raw.png
+
+# Next.js
+.next/
+next-env.d.ts
+
+# Convex
+.convex/
