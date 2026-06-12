@@ -1,4 +1,4 @@
-import { MegaNav } from "@/components/layout/MegaNav";
+import { MarketingNav } from "@/components/layout/MarketingNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export default function MarketingLayout({
@@ -8,7 +8,8 @@ export default function MarketingLayout({
 }) {
   return (
     <>
-      <MegaNav />
+      {/* Dark MegaNav by default; cream on light workshop pages (/shipable, /dare). */}
+      <MarketingNav />
       {children}
       <SiteFooter />
     </>

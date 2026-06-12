@@ -1,8 +1,17 @@
 import * as React from "react";
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 
 import { Logo } from "@/components/primitives/Logo";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+
+// Strict prerender forbids new Date() in uncached server components; a daily
+// cache window keeps the copyright year correct without going dynamic.
+async function CopyrightYear() {
+  "use cache";
+  cacheLife("days");
+  return <>{new Date().getFullYear()}</>;
+}
 
 /**
  * The Lucide "twitter" brand icon was removed from lucide-react 1.x, so the
@@ -159,7 +168,7 @@ export function SiteFooter() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-neutral-600 text-xs">
-            © {new Date().getFullYear()} Weekend MVP. Built to ship.
+            © <CopyrightYear /> Weekend MVP. Built to ship.
           </p>
           <div className="flex items-center gap-6">
             <NavExternalLink

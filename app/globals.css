@@ -117,6 +117,16 @@ body {
   mask-size: contain;
 }
 
+/* Hide scrollbars (ported from the starter-kit.html page styles). */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @utility grid-lines {
   background-image: linear-gradient(
       to right,
@@ -300,4 +310,57 @@ body {
 
 .idea-card:hover .idea-title {
   color: var(--accent-orange);
+}
+
+/* ===== Workshop pages (shipable, dare) — ported from legacy inline <style> ===== */
+
+@utility font-mono-eyebrow {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.18em;
+}
+
+@utility accent-italic {
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+@utility ticket-perf {
+  background-image: radial-gradient(
+    circle at center,
+    transparent 0,
+    transparent 6px,
+    #1a1a1a 6px,
+    #1a1a1a 7px,
+    transparent 7px
+  );
+  background-size: 18px 1px;
+  background-repeat: repeat-x;
+  background-position: center;
+  height: 1px;
+  opacity: 0.18;
+}
+
+/* Scroll reveal — shipable uses transform-only (contrast-safe, commit 7f8896a);
+   dare keeps the original fade + transform variant. `.is-in` is added by
+   <ScrollRevealInit /> on intersection. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    transform: translateY(14px);
+    transition: transform 0.6s ease;
+  }
+  .reveal.is-in {
+    transform: none;
+  }
+  .reveal-fade {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.6s ease,
+      transform 0.6s ease;
+  }
+  .reveal-fade.is-in {
+    opacity: 1;
+    transform: none;
+  }
 }
