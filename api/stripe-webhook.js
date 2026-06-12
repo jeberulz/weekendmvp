@@ -2,9 +2,13 @@
 //
 // Listens for `checkout.session.completed` events from Stripe.
 // On a successful $9 ship·able seat purchase, it enrolls the buyer's
-// email into the COHORT_1_PAID Beehiiv automation, which is the flow
-// that delivers the Zoom link, the Ship Sheet, and the bonuses to
-// paid attendees.
+// email into the dedicated "Ship.able Workshop" Beehiiv automation,
+// which is the workshop-specific flow that delivers confirmation,
+// reminders, the Zoom link, the Ship Sheet, and the bonuses. The free
+// form-submit waitlist also feeds into this same automation, so
+// anyone who has shown interest in ship·able lands in one cohesive
+// drip regardless of payment status (paid buyers simply re-enroll,
+// which is a no-op for already-enrolled subscribers in Beehiiv).
 //
 // Required Vercel environment variables:
 //   STRIPE_WEBHOOK_SECRET   from Stripe Dashboard → Developers → Webhooks
@@ -19,7 +23,7 @@
 export const config = { runtime: 'edge' };
 
 const PUBLICATION_ID = 'pub_5fbc631f-7950-4bac-80fe-80ba70dae2da';
-const PAID_AUTOMATION_ID = 'aut_17e754cc-6aeb-434d-bc41-c2ef2314a19f'; // COHORT_1_PAID
+const PAID_AUTOMATION_ID = 'aut_b55c6b1e-330b-4768-b44a-30e9e07ae92a'; // Ship.able Workshop
 const SIG_TOLERANCE_SECONDS = 300;
 
 async function verifyStripeSignature(rawBody, sigHeader, secret) {
