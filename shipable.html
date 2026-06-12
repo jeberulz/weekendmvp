@@ -9,8 +9,10 @@
     <meta name="keywords" content="MVP workshop, build MVP in a weekend, non-technical founder MVP, ship MVP live, AI MVP builder, 90 minute MVP, weekend MVP workshop">
     <meta name="author" content="John Iseghohi">
 
-    <!-- DRAFT NOTE: still pending before launch — wire a real checkout (Stripe/Gumroad/Lemon)
-         to replace the Beehiiv /api/subscribe waitlist on #seat. -->
+    <!-- Checkout: live Stripe Payment Link wired in the seat form script at the bottom.
+         The form does a fire-and-forget Beehiiv subscribe, then redirects to Stripe with
+         prefilled_email. Stripe redirects back to /shipable.html?paid=1 on success which
+         swaps the form for a confirmation block. -->
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -799,10 +801,8 @@
                     </button>
                 </form>
                 <p data-form-message class="mt-4 text-xs text-neutral-400" role="status" aria-live="polite">
-                    One-time $9 · Live on Zoom · Replay included · Unsubscribe anytime.
+                    One-time $9 · Secured by Stripe · Live on Zoom · Replay included.
                 </p>
-                <!-- NOTE: This captures the lead via Beehiiv (/api/subscribe). Wire [[CHECKOUT_URL]]
-                     (Stripe/Gumroad) for live payment once your checkout is ready. -->
             </div>
         </section>
     </main>
@@ -913,7 +913,12 @@
             document.querySelectorAll('.reveal').forEach(el => io.observe(el));
         })();
 
-        // Reusable subscribe handler (mirrors newsletter.html / api/subscribe)
+        // Stripe Checkout (live Payment Link for the $9 ship·able seat).
+        // Replace this URL if/when you regenerate the link.
+        const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/aFa00cdgk7v8cym50rbII00';
+
+        // Seat form: capture email to Beehiiv waitlist (fire-and-forget), then
+        // redirect to Stripe Checkout with email prefilled.
         document.querySelectorAll('form[data-newsletter-subscribe]').forEach((form) => {
             const msg = form.parentElement.querySelector('[data-form-message]');
             const btn = form.querySelector('button[type="submit"]');
@@ -921,39 +926,84 @@
             const labelLoading = form.querySelector('[data-label-loading]');
             const campaign = form.dataset.utmCampaign || 'shipable-workshop';
 
-            form.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = form.querySelector('input[type="email"]').value.trim();
                 if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#e9a06a]'); }
+                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-400'); msg.classList.add('text-[#e9a06a]'); }
                     return;
                 }
                 btn.disabled = true;
                 labelDefault?.classList.add('hidden');
+                if (labelLoading) labelLoading.textContent = 'Sending you to checkout…';
                 labelLoading?.classList.remove('hidden');
-                if (msg) { msg.textContent = 'Saving…'; msg.classList.remove('text-[#e9a06a]'); msg.classList.add('text-neutral-500'); }
+                if (msg) { msg.textContent = 'Sending you to Stripe checkout…'; msg.classList.remove('text-[#e9a06a]'); msg.classList.add('text-neutral-300'); }
+
+                // Fire pre-checkout intent events
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', 'begin_checkout', { currency: 'USD', value: 9, items: [{ item_id: 'shipable-workshop', item_name: 'ship·able Workshop Seat', price: 9, quantity: 1 }] });
+                }
+                if (typeof window.fbq === 'function') {
+                    window.fbq('track', 'InitiateCheckout', { currency: 'USD', value: 9 });
+                }
+
+                // Best-effort waitlist subscribe; do not block checkout if it fails.
                 try {
-                    const res = await fetch('/api/subscribe', {
+                    fetch('/api/subscribe', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'shipable', utm_medium: 'website' })
-                    });
-                    if (!res.ok) throw new Error('Subscribe failed');
-                    form.reset();
-                    if (typeof window.gtag === 'function') { window.gtag('event', 'shipable_seat_saved'); }
-                    if (typeof window.fbq === 'function') { window.fbq('track', 'Lead'); }
-                    if (msg) { msg.textContent = "You're on the list. Check your inbox to confirm your seat."; msg.classList.remove('text-[#e9a06a]'); msg.classList.add('text-white'); }
-                    labelLoading?.classList.add('hidden');
-                    labelDefault && (labelDefault.textContent = 'Seat saved ✓');
-                    labelDefault?.classList.remove('hidden');
-                } catch (err) {
-                    if (msg) { msg.textContent = 'Something went wrong. Try again in a moment.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#e9a06a]'); }
-                    btn.disabled = false;
-                    labelLoading?.classList.add('hidden');
-                    labelDefault?.classList.remove('hidden');
-                }
+                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'shipable', utm_medium: 'website' }),
+                        keepalive: true
+                    }).catch(() => {});
+                } catch (_) {}
+
+                // Redirect to Stripe Checkout with email prefilled.
+                const url = new URL(STRIPE_CHECKOUT_URL);
+                url.searchParams.set('prefilled_email', email);
+                url.searchParams.set('client_reference_id', email.slice(0, 200));
+                window.location.href = url.toString();
             });
         });
+
+        // Post-payment confirmation: when Stripe redirects back with ?paid=1,
+        // swap the form for a "you're in" block and fire the purchase event.
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('paid') !== '1') return;
+
+            if (typeof window.gtag === 'function') {
+                window.gtag('event', 'purchase', { currency: 'USD', value: 9, transaction_id: 'shipable-' + Date.now(), items: [{ item_id: 'shipable-workshop', item_name: 'ship·able Workshop Seat', price: 9, quantity: 1 }] });
+            }
+            if (typeof window.fbq === 'function') {
+                window.fbq('track', 'Purchase', { currency: 'USD', value: 9 });
+            }
+
+            const seat = document.getElementById('seat');
+            if (seat) {
+                const inner = seat.querySelector('.max-w-xl');
+                if (inner) {
+                    inner.innerHTML = `
+                        <div class="inline-flex items-center gap-2 mb-6">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#e9a06a]" aria-hidden="true"></span>
+                            <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-300">Seat saved</span>
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-semibold tracking-tight">You're in. <span class="accent-italic text-[#e9a06a] font-normal">See you Saturday.</span></h2>
+                        <p class="mt-4 text-neutral-300">Your Zoom link, Ship Sheet, and bonuses are on the way. Sat Jun 27 · 12:00 PM BST.</p>
+                        <p class="mt-2 text-xs text-neutral-400">If you don't see the confirmation in 5 minutes, check spam or email hello@weekendmvp.app.</p>
+                        <a href="index.html" class="mt-8 inline-flex items-center gap-2 rounded-2xl bg-white text-[#1a1a1a] px-7 py-3.5 text-sm font-semibold hover:bg-neutral-100 transition-all focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-[#1a1a1a]">
+                            Back to Weekend MVP
+                            <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+                        </a>
+                    `;
+                }
+                setTimeout(() => seat.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+            }
+
+            // Strip ?paid so refresh doesn't refire the conversion event.
+            if (window.history?.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+            }
+        })();
     </script>
 </body>
 </html>
