@@ -5,6 +5,9 @@ const LEGACY_ORIGIN =
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  turbopack: {
+    root: __dirname,
+  },
 
   async rewrites() {
     return {
