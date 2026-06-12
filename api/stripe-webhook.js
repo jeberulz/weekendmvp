@@ -80,9 +80,12 @@ async function enrollPaidSubscriber(email, sessionId) {
         email,
         reactivate_existing: true,
         send_welcome_email: false,
-        utm_source: 'stripe',
-        utm_medium: 'webhook',
-        utm_campaign: 'shipable-workshop-paid',
+        // Mirror the waitlist flow's source + campaign so the same entry
+        // condition fires in Beehiiv. utm_medium=paid is the discriminator
+        // the internal automation branch uses to route to paid-only emails.
+        utm_source: 'shipable',
+        utm_medium: 'paid',
+        utm_campaign: 'shipable-workshop',
         automation_ids: [PAID_AUTOMATION_ID],
       }),
     }
