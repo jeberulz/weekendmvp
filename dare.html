@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>DARE | Choose your AI product direction in 90 minutes · Live workshop for designers</title>
+    <meta name="description" content="DARE Live: a 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world. $29. Live on Zoom. Replay included.">
+    <meta name="author" content="John Iseghohi">
+
+    <!-- DRAFT: page still contains [[PLACEHOLDERS]] and an unscheduled date.
+         Remove this noindex AND add a sitemap.xml entry once placeholders
+         (date, stats, proof, checkout) are filled and the workshop is launch-ready. -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- ============================================================= -->
+    <!-- PLACEHOLDERS TO REPLACE BEFORE LAUNCH (search for [[ ):       -->
+    <!--  [[WORKSHOP_DATE_ISO]]  data-deadline on countdown            -->
+    <!--  [[DATE]] [[TIME]] [[TZ]]  human-readable schedule            -->
+    <!--  [[STAT_YEARS]] [[STAT_SHIPPED]]  credibility numbers         -->
+    <!--  [[CHECKOUT_URL]]  payment link (currently captures seat      -->
+    <!--    via Beehiiv /api/subscribe waitlist)                       -->
+    <!--  [[TZ_*]]  local-time conversions                             -->
+    <!-- ============================================================= -->
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weekendmvp.app/dare.html">
+    <meta property="og:title" content="DARE | Choose your AI product direction in 90 minutes">
+    <meta property="og:description" content="A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.">
+    <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="og:image:alt" content="DARE Live, a workshop for designers becoming AI-native founders">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://weekendmvp.app/dare.html">
+    <meta property="twitter:title" content="DARE | Choose your AI product direction in 90 minutes">
+    <meta property="twitter:description" content="A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.">
+    <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+
+    <link rel="canonical" href="https://weekendmvp.app/dare.html">
+
+    <!-- Google Analytics - Loaded conditionally after consent -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      (function() {
+        try {
+          const stored = localStorage.getItem('analytics_consent');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            const CONSENT_EXPIRY_DAYS = 365;
+            if (parsed.timestamp && Date.now() - parsed.timestamp < CONSENT_EXPIRY_DAYS * 24 * 60 * 60 * 1000) {
+              window.analyticsConsent = parsed.value === true;
+              if (window.analyticsConsent) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-Z1NYERTKRS';
+                document.head.appendChild(script);
+                script.onload = function() {
+                  window.gtag = function() { dataLayer.push(arguments); };
+                  gtag('js', new Date());
+                  gtag('config', 'G-Z1NYERTKRS');
+                };
+                if (typeof window.fbq === 'function') {
+                  window.fbq('init', '1602726847528813');
+                  window.fbq('track', 'PageView');
+                }
+                return;
+              }
+            }
+          }
+        } catch(e) { console.error('Error checking consent:', e); }
+        window.analyticsConsent = false;
+      })();
+      if (!window.analyticsConsent) {
+        window.gtag = function() { if (window.analyticsConsent === true) { dataLayer.push(arguments); } };
+      } else {
+        window.gtag = function() { dataLayer.push(arguments); };
+      }
+    </script>
+
+    <!-- Meta Pixel - Loaded conditionally after consent -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      if (window.analyticsConsent === true) {
+        fbq('init', '1602726847528813');
+        fbq('track', 'PageView');
+      } else {
+        window.fbqQueue = window.fbqQueue || [];
+        window.fbqQueue.push(['init', '1602726847528813']);
+        window.fbqQueue.push(['track', 'PageView']);
+      }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="image/favicon.png">
+    <link rel="apple-touch-icon" href="image/webclip.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <style>
+        html { color-scheme: light; }
+        /* DARE accent system: ink blue. #1D4ED8 large/accent text · #1E40AF small text (WCAG AA on cream) · #A7C0F2 on dark */
+        body {
+            font-family: 'Geist', 'Inter', sans-serif;
+            background-color: #fcfaf7;
+            color: #1a1a1a;
+        }
+        .font-mono-eyebrow {
+            font-family: 'Geist Mono', ui-monospace, monospace;
+            letter-spacing: 0.18em;
+        }
+        .accent-italic {
+            font-family: 'Newsreader', Georgia, serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+        .logo {
+            display: inline-block;
+            background-color: currentColor;
+            -webkit-mask-image: url('/image/weekendmvp-logo.svg');
+            mask-image: url('/image/weekendmvp-logo.svg');
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+        }
+        .ticket-perf {
+            background-image: radial-gradient(circle at center, transparent 0, transparent 6px, #1a1a1a 6px, #1a1a1a 7px, transparent 7px);
+            background-size: 18px 1px;
+            background-repeat: repeat-x;
+            background-position: center;
+            height: 1px;
+            opacity: 0.18;
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+            .reveal.is-in { opacity: 1; transform: none; }
+        }
+    </style>
+
+    <!-- JSON-LD: Event + Breadcrumb for SEO/AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://weekendmvp.app/#person",
+          "name": "John Iseghohi",
+          "jobTitle": "Founder, Weekend MVP",
+          "url": "https://cal.com/switchtoux"
+        },
+        {
+          "@type": "Event",
+          "name": "DARE Live · Choose your AI product direction in 90 minutes",
+          "description": "A 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world.",
+          "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "startDate": "[[WORKSHOP_DATE_ISO]]",
+          "organizer": { "@id": "https://weekendmvp.app/#person" },
+          "location": {
+            "@type": "VirtualLocation",
+            "url": "https://weekendmvp.app/dare.html"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "29",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://weekendmvp.app/dare.html"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://weekendmvp.app/" },
+            { "@type": "ListItem", "position": 2, "name": "DARE Live Workshop", "item": "https://weekendmvp.app/dare.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- ===================== TOP NAV ===================== -->
+    <div class="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+        <nav class="flex items-center justify-between w-full max-w-4xl h-14 pl-6 pr-2 bg-[#fcfaf7]/85 backdrop-blur-xl border border-black/10 rounded-full shadow-lg">
+            <a href="index.html" class="flex items-center gap-2" aria-label="Weekend MVP home">
+                <div class="logo h-4 w-32 md:h-5 md:w-40 text-black" role="img" aria-label="Weekend MVP"></div>
+            </a>
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-600">
+                <a href="startup-ideas.html" class="hover:text-black transition-colors">Ideas</a>
+                <a href="starter-kit.html" class="hover:text-black transition-colors">Starter Kit</a>
+                <a href="newsletter.html" class="hover:text-black transition-colors">Newsletter</a>
+            </div>
+            <a href="#seat" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#1a1a1a] px-5 py-2 text-xs font-semibold text-white hover:bg-black transition-all focus:outline-none focus:ring-2 focus:ring-black/30 focus:ring-offset-2 focus:ring-offset-[#fcfaf7] active:scale-95">
+                Save my seat · $29
+            </a>
+        </nav>
+    </div>
+
+    <main>
+        <!-- ===================== HERO ===================== -->
+        <section class="relative px-5 pt-32 pb-16 md:pt-40 md:pb-24 max-w-5xl mx-auto">
+            <div class="inline-flex items-center gap-2 mb-8">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] animate-pulse" aria-hidden="true"></span>
+                <span class="sr-only">Live:</span>
+                <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-600">Live Workshop · For Designers</span>
+            </div>
+
+            <h1 class="text-[17vw] leading-[0.9] md:text-[7.5rem] font-semibold tracking-tight text-[#1a1a1a]">
+                D<span class="text-[#1D4ED8]">·</span>A<span class="text-[#1D4ED8]">·</span>R<span class="text-[#1D4ED8]">·</span>E<span class="text-[#1D4ED8]">.</span>
+            </h1>
+            <p class="mt-4 font-mono-eyebrow text-[10px] md:text-xs uppercase text-[#1E40AF]">
+                Discover · Architect · Run · Earn
+            </p>
+
+            <p class="mt-8 max-w-2xl text-xl md:text-2xl leading-snug text-neutral-700">
+                A 90-minute live working session for experienced designers. You'll choose
+                <span class="accent-italic text-[#1D4ED8]">one concrete AI product or AI-powered service,</span>
+                and leave with a 4-week plan to move it into the real world.
+            </p>
+
+            <div class="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <a href="#seat" class="group inline-flex items-center gap-3 rounded-2xl bg-[#1a1a1a] pl-7 pr-5 py-4 text-base font-semibold text-white hover:bg-black transition-all focus:outline-none focus:ring-2 focus:ring-black/30 focus:ring-offset-2 focus:ring-offset-[#fcfaf7] active:scale-[0.98]">
+                    <span>Save my seat</span>
+                    <span class="h-5 w-px bg-white/25" aria-hidden="true"></span>
+                    <span class="text-[#A7C0F2]">$29</span>
+                    <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                </a>
+                <p class="text-sm text-neutral-500">Live on Zoom · Replay included · No engineering background required.</p>
+            </div>
+
+        </section>
+
+        <!-- ===================== DATE / COUNTDOWN ===================== -->
+        <section class="px-5 pb-16 md:pb-20 max-w-5xl mx-auto">
+            <div class="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 max-w-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">DARE Live starts in</span>
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">[[TZ]]</span>
+                </div>
+                <p class="text-3xl md:text-4xl font-semibold tracking-tight">
+                    [[DATE]] <span class="accent-italic text-[#A7C0F2]">[[TIME]]</span>
+                </p>
+                <p class="mt-2 text-sm text-neutral-300">90 minutes live · working session, not a lecture · Q&amp;A after</p>
+                <!-- Countdown: edit data-deadline (ISO 8601 with timezone offset) -->
+                <div id="countdown" data-deadline="[[WORKSHOP_DATE_ISO]]" class="mt-6 grid grid-cols-4 gap-3 max-w-sm" role="timer" aria-label="Time remaining until the workshop">
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="days" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-300">Days</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="hours" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-300">Hrs</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="minutes" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-300">Min</span>
+                    </div>
+                    <div class="rounded-xl bg-white/5 border border-white/10 px-2 py-3 text-center">
+                        <span data-cd="seconds" class="block text-2xl font-semibold tabular-nums">00</span>
+                        <span class="font-mono-eyebrow text-[9px] uppercase text-neutral-300">Sec</span>
+                    </div>
+                </div>
+                <p class="mt-6 text-sm text-neutral-400">One direction chosen. Four weeks mapped. In one sitting.</p>
+            </div>
+        </section>
+
+        <!-- ===================== DELIVERABLE TEASER ===================== -->
+        <section class="px-5 py-12 max-w-5xl mx-auto reveal">
+            <div class="rounded-3xl border border-black/10 bg-white p-8 md:p-10 flex flex-col md:flex-row items-start gap-8">
+                <!-- 4-week calendar grid motif: one accent move per week -->
+                <div class="shrink-0 w-40 rounded-xl bg-[#f0f3fa] border border-black/10 p-3" aria-hidden="true">
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <div class="font-mono-eyebrow text-[7px] uppercase text-neutral-400 text-center">W1</div>
+                        <div class="font-mono-eyebrow text-[7px] uppercase text-neutral-400 text-center">W2</div>
+                        <div class="font-mono-eyebrow text-[7px] uppercase text-neutral-400 text-center">W3</div>
+                        <div class="font-mono-eyebrow text-[7px] uppercase text-neutral-400 text-center">W4</div>
+                        <div class="h-7 rounded bg-[#1D4ED8]/80"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-[#1D4ED8]/60"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-neutral-200"></div>
+                        <div class="h-7 rounded bg-[#1D4ED8]/40"></div>
+                        <div class="h-7 rounded bg-[#1D4ED8]"></div>
+                    </div>
+                </div>
+                <div>
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">Your 4-Week DARE Plan</span>
+                    <h2 class="mt-3 text-3xl md:text-4xl font-semibold tracking-tight">You leave with a decision, on paper.</h2>
+                    <p class="mt-3 text-lg text-neutral-600 max-w-xl">During the session you'll fill in the DARE worksheets live. By the end, they become your 4-Week DARE Plan: one product or one service, one clear path — your chosen direction broken into one concrete move per week.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== WHY LISTEN (stats) ===================== -->
+        <section class="px-5 py-16 md:py-24 bg-[#1a1a1a] text-white">
+            <div class="max-w-5xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-white/15 px-4 py-1.5 mb-12">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-300">Why listen to me</span>
+                </div>
+                <dl class="divide-y divide-white/10">
+                    <!-- [[STAT_*]] replace with real numbers -->
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_YEARS]]<span class="accent-italic text-[#A7C0F2] text-3xl"> yrs</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">Designing products professionally</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">[[STAT_SHIPPED]]<span class="accent-italic text-[#A7C0F2] text-3xl"> shipped</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">AI-native products &amp; agentic workflows, built solo</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">78<span class="accent-italic text-[#A7C0F2] text-3xl"> broken down</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">AI &amp; SaaS ideas analyzed at weekendmvp.app</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between py-6 reveal">
+                        <dt class="text-4xl md:text-5xl font-semibold tracking-tight">1<span class="accent-italic text-[#A7C0F2] text-3xl"> framework</span></dt>
+                        <dd class="font-mono-eyebrow text-[10px] md:text-xs uppercase text-neutral-300 text-right">DARE, taught live · more coming</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <!-- ===================== THE REAL PROBLEM ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-3xl mx-auto reveal">
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02]">
+                You're a strong designer with vague AI ideas…
+                <span class="accent-italic text-[#1D4ED8] font-normal">and vague doesn't ship.</span>
+            </h2>
+            <div class="mt-10 space-y-6 text-lg text-neutral-700">
+                <p>You've been paying attention. You've used the tools. You can see, more clearly than most engineers, where AI actually fits a real person's workflow.</p>
+                <p>And yet nothing's moving. Three traps, usually:</p>
+                <ul class="space-y-4">
+                    <li class="flex gap-4">
+                        <span class="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold">The engineer myth.</strong> "I need to get technical first." So you collect tutorials instead of making a decision.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold">The big-idea trap.</strong> Every idea you take seriously feels like it needs a team and a roadmap. So you take none of them seriously.</span>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="mt-3 h-px w-6 bg-[#1D4ED8] shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold">The model maze.</strong> SaaS? Service? Agency? You're trying to pick the perfect vehicle before you've picked the problem.</span>
+                    </li>
+                </ul>
+                <p><span class="accent-italic text-[#1a1a1a]">The hard part of AI products is design judgment — which you already have. What you're missing isn't knowledge. It's a path.</span></p>
+                <p>DARE is that path, walked in 90 minutes.</p>
+            </div>
+        </section>
+
+        <!-- ===================== TL;DR ===================== -->
+        <section class="px-5 py-16 bg-[#f5f2ed]">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-semibold tracking-tight mb-10">
+                    Everything you need to know, <span class="accent-italic text-[#1D4ED8] font-normal">in ten seconds.</span>
+                </h2>
+                <ul class="space-y-6">
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's $29, one-time.</strong> A working session, not a course.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's 90 minutes live</strong> on [[DATE]], [[TIME]] [[TZ]], on Zoom — with Q&amp;A after.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's for experienced designers,</strong> design-leaning PMs, and semi-technical builders. No engineering required.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">You leave with one direction and a 4-week plan</strong> — a tiny agentic SaaS or an AI-powered productized service, chosen and mapped.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">Can't make it live? Replay included,</strong> same day, yours forever.</p>
+                    </li>
+                    <li class="flex gap-4">
+                        <iconify-icon icon="lucide:check" width="22" class="text-[#1D4ED8] mt-0.5 shrink-0" aria-hidden="true"></iconify-icon>
+                        <p class="text-lg text-neutral-700"><strong class="font-semibold text-[#1a1a1a]">It's the front door, not the whole house.</strong> DARE Live stands alone — and live attendees get first access when the deeper DARE program opens.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ===================== THREE MOVES (the framework) ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-14">
+                Three moves. <span class="accent-italic text-[#1D4ED8] font-normal">One direction by the end.</span>
+            </h2>
+
+            <div class="border-t border-black/10">
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-[#C9D8F7] leading-none w-24" aria-hidden="true">D</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Discover. <span class="accent-italic text-[#1D4ED8] font-normal">One buyer, one painful workflow.</span></h3>
+                        <p class="mt-3 text-lg text-neutral-600">You already know how to find the real problem under a vague brief — you've done it in every discovery call of your career. We aim that skill at the AI landscape and cut your idea cloud down to one specific person, one workflow, one why-now. Written down.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~25 min</span>
+                    </div>
+                </article>
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-[#C9D8F7] leading-none w-24" aria-hidden="true">A</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Architect. <span class="accent-italic text-[#1D4ED8] font-normal">This is where designers win.</span></h3>
+                        <p class="mt-3 text-lg text-neutral-600">Anyone can call an API. Almost nobody can design where the agent acts, where the human stays in control, and why anyone would trust it — that's interaction design, and it's the scarcest skill in AI products right now. You'll map your workflow into an Agent Blueprint: a simple agentic flow a real person would love to use.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~35 min</span>
+                    </div>
+                </article>
+                <article class="grid md:grid-cols-[auto_1fr] gap-x-8 gap-y-3 py-10 border-b border-black/10 reveal">
+                    <span class="text-6xl md:text-7xl font-semibold text-[#C9D8F7] leading-none w-24" aria-hidden="true">R+E</span>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-semibold tracking-tight">Run + Earn. <span class="accent-italic text-[#1D4ED8] font-normal">The scrappy v1, and the honest ask.</span></h3>
+                        <p class="mt-3 text-lg text-neutral-600">We scope the smallest real version — live prototype, tiny SaaS, or repeatable service workflow — then turn it into a concrete offer with a price and the exact words to ask for money without cringing. Both land in your 4-week plan: run in weeks 1–3, earn in week 4.</p>
+                        <span class="mt-4 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">~30 min</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ===================== WHAT'S INCLUDED (value stack) ===================== -->
+        <section class="px-5 py-20 md:py-28 bg-[#f5f2ed]">
+            <div class="max-w-4xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-600">What's included</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                    Six things in your seat. <span class="accent-italic text-[#1D4ED8] font-normal">~$500 of value.</span>
+                </h2>
+
+                <div class="rounded-3xl bg-white border border-black/10 overflow-hidden">
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">01</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">DARE Live Workshop</h3>
+                            <p class="mt-1 text-neutral-600">90-minute working session with John on Zoom. Bring one idea — or none. Discover handles that.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$97 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">02</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">DARE <span class="accent-italic text-neutral-500 font-normal">Opportunity Canvas</span></h3>
+                            <p class="mt-1 text-neutral-600">The Discover worksheet: buyer, workflow, pain, why-now. You fill it in live.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$47 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">03</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Agent <span class="accent-italic text-neutral-500 font-normal">Blueprint Worksheet</span></h3>
+                            <p class="mt-1 text-neutral-600">The Architect tool: map the flow, place the agent, design the human-in-the-loop guardrails.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$67 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">04</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">4-Week DARE Plan template</h3>
+                            <p class="mt-1 text-neutral-600">Your direction, sequenced one concrete move per week — from blueprint to first revenue or real market signal.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$147 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">05</span>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold">Lifetime replay</h3>
+                            <p class="mt-1 text-neutral-600">Full recording, yours forever. Rewatch the move you're on.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$47 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 border-b border-black/10 bg-[#fcfaf7]">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">06</span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-semibold">Agentic Founder <span class="accent-italic text-neutral-500 font-normal">Prompt Pack</span></h3>
+                                <span class="rounded-full border border-[#1E40AF]/40 text-[#1E40AF] px-2.5 py-0.5 font-mono-eyebrow text-[9px] uppercase">Bonus · Live only</span>
+                            </div>
+                            <p class="mt-1 text-neutral-600">The prompts that take your Agent Blueprint to a working v1 with today's tools — no engineering detour.</p>
+                            <span class="mt-3 inline-block rounded-full bg-[#f5f2ed] px-3 py-1 font-mono-eyebrow text-[10px] uppercase text-neutral-500">$97 value</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-5 p-6 md:p-8 bg-[#fcfaf7]">
+                        <span class="text-3xl font-semibold text-neutral-200 leading-none">07</span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-semibold">Founding Member <span class="accent-italic text-neutral-500 font-normal">Invite</span></h3>
+                                <span class="rounded-full border border-[#1E40AF]/40 text-[#1E40AF] px-2.5 py-0.5 font-mono-eyebrow text-[9px] uppercase">Bonus · Live only</span>
+                            </div>
+                            <p class="mt-1 text-neutral-600">First access and founding pricing when the full DARE program opens.</p>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="bg-[#1a1a1a] text-white p-8 md:p-10">
+                        <p class="text-neutral-300 mb-6 max-w-xl">Everything above exists for one outcome: you choose one direction and leave with a 4-week plan to move it into the real world.</p>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300 block mb-1">Total value</span>
+                                <span class="text-3xl font-semibold text-neutral-400 line-through decoration-[#1D4ED8]/70">$502</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300 block mb-1">You pay today</span>
+                                <span class="text-4xl font-semibold"><span class="text-[#A7C0F2]">$</span>29</span>
+                            </div>
+                        </div>
+                        <a href="#seat" class="group flex items-center justify-center gap-2 w-full rounded-xl bg-white text-[#1a1a1a] px-6 py-4 text-base font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-[0.99]">
+                            <span>Save my seat · $29</span>
+                            <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== PROOF (Before → After outcomes) ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                What changes <span class="accent-italic text-[#1D4ED8] font-normal">in 90 minutes.</span>
+            </h2>
+
+            <!-- These are worked outcome EXAMPLES, clearly labeled — swap in real
+                 Before→After alumni quotes after the first session runs. -->
+            <div class="rounded-3xl bg-[#1a1a1a] text-white p-8 md:p-10 mb-6 reveal">
+                <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">Before → After · A DARE outcome</span>
+                <p class="mt-6 text-xl md:text-2xl text-neutral-400 line-through decoration-white/30">"I should do something with AI… maybe an assistant for freelancers?"</p>
+                <p class="mt-4 text-2xl md:text-3xl font-semibold tracking-tight">"A done-for-you client-onboarding agent for B2B design studios — <span class="accent-italic text-[#A7C0F2] font-normal">sold as a productized service, first three conversations booked in week 4.</span>"</p>
+                <p class="mt-8 pt-6 border-t border-white/10 text-neutral-300 leading-relaxed max-w-2xl">That's the shape of the shift: from a category to a buyer, from a vibe to an offer, from someday to a dated plan.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-6">
+                <div class="rounded-3xl bg-white border border-black/10 p-8 reveal">
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Before → After · Tiny SaaS</span>
+                    <p class="mt-4 text-neutral-400 line-through">"Something with agents for research?"</p>
+                    <p class="mt-2 text-lg font-semibold">"A competitor-watch agent for boutique brand strategists — $19/mo, waitlist live in week 1."</p>
+                </div>
+                <div class="rounded-3xl bg-white border border-black/10 p-8 reveal">
+                    <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Before → After · Productized service</span>
+                    <p class="mt-4 text-neutral-400 line-through">"AI audits, maybe? For startups?"</p>
+                    <p class="mt-2 text-lg font-semibold">"A fixed-scope 'agent-ready UX audit' for seed-stage SaaS teams — $1.5k flat, pitched to five founders in week 2."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TICKET ===================== -->
+        <section class="px-5 py-20 md:py-28 bg-[#f5f2ed]">
+            <div class="max-w-2xl mx-auto">
+                <div class="inline-flex items-center rounded-full border border-black/10 px-4 py-1.5 mb-8">
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-600">Here's your ticket</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02] mb-12">
+                    90 minutes. <span class="accent-italic text-[#1D4ED8] font-normal">$29.</span> Walk out with a direction.
+                </h2>
+
+                <div class="rounded-3xl overflow-hidden border border-black/10 shadow-sm">
+                    <!-- Stub header -->
+                    <div class="bg-[#1a1a1a] text-white px-6 md:px-8 py-4 flex items-center justify-between">
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">Admission · DARE Live №01</span>
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300">DARE·26·S0001</span>
+                    </div>
+                    <!-- Body -->
+                    <div class="bg-white px-6 md:px-8 py-8">
+                        <p class="text-4xl font-semibold tracking-tight">D<span class="text-[#1D4ED8]">·</span>A<span class="text-[#1D4ED8]">·</span>R<span class="text-[#1D4ED8]">·</span>E<span class="text-[#1D4ED8]">.</span></p>
+                        <p class="mt-2 text-neutral-600">A working session with John Iseghohi. <span class="accent-italic text-[#1E40AF]">Choose your direction. Map your four weeks.</span></p>
+
+                        <dl class="grid grid-cols-2 gap-y-6 mt-8 pt-8 border-t border-black/10">
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Date</dt>
+                                <dd class="mt-1 font-semibold">[[DATE]]</dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Start</dt>
+                                <dd class="mt-1 font-semibold">[[TIME]] <span class="accent-italic text-neutral-500">[[TZ]]</span></dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Length</dt>
+                                <dd class="mt-1 font-semibold">90 min + Q&amp;A</dd>
+                            </div>
+                            <div>
+                                <dt class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Format</dt>
+                                <dd class="mt-1 font-semibold">Live on Zoom</dd>
+                            </div>
+                        </dl>
+
+                        <div class="ticket-perf my-8"></div>
+
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">What's included</span>
+                            <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-500">Value</span>
+                        </div>
+                        <ul class="mt-3 space-y-2 text-sm">
+                            <li class="flex justify-between"><span>DARE Live Workshop</span><span class="font-semibold">$97</span></li>
+                            <li class="flex justify-between"><span>DARE Opportunity Canvas</span><span class="font-semibold">$47</span></li>
+                            <li class="flex justify-between"><span>Agent Blueprint Worksheet</span><span class="font-semibold">$67</span></li>
+                            <li class="flex justify-between"><span>4-Week DARE Plan template</span><span class="font-semibold">$147</span></li>
+                            <li class="flex justify-between"><span>Lifetime replay</span><span class="font-semibold">$47</span></li>
+                            <li class="flex justify-between text-[#1E40AF]"><span>Bonus · Agentic Founder Prompt Pack</span><span class="font-semibold">$97</span></li>
+                            <li class="flex justify-between text-[#1E40AF]"><span>Bonus · Founding Member Invite</span><span class="font-semibold">—</span></li>
+                        </ul>
+                    </div>
+                    <!-- Stub footer -->
+                    <div class="bg-[#1a1a1a] text-white px-6 md:px-8 py-8 text-center">
+                        <span class="font-mono-eyebrow text-[10px] uppercase text-neutral-300 block mb-2">One-time · Seat</span>
+                        <p class="text-5xl font-semibold tracking-tight"><span class="text-[#A7C0F2]">$</span>29</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-300 mt-2"><span class="line-through">$502</span> value · 2 bonuses (live)</p>
+                        <p class="text-sm text-neutral-300 mt-3 mb-6">One direction chosen live. A 4-week path to shipping and earning from it.</p>
+                        <a href="#seat" class="group flex items-center justify-center gap-2 w-full rounded-xl bg-white text-[#1a1a1a] px-6 py-4 text-base font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-[0.99]">
+                            <span>Save my seat · $29</span>
+                            <iconify-icon icon="lucide:arrow-right" width="18" class="transition-transform group-hover:translate-x-0.5" aria-hidden="true"></iconify-icon>
+                        </a>
+                        <p class="font-mono-eyebrow text-[9px] uppercase text-neutral-400 mt-5">DARE·26·S0001 · Bring one idea</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TIMEZONES ===================== -->
+        <section class="px-5 py-20 md:py-24 max-w-3xl mx-auto reveal">
+            <h2 class="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.04] mb-6">
+                Here's when it lands <span class="accent-italic text-[#1D4ED8] font-normal">where you are.</span>
+            </h2>
+            <p class="text-lg text-neutral-600 mb-10">DARE Live runs <strong class="font-semibold text-[#1a1a1a]">[[TIME]] [[TZ]]</strong> on [[DATE]]. Find your local time below. Can't make it live? The replay hits your inbox the same day.</p>
+            <!-- [[TZ_*]] swap in your audience's top regions (your newsletter analytics will tell you which) -->
+            <div class="rounded-3xl border border-black/10 overflow-hidden divide-y divide-black/10">
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">New York</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_NYC_DATE]] · EDT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_NYC_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">London</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LON_DATE]] · BST</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LON_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">Lagos</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LAG_DATE]] · WAT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LAG_TIME]]</p>
+                </div>
+                <div class="flex items-center justify-between px-6 py-5 bg-white">
+                    <div>
+                        <p class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF]">Los Angeles</p>
+                        <p class="font-mono-eyebrow text-[10px] uppercase text-neutral-500 mt-1">[[TZ_LA_DATE]] · PDT</p>
+                    </div>
+                    <p class="text-3xl font-semibold tracking-tight">[[TZ_LA_TIME]]</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== MEET YOUR TEACHER ===================== -->
+        <section class="px-5 py-20 md:py-28 max-w-3xl mx-auto">
+            <!-- Replace src with a real photo of John; alt describes him -->
+            <img src="image/og-image.png" alt="John Iseghohi, product designer and founder of Weekend MVP" class="w-full rounded-3xl object-cover aspect-[4/3] bg-[#f5f2ed] mb-10">
+            <h2 class="text-5xl font-semibold tracking-tight">John Iseghohi.</h2>
+            <p class="font-mono-eyebrow text-[11px] uppercase text-[#1E40AF] mt-2">Product Designer · Founder, Weekend MVP</p>
+            <div class="mt-8 space-y-5 text-lg text-neutral-700">
+                <p>I'm a product designer. For most of my career that meant making other people's products work — until I decided to find out whether design skill alone could carry a product of its own.</p>
+                <p>It could. Without becoming an engineer, I've built and shipped multiple AI-native products and agentic workflows solo — and broken down 78 more ideas in public at weekendmvp.app. Every one of them started the same way: one buyer, one workflow, one designed agentic flow.</p>
+                <p>Watching other designers circle the same transition, I kept seeing the same three traps — and the same fix. Not more tutorials. A decision, made with a method. DARE is that method: the system I wish someone had handed me at the start, compressed into 90 minutes and applied to your idea, not a hypothetical one.</p>
+                <p>And I'm in this for the long haul: DARE is the first of several frameworks I'm building for designers who want to become AI-native founders.</p>
+            </div>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">[[STAT_YEARS]] yrs designing products</span>
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">[[STAT_SHIPPED]] AI-native products shipped solo</span>
+                <span class="rounded-full bg-[#f5f2ed] px-4 py-2 font-mono-eyebrow text-[10px] uppercase text-neutral-600">Frameworks: DARE — more coming</span>
+            </div>
+        </section>
+
+        <!-- ===================== SEAT / EMAIL CAPTURE ===================== -->
+        <section id="seat" class="px-5 py-20 md:py-28 bg-[#1a1a1a] text-white scroll-mt-24">
+            <div class="max-w-xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 mb-6">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] animate-pulse" aria-hidden="true"></span>
+                    <span class="sr-only">Live:</span>
+                    <span class="font-mono-eyebrow text-[11px] uppercase text-neutral-300">Save your seat</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-semibold tracking-tight">One workshop. One decision. <span class="accent-italic text-[#A7C0F2] font-normal">Four weeks of momentum.</span></h2>
+                <p class="mt-4 text-neutral-300">Grab your $29 seat. In 90 minutes you'll choose your direction and leave with your 4-week plan.</p>
+
+                <form data-newsletter-subscribe
+                      data-utm-campaign="dare-workshop"
+                      class="mt-8 flex flex-col sm:flex-row gap-3"
+                      novalidate>
+                    <label for="seat-email" class="sr-only">Email address</label>
+                    <input
+                        type="email"
+                        id="seat-email"
+                        name="email"
+                        required
+                        placeholder="you@example.com"
+                        aria-label="Email address"
+                        class="flex-1 bg-white/10 border border-white/20 rounded-full px-5 py-4 text-sm text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-white/40 transition-all">
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white text-[#1a1a1a] rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] disabled:opacity-60 disabled:cursor-not-allowed">
+                        <span data-label-default>Save my seat · $29</span>
+                        <span data-label-loading class="hidden">Saving…</span>
+                        <iconify-icon icon="lucide:arrow-right" width="14" aria-hidden="true"></iconify-icon>
+                    </button>
+                </form>
+                <p data-form-message class="mt-4 text-xs text-neutral-400" role="status" aria-live="polite">
+                    Your inbox gets: Zoom link · DARE worksheets · 4-Week Plan template · replay after the session. One-time $29.
+                </p>
+                <!-- NOTE: This captures the lead via Beehiiv (/api/subscribe). Wire [[CHECKOUT_URL]]
+                     (Stripe/Gumroad) for live payment once your checkout is ready. -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="px-5 border-t border-black/10">
+        <div class="max-w-5xl mx-auto py-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="index.html"><div class="logo h-5 w-32 text-black mb-4" role="img" aria-label="Weekend MVP"></div></a>
+                    <p class="text-neutral-600 text-sm mb-4">Ship your MVP in a weekend, even if you're non-technical.</p>
+                    <p class="text-neutral-600 text-xs">Created by <a href="https://cal.com/switchtoux" target="_blank" rel="noopener noreferrer" class="underline hover:text-neutral-900 transition-colors">John Iseghohi<span class="sr-only"> (opens in new tab)</span></a></p>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Browse Ideas</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="ideas/saas/" class="text-neutral-500 hover:text-neutral-900 transition-colors">SaaS Ideas</a></li>
+                        <li><a href="ideas/ai-tools/" class="text-neutral-500 hover:text-neutral-900 transition-colors">AI Tool Ideas</a></li>
+                        <li><a href="startup-ideas.html" class="text-neutral-600 hover:text-neutral-900 transition-colors">View All →</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Resources</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="starter-kit.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Starter Kit</a></li>
+                        <li><a href="articles.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Articles</a></li>
+                        <li><a href="newsletter.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Newsletter</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-neutral-900 font-medium text-sm mb-4">Workshop</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#seat" class="text-neutral-600 hover:text-neutral-900 transition-colors">Save my seat · $29</a></li>
+                        <li><a href="privacy-policy.html" class="text-neutral-500 hover:text-neutral-900 transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-neutral-600 text-xs">© <span id="year">2026</span> Weekend MVP. Built to ship.</p>
+                <a href="https://twitter.com/weekendmvp" target="_blank" rel="noopener noreferrer" class="text-neutral-600 hover:text-neutral-900 transition-colors" aria-label="Follow Weekend MVP on Twitter">
+                    <iconify-icon icon="lucide:twitter" width="18" aria-hidden="true"></iconify-icon>
+                    <span class="sr-only"> (opens in new tab)</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===================== STICKY CTA BAR ===================== -->
+    <div class="fixed bottom-4 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
+        <div class="pointer-events-auto flex items-center justify-between gap-4 w-full max-w-2xl rounded-2xl bg-[#1a1a1a] text-white pl-5 pr-2 py-2 shadow-2xl border border-white/10">
+            <div class="hidden sm:flex items-center gap-2 min-w-0">
+                <span id="sticky-countdown" class="font-mono-eyebrow text-[11px] uppercase text-neutral-300 truncate" data-deadline="[[WORKSHOP_DATE_ISO]]">Seats open now</span>
+            </div>
+            <a href="#seat" class="inline-flex items-center gap-2 rounded-xl bg-[#A7C0F2] text-[#1a1a1a] px-4 sm:px-5 py-3 text-xs sm:text-sm font-semibold hover:bg-[#bdd0f6] transition-all focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95 shrink-0 whitespace-nowrap">
+                Save my seat · $29
+                <iconify-icon icon="lucide:arrow-right" width="16" aria-hidden="true"></iconify-icon>
+            </a>
+        </div>
+    </div>
+
+    <!-- ===================== SCRIPTS ===================== -->
+    <script>
+        // Year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Countdown drives both the hero grid and the sticky bar.
+        (function () {
+            const grid = document.getElementById('countdown');
+            const sticky = document.getElementById('sticky-countdown');
+            const raw = (grid && grid.dataset.deadline) || (sticky && sticky.dataset.deadline) || '';
+            const deadline = raw && !raw.startsWith('[[') ? new Date(raw).getTime() : NaN;
+
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            function tick() {
+                if (isNaN(deadline)) {
+                    if (sticky) sticky.textContent = 'Seats open now';
+                    return; // placeholder date not set yet
+                }
+                let diff = Math.max(0, deadline - Date.now());
+                const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+                const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+                const m = Math.floor(diff / 60000); diff -= m * 60000;
+                const s = Math.floor(diff / 1000);
+                if (grid) {
+                    grid.querySelector('[data-cd="days"]').textContent = pad(d);
+                    grid.querySelector('[data-cd="hours"]').textContent = pad(h);
+                    grid.querySelector('[data-cd="minutes"]').textContent = pad(m);
+                    grid.querySelector('[data-cd="seconds"]').textContent = pad(s);
+                }
+                if (sticky) sticky.textContent = (deadline - Date.now() <= 0)
+                    ? 'Starting now'
+                    : pad(d) + 'd ' + pad(h) + 'h ' + pad(m) + 'm ' + pad(s) + 's left';
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+
+        // Scroll reveal
+        (function () {
+            if (!('IntersectionObserver' in window)) {
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-in'));
+                return;
+            }
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+            }, { threshold: 0.12 });
+            document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+        })();
+
+        // Reusable subscribe handler (mirrors newsletter.html / api/subscribe)
+        document.querySelectorAll('form[data-newsletter-subscribe]').forEach((form) => {
+            const msg = form.parentElement.querySelector('[data-form-message]');
+            const btn = form.querySelector('button[type="submit"]');
+            const labelDefault = form.querySelector('[data-label-default]');
+            const labelLoading = form.querySelector('[data-label-loading]');
+            const campaign = form.dataset.utmCampaign || 'dare-workshop';
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = form.querySelector('input[type="email"]').value.trim();
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    if (msg) { msg.textContent = 'Please enter a valid email.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#A7C0F2]'); }
+                    return;
+                }
+                btn.disabled = true;
+                labelDefault?.classList.add('hidden');
+                labelLoading?.classList.remove('hidden');
+                if (msg) { msg.textContent = 'Saving…'; msg.classList.remove('text-[#A7C0F2]'); msg.classList.add('text-neutral-500'); }
+                try {
+                    const res = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, utm_campaign: campaign, utm_source: 'dare', utm_medium: 'website' })
+                    });
+                    if (!res.ok) throw new Error('Subscribe failed');
+                    form.reset();
+                    if (typeof window.gtag === 'function') { window.gtag('event', 'dare_seat_saved'); }
+                    if (typeof window.fbq === 'function') { window.fbq('track', 'Lead'); }
+                    if (msg) { msg.textContent = "You're on the list. Check your inbox to confirm your seat."; msg.classList.remove('text-[#A7C0F2]'); msg.classList.add('text-white'); }
+                    labelLoading?.classList.add('hidden');
+                    labelDefault && (labelDefault.textContent = 'Seat saved ✓');
+                    labelDefault?.classList.remove('hidden');
+                } catch (err) {
+                    if (msg) { msg.textContent = 'Something went wrong. Try again in a moment.'; msg.classList.remove('text-neutral-500'); msg.classList.add('text-[#A7C0F2]'); }
+                    btn.disabled = false;
+                    labelLoading?.classList.add('hidden');
+                    labelDefault?.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
