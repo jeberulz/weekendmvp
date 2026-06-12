@@ -4,23 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light">
-    <title>ship·able | Build your MVP live in 90 minutes · Weekend MVP Workshop</title>
-    <meta name="description" content="A 90-minute live workshop where you turn the idea you've been sitting on into a real, live MVP people can use before the weekend's over. $9. Live on Zoom. Replay included.">
+    <title>ship·able | Build & Ship Your MVP Live in 90 Minutes ($9 Workshop)</title>
+    <meta name="description" content="Build and ship a real MVP in 90 minutes. Live $9 workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Sat Jun 27, 2026 · Live on Zoom · Lifetime replay.">
+    <meta name="keywords" content="MVP workshop, build MVP in a weekend, non-technical founder MVP, ship MVP live, AI MVP builder, 90 minute MVP, weekend MVP workshop">
     <meta name="author" content="John Iseghohi">
 
-    <!-- DRAFT: page is content-complete but not yet wired for payment.
-         Before going LIVE:
-           1. Wire a real checkout (Stripe/Gumroad/Lemon) — see seat form on #seat.
-              Currently emails capture via Beehiiv /api/subscribe only.
-           2. Remove the <meta name="robots" content="noindex, nofollow"> below.
-           3. Re-add this page to sitemap.xml. -->
-    <meta name="robots" content="noindex, nofollow">
+    <!-- DRAFT NOTE: still pending before launch — wire a real checkout (Stripe/Gumroad/Lemon)
+         to replace the Beehiiv /api/subscribe waitlist on #seat. -->
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Weekend MVP">
+    <meta property="og:locale" content="en_GB">
     <meta property="og:url" content="https://weekendmvp.app/shipable.html">
-    <meta property="og:title" content="ship·able | Build your MVP live in 90 minutes">
-    <meta property="og:description" content="Turn the idea you've been sitting on into a real, live MVP in 90 minutes, live on Zoom. $9. Replay included.">
+    <meta property="og:title" content="ship·able · Build your MVP live in 90 minutes for $9">
+    <meta property="og:description" content="Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Sat Jun 27, 2026 at 12 PM BST. Replay included.">
     <meta property="og:image" content="https://weekendmvp.app/image/og-image.png">
     <meta property="og:image:alt" content="ship·able, a Weekend MVP workshop">
     <meta property="og:image:type" content="image/png">
@@ -29,10 +27,12 @@
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:site" content="@weekendmvp">
     <meta property="twitter:url" content="https://weekendmvp.app/shipable.html">
-    <meta property="twitter:title" content="ship·able | Build your MVP live in 90 minutes">
-    <meta property="twitter:description" content="Turn the idea you've been sitting on into a real, live MVP in 90 minutes, live on Zoom. $9. Replay included.">
+    <meta property="twitter:title" content="ship·able · Build your MVP live in 90 minutes for $9">
+    <meta property="twitter:description" content="Live $9 workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Sat Jun 27, 2026 · 12 PM BST.">
     <meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
+    <meta property="twitter:image:alt" content="ship·able, a Weekend MVP workshop">
 
     <link rel="canonical" href="https://weekendmvp.app/shipable.html">
 
@@ -145,7 +145,7 @@
         }
     </style>
 
-    <!-- JSON-LD: Event + Breadcrumb for SEO/AEO -->
+    <!-- JSON-LD: Person + Organization + Event + FAQPage + Breadcrumb (SEO + AEO) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -155,27 +155,115 @@
           "@id": "https://weekendmvp.app/#person",
           "name": "John Iseghohi",
           "jobTitle": "Founder, Weekend MVP",
-          "url": "https://cal.com/switchtoux"
+          "url": "https://cal.com/switchtoux",
+          "image": "https://weekendmvp.app/image/john-portrait.jpg",
+          "sameAs": [
+            "https://twitter.com/weekendmvp",
+            "https://cal.com/switchtoux"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://weekendmvp.app/#org",
+          "name": "Weekend MVP",
+          "url": "https://weekendmvp.app/",
+          "logo": "https://weekendmvp.app/image/weekendmvp-logo.svg",
+          "founder": { "@id": "https://weekendmvp.app/#person" },
+          "sameAs": ["https://twitter.com/weekendmvp"]
         },
         {
           "@type": "Event",
+          "@id": "https://weekendmvp.app/shipable.html#event",
           "name": "ship·able · Build your MVP live in 90 minutes",
-          "description": "A 90-minute live workshop where you turn an idea into a real, deployed MVP with a live URL. Non-technical welcome, built with AI tools.",
+          "description": "A 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL. Non-technical welcome, built with AI tools. Includes the Ship Sheet, 48-hour build plan, AI MVP Builder, and the Weekend MVP Starter Kit.",
+          "image": [
+            "https://weekendmvp.app/image/hero-cover-desktop.jpg",
+            "https://weekendmvp.app/image/og-image.png"
+          ],
           "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
           "eventStatus": "https://schema.org/EventScheduled",
           "startDate": "2026-06-27T12:00:00+01:00",
-          "organizer": { "@id": "https://weekendmvp.app/#person" },
+          "endDate": "2026-06-27T14:00:00+01:00",
+          "inLanguage": "en",
+          "isAccessibleForFree": false,
+          "maximumAttendeeCapacity": 100,
+          "organizer": { "@id": "https://weekendmvp.app/#org" },
+          "performer": { "@id": "https://weekendmvp.app/#person" },
           "location": {
             "@type": "VirtualLocation",
             "url": "https://weekendmvp.app/shipable.html"
           },
           "offers": {
             "@type": "Offer",
+            "name": "ship·able seat",
             "price": "9",
             "priceCurrency": "USD",
             "availability": "https://schema.org/InStock",
-            "url": "https://weekendmvp.app/shipable.html"
+            "validFrom": "2026-06-12T00:00:00+01:00",
+            "url": "https://weekendmvp.app/shipable.html#seat",
+            "category": "Workshop"
           }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the ship·able workshop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "ship·able is a 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL by the end of the call. $9, live on Zoom, full replay included."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "When is the ship·able workshop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Saturday June 27, 2026 at 12:00 PM BST (7:00 AM EDT, 4:00 AM PDT, 12:00 PM WAT). Live on Zoom. If you can't make it live, you get the full lifetime replay."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How much does the workshop cost?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "$9 one-time. Includes the 90-minute live build, lifetime replay, the Ship Sheet worksheet, the 48-Hour Build Plan, and (live-only) the AI MVP Builder plus the Weekend MVP Starter Kit. Total stack value: $738."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Do I need to know how to code to attend?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. The workshop is built for non-technical founders. We use AI tools to build and deploy the MVP live on the call, so you walk out with a real shareable URL even if you've never written code."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What do I walk away with at the end?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A live, shareable URL for your MVP, a finished 48-hour build plan you can complete that weekend, and a way to capture your first users. Past attendees have shipped MVPs in 90 minutes and gotten paying users within days."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What if I can't attend live on Zoom?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You get the full lifetime replay. Note: the two bonuses (AI MVP Builder and Weekend MVP Starter Kit) are live-only, so attending live is recommended."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Who is hosting the workshop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "John Iseghohi, founder of Weekend MVP. He runs a community of 400+ weekend builders and has broken down 78 startup ideas on weekendmvp.app."
+              }
+            }
+          ]
         },
         {
           "@type": "BreadcrumbList",
