@@ -13,6 +13,7 @@
     "og:generate:dry": "node scripts/generate-og-cards.mjs --dry-run",
     "test:og": "node --test tests/og/",
     "extract:ideas": "node scripts/extract-idea-bodies.mjs",
+    "extract:articles": "node scripts/extract-articles-to-mdx.mjs",
     "seed:convex": "node scripts/seed-convex.mjs",
     "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run"
   },
