@@ -1,0 +1,104 @@
+---
+slug: "ai-meeting-notes-cleaner"
+title: "AI Meeting Notes Cleaner"
+---
+
+## The Problem
+
+Remote teams drown in meeting artifacts. Zoom and Microsoft Teams ship auto-transcripts full of false starts, crosstalk, and “can you hear me?”—but turning that blob into accountable action items still takes 20–30 minutes per call. Otter and Fireflies record everything yet overwhelm users with word dumps; managers want a **clean decision log**, not another searchable archive nobody opens.
+
+Product leads describe the same failure mode: “We have notes in three places and still miss follow-ups.” Granola and Fathom nail live capture for executives, but indie teams and consultants need a **weekend-buildable cleaner**—upload transcript, pick output format (standup summary, client recap, RACI actions), export to Notion or email. No bot joining calls required for v1.
+
+## The Solution
+
+MVP: paste-or-upload transcript UI, LLM pipeline that extracts attendees, decisions, risks, and action items with suggested owners, plus one-click Markdown/Notion export. Optional Zoom webhook in v2. Focus on *clarity* over storage—one screen in, structured doc out.
+
+**How it works:**
+
+1. **Ingest** — Paste transcript or upload .vtt from Zoom/Teams; detect speakers and timestamps
+2. **Clean** — LLM removes filler, merges duplicate threads, tags decisions vs brainstorm
+3. **Structure** — Output sections: Summary, Decisions, Action items (owner, due), Open questions
+4. **Export** — Copy Markdown, send email recap, or push to Notion via API
+
+## Market Research
+
+Meeting intelligence is crowded at the top but thin in the “transcript janitor” wedge for small teams:
+
+- **AI meeting assistants** — MarketsandMarkets projects the broader conversational AI segment exceeding **$40B by 2027**; meeting notes are a high-frequency wedge.
+- **Remote work persistence** — Gallup data shows **over 20% of US workers** still hybrid/remote, sustaining demand for async recap quality.
+- **Transcript volume** — Zoom reported **300M+ daily meeting participants** at peak; even a tiny share exporting transcripts creates massive TAM for post-processing tools.
+- **Wedge** — Compete on speed and format templates (client-facing vs internal), not on joining calls as a bot.
+
+## Competitive Landscape
+
+Incumbents capture recordings; you win on post-processing simplicity and template depth:
+
+- **Otter.ai** — Live transcription + search. Strong for lectures; action extraction and client-ready summaries need manual editing. Free tier · Pro ~$17/user/mo · Business ~$30/user/mo
+- **Fireflies.ai** — Bot joins calls, CRM integrations. Heavy for consultants who just want a cleaned recap from an existing .vtt file. Free · Pro $18/user/mo · Business $29/user/mo
+- **Granola** — Mac-native live notes with AI enhancement. Beautiful UX; limited if you already have Zoom transcript only. Free beta · paid tiers emerging
+- **Fathom** — Free AI notetaker for Zoom with highlight clips. Great for sales calls; less flexible custom output schemas for ops teams. Free core · Team plans for CRM sync
+
+**Your Opportunity**
+
+Be the “PDF compressor” of meeting notes: one job, instant value, $12/mo for unlimited cleans. Win SEO on “clean Zoom transcript” and “meeting notes to action items.”
+
+## Business Model
+
+Usage-based free tier drives viral loops inside Slack communities. Target **$1k MRR** at ~85 Pro users or a mix of Pro + small team plans.
+
+- **Free** ($0) — 5 cleans/month, watermark on export
+- **Pro** ($12/mo) — Unlimited cleans, custom templates, Notion export
+- **Team** ($39/mo) — 5 seats, shared template library, SSO later
+
+**Unit economics**
+
+~$0.08–0.15 LLM cost per clean on GPT-4o-mini class models · Pro margin >80% · CAC via template gallery and “paste your transcript” demo on landing page.
+
+## Recommended Tech Stack
+
+Keep v1 serverless: upload → queue → LLM → structured JSON → render. No call bot infrastructure required.
+
+- **Next.js 14 App Router** — Upload UI, streaming results, auth via Clerk or Supabase.
+- **OpenAI GPT-4o-mini / Claude Haiku** — Structured output with JSON schema for action items; retry on validation failure.
+- **Supabase** — Store transcripts, outputs, template presets; RLS per user.
+- **Vercel + Edge** — Deploy API routes; optional Inngest for async long transcripts.
+- **Notion API** — OAuth export as killer Pro feature; map sections to page blocks.
+- **Stripe Billing** — Metered or flat Pro subscription; usage caps on free tier.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Scaffold Next.js 14 TypeScript app “NotesCleaner” with Supabase auth, table meeting_cleans (raw_text, cleaned_json, template_id), and Zod schema for output: { summary, decisions[], actions[{owner, task, due}], open_questions[] }. Add /api/clean POST route calling OpenAI with structured outputs.
+```
+
+**2. Core Feature**
+
+```text
+Build transcript paste UI with character count, template picker (Standup, Client recap, Board notes), streaming markdown preview, and speaker attribution heuristic from “Name:” patterns. Include edit-in-place before export and copy-to-clipboard.
+```
+
+**3. Landing Page**
+
+```text
+Landing page: interactive demo with sample messy transcript pre-loaded, before/after toggle, comparison table vs Otter/Fireflies (we don't join your calls), pricing, FAQ on privacy (transcripts deleted after 30 days). Hero: “Your meeting ended. Your follow-ups didn't.”
+```
+
+**4. Notion Export**
+
+```text
+Implement Notion OAuth and block mapper: Summary → callout, Decisions → bulleted list, Actions → to-do blocks with @mentions parsed from attendee list.
+```
+
+## Sources
+
+Signals compiled from public research and vendor positioning (May 2026). Verify figures before financial projections.
+
+- [MarketsandMarkets — conversational AI market forecast](https://www.marketsandmarkets.com/Market-Reports/conversational-ai-market-49043506.html)
+- [Gallup — remote/hybrid work trends](https://www.gallup.com/workplace/694557/gallup-releases-latest-workplace-data.aspx)
+- [Zoom News — usage and growth context](https://news.zoom.us/zoom-sees-continued-growth/)
+- [Otter.ai — public pricing](https://otter.ai/pricing)
+- [Fireflies.ai — public pricing](https://fireflies.ai/pricing)

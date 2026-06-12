@@ -1,0 +1,167 @@
+---
+slug: "feature-voting-board"
+title: "Feature Voting Board"
+---
+
+## The Problem
+
+A SaaS founder gets feature requests in every channel at once. Twitter DMs. Intercom. Slack Connect threads. Email forwards from the CEO. Postmortem docs from customer interviews. One engineer maintains a Notion page called "Roadmap Ideas (actual)" that nobody trusts. By the time the team picks a quarterly theme, half the requests have gone stale and the other half were from one loud user who never actually upgrades.
+
+The incumbent answer is Canny at $360/month plus per-member pricing. That is a rounding error for a Series A company and a deal-breaker for the indie SaaS at $3K MRR. Founders who cannot justify Canny's price end up hand-building a Trello board, inheriting a dusty UserVoice subscription, or maintaining a GitHub issues repo labeled "public." None of these surface signal. None of them do status updates well. None of them close the loop with the original requester when the feature ships.
+
+The consequence is an identity mismatch. Customer-facing companies say they are "customer-driven." Their product decisions do not show it because the feedback never consolidates into a ranked list. Shipping the wrong features is the number-two cause of churn after onboarding friction. For a $3K–$30K MRR SaaS, a better feature-voting surface is a direct retention lever, and the tool needs to cost like an indie spent $19, not an enterprise spent $720.
+
+## The Solution
+
+A multi-tenant feature-voting SaaS priced for the indie and small-team segment. Each customer gets a public board at their own subdomain (or custom domain on paid tiers), an embeddable widget they paste into their app, and a simple admin for triage. **AI dedup** is the headline feature — when a user submits "dark mode pls," Claude compares against existing submissions and suggests voting on the existing "Dark theme support" instead of creating a duplicate. That one feature solves 40% of the mess that plagues every incumbent.
+
+**How it works:**
+
+1. **Paste the widget** — One \<script> tag in your app. Users see the board.
+2. **Submit + dedup** — AI checks similar requests; user votes existing or creates new.
+3. **Ship + notify** — Status change triggers email to every voter. Auto-changelog.
+
+The retention loop is the auto-notify on status change. When a requested feature ships, every voter gets an email: "Remember when you asked for dark mode 4 months ago? It is live today." That email is free re-engagement, it proves the founder is shipping, and it often converts dormant trials into paid. Canny charges for this. You do not.
+
+## Market Research
+
+The **customer feedback management software market is $12B+ globally in 2024, growing at 16–20% CAGR** (Grand View, MarketsAndMarkets). The product-led growth wave makes a feature voting surface effectively table-stakes for every new SaaS launched after 2022. Meanwhile, the indie-SaaS segment — founders with $1K–$50K MRR — has roughly **20K–40K active companies** in the Indie Hackers / MicroConf / r/SaaS ecosystem alone, all priced out of Canny's per-user tier structure.
+
+- **Canny has 1,000+ paying teams** (public ARR estimates ~$10M+). It was acquired by Permanent Capital in 2024 — a clear exit validation of the category at scale. Their pricing at $360–$1,200+/mo leaves the sub-$100/mo market completely open.
+- ProductBoard raised **$450M+ through Series D** at a $1.7B valuation (2022). Enterprise-focused. Does not serve indie SaaS.
+- **Companies with public roadmaps see 25–35% lower churn** versus no-roadmap peers (multiple studies from Productboard, Intercom, Appcues). The ROI on a $19/mo tool is ~40x if it prevents a single churn at $75 MRR.
+- Search volume: "product roadmap software" 2.4K/mo, "feature voting tool" 590/mo, "canny alternative" 390/mo — all with **$4–$9 CPC** signaling real commercial buying intent.
+- Communities: r/SaaS (220K), r/ProductManagement (180K), Indie Hackers (200K+ members), MicroConf Connect (8K+). Weekly threads asking "Canny alternatives" and "how do you handle feature requests."
+
+Market stage is *mature at the top, fragmented at the bottom*. Canny, ProductBoard, Aha!, and UserVoice dominate enterprise. Nolt and Frill serve the indie layer — but both are 2017–2019 vintage UIs with no AI features. A 2026 entrant with semantic dedup, embeddable widget, flat pricing, and custom domain on the first paid tier has 12–18 months before incumbents bolt AI onto their existing products.
+
+## Competitive Landscape
+
+Four classes of competitor, split cleanly by price point and positioning. The enterprise tier is saturated; the indie tier is stale. Your wedge: 2026 UX, AI dedup, flat pricing, widget + hosted + custom domain all included on the first paid tier.
+
+- **Canny** — Category leader for SaaS feature voting. Deep Intercom/Slack integrations, polished admin. Acquired by Permanent Capital 2024. Per-user-per-month pricing adds fast; custom domain gated to Business tier. $360/mo Growth → $900+/mo Business → custom Enterprise
+- **ProductBoard** — Enterprise product-management SaaS. Feature voting is one of many modules. $1.7B valuation implies structural incentive to price for enterprise; indie segment is below their sales floor. $20–$80/user/mo; typical team bill $500–$2K/mo
+- **Nolt / Frill.co** — Direct indie-tier competitors. Nolt has been around since 2017, UI is dated. Frill is cleaner but also 2019-vintage. Neither has AI dedup, neither has a meaningful embeddable widget story. Nolt $25–$75/mo flat; Frill $25–$149/mo flat
+- **DIY (Trello / GitHub / Notion)** — Free workarounds. Trello public boards, GitHub Discussions with upvote plugin, Notion database. Every founder tries this first; every founder eventually outgrows it because there is no notification loop, no dedup, no changelog, no voter anonymity. $0; hidden cost is founder admin time
+
+**Your Opportunity**
+
+Position exactly between DIY ($0, no loop) and Nolt/Frill ($25–$75 but 2019 UI). Flat $19 Pro / $49 Team. AI dedup as the hero differentiator. Embeddable widget in every tier (competitors gate this). Custom domain on Pro, not Business. Tagline: "Canny's feature set. Nolt's price. AI dedup nobody else has."
+
+## Business Model
+
+Flat-rate SaaS priced for the indie segment. Free tier captures new SaaS founders in month 1–3 and earns the trademark footer placement. Pro is the default for $5K–$50K MRR companies. Team covers multi-brand agencies and mid-market. Infrastructure cost per tenant is dominated by storage (negligible) and LLM inference for dedup (bounded per submission); gross margin sits above 90% at the Pro price point.
+
+- **Free** ($0) — 1 board, 100 total submissions, subdomain only, “Powered by” footer
+- **Pro** ($19/mo) — Unlimited submissions, custom domain, embeddable widget, AI dedup, Slack/Intercom integrations, status-change emails
+- **Team** ($49/mo) — Unlimited boards, 5 admin seats, private boards, priority support, API access, changelog auto-publishing
+
+**Unit Economics (illustrative)**
+
+- **~$0.40/mo** — Infra cost/tenant
+- **~$0.02/submission** — LLM dedup cost
+- **~94%** — Gross margin Pro
+- **8–12%** — Free → Pro conv.
+
+MRR path: 100 Pro = $1.9K/mo. 500 Pro + 30 Team = $11K/mo. At 2K Pro + 200 Team = $47.8K/mo ($574K ARR). The Team tier is the agency/multi-brand upsell lane; expect it to be ~10% of total customers but ~25% of revenue. Canny's 1K+ teams at ~$500–$700 blended ARPU is the ceiling proof; capturing 10% of the sub-enterprise segment lands a $2M+ ARR business without touching enterprise.
+
+## Recommended Tech Stack
+
+Multi-tenant SaaS basics plus two non-obvious details: vote-rate-limiting (prevent spam) via Upstash, and embeddable widget via sandboxed iframe with postMessage for auth handoff. Everything else is stock.
+
+- **Next.js 14 App Router** — Middleware routes `tenantSlug.product.com` or custom domain to `/[tenantSlug]/board`. Server Actions for vote/submit. Public board pages as Server Components for SEO.
+- **Supabase** — Tables: `tenants`, `features`, `votes`, `comments`, `subscribers`. RLS per-tenant. Postgres full-text search on feature titles for dedup candidate retrieval.
+- **Claude Haiku 4.5 for dedup** — New submission → Postgres FTS top 10 similar features → Haiku asks "is this a duplicate of any of these?" Cheap enough to run on every submission. Shows user the suggested existing feature; lets them vote or confirm "no, this is different."
+- **Upstash Redis rate limits** — Sliding-window rate limit per IP + per email: max 1 vote per feature, 20 submissions per day per tenant. Protects against botnet vote manipulation — the #1 operational risk for public voting sites.
+- **Resend + custom domain** — Status-change emails ("your requested feature is live"), weekly digest to admin ("top 5 requests this week"), voter opt-in confirmations. Team tier uses tenant's own sender domain via Resend custom-domain API.
+- **Stripe Billing + Vercel** — Stripe Checkout for Pro/Team, Customer Portal for plan changes. Vercel Custom Domains API for Pro/Team custom subdomain (SSL auto-provisioned). Vercel Cron nightly rolls up the "top requests" digest.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Multi-Tenant Scaffold**
+
+```text
+Create a Next.js 14 App Router multi-tenant SaaS for a feature voting board. Supabase backend, Tailwind, TypeScript.
+
+Schema (Supabase Postgres):
+- tenants(id, slug, custom_domain, owner_user_id, brand_primary_hex, stripe_customer_id, plan ENUM[free,pro,team], created_at)
+- features(id, tenant_id, title, body, status ENUM[under_review,planned,in_progress,shipped,wontfix], vote_count INT, created_by_email, created_at, shipped_at)
+- votes(id, feature_id, voter_email, voter_ip, created_at) — unique(feature_id, voter_email)
+- comments(id, feature_id, body, author_email, author_role ENUM[public,admin], created_at)
+- subscribers(id, feature_id, email) — voters who want status update emails
+
+RLS: tenants own-row; features/votes/comments scoped by tenant_id; public read on non-deleted rows.
+
+Middleware (Next.js):
+- Inspect request Host. If host matches tenants.custom_domain OR {slug}.portal.product.com, rewrite to /[tenantSlug]/board/...
+- If host is app.product.com, render admin routes at /admin/...
+
+Routes:
+- /[tenantSlug]/board (public list, filter by status, sort by votes|newest)
+- /[tenantSlug]/f/[featureId] (detail + comments)
+- /admin/login
+- /admin/features (triage view: new submissions, pending dedup, status changes)
+- /admin/settings (domain, branding, billing, integrations)
+
+Use Server Actions for the /vote and /submit mutations; include revalidatePath on the public board.
+```
+
+**2. AI Dedup + Rate Limiting**
+
+```text
+Implement AI-powered duplicate detection and vote spam protection. This is the product's differentiation vs Canny/Nolt.
+
+Dedup flow on submission:
+1. User submits new feature via /submit Server Action.
+2. Run Postgres FTS against existing features for this tenant: SELECT id, title, body, vote_count, ts_rank(to_tsvector(title || ' ' || body), websearch_to_tsquery($query)) AS rank FROM features WHERE tenant_id=$tid AND status NOT IN ('shipped','wontfix') ORDER BY rank DESC LIMIT 10;
+3. If top candidate rank > 0.3, pass the submission + top 5 candidates to Claude Haiku 4.5:
+   System prompt: "You identify whether a new feature request is a duplicate of existing ones. Return JSON: {is_duplicate: bool, match_id: string|null, confidence: 0-1, reason: string}"
+4. If is_duplicate AND confidence > 0.7: show user the modal: "This looks similar to [existing feature]. Vote for it instead?" with [Vote existing] or [Submit anyway].
+5. If user confirms submit anyway, create new feature. Track the "declined dedup" rate as a product metric.
+
+Rate limiting via Upstash Ratelimit:
+- Votes: 1 per (feature_id, voter_email) — DB unique constraint.
+- Submissions: 20/day per tenant (stop spam) and 5/hour per voter_email.
+- IP-based: 100 requests/hour per IP per tenant to the /vote and /submit endpoints.
+- Return 429 with Retry-After header when exceeded.
+
+Cost: Haiku dedup costs ~$0.002 per submission; budget-safe even at 10K submissions/month ($20).
+```
+
+**3. Embeddable Widget + Status Notifications**
+
+```text
+Build the embeddable widget and the status-change notification loop. These close the retention flywheel.
+
+Embeddable widget:
+- Host a standalone JS bundle at https://cdn.product.com/widget.js. Customer pastes:
+
+- On load, create a floating button ("💡 Feedback") in bottom-right.
+- Click opens an iframe pointing to https://acme.portal.product.com/widget (sandboxed with allow="forms").
+- Inside the iframe, render a trimmed version of the board: list top 10 active features, submit button, search.
+- postMessage bridge: if the host app wants to pass user_email (for pre-auth), the parent calls window.postMessage({type: 'identify', email: '...'}, '*') and the widget iframe listens. Reduces submission friction to one click.
+- Widget HTML/CSS: Tailwind inlined, 50KB total, zero dependencies on host app.
+
+Status-change notifications:
+1. Admin changes feature status in /admin/features. Server Action writes new status + records the prior one.
+2. Enqueue a background job (Vercel Cron or Upstash QStash): "send status-change emails for feature_id=X."
+3. Job queries all (voters + subscribers) for that feature, dedupes emails.
+4. Send via Resend using tenant's sender domain (Team tier) or platform domain (Free/Pro). React Email template with the feature title, new status, tenant branding.
+5. Track open + click via Resend webhooks; store as analytics.status_email_opens for the admin dashboard.
+6. For shipped status: auto-generate a changelog entry at /[tenantSlug]/changelog with markdown body. Team tier can toggle "auto-publish to changelog."
+
+This is the retention flywheel: voters get re-engaged on every ship event, admins get free proof-of-shipping marketing, and dormant accounts reactivate when a feature they cared about goes live.
+```
+
+## Sources
+
+- • [Grand View Research — Customer Feedback Management Market ($12B+ 2024, 16–20% CAGR)](https://www.grandviewresearch.com/industry-analysis/customer-feedback-management-market)
+- • [Canny Pricing — Growth $360/mo, Business $900+/mo (accessed April 2026)](https://canny.io/pricing)
+- • [TechCrunch coverage — Canny acquired by Permanent Capital (2024)](https://techcrunch.com/2024/)
+- • [ProductBoard Series D ($125M round, $1.7B valuation, 2022)](https://productboard.com/press)
+- • [Intercom — Public roadmap and churn (25–35% churn reduction)](https://www.intercom.com/blog/reducing-churn/)
+- • Keyword volumes from Google Keyword Planner (April 2026), CPC from Ahrefs. Ideabrowser direct search returned no exact match for feature-voting-board wedge; web research fills the category.
+
+Competitor pricing (Canny, ProductBoard, Nolt, Frill) shifts frequently; verify live pricing pages before marketing claims. Permanent Capital acquisition referenced from press coverage.

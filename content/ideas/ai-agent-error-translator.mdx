@@ -1,0 +1,108 @@
+---
+slug: "ai-agent-error-translator"
+title: "Doctor Debug: Plain-English Errors for AI Agents"
+---
+
+## The Problem
+
+No-code automation spent two years onboarding thousands of non-developers onto AI agent platforms. Marketers, operators, and consultants build agents on Lindy, Relay, and n8n that handle leads, scheduling, and routine ops. The agents work, until they break.
+
+When they break, the error log is written by engineers, for engineers. Stack traces, payload references, and HTTP status codes read like a foreign language to the operator who built the workflow. The person responsible for fixing the agent is the one person who cannot read what went wrong. So the agent sits broken, leads go unhandled, and the operator either pings a developer friend or rebuilds the whole thing from scratch.
+
+This is the new normal. Vibe coding and no-code agents let anyone ship automation fast, but the moment something fails, the gap between building and debugging swallows the project. The failure is rarely complex. It is usually an expired API key or a mismatch between two steps. It just does not read that way.
+
+## The Solution
+
+Doctor Debug catches the failure and reframes it. A user connects an agent once, and Doctor Debug watches each run in real time through the platform webhook and observability APIs. When the agent breaks, an explanation arrives in everyday language alongside a fix path that requires zero documentation reading.
+
+An expired API key reads as an expired API key, with the renewal steps. A malformed output reads as a mismatch between two workflow steps, with the exact line to adjust. Pattern recognition gets sharper as more agents are watched, because the fix library grows from real resolutions rather than synthetic test cases. The operator gets unstuck in minutes instead of waiting on a developer who may never reply.
+
+**How it works:**
+
+1. Integrate one platform first (Lindy) via its webhook and observability API, and ingest a real failure event into a normalized error shape.
+2. Build the translation engine: map the error signature to a plain-English explanation plus a ranked fix path, using Claude over a growing pattern library.
+3. Ship a dashboard and Slack alert that fire the explanation the moment an agent breaks, with a one-tap was-this-fix-right feedback loop.
+
+## Market Research
+
+The buyers already exist and already pay for the platforms that break on them. No-code agent tools have onboarded a large, non-technical audience that is structurally unable to self-serve when something fails. That is a recurring, high-frequency pain attached to revenue-critical workflows.
+
+The wedge is observability for non-developers, and it expands upmarket naturally: solo operators validate the product, then small agencies running five to ten agents pay for shared dashboards and audit logs.
+
+- Thousands of non-developers now run production AI agents on Lindy, Relay, and n8n
+- r/nocode and large Facebook automation groups are full of anyone-else-hit-this-error threads
+- Agencies running 5 to 10 client agents cannot afford stalled, unexplained breakages
+- Workflow platforms have a churn problem driven directly by error confusion
+
+## Competitive Landscape
+
+The alternatives are built for engineers or do not explain anything at all. That leaves a clean opening for a tool whose entire job is translation plus a fix path for a non-technical operator.
+
+- **Native platform logs** (Included) — Lindy and n8n expose raw errors, but they are written for engineers and offer no plain-English fix path.
+- **Sentry** (from $26/mo) — Excellent error monitoring, but aimed at developers debugging their own code, not operators running no-code agents.
+- **Zapier error emails** (Included) — Notifies you something failed, with little context and no guided resolution for the specific agent.
+- **Generic ChatGPT** ($20/mo) — Can sometimes explain an error if you paste it, but has no live connection to the agent and no fix library.
+
+**Your Opportunity**
+
+No tool sits on top of no-code agent platforms specifically to translate failures for the non-technical person who has to fix them. The fix library compounds with every resolution, which is a moat the generic chatbots cannot match.
+
+## Business Model
+
+Pricing follows the org size. Solo prosumers form a cheap validation tier that mostly engages at breakage moments. Agencies running multiple client agents pay meaningfully more for shared dashboards, Slack alerts, and audit logs their compliance teams want.
+
+At 49 dollars a month for the agency tier, roughly 100 paying agencies clear 5K per month, and the very platforms that generate the errors are a long-term distribution and embedding channel because reducing error confusion reduces their churn.
+
+- **Solo** ($15/mo) — One connected agent, real-time plain-English error explanations. The validation tier.
+- **Agency** ($49-99/mo) — Multiple agents, shared dashboard, Slack alerts, and audit logs for client work.
+- **Platform** (Custom) — Embedded observability licensed to the workflow platforms themselves to cut churn.
+
+**Unit Economics**
+
+- **$49/mo** — Agency tier price
+- **~100** — Agencies to $5K MRR
+- **\< $1** — AI cost per resolved error
+- **10 hrs** — Weekend MVP scope
+
+## Recommended Tech Stack
+
+The build is an integration plus a translation layer, not new infrastructure. Start with one platform to keep the error-shape mapping tractable, and grow the fix library from real user feedback.
+
+- **Platform webhooks + observability APIs** (Ingestion) — Captures failure events from Lindy and n8n without asking the user to touch code.
+- **Claude + a growing pattern library** (AI) — Maps an error signature to a plain-English cause and a ranked fix path, improving as resolutions accrue.
+- **Cloudflare Workers + Supabase** (Backend) — Cheap, fast event handling and storage for runs, patterns, and feedback.
+- **Web dashboard + Slack alerts** (Delivery) — Meets operators where they already watch for problems and notifies the moment an agent breaks.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build a service that receives webhook events from an n8n or Lindy agent run, normalizes the payload into a standard error shape (platform, step, error type, message, timestamp), and stores it in Supabase. Use Cloudflare Workers. Give me the schema, the webhook handler, and a test event.
+```
+
+**2. Core Feature**
+
+```text
+Write the translation engine. Given a normalized agent error, call Claude to produce: (1) a one-sentence plain-English explanation a non-developer understands, (2) the most likely cause, and (3) a numbered fix path. Match against a stored pattern library first; if a known pattern matches, prefer its vetted fix. Return JSON.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for Doctor Debug, a tool that explains AI agent errors in plain English for non-developers. Hero, a 3-step how-it-works, a comparison against raw platform logs and Sentry, pricing (Solo $15, Agency $49-99), and an email capture. Clean, reassuring, operator-friendly tone. Semantic HTML with Tailwind.
+```
+
+**4. Branding Package**
+
+```text
+Create a brand kit for Doctor Debug: positioning line (the error message rewritten for the person who has to fix it), a 5-word tagline set, a calm and trustworthy color palette with hex codes, an icon concept, and 5 launch posts aimed at r/nocode and Facebook automation groups.
+```
+
+**5. Pattern Library Feedback**
+
+```text
+Add a feedback loop to Doctor Debug. After each suggested fix, show a was-this-right control. On confirm, promote the error-signature-to-fix mapping into the pattern library with a confidence score; on reject, capture the correction. Use this library to short-circuit future identical errors without an AI call. Give me the schema and the promotion logic.
+```

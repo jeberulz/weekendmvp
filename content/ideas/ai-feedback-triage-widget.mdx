@@ -1,0 +1,115 @@
+---
+slug: "ai-feedback-triage-widget"
+title: "AI Feedback Triage Widget"
+---
+
+## The Problem
+
+Solo developers gather feedback from five places: app reviews, emails, Discord pings, support tickets, and the occasional tweet. Responding to each feels productive. Sorting them into priorities does not. Feature requests pile up next to bug reports and thank-you notes, and the person who built the whole product now owns the second job of deciding what every piece of it means. Canny and UserVoice exist for this, priced and designed for teams with a dedicated PM. Solo devs bounce off them in the trial.
+
+## The Solution
+
+A lightweight widget that embeds on any site or app with one snippet. When a user submits feedback, AI tags it as bug / feature request / confusion / praise, clusters it with similar submissions, and updates a ranked top-3 priority view. A weekly email digest summarizes what changed so the developer sees what matters without reading every message. One script tag covers Next.js, WordPress, and Framer.
+
+**How it works:**
+
+1. **Drop the snippet** — One line of JS, no backend required
+2. **AI auto-tags** — Bug / feature / praise / confusion, clustered by theme
+3. **Get the top 3** — Weekly digest with what’s urgent and what’s repeating
+
+## Market Research
+
+The solo-developer segment is one of the fastest-growing in software. No-code tools plus AI pair programmers have made the one-person product team a default, not an exception. Existing feedback tooling hasn’t caught up. Canny and UserVoice are the category’s public faces, both priced for funded teams. UserJot and Fider fill a tiny middle tier. The opening is AI-native, solo-priced, one-snippet install.
+
+- Reddit’s r/IndieDev (678K+ members) and r/Startup (873K+) surface weekly threads on feedback overload — demand is observable, not inferred.
+- Canny has raised $15M+; UserVoice was acquired by 3Pillar in 2021 — category validated, just not solved for the solo tier.
+- Keyword volume: “product feedback” searches up 47% YoY; “user testing” at 110K monthly (Ideabrowser keyword research).
+- No-code growth on Webflow, Framer, and Vercel has spawned millions of solo-published apps — every one is a feedback-widget candidate.
+
+## Competitive Landscape
+
+Two clusters: team-focused platforms priced for funded orgs (Canny, UserVoice) and minimal tools that require the developer to sort manually (UserJot, Fider). Nobody packages one-snippet install, AI auto-categorization, and a ranked top-3 view at under $10/mo.
+
+- **Canny** — Team/enterprise incumbent. Rich roadmap, voting, changelog. Designed for PM-led teams, not solo builders; pricing and UI both assume a dedicated product operator. $79/mo Starter → $399/mo Growth
+- **UserVoice** — Legacy enterprise player. Robust, expensive, sales-led. Overkill for indie use and the messaging doesn’t speak to solo devs at all. Custom pricing, typically $499+/mo
+- **UserJot** — Closest direct comp. Clean UX, generous free core — but zero AI categorization. Users still have to sort manually; the ranking layer doesn’t exist. Free core → $29/mo Pro
+- **Fider** — Open-source, self-hostable. Zero license cost, but install requires a server, a database, and ongoing maintenance. No AI. Most solo devs bounce. Free (self-host) or ~$50/mo hosted
+
+**Your Opportunity**
+
+Embed-in-seconds widget, AI that tags and ranks automatically, weekly digest that surfaces the top 3. $9/mo undercuts UserJot by 3x; free tier lets indie devs install today without a pricing conversation. Canny’s enterprise tilt and UserJot’s manual-sort gap are both the opening.
+
+## Business Model
+
+Freemium SaaS priced explicitly below UserJot. Free tier seeds indie-dev word-of-mouth (Reddit, GitHub, Hacker News); Pro monetizes a solo dev after their first weekly digest demonstrates value; Agency tier covers multi-brand freelancers and small studios. LLM cost per categorization is $0.001-0.005 with Claude Haiku, so margins hold at every tier.
+
+- **Free** ($0) — 1 project, 100 feedback items/mo, basic AI tagging, “powered by” badge
+- **Pro** ($9/mo) — Unlimited items, weekly digest, brand-voice categories, custom tags, no branding
+- **Agency** ($29/mo) — Multi-project, white-label, real-time Slack alerts, API access, 2 seats
+
+**Unit Economics (illustrative)**
+
+- **$0.001–0.005** — LLM cost/item
+- **~85%** — Gross margin Pro
+- **$15–30** — Target CAC
+- **6–10%** — Free → Pro
+
+## Recommended Tech Stack
+
+Ship the snippet on a CDN, route submissions through Cloudflare Workers, and store in Supabase. Claude Haiku does the categorization — cheap, fast, accurate. The entire install path must be under 60 seconds for a new customer: one script tag, one API key, and they’re collecting feedback.
+
+- **Cloudflare Workers + CDN** — The widget JS lives on Cloudflare’s CDN, loads async in \<15KB gzipped. Submit endpoint is a Worker: validates, rate-limits per project, queues to Supabase. Global edge = low latency install anywhere.
+- **Supabase** — Auth + Postgres for projects, feedback, categories, clusters. RLS per project. Realtime subscription drives the live top-3 view without polling.
+- **Claude Haiku (categorization)** — Haiku at $0.25/1M input tokens classifies each item for \<$0.005. Prompt cached with the taxonomy so repeat classifications are near-free. Fall back to GPT-4o mini on overload.
+- **Preact widget + Shadow DOM** — Preact keeps the snippet under 15KB. Shadow DOM isolates the widget from host-site CSS so brand colors always render clean. Zero layout shift on mount.
+- **Resend** — Weekly digest email with the ranked top-3 view. React Email templates for clean brand-voice output. Slack webhook for Agency tier real-time alerts.
+- **Stripe + PostHog** — Stripe Billing Checkout + Portal for Pro/Agency. PostHog instruments snippet installs, first-feedback-received, and first-digest-opened — the three events that predict conversion.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build an AI Feedback Triage Widget: a JS snippet customers embed, a Cloudflare Worker submit endpoint, and a Supabase-backed dashboard.
+
+Requirements:
+- Preact widget (<15KB gzipped) with Shadow DOM isolation for host-site CSS
+- One-tag install: <script src="https://cdn.siftbox.app/widget.js" data-project="PROJECT_KEY"></script>
+- Submit endpoint on Cloudflare Workers: validate input, rate-limit per project (30/min), queue to Supabase
+- Supabase schema: projects, feedback (text, project_id, status, created_at), categories, clusters
+- Dashboard: Next.js 14 App Router, auth via Supabase, ranked top-3 view that updates live via Realtime
+
+Ship the snippet + worker + submit path first. The dashboard can wait a day.
+```
+
+**2. Categorization Engine**
+
+```text
+Implement the AI categorization pipeline with Claude Haiku.
+
+For each new feedback item:
+1. Call Claude Haiku with a cached system prompt that defines 4 top-level categories (bug, feature_request, confusion, praise) plus any user-defined custom tags
+2. Return: {category, confidence, theme_slug, summary}
+3. Group items with matching theme_slug into clusters; update cluster.item_count
+4. Compute the ranked top-3 for the project: clusters with highest (item_count * recency_weight) in last 14 days
+5. Cache the project's taxonomy + custom categories with Claude's prompt caching for 80%+ token cost reduction
+
+Target: classification latency <500ms, cost <$0.005 per item.
+```
+
+**3. Weekly Digest**
+
+```text
+Build the weekly digest email that converts Free → Pro.
+
+Every Monday at 9am local time:
+1. Query each project’s top-3 clusters for the past 7 days
+2. Pull sample verbatim feedback (2 items per cluster, most recent + most upvoted)
+3. Render a React Email template: project name, “Top 3 this week,” each cluster card shows category icon, theme summary, item count, sample quotes
+4. Send via Resend; track open + click to PostHog as events weekly_digest_opened and weekly_digest_cta_clicked
+5. The digest ends with a single CTA: “See full dashboard” → dashboard URL with utm_source=digest
+
+The digest is the product’s aha moment. Make it land.
+```

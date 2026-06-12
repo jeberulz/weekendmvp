@@ -1,0 +1,163 @@
+---
+slug: "client-portal"
+title: "Client Portal Builder"
+---
+
+## The Problem
+
+Freelancers and small agencies invest serious money in front-of-house brand: a clean site, polished proposals, tight case studies. Then the client signs and the experience immediately collapses into Google Drive shared links, a Slack channel, a Loom inbox, and a Notion page. Five tools, four logins, zero cohesion. The perception of professionalism ends the second onboarding starts.
+
+The workarounds are worse than they look. Clients forward files to the wrong email. The designer sends a Figma link to a client who does not have Figma. Invoice status lives in Stripe, project timeline lives in a spreadsheet, and revision comments live in whoever's DMs were loudest that week. Every missed file is a billable hour of "where is this?" Every confused client is a reference that does not happen.
+
+The incumbent portals exist but they are built for creatives who are willing to spend a weekend building automations in Dubsado or mapping workflows in HoneyBook. A freelance consultant landing a $15K engagement on Monday does not have six hours to study tutorial videos before their client experience looks professional. They want: upload a logo, paste a domain, invite a client, done. Nobody ships that today.
+
+## The Solution
+
+A white-label, multi-tenant client portal where the setup is 60 seconds and every pixel is brandable. Freelancer signs up, picks a service-type template (design, consulting, marketing, coaching, development), uploads a logo, points their domain, and invites their first client. The client sees a portal that lives on `projects.agencyname.com`, not `agencyname.honeybook.com`. Every client sees only their own projects via row-level security.
+
+**How it works:**
+
+1. **Generate portal** — Logo, domain, service template. 60 seconds.
+2. **Invite clients** — Magic-link email, no client account creation
+3. **Run the project** — Files, milestones, messages, invoices, approvals
+
+Five service-type templates define the MVP. A design consultant's portal surfaces deliverable approvals and Figma embeds. A marketing agency's portal shows campaign status and metric dashboards. A coach's portal tracks session notes and goals. A dev shop's portal shows sprint status and PR links. Each template maps the five things that matter for that vertical — nothing more. The moat is not the portal, it is the defaults. Every freelancer signup trains the template, and the template becomes the product.
+
+## Market Research
+
+The global client portal software market is **$5.8B in 2025 and projected to reach $16.2B by 2035 at an 11.4% CAGR**. SMEs hold 49% of spend, and the segment is still fragmented across 15+ known tools with no conversational-AI leader. Adjacent: the AI website builder market sits at $3.41B (2026) growing to $14.78B by 2035 (17.7% CAGR), and custom AI code generation grows 22.3% CAGR. Clients expect the front-of-house polish of Framer-built sites; freelancers are behind the back-of-house curve.
+
+- **57M US freelancers (Upwork 2024)**, 60%+ earning from 2+ clients. Every one of them needs a delivery surface that is not a shared Google Drive.
+- **70% of B2B buyers prefer self-service portals** over email threads (Forrester). Clients ask "where is the portal?" more often than agencies have an answer.
+- Agencies spend **5+ hours/week** on client communication that a portal would absorb. At $100/hr that is $500/week of opportunity cost against a $29/mo tool.
+- Communities: **r/freelance (280K), r/agency (33K), r/nocode (115K), 287K-member AI automation Facebook group**. High weekly post volume on "best client portal 2026"—search and forum intent both validated.
+- **Asia Pacific grows 14.2% CAGR**, the fastest region. North America dominates spend today; localized templates unlock the APAC wedge.
+
+Market stage is *emerging*, not saturated. Dubsado (2015) and HoneyBook (2013) are 10+ years old and built around workflow-automation setup as the value prop. That is exactly the pain, not the feature. The 12–18 month window before incumbents bolt on AI-generated portals is open. Capture network effects (template library grows with each signup) before HoneyBook pushes a feature release.
+
+## Competitive Landscape
+
+Four direct incumbents, all weighted toward creatives and all requiring significant setup. Beneath them, the workarounds (Notion, shared Drives, custom WordPress) are where most freelancers actually live today. Your wedge is speed and specificity: a generated portal tuned to one of five service types, running on the freelancer's own domain, in 60 seconds.
+
+- **HoneyBook** — Category leader for creative freelancers. Strong mobile, polished templates, acquired by private equity in 2024. Setup is template-heavy; onboarding measured in hours, not minutes. No custom domain on lower tiers. $19/mo Starter → $39 Essentials → $79 Premium
+- **Dubsado** — Automation depth for creatives who want fine-grained workflows. Powerful, but the workflow mapping is the actual work. "Tedious setup" is the most-cited complaint in r/freelance and agency Facebook groups. ~$20/mo Starter → $40/mo Premier
+- **17hats** — Older all-in-one for service pros. Good community but UI feels 2018. Active Facebook Q&A community is a leading indicator of how much tutorial support users still need. $19/mo Essentials → $55/mo Premier
+- **Softr / WeWeb / Notion** — DIY no-code + workarounds. Cheap or free but the freelancer builds the portal themselves. Zero defaults; every project starts from a blank canvas. Users on r/nocode literally ask "simple client portal without coding" weekly. Softr $24–$79/mo, WeWeb $19–$99/mo, Notion free–$10/user
+
+**Your Opportunity**
+
+Zero-setup, service-type templates, custom domain included on the first paid tier, and Stripe Connect so the agency owns the payment relationship. Freelancer-first pricing: $29 flat for up to 5 clients, undercutting HoneyBook Essentials. Positioning: "Looks like Dubsado. Sets up like Framer. Priced like a Notion template." That sentence is the wedge.
+
+## Business Model
+
+Flat-rate SaaS priced below HoneyBook Essentials. Free tier captures skeptical freelancers with their first real client; Solo is the steady state; Agency unlocks team seats and multi-brand. Stripe Connect fees are pass-through, so you are not taking a payment cut. The only meaningful cost beyond infra is the custom-domain SSL automation; Vercel absorbs that.
+
+- **Free** ($0) — 1 client portal, 1 GB storage, subdomain only (yourname.portal.app), “Powered by” footer
+- **Solo** ($29/mo) — Up to 5 active clients, custom domain, full branding, Stripe Connect, all 5 templates, 20 GB
+- **Agency** ($99/mo) — Unlimited clients, 5 team seats, multi-brand, white-label email domain, priority support, 200 GB
+
+**Unit Economics (illustrative)**
+
+- **~$0.80/mo** — Infra cost/tenant
+- **~95%** — Gross margin Solo
+- **$40–$80** — Target CAC
+- **8–14%** — Free → Solo conv.
+
+MRR path: 50 Solo subs = $1.45K/mo. 500 Solo + 30 Agency = $17.4K/mo. At 2K Solo + 150 Agency = $72.85K/mo ($874K ARR). Switching costs compound: by client #10, the agency has 10 portals of project history, files, and threads. Rebuilding from blank is the moat.
+
+## Recommended Tech Stack
+
+Multi-tenant is the spine. Every portal is a row; every route resolves via subdomain or custom domain to a tenant, not a path. Supabase Row Level Security does the hard isolation work. Vercel handles the custom-domain SSL. Stripe Connect keeps you out of the payment flow.
+
+- **Next.js 14 App Router** — Middleware inspects the `Host` header and rewrites to `/[tenantSlug]/*`. Agency admin at `app.product.com`; client portals at custom domain or `*.portal.product.com`.
+- **Supabase** — Postgres with `tenants`, `memberships`, `projects`, `files`, `messages`, `milestones`. RLS policies scope everything to `auth.uid()` + membership. Storage bucket per-tenant with signed URLs.
+- **Vercel Custom Domains API** — Tenant adds their domain → you call `POST /projects/:id/domains`, show verification DNS records, Vercel handles Let's Encrypt SSL automatically. Zero ops for SSL.
+- **Stripe Connect (Standard)** — Agency onboards to Stripe via Connect; invoices are created on their Stripe account. Your platform takes $0 of their money. Separately, Stripe Billing charges the agency for your Solo/Agency subscription.
+- **Resend + custom domain** — Magic-link invites, new-message notifications, weekly digests. Resend's custom domain support lets Agency tier send from `hello@theiragency.com`, not your platform domain.
+- **Tailwind + CSS variables** — Every branded color, font, and logo lives in per-tenant CSS variables injected in `layout.tsx`. No runtime CSS compilation. `--brand-primary`, `--brand-logo-url`, etc.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Multi-Tenant Scaffold**
+
+```text
+Create a Next.js 14 App Router multi-tenant SaaS for a client portal builder. Supabase backend, Tailwind, TypeScript.
+
+Architecture:
+- Admin app at app.product.com (agency owner dashboard)
+- Client portals at *.portal.product.com AND on custom agency domains
+- Next.js middleware inspects Host header. If host is app.product.com -> render admin routes. If host matches a tenant subdomain or custom domain -> rewrite to /[tenantSlug]/portal/...
+
+Schema (Supabase Postgres):
+- tenants(id, slug, custom_domain, brand_logo_url, brand_primary_hex, service_template_type, stripe_account_id, plan, created_at)
+- memberships(id, tenant_id, user_id, role: 'owner' | 'member' | 'client', created_at)
+- projects(id, tenant_id, client_membership_id, title, status, created_at)
+- milestones(id, project_id, title, due_date, status, position)
+- files(id, project_id, path, size, uploaded_by, created_at)
+- messages(id, project_id, sender_membership_id, body, created_at)
+- invoices(id, project_id, stripe_invoice_id, amount_cents, status)
+
+RLS: every row scoped by tenant_id AND membership. Owners see everything in their tenant. Clients see only projects they are a member of.
+
+Auth: Supabase magic links, no passwords. Client invite email contains a signed URL that auto-joins the client to the project's membership row on click.
+```
+
+**2. Custom Domains via Vercel API**
+
+```text
+Implement custom-domain support end-to-end using the Vercel Domains API.
+
+Flow:
+1. In /admin/settings/domain the agency owner types their domain (projects.agency.com).
+2. Server action calls POST https://api.vercel.com/v10/projects/{PROJECT_ID}/domains with { name: "projects.agency.com" } using VERCEL_API_TOKEN.
+3. Vercel returns verification records. Display them to the user: "Add these DNS records to your domain:"
+   - CNAME projects -> cname.vercel-dns.com
+4. Poll Vercel's GET /v6/domains/:name/config every 30s; when verified=true, update tenants.custom_domain.
+5. Vercel auto-provisions Let's Encrypt SSL within ~60s of verification.
+
+In middleware.ts:
+- For every request, look up tenants WHERE custom_domain = host OR slug = host.split('.')[0]
+- If found, rewrite URL to /[tenantSlug]/portal/rest
+- If not found and host !== app.product.com, render a friendly "portal not found" page
+
+Do NOT store DNS records in your own DB; always re-fetch from Vercel to avoid drift.
+
+Test with a throwaway domain on Cloudflare or Namecheap before shipping.
+```
+
+**3. Stripe Connect + Service Templates**
+
+```text
+Two features, one prompt.
+
+A) Stripe Connect (Standard accounts):
+- In /admin/settings/billing, add a "Connect Stripe" button
+- Redirect to https://connect.stripe.com/oauth/authorize?response_type=code&client_id=CA_xxx&scope=read_write&state=
+- On callback, exchange code for access_token via POST https://connect.stripe.com/oauth/token; store the account_id in tenants.stripe_account_id
+- To create an invoice, call Stripe API with Stripe-Account: {account_id} header. The money flows to the agency's Stripe, not yours.
+- Your platform billing (Solo/Agency $29/$99) is separate: standard Stripe Billing on your own account.
+
+B) Service templates (the product's core UX):
+- When an agency signs up, ask one question: "What do you deliver?"
+- Options: design, consulting, marketing, coaching, development
+- Based on the choice, seed the first project with:
+  - design: milestones = [Brief approved, First round, Revisions, Final delivery]
+  - consulting: milestones = [Kickoff, Discovery, Recommendations, Implementation]
+  - marketing: milestones = [Audit, Strategy approved, Campaign live, Reporting]
+  - coaching: milestones = [Intake, Session 1, Mid-point check-in, Session N, Wrap]
+  - development: milestones = [Scope, Spike, Sprint 1, Sprint 2, Launch]
+- Seed a starter message thread with a welcome message using the agency's logo.
+- Defaults are the product. Let power users edit them; never force them to build from blank.
+```
+
+## Sources
+
+- • [MAK Data Insights — Client Portal Software Market ($5.8B → $16.2B by 2035, 11.4% CAGR)](https://www.makdatainsights.com/reports/global-client-portal-software-market)
+- • [Cognitive Market Research — Client Portal Software Market Report](https://www.cognitivemarketresearch.com/client-portal-software-market-report)
+- • [Custom Market Insights — AI Website Builder Market (17.7% CAGR, 22.3% custom AI code gen)](https://www.custommarketinsights.com/report/ai-powered-website-builder-market/)
+- • [Upwork Freelance Forward 2024 — 57M US freelancers](https://www.upwork.com/research/freelance-forward-2024)
+- • Ideabrowser idea #6761 (opportunity 9, pain 9, builder_confidence 9, timing 9) competitive and market stage research, April 2026.
+
+Verify competitor pricing against live product pages before marketing claims; tiers and packaging shift quarterly.

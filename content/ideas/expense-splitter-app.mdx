@@ -1,0 +1,116 @@
+---
+slug: "expense-splitter-app"
+title: "Expense Splitter App"
+---
+
+## The Problem
+
+Every group trip, every dinner with friends, every shared house ends the same way: someone Venmo-requesting, others forgetting who paid what, and awkward "you still owe me $23" conversations weeks later. Splitwise exists but feels dated and bloated. People want something simpler.
+
+## The Solution
+
+A clean, modern expense splitter that creates a group, logs expenses, and calculates the minimum number of payments needed to settle up. Integrates with Venmo/PayPal for one-tap settlement. Works great for trips, roommates, and regular dinner groups.
+
+**How it works:**
+
+1. **Create group** — Invite friends via link
+2. **Log expenses** — Who paid, who's involved
+3. **Settle up** — Optimized payments via Venmo
+
+## Market Research
+
+Group expense tracking is an evergreen category with one dominant incumbent and a long tail of me-toos. The opportunity is not inventing a new category—it is modern UX, faster settlement, and niche modes (group travel, roommates, couples) that the incumbent has underserved for nearly a decade.
+
+- Splitwise reports 50M+ downloads and last raised on a $1B+ valuation; Pro tier at $4/mo is the market's price anchor.
+- Global outbound tourism has fully recovered past 2019 levels (UNWTO 2024)—group trips are the highest-intent use case for a splitter.
+- Zelle processed $1T+ in P2P payments in 2023 and Venmo passed $270B in annual TPV—settlement rails are solved; splitting UX is not.
+- Gen Z and Millennials split 3+ recurring expenses with housemates on average (Zillow / Pew housing surveys); roommate is a sticky, monthly use case.
+
+## Competitive Landscape
+
+Splitwise owns the brand; Venmo owns the default. Everyone else fights for niche use cases. Your opening is modern UX plus a specific mode the incumbent neglects—group travel receipt parsing, multi-currency, or a roommate-first recurring bills layout.
+
+- **Splitwise** — Category king. Works, but UI is a decade old, Pro tier feels nickel-and-dimed, and the travel-specific workflow (multi-currency, receipt photos, exchange rates) still requires workarounds. Free with ads → $4/mo Pro (no ads, receipts, currency conversion)
+- **Tricount** — Euro-popular, travel-first. Slick enough on the app, but no dominant US presence and the web experience is weak—opening for a travel splitter with a tight trip-pass offer. Free with ads → €2.99/mo Premium
+- **Settle Up** — Clean, minimal, indie. Good multi-currency handling but weaker viral loops—nobody talks about Settle Up the way they talk about Splitwise. Product is fine; distribution is the gap. Free → $2.99/mo or $14.99/yr Premium
+- **Venmo / Cash App** — The “just Venmo me” default. Kills intent once per transaction but has no group math, no history per trip, no recurring bill logic. Co-existence play: export settled balances as a Venmo / Cash App request link. Free for P2P; no splitting or group tracking UX
+
+**Your Opportunity**
+
+Ship a modern, mobile-first PWA that nails one niche hard—group travel with OCR receipt capture and live multi-currency, or a roommate-first recurring bills home—then widen. Splitwise’s stagnation and Venmo’s non-answer are both the opening.
+
+## Business Model
+
+Freemium subscription priced at the category floor, plus a one-time Trip Pass that captures the high-intent travel moment without asking tourists to start a monthly subscription. Free tier seeds viral group invites; Pro monetizes housemates and repeat trip organizers.
+
+- **Free** ($0) — 1 active group, up to 5 members, basic split math, Venmo/Cash App hand-off
+- **Pro** ($3.99/mo) — Unlimited groups, recurring expenses, multi-currency, receipt OCR, CSV export
+- **Trip Pass** ($9.99 once) — One trip, unlimited members, full feature set for 30 days—no subscription
+
+**Unit Economics (illustrative)**
+
+- **$2–6** — Target CAC
+- **1.8–2.4** — Viral k-factor
+- **3–5%** — Pro conversion
+- **8–12%** — Trip Pass attach
+
+## Recommended Tech Stack
+
+PWA-first is the call—travelers on patchy hotel Wi-Fi need offline expense entry that syncs later. Next.js covers marketing + app + API in one deploy; Supabase handles auth, Postgres, and Realtime for live group balance updates; OCR via GPT-4o Vision keeps receipt capture a single API call.
+
+- **Next.js 14 PWA + TypeScript** — App Router, installable PWA with service worker for offline expense entry. IndexedDB queue drains to Postgres on reconnect.
+- **Supabase** — Auth + Postgres for groups/members/expenses, Realtime for live balance updates, Storage for receipt images, RLS per group membership.
+- **GPT-4o Vision (receipts)** — Single API call parses receipt photo into merchant, total, line items, and currency. Gate behind Pro + Trip Pass to keep margin positive.
+- **Stripe** — Checkout + Billing Portal for Pro subscriptions; one-off Payment Links for Trip Pass. Webhook-driven entitlement sync.
+- **Open Exchange Rates** — Daily FX rates for multi-currency trips; store rate-at-entry on the expense so historical balances don’t drift.
+- **Resend** — Trip summary emails, recurring-bill reminders, “you owe / you’re owed” nudges with one-click settle links.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js PWA for an Expense Splitter app.
+
+Features:
+- Landing page with "Start a Group" CTA
+- Create group: name, invite link generation
+- Group dashboard: members, expenses list, balance summary
+- Add expense modal: amount, description, who paid, split type (equal/exact/percentage)
+- Each member sees their balance (owed/owing)
+
+Use Supabase auth (magic link for easy onboarding) and database. Make it installable as PWA for mobile.
+```
+
+**2. Core Feature**
+
+```text
+Implement the settlement optimization algorithm:
+
+1. Calculate net balance for each person (total paid - total owed)
+2. People with positive balance are owed money; negative balance owe money
+3. Implement minimum transaction algorithm:
+   - Sort creditors and debtors
+   - Match largest debtor with largest creditor
+   - Settle minimum of both amounts
+   - Repeat until all settled
+4. Display settlement plan: "Alice pays Bob $50" etc.
+
+This minimizes total number of transactions needed.
+```
+
+**3. Payment Integration**
+
+```text
+Add payment links for settlement:
+
+- Generate Venmo deep links: venmo://paycharge?txn=pay&recipients={username}&amount={amount}¬e={description}
+- Generate PayPal.me links: paypal.me/{username}/{amount}
+- Add "Mark as Paid" button to manually record settlements
+- Send push notification when someone marks payment complete
+- Keep history of all settlements
+
+Allow users to save their Venmo/PayPal username in settings.
+```

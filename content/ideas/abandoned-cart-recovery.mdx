@@ -1,0 +1,119 @@
+---
+slug: "abandoned-cart-recovery"
+title: "Abandoned Cart Recovery Tool"
+---
+
+## The Problem
+
+70% of online shopping carts are abandoned—that's trillions of dollars left on the table every year. Store owners know they should send recovery emails, but Klaviyo is expensive ($45+/mo), Shopify's built-in is basic, and setting up effective sequences requires marketing expertise most store owners don't have.
+
+## The Solution
+
+A focused abandoned cart recovery tool that integrates with Shopify/WooCommerce, uses AI to write personalized recovery emails based on the products in cart, and optimizes send times automatically. Simple pricing, fast setup, measurable ROI.
+
+**How it works:**
+
+1. **Connect store** — Shopify or WooCommerce app
+2. **AI writes emails** — Personalized to cart contents
+3. **Auto-recover sales** — 3-email sequence on autopilot
+
+## Market Research
+
+Global e-commerce sales crossed $6T in 2024 (eMarketer). Baymard Institute tracks the average cart abandonment rate at 70%+—meaning for every 10 carts a store fills, 7 leave without buying. Recovery workflows are among the highest-ROI channels in e-commerce; Klaviyo built a $9B public company on that thesis. The indie opening is Shopify-first, sub-$30/mo, AI-written copy, with SMS included by default.
+
+- Baymard Institute: 70.19% documented average cart abandonment rate across 49 studies—structural, not a blip.
+- Shopify crossed 4.8M+ active stores (BuiltWith 2024); majority run on under-$50/mo app budgets and churn hard on pricier add-ons.
+- Klaviyo IPO’d at a $9B valuation in 2023; its Shopify add-on starts at $45/mo and scales with contact count—price ceiling the indie opening sits below.
+- SMS recovery rates beat email by 2–3x (Attentive / Postscript industry reports); email-only recovery leaves money on the table.
+
+## Competitive Landscape
+
+Incumbents are either pricey email marketing suites with abandoned-cart as a feature (Klaviyo, Omnisend) or popup/conversion apps with light recovery (Privy, ReConvert). Nobody packages AI-written copy, email + SMS, and sub-$20/mo pricing as the default Shopify install for sub-$500K GMV stores.
+
+- **Klaviyo** — Shopify e-commerce email king. Deep segmentation and predictive analytics, but priced to scale with list size—painful for sub-$500K GMV stores who just want cart recovery working. $45/mo starter → $720+/mo at 50K contacts
+- **Omnisend** — Challenger brand. Cleaner onboarding than Klaviyo, strong pre-built flows, SMS bundled. Generous free tier; paid tiers jump fast once the store grows. Free up to 500 contacts → $16–$59/mo Standard
+- **Privy** — Popup + cart recovery combo. Good free tier, but cart recovery is an add-on to the popup product; SMS is a separate upgrade. Free 100 contacts → $30/mo Starter → $100+/mo Growth
+- **Recart / ReConvert** — Recart leans into Messenger/SMS; ReConvert focuses on post-purchase upsells with light cart recovery. Both useful, neither the “complete Shopify recovery” default. Recart $299+/mo SMS-heavy; ReConvert $5–$45/mo
+
+**Your Opportunity**
+
+Ship a Shopify App that installs in 60 seconds, auto-generates AI recovery copy tuned to the store’s brand voice, sends email + SMS in one flow, and prices at $19–$49 flat—not scaled with list size. Klaviyo’s list-size tax and Privy’s popup-first tilt are both the opening.
+
+## Business Model
+
+Flat-rate SaaS priced for sub-$500K GMV Shopify stores that feel priced out of Klaviyo. Free tier captures stores in the first year; Pro monetizes steady-state stores with SMS; Growth covers multi-store brands. SMS cost is the main variable, so include a usage allowance per tier instead of flat-unlimited.
+
+- **Free** ($0) — 500 cart abandons/mo, email-only, 1 flow, “powered by” footer
+- **Pro** ($19/mo) — Unlimited abandons, email + 500 SMS/mo, AI copy, custom branding, 3 flows
+- **Growth** ($49/mo) — 2K SMS/mo, multi-store, segmentation, A/B testing, revenue attribution, 3 seats
+
+**Unit Economics (illustrative)**
+
+- **$0.008/msg** — SMS cost (US)
+- **~65%** — Gross margin Pro
+- **$30–60** — Target CAC
+- **7–12%** — Free → Pro
+
+## Recommended Tech Stack
+
+This is a Shopify App wired to webhooks, a scheduled email/SMS dispatcher, and an AI copy generator. Ship on the Shopify App Store day one for distribution. Keep the admin embedded inside Shopify Admin to minimize context switching for store owners.
+
+- **Shopify App (Remix template)** — Remix-based Shopify App with embedded admin (Polaris), OAuth install flow, and checkouts/create + checkouts/update webhook subscriptions.
+- **Supabase** — Postgres for shops, abandoned_checkouts, flows, messages. Row Level Security per shop. Store raw checkout payload for audit and revenue attribution.
+- **Twilio Programmable SMS** — SMS sends for recovery flows. A2P 10DLC registration required in US; price tier accordingly. Signed status webhooks update message table.
+- **Resend** — Transactional email sends with open/click tracking. React Email for branded templates that pull product images from the abandoned checkout payload.
+- **Claude (AI copy)** — Generate 3-message sequence (15 min / 1 hr / 24 hr) tuned to store voice and product. Cache brand voice prompt per shop to hold LLM margin.
+- **Vercel Cron + Stripe** — Per-minute cron dispatches due messages. Stripe Billing for Pro/Growth via Shopify Billing API (required for App Store apps); webhook syncs entitlements.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for Abandoned Cart Recovery.
+
+Features:
+- Shopify OAuth app installation flow
+- Dashboard: recovered revenue, emails sent, recovery rate
+- Email template editor with variables (customer name, products, cart link)
+- Settings: email timing (1hr, 24hr, 72hr), sender name/email
+- Preview of email sequence
+
+Use Supabase for auth/data. Set up Shopify webhook for cart abandonment events.
+```
+
+**2. Core Feature**
+
+```text
+Implement the email generation and sending:
+
+1. When Shopify webhook fires for abandoned cart:
+   - Store cart data: customer email, name, products, total, cart URL
+   - Schedule 3 emails: 1 hour, 24 hours, 72 hours after abandonment
+2. Before sending each email, use AI to personalize:
+   - Email 1: Gentle reminder with product images
+   - Email 2: Create urgency ("still available")
+   - Email 3: Offer small discount (configurable)
+3. Use Resend or SendGrid for email delivery
+4. Track opens, clicks, and conversions (add UTM to cart link)
+5. Cancel sequence if cart is recovered
+
+Stop sequence immediately when purchase is made.
+```
+
+**3. Analytics Dashboard**
+
+```text
+Build analytics dashboard showing:
+
+- Total recovered revenue (attributed to email clicks)
+- Recovery rate (carts recovered / carts abandoned)
+- Email performance: open rate, click rate by email in sequence
+- Best performing products (which items get recovered most)
+- Time series chart of recoveries over time
+
+Calculate ROI: "This month you recovered $X from Y abandoned carts"
+Show comparison to previous month.
+```

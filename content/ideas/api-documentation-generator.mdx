@@ -1,0 +1,116 @@
+---
+slug: "api-documentation-generator"
+title: "AI API Documentation Generator"
+---
+
+## The Problem
+
+API documentation is a chore that developers hate. It's always out of date, incomplete, or missing examples. Teams either spend hours maintaining docs manually or ship terrible developer experience. Meanwhile, good docs are the difference between a beloved API and one that never gets adopted.
+
+## The Solution
+
+Connect your GitHub repo, and AI analyzes your code to generate complete API documentation. It extracts endpoints, parameters, response types, and even generates realistic examples. Hosted docs update automatically on every push.
+
+**How it works:**
+
+1. **Connect GitHub** — OAuth to your repo
+2. **AI analyzes code** — Extracts endpoints, types, params
+3. **Publish docs** — Beautiful, interactive docs site
+
+## Market Research
+
+API documentation tooling is a mature developer category with fresh AI-native disruption. ReadMe raised on a $200M+ valuation; Stoplight was acquired by SmartBear in 2022; Mintlify raised a $20M Series A in 2024 on the AI-generated-docs thesis. The indie opening is a truly automated, OpenAPI-in-repo-to-hosted-docs pipeline for small teams who can’t justify $200+/mo.
+
+- Postman State of the API 2024: “poor documentation” is consistently a top-3 complaint developers raise about third-party APIs—structural, recurring pain.
+- Mintlify’s $20M Series A (TechCrunch 2024) validated AI-generated docs as a standalone category, not a feature.
+- GitHub’s Octoverse reports OpenAPI/Swagger specs in millions of public repos; every one is a candidate for automated publishing.
+- Scalar (open source) crossed 20K+ GitHub stars—signals developer appetite for modern OpenAPI renderers priced below the incumbents.
+
+## Competitive Landscape
+
+Two clusters: the AI-native docs platforms (Mintlify, ReadMe) priced for mid-market teams, and the open-source renderers (Redoc, Scalar) with zero price but heavy DIY setup. Your wedge is a hosted, AI-assisted OpenAPI-to-docs pipeline at $29/mo—between free-but-DIY and $99+/mo-but-hosted.
+
+- **Mintlify** — Current AI-docs darling. Beautiful output, auto-generated prose from OpenAPI + source. Pricing climbs fast past free tier; feels built for funded teams. Free OSS → $150/mo Pro → $550/mo Growth
+- **ReadMe.com** — Category incumbent. Rich API reference, interactive try-it UI, metrics. Mature but manual—still asks writers to touch every endpoint description. Free personal → $99/mo Startup → $399/mo Business
+- **Stoplight / SwaggerHub** — Enterprise design-first API platforms. Heavy, governance-centric, priced for enterprise API platform teams, not indie devs shipping SDKs. $39–$175/user/mo (Stoplight); $90+/user/mo (SwaggerHub)
+- **Redoc / Scalar (open source)** — Self-host renderers. Free and clean, but developers spend a weekend wiring them up, hosting them, and hand-writing prose. No AI assistance, no hosted search, no versioning UI. Free — but real cost is engineer time
+
+**Your Opportunity**
+
+Ship a GitHub App + hosted docs site that reads OpenAPI from a repo, generates missing prose with AI, and auto-publishes on merge. Price it at $29/mo—below Mintlify’s $150 floor, above Scalar’s “free if you self-host” setup cost. Own the indie SaaS tier that ships SDKs but doesn’t have a docs team.
+
+## Business Model
+
+SaaS freemium with an OSS-friendly free tier to seed GitHub Marketplace discovery. Pro monetizes indie SaaS teams shipping paid APIs; Team adds seats and versioning for sub-50-dev orgs. Pricing sits explicitly below Mintlify’s floor.
+
+- **OSS / Free** ($0) — Public repos, unlimited endpoints, weekly AI regeneration, subdomain hosting
+- **Pro** ($29/mo) — Private repos, custom domain, daily regeneration, Algolia search, branded docs
+- **Team** ($99/mo) — 5 seats, versioned docs, API analytics, approval workflow, SSO, SLA
+
+**Unit Economics (illustrative)**
+
+- **$0.20–1.00** — LLM cost per regen
+- **~75%** — Gross margin Pro
+- **$40–80** — Target CAC
+- **115%+** — Net retention
+
+## Recommended Tech Stack
+
+This is a GitHub App that reads OpenAPI specs, generates prose with Claude, and publishes a Next.js docs site. The tricky bits are diffing spec changes on each push (so regeneration is cheap), caching AI prose per endpoint, and making the docs URL a first-class custom domain.
+
+- **GitHub App + Octokit** — Install-once App with push webhook. Detect openapi.yaml/json path, fetch on push, diff against last snapshot, regenerate only changed endpoints.
+- **OpenAPI parser (swagger-parser)** — Validates spec on each push, resolves $ref, extracts per-endpoint shape. Feeds structured data to the prose-generation step.
+- **Claude + prompt caching** — Endpoint + brand voice prompt cached; only the delta per endpoint is regenerated. Cuts token spend by 80%+ on repeat regenerations.
+- **Next.js docs site + MDX** — Per-customer Next.js site rendering endpoint pages from MDX. Vercel multi-tenant: one deploy, path-based routing by customer slug; custom domain via Vercel Domains API.
+- **Algolia DocSearch** — Index each generated doc page on publish; Pro/Team tier feature. Free for OSS customers via DocSearch program.
+- **Supabase + Stripe** — Supabase for auth, installations, cached prose. Stripe Checkout + Billing Portal; webhook-driven entitlement sync for custom domain / versioning features.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for an API Documentation Generator.
+
+Features:
+- GitHub OAuth to connect repositories
+- Dashboard showing connected repos and their docs status
+- Settings to configure which folders contain API code
+- Preview mode to see generated docs before publishing
+- Custom domain support for hosted docs
+
+Use Supabase for auth and database. Store: user, repos, generated_docs, custom_domains.
+```
+
+**2. Core Feature**
+
+```text
+Create the documentation generator:
+
+1. Fetch API route files from GitHub (look for /api/, /routes/, common patterns)
+2. For each file, send to Claude with prompt: "Analyze this API code and extract: HTTP method, endpoint path, query parameters, request body schema, response schema, description"
+3. Generate OpenAPI spec from extracted data
+4. Convert OpenAPI to interactive documentation using Redoc or custom renderer
+5. Create example requests with realistic mock data
+6. Generate code snippets for curl, JavaScript, Python
+
+Run this on GitHub webhook for push events to keep docs updated.
+```
+
+**3. Docs Site**
+
+```text
+Create the hosted documentation site:
+
+- Clean, modern design similar to Stripe or Vercel docs
+- Left sidebar with endpoint navigation grouped by resource
+- Main content area with: endpoint description, parameters table, request/response examples
+- Right sidebar with code snippets (toggleable languages)
+- Built-in search across all endpoints
+- Dark/light mode toggle
+- "Try it" button to make live requests (if user adds API key)
+
+Deploy each user's docs to a subdomain: {project}.docs.yourdomain.com
+```

@@ -11,7 +11,10 @@
     "og:generate": "node scripts/generate-og-cards.mjs",
     "og:generate:force": "node scripts/generate-og-cards.mjs --force",
     "og:generate:dry": "node scripts/generate-og-cards.mjs --dry-run",
-    "test:og": "node --test tests/og/"
+    "test:og": "node --test tests/og/",
+    "extract:ideas": "node scripts/extract-idea-bodies.mjs",
+    "seed:convex": "node scripts/seed-convex.mjs",
+    "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,117 @@
+---
+slug: "contract-analyzer"
+title: "AI Contract Decoder for Non-Lawyers"
+---
+
+## The Problem
+
+A solo founder signs a SaaS reseller agreement on Monday, an NDA with a prospect on Tuesday, and an offer letter for their first hire on Wednesday. None of those documents got a real legal review. The math does not work: the cheapest small-business attorneys quote $250–$500 per hour, with $1,500–$3,000 minimums for anything resembling a contract negotiation. So the founder skims, signs, and hopes nothing in the indemnity clause comes back to bite them. Multiply that across the 33 million U.S. small businesses and you have a structural risk most of the legal industry has decided is not worth its time.
+
+The pain shows up loudly online. Reddit’s r/legaladvice has more than 1.2 million members, and the highest-engagement threads are almost always “is this contract safe to sign?” with a wall of pasted clauses and a frantic ask for plain-English help. Search demand for “plain language legal” and “contract red flags” phrasing has been climbing for years. Facebook groups like “Office for Lawyers” (5,600+ members) and “ChatGPT and AI for Law Firms” trade tips on summarizing contracts faster, but those tools are pointed at lawyers—not the people actually signing. The gap is stark: enterprise legal-tech platforms cost five figures a year, free templates from Rocket Lawyer and LegalZoom do not analyze documents you bring in, and dropping a contract into raw ChatGPT gives you a confident answer that may or may not be hallucinated. Founders need a tool built for non-lawyers that is opinionated about risk, transparent about uncertainty, and priced like a SaaS subscription rather than a retainer.
+
+## The Solution
+
+A web app where the user uploads any contract—PDF, DOCX, image of a signed page—and gets back a plain-English summary, a risk-flag list, an “unusual clauses” callout, and a side-by-side comparison against typical terms for that document type. The pipeline chunks the document, runs each section through a frontier model (GPT-4o or Claude 3.5 Sonnet) using structured outputs, and persists every span with the source paragraph it came from so users can trust the citations. A risk taxonomy specific to common SMB documents—NDAs, MSAs, employment agreements, vendor terms, leases, SaaS subscriptions—ranks each flag as informational, caution, or red-flag. The output is short, scannable, and explicit about what the AI is not sure about. You are selling clarity with receipts, not autonomous legal advice.
+
+**How it works:**
+
+1. **Upload** — Drag a PDF, Word doc, or photo of a contract; pdf-parse + mammoth + Tesseract pull clean text
+2. **Decode** — Each clause gets a plain-English rewrite, a risk score, and a confidence label
+3. **Compare** — Side-by-side against a baseline for that document type (NDA, MSA, lease)
+4. **Export** — One-page summary + flagged-clause checklist as PDF, Markdown, or shareable link
+
+## Market Research
+
+Legal-tech demand is being pulled forward by both AI capability and a structural shift toward alternative legal services. Five independent data points anchor the opportunity:
+
+- **Legal technology is a $33.25B market in 2025**, projected to reach $47.61B by 2029 at a 9.4% CAGR—outpacing the broader legal services category and creating room for net-new categories like consumer-grade contract analysis (Globe Newswire / Business Research Company forecasts).
+- **Alternative Legal Services Providers crossed $28.5B in 2024** and are growing at 18% CAGR, per Thomson Reuters’ 2025 ALSP report. The category exists because corporate buyers are unbundling work away from BigLaw—the same dynamic that opens space for SMB-focused tools like this.
+- **The global legal services market is expected to hit $1.55 trillion by 2034** (Precedence Research). Even a fraction of a percent siphoned by self-service AI tooling represents a multi-billion-dollar wedge.
+- **1.2M+ members in r/legaladvice**, plus rising search interest in “plain language legal,” demonstrate consumer demand at scale (Ideabrowser community analysis on idea #1175). The audience already self-identifies; you do not need to create demand.
+- **Corporate legal departments’ share of ALSP spend is growing 19.6% annually** (Arizton). The buying behavior is shifting; the wedge for a self-serve product to the underserved bottom of that market is wide open.
+
+## Competitive Landscape
+
+Legal tech is dominated by enterprise incumbents and DIY-template players. Almost nobody is selling a real document analyzer to the bottom of the SMB market—which is exactly where the demand is loudest:
+
+- **LexisNexis (RELX)** — Lexis+ AI and Lexis Protégé deliver enterprise-grade contract review and legal research. Trusted brand, deep data, but built for law firms with seat-based licensing. Quote-based enterprise pricing—account-managed; not published, typically 5–6 figures/year
+- **Thomson Reuters (Westlaw + CoCounsel)** — CoCounsel (acquired from Casetext in 2023) brought conversational AI to enterprise legal research and document review. Post-acquisition focus has shifted toward enterprise bundles. Subscription tiers via sales; CoCounsel public floor reported around $225–$500/seat/mo when sold standalone
+- **Lexion (now part of Docusign IAM)** — SMB-friendly contract management with AI-assisted summarization. Closer to the SMB segment than incumbents, but the product is workflow-heavy and aimed at legal-ops buyers, not founders. Tiered SaaS; entry plans typically $400–$1,000+/mo via Docusign account teams
+- **Rocket Lawyer / LegalZoom** — Sell templates and bolt-on attorney consults. Great for generating contracts, but neither analyzes documents you bring in—you cannot upload an arbitrary NDA and get a risk read. Rocket Lawyer Premium ~$39.99/mo; LegalZoom business plans $39.99–$71.99/mo
+- **DIY: ChatGPT / Claude** — Free-tier or $20/mo wrappers people are already using. No risk taxonomy, no industry comparison, no audit trail. Confident-sounding hallucinations are the rule, not the exception. $0–$20/mo per user; unpredictable accuracy
+- **Plain-language nonprofits (LawHelp et al.)** — Explain legal concepts in clear language but do not analyze a document you upload. Excellent reference; not a workflow tool. Free; static content
+
+**Your Opportunity**
+
+Real-time, affordable, browser-friendly contract simplification for individuals and small businesses is the gap the incumbents have intentionally left open. Win on three things they cannot easily copy: (1) opinionated risk scoring with a transparent confidence model, (2) a comparison library tuned to common SMB document types, and (3) a price point—$19–$49/mo—they will not move down to defend.
+
+## Business Model
+
+Subscription SaaS with a generous free tier as the wedge. The math to $20K MRR is roughly 400 paid customers blended across Solo and Team plans—or 800 Solo subs alone. A $0.10–$0.30 model spend per analyzed contract (with prompt caching) keeps gross margin well above 80% even at the entry price.
+
+- **Free** ($0) — 1 contract/month, basic risk flags, watermark on export—the lead-gen channel
+- **Solo** ($19/mo) — Unlimited common contracts (NDAs, employment, vendor), risk taxonomy, industry comparison library
+- **Team** ($49/mo) — 3 seats, shared library, document history, exportable risk register, priority support
+
+Backend offers extend the ladder: a $99/mo Compliance plan (industry-specific clause libraries, redline suggestions) and white-label enterprise licensing in the $20K–$50K/year range for accountants and small-business associations bundling the tool to their members.
+
+**Unit Economics**
+
+- **$90** — Target CAC
+- **$26/mo** — Avg. Revenue / User
+- **~85%** — Gross Margin
+- **~$400** — LTV (18-mo)
+
+## Recommended Tech Stack
+
+Optimize for ingestion → chunk → analyze → persist with citations. Long-context models matter: the average MSA is 15–30 pages, and Claude 3.5 Sonnet’s 200K window lets you feed an entire contract in one shot rather than stitching summaries across chunks.
+
+- **Next.js 14 + Vercel** — App Router for the analyzer workspace, server actions for upload, streaming UI for clause-by-clause output.
+- **Anthropic Claude 3.5 Sonnet (+ GPT-4o fallback)** — 200K context for long agreements; structured outputs for \{summary, risk_flags[], unusual_clauses[], plain_english_rewrite, confidence} per clause.
+- **Supabase (Auth + Storage + Postgres)** — Row-level security per workspace is the trust foundation—people are uploading contracts. Storage for source files, Postgres for analyses and audit logs.
+- **pdf-parse + mammoth + Tesseract.js** — PDF text extraction, DOCX parsing, and OCR fallback for scanned or photographed contracts. Chain them in a single ingestion worker.
+- **Stripe Billing** — Free / Solo / Team tiers + metered overages on contracts beyond plan limits; customer portal for self-serve plan changes.
+- **Resend + Inngest** — Resend delivers the one-page summary email after each analysis; Inngest orchestrates async OCR and re-analysis when the user uploads a revised version.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “ContractDecoder.” Provision Supabase with tables: workspaces, members, documents (file_path, doc_type, status), analyses (document_id, summary, risk_flags JSONB, unusual_clauses JSONB, plain_english_rewrite, confidence FLOAT, model, prompt_version), and audit_logs. Add row-level security so a member can only see rows in workspaces they belong to. Wire Stripe with three products (Free, Solo $19, Team $49), Resend for transactional email, and an Inngest client for async jobs. Add env vars for ANTHROPIC_API_KEY and OPENAI_API_KEY (fallback). Install pdf-parse, mammoth, and tesseract.js for ingestion.
+```
+
+**2. Core Analyzer Pipeline**
+
+```text
+Build the analyze flow. On upload: extract text via pdf-parse (PDF), mammoth (DOCX), or Tesseract (image fallback). Detect doc_type via a small classifier prompt (NDA, MSA, employment, vendor, lease, SaaS subscription, other). Send the full text to Claude 3.5 Sonnet with a strict JSON schema: { summary: string (3 short paragraphs, 9th-grade reading level), risk_flags: Array<{ clause_excerpt, severity: "info"|"caution"|"red", why_it_matters, suggested_question }>, unusual_clauses: Array<{ clause_excerpt, why_unusual }>, plain_english_rewrite: string, confidence: 0–1, baseline_comparison: Array<{ topic, this_contract, typical }> }. Persist the result and the prompt version. Add a streaming UI that renders the summary first, then risk flags, then comparison. Include a clear “not legal advice” disclaimer near every output.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for ContractDecoder. Hero headline: “Read every contract you sign. Without paying $500/hour for it.” Sub: “Plain-English summaries, risk flags, and red-flag comparisons in 30 seconds.” Sections: live demo with a sample NDA the user can analyze without signing up; problem (founders skim contracts because lawyers are too expensive); how it works (4 steps with icons); pricing (Free / Solo $19 / Team $49) anchored against a $500/hr attorney callout; FAQ covering accuracy, “is this legal advice?”, and data privacy. Use the Geist font, white background, black accents, generous whitespace. CTA: “Decode a free contract” routes to the upload flow.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for ContractDecoder: a wordmark and a small icon mark suggesting “decoded text.” Pick a primary near-black, a single accent (warm amber or muted green), and two neutrals. Type system: Geist for UI and headings, IBM Plex Mono for clause excerpts. Provide hex codes, font weights, a 6-icon usage set (upload, flag, clause, compare, export, history), and three voice rules: explain like a smart friend, never invent a clause, always disclose confidence. Output as a one-page brand sheet.
+```
+
+## Sources
+
+Market sizing, competitive pricing notes, and demand signals collated from Ideabrowser MCP idea #1175 and the public research it cites (May 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Globe Newswire — Legal Technology Market 2025–2029–2034 forecast (RELX, Thomson Reuters, Wolters Kluwer)](https://www.globenewswire.com/news-release/2025/03/24/3047608/0/en/Legal-Technology-Market-Analysis-Shares-and-Growth-Forecast-2025-2029-2034-Featuring-RELX-Thomson-Reuters-Wolters-Kluwer-OpenText-Corporation-LexisNexis-Legal-Professional-Company-.html)
+- [The Business Research Company — Legal Technology Global Market Report](https://www.thebusinessresearchcompany.com/report/legal-technology-global-market-report)
+- [Precedence Research — Legal Services Market ($1.55T by 2034)](https://www.precedenceresearch.com/legal-services-market)
+- [Thomson Reuters — 2025 ALSP Report ($28.5B segment)](https://www.thomsonreuters.com/en/press-releases/2025/january/alternative-legal-services-providers-2025-report-shows-segment-comprises-28-billion-of-the-legal-market)
+- [LawNext — ALSP market growth analysis (2025)](https://www.lawnext.com/2025/01/alternative-legal-services-market-grows-to-28-5b-as-industry-faces-critical-juncture-thomson-reuters-report-finds.html)
+- [Arizton — U.S. Alternative Legal Service Providers Market (corporate segment 19.6% CAGR)](https://www.arizton.com/market-reports/alternative-legal-service-providers-market-united-states)
+- [Grand View Research — U.S. Legal Services Market Report](https://www.grandviewresearch.com/industry-analysis/us-legal-services-market-report)
+- [Nextpoint — 2025 State of the eDiscovery Industry takeaways](https://www.nextpoint.com/ediscovery-blog/ediscovery-trends-survey-key-takeaways-from-the-2025-state-of-the-industry-report/)
+
+Page sourced via Ideabrowser MCP (idea_id 1175): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.

@@ -1,0 +1,110 @@
+---
+slug: "subscription-analytics-dashboard"
+title: "Subscription Analytics Dashboard"
+---
+
+## The Problem
+
+SaaS founders often fly blind when it comes to their metrics. Stripe gives you raw data, but calculating MRR, churn rate, and customer lifetime value requires spreadsheet gymnastics. Most founders either ignore these metrics entirely or spend hours each month manually calculating them. By the time they realize churn is killing their business, it's often too late to course-correct.
+
+## The Solution
+
+A clean, focused dashboard that connects to Stripe and automatically calculates the metrics that matter: MRR, ARR, churn rate, LTV, and revenue growth. No complex setup, no learning curve—just connect Stripe and see your numbers in real-time.
+
+**How it works:**
+
+1. **Connect Stripe** — OAuth integration in one click
+2. **Auto-calculate** — MRR, churn, LTV computed instantly
+3. **Track trends** — See growth and churn over time
+
+## Market Research
+
+Subscription analytics is a mature but consolidating category. ChartMogul and Baremetrics own the mid-market; ProfitWell (now part of Paddle) owns the free-in-exchange-for-lock-in play; Stripe’s own Sigma and Revenue Recognition sit one layer deeper. The indie opportunity is founders on Stripe with under $50K MRR who want a clean dashboard at a price that doesn’t feel like a tax on being small.
+
+- Stripe publicly reports processing for millions of businesses; every Stripe-native SaaS is a potential user, and most under $50K MRR use a spreadsheet.
+- Baremetrics’ entry plan sits at $129/mo (as of 2024 public pricing), ChartMogul at $100+/mo—both price floors are well above early-stage founder comfort.
+- ProfitWell was acquired by Paddle in 2022; the free plan persists but now routes users toward Paddle’s merchant-of-record stack—opening for a neutral option.
+- Global SaaS market projected past $900B by 2030 (Gartner); every new SaaS needs MRR/churn/LTV math on day one.
+
+## Competitive Landscape
+
+Incumbents compete on breadth (ChartMogul) or free-plus-upsell (ProfitWell/Paddle). Your opening is a Stripe-only, indie-priced dashboard that opens in under 60 seconds and doesn’t require a migration conversation with a payments vendor.
+
+- **ChartMogul** — Category incumbent. Rich cohort analysis, CRM syncs, forecasting. Priced for Series A+ teams; setup is heavier than indie founders want. $100/mo Launch → $500+/mo Volume (scales with MRR)
+- **Baremetrics** — The indie-hacker favorite of 2018 that drifted upmarket. Still excellent UX; $129/mo entry price prices out pre-$10K MRR founders who need it most. $129/mo Metrics → $229/mo Control Center
+- **ProfitWell (Paddle)** — Free forever core analytics, but now a funnel into Paddle’s merchant-of-record billing. Product-led hook for Paddle’s upsell, not a neutral analytics tool. Free core → upsell to Paddle Billing/Retain
+- **Stripe Sigma + spreadsheets** — The default. Stripe’s own SQL analytics + a Google Sheet glued together by the founder at 11 pm. Works, but fragile and no alerts, no cohort retention curves, no churn root-causing. Sigma usage-based (cents per query); spreadsheets free
+
+**Your Opportunity**
+
+Own the “sub-$50K MRR Stripe founder” wedge: free up to $10K MRR, $29/mo Pro, no Paddle lock-in, alerts in Slack, and defensible cohort math out of the box. Baremetrics’ price floor and ProfitWell’s Paddle-capture are both the opening.
+
+## Business Model
+
+Freemium with a usage-based tilt: free under $10K MRR to seed Indie Hackers and r/SaaS word-of-mouth, Pro at $29/mo through $50K MRR, Team at $79/mo for sub-50-dev teams who need seats and Slack digests. Price curve mirrors your customer’s MRR curve so the tool is never a tax.
+
+- **Free** ($0) — 1 Stripe account, up to $10K MRR, core dashboard, 14-day history
+- **Pro** ($29/mo) — Unlimited history, cohort retention, Slack/email alerts, multi-account, weekly digest
+- **Team** ($79/mo) — 5 seats, board-ready PDF reports, benchmarks, SSO, investor-view sharing link
+
+**Unit Economics (illustrative)**
+
+- **$25–60** — Target CAC
+- **6–10%** — Free → Pro conversion
+- **$34/mo** — Blended ARPU
+- **110%+** — Net retention
+
+## Recommended Tech Stack
+
+The hard parts are Stripe historical backfill (pagination-heavy, rate limited) and pre-computing cohort retention cheaply at query time. Next.js covers app + marketing; Supabase handles auth, Postgres, and Edge Functions for nightly rollups; Stripe webhooks keep the dashboard live between nightly jobs.
+
+- **Next.js 14 + TypeScript** — Marketing site, dashboard, Stripe OAuth callback, webhook endpoint. Server Components render the dashboard from pre-aggregated Postgres rows for sub-300 ms loads.
+- **Supabase (Postgres + Edge)** — Auth, Postgres for raw Stripe events + daily_metrics rollup tables, RLS per workspace. Edge Functions run Stripe historical sync and nightly cohort computation.
+- **Stripe OAuth + webhooks** — OAuth Connect for read-only access; webhook endpoint idempotent on event.id; historical backfill on first connect with resume-able paging. Signed webhook verification required.
+- **Tremor + Recharts** — Tremor components for KPI cards and cohort tables; Recharts for time-series MRR chart. Both tree-shake cleanly and match Tailwind tokens.
+- **Resend + Slack webhooks** — Weekly email digest with MRR/churn delta; Slack Incoming Webhooks for Pro/Team tier alerts on churn spikes and new-customer milestones.
+- **Vercel Cron + Stripe Billing** — Nightly cron triggers cohort rollup Edge Function. Stripe Billing Checkout + Portal for Pro/Team subscriptions; webhook syncs plan entitlements.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app with Tailwind CSS for a Subscription Analytics Dashboard.
+
+The app needs:
+- A landing page with "Connect Stripe" OAuth button
+- A dashboard page showing: MRR, ARR, Churn Rate, LTV, Customer Count
+- Charts showing MRR trend over the last 12 months
+- Dark/light mode toggle
+- Use shadcn/ui components for a polished look
+
+Use the App Router and set up Stripe OAuth with the Connect flow.
+```
+
+**2. Core Feature**
+
+```text
+Add API routes that:
+1. Connect to Stripe API using the connected account's access token
+2. Fetch all subscriptions and calculate MRR (sum of active subscription amounts)
+3. Calculate churn rate (canceled / total subscriptions in a period)
+4. Calculate LTV (average revenue per customer / churn rate)
+5. Return all metrics as JSON for the dashboard
+
+Include caching to avoid hitting Stripe API limits.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page with:
+- Headline: "Finally understand your SaaS metrics"
+- Subheadline explaining the problem
+- Screenshot/mockup of the dashboard
+- 3 benefit cards: Real-time MRR, Churn alerts, LTV tracking
+- Pricing: Free tier (1 product) and Pro ($19/mo for unlimited)
+- FAQ section about security and Stripe integration
+```

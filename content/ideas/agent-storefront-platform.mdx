@@ -1,0 +1,119 @@
+---
+slug: "agent-storefront-platform"
+title: "Storefront for Custom AI Agents"
+---
+
+## The Problem
+
+A solo developer ships a working agent that drafts B2B sales emails, summarizes earnings calls, or runs lead enrichment. They have a working tool. What they do not have is a way to charge for it. GitHub gives them stars. OpenAI’s GPT Store and Anthropic’s Skills directory are walled to a single provider with thin monetization. Stripe handles payments but knows nothing about agents—no per-call metering by tokens, no model-cost cogs, no creator analytics, no discovery surface for buyers. Gumroad will sell a download but cannot host a live API endpoint. So most agents ship as a `git clone`-and-pray repo and the founder watches the stars rise while the bank account does not.
+
+The pain is loud and platform-specific. r/AI_Agents has 299,000+ members and the highest-comment threads (70+ comments on agent-framework posts) are about tooling gaps in monetization. r/ChatGPTCoding routinely runs 190+ comment threads ranking dev tools. ClawHub already has 3,000+ skills and 50,000 monthly installs but offers basic hosting only—no analytics, no A/B testing, no cross-publish, no revenue dashboard. Vercel’s AI SDK and the open `agentskills.io` standard solved deployment but skipped the business layer. Agencies packaging custom agents for enterprise clients hit the same wall: every client engagement is a one-off rebuild because there is no platform that turns “working agent” into “product line.” The agent skills economy is at the same place the iOS App Store was in early 2009—real demand, real supply, no liquidity layer.
+
+## The Solution
+
+A storefront platform where any creator connects an agent (just an API endpoint and an auth header), writes a description, picks a pricing model—flat subscription, per-call metered, or tiered usage—and publishes. The platform sits in front of the agent as a thin proxy: every call gets metered, billed, rate-limited, and logged with a request/response trace. Buyers browse a discovery feed organized by use case (writing, research, sales, ops, support, code), see a live demo on the product page, and check out via Stripe. Creators get a dashboard showing MRR, top agents, conversion by traffic source, A/B test winners, and per-buyer usage. The marketplace flywheel kicks in once you have 20 hand-picked creators with existing audiences—they bring buyers, those buyers discover other agents, and supply attracts the next wave of creators. The business case is simple: GitHub handles code; this handles business.
+
+**How it works:**
+
+1. **Connect** — Paste the agent endpoint, set auth header, define inputs/outputs
+2. **Price** — Flat sub, per-call, or tiered usage; auto-pass-through model cogs
+3. **Publish** — Live demo, discovery feed, SEO-ready product page
+4. **Sell** — Stripe Connect handles checkout, payouts, metering, refunds
+
+## Market Research
+
+Agentic AI is the fastest-growing category in software right now, and the supply side—developers building custom agents—has no business platform. Five data points anchor the timing:
+
+- **Agentic AI is forecast to grow from $7.84B in 2025 to $52.62B by 2030** at a 46.3% CAGR (Fortune Business Insights / Grand View Research). Some analyst tracks push the 2033 figure as high as $182B—treat as directional, but the trajectory is well above 40% CAGR across vendors.
+- **ClawHub already has 3,000+ published skills and 50,000 monthly installs** (Solo Business Hub) on a platform that only does basic hosting—real demand for an agent distribution surface, with the analytics/monetization layer wide open.
+- **Multi-agent systems are growing at 46.3% CAGR** within the broader market (Grand View Research), and vertical agents specifically at ~62.7% CAGR (USAII). The supply side is fragmenting fast—a discovery layer is structurally necessary.
+- **r/AI_Agents has 299,800+ followers** and r/artificial has 1.2M, with high-comment threads consistently flagging tooling and monetization gaps (Ideabrowser community analysis). The audience is both creators and early buyers—rare alignment.
+- **Search demand for “artificial intelligence sdk” runs ~22K/mo with 68.6% YoY growth** and “ai developer tools” ~2,400/mo (Ideabrowser keyword research). Agent-related queries collectively pull 729K monthly searches across the cluster, signaling a real distribution surface.
+
+## Competitive Landscape
+
+No one is selling the business layer. Every incumbent owns either the code repo, the deployment surface, or a single-vendor app store—none of them are an open marketplace with metered billing and creator analytics:
+
+- **GitHub (anthropics/skills, vercel-labs/agent-skills)** — Tens of thousands of stars across agent-skill repos and 100K+ installs. Best-in-class for code distribution. Zero business tooling: no metering, no checkout, no buyer discovery, no analytics. Free / open-source; no monetization layer
+- **ClawHub** — 3,000+ published skills, 50K monthly installs. Closest to a real marketplace, but feature-thin—basic listing only. No analytics, no A/B testing, no cross-publish, no revenue dashboard, no Stripe Connect-style payouts. Free / basic listing; no creator monetization tooling
+- **Vercel AI SDK + Agent Skills standard** — Excellent deployment primitives, the “Stripe checkout” equivalent for agent infra. But it ships agents—it does not sell them. No buyer-facing storefront. Freemium; deployment-focused, not commerce
+- **OpenAI GPT Store** — Large traffic surface but locked to OpenAI’s model. Creator monetization is opaque, single-currency, and excludes anyone running on Anthropic, Vercel, or self-hosted endpoints. Free to list; revenue share rolling out by region, no creator analytics suite
+- **Anthropic Claude Agent SDK / Skills** — SDK + skills directory bundled with the model. Strong dev experience for Claude-only agents; not designed as a multi-vendor marketplace and has no buyer storefront. Freemium SDK; enterprise via Anthropic sales
+- **Gumroad / Stripe Payment Links** — Creators currently bolt these on for one-off sales. Works for downloads; breaks immediately for live API agents (no metering, no buyer accounts, no usage analytics). Gumroad: 10% + payment fees; Stripe: ~3% + 30¢
+
+**Your Opportunity**
+
+Be the first credible “Shopify for AI agents”: model-agnostic (GPT, Claude, Llama, self-hosted), with metered billing and a real creator analytics suite. Win on three things incumbents will not match: (1) cross-vendor support—single-provider stores cannot, (2) per-call metering with auto-pass-through model cogs—Gumroad/Stripe alone cannot, and (3) a buyer-facing discovery surface organized by use case—GitHub will not.
+
+## Business Model
+
+Two-sided: creators pay a SaaS subscription for the platform, and the marketplace takes a percentage on every sale. The math to a real business is roughly 250 paying creators on Pro plus 5% take rate on a $300K GMV month—under $100K MRR with healthy gross margin once Stripe Connect fees are netted out. Frame creators against the “build it yourself” cost: a custom checkout + metering + analytics build is 80–120 hours of senior engineering, recurring infra, and constant Stripe edge cases.
+
+- **Starter** ($99/mo) — Up to 3 agents, basic analytics, Stripe Connect, 15% marketplace fee
+- **Pro** ($299/mo) — Unlimited agents, A/B testing, cross-publish, custom domain, 10% fee
+- **Agency** ($799/mo) — Multi-creator workspaces, team seats, white-label storefronts, 7% fee
+
+Backend offers extend the ladder: $50–$200/mo add-ons (advanced analytics, real-time collab, audit logs) and an Enterprise tier from $10K/year for custom integrations, dedicated infra, and contracted SLAs—mirroring how Shopify priced into Plus.
+
+**Unit Economics**
+
+- **$300** — Target CAC
+- **$220/mo** — Avg. Revenue / Creator
+- **~10%** — Marketplace Take
+- **~$5.3K** — LTV (24-mo)
+
+## Recommended Tech Stack
+
+Optimize for two flows: creators connect & configure, buyers discover & transact. The hot path is the metered proxy in front of every agent endpoint—low-latency, observable, and billing-aware. Stripe Connect handles the marketplace mechanics so you ship in days, not months.
+
+- **Next.js 14 + Vercel** — App Router for storefront + creator dashboard, server actions for agent registration, edge runtime for the metered proxy.
+- **Supabase + Postgres** — Tables: workspaces, creators, agents, listings, subscriptions, usage_events (high-volume). RLS on agents/usage so creators only see their own.
+- **Stripe Connect + Metered Billing** — Express accounts for creators, automatic payouts after platform fee. Metered subscriptions for per-call agents; usage records pushed from the proxy.
+- **Cloudflare Workers (metered proxy)** — Inline proxy for every agent call: auth, rate limit, log request/response (configurable redaction), emit usage events to Supabase + Stripe.
+- **Clerk** — Org-aware auth so creators graduate solo → agency workspaces; SSO at the Agency tier.
+- **Tinybird (or ClickHouse) + PostHog** — Tinybird for fast usage-event aggregations behind the creator dashboard; PostHog for storefront funnels, A/B tests, and conversion attribution.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “AgentBay,” a Shopify-style storefront for AI agents. Provision Supabase with tables: workspaces, creators (clerk_user_id, stripe_account_id), agents (creator_id, name, description, endpoint_url, auth_header_name, auth_header_value_encrypted, pricing_model: "flat"|"metered"|"tiered", base_price_cents, per_call_price_cents, status), listings (agent_id, slug, hero_copy, demo_input, category), subscriptions (buyer_id, agent_id, stripe_subscription_id, status), usage_events (agent_id, buyer_id, tokens_in, tokens_out, latency_ms, cost_cents, created_at). Add Clerk for org-aware auth, Stripe Connect Express for marketplace payouts, and a Cloudflare Worker stub at /proxy/[agent_slug] that will meter calls. Env: STRIPE_SECRET_KEY, CLERK_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, ENCRYPTION_KEY.
+```
+
+**2. Metered Proxy + Publishing Flow**
+
+```text
+Build the creator publishing flow and the metered proxy. Publishing: a 4-step form (Connect endpoint & auth, Define input/output JSON schemas, Pick pricing model + price, Confirm) that writes to agents and listings, encrypts the auth header at rest, and triggers a synthetic test call to verify the endpoint responds 200. Proxy: a Cloudflare Worker route that accepts buyer requests at /proxy/{agent_slug}, validates the buyer’s subscription is active, decrypts and forwards to the upstream endpoint with the creator’s auth header, streams the response back, and emits a usage_event row plus a Stripe usage_record (subscription_item, quantity, timestamp) when pricing_model is "metered" or "tiered." Add rate limiting per buyer per minute and a configurable PII-redaction step on logged payloads.
+```
+
+**3. Storefront, Discovery & Checkout**
+
+```text
+Build the buyer-facing storefront. Routes: / (curated discovery feed grouped by use case—writing, research, sales, ops, support, code), /a/{slug} (agent product page with hero, description, live demo widget that calls the proxy with a sample input, pricing card, and creator profile snippet), /checkout (Stripe Checkout with Connect destination charges and platform fee = listing.platform_fee_pct), /dashboard/buyer (agents I subscribe to, usage charts, manage subscription). Use Geist + Tailwind, white background, black accents, generous whitespace, no purple gradients. Add a TanStack Query hook usePlayDemo() that POSTs to /proxy/{slug} with throttling. Hero copy: “Buy and run live AI agents. No glue code.”
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for AgentBay. Wordmark + small icon mark suggesting a doorway/storefront for agents. Pick a primary near-black, a single accent color (warm teal or muted electric blue), two neutrals. Type system: Geist for UI and headings, IBM Plex Mono for endpoint URLs and code. Provide hex codes, font weights, and 8 product icons (connect, price, publish, demo, sell, meter, payout, analytics). Voice rules: blunt, dev-honest, no “revolutionary,” always show prices in USD with cents. Output as a one-page brand sheet.
+```
+
+## Sources
+
+Market sizing, competitive notes, and demand signals collated from Ideabrowser MCP idea #5995 and the public research it cites (May 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Fortune Business Insights — Agentic AI Market 2026 ($7.84B → $52.62B by 2030, 46.3% CAGR)](https://www.fortunebusinessinsights.com/agentic-ai-market-114233)
+- [Grand View Research — AI Agents Market Report (multi-agent 46.3% CAGR)](https://www.grandviewresearch.com/industry-analysis/ai-agents-market-report)
+- [Solo Business Hub — AI Agent Skills Boom 2026 (ClawHub 3K+ skills, 50K installs)](https://www.solobusinesshub.com/trend-watch/ai-agent-skills-boom-2026/)
+- [USAII — Top 5 AI Agent Trends for 2026 (vertical agents 62.7% CAGR)](https://www.usaii.org/ai-insights/top-5-ai-agent-trends-for-2026)
+- [Salesmate — The Future of AI Agents (adoption signals)](https://www.salesmate.io/blog/future-of-ai-agents/)
+- [Joget — AI Agent Adoption in 2026 (analyst data)](https://joget.com/ai-agent-adoption-in-2026-what-the-analysts-data-shows/)
+- [agentskills.io — Open standard for agent skills](https://agentskills.io/home)
+- [Aura — AI Agent Skills Data Trends (workforce signals)](https://blog.getaura.ai/ai-agents-skills-data-trends)
+- [MLOps Community — Architecting the AI Agent Platform](https://mlops.community/architecting-the-ai-agent-platform-a-definitive-guide/)
+- [BCG — AI Agents capability overview (enterprise adoption)](https://www.bcg.com/capabilities/artificial-intelligence/ai-agents)
+
+Page sourced via Ideabrowser MCP (idea_id 5995): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.

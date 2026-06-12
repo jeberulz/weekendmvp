@@ -1,0 +1,119 @@
+---
+slug: "ai-knowledge-transfer-platform"
+title: "AI-Driven Knowledge Transfer Platform"
+---
+
+## The Problem
+
+When a ten-year sales engineer gives notice, the company loses more than a headcount. They lose the workaround for the legacy billing API, the three enterprise accounts that only trust her, and the mental map of which procurement contacts actually respond on Fridays. HR schedules an exit interview about culture. IT revokes access on day ten. Nobody captures the tacit layer—the stuff that never made it into Confluence because it lived in Slack DMs and hallway conversations.
+
+People leaders know the cost. **SHRM pegs replacement cost at 50–200% of salary** for specialized roles, and a large share of that is ramp time, not recruiting fees. Yet most offboarding still means a PDF checklist and a forwarded email thread. L&D teams buy Guru or Trainual for *documented* SOPs, but those tools assume someone already wrote the knowledge down. They do not interview the person who knows which vendor will expedite a PO if you cc finance.
+
+The pain quote you hear in ops reviews: *"We knew Sarah was leaving for six weeks and still spent the first quarter of her replacement re-learning accounts we'd already won once."* That is the gap—structured, AI-assisted knowledge transfer at the moment of departure, not six months later when someone finally updates the wiki.
+
+## The Solution
+
+A B2B SaaS platform that runs a **guided knowledge-transfer sprint** between notice date and last day. HR or the manager creates an offboarding project, selects role templates (engineering, sales, CS, ops), and the system schedules async AI interviews plus optional live sessions. Claude asks follow-up questions based on gaps—accounts, tools, tribal rules, failure modes—then assembles a handoff pack: decision log, stakeholder map, open risks, and "first 30 days" advice for the replacement.
+
+**Weekend MVP feature set:**
+
+- **Offboarding project** — owner, departing employee, last day, role template
+- **AI interview loops** — voice or text; adaptive questions from prior answers
+- **Handoff pack generator** — PDF + searchable web archive with citations to source answers
+- **Successor brief** — onboarding digest auto-generated for the incoming hire
+- **Manager dashboard** — completion %, flagged "critical unknowns," export to Notion/Slack
+
+Pair this with a [Virtual Knowledge Hub](/ideas/virtual-knowledge-hub) for ongoing mentorship after the hire starts—the handoff pack is the institutional layer; live experts are the relationship layer. Different SKUs, same buyer (People Ops + team leads).
+
+## Market Research
+
+Knowledge management software is a mature category, but **offboarding-specific capture** is still a workflow gap. The broader corporate learning market exceeds **$400B globally** when you include LMS, knowledge bases, and enablement tooling; the slice relevant here—employee transition and institutional memory—is growing as tenure shortens and remote work fragments documentation.
+
+- **Voluntary turnover** in US professional services remains elevated post-2022; teams plan for 15–20% annual movement in high-growth SaaS.
+- **Enterprise KM spend** (Guru, Bloomfire, Sana, Notion Enterprise) validates budget lines for "making knowledge findable"—your wedge is *creating* knowledge at exit, not hosting it.
+- **Regulated industries** (finance, healthcare ops, defense contractors) have audit requirements for succession documentation—compliance is a sales accelerant.
+- **AI interview tooling** (voice agents, structured extraction) dropped build cost 10× since 2023; a weekend MVP can ship credible demos.
+
+Stage: *emerging wedge inside a crowded parent category*. Incumbents optimize for libraries; you optimize for the two-week window before access is revoked.
+
+## Competitive Landscape
+
+Incumbents own the library; none own the exit interview that produces net-new artifacts under deadline pressure.
+
+- **Guru** — Card-based knowledge base inside Slack/browser. Great for documented answers; weak for generating tacit knowledge from leavers who never wrote cards. Custom; typically $10–$20/user/mo at scale
+- **Bloomfire** — Enterprise search + Q&A across uploaded content. Assumes corpus exists; does not run structured exit capture. Quote-based; mid-market often $15K+/year
+- **Trainual** — SOP and playbook builder for onboarding. Strong for repeatable processes; not adaptive interviews with departing experts. From ~$249/mo (Small Business) published tiers
+- **Sana** — AI-native learning + knowledge for enterprises. Closest AI story, but positioned as always-on L&D—not offboarding sprint. Enterprise custom; team plans quote-based
+
+**Your Opportunity**
+
+Own the offboarding sprint: time-boxed projects, role templates, handoff packs with audit trail, and successor briefs. Sell to HR/ops with ROI framed as weeks shaved off replacement ramp—not another wiki seat.
+
+## Business Model
+
+Per-seat SaaS for active offboarding projects plus overage on AI interview minutes. Land with People Ops; expand to team leads who run quarterly role transitions.
+
+- **Starter** ($299/mo) — 3 active projects, 500 AI minutes, PDF export
+- **Team** ($799/mo) — 15 projects, unlimited minutes cap, Notion sync, manager seats
+- **Enterprise** (Custom) — SSO, retention policies, HRIS webhooks, audit exports
+
+MRR path: 10 Team customers = $7.99K/mo. 40 Team + 5 Enterprise (~$2K avg) ≈ $42K/mo. Target $5K/mo with ~7 Team accounts or 2 Team + 1 mid Enterprise—achievable via LinkedIn outbound to ops leaders at 200–800 employee SaaS companies.
+
+## Recommended Tech Stack
+
+Interview orchestration + document assembly + search. No exotic infra; the product is prompt quality and HR-friendly UX.
+
+- **Next.js 14 + Supabase** — Tables: organizations, projects, interviews, answers, handoff_packs. RLS per org. Store audio in Supabase Storage; transcripts in Postgres.
+- **Claude + Whisper** — Whisper (or Deepgram) for voice capture; Claude Sonnet for adaptive follow-ups and pack synthesis with JSON schema outputs.
+- **Vercel + Inngest** — Background jobs for interview reminders, pack generation, and Slack/email nudges to departing employees.
+- **Stripe Billing** — Seat + minute overage metering. Trial = one free project to prove handoff quality.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Offboarding Schema + Interview Flow**
+
+```text
+Scaffold a Next.js 14 App Router B2B app for AI offboarding knowledge transfer. Supabase auth (magic link), orgs, projects, interviews.
+
+Schema:
+- projects(id, org_id, departing_name, role_template, last_day, status)
+- interview_sessions(id, project_id, channel enum[text,voice], transcript, completed_at)
+- answers(id, session_id, question_key, body, embedding vector(1536))
+- handoff_packs(id, project_id, markdown, published_at)
+
+Flow: manager creates project → system emails departing employee daily question batches (5 questions) → Claude generates next questions based on gaps in answers table → on last day compile handoff pack sections: Stakeholders, Open loops, Tooling tricks, Landmines, First 30 days advice.
+
+Include RLS and a minimal admin review UI.
+```
+
+**2. Adaptive Follow-Up Generator**
+
+```text
+Write a server action that takes prior answers for an offboarding project and returns the next 3 interview questions.
+
+Input: role_template (sales_engineer), answers[], days_until_last_day.
+Use Claude with JSON schema: { questions: [{ key, text, priority, rationale }] }.
+Rules: never repeat answered keys; prioritize accounts/revenue/risk if sales; prioritize on-call/runbooks if engineering; if <7 days left, only high-priority gaps.
+Store embeddings on each answer for duplicate detection.
+```
+
+**3. Handoff Pack Assembler**
+
+```text
+Given all answers for project_id, generate a handoff pack markdown with sections and inline citations [Q12].
+
+Use Claude Opus/Sonnet with strict instructions: no invented policies; mark unknowns explicitly; include stakeholder table; export HTML + PDF via @react-pdf/renderer.
+Add "successor brief" variant: 1-page TL;DR for incoming hire.
+Webhook to post summary to Slack channel #team-handoff.
+```
+
+## Sources
+
+- • [SHRM — cost of turnover overview](https://www.shrm.org/topics-tools/tools/hr-answers/cost-of-turnover)
+- • [Guru — pricing page](https://www.getguru.com/pricing)
+- • [Trainual — pricing](https://trainual.com/pricing)
+- • [Grand View Research — corporate training market size (context for L&D spend)](https://www.grandviewresearch.com/industry-analysis/corporate-training-market)
+
+Verify competitor pricing on live product pages; packaging changes frequently.

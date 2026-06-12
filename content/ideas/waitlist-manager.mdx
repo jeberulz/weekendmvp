@@ -1,0 +1,112 @@
+---
+slug: "waitlist-manager"
+title: "Waitlist & Launch Manager"
+---
+
+## The Problem
+
+Startups spend months building products in stealth, then launch to crickets. Building a waitlist is table stakes now, but most founders just use a Google Form or basic email capture. They miss the opportunity to create buzz and virality before launch—the exact moment when hype matters most.
+
+## The Solution
+
+A waitlist tool with built-in referral mechanics. Users sign up, get a unique referral link, and move up the waitlist when friends join. Leaderboards, milestone rewards, and social sharing turn every signup into a potential viral loop.
+
+**How it works:**
+
+1. **User signs up** — Gets position + unique referral link
+2. **Share to move up** — Each referral bumps their position
+3. **Unlock rewards** — Hit milestones for early access perks
+
+## Market Research
+
+The viral waitlist model is a proven playbook: Robinhood reached 1M signups pre-launch, Superhuman famously gated onboarding behind a hand-curated queue, and Arc Browser scaled the mechanic for an AI-native launch. Existing tools sit at two ends of the market—expensive enterprise growth platforms and cobbled-together Google Forms. The indie-hacker middle is underserved.
+
+- Viral Loops and Gleam sit at $49–$200/mo—out of reach for pre-revenue founders who need a waitlist most.
+- Harry’s grew to 100K signups in one week via referral mechanics (Harry’s founder AMA); Robinhood to 1M pre-launch (publicly reported by founders).
+- Product Hunt sees 30+ new products launched per day on average; every one of them wants a pre-launch email capture with social proof mechanics.
+- The email marketing software category is projected past $18B by 2027 (Statista); waitlist tools are the top-of-funnel wedge into that budget.
+
+## Competitive Landscape
+
+Three clusters: enterprise growth suites priced above indie budgets, generic form builders that don’t track referral positioning, and indie-friendly tools with dated UX. Your wedge is modern, founder-branded waitlists with referral positioning and custom domain at a price point the generic form builders can’t sustainably match.
+
+- **Viral Loops** — The category leader for referral campaigns. Powerful, extensible, and expensive. Pre-revenue founders run a single campaign and churn after launch, which is exactly what their pricing assumes. $49/mo Startup → $299/mo Enterprise (per campaign pricing)
+- **Prefinery** — Long-running, stable, broad feature set. UI feels dated and setup asks too much of founders who just want a signup form with a queue position email. Good for agencies, heavy for solos. $59/mo Launch → $249/mo Growth
+- **KickoffLabs** — Template-driven landing pages with referral tracking built in. Strong for contests; weaker on modern look-and-feel. Priced one tier above indie-friendly but below enterprise. $49/mo Pro → $199/mo Business
+- **Typeform / Tally + Mailchimp** — The “just use a form + email list” default. Captures emails fine, but no queue position, no referral link, no social proof counter. Founders glue spreadsheets together to fake the mechanic. Free → $25/mo combined; no referral mechanics
+
+**Your Opportunity**
+
+Own the indie-to-small-startup tier: a polished waitlist page on a custom domain, referral position leaderboard, Zapier/webhook hooks, and a free tier that actually lets founders ship. Viral Loops’ price floor and Typeform’s missing mechanics are the opening.
+
+## Business Model
+
+Freemium SaaS with a generous free tier to seed indie-hacker word-of-mouth, a Pro tier priced well below the $49 category floor, and a Growth tier that monetizes brands running serial launches. Founders typically run one waitlist for 60–120 days, so pricing must feel fair for a campaign-shaped use case.
+
+- **Free** ($0) — 1 waitlist, 500 subscribers, referral positioning, “powered by” footer
+- **Pro** ($19/mo) — Unlimited waitlists, 10K subscribers, custom domain, no branding, Zapier/webhook hooks
+- **Growth** ($49/mo) — 100K subscribers, A/B testing, priority placement, 2 team seats, analytics dashboard
+
+**Unit Economics (illustrative)**
+
+- **$10–25** — Target CAC
+- **5–8%** — Free → Pro conversion
+- **$14/mo** — Blended ARPU
+- **2–4 mo** — Campaign lifespan
+
+## Recommended Tech Stack
+
+This is a classic Next.js + Supabase app with a few non-obvious pieces: rate limiting for the public /api/join endpoint, custom domain handling for the Pro tier, and a referral-position computation that needs to be cheap at 10K+ subscribers. Resend covers welcome emails; PostHog tracks the viral k-factor you’ll demo on your landing page.
+
+- **Next.js 14 + TypeScript** — Marketing site, dashboard, and /api/join in one deploy. Server Actions for waitlist config; Edge runtime for the public join endpoint.
+- **Supabase** — Auth + Postgres for waitlists/subscribers/referrals, RLS per workspace. Trigger computes referrer_count on insert so queue position is a simple ORDER BY.
+- **Upstash Redis** — Per-IP rate limiting on the public join endpoint (5 per minute), and a per-waitlist signup counter cached for the hero social-proof number.
+- **Resend** — Welcome email with queue position and unique referral link, double opt-in, launch-day broadcast, abandoned-referral nudge at day 7.
+- **Vercel (custom domains)** — Wildcard domain + programmatic Vercel Domains API for Pro-tier custom domain mapping; Edge Middleware rewrites to the right waitlist by host.
+- **Stripe + PostHog** — Stripe Checkout + Billing Portal for Pro/Growth. PostHog to instrument viral k-factor per waitlist and surface it in the owner’s dashboard.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for a Viral Waitlist Manager.
+
+The app needs:
+- Public signup page with email input and optional referral code field
+- Post-signup page showing: current position, referral link, share buttons (Twitter, LinkedIn, copy link)
+- Leaderboard showing top 10 referrers (anonymized by default)
+- Admin dashboard for waitlist owners to see: total signups, referral stats, export emails
+
+Use Supabase for auth and database. Make the signup page embeddable as an iframe.
+```
+
+**2. Core Feature**
+
+```text
+Implement the referral position system:
+
+1. On signup, create user with initial position = total signups + 1
+2. Generate unique referral code (8 char alphanumeric)
+3. When someone signs up with a referral code:
+   - Credit the referrer
+   - Move referrer up by X positions (configurable, default: 3)
+   - Track referral relationship in database
+4. Position calculation should be real-time based on referral count
+
+Add API endpoint to check position and referral count for the status page.
+```
+
+**3. Rewards System**
+
+```text
+Add milestone rewards:
+- 3 referrals: "Founding Member" badge
+- 5 referrals: Early access priority
+- 10 referrals: Lifetime discount unlock
+
+Show progress bar on user's status page. Send email notifications when milestones are hit.
+Allow waitlist owners to customize milestone thresholds and rewards from admin.
+```

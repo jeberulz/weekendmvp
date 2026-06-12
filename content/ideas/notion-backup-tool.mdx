@@ -1,0 +1,178 @@
+---
+slug: "notion-backup-tool"
+title: "Notion Backup Tool"
+---
+
+## The Problem
+
+Notion is the second brain for an estimated **30M+ users and 20K+ paying teams**. It holds meeting notes, product specs, customer contracts, HR docs, and the CEO's half-finished book. Notion's own backup story is: "You can export a workspace to Markdown and HTML" — manually, one workspace at a time, with attachments that often fail on large workspaces. There is no scheduled backup, no version history across time, no granular restore of a single deleted page.
+
+People lose data in Notion routinely. A VA accidentally drags an entire database into the trash, past the 30-day recovery window. A guest user deletes 200 pages before revoking access. A Zapier integration goes rogue and overwrites content. A workspace admin clicks the wrong "delete forever" dialog on a Friday. In all these cases, Notion's support tells you "we cannot recover that." Teams have lost weeks of work.
+
+The incumbent answer is Rewind.io at $12–$99/month, which works but packages Notion alongside Slack, HubSpot, GitHub, etc. You pay for the bundle. Solo Notion power-users and small teams just want Notion backup, cheap, with point-in-time restore. That SKU does not exist at indie pricing. The $9/month Notion-only backup tool with diff view and one-click page-level restore is the wedge.
+
+## The Solution
+
+A Notion-focused backup SaaS. User connects their Notion workspace via OAuth; sets a schedule (hourly, daily, weekly); picks a destination (managed storage, S3, Google Drive, local download). The system runs an incremental backup via the Notion API, diffs against the prior snapshot, stores only the changed blocks. Restore is either one-click page-level ("restore this page to how it looked Tuesday 3pm") or full workspace rebuild from any snapshot.
+
+**How it works:**
+
+1. **Connect Notion** — OAuth workspace auth. One-click.
+2. **Schedule + store** — Hourly/daily/weekly; S3/Drive/managed
+3. **Restore anything** — Page-level or full workspace, diff view
+
+The moat is incremental diff + block-level addressing. Every Notion block has an ID; we store a snapshot graph per workspace, and each new backup compares block-by-block. Storage stays cheap (only changed blocks), restore stays instant (we can reconstruct any page at any timestamp from the graph). Rewind does this well for the whole bundle; we do it better for Notion alone, at 1/5 the price.
+
+## Market Research
+
+Notion's user base is a demand-side goldmine. **30M+ users (Notion, public statements 2023)**, growing roughly 30% YoY. Commercial tier has 20K+ paying teams; thousands of those handle sensitive or regulated data. The **SaaS backup/DLP market is $4.7B in 2024, projected to $18.5B by 2030 at 25%+ CAGR** (Grand View). Notion-specific is a meaningful vertical slice.
+
+- **Rewind.io raised $65M Series A+** at ~$150M valuation (2021–2022) covering Shopify, Notion, GitHub, Trello, etc. Category validation at unicorn trajectory.
+- **30-day Notion trash window** is a known pain point — r/Notion has weekly threads on "I lost my pages." Search volume "notion backup" 1.9K/mo, CPC $2–$5.
+- EU teams face **GDPR Art. 32 data integrity requirements** that effectively mandate off-platform backup of customer data stored in Notion. Compliance is a wedge for B2B upsell.
+- Notion API rate limit: **3 requests/second** (roughly 259K calls/day per integration). A full backup of a 10K-page workspace fits within a daily budget comfortably; incremental backups are trivially within budget.
+- Communities: r/Notion (560K), r/NotionSo (180K), Notion Ambassadors program (1K+ power users who run agencies). Distribution via ambassador partnerships is a cheap growth channel.
+
+Stage: *narrow competitive*. Rewind dominates the bundle. NotionBackups.com and a handful of one-person tools serve the indie slice but most are manual-export wrappers, not incremental systems. AI is not the differentiator here — cost and restore UX are. Build the cleanest Notion-only backup experience at $9 flat and win on price + UX.
+
+## Competitive Landscape
+
+Three competitor classes. Rewind owns the bundled SaaS backup space. Indie tools wrap Notion's manual export endpoint and lack incremental/diff features. DIY scripts exist but break the first time a user's workspace grows past 1,000 pages. Your slot: Notion-only, incremental, block-level restore, flat indie pricing.
+
+- **Rewind.io** — Category leader. Backs up Notion, Shopify, Slack, GitHub, HubSpot, Trello in one bundle. $65M funding, ~$150M valuation. Priced for teams who need the whole stack covered; overkill for Notion-only users. $12/mo starter (1 app) → $99+/mo team bundles
+- **NotionBackups.com + similar indies** — Single-purpose Notion backup tools. Most wrap Notion's manual export API: full export every time, no incremental diff, no page-level restore. "Backup" but not really "restore." Frequent service outages reported in r/Notion. $5–$50/mo depending on workspace size
+- **Notion's built-in export** — Manual "Export all workspace content" button. HTML/Markdown/CSV formats. No schedule, no versioning, no restore flow. 30-day trash is the only "restore" Notion offers, and it deletes forever after 30 days. Free; hidden cost is work done before the mistake
+- **DIY scripts (GitHub gists, Zapier)** — Python/Node scripts cron'd on a VPS hitting the Notion API. Zero restore UX. Fragile when the workspace grows. Requires an engineer to maintain. Dozens of abandoned repos on GitHub. $0 + engineering time; high maintenance
+
+**Your Opportunity**
+
+Notion-only, block-level diffs, page-level restore with a visual diff viewer, managed storage included on first paid tier. Flat $9 Solo / $29 Team. Ambassador-partner distribution (60%+ margin share) with the Notion Ambassadors community. Tagline: "Rewind for Notion, priced for people who love Notion."
+
+## Business Model
+
+Flat-rate SaaS. Free tier captures curious users and seeds the "I backed up Notion and saved my ass" anecdote in r/Notion. Solo covers individual power users and consultants. Team handles agencies managing client workspaces and compliance-motivated SMB teams. Storage costs are the main variable — S3/R2 at $0.015/GB/month + bandwidth. For a typical 500MB Notion workspace, monthly storage is ~$0.01; gross margin stays above 90%.
+
+- **Free** ($0) — 1 workspace, weekly backup, 7-day retention, manual restore via download
+- **Solo** ($9/mo) — Daily backup, 90-day history, page-level restore, managed storage 10GB, diff viewer
+- **Team** ($29/mo) — Hourly backup, 1-year history, 100GB, S3/Drive BYO, SSO, audit log, 3 workspaces
+
+**Unit Economics (illustrative)**
+
+- **~$0.15/mo** — Storage cost/tenant
+- **~96%** — Gross margin Solo
+- **$10–$25** — Target CAC
+- **12–18%** — Free → Solo conv.
+
+MRR path: 500 Solo = $4.5K/mo. 2K Solo + 100 Team = $20.9K/mo. At 5K Solo + 400 Team = $56.6K/mo ($679K ARR). Retention is extremely high for backup tools — users rarely cancel something that protects them, especially after one near-miss. Churn target \<2%/mo, easily achievable. Upsell to Team is driven by compliance events (new customer, SOC 2 audit, etc.).
+
+## Recommended Tech Stack
+
+Two parts: the Next.js admin UI, and the backup worker that runs on a schedule. Workers use a queue so Notion API rate limits don't cascade into user-visible failures. Storage on R2 or S3.
+
+- **Next.js 14 App Router** — Admin: workspace list, snapshot calendar, diff viewer, restore UI. Notion OAuth flow. Stripe Checkout. Server Actions for manual "backup now" and restore actions.
+- **Supabase** — Tables: `users`, `workspaces`, `snapshots`, `snapshot_blocks`, `restore_jobs`. RLS per-user. snapshot_blocks stores hash → R2 object pointer for dedup.
+- **Cloudflare R2 (primary storage)** — R2 for backup blobs (zero egress fees). Object keys: `tenants/{tid}/blocks/{sha256}.json`. Content-addressable dedup across workspaces — same block text stored once. Typical workspace dedup ratio 30–50%.
+- **Notion API + Upstash QStash** — Notion API (3 req/s rate limit). Upstash QStash for scheduled + async workers; one worker per workspace, rate-limited client-side. Exponential backoff on 429. Workers emit progress events to Supabase for live UI.
+- **Diff algorithm** — Merkle-tree-style: hash each block, hash each page (hash of children), hash workspace. Skip unchanged subtrees entirely. For UI diff: stable-JSON diff via jsondiffpatch; render as side-by-side with added/removed inline highlights.
+- **Stripe Billing + Resend** — Stripe Checkout for Solo/Team; Stripe Customer Portal for plan changes. Resend for backup-complete notifications, "backup skipped 3 days in a row" alerts, and monthly summaries.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Notion OAuth + Schema**
+
+```text
+Create a Next.js 14 App Router app for Notion backup. Supabase backend, TypeScript, Tailwind.
+
+Notion OAuth flow:
+1. Register a Notion public integration at https://www.notion.so/my-integrations (Public type).
+2. /api/notion/oauth route handles the callback; exchanges code for access_token via POST https://api.notion.com/v1/oauth/token with Authorization: Basic base64(clientId:clientSecret).
+3. Store access_token + bot_id + workspace_id on workspaces table, scoped to the authenticated user.
+
+Schema:
+- users(id, email, stripe_customer_id, plan ENUM[free,solo,team])
+- workspaces(id, user_id, notion_workspace_id, notion_access_token_encrypted, name, icon_url, schedule ENUM[hourly,daily,weekly], destination ENUM[managed,s3,drive], destination_config JSONB, created_at)
+- snapshots(id, workspace_id, started_at, completed_at, status ENUM[running,completed,failed], page_count, block_count, bytes_stored, root_hash)
+- snapshot_blocks(snapshot_id, block_id, page_id, content_hash, position) — no object data here
+- block_content(content_hash PRIMARY KEY, r2_key, bytes, created_at) — dedup table
+- restore_jobs(id, snapshot_id, target ENUM[new_workspace,in_place_page], status, log)
+
+RLS: user_id scoping on everything. Encrypt notion_access_token at rest using Supabase Vault.
+
+Routes:
+- /dashboard (workspaces list)
+- /workspace/[id] (calendar of snapshots, recent changes)
+- /snapshot/[id]/diff (vs prior snapshot)
+- /snapshot/[id]/restore (destination picker)
+- /connect (OAuth start)
+```
+
+**2. Incremental Backup Worker**
+
+```text
+Implement the incremental backup worker. This is the product's cost moat.
+
+Upstash QStash schedule fires on each workspace's cron. Worker flow:
+1. Create a snapshot row with status='running'.
+2. Use Notion API /v1/search with filter=page to enumerate all pages in the workspace. Respect rate limit (3 req/s): use bottleneck or p-limit.
+3. For each page, fetch /v1/blocks/{page_id}/children recursively (Notion nests arbitrarily; depth-first, max depth 5 for MVP).
+4. For each block:
+   a. Compute content_hash = sha256(JSON.stringify(canonicalBlock(block))) — canonicalize by sorting keys, stripping timestamps.
+   b. If content_hash exists in block_content table: reuse, increment reference count.
+   c. Otherwise: upload JSON to R2 at tenants/{tid}/blocks/{content_hash}.json, insert block_content row.
+   d. Insert snapshot_blocks row linking snapshot_id → content_hash.
+5. Compute page_hash = hash(sorted child block hashes). Compute root_hash from all page hashes.
+6. Update snapshot with page_count, block_count, bytes_stored, root_hash, status='completed'.
+7. If root_hash unchanged from prior snapshot, mark this snapshot as 'identical' — still record it but no new storage.
+
+Rate limit safety:
+- Bottleneck: max 3 req/sec, max 180 req/min.
+- On 429: exponential backoff starting at 2s, max 60s.
+- Persist cursor in snapshots.progress_json so a restart resumes without duplication.
+
+Error handling:
+- Archived/trashed pages: include in snapshot with archived=true flag; restore UI can show them separately.
+- Deleted-and-purged pages (>30 days): compare to prior snapshot; if missing, flag as "permanently deleted" and still available from last backup.
+
+Emit progress every 10 pages to Supabase realtime channel: {snapshot_id, pages_done, pages_total} — UI shows live progress bar.
+```
+
+**3. Restore Flow + Diff Viewer**
+
+```text
+Build the restore flow and diff viewer. These are the features people pay for.
+
+Diff viewer (/snapshot/[id]/diff):
+1. Load current snapshot + prior snapshot.
+2. Compare by block_id: added (in current, not prior), removed (in prior, not current), modified (content_hash differs).
+3. Group by page. For each page, show: "+3 -1 ~2 blocks" summary.
+4. Click page to expand: side-by-side diff using react-diff-viewer-continued, rendering the JSON block structure as readable markdown.
+5. Filter: "Show only modified pages."
+6. Diff is expensive if many blocks; paginate per-page lazily.
+
+Page-level restore:
+1. User clicks "Restore this page to version X" on a diff view.
+2. Server fetches all blocks for the chosen (snapshot, page_id) from R2 via content_hash table.
+3. Options:
+   a. Restore in-place: use Notion API PATCH /v1/blocks/{page_id} to update title, then replace children via DELETE existing blocks then POST children from snapshot. Warning: this is destructive; require double-confirmation.
+   b. Restore as new page: create new sibling page with suffix "(restored from YYYY-MM-DD)" and POST children. Default, safest.
+4. Track restore_jobs row; emit progress; notify via Resend on completion.
+
+Full workspace restore (Team tier only):
+1. Pick snapshot.
+2. Option A: restore into the original workspace (dangerous, requires typed confirmation of workspace name).
+3. Option B: export as downloadable Notion-import ZIP (Markdown + attachments) — user can then import into a fresh workspace via Notion's native Import.
+4. Log every restore action to audit_log for compliance.
+```
+
+## Sources
+
+- • [Grand View Research — SaaS Backup Market ($4.7B 2024 → $18.5B by 2030, 25%+ CAGR)](https://www.grandviewresearch.com/industry-analysis/saas-backup-software-market)
+- • [Notion Pricing + Help Docs (30-day trash retention, manual export only)](https://www.notion.so/help/notion-pricing)
+- • [Notion API rate limits (3 requests/second)](https://developers.notion.com/reference/request-limits)
+- • [Rewind.io Pricing (accessed April 2026)](https://www.rewind.io/pricing)
+- • [GDPR Article 32 — Data integrity and availability requirements](https://gdpr-info.eu/art-32-gdpr/)
+- • Rewind Series A ($65M, 2021-2022) referenced from press coverage. Notion 30M+ users referenced from public company statements. Ideabrowser MCP returned no direct match for Notion-specific backup wedge.
+
+Verify Rewind pricing and Notion API rate limits against current docs before marketing claims.

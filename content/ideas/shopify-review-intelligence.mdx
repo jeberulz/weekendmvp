@@ -1,0 +1,114 @@
+---
+slug: "shopify-review-intelligence"
+title: "ReviewIQ"
+---
+
+## The Problem
+
+Shopify merchants live and die by product page conversion. Reviews are the highest-trust social proof on a PDP—yet most stores either dump a 200-review wall on shoppers or hide reviews behind tabs nobody opens. DTC operators ($500K–$5M GMV) feel this acutely: big enough that a 0.3% conversion lift pays for software, too small to employ a CX analyst who manually reads every new review and rewrites summary copy each quarter.
+
+The pain is chronic, not one-off. Ideabrowser community signals show recurring threads in **r/ecommerce** and **r/Shopify** asking how to “summarize reviews on product pages” and whether AI review widgets hurt SEO. Merchants already pay for Yotpo, Loox, or Judge.me—those tools excel at collection and display, not at turning review text into refreshed, theme-aware summary blocks and competitor narrative benchmarks. Manual curation breaks at scale: a catalog refresh means re-reading hundreds of SKUs. That gap is ReviewIQ’s wedge: *intelligent* review synthesis with weekly sentiment drift and competitor intel, not another star-rating widget.
+
+## The Solution
+
+ReviewIQ is an AI review intelligence layer for Shopify. It ingests your product reviews via the Shopify Admin API, clusters them by theme (fit, durability, shipping, value), and generates PDP-ready summary blocks—pros, cons, and “most mentioned” phrases—refreshed on a weekly cron. The admin dashboard flags sentiment shifts (“shipping complaints up 18% this week”), compares your review narrative against competitor URLs you track, and exports Theme App Extension blocks merchants embed above the review list. Beta positioning from Ideabrowser research targets 5–15% PDP engagement lifts when shoppers scan AI summaries before scrolling raw reviews. Agencies get multi-store workspaces and white-label PDF review briefs for $99/month.
+
+**How it works:**
+
+1. **Connect store** — Install the Shopify app, OAuth in, and sync products + reviews from your existing review provider or native Shopify reviews.
+2. **Summarize themes** — Weekly job clusters review text, runs LLM summarization, and scores sentiment drift vs. prior period.
+3. **Embed on PDP** — Publish Theme App Extension blocks with editable summary copy; merchant approves before live.
+4. **Benchmark rivals** — Add competitor product URLs; compare what their customers praise vs. complain about on the same category.
+
+## Market Research
+
+Online ratings and reviews infrastructure is a mature, growing category—not a nice-to-have widget. The stats below come from Ideabrowser why-now and competitive analysis (June 2026). Triangulate before quoting in investor decks:
+
+- **$16.8B global online ratings & reviews market in 2025**, projected to reach **$31.5B by 2029** at ~17.3% CAGR (Mintel / The Business Research Company via Ideabrowser).
+- **93% of consumers** say online reviews influence purchase decisions; summarized review content on PDPs reduces bounce on review-heavy categories (Deloitte consumer research cited in Ideabrowser why-now analysis).
+- **Shopify ecosystem scale:** millions of merchants; review apps are among the highest-install categories in the App Store—merchants already budget $15–40/mo for review tooling before adding intelligence.
+- **Search demand:** “AI review summarizer” and “Shopify review widget” clusters rising; Ideabrowser keyword research surfaces mattress-review and PDP-summary long-tail terms with commercial intent.
+- **Enterprise AI precedent:** Amazon’s FARSum and internal review-summarization research (Amazon Science) validates shopper appetite for AI-generated review digests—independent merchants lack equivalent tooling at SMB price points.
+
+## Competitive Landscape
+
+Review tooling is crowded on collection and display, thin on intelligence. Incumbents optimize stars and UGC photos; almost none combine weekly AI summaries, sentiment drift alerts, and competitor narrative benchmarks in one Shopify-native app. Pricing from Ideabrowser competitive analysis unless noted:
+
+- **Yotpo** — Enterprise-grade reviews, loyalty, and SMS; strong at collection and syndication, weak at merchant-facing AI summary blocks refreshed on a schedule. From ~$15–29/month (tiered by order volume)
+- **Loox** — Photo-review specialist with beautiful widgets; optimized for visual UGC, not thematic text summarization or competitor benchmarking. ~$9.99–39.99/month by order band
+- **Judge.me** — Popular budget review app with solid widgets and Q&A; no native weekly AI digest or cross-competitor narrative analysis. ~$15/month Awesome plan
+- **Amazon FARSum (enterprise)** — Research-grade abstractive summarization on Amazon PDPs; proves demand, unavailable to independent Shopify merchants. Platform-internal; not licensable to SMBs
+- **ChatGPT / manual copy** — Merchants paste reviews into ChatGPT once; output stale within days, no drift alerts, no embed workflow, no competitor sync. $20/mo Plus + operator time
+- **DIY (spreadsheet curation)** — Free but costs hours per SKU refresh; breaks when catalog exceeds ~50 active products. $0 direct cost; high opportunity cost
+
+**Your Opportunity**
+
+Own the “review intelligence” layer on top of collection apps merchants already pay for. Win on three axes incumbents won’t combine: (1) weekly-refreshed AI summaries merchants approve before publish, not one-time ChatGPT paste; (2) sentiment drift alerts when themes spike (“ sizing runs small” trending up); (3) competitor URL benchmarking so a mattress brand sees how their review narrative differs from Casper’s. One avoided return spike or conversion lift pays for a year at $29/month.
+
+## Business Model
+
+Free demo → Starter subscription → Advanced intelligence → agency / enterprise seats. Anchor at $29/month for single-store merchants (matches Judge.me/Yotpo entry bands while adding AI summaries incumbents lack). Expand to multi-store agencies, then $499/month enterprise with custom models and SLA from the Ideabrowser value ladder.
+
+- **Starter** ($29/mo) — Up to 3 stores, weekly AI summaries, Theme App Extension embed, email drift alerts
+- **Advanced** ($99/mo) — Unlimited SKUs, competitor benchmarking, priority refresh, white-label PDF briefs
+- **Enterprise** ($499/mo) — Multi-brand rollups, custom sentiment models, dedicated onboarding, API access
+
+**Unit Economics**
+
+- **$45** — Target CAC
+- **$38/mo** — ARPU (blended)
+- **6%/mo** — Est. churn
+- **$456** — LTV (12 mo)
+
+Path to $5k MRR: ~130 Starter accounts *or* ~50 Advanced accounts. Value ladder also supports a $49/mo competitor-intel add-on and free interactive demo (one product URL) as lead magnet per Ideabrowser go-to-market research.
+
+## Recommended Tech Stack
+
+Shopify-native app shell + review sync + LLM summarization pipeline + Theme App Extension for PDP embeds. Bill through Shopify Billing API so merchants stay in one invoice; cache LLM outputs aggressively to keep COGS under 20% of ARPU.
+
+- **Shopify App (Remix + Polaris)** — Official app template: OAuth, Admin API review sync, Billing API for $29/$99 tiers, Theme App Extension for summary blocks.
+- **Supabase (Postgres + RLS)** — Tables: shops, products, reviews, themes, summaries, competitor_urls, drift_events. pgvector optional for theme clustering.
+- **OpenAI / Anthropic** — Abstractive summarization + theme extraction; batch weekly jobs; store hashed review IDs to skip unchanged text.
+- **Vercel + Cron** — Host Remix app; scheduled sync + summarization workers; edge-cache public demo pages.
+- **Upstash Redis** — Rate-limit Shopify webhooks, queue summarization jobs, cache latest summary JSON for Theme Extension API.
+- **Resend** — Weekly drift alert emails (“3 new shipping complaints this week”) with deep links back to admin approval queue.
+- **PostHog** — Track install→first summary→embed→paid conversion; correlate summary views with merchant-reported PDP metrics.
+- **TypeScript end-to-end** — Shared types between admin UI, worker, and Theme Extension liquid/JS bridge for summary payloads.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Shopify Remix app called “ReviewIQ” with TypeScript, Polaris, and Prisma on Supabase Postgres. Tables: shops (shop_domain, plan_tier, billing_id), products (shopify_product_id, title), reviews (product_id, body, rating, created_at, external_id), summary_versions (product_id, pros_json, cons_json, themes_json, approved_at), competitor_targets (shop_id, url, last_scraped_at), drift_events (product_id, theme, delta_pct, week_of). Wire Shopify OAuth, Billing API plans at $29 Starter and $99 Advanced, webhook handlers for products/update, and env vars for OpenAI + Resend. Enable RLS scoped by shop_id.
+```
+
+**2. Core Feature**
+
+```text
+Build the review intelligence pipeline. (1) Weekly cron pulls new reviews via Shopify Admin API (or Yotpo/Judge.me webhook if present). (2) Cluster review sentences by theme with LLM; output pros (3 bullets), cons (3 bullets), and top quoted phrases. (3) Compare theme weights vs. prior week; create drift_events when any theme moves >15%. (4) Admin UI: product list with pending summaries, approve/edit before publish, competitor side-by-side panel. (5) Theme App Extension block reads latest approved summary JSON from app proxy endpoint. (6) Optional competitor scraper: fetch public review text from merchant-supplied URLs, summarize narrative differences.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site for ReviewIQ. Hero: “Turn 200 reviews into 3 sentences shoppers actually read.” Sections: the review-wall problem, live demo (paste product URL → mock summary), case study block (“+12% PDP scroll depth in beta”), comparison vs Yotpo / Loox / Judge.me on intelligence features, pricing Starter $29 / Advanced $99, FAQ on Shopify Billing and review provider compatibility, email capture for free one-product summary. Palette: ink #0F1115, paper #FCFAF7, emerald accent #10B981 for trust/summary chips. Voice: merchant-practical, revenue-focused, no agency fluff.
+```
+
+**4. Branding Package**
+
+```text
+Branding for ReviewIQ: speech-bubble + star mark readable at 16px. Colors — ink #0F1115, paper #FCFAF7, emerald #10B981 (positive themes), amber #F59E0B (drift warnings). Typography: Geist Sans UI, Geist Mono for theme percentages. Deliverables: favicon, empty-state illustration (“Reading 847 reviews…”), summary block mockup for PDP, drift alert email template, Shopify App Store icon set (1200×1200).
+```
+
+## Sources
+
+Market sizing, competitive landscape, and community signals from Ideabrowser MCP (idea_id 1396). Triangulate before quoting in investor materials.
+
+- [Mintel — online ratings & reviews market sizing](https://www.mintel.com/)
+- [The Business Research Company — ratings/reviews CAGR forecasts](https://www.thebusinessresearchcompany.com/)
+- [Data Insights Market — review platform market reports](https://www.datainsightsmarket.com/)
+- [Amazon Science — FARSum abstractive review summarization](https://www.amazon.science/publications/farsum)
+- [Deloitte — consumer trust in online reviews](https://www2.deloitte.com/)

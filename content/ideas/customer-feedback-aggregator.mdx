@@ -1,0 +1,113 @@
+---
+slug: "customer-feedback-aggregator"
+title: "Customer Feedback Aggregator"
+---
+
+## The Problem
+
+Product teams are drowning in feedback scattered across G2, Capterra, Trustpilot, app stores, and social media. They either miss critical reviews, respond too late, or waste hours manually compiling insights. Negative reviews slip through, damaging reputation before anyone notices.
+
+## The Solution
+
+A unified dashboard that pulls reviews from all major platforms, uses AI to identify sentiment and themes, and alerts you when something needs attention. Track your reputation score across platforms and respond without switching tabs.
+
+**How it works:**
+
+1. **Connect platforms** — G2, Capterra, app stores, etc.
+2. **AI analysis** — Sentiment, themes, urgency scoring
+3. **Get alerts** — Slack/email when reviews need response
+
+## Market Research
+
+Online reputation management is a mature category. Incumbents price for enterprise; the indie opening is SaaS founders and small product teams who live and die by G2, Capterra, and app store ratings but can’t justify $200+/mo to watch them. AI-native sentiment clustering plus Slack alerts is a defensible wedge.
+
+- BrightLocal’s Local Consumer Review Survey 2024: 98% of consumers read online reviews; review recency and response rate are top-weighted by buyers.
+- G2 hosts 2M+ reviews across 100K+ products; Trustpilot passed 250M+ reviews in 2024—review volume is still compounding.
+- Online reputation management market sized at $333M+ in 2023 (Grand View Research) with double-digit projected CAGR.
+- Podium and Birdeye both priced $249+/mo; ReviewTrackers at $99+/mo—clear price gap under $30/mo for SaaS indies.
+
+## Competitive Landscape
+
+Three clusters: enterprise reputation suites (Birdeye, Podium) priced for multi-location service businesses, mid-market specialists (ReviewTrackers), and app-store-only tools (Appbot). None of them nail the SaaS indie who wants G2 + Capterra + Trustpilot + app stores in one Slack-friendly dashboard at under $30/mo.
+
+- **Birdeye** — Enterprise reputation suite. Heavy on local-business use cases (multi-location dentists, home services). Sales-led onboarding; annual contracts; overkill for SaaS teams. Custom pricing, typically $249–$449/mo/location
+- **ReviewTrackers** — Solid mid-market SaaS. Broad platform coverage, decent sentiment analysis, but feels designed for multi-location marketers, not SaaS founders tracking G2 pages. $99/mo Starter → $249/mo Pro (typical 2024 quotes)
+- **Podium** — Messaging + reviews combo, targets service businesses. Rich but sprawling; SaaS teams pay for features (texting, webchat) they don’t need. $249/mo Essentials → $449/mo Standard
+- **Appbot** — App-store reviews only (iOS/Android/Windows Store). Strong for mobile teams but ignores G2/Capterra/Trustpilot—SaaS founders still need a second tool. $39/mo Bronze → $299/mo Platinum
+
+**Your Opportunity**
+
+Ship a SaaS-indie-first review aggregator: G2, Capterra, Trustpilot, and app stores in one feed, AI-clustered themes, Slack alerts on new negative reviews, weekly digest. $29/mo undercuts the $99 floor and $249 ceilings. Podium’s service-business tilt and Appbot’s app-only scope are both the opening.
+
+## Business Model
+
+SaaS freemium with an explicit price ceiling below the $99 incumbents. Free tier seeds Indie Hackers and r/SaaS word-of-mouth; Pro monetizes steady-state SaaS teams; Team covers sub-50-seat product orgs.
+
+- **Free** ($0) — 1 product, 2 platforms, weekly check, 30-day history
+- **Pro** ($29/mo) — Unlimited platforms, daily check, Slack alerts, AI themes, export
+- **Team** ($79/mo) — 3 products, 5 seats, competitor tracking, sentiment trend dashboard, SSO
+
+**Unit Economics (illustrative)**
+
+- **$40–80** — Target CAC
+- **5–8%** — Free → Pro
+- **$36/mo** — Blended ARPU
+- **110%+** — Net retention
+
+## Recommended Tech Stack
+
+The hard part is review ingestion. Some platforms (App Store, Google Play) have official APIs; others (G2, Capterra, Trustpilot) either require partner access or well-behaved scraping. Start with official APIs, add a Playwright worker for the rest, and gate high-frequency checks behind paid tiers so cost scales with revenue.
+
+- **Next.js 14 + TypeScript** — Marketing, app, API routes. Server Components render the review feed from pre-aggregated Postgres for fast loads.
+- **Supabase** — Auth + Postgres for products, reviews (platform, sentiment, theme), RLS per workspace. Unique index on (platform, external_id) for idempotent ingestion.
+- **Platform APIs first** — App Store Connect, Google Play Developer, Trustpilot Business API. API-first sources are cheap to poll → keep them on the free tier.
+- **Playwright workers (Modal/Fly)** — For G2/Capterra where no public API exists, use Playwright on a dedicated worker (Modal or Fly Machines) with rotating residential proxies and strict rate limits. Gate behind Pro.
+- **Claude (sentiment + themes)** — Score sentiment and assign themes (“pricing”, “bugs”, “support”) per review. Batch requests nightly; cache theme taxonomy per product to minimize tokens.
+- **Slack + Resend + Stripe** — Slack Incoming Webhooks for negative-review alerts, Resend for weekly digest, Stripe Billing for Pro/Team with webhook-synced entitlements.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for a Customer Feedback Aggregator.
+
+Features needed:
+- Dashboard showing reviews from multiple sources in a unified feed
+- Filter by platform, sentiment (positive/neutral/negative), date
+- Each review card shows: source platform, rating, date, text, sentiment badge
+- Sidebar with aggregated stats: average rating by platform, total reviews, sentiment breakdown
+- Settings page to add API keys/connections for different platforms
+
+Use Tailwind CSS and shadcn/ui components.
+```
+
+**2. Core Feature**
+
+```text
+Create API integrations for:
+1. G2 reviews via their API (requires partner access) or web scraping
+2. App Store reviews using Apple's RSS feed
+3. Google Play reviews using their scraping library
+
+For each review, use OpenAI to:
+- Analyze sentiment (positive/neutral/negative with score 0-100)
+- Extract key themes/topics mentioned
+- Flag reviews that need urgent response (complaints, bugs mentioned)
+
+Store reviews in a database with polling for new reviews every hour.
+```
+
+**3. Notifications**
+
+```text
+Add notification system:
+- Slack webhook integration to post new reviews to a channel
+- Email digest option (daily/weekly summary)
+- Instant alerts for negative reviews (1-2 stars)
+- Weekly report showing: review count, avg rating change, common themes
+
+Include a settings page to configure notification preferences per user.
+```

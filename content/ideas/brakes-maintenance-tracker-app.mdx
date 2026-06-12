@@ -1,0 +1,109 @@
+---
+slug: "brakes-maintenance-tracker-app"
+title: "Brakes Maintenance Tracker App that Automates Reminders and Records for Vehicle Owners ([$1M+ ARR Potential])"
+---
+
+## The Problem
+
+Most drivers know oil changes; brakes are invisible until noise, vibration, or a shop quotes a surprise four-figure job. OEM intervals are vague, driving conditions vary wildly, and the average vehicle on US roads is over a decade old—components age on different curves. Generic reminder apps either spam broad “service due” alerts or rely on CARFAX-linked history that may never capture the quick pad swap at an indie shop.
+
+From the driver’s seat the real pain is *evidence*: no single place for pad measurements, fluid flush dates, rotor resurfacing, or warranty paperwork. When it is time to sell the car, that history evaporates. A focused brake tracker turns preventive maintenance into a lightweight habit instead of a fire drill.
+
+## The Solution
+
+Ship a mobile-first app (Expo/React Native is enough for v1) where each vehicle gets a brake timeline: front/rear pad % estimates, fluid exchange dates, rotor notes, and photo receipts. Rules engine combines odometer deltas, elapsed months, and user-tagged “hard use” (towing, mountains, rideshare) to prioritize notifications. Optional marketplace hooks let vetted shops publish brake specials; you take a lead fee instead of fighting national ad networks on day one.
+
+**How it works:**
+
+1. **Onboard** — VIN or year/make/model, current mileage, last brake job baseline
+2. **Log** — Inspections, pad depth, fluid, rotors—photos and PDF receipts in cloud storage
+3. **Nudge** — Push notifications when rules trip; snooze with reason (low miles, garage queen)
+4. **Share** — Export a buyer-ready brake report; shops optionally claim leads in-zip
+
+## Market Research
+
+Vehicle maintenance is shifting from paper glovebox folders to phones; predictive and specialty apps are growing faster than the broader aftermarket paperwork stack. Directional stats worth anchoring a landing page—triangulate before investor decks:
+
+- **Car maintenance / service app segment** — industry forecasts frequently cite roughly **double-digit CAGR** through the early 2030s as smartphones become the default service log (multiple analyst summaries size the global car maintenance app market around mid–hundreds of millions USD in the 2024 window with paths toward ~$1.5B+ by the next decade—definitions vary).
+- **Aging fleet** — S&P Global Mobility reported the average age of US light vehicles reached **12.6 years in 2024**, extending the aftermarket “sweet spot” for wear items including brakes.
+- **Brake repair spend** — third-party market reports size the **global brake repair services** opportunity in the tens of billions USD annually; even conservative slices imply millions of consumers actively paying for brake work each year.
+- **Wedge** — horizontal apps optimize for VIN imports and breadth; a brake-native UX can win SEO (“brake maintenance log”, “pad wear tracker”) and partnerships with regional shop chains faster than another me-too CARFAX clone.
+
+## Competitive Landscape
+
+You are not displacing telematics OEM apps on week one—you are out‑executing horizontal trackers on depth for one subsystem:
+
+- **CARFAX Car Care** — Free consumer app with service reminders and history tied to CARFAX data—strong on breadth, weak on granular brake journaling and indie shop capture. Consumer: free · monetization via CARFAX ecosystem
+- **Drivvo** — Popular for fuel, cost-per-mile, and light maintenance reminders; brake-specific workflows are DIY hacks, not first-class. Freemium + Pro (region-dependent, typically low single-digit $/mo)
+- **GarageHub / DIY trackers** — Enthusiast-oriented logs with parts inventory—great for garages, intimidating for normie commuters who only want brakes solved. Often subscription or one-time purchase under $10/mo
+- **Notes + Calendar** — Zero marginal cost, zero structure—photos get lost, resale value story disappears. $0 — churns to your app when they sell the car once
+
+**Your Opportunity**
+
+Own the keyword tail around brake maintenance discipline, exportable history for private-party sales, and shop lead-gen in zip codes where CARFAX coverage is thin. Depth beats “yet another maintenance checklist app.”
+
+## Business Model
+
+Freemium consumer app with B2B shop leads mirrors how drivers already discover brakes—search, anxiety, then phone call. Keep consumer ARPU modest; monetize density in a few metro pilots before scaling ads.
+
+- **Driver Free** ($0) — 1 vehicle, basic reminders, local-only history
+- **Driver Pro** ($4.99/mo) — Multi-vehicle, cloud backup, PDF export, predictive alerts
+- **Shop Partner** ($99/mo) — Lead inbox + zip placement; CPA bonus on booked appointments
+
+**Unit Economics (illustrative)**
+
+- **$8–15** — Target CAC
+- **$3.5/mo** — Blended ARPU
+- **$15–40** — Shop lead fee
+- **\< 90 days** — Payback
+
+## Recommended Tech Stack
+
+Optimize for fast mobile iteration, offline-friendly logs, and push. Supabase keeps auth + Postgres + storage in one place; Expo Application Services handles OTA fixes post-launch.
+
+- **Expo (React Native) + TypeScript** — Cross-platform push, camera for pad photos, EAS builds for TestFlight/Play Internal.
+- **Supabase** — Auth, Postgres for vehicles/events/reminder rules, Storage for receipts, Row Level Security per user.
+- **FCM (via Expo notifications)** — Scheduled local + remote pushes for reminder escalations and shop promos.
+- **Stripe + RevenueCat (optional)** — Mobile subscriptions with sane trial handling; RevenueCat if you want cross-store analytics fast.
+- **Vision / LLM (v2)** — Optional: classify brake noise clips or read shop invoices into structured line items—ship rules-first, AI second.
+- **Next.js marketing site** — SEO landing pages per city (“brake log app Austin”) funneling to app store links.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Expo SDK 52 app with TypeScript for “BrakeTrack” — a brakes-focused vehicle maintenance tracker. Add Supabase client, auth (email + Apple), and tables: profiles, vehicles (vin, ymm, odometer), brake_events (type enum: inspection, pad_replace, fluid, rotor, other), attachments (storage paths), reminder_rules (mileage_threshold, months_threshold, severity). Include Row Level Security policies, Zod schemas shared between app and edge functions, and environment templates for EAS secrets.
+```
+
+**2. Core Feature**
+
+```text
+Build the logging flow: camera capture for pad photos and receipt PDF upload to Supabase Storage, event timeline UI with filters (axle, component), and a reminder engine that schedules Expo push notifications when odometer deltas from last brake_event exceed configurable thresholds or calendar windows elapse. Add offline queue with AsyncStorage sync. Include a “resale report” screen that renders a branded PDF summary via a small Next.js API route.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site for BrakeTrack: hero “Know your brakes before they scream.” Sections: problem (surprise quotes + aging fleet stat), solution screenshots (timeline + reminders), comparison vs generic car apps, pilot shop logos placeholder, pricing (Free / Pro / Shop), FAQ on privacy and data export. Palette: asphalt black, safety orange accent, warm off-white background—automotive but calm.
+```
+
+**4. Branding Package**
+
+```text
+Brand BrakeTrack: logo combining a brake rotor silhouette with a checkmark arc (reads at 24px), colors — primary #111827, surface #FAFAF9, accent #EA580C, caution #CA8A04. Type: Geist Sans UI, JetBrains Mono for odometer readouts. Deliverables: app icon (iOS rounded), splash, wordmark, and one explainer illustration of pad wear stages.
+```
+
+## Sources
+
+Signals compiled from public research and vendor positioning (April 2026). Verify figures before financial projections.
+
+- [OpenPR summary — car maintenance app market growth context](https://www.openpr.com/news/4255661/car-maintenance-app-market-is-going-to-boom-major-giants)
+- [Allied Market Research — car service application market](https://www.alliedmarketresearch.com/car-service-application-market-A14073)
+- [S&P Global Mobility — average vehicle age in the United States (2024)](https://www.spglobal.com/automotive-insights/en/blogs/2024/5/average-age-vehicles-united-states-2024)
+- [Kentley Insights — brake repair services market sizing](https://www.kentleyinsights.com/brake-repair-services-for-cars-trucks-market-size-growth-report/)
+- [CARFAX — Car Care consumer positioning](https://www.carfax.com/Service/)
+
+Ideabrowser MCP was not enabled in this workspace; drafted from `ideas/drafts/brakes-maintenance-app/raw.md` plus open-web research.

@@ -1,0 +1,101 @@
+---
+slug: "personal-wellness-coach"
+title: "Personal Wellness Coach"
+---
+
+## The Problem
+
+Most people do not need a hospital—they need consistency. They download a fitness app, log meals for four days, then ghost. **Noom** charges premium prices for psychology-driven weight programs but locks users into long subscriptions. **BetterHelp** solves mental health, not "drink water, fix desk posture, eat protein at breakfast." **WHOOP** sells recovery scores to athletes willing to pay $30/mo but does not tell you *what to do today* in plain language.
+
+Wearables generate data; users lack coaching narrative. Nutrition apps count calories without connecting to energy crashes at 3pm. Remote workers want posture and movement nudges tied to calendar gaps, not generic "stand up" alarms.
+
+The wedge: an AI coach that runs a **daily 2-minute check-in**, synthesizes habits + optional Apple Health steps + photo meal notes, and outputs one prioritized action. Optional human coach video for accountability at $49/session. Not medical advice—wellness coaching with clear disclaimers.
+
+## The Solution
+
+Mobile-first PWA: morning check-in (sleep, mood, energy), habit streaks (water, steps, stretch), meal snap or text log with macro estimates, and desk posture reminders via scheduled notifications (camera-free MVP uses timer + ergonomic tips). Claude generates a **daily plan card** with one focus habit. Weekly review summarizes trends. Upsell: book a certified wellness coach for 30 minutes via Stripe.
+
+**Weekend MVP scope:**
+
+- Auth + onboarding goals (lose weight, energy, posture, strength)
+- Daily check-in form + streak UI
+- AI daily plan (Claude) from last 7 days of logs
+- Push notifications (web push or email fallback)
+- Coach marketplace lite (5 hand-picked coaches, Cal embed)
+
+Knowledge-transfer angle: optional library of coach tips (like a lightweight [Virtual Knowledge Hub](/ideas/virtual-knowledge-hub) for wellness micro-lessons). Keeps SEO cluster connected without competing positioning.
+
+## Market Research
+
+Digital health and fitness apps exceed **$10B+ globally**; habit and coaching subsegments grow fastest among millennials and remote workers. GLP-1 headlines increased interest in nutrition coaching adjacently. Your SKU is sub-clinical—avoid FDA claims, target motivation and adherence.
+
+- **Noom** proved subscription willingness for behavior-change coaching at consumer scale.
+- **Wearable penetration** (Apple Watch, WHOOP, Oura) creates data hooks via HealthKit APIs.
+- **Employer wellness stipends** ($50–$100/mo) are an eventual B2B2C channel after B2C proof.
+- **AI cost collapse** makes personalized daily plans economical at $12–$19/mo consumer price.
+
+Stage: *crowded headline category, open wedge in unified habit+nutrition+posture AI narrative*. Win on tone (non-judgmental, one daily action) not feature breadth.
+
+## Competitive Landscape
+
+Incumbents own single verticals (weight psychology, therapy, recovery scores). Bundle daily adherence with optional human coach.
+
+- **Noom** — Psychology-based weight loss with human coaches in premium tiers. Heavy onboarding, long commitments. Often $60+/mo promotional pricing varies
+- **BetterHelp (coach tier adjacency)** — Therapy platform—not wellness habits. Users conflate mental health with lifestyle coaching. Therapy subscriptions ~$60–$90/week
+- **WHOOP** — Recovery and strain scoring for athletes. Excellent data; weak habit coaching narrative for general users. ~$30/mo membership + hardware
+- **MyFitnessPal / Lose It** — Calorie tracking databases. Logging without coaching story; high churn. Freemium; premium ~$20/mo
+
+**Your Opportunity**
+
+One daily AI plan across habits, meals, and desk health; optional human coach upsell; $12–$19/mo with 7-day streak guarantee messaging. Target remote knowledge workers, not bodybuilders.
+
+## Business Model
+
+B2C subscription primary; take rate on human coach sessions secondary. Keep CAC low via TikTok/SEO "desk posture" content.
+
+- **Core** ($14/mo) — Daily AI plan, habits, meal notes, push nudges
+- **Plus** ($24/mo) — HealthKit sync, weekly video review summary, priority support
+- **Coach session** ($49) — 30-min human coach; platform keeps 20%
+
+MRR path: 80 Core subscribers = $1.12K/mo; add 20 Plus + 10 coach sessions/mo ≈ $1.5K+. Target $1K/mo with ~70 paying users—achievable with one viral short-form content loop.
+
+## Recommended Tech Stack
+
+PWA + Supabase + Claude + Stripe. HealthKit is iOS-only stretch; ship web-first check-ins.
+
+- **Next.js 14 PWA + Supabase** — checkins, habits, meal_logs, plans (daily JSON), users. Row-level security per user_id.
+- **Claude Haiku/Sonnet** — Daily plan generation from structured last-7-day summary; guardrails: no medical diagnosis language.
+- **Stripe Billing + Connect** — Subscriptions for Core/Plus; Connect for coach payouts.
+- **Resend + OneSignal/web push** — Morning check-in email; web push for posture breaks.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Wellness PWA Scaffold**
+
+```text
+Build Next.js PWA personal wellness coach. Supabase auth. Onboarding: pick goals[]. Daily check-in stores mood 1-5, sleep_hours, notes. habits table with streak_count.
+
+Page /today shows AI plan card generated server-side. Include disclaimer footer: not medical advice.
+```
+
+**2. Daily Plan Generator**
+
+```text
+Cron 6am user-local: aggregate last 7 checkins + habits + meal_logs. Claude prompt: return JSON { focus, habit_action, meal_tip, posture_tip, encouragement } max 120 words total. Tone: supportive, specific, no shame. Block medical claims.
+```
+
+**3. Coach Upsell Flow**
+
+```text
+Add /coaches with 5 static profiles, Stripe checkout $49, Cal.com embed. After payment, show booking link. Track coach_sessions table for payout calc.
+```
+
+## Sources
+
+- • [Grand View Research — digital health market](https://www.grandviewresearch.com/industry-analysis/digital-health-market)
+- • [Noom — consumer program](https://www.noom.com/)
+- • [WHOOP — membership](https://www.whoop.com/)
+
+Verify competitor pricing on live product pages; packaging changes frequently.

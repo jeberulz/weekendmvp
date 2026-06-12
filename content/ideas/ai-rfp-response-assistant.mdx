@@ -1,0 +1,108 @@
+---
+slug: "ai-rfp-response-assistant"
+title: "AI RFP Response Assistant for SMB Sales Teams"
+---
+
+## The Problem
+
+Mid-market sales and solutions engineers live inside 200-row spreadsheets called security questionnaires, vendor RFPs, and DDQs. Each deal duplicates work: hunt through old proposals, Slack threads, and PDFs for the one paragraph that proves SOC 2 coverage or data residency. Miss a deadline and the deal stalls; copy-paste the wrong year and you erode trust. Generic ChatGPT answers sound confident but hallucinate policies your company does not have—legal and security teams will not sign off.
+
+Incumbent response-management platforms are built for enterprises with dedicated proposal ops. Public pricing for category leaders starts around five figures annually with annual contracts, which rules out the 10–200 person SaaS vendors winning an outsized share of new RFP volume. Spreadsheets plus manual search do not scale; enterprise suites do not fit the budget. The wedge is a focused assistant that combines retrieval over your own documents with tight human-in-the-loop review—not another bloated content library nobody maintains.
+
+## The Solution
+
+A web app where the AE or solutions consultant uploads the RFP (PDF, Word, or portal export), maps sections to owners, and connects a “win library” of past proposals, security docs, and release notes. Embeddings index every chunk; each question pulls the top-k evidence spans before the model writes. Output is structured: proposed answer, bullet citations back to source files, and explicit “needs human” flags when similarity scores drop. Export to Word or Google Docs preserves tables procurement teams expect. You are selling speed with auditability—not fully autonomous compliance fiction.
+
+**How it works:**
+
+1. **Ingest** — Upload the RFP, split into sections, sync collateral from Drive or Notion
+2. **Retrieve** — Vector search surfaces the best past answers, policies, and metrics
+3. **Draft** — LLM writes section replies with citations and gap warnings
+4. **Export** — Review in-app, resolve flags, export to Docx with a compliance checklist
+
+## Market Research
+
+Procurement and vendor security reviews are formalizing across industries, which keeps demand for faster, auditable RFP workflows structurally high. Third-party sizing varies by segment definition, but directional signals are consistent:
+
+- **High-teens CAGR** appears repeatedly in analyst forecasts for RFP / proposal-automation software through the mid-2030s as teams replace spreadsheets with cloud workflows (Industry Research Biz summary of the broader RFP software market).
+- **AI-augmented response workflows** are called out as a distinct fast-growing sub-segment—multiple research shops size the “RFP response automation AI” market around low single-digit billions USD in the 2024 window with double-digit growth into the next decade (e.g., DataIntelo / Growth Market Reports style estimates—treat as directional, not gospel).
+- **Cloud-first adoption** shows up across buyer surveys bundled with these reports—enterprises bias toward SaaS libraries, which validates a multi-tenant product you can host on Vercel + Supabase instead of shipping on-prem.
+- **SMB wedge**: the same tailwinds lift mid-market SaaS vendors (50–500 employees) that must answer enterprise security reviews but cannot justify dedicated proposal operations—your ideal first 50 accounts.
+
+## Competitive Landscape
+
+Incumbents own the enterprise narrative; almost everything is “contact sales” pricing. That creates a clean undercut story for teams with \<50 seats:
+
+- **Loopio** — Mature content library, review workflows, and AI-assisted drafting aimed at proposal teams. Strong in regulated and mid-market/enterprise accounts. Public pricing lists Foundations from ~$20,000/year (10 seats) — custom tiers above that
+- **Responsive (ex-RFPIO)** — Full response-management platform with deep integrations and enterprise SSO. Breadth is the product; complexity and price follow. Quote-based; list pricing not published — plan for enterprise sales cycles
+- **Qvidian (Upland)** — Long-standing player for large proposal shops and financial services. Heavy on governance, lighter on modern AI-native UX. Enterprise contracts — typically 5-figure annual minimums
+- **DIY stack** — Notion/Drive + ChatGPT. Cheap and flexible, but no retrieval citations, no section-level audit trail, and compliance teams hate it. $20–60/user/mo in productivity tools + unpredictable model spend
+
+**Your Opportunity**
+
+Sell “credible first drafts with receipts” to SaaS companies that outgrew DIY but will never buy Loopio. Retrieval-grounded answers, explicit citations, and export to Word beat raw ChatGPT for security questionnaires—price 10× below enterprise suites and win on speed-to-ROI.
+
+## Business Model
+
+Seat-based SaaS with usage caps on embedded pages and monthly LLM tokens keeps COGS predictable. Anchor against DIY spend (~$50–150/mo per rep in tools) while staying an order of magnitude under Loopio’s published floor.
+
+- **Team** ($79/mo) — 3 seats, 3 active RFPs, 2k library pages, Slack alerts
+- **Growth** ($199/mo) — 10 seats, unlimited RFPs, SSO-ready, priority vector indexing
+- **Scale** ($399/mo) — 25 seats, audit log export, custom data retention, shared workspaces
+
+**Unit Economics**
+
+- **$400** — Target CAC
+- **$180/mo** — Avg. Revenue/Account
+- **4%/mo** — Est. Churn
+- **$2.9k** — LTV (18 mo)
+
+## Recommended Tech Stack
+
+Optimize for ingestion → chunk → embed → retrieve → generate. Supabase pgvector keeps you on one Postgres; Vercel AI SDK streams answers back to the browser while you log citations.
+
+- **Next.js 15 + TypeScript** — App Router for the RFP workspace, server actions for uploads, streaming UI for section-by-section drafts.
+- **OpenAI (embeddings + GPT-4.1 mini / 4o)** — text-embedding-3-small for vectors; structured outputs for \{answer, citations[], confidence, needs_human} per section.
+- **Supabase + pgvector** — Store documents, chunks, embeddings, and RFP projects; RLS per workspace; edge functions for async re-index jobs.
+- **Clerk** — Org + user model maps cleanly to multi-seat billing; SAML hooks when you graduate Growth → Scale.
+- **Stripe Billing** — Metered component for token overages; customer portal for seat changes.
+- **Vercel + Inngest (or Trigger.dev)** — Background jobs for PDF parsing, OCR fallbacks, and re-embedding when the library updates.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 15 project with TypeScript, Tailwind CSS, and the Vercel AI SDK for an “AI RFP Response Assistant”. Set up Supabase (Postgres + pgvector + storage buckets) with tables: workspaces, members, rfps, rfp_sections, documents, document_chunks (embedding vector(1536), metadata JSONB), generation_runs, and citations. Add Clerk for org-based auth, Stripe subscriptions for Team/Growth/Scale tiers, and environment variables for OpenAI + Supabase service role. Include PDF text extraction via pdf-parse with a TODO hook for unstructured.io if layout is messy.
+```
+
+**2. Core Feature**
+
+```text
+Build the RFP drafting pipeline: (1) Upload flow that splits PDFs/DOCX into sections using heading heuristics + manual override grid, (2) Background job that chunks library docs to ~800 tokens with overlap, embeds with text-embedding-3-small, stores in pgvector, (3) For each section, run similarity search (top 8 chunks), then call GPT-4o with JSON schema {answer_markdown, citations:[{doc_id, chunk_id, quote}], confidence_0_1, needs_human_reason}, refusing to invent policies not present in citations, (4) UI with side-by-side source viewer and accept/edit/export to DOCX using a server-generated template. Stream tokens to the UI for perceived speed.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site for “Receipt” (placeholder name) — AI RFP assistant for SaaS sales teams. Hero: “Answer enterprise security questionnaires with receipts, not vibes.” Include: problem (DIY ChatGPT vs $20K suites), solution diagram (ingest → retrieve → cite → export), interactive sample showing a SOC2 question with highlighted source quotes, comparison table vs Loopio/Responsive/DIY, pricing for Team/Growth/Scale, security section (data retention, zero training on customer data), and email capture. Palette: ink navy, warm paper background, electric blue accents — credible not flashy.
+```
+
+**4. Branding Package**
+
+```text
+Branding for Receipt: logo mark combining a checkmark with a document fold (works at 24px), colors — primary #0F172A, secondary #F8FAFC, accent #2563EB, caution #F59E0B for “needs review” states. Typography: Geist Sans for UI, IBM Plex Mono for citation chips. Deliverables: favicon, app sidebar wordmark, empty-library illustration, and LinkedIn banner for outbound to VP Sales Ops.
+```
+
+## Sources
+
+Market sizing and competitive pricing signals collated from public research summaries and vendor pages (April 2026). Triangulate before you cite in investor materials.
+
+- [Industry Research Biz — RFP software market overview (CAGR context)](https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348)
+- [DataIntelo — RFP response automation AI market snapshot](https://dataintelo.com/report/rfp-response-automation-ai-market)
+- [Loopio — public Foundations pricing](https://loopio.com/pricing/)
+- [Responsive — plan structure (quote-based)](https://www.responsive.io/pricing/)
+
+Ideabrowser MCP was unavailable in this workspace; this page was researched via open web sources.

@@ -1,0 +1,109 @@
+---
+slug: "ai-brake-inspection-analyser"
+title: "AI-Powered Brake Inspection Analyser"
+---
+
+## The Problem
+
+Independent shops lose margin on brake inspections because explaining pad wear to a skeptical customer takes longer than the inspection itself. Techs know a 3mm pad is “yellow soon,” but the service advisor still fights trust battles without visual proof. Generic AI photo tools do not understand rotor scoring, heat checking, or pad taper—and OBD apps ignore physical wear entirely.
+
+Shops that do show photos often use messy camera rolls or markup in Paint. *“Customers think we’re upselling until they see the pad compared to a new one,”* is the recurring advisor complaint. A brake-specific vision pipeline that outputs a standardized wear score, annotated overlay, and recommended line items turns inspection into a sales asset instead of a confrontation.
+
+Multi-point inspection (MPI) software exists (Tekmetric, AutoLeap), but AI-assisted brake wear scoring is still early. A lightweight SaaS that plugs into existing shop workflows—photo in, PDF out—can sell per bay without replacing the whole shop management stack.
+
+## The Solution
+
+Build a mobile-friendly web app (PWA is fine) where a tech captures guided photos: pad profile against rotor, rotor face, caliper area. Upload hits a vision pipeline (OpenAI GPT-4o vision or a fine-tuned classifier) that returns wear percentage estimate, severity band (green/yellow/red), and suggested services (pads only, pads+rotors, fluid flush). Optional audio clip classifies squeal vs. grind vs. ABS chatter for triage.
+
+Output a customer-facing PDF with side-by-side new-vs-worn diagram, advisor talking points, and VIN/RO number footer. Shop dashboard tracks inspections per month, conversion to booked jobs, and credit usage. Start with human-in-the-loop review toggle so advisors can override AI scores until accuracy earns trust.
+
+**How it works:**
+
+1. **Capture** — Guided camera overlay ensures consistent pad angle
+2. **Analyse** — Vision model returns wear score + confidence
+3. **Report** — Branded PDF for customer signature in waiting room
+4. **Track** — Shop dashboard: inspections, overrides, booked revenue
+
+## Market Research
+
+Computer vision in automotive maintenance is moving from R&D to shop-floor pilots as model costs drop:
+
+- **US independent repair shops** — roughly **160K+** repair establishments; even 0.1% paying $99/mo is a viable bootstrap SaaS.
+- **Inspection software TAM** — shop management platforms charge $200–400/mo; a $99/mo AI add-on that increases brake close rates targets a clear ROI story.
+- **Vision API economics** — sub-$0.05 per image at volume makes per-inspection pricing ($2–5) profitable.
+- **Upsell leverage** — brake jobs average hundreds of dollars; one extra approved pad job per week pays for the tool many times over.
+
+## Competitive Landscape
+
+- **Tekmetric / AutoLeap MPI** — Full shop management with digital vehicle inspections. Broad, not brake-specialized AI scoring; long implementation cycles. Shop SaaS $200–400+/mo
+- **Generic CV APIs** — Google Cloud Vision, AWS Rekognition—no brake domain prompts or customer PDF templates out of the box. Pay-per-call · requires custom build
+- **Manual photo markup** — WhatsApp + Sharpie on paper RO. Free, unscalable, no analytics. $0 · inconsistent
+- **Equipment-based gauges** — Physical pad gauges accurate but do not produce customer-facing visuals automatically. Hardware $20–80 · labor time
+
+**Your Opportunity**
+
+Be the brake-only AI inspection layer shops bolt on without switching SMS—sell credits, prove ROI on brake close rate, expand to fleet accounts.
+
+## Business Model
+
+B2B SaaS: per-inspection credits for indies, unlimited seats for groups. Land with free 20-inspection trial per shop.
+
+- **Starter** ($49/mo) — 100 inspections, 1 location, branded PDFs
+- **Pro Shop** ($99/mo) — 400 inspections, 3 advisors, API export
+- **Credit pack** ($0.75/ea) — Overage or pay-as-you-go for low volume
+
+**Unit Economics (illustrative)**
+
+- **50** — Target shops
+- **$79/mo** — ARPU
+- **~$15/mo** — COGS/shop
+- **~$3.9K** — MRR at 50
+
+## Recommended Tech Stack
+
+Next.js PWA + Supabase storage for images, OpenAI vision for v1 scoring, background job queue for PDF generation. Human override table improves prompts over time.
+
+- **Next.js 14 PWA** — Camera capture, shop login, advisor dashboard.
+- **Supabase Storage + DB** — Images, inspection records, shop branding settings.
+- **OpenAI Vision API** — Pad wear scoring with structured JSON output schema.
+- **React PDF / Puppeteer** — Customer-facing inspection PDFs with annotated images.
+- **Stripe Billing** — Subscription + metered overage for inspection credits.
+- **Vercel + Inngest** — Async analysis jobs, webhooks to shop SMS systems (v2).
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**Project Setup. Scaffold BrakeVision SaaS: Next.js 14, Supabase (shops, inspections, images, overrides), OpenAI vision wrapper returning JSON \{wearPct, severity, recommendations[], confidence}. Include Zod validation and shop-level API keys.**
+
+```text
+undefined
+```
+
+**Core Feature. Mobile capture flow with SVG overlay guiding pad photo angle. On upload, queue analysis job, display results with editable advisor notes, generate PDF with shop logo. Log human overrides for future prompt tuning.**
+
+```text
+undefined
+```
+
+**Vision Prompt. Write system prompt for automotive brake pad analysis: identify pad thickness vs rotor, classify green/yellow/red, list likely services, refuse to guess if image blurry—return confidence score and re-shoot instructions.**
+
+```text
+undefined
+```
+
+**Sales Landing. Landing page for shop owners: ROI calculator (extra brake jobs/week), 20 free inspections CTA, testimonial layout, comparison vs generic MPI modules. Dark garage aesthetic with high-contrast safety yellow accents.**
+
+```text
+undefined
+```
+
+## Sources
+
+Signals compiled from public research (verify before financial projections).
+
+- [US Census — auto repair establishment counts](https://www.census.gov/data/tables/2021/econ/cbp/2021-cbp-autorepair.html)
+- [Tekmetric — shop management competitor](https://www.tekmetric.com/)
+- [OpenAI — vision API documentation](https://platform.openai.com/docs/guides/vision)
+- [NHTSA — brake safety context](https://www.nhtsa.gov/vehicle-safety)
+- [AutoLeap — digital inspection competitor](https://www.autoleap.com/)

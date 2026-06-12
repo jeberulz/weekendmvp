@@ -1,0 +1,122 @@
+---
+slug: "sms-time-tracker"
+title: "SMS Time Tracker for Side-Hustlers"
+---
+
+## The Problem
+
+A weekend consultant finishes a Saturday-morning client call, jumps in the car to make a delivery, swings by a coffee shop to write copy for a third client, then realizes at midnight that none of those hours got logged anywhere. Existing time-tracking apps assume you work at a desk: they want you to switch tabs, find the project, hit a button, watch a timer. Most gig workers don’t have that ritual—they have a steering wheel, a doorbell, a kid’s soccer game. The friction between “I’m starting work” and “the timer is running” is the gap where billable revenue evaporates.
+
+The pain shows up loudly online. Reddit’s r/sidehustle has 3.1M members, and time-management threads routinely break a thousand comments asking for the simplest possible tracker. r/productivity (261K) and r/Frugal (2.4M) reinforce the same signal: people want something cheaper and more accessible than Toggl or Harvest, but more structured than a Notes app. Facebook’s Side Hustle Nation (60K+) and “Moms & Dads Looking for Side Hustles Online” surface a parallel pain—parents juggling a part-time business with school pickups can’t add another app to their day. Meanwhile, 84% of U.S. consumers are already opted in to receive business text messages, up 35 percentage points since 2021. The communication channel they will tolerate is already on their phone; the productivity tool fighting for it is not.
+
+The downstream cost is concrete. Federal Reserve data puts the U.S. side-hustle population somewhere between 36% and 50% of adults depending on definition—tens of millions of people who undercount their hours, undercharge their clients, or pay a tax accountant extra at year-end to reconstruct what they actually worked. A tracker that requires zero app installs, zero context switches, and zero behavior change beyond a habit (texting) they already have isn’t a luxury feature—it’s the only design that survives contact with how this segment actually lives.
+
+## The Solution
+
+A web app whose primary surface is a phone number. Users sign up once, set an hourly rate and a few project tags, then run their entire workflow over SMS. Text *start* and a timer begins; text *start uber* and it tags the session to a project; text *stop* and the system replies with elapsed time and earnings against the configured rate. A small server-side state machine handles edge cases (forgotten stops, overlapping sessions, time-zone math). gpt-4o-mini auto-categorizes ambiguous entries into project buckets, and a Sunday cron job texts every active user a markdown summary of the week with a CSV link they can attach to an invoice. Optional commands (*break*, *rate $75*, *note client called late*) layer on without forcing anyone to learn them. You are selling a behavior change without asking for one—the user’s text-message habit is the entire UI.
+
+**How it works:**
+
+1. **Text start** — User texts “start” (or “start uber”) to your Twilio number; webhook opens a timer in Postgres, replies with confirmation in \<1s
+2. **Track** — Timer accumulates; auto-stop fires after 8 hrs to catch forgotten sessions; user can text “break” or “note ...” mid-stream
+3. **Categorize** — gpt-4o-mini classifies each session into a project bucket; ambiguous entries surface for one-tap confirmation in the dashboard
+4. **Invoice** — Sunday SMS summary with hours by project, earnings against rate, and a CSV/PDF link ready to attach to an invoice
+
+## Market Research
+
+SMS infrastructure has matured into a primary commerce channel at the same time the gig economy has scaled into a structural part of the U.S. workforce. The convergence is what makes this a now-or-never wedge:
+
+- **SMS marketing is a $12.6B industry in 2025**, with some forecasts projecting $38.4B by 2030 (Telnyx 2025 SMS report). The infrastructure cost to run a behavioral SMS product has fallen below the price point most side-hustlers will pay for it—a precondition that didn’t exist five years ago.
+- **84% of U.S. consumers are opted in to business SMS in 2025**, a 35-point jump since 2021 (SimpleTexting 2025 stats). The channel itself is no longer the problem; the question is whether you build a tool that respects it.
+- **SMS marketing spend grew 42% YoY in the Americas in 2025** (Dotdigital 2025 Benchmark), and 67% of businesses plan to increase SMS budgets this year (SimpleTexting). Capital is flowing to the rails; the productivity layer on top is largely uncontested.
+- **Reddit’s r/sidehustle alone has 3.1M members**, plus r/productivity (261K), r/Frugal (2.4M), and r/Entrepreneur (1.4M)—a combined 7M+ self-identified gig workers and solopreneurs actively trading recommendations on tracking tools (Ideabrowser community analysis on idea #1241). You are not creating demand; you are routing existing demand.
+- **The U.S. gig workforce sits at 64M+ workers** (BLS / McKinsey 2024 estimates) and the global freelance population is projected to cross 86M by 2027 (Statista). At a $9/mo entry price, capturing 0.05% of just the U.S. number is a ~$3.5M ARR business—below most VC bars, well above most bootstrap thresholds.
+- **21–30% of online revenue is now attributed to SMS** for businesses that have adopted the channel (SimpleTexting 2025). Side-hustlers are the consumer-side mirror image: the channel that already converts for them is where their tooling should live.
+
+## Competitive Landscape
+
+Time tracking is a crowded category, but every incumbent assumes a desktop user with a browser tab open. Nobody is selling SMS-native, sub-$10/month tracking to the gig population—which is the entire point:
+
+- **Toggl Track** — The category leader for freelancers—great desktop app, browser extensions, mobile clients. Beautiful product, but the entire UX assumes the user opens it. Pomodoro, idle detection, and reports are best-in-class once you remember to start the timer. Free / Starter $10/user/mo / Premium $20/user/mo (annual)
+- **Harvest** — Gold standard for agencies and teams that bill clients. Strong invoicing, expense tracking, integrations. Designed for desk workers—the mobile app is functional but not the primary surface, and pricing is per-seat from dollar one. Free (1 user, 2 projects) / Pro $11/user/mo
+- **Clockify** — Generous free tier (unlimited users), kiosk mode, decent reporting. Wins on price—but UX is heavy and the mobile experience expects you to navigate menus to start a timer. Built for managers measuring teams, not individuals dodging app fatigue. Free / Basic $3.99/user/mo / Standard $5.49 / Pro $7.99 / Enterprise $11.99 (annual)
+- **Daylio** — A close adjacency: SMS-adjacent “tap-to-track” mood tracker with millions of installs. Proves the audience for low-friction, habit-based tracking exists—but Daylio is mood-only, not billable hours, and still requires the app. Free / Premium ~$35.99/year
+- **Notion / Spreadsheets** — The default tool for the audience that hates dedicated apps. Endless template marketplaces. Real cost: every entry is manual, retroactive, and easy to forget. The friction the SMS approach eliminates is exactly what these tools impose. Notion Personal free; templates $9–$49 one-time. Sheets free.
+- **DIY: Twilio + iOS Shortcuts** — Technical users will tell you this is a weekend project they can build themselves. They are right—but they will not maintain it, and 99.9% of side-hustlers won’t configure Twilio. The product is the discipline of shipping the boring 80% (auth, billing, summaries, support). $0—but with a tax in setup time, debugging, and zero customer support
+
+**Your Opportunity**
+
+No incumbent will move down to a $9/mo SMS-only product—it cannibalizes their per-seat economics and dilutes their enterprise positioning. Win on three things they will not chase: (1) zero-install onboarding (text the number, you’re tracking), (2) gig-worker UX (one-handed, mid-task, no app), and (3) a price point that makes “why am I paying $20/user for Toggl when I’m the only user” the obvious switching pitch.
+
+## Business Model
+
+Subscription SaaS with a free tier that converts on usage limits, not features. The math to $1M ARR runs through roughly 9,000 paid users blended across Solo and Pro plans—or 12,000 Solo subs alone. SMS unit costs (Twilio + carrier fees) come in around $0.008–$0.015 per outbound message, and a typical user receives ~30 messages/month, so variable cost is well under $0.50/user. Even with the $9 entry price, blended gross margin lands at ~80%.
+
+- **Free** ($0) — Up to 5 sessions/month, weekly summary by SMS, 1 hourly rate—the lead-gen wedge
+- **Solo** ($9/mo) — Unlimited sessions, AI auto-categorization, multiple project rates, CSV export, monthly invoice helper
+- **Pro** ($19/mo) — Everything in Solo + Stripe-powered invoicing, multi-project dashboards, expense tracking, priority SMS routing
+
+Backend offers extend the ladder: a $39/mo Agency plan (3 seats, shared client roster, branded invoices) and an annual prepay ($79/year) that removes friction for the “I just want to pay once” segment of side-hustlers who hate recurring charges. Workshop / accountability cohorts ($49/quarter, optional) keep retention high in the brutal first 90 days when most habit-based tools churn.
+
+**Unit Economics**
+
+- **$30** — Target CAC
+- **$12/mo** — Avg. Revenue / User
+- **~80%** — Gross Margin
+- **~$115** — LTV (12-mo)
+
+## Recommended Tech Stack
+
+Optimize for inbound webhook → state machine → Postgres → outbound SMS in well under a second. The hard part is not the AI; it is reliable command parsing, idempotent timer state, and a Sunday cron that never fails silently.
+
+- **Next.js 14 + Vercel** — App Router for the dashboard, Edge runtime for the Twilio webhook, Vercel Cron for the Sunday summary job. One repo, zero infra babysitting.
+- **Twilio (Programmable Messaging)** — Buy a long-code or short-code, point its inbound webhook at `/api/sms`, send replies via the REST API. A2P 10DLC registration is mandatory in the U.S.—factor in 1–3 days.
+- **Supabase (Auth + Postgres)** — Tables: users (phone, rate, timezone), projects, sessions (start_at, end_at, project_id, note, source: ‘sms’|‘web’), summaries. Row-level security keyed on phone—privacy is non-negotiable here.
+- **OpenAI gpt-4o-mini** — Two thin prompts: (1) parse free-form commands (“started client work at Starbucks”) into a structured intent, (2) classify ambiguous sessions into the user’s existing project taxonomy with a confidence score.
+- **Stripe Billing** — Free / Solo / Pro tiers + an annual prepay product. Customer portal for self-serve plan changes; metered overages on free-tier users who exceed 5 sessions/month nudge upgrade.
+- **Vercel Cron + Inngest (optional)** — Vercel Cron for the Sunday summary fan-out and the 8-hour auto-stop sweep. If you outgrow it (queue depth, retries), drop in Inngest—same code, durable execution.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “TextTrack.” Provision Supabase with these tables: users (id, phone UNIQUE, email, timezone TEXT default ‘UTC’, default_rate_cents INT, plan TEXT default ‘free’), projects (id, user_id, name, rate_cents INT, color TEXT), sessions (id, user_id, project_id, started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, note TEXT, source TEXT CHECK source IN (‘sms’,‘web’), confidence FLOAT), summaries (id, user_id, week_start, total_seconds, total_cents, csv_url, sent_at). Enable row-level security so each user can only read/write rows where user_id matches their auth.uid(). Wire Stripe with three products (Free, Solo $9, Pro $19) plus a $79/year annual SKU. Add env vars TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, OPENAI_API_KEY. Install the Twilio Node SDK and the Vercel AI SDK.
+```
+
+**2. SMS Command Parser + Timer State Machine**
+
+```text
+Build POST /api/sms as a Vercel Edge route. Validate the inbound Twilio signature. Look up the user by From phone number; if missing, reply with a signup link and exit. Parse the Body with a small command grammar first (regex: ^(start|stop|break|rate|note|status)( .*)?$); if it doesn’t match, fall through to gpt-4o-mini with a strict JSON schema: { intent: "start"|"stop"|"break"|"set_rate"|"note"|"status"|"unknown", project_hint?: string, rate_cents?: number, note?: string, confidence: number }. State rules: start opens a session if no open session exists, otherwise replies “already tracking  for X min”; stop closes the open session and replies with elapsed time + earnings against rate; break inserts a paused gap; rate updates user.default_rate_cents; note appends to the most recent session. Auto-stop any session older than 8 hours via a cron sweep. Reply via TwiML in <1s; do heavy work (categorization) in a background fetch. Persist every inbound and outbound message to a messages table for audit.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for TextTrack. Hero headline: “Track every billable hour with two text messages.” Sub: “Text ‘start’ when work begins, ‘stop’ when it ends. We do the math. You send the invoice.” Sections: live demo (a fake phone screen showing a real SMS exchange that animates on scroll), problem (gig workers undercount hours because every existing tracker assumes a desk), how it works (4 steps with icons matching the page’s solution section), pricing (Free / Solo $9 / Pro $19) anchored against a Toggl $20/user/mo callout, FAQ covering carrier compliance (A2P 10DLC), accuracy of auto-categorization, and data privacy. Use the Geist font, off-white #fcfaf7 background, near-black accents, generous whitespace. Primary CTA: “Text START to  to begin” with a fallback email-capture form.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for TextTrack: a wordmark and a small icon mark suggesting “a single text bubble with a clock.” Pick a primary near-black, a single emerald accent (#10b981 or similar), and two warm neutrals. Type system: Geist for UI and headings, IBM Plex Mono for code/timer values. Provide hex codes, font weights, a 6-icon usage set (start, stop, break, rate, project, export), and three voice rules: never moralize about productivity, always show earnings alongside hours, write SMS replies under 160 chars when possible. Output as a one-page brand sheet plus three sample SMS-confirmation copy variants.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #1241 and the public research it cites (May 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [SimpleTexting — 2025 Texting and SMS Marketing Statistics (84% opt-in, 67% budget growth)](https://simpletexting.com/blog/2025-texting-and-sms-marketing-statistics/)
+- [Telnyx — State of SMS Marketing 2025 ($12.6B by 2025, $38.4B by 2030)](https://telnyx.com/resources/state-of-sms-marketing-2025-trends-growth-and-opportunities)
+- [Dotdigital 2025 Benchmark Report — SMS marketing growth 42% YoY in the Americas](https://www.businesswire.com/news/home/20250128617838/en/SMS-Marketing-Soars-42-Amongst-Marketers-in-the-Americas-Outpacing-Global-Trends-Dotdigitals-2025-Benchmark-Report-Reveals)
+- [Infobip — SMS Marketing Statistics (channel adoption, ROI signals)](https://www.infobip.com/blog/sms-marketing-statistics)
+- [TxtCart — 2024/2025 Text Marketing Statistics](https://txtcartapp.com/blog/text-marketing-statistics/)
+- [Yotpo — Ecommerce SMS Marketing Guide (channel revenue mix)](https://www.yotpo.com/blog/ecommerce-sms-marketing-guide/)
+- [Mailchimp — SMS Marketing Trends 2025 (AI personalization signals)](https://mailchimp.com/resources/sms-marketing-trends/)
+- [Toggl Track — pricing reference ($10–$20/user/mo)](https://www.toggl.com/track/pricing/)
+- [Clockify — pricing reference (Basic $3.99 to Enterprise $11.99/user/mo)](https://clockify.me/pricing)
+- [Harvest — pricing reference ($11/user/mo Pro)](https://www.getharvest.com/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 1241): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, execution_plan.
