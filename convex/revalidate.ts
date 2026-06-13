@@ -13,6 +13,16 @@ import { internalAction } from "./_generated/server";
  * every fetch is wrapped in try/catch and errors are only logged. If
  * REVALIDATE_SECRET is unset (e.g. local dev), the action no-ops.
  */
+
+// Convex Actions expose `process.env` at runtime, but convex/tsconfig.json
+// restricts lib to ES2023+dom (no @types/node), so we declare the shape we
+// use locally. Set both env vars via `npx convex env set <NAME> <VALUE>`.
+declare const process: {
+  env: {
+    REVALIDATE_SECRET?: string;
+    SITE_URL?: string;
+  };
+};
 export const run = internalAction({
   args: { tags: v.array(v.string()) },
   returns: v.null(),
