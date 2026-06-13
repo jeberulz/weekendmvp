@@ -1,13 +1,13 @@
-# ship·able — 13-Day Launch Email Campaign
+# ship·able · 13-Day Launch Email Campaign
 
-**Workshop:** ship·able — build your MVP live in 90 minutes
+**Workshop:** ship·able · build your MVP live in 90 minutes
 **Window:** Mon **Jun 15** → Sat **Jun 27, 2026** (workshop day) · 1 email/day
 **Goal:** Sell the $9 ship·able seat
 **Creator/sender:** John Iseghohi
-**Seat link:** `weekendmvp.app/shipable`
+**Seat link:** `weekendmvp.app/shipable` (rewrites to `shipable.html`)
 
-> **Throughline (every email returns here):** *Your idea isn't worth nothing because it's bad — it's worth nothing because it's still in your head.*
-> **The promise:** 90 minutes, live, $9 → you walk out with a **real MVP at a live URL**, ready to send to your first 5 users this weekend.
+> **Throughline (every email returns here):** *Your idea isn't worth nothing because it's bad. It's worth nothing because it's still in your head.*
+> **The promise:** 90 minutes, live, $9. You walk out with a **real MVP at a live URL**, ready to send to your first 5 users this weekend.
 
 ---
 
@@ -16,14 +16,41 @@
 - Each email has **2 subject lines (A/B)**, **preview text**, a **profanity level**, and the **body**.
 - **Profanity is mixed on purpose** and ramps with urgency: `CLEAN` early (belief/value), `MILD` through the middle (objections), `FULL-SEND` for the final 48 hours. Swap any level if it's off-brand for a given send.
 - Replace bracketed placeholders before sending: `[First Name]`, `[X]` (seat counts), the Day 6 real case study, final time/timezone, and the seat/checkout URL.
-- **Tie-in:** set the landing page's `[[WORKSHOP_DATE_ISO]]` to **Sat Jun 27** so the countdown matches.
+- **Voice rule:** zero em-dashes (`—`) anywhere. Use periods, commas, or restructure. (Matches the site voice on `shipable.html`.)
+- **Tie-in:** the landing page `[[WORKSHOP_DATE_ISO]]` is set to `2026-06-27T12:00:00+01:00`, so the countdown matches the schedule below.
+
+### Schedule (single source of truth)
+
+- **Primary:** Saturday, June 27, 2026 · **12:00 PM BST** (UK)
+- **Secondary (drop these into Day 3 + Day 13b):** 7:00 AM EDT (New York) · 4:00 AM PDT (LA) · 12:00 PM WAT (Lagos)
+- **Format:** 90 minutes live on Zoom + open Q&A. Replay included for everyone who buys.
 
 ### Logistics / deliverability
 
-- **You run a twice-daily newsletter** — pause it (recommended) or run this as a separate stream so subscribers aren't getting 3 emails/day.
-- **Suppress buyers** the instant they grab a seat — nobody who paid should keep getting pitched.
-- Add a one-click **"mute the workshop emails"** link so people can opt out of *this campaign* without unsubscribing from the list.
+- **Pause the twice-daily newsletter** for the full 13 days. Resume on Sunday Jun 28 with a single "post-workshop" newsletter (replay link for non-buyers, momentum upsell for attendees).
+- **Suppress paid buyers from broadcasts** so nobody who paid keeps getting pitched (see **Beehiiv audience filter** section at the bottom).
+- Add a one-click **"mute the workshop emails"** link on every email so people can opt out of *this campaign* without unsubscribing from the list.
 - One consistent **morning send slot**. Day 13 gets an optional **second send ~60 min before go-live** (highest-converting email of the launch).
+
+### Seat-count placeholders (`[X]`)
+
+Days 3, 10, 12, and 13 reference live seat counts. Pick one approach for the whole campaign:
+
+1. **Real numbers, updated daily** (most credible). Pull the count from Stripe each morning before the send.
+2. **Round-number floors you'll definitely exceed** (e.g. "50+ builders are already in"). Safer if you don't want to update daily.
+3. **Cap framing instead** (e.g. "seats capped at 100, room's filling"). Skips the count entirely.
+
+Whatever you choose, **Day 13's "[350+] builders" must be a realistic number**. If you've sold 60 seats, do not claim 350.
+
+### List segmentation (protect deliverability)
+
+13 daily emails to a cold list will damage your domain reputation. Segment in Beehiiv:
+
+| Segment | Send |
+|---|---|
+| Engaged (last 30-day openers) | All 13 |
+| Semi-engaged (30–90 days) | Days 1, 3, 7, 10, 12, 13 (6 emails) |
+| Cold (90+ days, unopened) | Days 3, 12, 13 only (3 emails: announce + 48hr + final) |
 
 ---
 
@@ -48,9 +75,9 @@
 
 ---
 
-# Day 1 — Belief opener
+# Day 1 · Belief opener
 **Profanity:** CLEAN
-**Subject A:** the idea you keep not building
+**Subject A:** the idea you keep not building   *(lead with this)*
 **Subject B:** you've had this idea for how long now?
 **Preview:** It's not a lack of time. I'll prove it this week.
 
@@ -66,13 +93,13 @@ But it's still not real.
 
 There's no link. Nothing anyone can open. Nothing anyone can use.
 
-And every time someone else launches something — something you know you could've built — it stings a little.
+And every time someone else launches something, something you know you could've built, it stings a little.
 
 That sting isn't jealousy.
 
 It's your own idea, tapping you on the shoulder, asking why it's still stuck in your head.
 
-Here's the uncomfortable truth: an idea in your head is worth exactly nothing. Not because it's a bad idea — because nobody can touch it.
+Here's the uncomfortable truth: an idea in your head is worth exactly nothing. Not because it's a bad idea. Because nobody can touch it.
 
 I've spent years helping people get the thing out of their head and onto the internet. Fast. In a weekend. Sometimes in an afternoon.
 
@@ -86,9 +113,11 @@ I read every one.
 
 John
 
+P.S. Your idea isn't worth nothing because it's bad. It's worth nothing because it's still in your head. That's the whole reason this week exists.
+
 ---
 
-# Day 2 — The reframe
+# Day 2 · The reframe
 **Profanity:** CLEAN
 **Subject A:** more followers won't fix this
 **Subject B:** the lie that's keeping your idea in your head
@@ -112,9 +141,9 @@ Every one of those feels true.
 
 Every one of those is a stall.
 
-Here's what I've watched happen, over and over: people wait until they have *more* — more time, more skill, more followers — and the idea just… ages. Quietly. In a folder. In their head.
+Here's what I've watched happen, over and over. People wait until they have *more*. More time, more skill, more followers. And the idea just… ages. Quietly. In a folder. In their head.
 
-Meanwhile someone with half the skill and a quarter of the audience ships the smaller, uglier version this weekend — and gets their first users.
+Meanwhile someone with half the skill and a quarter of the audience ships the smaller, uglier version this weekend. And gets their first users.
 
 The difference between them and you isn't more.
 
@@ -124,7 +153,7 @@ One small, real, live version of the idea. Out in the world where people can act
 
 That's the whole game. And it's a lot closer than you think.
 
-Tomorrow I'll show you exactly how we're going to get you there — in 90 minutes, live.
+Tomorrow I'll show you exactly how we're going to get you there. In 90 minutes, live.
 
 Keep an eye on your inbox.
 
@@ -132,7 +161,7 @@ John
 
 ---
 
-# Day 3 — Announcement
+# Day 3 · Announcement
 **Profanity:** MILD
 **Subject A:** I'm doing something I never do
 **Subject B:** this Saturday, you ship
@@ -146,7 +175,7 @@ I'm running a live workshop. One time. Open to everyone on this list.
 
 It's called **ship·able**, and the name kind of gives it away.
 
-In 90 minutes, I'll help you take the idea that's been rotting in your head — the one you keep "researching" — and turn it into a real, live thing people can actually click.
+In 90 minutes, I'll help you take the idea that's been rotting in your head, the one you keep "researching", and turn it into a real, live thing people can actually click.
 
 Not a someday plan. A URL. This weekend.
 
@@ -154,19 +183,20 @@ Because here's what I've learned after years of building weekend MVPs:
 
 The product you want to launch isn't on the other side of more time, more skill, or finally learning to code.
 
-It's on the other side of **one shipped thing.** And that's the whole point of this workshop.
+It's on the other side of **one shipped thing.** That's the whole point of this workshop.
 
 Here's the deets 👇
 
-**When:** Saturday, June 27th, 11am ET
+**When:** Saturday, June 27 · **12:00 PM BST** (7:00 AM EDT · 4:00 AM PDT · 12:00 PM WAT)
 **Where:** Live on Zoom, with me
-**Can't make it?** Replay's included.
+**Length:** 90 minutes + Q&A
+**Can't make it live?** Replay's included.
 
 **→ Save my seat ($9): weekendmvp.app/shipable**
 
 One thing so we're on the same page:
 
-I'm not running this as a faceless webinar. I want to see your screen, unstick you live, and watch you hit deploy. That means seats are capped — and we're already [X]% full.
+I'm not running this as a faceless webinar. I want to see your screen, unstick you live, and watch you hit deploy. That means seats are capped, and we're already [X]% full.
 
 So "no pressure" would be a lie.
 
@@ -179,7 +209,7 @@ John
 
 ---
 
-# Day 4 — "Not technical" objection
+# Day 4 · "Not technical" objection
 **Profanity:** MILD
 **Subject A:** but you're not technical. good.
 **Subject B:** "i don't code" is not the problem you think it is
@@ -187,7 +217,7 @@ John
 
 [First Name],
 
-Yesterday I told you about ship·able — the live workshop where you walk out with a real MVP this Saturday.
+Yesterday I told you about ship·able, the live workshop where you walk out with a real MVP this Saturday.
 
 And I already know the thought that popped into some of your heads:
 
@@ -195,11 +225,13 @@ And I already know the thought that popped into some of your heads:
 
 Good. Genuinely.
 
-Because here's what's changed: you don't write the code anymore. You direct it.
+Because here's what's changed: **you don't write the code anymore. You direct it.**
+
+**→ Grab my seat: weekendmvp.app/shipable**
 
 In the workshop, we build live with AI tools. You describe what you want, it scaffolds it, you tweak it, you deploy it. I'm on the screen with you the whole time.
 
-The non-technical people are often the ones who ship fastest — because they're not precious about it. They just want the thing to exist.
+The non-technical people are often the ones who ship fastest. They're not precious about it. They just want the thing to exist.
 
 I've watched people who'd never opened a code editor put a working app on the internet in under 90 minutes.
 
@@ -216,7 +248,7 @@ John
 
 ---
 
-# Day 5 — "No time" / scope objection
+# Day 5 · "No time" / scope objection
 **Profanity:** CLEAN
 **Subject A:** this fits in a Saturday morning
 **Subject B:** you don't need a quarter. you need a weekend.
@@ -228,7 +260,7 @@ The number one reason good ideas die:
 
 They were scoped too big to ever finish.
 
-You imagined the whole thing — accounts, dashboards, payments, the mobile app, the AI feature — and the size of it quietly talked you into doing nothing.
+You imagined the whole thing. Accounts, dashboards, payments, the mobile app, the AI feature. And the size of it quietly talked you into doing nothing.
 
 That's not an idea problem. That's a scoping problem.
 
@@ -238,7 +270,7 @@ On Saturday, that's exactly what we do together:
 
 → We take your big idea and cut it down to the one thing one person will use on day one.
 → We scope it so it fits in a weekend, not a quarter.
-→ We build it and put it live — on the call.
+→ We build it and put it live. On the call.
 
 You come into the weekend with an idea. You leave it with a link.
 
@@ -251,17 +283,19 @@ $9 and 90 minutes.
 Have a good weekend either way,
 John
 
+P.S. Your idea isn't stuck because it's bad. It's stuck because it's still in your head. Saturday fixes that.
+
 ---
 
-# Day 6 — Proof / story
+# Day 6 · Proof / story
 **Profanity:** MILD
 **Subject A:** he sat on it for a year. shipped it in a night.
 **Subject B:** the "i'm not a real founder" guy
 **Preview:** Same skill you've got. He just finally shipped.
 
-> ⚠️ Swap in a **real** builder win — keep the shape, lose the invention. Don't ship a fabricated testimonial.
+> ⚠️ Swap in a **real** builder win. Keep the shape, lose the invention. Don't ship a fabricated testimonial. If you don't have a real story yet, drop Day 6 and let Day 7 do the work.
 
-[First Name] —
+[First Name],
 
 Quick story.
 
@@ -290,7 +324,7 @@ John
 
 ---
 
-# Day 7 — The $9 math
+# Day 7 · The $9 math
 **Profanity:** CLEAN
 **Subject A:** nine dollars. here's the math.
 **Subject B:** what $9 actually gets you
@@ -300,20 +334,22 @@ John
 
 Let's just put the numbers on the table, because $9 makes some people suspicious.
 
-Here's everything in the seat:
+Here's everything in the seat, priced the way I'd normally price each piece:
 
-— The 90-minute live build workshop with me
-— The Ship Sheet you fill in live (walk out with a finished build plan)
-— Lifetime replay
-— Your 48-hour build plan, scoped to ship by Sunday
-— Bonus (live only): the AI MVP Builder prompt pack
-— Bonus (live only): the full Weekend MVP Starter Kit
-
-Priced the way people normally price this stuff, that's a few hundred dollars.
+| What | Value |
+|---|---|
+| 90-minute live build workshop with me | $97 |
+| The Ship Sheet you fill in live (walk out with a finished build plan) | $47 |
+| Lifetime replay | $47 |
+| 48-Hour Build Plan, scoped to ship by Sunday | $199 |
+| Bonus (live only): AI MVP Builder prompt pack | $199 |
+| Bonus (live only): Weekend MVP Starter Kit | $149 |
+| **Total value** | **$738** |
+| **You pay** | **$9** |
 
 You pay nine.
 
-Why so cheap? Because the goal isn't to make money on the ticket. The goal is to get you to actually show up and ship — because once you've shipped one thing, you never go back to leaving ideas in your head.
+Why so cheap? Because the goal isn't to make money on the ticket. The goal is to get you to actually show up and ship. Because once you've shipped one thing, you never go back to leaving ideas in your head.
 
 Nine dollars. Less than the coffee you're probably holding right now.
 
@@ -322,9 +358,11 @@ Nine dollars. Less than the coffee you're probably holding right now.
 See you Saturday,
 John
 
+P.S. If for any reason you hate it, hit reply and I'll refund you. No questions, no friction. At nine bucks, the only risk is showing up.
+
 ---
 
-# Day 8 — What you walk out with
+# Day 8 · What you walk out with
 **Profanity:** MILD
 **Subject A:** what you actually walk out with
 **Subject B:** picture Saturday, 90 minutes later
@@ -340,7 +378,7 @@ Here's the actual state you're in 90 minutes after we start on Saturday:
 
 You have a **live URL.** A real one. You can open it on your phone right now, and so can anyone you send it to.
 
-You have the **one screen that proves your idea** — built, deployed, working.
+You have the **one screen that proves your idea.** Built, deployed, working.
 
 You have a way to **capture your first users**, so you find out if people want this *before* you pour a weekend into the full thing.
 
@@ -352,7 +390,7 @@ Three moves get you there:
 
 1. We sharpen the idea to one buyer, one problem.
 2. We cut it to the version you can ship this weekend.
-3. We build it and put it live — on the call.
+3. We build it and put it live. On the call.
 
 Idea in. Link out.
 
@@ -363,9 +401,11 @@ $9, live on Zoom, replay included.
 See you in there,
 John
 
+P.S. The idea in your head is worth nothing until someone can open it. Saturday is the day you make that true.
+
 ---
 
-# Day 9 — "No idea yet" objection
+# Day 9 · "No idea yet" objection
 **Profanity:** MILD
 **Subject A:** don't have an idea? perfect.
 **Subject B:** "but i don't know what to build"
@@ -377,18 +417,18 @@ A few people have replied with some version of:
 
 "I want in, but I don't actually have an idea yet."
 
-Perfect. You're not behind — you're early, and that's an advantage.
+Perfect. You're not behind. You're early, and that's an advantage.
 
 Two ways this goes on Saturday:
 
 1. You bring a half-formed idea, and we sharpen it together into something you can ship that day.
-2. You don't have one — so you grab one of the **78 ideas** we've already researched and broken down on the site, and you build that.
+2. You don't have one, so you grab one of the **78 ideas** we've already researched and broken down on the site, and you build that.
 
 Either way, you walk out with a live MVP.
 
 The idea doesn't have to be yours and original and perfect. It has to be small, real, and shipped.
 
-That's the muscle we're building: taking an idea — *any* idea — and putting it on the internet fast. Once you've done it once, you'll do it again and again.
+That's the muscle we're building: taking an idea (any idea) and putting it on the internet fast. Once you've done it once, you'll do it again. And again.
 
 "No idea" isn't a reason to skip this. It's a reason to come.
 
@@ -401,11 +441,11 @@ John
 
 ---
 
-# Day 10 — Momentum + capped seats
+# Day 10 · Momentum + capped seats
 **Profanity:** MILD
 **Subject A:** [X] builders are already in
 **Subject B:** why i'm capping the seats
-**Preview:** This isn't a webinar. That's the point — and the catch.
+**Preview:** This isn't a webinar. That's the point, and the catch.
 
 [First Name],
 
@@ -421,18 +461,20 @@ That kind of interaction only works with a capped room.
 
 Which means seats are limited, and they're going.
 
-I'm not going to fake a countdown or invent scarcity. The scarcity is just real: when the room's full, it's full. And when we go live, the doors shut.
+I'm not going to fake a countdown or invent scarcity. The scarcity is just real. When the room's full, it's full. When we go live, the doors shut.
 
-If you've been "yeah, I'll probably do that" about Saturday — this is the nudge to stop probably-ing and grab the seat.
+If you've been "yeah, I'll probably do that" about Saturday, this is the nudge to stop probably-ing and grab the seat.
 
 **→ Grab my seat: weekendmvp.app/shipable**
 
 See you in there,
 John
 
+P.S. Capped doesn't mean rushed. It means I can actually see what you're building. That's worth a lot more than nine bucks.
+
 ---
 
-# Day 11 — Cost of not shipping
+# Day 11 · Cost of not shipping
 **Profanity:** CLEAN
 **Subject A:** this time next year
 **Subject B:** the most expensive thing you're doing is nothing
@@ -444,26 +486,30 @@ I want to play out two versions of this time next year.
 
 **Version one:**
 
-The idea's still in your head. You talked about it a few more times. You researched a couple more tools. Maybe you started it once and stalled. Someone else launched something close to it and you felt that familiar sting. It's June again, and the idea is exactly where it is right now — nowhere.
+The idea's still in your head. You talked about it a few more times. You researched a couple more tools. Maybe you started it once and stalled. Someone else launched something close to it and you felt that familiar sting. It's June again, and the idea is exactly where it is right now. Nowhere.
 
 **Version two:**
 
 You spent $9 and one Saturday morning this June and put the first version live. It wasn't perfect. It didn't need to be. A few people used it. That tiny bit of proof gave you the nerve to build the next thing, and the next. You became someone who ships.
 
+**→ Be version two: weekendmvp.app/shipable**
+
 The gap between those two years isn't talent. It isn't time. It isn't your follower count.
 
 It's one Saturday. The one coming up.
 
-The idea will still be there next year if you want it to be. The only question is whether it'll still be in your head — or finally on the internet.
+The idea will still be there next year if you want it to be. The only question is whether it'll still be in your head, or finally on the internet.
 
 **→ Grab my seat: weekendmvp.app/shipable**
 
 See you Saturday,
 John
 
+P.S. Your idea isn't worth nothing because it's bad. It's worth nothing because it's still in your head. Saturday is when that stops being true.
+
 ---
 
-# Day 12 — 48-hour push
+# Day 12 · 48-hour push
 **Profanity:** FULL-SEND
 **Subject A:** 48 hours, then the doors shut
 **Subject B:** read this if your idea's still in your head
@@ -473,13 +519,13 @@ John
 
 Quick one. We're on the clock.
 
-This Saturday I'm running a live workshop to get your idea shipped. Actually shipped — a real URL, in 90 minutes.
+This Saturday I'm running a live workshop to get your idea shipped. Actually shipped. A real URL, in 90 minutes.
 
 [X] builders are already in.
 
 Doors close in just under 48 hours. The second we go live.
 
-Want a seat? → weekendmvp.app/shipable
+**→ Want a seat? weekendmvp.app/shipable**
 
 Still on the fence? Here's the short version of why you shouldn't be.
 
@@ -497,7 +543,7 @@ And an idea in your head pays exactly fuck all. It just sits there, nagging you 
 
 Here's the test:
 
-If I asked you right now to show me your idea — live, a link I can open — you couldn't.
+If I asked you right now to show me your idea, live, a link I can open, you couldn't.
 
 Not because the idea's bad. Not because you're not smart enough.
 
@@ -515,7 +561,7 @@ Live on Zoom, replay's yours if you can't make it. Either way you're covered.
 
 [X] people already decided this was worth a Saturday morning.
 
-You've got a real idea going to waste — because nobody's ever made you sit down and ship the first version.
+You've got a real idea going to waste because nobody's ever made you sit down and ship the first version.
 
 This is the morning you finally do.
 
@@ -528,7 +574,7 @@ John
 
 ---
 
-# Day 13 — Day-of collar-grab
+# Day 13 · Day-of collar-grab
 **Profanity:** FULL-SEND
 **Subject A:** shoulda, woulda, shipped
 **Subject B:** doors close when we go live
@@ -538,9 +584,9 @@ I just sent the final reminder to everyone who's in.
 
 We go live in just under 24 hours. With or without you.
 
-Grab your seat, if you haven't → weekendmvp.app/shipable
+**→ Grab your seat: weekendmvp.app/shipable**
 
-The moment we start, the doors shut. No "can I still sneak in" emails — I genuinely won't see them. I'll be heads-down, live, with the [350+] builders lined up to finally put their idea on the internet.
+The moment we start, the doors shut. No "can I still sneak in" emails. I genuinely won't see them. I'll be heads-down, live, with the [X] builders lined up to finally put their idea on the internet.
 
 So this is me grabbing you by the collar one last time.
 
@@ -568,6 +614,8 @@ You show up Saturday, you walk out with a live MVP. One link. Real. Ready to sen
 
 Not in a few months once you've "thought about it." This week.
 
+**→ Grab your seat: weekendmvp.app/shipable**
+
 And the whole thing costs nine bucks.
 
 Nine. Less than the coffee you'll sip while you build it.
@@ -585,10 +633,10 @@ John
 
 ---
 
-# Day 13b — Last call (optional, ~60 min before go-live)
+# Day 13b · Last call (optional, ~60 min before go-live)
 **Profanity:** MILD
 **Subject A:** we're live in 60 minutes (last seats)
-**Subject B:** last call — doors shut in an hour
+**Subject B:** last call. doors shut in an hour.
 **Preview:** This is the final email. Then I'm offline and building with everyone.
 
 [First Name].
@@ -599,7 +647,7 @@ That's how long until we go live and the doors shut for good.
 
 This is the last email you'll get from me about this. After I hit send, I'm closing the inbox and opening Zoom with everyone who decided this was the Saturday.
 
-If you've read every email this week and still haven't grabbed your seat — this is it. Nine bucks. Sixty minutes. Then it's gone, and the idea goes back in the drawer.
+If you've read every email this week and still haven't grabbed your seat, this is it. Nine bucks. Sixty minutes. Then it's gone, and the idea goes back in the drawer.
 
 **→ Grab my seat: weekendmvp.app/shipable**
 
@@ -612,6 +660,51 @@ John
 
 ## Post-workshop (optional follow-ups, not part of the 13)
 
-- **Attendees:** "you shipped — here's how to keep the momentum" → upsell a sprint / Starter Kit deep-dive.
-- **No-shows (replay):** "you missed it, but the replay's in — build it tonight."
+- **Attendees:** "you shipped. here's how to keep the momentum" → upsell a sprint / Starter Kit deep-dive.
+- **No-shows (replay):** "you missed it, but the replay's in. build it tonight."
 - **Non-buyers:** "doors are closed, but here's the free 3-screen framework" → back to the newsletter nurture.
+
+---
+
+## Beehiiv audience filter setup
+
+These broadcasts live alongside the **Ship.able Workshop** automation (`aut_b55c6b1e-330b-4768-b44a-30e9e07ae92a`). Without filtering, anyone who clicks through a broadcast and submits the seat form on `shipable.html` gets enrolled in the automation AND keeps receiving the broadcasts. That's overlap and looks spammy. Set up one filter, use it on every send.
+
+### One-time setup
+
+1. In Beehiiv → **Segments → New segment**
+2. Name: `Ship·able · in automation` (or similar)
+3. Filter rules: subscribers where **all** of the following are true:
+   - `UTM Campaign` equals `shipable-workshop`
+4. Save.
+
+This segment captures both waitlist signups (`utm_medium=waitlist`) and paid customers (`utm_medium=paid`) since both flows share the same campaign.
+
+### Send-time filter (apply on every Day 1–13 broadcast)
+
+In the broadcast audience builder:
+
+- **Send to:** All active subscribers (or your engaged segment per the deliverability table above)
+- **Exclude:** `Ship·able · in automation`
+
+That's it. The automation now owns anyone who's already raised their hand. The broadcasts go only to the cold list who hasn't shown intent yet.
+
+### Optional: paid-buyer suppression segment (defense-in-depth)
+
+If you want to be extra safe and never pitch a paid customer:
+
+1. Beehiiv → **Segments → New segment**
+2. Name: `Ship·able · paid customers`
+3. Filter: `UTM Medium` equals `paid` AND `UTM Campaign` equals `shipable-workshop`
+4. Save.
+
+Then exclude this segment in addition to the first one. The `in automation` segment already covers it, but two layers of defense beats one.
+
+### Sanity check before Day 1
+
+Right before Mon Jun 15, do this in Beehiiv:
+
+1. Open the segment `Ship·able · in automation`.
+2. Note the count (should be small if nobody's hit the page yet).
+3. Run a test send of Day 1 to your own email, confirm you're excluded if you're in the segment.
+4. If the count is zero, all good. If non-zero, those subscribers will *not* get the broadcast.
