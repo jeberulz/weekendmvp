@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import {
@@ -8,12 +7,12 @@ import {
   FileText,
   Headphones,
   Library,
-  Lightbulb,
   Receipt,
   Wrench,
 } from "lucide-react";
 
 import { JsonLd } from "@/components/primitives/JsonLd";
+import { HubRelatedTiles } from "@/components/hubs/HubRelatedTiles";
 import {
   HubBreadcrumb,
   HubHero,
@@ -380,48 +379,21 @@ async function CachedSolveHub({ slug }: { slug: string }) {
       </section>
 
       {/* Related Problems */}
-      <section className="mb-16" aria-labelledby="related-heading">
-        <h2
-          id="related-heading"
-          className="text-2xl font-medium text-white mb-8"
-        >
-          Related Problems to Solve
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {PROBLEM_SLUGS.filter((s) => s !== slug).map((other) => {
-            const OtherIcon = PROBLEM_PAGES[other].icon;
-            return (
-              <Link
-                key={other}
-                href={`/solve/${other}`}
-                className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
-              >
-                <OtherIcon
-                  size={24}
-                  className="text-neutral-400 mb-2 mx-auto"
-                  aria-hidden="true"
-                />
-                <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-                  {PROBLEM_PAGES[other].shortTitle.replace("Automate ", "")}
-                </p>
-              </Link>
-            );
-          })}
-          <Link
-            href="/startup-ideas"
-            className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
-          >
-            <Lightbulb
-              size={24}
-              className="text-neutral-400 mb-2 mx-auto"
-              aria-hidden="true"
-            />
-            <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-              All Ideas
-            </p>
-          </Link>
-        </div>
-      </section>
+      <HubRelatedTiles
+        title="Related Problems to Solve"
+        headingId="related-heading"
+        className="mt-0 mb-16"
+        items={PROBLEM_SLUGS.filter((s) => s !== slug).map((other) => ({
+          slug: other,
+          label: PROBLEM_PAGES[other].shortTitle.replace("Automate ", ""),
+          href: `/solve/${other}`,
+          icon: PROBLEM_PAGES[other].icon,
+          iconClassName: "text-neutral-400",
+        }))}
+        allHref="/startup-ideas"
+        allLabel="All Ideas"
+        columnsLgClassName="lg:grid-cols-5"
+      />
 
       <HubCta
         heading={`Ready to solve ${page.shortTitle.replace("Automate ", "").toLowerCase()}?`}

@@ -9,7 +9,6 @@ import {
   Clock,
   Code2,
   HeartHandshake,
-  LayoutGrid,
   Lightbulb,
   MessageCircle,
   Palette,
@@ -25,6 +24,7 @@ import {
 
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
+import { HubRelatedTiles } from "@/components/hubs/HubRelatedTiles";
 import {
   HubBreadcrumb,
   HubChip,
@@ -590,48 +590,22 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
       ) : null}
 
       {/* Other Audiences */}
-      <section className="mt-24" aria-labelledby="other-audiences-heading">
-        <h2
-          id="other-audiences-heading"
-          className="text-2xl font-medium text-white mb-8"
-        >
-          Ideas For Other Audiences
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {AUDIENCE_TILES.filter((tile) => tile.slug !== slug).map((tile) => {
-            const TileIcon = tile.icon;
-            return (
-              <Link
-                key={tile.slug}
-                href={`/ideas-for/${tile.slug}`}
-                className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
-              >
-                <TileIcon
-                  size={24}
-                  className={`${tile.iconClass} mb-2 mx-auto`}
-                  aria-hidden="true"
-                />
-                <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-                  {tile.label}
-                </p>
-              </Link>
-            );
-          })}
-          <Link
-            href="/startup-ideas"
-            className="group p-4 bg-white/5 border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
-          >
-            <LayoutGrid
-              size={24}
-              className="text-neutral-400 mb-2 mx-auto"
-              aria-hidden="true"
-            />
-            <p className="text-white text-sm font-medium group-hover:text-neutral-200 transition-colors">
-              All Ideas
-            </p>
-          </Link>
-        </div>
-      </section>
+      <HubRelatedTiles
+        title="Ideas For Other Audiences"
+        headingId="other-audiences-heading"
+        items={AUDIENCE_TILES.filter((tile) => tile.slug !== slug).map(
+          (tile) => ({
+            slug: tile.slug,
+            label: tile.label,
+            href: `/ideas-for/${tile.slug}`,
+            icon: tile.icon,
+            iconClassName: tile.iconClass,
+          }),
+        )}
+        allHref="/startup-ideas"
+        allLabel="All Ideas"
+        columnsLgClassName="lg:grid-cols-6"
+      />
 
       <HubCta
         heading="Ready to start building?"
