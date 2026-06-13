@@ -2,26 +2,30 @@
 
 ## Project Overview
 
-Weekend MVP is a static HTML/CSS/JS website for startup idea validation and the Weekend MVP Starter Kit. All pages must be accessible, performant, and follow consistent patterns.
+Weekend MVP is a **Next.js (App Router) + MDX + Convex** site for startup idea validation and the Weekend MVP Starter Kit. Pages are React Server Components; long-form content (ideas, articles, newsletters) is authored as MDX in `content/` and metadata lives in Convex + the `*/manifest.json` files. All pages must be accessible, performant, and follow consistent patterns.
 
 ### Local development
 
 | Goal | Command |
 |------|---------|
-| Static HTML only (fastest) | `npm run dev` — Python HTTP server on port **5173** |
-| Edge/API routes + rewrites (`/api/*`, `/ideas/today` → `ideas-today`) | `npm run vercel:dev` — Vercel dev on port **5173** (see [`vercel.json`](vercel.json)) |
+| App dev server | `npm run dev` — `next dev` (default port **3000**) |
+| Convex backend (run alongside dev) | `npm run convex:dev` — required for the ideas grid, hubs, and seeding |
+| Type check | `npm run typecheck` — `tsc --noEmit` |
+| Production build | `npm run build` — `next build` |
 
-**CSS:** Source file is [`src/input.css`](src/input.css). Production output is [`styles.css`](styles.css) (do not edit by hand). Run `npm run build:css` before deploy or after changing styles; use `npm run watch:css` in a second terminal while iterating. The site `build` script runs `build:css` so Vercel generates CSS on every deploy.
+**Styling:** Tailwind v4 via `@tailwindcss/postcss` (see [`postcss.config.mjs`](postcss.config.mjs)). Global styles live in [`app/globals.css`](app/globals.css); fonts are Geist (sans/mono). There is no hand-built CSS pipeline — do not edit compiled output.
 
-**After clone:** `npm ci` then `npm run build` to verify Tailwind output.
+**Content pipeline:** new ideas/articles are MDX in `content/` + an entry in `ideas/manifest.json` / `articles/manifest.json` (the metadata source of truth), then `npm run seed:convex` (→ Convex powers grids/hubs) and `npm run og:generate` (→ OG cards). The sitemap (`app/sitemap.ts`) and robots (`app/robots.ts`) are generated automatically — there is no static `sitemap.xml`/`robots.txt` to edit. Use the `/publish-idea`, `/publish-article`, and `/publish-programmatic` skills rather than authoring by hand.
 
-**QA (optional):** `npm run check:stylesheets` and `npm run check:links` print reports (exit 0). Set `STRICT=1` to fail the process when issues exist (e.g. CI gates).
+**After clone:** `npm ci`, then `npm run build` (and `npm run convex:dev` in a second terminal for backend-dependent pages).
 
 ---
 
 ## Accessibility Requirements (WCAG 2.1 AA)
 
 **Every page and component MUST follow these accessibility rules. Non-compliance is a bug.**
+
+> These rules apply to the React/JSX components in `app/` and `components/`, and to MDX content. The examples below are written in HTML for brevity — translate to JSX (`className`, `aria-hidden={true}`, etc.). The app uses **`lucide-react`** icons (e.g. `<X aria-hidden />`), not the `iconify-icon` web component shown in legacy snippets.
 
 ### Critical Requirements (Must Pass)
 
@@ -148,83 +152,39 @@ Always include this CSS for screen-reader-only text:
 
 ---
 
-## HTML Templates Checklist
+## New Page / Component Checklist
 
-When creating new HTML pages, verify:
+When creating a new route, component, or MDX page, verify:
 
 **Accessibility:**
 - [ ] All icon-only buttons have `aria-label`
-- [ ] All decorative icons have `aria-hidden="true"`
-- [ ] Logo divs have `role="img"` and `aria-label="Weekend MVP"`
+- [ ] All decorative icons have `aria-hidden`
+- [ ] Logo elements have `role="img"` and `aria-label="Weekend MVP"`
 - [ ] All form inputs have labels (visible or aria-label)
 - [ ] All images have alt attributes
 - [ ] External links have `rel="noopener noreferrer"` and sr-only text
 - [ ] Focus rings use visible opacity (white/40+ or black/30+)
 - [ ] Color-only indicators have supplementary text
-- [ ] `lang="en"` on html element
 - [ ] Heading hierarchy is logical (h1 > h2 > h3, no skipping)
 
-**SEO/AEO:**
-- [ ] Page added to `sitemap.xml`
-- [ ] `twitter:image` meta tag present
-- [ ] Canonical URL set
-- [ ] JSON-LD schema included (if applicable)
-- [ ] Email gate content visible by default (if using gate)
+**SEO/AEO** (mostly automatic — see the SEO & AEO section):
+- [ ] `generateMetadata` sets title, description, canonical, and `og:image`/`twitter:image`
+- [ ] JSON-LD emitted from the route (use the builders in `lib/seo.ts`)
+- [ ] For MDX content: an entry exists in the relevant `manifest.json` and Convex has been seeded
+- [ ] No manual `sitemap.xml` edit needed — `app/sitemap.ts` auto-discovers `content/**/*.mdx` and exported `*_SLUGS`
 
 ---
 
 ## Component Patterns
 
-### Close Button (Modal/Menu)
-```html
-<button id="close-modal" class="..." aria-label="Close modal">
-    <iconify-icon icon="lucide:x" width="20" aria-hidden="true"></iconify-icon>
-</button>
-```
+UI is built from React components in `components/` and route files in `app/` (Tailwind v4 + `lucide-react` + Radix primitives). Reuse existing components rather than hand-writing markup; mirror their accessibility wiring. Reference examples:
 
-### Mobile Menu Button
-```html
-<button id="mobile-menu-open" class="..." aria-label="Open menu">
-    <iconify-icon icon="lucide:menu" width="24" aria-hidden="true"></iconify-icon>
-</button>
-```
+- **Icon-only button / copy button:** see `app/(marketing)/starter-kit/CopyPromptButton.tsx` (`aria-label` + `aria-hidden` icon).
+- **Logo / nav / footer:** the shared App Router layouts (`app/**/layout.tsx`) — pages do not re-author nav, footer, or analytics.
+- **External link with sr-only hint:** mirror the byline/external-link pattern in `app/articles/[slug]/page.tsx`.
+- **Forms (email/subscribe):** `react-hook-form` + the Beehiiv API route — see the seat/subscribe forms under `app/(marketing)/`.
 
-### Copy Button
-```html
-<button onclick="copyContent()" class="..." aria-label="Copy to clipboard">
-    <iconify-icon icon="lucide:copy" width="18" aria-hidden="true"></iconify-icon>
-</button>
-```
-
-### External Link
-```html
-<a href="https://cal.com/..." target="_blank" rel="noopener noreferrer" class="...">
-    Book a Consult<span class="sr-only"> (opens in new tab)</span>
-</a>
-```
-
-### Status Badge
-```html
-<div class="inline-flex items-center gap-2 ...">
-    <span class="w-1.5 h-1.5 rounded-full bg-green-500" aria-hidden="true"></span>
-    <span class="sr-only">Active:</span>
-    New ideas added regularly
-</div>
-```
-
-### Logo
-```html
-<a href="index.html">
-    <div class="logo h-4 w-32 text-white" role="img" aria-label="Weekend MVP"></div>
-</a>
-```
-
-### Form Input
-```html
-<label for="email" class="...">Email Address</label>
-<input type="email" id="email" name="email" required placeholder="you@example.com"
-    class="... focus:outline-none focus:ring-2 focus:ring-white/40 ...">
-```
+The accessibility attributes in the rules above are mandatory on every new component regardless of which pattern it follows.
 
 ---
 
@@ -243,74 +203,23 @@ When implementing email subscriptions, follow `BEEHIIV_CURSOR_RULES.md`:
 
 **All pages must be optimized for both search engines (Google) and AI answer engines (ChatGPT, Perplexity, Claude).**
 
-### Critical Files
+In the App Router, most SEO/AEO wiring is automatic. Do **not** hand-edit a sitemap or robots file, and do not maintain JSON-LD by hand on index pages.
 
-| File | Purpose | Update When |
-|------|---------|-------------|
-| `robots.txt` | Allows AI crawlers (GPTBot, PerplexityBot, Claude-Web) | Rarely changes |
-| `sitemap.xml` | Lists all pages for discovery | **Every new page** |
+### Sitemap & Robots (automatic)
 
-### Sitemap Updates
+- `app/sitemap.ts` generates the sitemap at build/request time. It auto-discovers `content/ideas/*.mdx`, `content/articles/*.mdx`, and `content/newsletter-pages/*.mdx`, and pulls programmatic hub slugs from the exported `*_SLUGS` (audiences, problems, collections). Adding an MDX file or a config-object entry is enough — there is no `sitemap.xml`.
+  - One exception: `BUILD_WITH_SLUGS` is inlined in `app/sitemap.ts`, so a new `/build-with/{tool}` also needs its slug added to that array.
+- `app/robots.ts` generates robots rules (AI crawlers allow-listed: GPTBot, ClaudeBot, PerplexityBot, etc.). There is no `robots.txt`.
 
-When adding a new page, add to `sitemap.xml`:
+### Metadata & JSON-LD (per route)
 
-```xml
-<url>
-  <loc>https://weekendmvp.app/{path}</loc>
-  <lastmod>{YYYY-MM-DD}</lastmod>
-  <changefreq>monthly</changefreq>
-  <priority>0.7</priority>
-</url>
-```
+- Each route exports `generateMetadata` for title, description, canonical, and `og:image`/`twitter:image`. Idea/article OG images live at `/image/og/{idea|article}/{slug}.png`.
+- JSON-LD is emitted from the route using the builders in `lib/seo.ts` (Article, SoftwareApplication, HowTo, BreadcrumbList, CollectionPage + ItemList). Index pages (`/startup-ideas`, `/articles`) generate their `ItemList` **dynamically** from Convex/MDX — never edit a static `ItemList` by hand.
+- Idea pages parse the MDX `**How it works:**` numbered list into the `HowTo` schema, so keep that section format intact.
 
-### Email Gate Pattern (Critical for Crawlers)
+### Content visibility (no JS gate)
 
-**Content MUST be visible by default.** AI crawlers cannot execute JavaScript.
-
-```html
-<!-- CORRECT - Content visible by default -->
-<div id="email-gate" class="hidden">
-    <!-- Gate form here -->
-</div>
-<div id="gated-content">
-    <!-- Main content visible to crawlers -->
-</div>
-<script>
-if (!localStorage.getItem('weekendmvp_subscribed')) {
-    document.getElementById('email-gate').classList.remove('hidden');
-    document.getElementById('gated-content').classList.add('hidden');
-}
-</script>
-
-<!-- INCORRECT - Content hidden from crawlers -->
-<div id="gated-content" class="hidden">
-    <!-- Crawlers see nothing! -->
-</div>
-```
-
-### Required Meta Tags
-
-Every page needs:
-
-```html
-<meta property="twitter:image" content="https://weekendmvp.app/image/og-image.png">
-<link rel="canonical" href="https://weekendmvp.app/{path}">
-```
-
-### JSON-LD Schema Markup
-
-Include structured data for AI understanding:
-
-**startup-ideas.html:**
-- `CollectionPage` + `ItemList` (update numberOfItems and add ListItem for each new idea)
-- `FAQPage` with common questions
-- `BreadcrumbList`
-
-**Individual idea pages (ideas/*.html):**
-- `Article` with headline, description, datePublished
-- `SoftwareApplication` with applicationCategory
-- `HowTo` with steps
-- `BreadcrumbList`
+Pages are server-rendered, so content is visible to crawlers by default — there is **no** JavaScript email-gate to manage. Keep primary content in the server-rendered output (MDX body / RSC), not behind client-only state.
 
 ### Application Categories for Schema
 
@@ -327,12 +236,11 @@ Include structured data for AI understanding:
 
 ### SEO/AEO Checklist for New Pages
 
-- [ ] Added to `sitemap.xml`
-- [ ] `twitter:image` meta tag present
-- [ ] Canonical URL set
-- [ ] JSON-LD schema included
-- [ ] Email gate uses correct visibility pattern (content visible by default)
-- [ ] If idea page: Updated `ItemList` in startup-ideas.html
+- [ ] `generateMetadata` sets title, description, canonical, and `og:image`/`twitter:image`
+- [ ] JSON-LD emitted via `lib/seo.ts` builders (dynamic ItemList on index pages — never hand-edited)
+- [ ] Primary content is server-rendered (no client-only gate hiding it from crawlers)
+- [ ] For MDX content: `manifest.json` entry added + `npm run seed:convex` run (so it appears in grids/hubs)
+- [ ] Sitemap/robots untouched — they regenerate from `app/sitemap.ts` / `app/robots.ts`
 
 ---
 
@@ -340,19 +248,24 @@ Include structured data for AI understanding:
 
 ```
 weekendmvp/
-├── index.html              # Main landing page
-├── startup-ideas.html      # Ideas collection page (has ItemList schema)
-├── starter-kit.html        # Starter kit page
-├── privacy-policy.html     # Privacy policy
-├── sitemap.xml             # SEO: All pages for search engines
-├── robots.txt              # SEO: Crawler permissions (allows AI bots)
-├── ideas/                  # Individual idea pages
-│   ├── manifest.json       # Ideas metadata
-│   ├── _template.html      # Canonical idea-page template (used by publish-idea skill)
-│   └── {slug}.html         # Individual idea pages (with schema)
-├── api/                    # Vercel API routes
-├── scripts.js              # Main JavaScript
-├── styles.css              # Custom CSS
+├── app/                    # Next.js App Router (routes, layouts, metadata, sitemap.ts, robots.ts)
+│   ├── ideas/[slug]/       # Idea page (MDX → render) + collection hubs
+│   ├── articles/[slug]/    # Article page (MDX → render)
+│   ├── startup-ideas/      # Ideas grid (Convex-driven)
+│   ├── solve|build-with|ideas-for/  # Programmatic hubs (hardcoded TS config objects)
+│   └── api/                # Route handlers (Beehiiv subscribe, Stripe webhook, revalidate, …)
+├── content/                # MDX source — the body of each page
+│   ├── ideas/*.mdx         # frontmatter: slug + title only (metadata lives in manifest/Convex)
+│   ├── articles/*.mdx      # rich frontmatter (title, description, publishedAt, heroAlt, …)
+│   └── newsletter-pages/*.mdx
+├── ideas/manifest.json     # Idea metadata — SOURCE OF TRUTH (feeds Convex seed + OG)
+├── articles/manifest.json  # Article metadata — feeds OG + Convex seed
+├── ideas/SECTIONS.md       # The 7-section idea contract (manual gate for publish-idea)
+├── convex/                 # Convex backend: schema, queries, seed functions
+├── components/             # Shared React components (incl. hubs/hub-data.ts Convex fetchers)
+├── lib/                    # mdx.tsx (MDX loader), seo.ts (JSON-LD), og/ (OG sources)
+├── scripts/                # seed-convex.mjs, generate-og-cards.mjs, migration extractors
+├── app/globals.css         # Global Tailwind v4 styles
 └── CLAUDE.md               # This file
 ```
 
