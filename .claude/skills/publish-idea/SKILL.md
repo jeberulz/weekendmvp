@@ -72,9 +72,10 @@ If ambiguous, default to Mode A and ask the user to confirm the idea_id.
 3. **Writes** `content/ideas/{slug}.mdx` — minimal frontmatter (`slug` + `title`) + the canonical `##` body sections.
 4. **Adds** an entry to `ideas/manifest.json` with full provenance, scores, og, and the meta description.
 5. **Runs the manual section gate** against `ideas/SECTIONS.md` (all 7 sections present, body ≥ ~800 words, no leftover placeholders).
-6. **Seeds Convex** via `npm run seed:convex` so the idea appears in the grid + hubs.
+6. **Seeds Convex (dev AND `--prod`)** via `npm run seed:convex` so the idea appears in the grid + hubs — the live grid reads the **production** deployment, so the `--prod` seed is required for online visibility.
 7. **Generates the OG card** via `npm run og:generate -- --slug {slug} --surface idea --non-blocking` (best-effort, never blocks the publish).
-8. **Reports** what was created with research sources/citations.
+8. **Deploys** — commits & pushes the MDX + OG PNG (git push → Vercel build) so the page and image actually exist in production; the prod seed alone only feeds the grid/hub data.
+9. **Reports** what was created with research sources/citations.
 
 The grid card, ItemList JSON-LD, page schema graph, nav/footer/analytics, and sitemap entry are **all produced automatically** by the App Router routes + layout after seeding and the next build — the skill no longer emits any of them.
 
@@ -175,8 +176,9 @@ Follow the shared sink sequence in **Steps 5–9** below (write `content/ideas/{
 - Convex (seeded via `npm run seed:convex` — idea now in /startup-ideas grid + hubs)
 - image/og/idea/{slug}.png (new — composed OG card via Recraft v3, IF og.status=ready)
 
-**Seed status:** {seeded OK | FAILED — see seed-failure note in Step 8}
+**Seed status:** {dev: OK/failed; prod: OK/failed — prod required for the live grid/hub card; see Step 8}
 **OG card:** {provider: recraft | openai-gpt-image-1} — og.status: {ready | failed}. {If failed: page ships with the site-wide fallback image; a future `npm run og:generate` retries.}
+**Deploy / live status:** {LIVE — pushed, Vercel deployed, `/ideas/{slug}` returns 200 | STAGED — written + seeded locally but NOT deployed; page/OG 404 until `git push` (Step 10)}
 
 **Sections included:** The Problem, The Solution (+ How it works), Market Research, Competitive Landscape, Business Model, Recommended Tech Stack, AI Prompts to Build This, Sources
 
@@ -185,7 +187,7 @@ Follow the shared sink sequence in **Steps 5–9** below (write `content/ideas/{
 - {citation_2}
 - ... (list all from competitive_analysis.data.citations)
 
-**Preview:** Run `npm run dev` and open http://localhost:5173/ideas/{slug} to verify all 8 sections render.
+**Preview:** Run `npm run dev` and open http://localhost:5173/ideas/{slug} to verify all 8 sections render. **Live** requires the deploy (Step 10) — confirm `https://www.weekendmvp.app/ideas/{slug}` returns 200.
 ```
 
 ---
@@ -444,6 +446,7 @@ Copy and paste these into Claude, Cursor, or your favorite AI tool.
 
 Authoring rules for body quality:
 - Plain GitHub-flavored markdown only (`##`/`###`, `**bold**`, `-` lists, `1.` lists, fenced ```code```, `[text](url)` links). No raw HTML, no `<head>`, no `<script>`, no email-gate markup, no nav/footer — the route and layout provide all of that.
+- **MDX, not plain markdown — escape bare `<` and `{` in prose.** This is `.mdx`, so a bare `<` or `{` outside a fenced code block is parsed as JSX and **crashes the page build (500 in production), not just a render glitch**. The classic trap is unit economics like `<$0.01` or `<5%`. Write `under $0.01` / `~$0.005` / `&lt;5%` instead, and avoid bare `{…}` in prose (use `≈`, "about", or wrap in backticks). Inside fenced ```code``` blocks, `<` and `{` are safe — only prose is affected.
 - The `## The Solution` section **must** include the `**How it works:**` numbered list (HowTo schema depends on it).
 - Slug in frontmatter must equal the filename and match `^[a-z0-9-]+$`.
 
@@ -509,6 +512,7 @@ There is **no audit script** anymore. Manually verify the MDX body against `idea
 - [ ] Body word count ≥ ~800 words (aim for 1,500–2,400 like the exemplars).
 - [ ] Competitive Landscape names 3+ competitors with pricing; Market Research has 2+ cited stats.
 - [ ] No leftover placeholders (`{{VAR}}`, `IDEA_TITLE`, `{slug}`, `TODO`, `Lorem`).
+- [ ] **No bare `<` or `{` in prose** (outside fenced code) — these compile as JSX and 500 the page. Watch unit-economics lines like `<$0.01`.
 - [ ] Frontmatter is exactly `slug` + `title`, both quoted.
 
 Quick mechanical check you can run:
@@ -517,9 +521,11 @@ Quick mechanical check you can run:
 grep -c '^## ' content/ideas/{slug}.mdx        # expect 8 (7 canonical + Sources)
 grep -n 'How it works' content/ideas/{slug}.mdx # expect 1 hit under The Solution
 wc -w content/ideas/{slug}.mdx                  # expect ~800+ words
+# MDX safety: bare < or { in prose (outside ``` fences) → JSX parse error → 500. Expect NO output:
+awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/ideas/{slug}.mdx
 ```
 
-If any check fails, fix the MDX before continuing. Do not set `provenance.auditPassed: true` until this passes.
+If any check fails, fix the MDX before continuing. Do not set `provenance.auditPassed: true` until this passes. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
 
 ### Step 8: Seed Convex — DEV **and** PROD (required for grid/hub visibility)
 
@@ -551,6 +557,28 @@ Behavior:
 - On failure (Recraft AND `gpt-image-1` both errored): flips `og.status` to `"failed"`, exits 0 (because `--non-blocking`). The publish continues. The route's OG meta points at the expected PNG path; social crawlers fall back to the site-wide `image/og-image.png` when the file is missing. A future `npm run og:generate` retries every entry with `og.status: "failed"`.
 
 **Critical invariant:** the publish flow's success status MUST be independent of the OG card outcome. Never let a Recraft/OpenAI API error block an idea page from shipping.
+
+See `IMAGES.md` for setup, drift recovery, and prompt-writing rules.
+
+### Step 10: Deploy to production (REQUIRED for the page + OG image to exist live)
+
+**The `--prod` Convex seed (Step 8) only feeds the grid/hub *data*. It does NOT make the idea page or its OG image exist in production.** Going fully live takes **two** independent things:
+
+| What | Source | Made live by |
+|------|--------|--------------|
+| `/startup-ideas` grid card + hub listings (data) | production Convex | `npm run seed:convex -- --prod` (Step 8) |
+| `/ideas/{slug}` page (renders MDX at build time) | `content/ideas/{slug}.mdx` in the repo | **git push → Vercel deploy** |
+| Hero / OG image | `public/image/og/idea/{slug}.png` in the repo | **git push → Vercel deploy** |
+
+The new `.mdx` and `.png` files must be **committed and pushed** — that triggers the Vercel build that bundles them. Without the deploy, `/ideas/{slug}` and the OG image return **404** even though the prod seed succeeded and the grid card may already point at them.
+
+```bash
+git add content/ideas/{slug}.mdx ideas/manifest.json public/image/og/idea/{slug}.png
+git commit -m "content(idea): {title}"
+git push origin main   # triggers the Vercel production deploy
+```
+
+Confirm after the deploy finishes (~1-2 min): `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/ideas/{slug}` → expect **200**. Do **not** report the idea as "live" until the page returns 200. If no push was authorized, report it as **staged + seeded**, not live.
 
 See `IMAGES.md` for setup, drift recovery, and prompt-writing rules.
 
@@ -623,6 +651,7 @@ Before marking complete:
 - [ ] Manifest entry includes `og.subject` + `og.accent` + `og.status: "pending"`
 - [ ] Passed the Step 7 manual section gate (8 `##` sections, How-it-works list, ≥ ~800 words, no placeholders)
 - [ ] Ran `npm run seed:convex` (dev) **AND** `npm run seed:convex -- --prod` (production — required for live grid/hub visibility) and confirmed both succeeded; if either failed, surfaced the fix and did NOT claim grid visibility
+- [ ] **Deployed (Step 10):** committed + pushed the MDX + OG PNG so the page/image exist in prod (git push → Vercel); confirmed `/ideas/{slug}` returns 200 live. (If no push authorized, reported it as staged + seeded, NOT live.)
 - [ ] Ran `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Confirmed `og.status` is `"ready"` or `"failed"` (publish proceeds either way)
 - [ ] Verified `/ideas/{slug}` renders all 8 sections in `npm run dev`

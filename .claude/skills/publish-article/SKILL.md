@@ -56,8 +56,9 @@ This file contains:
 9. **Appends the manifest entry** to `articles/manifest.json` (metadata + OG subject/accent)
 10. **Seeds Convex (dev AND `--prod`)** via `npm run seed:convex` so the article wires into the `/articles` index — the live index reads the **production** deployment, so the `--prod` seed is required for online visibility
 11. **Generates the OG/hero card** via `npm run og:generate` (non-blocking)
-12. **Marks topic as PUBLISHED** in research.md
-13. **Reports** what was created with sources
+12. **Deploys** — commits & pushes the MDX + OG PNG (git push → Vercel build) so the page and image actually exist in production; the prod seed alone only feeds the index data
+13. **Marks topic as PUBLISHED** in research.md
+14. **Reports** what was created with sources
 
 ---
 
@@ -354,6 +355,7 @@ The route renders the hero from `/image/og/article/{slug}.png` using `heroAlt`. 
 - Follow the selected framework structure exactly.
 - Use `##` / `###` headings. **Do not add an `<h1>` or a `#` title** — the route renders the `<h1>` from `title`.
 - Use markdown lists, bold, and fenced code blocks (```` ``` ````) as needed.
+- **MDX, not plain markdown — escape bare `<` and `{` in prose.** A bare `<` or `{` outside a fenced code block is parsed as JSX and **crashes the build (500 in production)**. The classic trap is `<$0.01`, `<5%`, or a stray `{`. Write `under $0.01` / `~$0.005` / `&lt;5%` and avoid bare `{…}` in prose. Inside ```` ``` ```` fences they're safe. Verify before seeding: `awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/articles/{slug}.mdx` should print nothing.
 - Keep the tone guidelines from Step 7.
 - **Include 3+ CTAs linking to `/startup-ideas`** (the App Router route — no `.html`). Place one early (after establishing the problem), one middle (after the solution), one at the end.
 
@@ -438,7 +440,34 @@ npm run og:generate -- --slug {slug} --surface article --non-blocking
 
 **Critical invariant:** publish-article's success status MUST stay independent of the OG card outcome. Never let a Recraft/OpenAI API error block an article from shipping. See `IMAGES.md` for setup and drift recovery.
 
-### Step 12: Mark Topic as Published (REQUIRED)
+### Step 12: Deploy to production (REQUIRED for the page + OG image to exist live)
+
+**The `--prod` Convex seed (Step 10) only feeds the `/articles` index *data*. It does NOT make the article page or its OG image exist in production.** Going fully live takes **two** independent things:
+
+| What | Source | Made live by |
+|------|--------|--------------|
+| `/articles` index card (data) | production Convex | `npm run seed:convex … --prod` (Step 10) |
+| `/articles/{slug}` page (renders MDX at build time) | `content/articles/{slug}.mdx` in the repo | **git push → Vercel deploy** |
+| Hero / OG image | `public/image/og/article/{slug}.png` in the repo | **git push → Vercel deploy** |
+
+So the new `.mdx` and `.png` files must be **committed and pushed** — that triggers the Vercel build that bundles them. Without the deploy, `/articles/{slug}` and the OG image return **404** even though the prod seed succeeded and the index card may already point at them.
+
+```bash
+git add content/articles/{slug}.mdx articles/manifest.json public/image/og/article/{slug}.png
+git commit -m "content(article): {title}"
+git push origin main   # triggers the Vercel production deploy
+```
+
+**Confirm live after the deploy finishes (~1-2 min):**
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/articles/{slug}            # expect 200
+curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/image/og/article/{slug}.png # expect 200
+curl -s https://www.weekendmvp.app/articles | grep -c {slug}                                     # expect 1
+```
+
+Do **not** report the article as "live" until the page returns **200** (not just the prod seed succeeding). If the user hasn't authorized a push, say the article is **staged locally + seeded** and that a deploy is required to go live — don't claim it's live.
+
+### Step 13: Mark Topic as Published (REQUIRED)
 
 **Update the topics queue in `.claude/skills/publish-article/topics/research.md`:**
 
@@ -539,9 +568,11 @@ After completion, report:
 - image/og/article/{slug}.png (new — composed OG card, IF og.status=ready; also the in-page hero)
 - .claude/skills/publish-article/topics/research.md (topic marked as published)
 
-**Convex seed:** {success | FAILED — Convex dev not running; article renders from MDX but index publishedAt not updated until reseed}
+**Convex seed:** {dev: success/failed; prod: success/failed — prod required for the live index card}
 
 **OG card:** {provider used: recraft | openai-gpt-image-1} — og.status: {ready | failed}. {If failed: hero 404s until a future `npm run og:generate` retry; publish still succeeded.}
+
+**Deploy / live status:** {LIVE — pushed, Vercel deployed, `/articles/{slug}` returns 200 | STAGED — written + seeded locally but NOT deployed; page/OG 404 until `git push`}
 
 **Framework used:** {FRAMEWORK_NAME}
 
@@ -563,7 +594,7 @@ After completion, report:
 - {SOURCE_1}
 - {SOURCE_2}
 
-**Preview:** Run `npm run dev` and open `/articles/{slug}` to verify.
+**Preview:** Run `npm run dev` and open `/articles/{slug}` to verify locally. **Live** requires the deploy (Step 12) — confirm `https://www.weekendmvp.app/articles/{slug}` returns 200.
 ```
 
 ---
@@ -586,6 +617,7 @@ Before marking complete:
 - [ ] Ran `npm run seed:convex -- --only articles` (dev) **AND** `npm run seed:convex -- --only articles --prod` (production — required for live index visibility); both seed results reported
 - [ ] Ran `npm run og:generate -- --slug {slug} --surface article --non-blocking` (Step 11)
 - [ ] Confirmed og.status is "ready" or "failed" (publish proceeds either way)
+- [ ] **Deployed (Step 12):** committed + pushed the MDX + OG PNG so the page/image exist in prod (git push → Vercel); confirmed `/articles/{slug}` returns 200 live. (If no push authorized, reported it as staged + seeded, NOT live.)
 - [ ] **Topic marked as PUBLISHED in research.md** (REQUIRED)
 - [ ] Body heading hierarchy logical (no manual `<h1>`)
 - [ ] `/articles/{slug}` renders in `npm run dev`

@@ -235,6 +235,18 @@ writing.
   `app/sitemap.ts`) — automatic for problem/audience/collection; for tools,
   confirm you added it to `BUILD_WITH_SLUGS`.
 
+### Step 6.5 — Deploy to production (REQUIRED for the hub to exist live)
+
+Programmatic hubs are **TS config objects in route files** (`app/solve|build-with|ideas-for/...`) — they live in code, so the hub route does not exist in production until the code is **deployed**. The `--prod` Convex seed only refreshes the *ideas data* the hub queries; it cannot create a route that isn't in the deployed build.
+
+```bash
+git add <route file> app/sitemap.ts ideas/manifest.json   # whichever you touched
+git commit -m "feat(hub): add {page_type} hub {slug}"
+git push origin main   # triggers the Vercel production deploy
+```
+
+Confirm after deploy (~1-2 min): `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/{path}/{slug}` → expect **200**. Do **not** report the hub as live until it returns 200. If no push was authorized, report it as **staged locally**, not live.
+
 ### Step 7 — Report
 
 ```markdown
@@ -249,6 +261,7 @@ writing.
 - npm run typecheck: pass
 - /{path}/{slug} renders with {count} ideas
 - slug present in sitemap route output
+- **Deploy / live status:** {LIVE — pushed, Vercel deployed, /{path}/{slug} returns 200 | STAGED — local only, route 404s until `git push` (Step 6.5)}
 
 **Page details:**
 - URL: https://weekendmvp.app/{path}/{slug}
@@ -363,6 +376,7 @@ Your job is just clean, accurate copy in the config fields.
 - [ ] (tool) `titlePattern` contains the literal `{count}`; slug added to
       `BUILD_WITH_SLUGS` in `app/sitemap.ts`
 - [ ] Ideas tagged in `ideas/manifest.json` and **seeded to dev AND prod** (`npm run seed:convex` + `npm run seed:convex -- --prod` — prod required for live hub visibility)
+- [ ] **Deployed (Step 6.5):** committed + pushed the route/config changes (git push → Vercel) so the hub route exists in prod; confirmed `/{path}/{slug}` returns 200 live. (If no push authorized, reported it as staged, NOT live.)
       so the hub isn't empty — ≥3 ideas
 - [ ] `npm run typecheck` passes
 - [ ] Hub route renders in `npm run dev` and shows the curated ideas
