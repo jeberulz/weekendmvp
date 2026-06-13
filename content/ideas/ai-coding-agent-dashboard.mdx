@@ -1,0 +1,136 @@
+---
+slug: "ai-coding-agent-dashboard"
+title: "AI Coding Agent Dashboard"
+---
+
+## The Problem
+
+You wake up, pour the coffee, and your AI agents have already been working for eight hours. Claude Code closed three issues overnight. Cursor's background agent refactored a service. A GitHub Copilot Workspace task opened two pull requests. Codex pushed a branch. The work happened — but the evidence is scattered across six tools, each with its own tab, its own inbox, its own notion of "activity." Before you've made a single decision, you've spent twenty minutes doing morning archaeology: clicking through repos, scanning PR lists, cross-referencing which agent did what and whether any of it is safe to merge.
+
+This is the new shape of the workday. Autonomous coding agents went mainstream across 2025–2026, and a single developer now orchestrates a small overnight team that reports in completely different systems. GitHub shows commits. Cursor logs edits. Devin tracks tasks. Claude Code runs in the terminal. None of them know about each other. There is no shared timeline, no "what changed since yesterday," no one screen that answers the only question that matters at 8am: *what did my agents actually do, and what needs my eyes?*
+
+The pain is acute and it compounds with adoption. The more you lean on agents, the worse the fragmentation gets — and the higher the stakes, because an unreviewed agent PR that auto-merged at 3am is a production incident waiting to happen. Developers already feel this: threads about AI-tool sprawl, credit-pricing shock, and "I can't tell what my agents are doing" rack up hundreds of comments across r/github (196K members), r/GithubCopilot (73K), and r/OpenAI (376K). The behavior that creates the pain — running multiple agents across multiple repos — is now standard. The tool that resolves it doesn't exist yet.
+
+## The Solution
+
+A neutral control tower for AI coding agents: one dashboard that ingests activity from every agent and repo you run, normalizes it into a single timeline, and gives you a glanceable morning digest of everything that shipped while you slept. Connect your GitHub org once; the dashboard listens to webhooks and agent APIs, tags each event by which agent produced it, and rolls it up into cards organized by repo, agent, and impact. A Slack digest lands before you open a browser. The twenty-minute tab-hop becomes a thirty-second scan.
+
+**How it works:**
+
+1. **Connect once** — Install the GitHub App, link Slack, point it at your repos and agents
+2. **Agents work overnight** — The dashboard ingests PRs, commits, issues, and task events via webhooks
+3. **Wake up to one screen** — A normalized timeline + Slack digest shows what each agent did and what needs review
+
+The product's job is to turn noise into a decision queue. Every overnight event is summarized in one line ("Claude Code: closed #412, opened PR #418 — touches auth, needs review"), grouped by impact, and flagged when something looks risky — an auto-merge to main, a change to a sensitive path, a PR with no human reviewer. Filter by project, time range, or agent. The "morning status check" is the wedge; the durable value is becoming the system of record for agent activity, the place teams trust to answer *who changed what, when, and was it reviewed.*
+
+## Market Research
+
+There is no clean standalone "AI coding agent dashboard" market yet — which is exactly the signal. The addressable space is a slice of three large, proven markets: developer tooling, AI observability, and engineering productivity. The behavior underneath is already mainstream: autonomous agents that edit code, run tests, and open pull requests moved into everyday production workflows across 2025–2026, and the category of *watching* them is wide open with no recognized leader.
+
+- AI coding agents crossed mainstream developer adoption by 2025–2026 — Claude Code, Cursor, GitHub Copilot Workspace, and Codex are now standard parts of the daily loop, multiplying the surfaces a developer has to monitor.
+- The demand is loud in the communities where these power users live: **r/github (196K+), r/OpenAI (376K+), r/vscode (215K+), and r/GithubCopilot (73K+)**, with recurring high-comment threads on tool sprawl, integration friction, and a Copilot credit-pricing backlash post that drew **160+ comments**.
+- Education-led demand is huge: YouTube tutorials and reviews on GitHub Copilot and AI dev tooling routinely pull **100K–800K views**, with "AI dashboards and analytics" repeatedly flagged as an unmet content gap.
+- The monetization comps are unambiguous — engineering-visibility tools (Datadog, New Relic, Sentry, LinearB, Linear) all proved that teams pay per-seat for observability and workflow dashboards. Observability platforms began as dashboards and became infrastructure; agent activity is on the same trajectory.
+- Willingness to pay tracks existing dev-tool bands ($10–20/user/month for Copilot-class tools), and engineering leads carry budget specifically to *justify and govern* AI spend to leadership.
+
+Stage: *early-emergent*. The underlying behavior is mature enough to support a product, but the aggregation layer is not yet an established category. The absence of a leader is the opportunity — and the clock is the risk: platform vendors will try to surface their own native summaries. The window to plant the neutral, cross-agent standard is now, before any single vendor closes it.
+
+## Competitive Landscape
+
+Every existing player shows you *its own* agent's activity inside *its own* walls. None of them is incentivized to aggregate a competitor's work into one neutral view — which is precisely the gap. The wedge is cross-platform: the one screen that spans GitHub, Cursor, Claude Code, and Codex at once.
+
+- **GitHub Copilot / Copilot Workspace** — The default surface where many code changes land, with deep PR and repo integration. But it's vertically integrated and built to keep you inside GitHub, not to summarize what Cursor or Claude Code did. *Copilot ~$10/mo Individual, $19/user Business, $39 Enterprise.*
+- **Cursor** — A superb AI-native editor with strong agent UX and growing power-user mindshare. Editor-centric by design, so it has no view into cloud agents, terminal agents, or GitHub-native workflows running in parallel. *~$20/mo Pro, $40/user Business.*
+- **Claude Code / OpenAI Codex** — Top-tier terminal and multi-surface agents with excellent execution. Each shows its own task history, but neither is a neutral control tower across vendors — and the more capable they get, the more fragmentation they add. *Subscription/usage-based via Anthropic and OpenAI.*
+- **Engineering analytics dashboards (LinearB, Swarmia, Sleuth) & manual GitHub checking** — Established willingness to pay for engineering visibility, but these are repo- and PR-centric, not agent-centric — they don't tag or roll up *which agent* did what. The real default is still manual: opening six tabs every morning. *Analytics tools ~$20–39/dev/mo; manual checking $0, paid in hours.*
+
+**Your Opportunity**
+
+Own the morning status-check for the developer or small team running 2–4 agents across multiple repos — the use case no incumbent serves because none of them spans vendors. Be the neutral layer: agent-tagged timeline, overnight digest, risk flags for unreviewed auto-merges. Lead with "all your AI agents on one screen," then deepen into governance and audit (who-changed-what, was-it-reviewed) that becomes sticky for teams. The defensible moat isn't the UI — it's becoming the trusted system of record for agent activity before a platform vendor bolts on a native summary.
+
+## Business Model
+
+Per-seat SaaS with a free solo tier that doubles as the distribution engine — developers screenshot their overnight digest and post it, which is the marketing. The Starter tier converts the individual juggling multiple agents; Pro is the steady-state team tier with cross-repo rollups and governance; Enterprise adds SSO, audit logs, and custom connectors for orgs that need agent activity in their compliance story. Variable cost is low: webhook ingestion plus a small LLM summarization spend per PR (one one-line summary ≈ a fraction of a cent), so margins look like classic dev-SaaS.
+
+- **Free** ($0) — 1 developer, 2 connected agents, daily digest for up to 3 repos, "powered by" footer. Pure top-of-funnel.
+- **Starter** ($15/user/mo) — Unlimited agents + repos, Slack digests, agent-tagged timeline, risk flags.
+- **Pro** ($50/user/mo) — Cross-repo rollups, team dashboards, governance views (reviewed vs. auto-merged), analytics + anomaly flags.
+- **Enterprise** (custom) — SSO, audit logs, data-residency controls, custom connectors, priority support.
+
+**Unit Economics (illustrative)**
+
+- **~$0.005** — LLM cost / PR summary
+- **~92%** — Gross margin Pro
+- **$30–$70** — Target CAC
+- **6–10%** — Free → paid conv.
+
+MRR path: 200 Starter seats = $3K/mo. 600 Starter + 60 Pro seats = $12K/mo. At 1,500 Starter + 250 Pro + a few Enterprise ≈ $35K/mo+ (~$420K ARR). Retention lever: once a team runs its morning standup off the dashboard, switching cost climbs fast. Distribution: post overnight-digest screenshots into r/github and r/GithubCopilot, partner with 2–3 mid-size AI-dev YouTubers for "manage agent chaos" demos, and ship a GitHub App + Slack integration so adoption is one click.
+
+## Recommended Tech Stack
+
+The engine is event ingestion + normalization across fast-moving agent APIs; the moat is connector depth and a clean, agent-tagged event model. Building a basic aggregator is easy — keeping reliable integrations as Cursor, Claude Code, and Copilot evolve weekly is the hard, defensible part.
+
+- **Next.js 15 + Server Actions** — Dashboard at `app.product.com` with streaming, real-time activity cards. Server Actions handle digest generation and connector config.
+- **GitHub App + webhooks** — The primary event source: PR opened/merged, issues closed, commits, checks. Install-once OAuth, fine-grained repo permissions. This is the backbone connector.
+- **Convex or Supabase (Postgres)** — Normalized event store: `agents`, `repos`, `events`, `digests`, `risk_flags`. One canonical event shape that every connector maps into, so the timeline stays agent-agnostic.
+- **Connector layer (per agent)** — Adapters that map Cursor activity logs, Claude Code session/task events, and Codex task endpoints into the canonical event model. Designed for easy addition as new agents appear — connector breadth is the moat.
+- **Claude (Haiku/Sonnet) for one-line summaries** — Summarize each PR/diff into a glanceable line and a risk tag ("touches auth, no human reviewer"). Cheap, cacheable, runs on ingest.
+- **Slack API + Resend** — Morning digest to the right channel before anyone opens a browser; email fallback. Stripe Billing for per-seat Starter/Pro/Enterprise.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Scaffold + GitHub App**
+
+```text
+Create a Next.js 15 App Router SaaS that aggregates AI coding agent activity. TypeScript, Tailwind, Convex (or Supabase Postgres) backend, Stripe Billing.
+
+Schema:
+- users(id, email, plan, stripe_customer_id)
+- agents(id, user_id, kind ENUM[claude_code, cursor, copilot, codex, other], display_name, connected_at)
+- repos(id, user_id, github_repo_id, full_name, installation_id)
+- events(id, user_id, agent_id, repo_id, type ENUM[pr_opened, pr_merged, commit, issue_closed, task_done], title, url, occurred_at, payload JSONB, summary TEXT, risk_flag TEXT)
+- digests(id, user_id, window_start, window_end, sent_at, channel)
+
+Build the GitHub App install flow (OAuth, fine-grained repo perms) and a webhook receiver at /api/webhooks/github that verifies signatures and writes normalized rows into events. Routes:
+- /dashboard (timeline of cards, filter by repo/agent/time)
+- /connect (manage agents + repos)
+- /settings (Slack channel, digest schedule)
+```
+
+**2. Connector Layer + Event Normalization**
+
+```text
+Implement the connector layer that maps each agent's activity into one canonical event shape: { agent_id, repo_id, type, title, url, occurred_at, payload }.
+
+- GitHub connector: parse webhook payloads (pull_request, push, issues, check_run) into events. Detect the acting agent from the PR/commit author, branch naming, or a configurable mapping (e.g. branches prefixed `claude/`, `cursor/`).
+- Cursor / Claude Code / Codex connectors: poll or receive their task/session endpoints, map completed tasks into events of type task_done with a link back to the resulting PR/commit.
+- Dedupe: a single logical change (agent task -> commit -> PR) should collapse into one timeline entry with sub-events, not three rows.
+
+Write it so adding a new agent = adding one adapter file that implements a normalize(payload) -> Event[] interface. Connector breadth is the moat — make it trivial to extend.
+```
+
+**3. Overnight Digest + Risk Flags + Slack**
+
+```text
+Build the morning digest pipeline — the core habit.
+
+On a schedule (default 7am user-local), for each user:
+- Query events in the overnight window grouped by repo and agent.
+- For each PR/diff, call Claude (Haiku) to produce: a one-line summary and a risk_flag if it (a) auto-merged to a protected branch, (b) touched a sensitive path (auth, billing, migrations, secrets), or (c) has no human reviewer. Cache summaries on the event row.
+- Render a digest: "Last night: 3 agents, 7 events, 2 need review" with grouped one-liners and risk items pinned to the top.
+- Post to the user's Slack channel via the Slack API; email fallback via Resend. Make every line link back to the GitHub PR.
+
+The dashboard /dashboard view renders the same data as filterable cards. The risk queue (unreviewed / sensitive-path changes) is the part that turns a nice-to-have into a daily must-open.
+```
+
+## Sources
+
+- • [MightyBot — Coding AI agents for accelerating engineering workflows (agent landscape, 2026)](https://mightybot.ai/blog/coding-ai-agents-for-accelerating-engineering-workflows/)
+- • [AdventureMedia — Building a competitor-intelligence dashboard with Claude Code (agent-built dashboards in practice)](https://adventuremedia.ai/blog/how-to-build-a-competitor-ad-intelligence-dashboard-using-claude-code)
+- • [Parallel — Automating competitive landscape analysis: a developer's guide (agent pipelines)](https://parallel.ai/articles/how-to-automate-market-mapping-with-ai-a-developers-guide-to-competitive-landscape-analysis)
+- • [GenAI Unplugged — Competitive AI analysis agents (multi-agent workflows)](https://genaiunplugged.substack.com/p/competitive-ai-analysis-agent)
+- • Ideabrowser idea #8127 "Overnight activity dashboard for AI coding agents" (opportunity 9, pain 9, builder confidence 9, timing 9), June 2026 research stack — community sizing (r/github 196K, r/GithubCopilot 73K, r/OpenAI 376K, r/vscode 215K) and pricing-backlash signals.
+
+Verify agent API surfaces and competitor pricing on live docs — Copilot/Cursor/Claude Code pricing and endpoints shift frequently in this fast-moving category.

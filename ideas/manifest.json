@@ -2434,6 +2434,52 @@
         "builder_confidence": 7
       },
       "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-coding-agent-dashboard",
+      "title": "AI Coding Agent Dashboard",
+      "publishedAt": "2026-06-13",
+      "category": "developer-tools",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "v0"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "description": "One neutral dashboard that aggregates what every AI coding agent (Claude Code, Cursor, Copilot, Codex) shipped overnight — PRs, merges, issues — into a single morning digest with risk flags.",
+      "source": "ideabrowser:8127",
+      "og": {
+        "subject": "A single dark monitor on a desk before dawn, one mint-green status row glowing across an otherwise dim dashboard, faint reflections on the desk surface, very shallow focus, no legible text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 2243,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-13T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "standard"
     }
   ],
   "categories": [
