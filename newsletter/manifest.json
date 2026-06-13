@@ -131,6 +131,30 @@
         "status": "ready",
         "emailStatus": "ready"
       }
+    },
+    {
+      "slug": "2026-06-13-am",
+      "title": "Idea of the Day: Doctor Debug for AI agents",
+      "publishedAt": "2026-06-13",
+      "edition": "am",
+      "description": "Your AI agent broke at 2am. Doctor Debug explains why — in plain English, with a fix path.",
+      "og": {
+        "subject": "A coffee mug on a near-black kitchen counter with a single mint LED clock glow catching the rim, very early morning, no people",
+        "status": "ready",
+        "emailStatus": "ready"
+      }
+    },
+    {
+      "slug": "2026-06-13-pm",
+      "title": "Builder Brief: Minimalist Habit Tracker (deep dive)",
+      "publishedAt": "2026-06-13",
+      "edition": "pm",
+      "description": "Habit apps punish one missed day. Here's the guilt-free, $29/year tracker you could ship this weekend.",
+      "og": {
+        "subject": "A reading lamp on a near-black desk casting a single lavender glow over an open journal and a closed laptop, quiet evening, no people",
+        "status": "ready",
+        "emailStatus": "ready"
+      }
     }
   ]
 }

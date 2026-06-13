@@ -1,0 +1,70 @@
+---
+slug: "2026-06-13-am"
+title: "Idea of the Day: Doctor Debug for AI agents"
+description: "Your AI agent broke at 2am. Doctor Debug explains why — in plain English, with a fix path."
+publishedAt: "2026-06-13"
+edition: "am"
+ctaUrl: "/ideas/ai-agent-error-translator"
+---
+
+![Coffee mug on a dark counter with a single mint LED glow, AI agents idea of the day](/image/email/newsletter/2026-06-13-am.jpg)
+
+This week's recurring story: AI agents now ship work overnight while you sleep — code, leads, support tickets — and you wake up unable to tell what they actually did. The dream is autonomy. The catch nobody mentions is the next morning: the moment an agent breaks, the person who built it usually can't read the error.
+
+**IDEA OF THE DAY**
+
+## Doctor Debug: Plain-English Errors for AI Agents
+
+No-code platforms spent two years putting AI agents in the hands of marketers, operators, and consultants. The agents handle leads, scheduling, and routine ops — until one fails. Then the log is a stack trace written by engineers, for engineers, and the one person responsible for the fix is the one person who can't read it. So the agent sits broken, leads go unhandled, and the operator pings a developer friend or rebuilds the whole thing from scratch.
+
+Doctor Debug watches each run through the platform's webhook, and the moment something breaks it sends a plain-English explanation plus a ranked fix path. An expired API key reads as an expired API key, with the renewal steps. A bad hand-off between two steps reads as exactly that, with the line to change. The fix library compounds with every real resolution — a moat a generic chatbot can't copy.
+
+**Why it's a weekend build:** ~10h to MVP, $5K/mo target. Stack: Claude, Cursor, Windsurf, and Replit.
+
+<Cta href="/ideas/ai-agent-error-translator">Read the full teardown</Cta>
+
+---
+
+**TREND WATCH**
+
+Conversational AI is going mainstream faster than the tooling around it. "Chatbot customer care" just broke out — businesses are wiring automated agents into support, bookings, and transactions at scale, and most of those deployments are owned by someone who has never opened a terminal.
+
+**The hidden customer isn't the developer — it's the operator.** Every one of those agents was set up by a non-technical person who chose the platform precisely so they'd never have to read code. When it fails, that promise evaporates, and they churn off the platform out of pure confusion. Translation is the product the platforms themselves should have shipped.
+
+> 📈 **"chatbot customer care"** — 9,900/mo volume · +326% growth · **BREAKOUT**
+
+Also trending: *control apps (+241%), home assistant (+124%).*
+
+---
+
+**FOUNDER PLAYBOOK**
+
+**The observability products that won never started by monitoring everything — they started by translating one thing well.**
+
+*Pick the smallest unreadable moment and make it human.*
+
+- **Translate, don't log.** Sentry already shows operators the error. The gap isn't visibility, it's comprehension — your whole job is turning the trace into a sentence and a next step.
+- **Start with one platform.** Map a single tool's failure shape (Lindy first) end to end before you add the second. A shallow integration across five platforms helps no one.
+- **Let the fix library compound.** Every confirmed resolution becomes a cached answer the next user gets for free. That feedback loop is the moat, so build the was-this-right button before you polish the dashboard.
+
+---
+
+**🛠 STEAL THIS — The 90-Minute Agent Watchdog**
+
+You don't need the whole product to prove the wedge. You need one real error, translated.
+
+- **0–30 min:** Wire a webhook from one n8n or Lindy agent into a tiny endpoint that stores each failure in a normalized shape (platform, step, error type, message).
+- **30–60 min:** Pass that error to Claude with a prompt that returns three things — a one-sentence explanation, the likely cause, and a numbered fix path.
+- **60–90 min:** Fire the result to Slack the moment a run fails, with a one-tap "was this right?" button to seed your pattern library.
+
+Ship that to five operators who already run agents. If two say "oh, *that's* what it was" — you have a product.
+
+---
+
+Sneak peek at tomorrow's idea…
+
+*The dashboard that tells you what your AI coding agents shipped while you were asleep — one screen instead of six open tabs.*
+
+---
+
+**PS** — What's the most cryptic error an AI agent ever threw at you? Hit reply — the best one becomes a Doctor Debug example.
