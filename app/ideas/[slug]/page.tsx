@@ -24,7 +24,11 @@ import {
   tocFromMarkdown,
   toolName,
 } from "@/components/ideas/idea-meta";
-import { renderCollection } from "./collection";
+import {
+  COLLECTION_SLUGS,
+  getCollectionMeta,
+  renderCollection,
+} from "./collection";
 
 const CONTENT_DIR = "content/ideas";
 const SITE = "https://weekendmvp.app";
@@ -189,7 +193,7 @@ export async function generateStaticParams() {
   // Filesystem only — Convex may be unavailable at build time. listMdxSlugs
   // skips _-prefixed entries, which excludes content/ideas/_quarantine.
   const slugs = await listMdxSlugs(CONTENT_DIR);
-  return slugs.map((slug) => ({ slug }));
+  return [...slugs, ...COLLECTION_SLUGS].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -199,7 +203,32 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const resolved = await resolveIdea(slug);
-  if (!resolved) return {}; // collection hubs (U11) / 404 own their metadata
+  if (!resolved) {
+    // Collection hub fallback (U11): use the collection's own copy.
+    const collection = getCollectionMeta(slug);
+    if (collection) {
+      const collectionUrl = `${SITE}/ideas/${slug}`;
+      return {
+        title: { absolute: `${collection.title} | Weekend MVP` },
+        description: collection.description,
+        alternates: { canonical: `/ideas/${slug}` },
+        openGraph: {
+          type: "website",
+          url: collectionUrl,
+          title: `${collection.title} | Weekend MVP`,
+          description: collection.description,
+          images: [`${SITE}/image/og-image.png`],
+        },
+        twitter: {
+          card: "summary_large_image",
+          title: `${collection.title} | Weekend MVP`,
+          description: collection.description,
+          images: [`${SITE}/image/og-image.png`],
+        },
+      };
+    }
+    return {}; // 404 path
+  }
   const { title, description, ogImage } = resolved;
   const url = `${SITE}/ideas/${slug}`;
   const ogImageAbs = `${SITE}${ogImage}`;

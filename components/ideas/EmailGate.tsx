@@ -28,86 +28,13 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 import { trackEvent } from "@/lib/track";
-
-const STORAGE_KEY = "ideas_email";
-const NEWSLETTER_PLACEHOLDER = "__newsletter__";
+import {
+  isValidEmail,
+  resolveAccess,
+  subscribeToIdeas,
+} from "@/components/ideas/gate-access";
 
 type GateState = "checking" | "locked" | "unlocked";
-
-function isValidEmail(email: unknown): email is string {
-  return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function isLocalhost(): boolean {
-  return (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-  );
-}
-
-/** Remove a query param without reloading (gate.js stripParam). */
-function stripParam(paramName: string) {
-  try {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has(paramName)) return;
-    url.searchParams.delete(paramName);
-    const newSearch = url.searchParams.toString();
-    const newUrl =
-      url.pathname + (newSearch ? "?" + newSearch : "") + url.hash;
-    window.history.replaceState({}, "", newUrl);
-  } catch {
-    /* ignore */
-  }
-}
-
-/** gate.js verifyEmailWithBeehiiv: localhost is trusted, else /api/ideas-verify. */
-async function verifyEmailWithBeehiiv(email: string): Promise<boolean> {
-  if (isLocalhost()) return true;
-  try {
-    const res = await fetch("/api/ideas-verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (!res.ok) return false;
-    const data = (await res.json()) as { ok?: boolean };
-    return data?.ok === true;
-  } catch {
-    return false;
-  }
-}
-
-async function resolveAccess(): Promise<boolean> {
-  // 1. Already unlocked on this device.
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return true;
-
-  const params = new URLSearchParams(window.location.search);
-  const emailParam = params.get("e");
-  const isBeehiivClick = params.get("utm_source") === "beehiiv";
-
-  // 2. Newsletter deep link with ?e=<email> — verify against Beehiiv.
-  if (emailParam && isValidEmail(emailParam)) {
-    const ok = await verifyEmailWithBeehiiv(emailParam);
-    stripParam("e");
-    if (ok) {
-      localStorage.setItem(STORAGE_KEY, emailParam);
-      return true;
-    }
-  }
-
-  // 3. Trusted Beehiiv click without the email param.
-  if (isBeehiivClick) {
-    localStorage.setItem(STORAGE_KEY, NEWSLETTER_PLACEHOLDER);
-    return true;
-  }
-
-  // 4. Local development bypass.
-  if (isLocalhost()) return true;
-
-  // 5. Locked.
-  return false;
-}
 
 export function EmailGate({
   slug,
@@ -151,21 +78,7 @@ export function EmailGate({
     setSubmitting(true);
     setError(null);
     try {
-      if (!isLocalhost()) {
-        const response = await fetch("/api/ideas-subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, first_name: firstName }),
-        });
-        const data = (await response
-          .json()
-          .catch(() => ({}))) as { success?: boolean; error?: string };
-        if (!response.ok && !data.success) {
-          throw new Error(data.error || "Failed to subscribe");
-        }
-      }
-
-      localStorage.setItem(STORAGE_KEY, email);
+      await subscribeToIdeas(email, firstName);
       trackEvent("signup_form_success", {
         form_id: "ideas_gate",
         idea_slug: slug,
