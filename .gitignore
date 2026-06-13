@@ -67,3 +67,5 @@ next-env.d.ts
 
 # Convex
 .convex/
+tmp/
+tsconfig.tsbuildinfo
