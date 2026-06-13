@@ -147,7 +147,7 @@ async function fetchIdeaRow(slug: string): Promise<IdeaDoc | null> {
 async function ideaOgImage(slug: string): Promise<string> {
   try {
     await fs.access(
-      path.join(process.cwd(), "image", "og", "idea", `${slug}.png`),
+      path.join(process.cwd(), "public", "image", "og", "idea", `${slug}.png`),
     );
     return `/image/og/idea/${slug}.png`;
   } catch {
