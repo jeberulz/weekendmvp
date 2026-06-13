@@ -39,6 +39,14 @@ import {
   fetchRefTables,
   type IdeaDoc,
 } from "@/components/hubs/hub-data";
+import {
+  breadcrumbSchema,
+  buildGraph,
+  howToSchema,
+  personSchema,
+  softwareApplicationSchema,
+  websiteSchema,
+} from "@/lib/seo";
 
 const SITE = "https://weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
@@ -566,60 +574,31 @@ export async function generateMetadata({
 
 function buildSchema(page: ToolPage, data: ToolData) {
   const url = `${SITE}/build-with/${page.slug}`;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: `${SITE}/`,
-        name: "Weekend MVP",
-        publisher: { "@id": `${SITE}/#person` },
-      },
-      {
-        "@type": "SoftwareApplication",
-        name: page.name,
-        applicationCategory: "DeveloperApplication",
-        description: page.schemaDescription,
-        operatingSystem: page.operatingSystem,
-        url: data.url,
-      },
-      {
-        "@type": "HowTo",
-        name: `How to Get Started with ${page.name}`,
-        description: `Quick guide to start building projects with ${page.name}`,
-        step: data.gettingStarted.map((text, index) => ({
-          "@type": "HowToStep",
-          position: index + 1,
-          text,
-        })),
-      },
-      {
-        ...ideasItemList(data.ideas),
-        name: `Project Ideas for ${page.name}`,
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Build With",
-            item: `${SITE}/build-with/`,
-          },
-          { "@type": "ListItem", position: 3, name: page.name, item: url },
-        ],
-      },
-    ],
-  };
+  return buildGraph(
+    personSchema(),
+    websiteSchema(),
+    softwareApplicationSchema({
+      name: page.name,
+      applicationCategory: "DeveloperApplication",
+      description: page.schemaDescription,
+      operatingSystem: page.operatingSystem,
+      url: data.url,
+    }),
+    howToSchema({
+      name: `How to Get Started with ${page.name}`,
+      description: `Quick guide to start building projects with ${page.name}`,
+      steps: data.gettingStarted.map((text) => ({ text })),
+    }),
+    {
+      ...ideasItemList(data.ideas),
+      name: `Project Ideas for ${page.name}`,
+    },
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Build With", href: "/build-with/" },
+      { label: page.name, href: url },
+    ]),
+  );
 }
 
 /* ------------------------------------------------------------------ */

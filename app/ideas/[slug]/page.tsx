@@ -12,6 +12,14 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import {
+  articleSchema,
+  breadcrumbSchema,
+  buildGraph,
+  howToSchema,
+  personSchema,
+  softwareApplicationSchema,
+} from "@/lib/seo";
 import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
@@ -277,7 +285,14 @@ function buildSchema(slug: string, resolved: ResolvedIdea) {
   const solutionDescription =
     firstParagraph(sectionBody(content, "The Solution")) || description;
   const parsedSteps = howItWorksSteps(content);
-  const steps = parsedSteps.length === 3 ? parsedSteps : null;
+  const stepTexts =
+    parsedSteps.length === 3
+      ? parsedSteps
+      : HOWTO_STEP_NAMES.map(() => solutionDescription);
+  const steps = HOWTO_STEP_NAMES.map((name, i) => ({
+    name,
+    text: stepTexts[i],
+  }));
 
   const datePublished = idea
     ? new Date(idea.publishedAt).toISOString().slice(0, 10)
@@ -285,66 +300,34 @@ function buildSchema(slug: string, resolved: ResolvedIdea) {
   const buildHours =
     idea && /^\d+$/.test(idea.buildTime) ? idea.buildTime : undefined;
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "Article",
-        headline: title,
-        description,
-        author: { "@id": `${SITE}/#person` },
-        publisher: {
-          "@type": "Organization",
-          name: "Weekend MVP",
-          url: SITE,
-        },
-        ...(datePublished ? { datePublished } : {}),
-        mainEntityOfPage: url,
-        image: ogImageAbs,
-      },
-      {
-        "@type": "SoftwareApplication",
-        name: title,
-        applicationCategory: idea?.applicationCategory ?? "BusinessApplication",
-        operatingSystem: "Web",
-        description: solutionDescription,
-      },
-      {
-        "@type": "HowTo",
-        name: `Build ${title} MVP`,
-        description: `Step-by-step guide to building ${title} in a weekend.`,
-        ...(buildHours ? { totalTime: `PT${buildHours}H` } : {}),
-        step: (steps ?? HOWTO_STEP_NAMES.map(() => solutionDescription)).map(
-          (text, index) => ({
-            "@type": "HowToStep",
-            position: index + 1,
-            name: HOWTO_STEP_NAMES[index],
-            text,
-          }),
-        ),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Startup Ideas",
-            item: `${SITE}/startup-ideas`,
-          },
-          { "@type": "ListItem", position: 3, name: title, item: url },
-        ],
-      },
-    ],
-  };
+  return buildGraph(
+    personSchema(),
+    articleSchema({
+      title,
+      description,
+      slug,
+      pathPrefix: "/ideas",
+      datePublished,
+      image: ogImageAbs,
+      authorRef: true,
+    }),
+    softwareApplicationSchema({
+      name: title,
+      applicationCategory: idea?.applicationCategory ?? "BusinessApplication",
+      description: solutionDescription,
+    }),
+    howToSchema({
+      name: `Build ${title} MVP`,
+      description: `Step-by-step guide to building ${title} in a weekend.`,
+      steps,
+      totalTime: buildHours ? `PT${buildHours}H` : undefined,
+    }),
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
+      { label: title, href: url },
+    ]),
+  );
 }
 
 /* ------------------------------------------------------------------ */

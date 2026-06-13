@@ -168,7 +168,7 @@ export function itemListSchema(
 
 // ---------- HowTo ----------
 
-export type HowToStep = { name: string; text: string };
+export type HowToStep = { name?: string; text: string };
 
 export function howToSchema(input: {
   name: string;
@@ -180,12 +180,15 @@ export function howToSchema(input: {
     "@type": "HowTo",
     name: input.name,
     description: input.description,
-    step: input.steps.map((s, i) => ({
-      "@type": "HowToStep",
-      position: i + 1,
-      name: s.name,
-      text: s.text,
-    })),
+    step: input.steps.map((s, i) => {
+      const entry: Record<string, unknown> = {
+        "@type": "HowToStep",
+        position: i + 1,
+      };
+      if (s.name !== undefined) entry.name = s.name;
+      entry.text = s.text;
+      return entry;
+    }),
   };
   if (input.totalTime) schema.totalTime = input.totalTime;
   return schema;
@@ -198,6 +201,7 @@ export function softwareApplicationSchema(input: {
   description: string;
   applicationCategory: string;
   operatingSystem?: string;
+  url?: string;
   offers?: { price?: string; priceCurrency?: string };
 }) {
   const schema: Record<string, unknown> = {
@@ -207,6 +211,7 @@ export function softwareApplicationSchema(input: {
     applicationCategory: input.applicationCategory,
     operatingSystem: input.operatingSystem ?? "Web",
   };
+  if (input.url) schema.url = input.url;
   if (input.offers) {
     schema.offers = {
       "@type": "Offer",
@@ -300,6 +305,9 @@ export function buildGraph(...schemas: Array<Record<string, unknown> | null | un
 function toIsoDate(value: number | string | undefined): string | undefined {
   if (value === undefined || value === null) return undefined;
   if (typeof value === "string") {
+    // Preserve legacy YYYY-MM-DD strings verbatim (the format used by
+    // article/newsletter frontmatter and idea publishedAt slices).
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
     const parsed = Date.parse(value);
     if (Number.isFinite(parsed)) return new Date(parsed).toISOString();
     return undefined;

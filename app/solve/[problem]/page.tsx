@@ -23,6 +23,13 @@ import { HubCta } from "@/components/hubs/HubCta";
 import { HubIdeasGrid } from "@/components/hubs/HubIdeasGrid";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import { fetchAllIdeas } from "@/components/hubs/hub-data";
+import {
+  breadcrumbSchema,
+  buildGraph,
+  howToSchema,
+  personSchema,
+  websiteSchema,
+} from "@/lib/seo";
 
 const SITE = "https://weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
@@ -235,44 +242,20 @@ export async function generateMetadata({
 
 function buildSchema(page: SolvePage) {
   const url = `${SITE}/solve/${page.slug}`;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: `${SITE}/`,
-        name: "Weekend MVP",
-        publisher: { "@id": `${SITE}/#person` },
-      },
-      {
-        "@type": "HowTo",
-        name: page.title,
-        description: page.description,
-        step: page.steps.map((s, i) => ({
-          "@type": "HowToStep",
-          position: i + 1,
-          name: s.name,
-          text: s.text,
-        })),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          { "@type": "ListItem", position: 2, name: "Solve", item: `${SITE}/solve/` },
-          { "@type": "ListItem", position: 3, name: page.shortTitle, item: url },
-        ],
-      },
-    ],
-  };
+  return buildGraph(
+    personSchema(),
+    websiteSchema(),
+    howToSchema({
+      name: page.title,
+      description: page.description,
+      steps: page.steps,
+    }),
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Solve", href: "/solve/" },
+      { label: page.shortTitle, href: url },
+    ]),
+  );
 }
 
 /* ------------------------------------------------------------------ */

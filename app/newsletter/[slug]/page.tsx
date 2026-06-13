@@ -8,6 +8,7 @@ import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/newsletter-pages";
 const SITE = "https://weekendmvp.app";
@@ -227,27 +228,14 @@ async function CachedIssue({ slug }: { slug: string }) {
   // Mirrors the legacy per-issue JSON-LD Article block (same author shape).
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: fm.title,
-    description: fm.description,
-    author: {
-      "@type": "Person",
-      name: "John Iseghohi",
-      url: "https://cal.com/switchtoux",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Weekend MVP",
-      url: SITE,
-    },
-    ...(fm.publishedAt
-      ? { datePublished: fm.publishedAt, dateModified: fm.publishedAt }
-      : {}),
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${SITE}/newsletter/${slug}`,
-    },
-    image: `${SITE}/image/og/newsletter/${slug}.png`,
+    ...articleSchema({
+      title: fm.title,
+      description: fm.description,
+      slug,
+      pathPrefix: "/newsletter",
+      datePublished: fm.publishedAt,
+      image: `${SITE}/image/og/newsletter/${slug}.png`,
+    }),
   };
 
   return (

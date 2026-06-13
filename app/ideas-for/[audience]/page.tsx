@@ -40,6 +40,13 @@ import {
   fetchIdeasByAudience,
   fetchRefTables,
 } from "@/components/hubs/hub-data";
+import {
+  breadcrumbSchema,
+  buildGraph,
+  collectionPageSchema,
+  personSchema,
+  websiteSchema,
+} from "@/lib/seo";
 
 const SITE = "https://weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
@@ -403,48 +410,24 @@ function buildSchema(
   ideas: Awaited<ReturnType<typeof fetchIdeasByAudience>>,
 ) {
   const url = `${SITE}/ideas-for/${page.slug}`;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: `${SITE}/`,
-        name: "Weekend MVP",
-        publisher: { "@id": `${SITE}/#person` },
-      },
-      {
-        "@type": "CollectionPage",
-        name: page.title,
+  return buildGraph(
+    personSchema(),
+    websiteSchema(),
+    {
+      ...collectionPageSchema({
+        title: page.title,
         description,
         url,
-        isPartOf: { "@id": `${SITE}/#website` },
-        author: { "@id": `${SITE}/#person` },
-        audience: { "@type": "Audience", audienceType: page.name },
-        mainEntity: ideasItemList(ideas),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Ideas For",
-            item: `${SITE}/ideas-for/`,
-          },
-          { "@type": "ListItem", position: 3, name: page.name, item: url },
-        ],
-      },
-    ],
-  };
+        audienceType: page.name,
+      }),
+      mainEntity: ideasItemList(ideas),
+    },
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Ideas For", href: "/ideas-for/" },
+      { label: page.name, href: url },
+    ]),
+  );
 }
 
 /* ------------------------------------------------------------------ */

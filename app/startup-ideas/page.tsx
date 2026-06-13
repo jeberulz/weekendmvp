@@ -9,6 +9,14 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { CATEGORY_META, humanizeSlug } from "@/components/ideas/idea-meta";
+import {
+  breadcrumbSchema,
+  buildGraph,
+  collectionPageSchema,
+  faqPageSchema,
+  personSchema,
+  websiteSchema,
+} from "@/lib/seo";
 import { StartupIdeasGate } from "./StartupIdeasGate";
 import {
   IdeasExplorer,
@@ -227,70 +235,39 @@ const FAQ = [
 ];
 
 function buildSchema(data: StartupIdeasData) {
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: `${SITE}/`,
-        name: "Weekend MVP",
-        publisher: { "@id": `${SITE}/#person` },
-      },
-      {
-        "@type": "CollectionPage",
-        name: "Startup Ideas You Can Build This Weekend",
+  return buildGraph(
+    personSchema(),
+    websiteSchema(),
+    {
+      ...collectionPageSchema({
+        title: "Startup Ideas You Can Build This Weekend",
         description:
           "Research-backed startup ideas for busy professionals who want to ship something real without quitting their day job.",
         url: `${SITE}/startup-ideas`,
-        isPartOf: { "@id": `${SITE}/#website` },
-        author: { "@id": `${SITE}/#person` },
-        mainEntity: {
-          "@type": "ItemList",
-          numberOfItems: data.ideas.length,
-          itemListElement: data.ideas.map((idea, index) => ({
-            "@type": "ListItem",
-            position: index + 1,
-            item: {
-              "@type": "SoftwareApplication",
-              name: idea.title,
-              applicationCategory:
-                data.applicationCategories[idea.slug] ?? "BusinessApplication",
-              description: idea.description,
-              url: `${SITE}/ideas/${idea.slug}`,
-            },
-          })),
-        },
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Startup Ideas",
-            item: `${SITE}/startup-ideas`,
+      }),
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: data.ideas.length,
+        itemListElement: data.ideas.map((idea, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "SoftwareApplication",
+            name: idea.title,
+            applicationCategory:
+              data.applicationCategories[idea.slug] ?? "BusinessApplication",
+            description: idea.description,
+            url: `${SITE}/ideas/${idea.slug}`,
           },
-        ],
-      },
-      {
-        "@type": "FAQPage",
-        mainEntity: FAQ.map(({ question, answer }) => ({
-          "@type": "Question",
-          name: question,
-          acceptedAnswer: { "@type": "Answer", text: answer },
         })),
       },
-    ],
-  };
+    },
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Startup Ideas", href: "/startup-ideas" },
+    ]),
+    faqPageSchema(FAQ),
+  );
 }
 
 /* ------------------------------------------------------------------ */

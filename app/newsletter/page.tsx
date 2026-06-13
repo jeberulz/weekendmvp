@@ -10,6 +10,7 @@ import { MegaNav } from "@/components/layout/MegaNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { buildGraph } from "@/lib/seo";
 
 const SITE = "https://weekendmvp.app";
 const CONTENT_DIR = "content/newsletter-pages";
@@ -211,32 +212,27 @@ async function CachedNewsletterPage() {
 
   // CollectionPage + ItemList ported from the newsletter.html JSON-LD
   // (extensionless URLs).
-  const schema = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        name: "The Weekend MVP Newsletter",
-        description:
-          "Twice-daily newsletter for weekend builders. Fresh startup ideas every morning, deeper build guides every afternoon.",
-        url: `${SITE}/newsletter`,
-        mainEntity: {
-          "@type": "ItemList",
-          numberOfItems: issues.length,
-          itemListElement: issues.map((issue, index) => ({
-            "@type": "ListItem",
-            position: index + 1,
-            item: {
-              "@type": "Article",
-              name: issue.title,
-              url: `${SITE}/newsletter/${issue.slug}`,
-              ...(issue.isoDate ? { datePublished: issue.isoDate } : {}),
-            },
-          })),
+  const schema = buildGraph({
+    "@type": "CollectionPage",
+    name: "The Weekend MVP Newsletter",
+    description:
+      "Twice-daily newsletter for weekend builders. Fresh startup ideas every morning, deeper build guides every afternoon.",
+    url: `${SITE}/newsletter`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: issues.length,
+      itemListElement: issues.map((issue, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "Article",
+          name: issue.title,
+          url: `${SITE}/newsletter/${issue.slug}`,
+          ...(issue.isoDate ? { datePublished: issue.isoDate } : {}),
         },
-      },
-    ],
-  };
+      })),
+    },
+  });
 
   return (
     <main className="relative z-10">

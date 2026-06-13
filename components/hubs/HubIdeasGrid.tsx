@@ -1,43 +1,28 @@
-import Link from "next/link";
-
+import { IdeaCard } from "@/components/primitives/IdeaCard";
 import type { IdeaDoc } from "@/components/hubs/hub-data";
 import { categoryColor, categoryLabel } from "@/components/hubs/hub-theme";
 
 /**
- * Idea card grid matching the legacy generated markup
- * (generateIdeasGrid in scripts/generate-programmatic-pages.js /
- * renderCards in scripts/sync-build-with.js): category badge + ~hours,
- * title, two-line description.
+ * Idea card grid for hub pages. Thin wrapper around the shared IdeaCard
+ * primitive (variant="default", surface="translucent") — the per-card
+ * category badge tint comes from hub-theme.ts's categoryColor() map.
  */
-
-function truncate(text: string, max = 120): string {
-  return text.length > max ? `${text.slice(0, max - 3)}...` : text;
-}
 
 export function HubIdeaCard({ idea }: { idea: IdeaDoc }) {
   const color = categoryColor(idea.category);
   return (
-    <Link
-      href={`/ideas/${idea.slug}`}
-      className="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <span
-          className={`px-2 py-1 ${color.badge} text-[10px] font-bold uppercase rounded-full`}
-        >
-          {categoryLabel(idea.category)}
-        </span>
-        <span className="text-neutral-600 text-xs">
-          ~{idea.buildTime || 8} hours
-        </span>
-      </div>
-      <h3 className="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">
-        {idea.title}
-      </h3>
-      <p className="text-neutral-500 text-sm line-clamp-2">
-        {truncate(idea.description)}
-      </p>
-    </Link>
+    <IdeaCard
+      surface="translucent"
+      idea={{
+        slug: idea.slug,
+        title: idea.title,
+        description: idea.description,
+        category: idea.category,
+        categoryLabel: categoryLabel(idea.category),
+        buildTimeLabel: `~${idea.buildTime || 8} hours`,
+        badgeClass: `${color.badge} rounded-full`,
+      }}
+    />
   );
 }
 

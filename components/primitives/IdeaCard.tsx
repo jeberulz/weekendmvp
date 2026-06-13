@@ -31,21 +31,36 @@ export type IdeaCardData = {
   categoryLabel?: string | null;
   /** Hours to build (string from manifest or number). */
   buildTime?: string | number | null;
-  /** "deep" | "summary" — drives the Deep Research / Quick Idea chip. */
+  /** Pre-formatted meta chip text (e.g. "8 hours"). Bypasses the buildTime fallback. */
+  buildTimeLabel?: string | null;
+  /** "deep" | "summary" -- drives the Deep Research / Quick Idea chip. */
   researchLevel?: "deep" | "summary" | string | null;
+  /**
+   * Per-category badge tint classes (hubs + homepage Featured Ideas).
+   * Overrides the default `.idea-badge` orange. Pass full class strings.
+   */
+  badgeClass?: string | null;
 };
 
 export type IdeaCardVariant = "default" | "compact" | "featured";
 export type IdeaCardTheme = "dark" | "cream";
+/**
+ * Surface treatment.
+ *   - elevated:    bg-[#0A0A0A] / bg-neutral-100 (IdeasExplorer, RelatedIdeas)
+ *   - translucent: bg-white/5 (hubs, homepage Featured Ideas)
+ */
+export type IdeaCardSurface = "elevated" | "translucent";
 
 type IdeaCardProps = {
   idea: IdeaCardData;
   variant?: IdeaCardVariant;
   theme?: IdeaCardTheme;
+  surface?: IdeaCardSurface;
   /** Override the link target. Defaults to /ideas/{slug}. */
   href?: string;
   /** Hide the card from layout while keeping it in the DOM (filter UIs). */
   hidden?: boolean;
+  /** Append additional classes (animate-enter, layout overrides, etc.). */
   className?: string;
 };
 
@@ -53,9 +68,17 @@ function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 3)}...` : text;
 }
 
-const SURFACE: Record<IdeaCardTheme, string> = {
-  dark: "bg-[#0A0A0A] border border-white/5 hover:border-white/10",
-  cream: "bg-neutral-100 border border-neutral-200 hover:border-neutral-300",
+const SURFACE: Record<IdeaCardTheme, Record<IdeaCardSurface, string>> = {
+  dark: {
+    elevated: "bg-[#0A0A0A] border border-white/5 hover:border-white/10",
+    translucent:
+      "bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/[0.07]",
+  },
+  cream: {
+    elevated:
+      "bg-neutral-100 border border-neutral-200 hover:border-neutral-300",
+    translucent: "bg-white/60 border border-black/10 hover:border-black/20",
+  },
 };
 
 const TITLE: Record<IdeaCardTheme, string> = {
@@ -82,11 +105,16 @@ export function IdeaCard({
   idea,
   variant = "default",
   theme = "dark",
+  surface = "elevated",
   href,
   hidden = false,
   className,
 }: IdeaCardProps) {
   const target = href ?? `/ideas/${idea.slug}`;
+  const surfaceClass = SURFACE[theme][surface];
+  const buildTimeText =
+    idea.buildTimeLabel ??
+    (idea.buildTime != null ? `${idea.buildTime} hours` : null);
 
   if (variant === "compact") {
     return (
@@ -94,7 +122,7 @@ export function IdeaCard({
         href={target}
         className={cn(
           "idea-card group block p-4 rounded-2xl transition-all",
-          SURFACE[theme],
+          surfaceClass,
           hidden && "hidden",
           className,
         )}
@@ -128,22 +156,28 @@ export function IdeaCard({
         href={target}
         className={cn(
           "idea-card group block p-8 rounded-3xl transition-all",
-          SURFACE[theme],
+          surfaceClass,
           hidden && "hidden",
           className,
         )}
         data-category={idea.category ?? undefined}
       >
-        {idea.categoryLabel || idea.buildTime ? (
+        {idea.categoryLabel || buildTimeText ? (
           <div className="flex items-center gap-3 mb-5">
             {idea.categoryLabel ? (
-              <span className="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">
+              <span
+                className={cn(
+                  "px-2 py-1 text-[10px] font-semibold uppercase tracking-wider",
+                  idea.badgeClass ?? "idea-badge rounded-md",
+                  !idea.badgeClass && "rounded-md",
+                )}
+              >
                 {idea.categoryLabel}
               </span>
             ) : null}
-            {idea.buildTime ? (
+            {buildTimeText ? (
               <span className={cn("text-xs", META[theme])}>
-                ~{idea.buildTime} hours
+                {idea.buildTimeLabel ? buildTimeText : `~${buildTimeText}`}
               </span>
             ) : null}
           </div>
@@ -171,17 +205,28 @@ export function IdeaCard({
       href={target}
       className={cn(
         "idea-card group block p-6 rounded-2xl transition-all",
-        SURFACE[theme],
+        surfaceClass,
         hidden && "hidden",
         className,
       )}
       data-category={idea.category ?? undefined}
     >
-      {idea.categoryLabel || idea.researchLevel ? (
+      {idea.categoryLabel || idea.researchLevel || buildTimeText ? (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           {idea.categoryLabel ? (
-            <span className="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">
+            <span
+              className={cn(
+                "px-2 py-1 text-[10px] font-semibold uppercase tracking-wider",
+                idea.badgeClass ?? "idea-badge rounded-md",
+                !idea.badgeClass && "rounded-md",
+              )}
+            >
               {idea.categoryLabel}
+            </span>
+          ) : null}
+          {idea.buildTimeLabel && surface === "translucent" ? (
+            <span className={cn("text-xs", META[theme])}>
+              {idea.buildTimeLabel}
             </span>
           ) : null}
           {idea.researchLevel === "deep" ? (
@@ -204,11 +249,19 @@ export function IdeaCard({
         {idea.title}
       </h3>
       {idea.description ? (
-        <p className={cn("text-sm leading-relaxed mb-4", BODY[theme])}>
-          {truncate(idea.description, 160)}
+        <p
+          className={cn(
+            "text-sm leading-relaxed mb-4",
+            surface === "translucent" && "line-clamp-2",
+            BODY[theme],
+          )}
+        >
+          {surface === "translucent"
+            ? truncate(idea.description, 120)
+            : truncate(idea.description, 160)}
         </p>
       ) : null}
-      {idea.buildTime ? (
+      {idea.buildTime && surface === "elevated" ? (
         <div className={cn("flex items-center gap-2 text-xs", META[theme])}>
           <Clock size={14} aria-hidden="true" />
           <span>~{idea.buildTime} hours to build</span>

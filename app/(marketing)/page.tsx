@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+
+import { IdeaCard } from "@/components/primitives/IdeaCard";
 import { ArrowRight } from "lucide-react";
 
 import { BeehiivSubscribeForm } from "@/components/forms/BeehiivSubscribeForm";
@@ -235,14 +237,19 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {FEATURED_IDEAS.map((idea) => (
-              <Link key={idea.slug} href={`/ideas/${idea.slug}`} className={`animate-enter ${idea.delay} group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 transition-all`}>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className={`px-2 py-1 ${idea.badgeClass} text-[10px] font-bold uppercase rounded-full`}>{idea.categoryLabel}</span>
-                  <span className="text-neutral-600 text-xs">{idea.buildTime}</span>
-                </div>
-                <h3 className="text-white font-medium mb-2 group-hover:text-neutral-200 transition-colors">{idea.title}</h3>
-                <p className="text-neutral-500 text-sm line-clamp-2">{idea.description}</p>
-              </Link>
+              <IdeaCard
+                key={idea.slug}
+                surface="translucent"
+                className={`animate-enter ${idea.delay}`}
+                idea={{
+                  slug: idea.slug,
+                  title: idea.title,
+                  description: idea.description,
+                  categoryLabel: idea.categoryLabel,
+                  buildTimeLabel: idea.buildTime,
+                  badgeClass: `${idea.badgeClass} rounded-full`,
+                }}
+              />
             ))}
           </div>
           <div className="mt-8 text-center md:hidden">

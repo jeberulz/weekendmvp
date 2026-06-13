@@ -31,6 +31,13 @@ import {
   fetchIdeasByCategory,
   fetchIdeasByRevenueGoal,
 } from "@/components/hubs/hub-data";
+import {
+  breadcrumbSchema,
+  buildGraph,
+  collectionPageSchema,
+  personSchema,
+  websiteSchema,
+} from "@/lib/seo";
 
 const SITE = "https://weekendmvp.app";
 
@@ -354,45 +361,24 @@ function buildCollectionSchema(
   ideas: Awaited<ReturnType<typeof fetchAllIdeas>>,
 ) {
   const url = `${SITE}/ideas/${def.slug}`;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Person",
-        "@id": `${SITE}/#person`,
-        name: "John Iseghohi",
-        jobTitle: "Product Builder & MVP Specialist",
-        url: "https://cal.com/switchtoux",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE}/#website`,
-        url: `${SITE}/`,
-        name: "Weekend MVP",
-        publisher: { "@id": `${SITE}/#person` },
-      },
-      {
-        "@type": "CollectionPage",
-        name: def.title,
+  return buildGraph(
+    personSchema(),
+    websiteSchema(),
+    {
+      ...collectionPageSchema({
+        title: def.title,
         description: def.description,
         url,
-        isPartOf: { "@id": `${SITE}/#website` },
-        author: { "@id": `${SITE}/#person` },
-        mainEntity: ideasItemList(ideas),
-      },
+      }),
+      mainEntity: ideasItemList(ideas),
+    },
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Ideas", href: "/startup-ideas" },
       {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
-          { "@type": "ListItem", position: 2, name: "Ideas", item: `${SITE}/startup-ideas` },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: def.title.replace(" Startup Ideas", "").trim(),
-            item: url,
-          },
-        ],
+        label: def.title.replace(" Startup Ideas", "").trim(),
+        href: url,
       },
-    ],
-  };
+    ]),
+  );
 }

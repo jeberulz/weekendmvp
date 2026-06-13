@@ -5,6 +5,7 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { breadcrumbSchema, buildGraph } from "@/lib/seo";
 import { ArticlesIndex, type ArticleCard } from "./ArticlesIndex";
 
 const SITE = "https://weekendmvp.app";
@@ -148,43 +149,32 @@ async function CachedArticlesPage() {
 
   // CollectionPage + ItemList ported from the articles.html JSON-LD
   // (extensionless URLs, positions normalized).
-  const schema = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        name: "Weekend MVP Articles",
-        description:
-          "Guides, frameworks, and ideas for shipping your weekend MVP.",
-        url: `${SITE}/articles`,
-        mainEntity: {
-          "@type": "ItemList",
-          numberOfItems: articles.length,
-          itemListElement: articles.map((article, index) => ({
-            "@type": "ListItem",
-            position: index + 1,
-            item: {
-              "@type": "Article",
-              name: article.title,
-              url: `${SITE}/articles/${article.slug}`,
-            },
-          })),
-        },
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: SITE },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Articles",
-            item: `${SITE}/articles`,
+  const schema = buildGraph(
+    {
+      "@type": "CollectionPage",
+      name: "Weekend MVP Articles",
+      description:
+        "Guides, frameworks, and ideas for shipping your weekend MVP.",
+      url: `${SITE}/articles`,
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: articles.length,
+        itemListElement: articles.map((article, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Article",
+            name: article.title,
+            url: `${SITE}/articles/${article.slug}`,
           },
-        ],
+        })),
       },
-    ],
-  };
+    },
+    breadcrumbSchema([
+      { label: "Home", href: "/" },
+      { label: "Articles", href: "/articles" },
+    ]),
+  );
 
   return (
     <main className="relative z-10">

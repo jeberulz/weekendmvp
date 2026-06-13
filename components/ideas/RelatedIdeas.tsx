@@ -5,10 +5,10 @@
  * nothing, the page still works.
  */
 
-import Link from "next/link";
 import { fetchQuery } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
+import { IdeaCard } from "@/components/primitives/IdeaCard";
 import { categoryName } from "@/components/ideas/idea-meta";
 
 type RelatedIdea = {
@@ -40,18 +40,17 @@ export async function RelatedIdeas({
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {related.map((idea) => (
-          <Link
+          <IdeaCard
             key={idea.slug}
-            href={`/ideas/${idea.slug}`}
-            className="idea-card group p-4 bg-neutral-100 border border-neutral-200 rounded-2xl hover:border-neutral-300 transition-all"
-          >
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-              {categoryName(idea.category)}
-            </span>
-            <h4 className="idea-title text-sm font-medium text-neutral-900 group-hover:text-black transition-colors mt-1">
-              {idea.title}
-            </h4>
-          </Link>
+            variant="compact"
+            theme="cream"
+            idea={{
+              slug: idea.slug,
+              title: idea.title,
+              category: idea.category,
+              categoryLabel: categoryName(idea.category),
+            }}
+          />
         ))}
       </div>
     </div>

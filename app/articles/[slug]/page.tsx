@@ -6,6 +6,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/articles";
 const SITE = "https://weekendmvp.app";
@@ -139,27 +140,13 @@ async function CachedArticle({ slug }: { slug: string }) {
   // Mirrors the legacy per-article JSON-LD Article block (same author shape).
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: fm.title,
-    description: fm.description,
-    author: {
-      "@type": "Person",
-      name: "John Iseghohi",
-      url: "https://cal.com/switchtoux",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Weekend MVP",
-      url: SITE,
-    },
-    ...(fm.publishedAt
-      ? { datePublished: fm.publishedAt, dateModified: fm.publishedAt }
-      : {}),
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${SITE}/articles/${slug}`,
-    },
-    image: ogImage,
+    ...articleSchema({
+      title: fm.title,
+      description: fm.description,
+      slug,
+      datePublished: fm.publishedAt,
+      image: ogImage,
+    }),
   };
 
   return (

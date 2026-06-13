@@ -22,8 +22,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { Clock, Search } from "lucide-react";
+import { Search } from "lucide-react";
+
+import { IdeaCard as SharedIdeaCard } from "@/components/primitives/IdeaCard";
 
 export type IdeaCardData = {
   slug: string;
@@ -90,45 +91,22 @@ function matches(idea: IdeaCardData, category: string, query: string): boolean {
   return matchesCategory && matchesSearch;
 }
 
-/** One idea card — markup ported verbatim from the legacy idea-card. */
+/** One idea card — composes the shared IdeaCard primitive (elevated, dark). */
 function IdeaCard({ idea, hidden }: { idea: IdeaCardData; hidden: boolean }) {
   return (
-    <Link
-      href={`/ideas/${idea.slug}`}
-      className={`idea-card group block p-6 bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all${hidden ? " hidden" : ""}`}
-      data-category={idea.category ?? undefined}
-    >
-      {idea.categoryLabel || idea.researchLevel ? (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          {idea.categoryLabel ? (
-            <span className="idea-badge px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider">
-              {idea.categoryLabel}
-            </span>
-          ) : null}
-          {idea.researchLevel === "deep" ? (
-            <span className="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-sky-500/10 text-sky-300/70 border border-sky-500/20">
-              Deep Research
-            </span>
-          ) : idea.researchLevel ? (
-            <span className="px-2 py-1 rounded-md text-[10px] font-medium uppercase tracking-wider bg-white/5 text-neutral-500 border border-white/10">
-              Quick Idea
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-      <h3 className="idea-title text-lg font-medium text-white mb-2 transition-colors">
-        {idea.title}
-      </h3>
-      <p className="text-sm text-neutral-500 leading-relaxed mb-4">
-        {idea.description}
-      </p>
-      {idea.buildTime ? (
-        <div className="flex items-center gap-2 text-xs text-neutral-600">
-          <Clock size={14} aria-hidden="true" />
-          <span>~{idea.buildTime} hours to build</span>
-        </div>
-      ) : null}
-    </Link>
+    <SharedIdeaCard
+      surface="elevated"
+      hidden={hidden}
+      idea={{
+        slug: idea.slug,
+        title: idea.title,
+        description: idea.description,
+        category: idea.category ?? undefined,
+        categoryLabel: idea.categoryLabel,
+        buildTime: idea.buildTime ?? undefined,
+        researchLevel: idea.researchLevel,
+      }}
+    />
   );
 }
 
