@@ -2388,6 +2388,52 @@
         "timing": 9,
         "builder_confidence": 8
       }
+    },
+    {
+      "slug": "ai-cpg-packaging-designer",
+      "title": "AI CPG Packaging Designer",
+      "publishedAt": "2026-06-13",
+      "category": "ai-tools",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "designers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "description": "Turn a product brief into shelf-ready, print-correct CPG packaging in a day. AI generates carton, pouch, and label concepts on real dielines with compliant nutrition panels — not generic logos.",
+      "source": "ideabrowser:33",
+      "og": {
+        "subject": "A single unlabeled product carton standing on a dark studio table, one aubergine rim-light tracing its edges, faint dieline guide-marks glowing along the fold, very shallow focus, no legible text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 2145,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-13T12:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "researchLevel": "standard"
     }
   ],
   "categories": [
