@@ -54,7 +54,7 @@ This file contains:
 7. **Writes original, researched content** following the chosen framework
 8. **Writes the MDX article** to `content/articles/{slug}.mdx` (rich frontmatter + markdown body)
 9. **Appends the manifest entry** to `articles/manifest.json` (metadata + OG subject/accent)
-10. **Seeds Convex** via `npm run seed:convex` so the article wires into the `/articles` index
+10. **Seeds Convex (dev AND `--prod`)** via `npm run seed:convex` so the article wires into the `/articles` index — the live index reads the **production** deployment, so the `--prod` seed is required for online visibility
 11. **Generates the OG/hero card** via `npm run og:generate` (non-blocking)
 12. **Marks topic as PUBLISHED** in research.md
 13. **Reports** what was created with sources
@@ -403,22 +403,28 @@ See `IMAGES.md` for the full prompt-writing guide.
 
 See `IMAGES.md` for the full prompt-writing guide referenced above.
 
-### Step 10: Seed Convex (REQUIRED for index visibility)
+### Step 10: Seed Convex — DEV **and** PROD (REQUIRED for index visibility)
 
-The `/articles` index (`app/articles/page.tsx`) lists articles from the filesystem MDX but overlays Convex for `publishedAt`. Seed Convex so the new entry is fully wired:
+The `/articles` index (`app/articles/page.tsx`) **lists from Convex** — `fetchQuery(api.articles.list)` is the source of truth, and the filesystem MDX is only a build-time fallback when Convex is unreachable. This means an article is **NOT on the live index** until the **production** Convex deployment is seeded. Seeding only dev makes it appear locally but stay invisible on weekendmvp.app.
+
+Seed **both** deployments:
 
 ```bash
-npm run seed:convex -- --only articles
+npm run seed:convex -- --only articles          # dev deployment (local preview)
+npm run seed:convex -- --only articles --prod    # production deployment (LIVE site) — REQUIRED
 ```
 
-(Plain `npm run seed:convex` re-seeds everything idempotently — upsert by slug — and is also fine.)
+(Plain `npm run seed:convex [--prod]` re-seeds everything idempotently — upsert by slug — and is also fine.)
 
-**Prerequisite:** the Convex **dev** deployment must be running. In a separate terminal:
-```bash
-npx convex dev
-```
+The prod upsert (`convex/articles.upsertBySlug`) automatically schedules `internal.revalidate.run` with the `articles` cache tag, which calls `https://weekendmvp.app/api/revalidate` and busts the cached index page — so the article shows up live within seconds, no redeploy needed.
 
-**Failure mode:** if `npx convex dev` is not running, `seed:convex` errors because it cannot reach the deployment. The MDX page at `/articles/{slug}` still renders from disk, but the `/articles` index `publishedAt` overlay won't update until you start Convex dev and re-run the seed. Surface this clearly — do **not** report the article as fully live if seeding failed.
+**Prerequisites:**
+- **Dev seed:** the Convex **dev** deployment must be running (`npx convex dev` in a separate terminal).
+- **Prod seed:** you must have access to the production deployment (`npx convex run … --prod` auth). The prod deployment already has the seed functions deployed.
+
+**Failure modes:**
+- If the **dev** seed errors (Convex dev not running), the local `/articles` index won't update.
+- **If you skip the `--prod` seed, the article renders at `/articles/{slug}` but never appears on the live `/articles` index.** This is the #1 "I can't see my article" cause. Always run the prod seed and confirm it reports `inserted`/`updated` for the new slug. Do **not** report the article as live on the index until the prod seed succeeds.
 
 ### Step 11: Generate the OG/Hero Card (non-blocking — never fails the publish)
 
@@ -529,7 +535,7 @@ After completion, report:
 **Files created/modified:**
 - content/articles/{slug}.mdx (new — rich frontmatter + markdown body)
 - articles/manifest.json (entry appended with og.subject + og.accent + og.status)
-- Convex (seeded via `npm run seed:convex` — `/articles` index overlay)
+- Convex (seeded dev + `--prod` via `npm run seed:convex` — the `--prod` seed is what makes the article appear on the live `/articles` index)
 - image/og/article/{slug}.png (new — composed OG card, IF og.status=ready; also the in-page hero)
 - .claude/skills/publish-article/topics/research.md (topic marked as published)
 
@@ -577,7 +583,7 @@ Before marking complete:
 - [ ] No HTML/head/nav/footer/hero/JSON-LD emitted (the route owns all of it)
 - [ ] `heroAlt` frontmatter is descriptive and non-empty
 - [ ] `articles/manifest.json` appended with new entry (og.subject + og.accent + og.status: "pending")
-- [ ] Ran `npm run seed:convex -- --only articles` (Convex dev running); seed result reported
+- [ ] Ran `npm run seed:convex -- --only articles` (dev) **AND** `npm run seed:convex -- --only articles --prod` (production — required for live index visibility); both seed results reported
 - [ ] Ran `npm run og:generate -- --slug {slug} --surface article --non-blocking` (Step 11)
 - [ ] Confirmed og.status is "ready" or "failed" (publish proceeds either way)
 - [ ] **Topic marked as PUBLISHED in research.md** (REQUIRED)

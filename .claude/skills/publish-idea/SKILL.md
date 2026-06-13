@@ -25,7 +25,7 @@ Practical consequences:
 - The `HowTo` schema is parsed from the MDX body: the `## The Solution` section **must** contain a `**How it works:**` line followed by a numbered list (`1.` / `2.` / `3.`). Those become the HowTo steps.
 - The idea's meta description comes from the `manifest.json` `description` field; if absent the route falls back to an `excerpt()` of the first paragraph. Always set `description` in the manifest.
 - Slugs must match `^[a-z0-9-]+$` (validated in `lib/mdx.tsx`). Files starting with `_` are excluded.
-- **An idea is NOT live until it is seeded into Convex.** The grid and all hub pages query Convex first; MDX is only a build-time fallback for the individual page. Skipping `seed:convex` means the page may render at `/ideas/{slug}` but never appears in the `/startup-ideas` grid or hubs.
+- **An idea is NOT live until it is seeded into the PRODUCTION Convex deployment.** The grid and all hub pages query Convex first; MDX is only a build-time fallback for the individual page. The live site reads the **production** deployment — so a plain `npm run seed:convex` (dev) is not enough. You must also run `npm run seed:convex -- --prod`. Skipping the prod seed means the page may render at `/ideas/{slug}` but never appears in the live `/startup-ideas` grid or hubs.
 
 ---
 
@@ -521,17 +521,21 @@ wc -w content/ideas/{slug}.mdx                  # expect ~800+ words
 
 If any check fails, fix the MDX before continuing. Do not set `provenance.auditPassed: true` until this passes.
 
-### Step 8: Seed Convex (required for grid/hub visibility)
+### Step 8: Seed Convex — DEV **and** PROD (required for grid/hub visibility)
 
-Push the idea (and the rest of the manifest) into Convex so it appears in `/startup-ideas` and all hub pages:
+Push the idea (and the rest of the manifest) into Convex so it appears in `/startup-ideas` and all hub pages. The grid and hubs **list from Convex** (MDX is only a build-time fallback), so the idea is **NOT on the live grid** until the **production** deployment is seeded. Seed **both**:
 
 ```bash
-npm run seed:convex
+npm run seed:convex            # dev deployment (local preview)
+npm run seed:convex -- --prod   # production deployment (LIVE site) — REQUIRED for grid/hub visibility
 ```
 
-- Seeds the **dev** Convex deployment (no `--prod`). It is **idempotent** — upserts by slug, so re-running is safe and re-seeds the whole manifest.
-- **Prerequisite:** `npx convex dev` must be running in another terminal (or the seed functions must already be deployed via `npx convex deploy`). The seed script calls deployed Convex mutations.
-- **Failure signature:** if Convex dev is not running, the command errors with a connection/deployment-not-found message and exits non-zero — it does **not** seed. If this happens, the idea page may still render at `/ideas/{slug}` (MDX fallback) but **will NOT appear in the grid or hubs**. Do not report the idea as "live" on the grid until seeding succeeds. Tell the user: start `npx convex dev`, then re-run `npm run seed:convex`.
+- Both are **idempotent** — upsert by slug, so re-running is safe and re-seeds the whole manifest.
+- The prod upsert auto-schedules cache revalidation (`internal.revalidate.run` → `https://weekendmvp.app/api/revalidate`) for the `ideas`/affected hub tags, so the grid updates live within seconds — no redeploy needed.
+- **Prerequisites:** dev seed needs `npx convex dev` running (or seed functions deployed via `npx convex deploy`); prod seed needs production deployment access.
+- **Failure signatures:**
+  - Dev seed fails (Convex dev not running) → local grid won't update.
+  - **Skipping the `--prod` seed → the idea renders at `/ideas/{slug}` but never appears in the live `/startup-ideas` grid or hubs.** This is the #1 "I can't see my idea" cause. Always run the prod seed and confirm it reports `inserted`/`updated`. Do **not** claim grid/hub visibility until the prod seed succeeds.
 - Dry-run preview (optional): `npm run seed:convex -- --dry-run`.
 
 ### Step 9: Generate the per-page OG card (best-effort, never blocks publish)
@@ -618,7 +622,7 @@ Before marking complete:
 - [ ] Added `ideas/manifest.json` entry with full provenance (researchCalls, citations, wordCount, auditPassed, auditRunAt), `description`, `scores` (Mode A only), `source`, `applicationCategory`
 - [ ] Manifest entry includes `og.subject` + `og.accent` + `og.status: "pending"`
 - [ ] Passed the Step 7 manual section gate (8 `##` sections, How-it-works list, ≥ ~800 words, no placeholders)
-- [ ] Ran `npm run seed:convex` and confirmed it succeeded (idea now in grid/hubs); if it failed, surfaced the `npx convex dev` fix and did NOT claim grid visibility
+- [ ] Ran `npm run seed:convex` (dev) **AND** `npm run seed:convex -- --prod` (production — required for live grid/hub visibility) and confirmed both succeeded; if either failed, surfaced the fix and did NOT claim grid visibility
 - [ ] Ran `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Confirmed `og.status` is `"ready"` or `"failed"` (publish proceeds either way)
 - [ ] Verified `/ideas/{slug}` renders all 8 sections in `npm run dev`

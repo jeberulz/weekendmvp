@@ -202,16 +202,24 @@ non-imported icon, a missing `categoryMatches`, `{count}` left out of a tool's
 ### Step 5 — Seed Convex (if you touched manifest tags or ref blocks)
 
 ```bash
-npm run seed:convex          # dev deployment; upserts by slug, idempotent
+npm run seed:convex            # dev deployment; upserts by slug, idempotent
+npm run seed:convex -- --prod   # production deployment — REQUIRED for live hub/grid visibility
 # or scope it:
-npm run seed:convex -- --only refs     # just the reference tables
+npm run seed:convex -- --only refs            # just the reference tables (dev)
+npm run seed:convex -- --only refs --prod     # ...and on production
 ```
 
+**Live hubs read the PRODUCTION Convex deployment**, so a dev-only seed updates
+local preview but not the live site. Always run the `--prod` seed too; the prod
+upsert auto-triggers cache revalidation (`/api/revalidate`) so the hub updates
+within seconds, no redeploy.
+
 **Prerequisite:** the Convex dev deployment must be running
-(`npx convex dev` in another terminal) or deployed. If seeding fails with a
-connection error, that is the fix — surface it clearly; do **not** claim the hub
-is populated until the seed succeeds. Use `npm run seed:convex -- --dry-run`
-to preview without writing.
+(`npx convex dev` in another terminal) or deployed; the `--prod` seed needs
+production deployment access. If seeding fails with a connection error, that is
+the fix — surface it clearly; do **not** claim the hub is populated until the
+(prod) seed succeeds. Use `npm run seed:convex -- --dry-run` to preview without
+writing.
 
 > Pure config-only edits (e.g. a `problem` reusing existing categories) need no
 > reseed — the ideas are already in Convex. Reseed only when you changed
@@ -354,7 +362,7 @@ Your job is just clean, accurate copy in the config fields.
 - [ ] `color` is a valid `HubColor`; `icon` imported in the route file
 - [ ] (tool) `titlePattern` contains the literal `{count}`; slug added to
       `BUILD_WITH_SLUGS` in `app/sitemap.ts`
-- [ ] Ideas tagged in `ideas/manifest.json` and **seeded** (`npm run seed:convex`)
+- [ ] Ideas tagged in `ideas/manifest.json` and **seeded to dev AND prod** (`npm run seed:convex` + `npm run seed:convex -- --prod` — prod required for live hub visibility)
       so the hub isn't empty — ≥3 ideas
 - [ ] `npm run typecheck` passes
 - [ ] Hub route renders in `npm run dev` and shows the curated ideas
