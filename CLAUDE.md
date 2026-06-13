@@ -199,6 +199,21 @@ When implementing email subscriptions, follow `BEEHIIV_CURSOR_RULES.md`:
 
 ---
 
+## Analytics (GA4)
+
+Google Analytics is **consent-gated** — `components/consent/AnalyticsScripts.tsx` only loads `gtag.js` (with `anonymize_ip`) after the visitor accepts the consent banner. Custom events go through `window.gtag` (see `lib/track.ts`); the form components fire events like `begin_checkout` / `dare_seat_saved`.
+
+Two **different** GA identifiers — don't conflate them:
+
+| ID | What | Where |
+|----|------|-------|
+| **Measurement ID** `G-Z1NYERTKRS` | client-side tracking | `NEXT_PUBLIC_GA_ID` (`.env.local` + Vercel prod) |
+| **Property ID** `517826359` | GA4 **Data API** reads/reporting | service-account integrations (e.g. the GA MCP) |
+
+⚠️ **Build-time gotcha:** `NEXT_PUBLIC_*` vars are inlined at **build** time. If `NEXT_PUBLIC_GA_ID` is missing/empty in the Vercel **production** environment, the live site ships `GA_ID=undefined` and GA collects **nothing** — with no error. After changing the value in Vercel, you must trigger a **fresh build** (an empty commit + push works); updating the env var alone does not re-inline it into already-built client bundles.
+
+---
+
 ## SEO & AEO (Answer Engine Optimization)
 
 **All pages must be optimized for both search engines (Google) and AI answer engines (ChatGPT, Perplexity, Claude).**
