@@ -7,6 +7,10 @@
     {
       "source": "/ideas/today",
       "destination": "/api/ideas-today"
+    },
+    {
+      "source": "/shipable",
+      "destination": "/shipable.html"
     }
   ]
 }
