@@ -239,6 +239,18 @@
         "accent": "emerald",
         "status": "ready"
       }
+    },
+    {
+      "slug": "anthropic-fable-5-for-builders",
+      "title": "Anthropic Just Shipped Fable 5: What It Means for Weekend Builders",
+      "description": "Anthropic released Fable 5 on June 9, 2026—its most capable model yet, free through June 22. Here's what it is and what solo founders should build with it.",
+      "wordCount": 1218,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A brand-new hardcover manual standing slightly open on a near-black desk, a single lavender beam glancing along its crisp fresh spine, very shallow focus, deep shadow surrounding",
+        "accent": "lavender",
+        "status": "ready"
+      }
     }
   ]
 }
