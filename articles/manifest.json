@@ -227,6 +227,18 @@
         "accent": "lime",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-get-your-first-10-customers",
+      "title": "How to Get Your First 10 Customers (Without an Audience)",
+      "description": "You shipped your MVP and nobody came. Here's how to get your first 10 customers with no audience—using manual outreach, niche communities, and unscalable moves.",
+      "wordCount": 1629,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A single hand-addressed envelope resting on a near-black desk, one corner lifted, an emerald glow from a phone screen beside it catching the flap, deep shadow filling the rest",
+        "accent": "emerald",
+        "status": "ready"
+      }
     }
   ]
 }
