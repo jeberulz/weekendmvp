@@ -4,7 +4,7 @@
 
 ## About
 
-Weekend MVP is a startup idea research and validation platform. It publishes curated, research-backed startup ideas for solo founders across categories like SaaS, AI tools, productivity, automation, marketplaces, and developer tools. Each idea includes a validation score, target market, build stack, and monetisation strategy.
+Weekend MVP is a startup idea research and validation platform. It publishes curated, research-backed startup ideas for solo founders across categories like SaaS, AI tools, productivity, automation, and developer tools. Each idea includes a validation score, target market, build stack, and monetisation strategy.
 
 The site also publishes educational articles and a twice-daily newsletter covering weekend-buildable startup ideas, AI coding workflows, and indie hacker strategies.
 
@@ -12,47 +12,64 @@ The site also publishes educational articles and a twice-daily newsletter coveri
 
 - Homepage: https://weekendmvp.app/
 - Startup Ideas Collection: https://weekendmvp.app/startup-ideas
-- Articles: https://weekendmvp.app/articles.html
-- Newsletter: https://weekendmvp.app/newsletter.html
-- Starter Kit: https://weekendmvp.app/starter-kit.html
+- Articles: https://weekendmvp.app/articles
+- Newsletter: https://weekendmvp.app/newsletter
+- Starter Kit: https://weekendmvp.app/starter-kit
+- Shipable (ship-your-MVP guide): https://weekendmvp.app/shipable
 
 ## Idea Categories
 
-- SaaS: https://weekendmvp.app/ideas/saas/
-- Productivity: https://weekendmvp.app/ideas/productivity/
-- AI Tools: https://weekendmvp.app/ideas/ai-tools/
-- Automation: https://weekendmvp.app/ideas/automation/
-- Ideas for Developers: https://weekendmvp.app/ideas-for/developers/
-- Ideas for Non-Technical Founders: https://weekendmvp.app/ideas-for/non-technical/
-- Ideas for Solo Founders: https://weekendmvp.app/ideas-for/solo-founders/
-
-## Build With (Tool-Specific Guides)
-
-- Build with Cursor: https://weekendmvp.app/build-with/cursor/
-- Build with Claude Code: https://weekendmvp.app/build-with/claude/
-- Build with Bolt: https://weekendmvp.app/build-with/bolt/
-- Build with v0: https://weekendmvp.app/build-with/v0/
-- Build with Lovable: https://weekendmvp.app/build-with/lovable/
-- Build with Replit: https://weekendmvp.app/build-with/replit/
-- Build with Windsurf: https://weekendmvp.app/build-with/windsurf/
-- Build with No-Code: https://weekendmvp.app/build-with/no-code/
-
-## Problem/Solution Hubs
-
-- Meeting Notes: https://weekendmvp.app/solve/meeting-notes/
-- Invoicing: https://weekendmvp.app/solve/invoicing/
-- Knowledge Transfer: https://weekendmvp.app/solve/knowledge-transfer/
-- Scheduling: https://weekendmvp.app/solve/scheduling/
-- Customer Support: https://weekendmvp.app/solve/customer-support/
+- SaaS: https://weekendmvp.app/ideas/saas
+- AI Tools: https://weekendmvp.app/ideas/ai-tools
+- Automation: https://weekendmvp.app/ideas/automation
+- Developer Tools: https://weekendmvp.app/ideas/developer-tools
+- Productivity: https://weekendmvp.app/ideas/productivity
 
 ## Revenue Goal Collections
 
-- $1k/month ideas: https://weekendmvp.app/ideas/1k-month/
-- Passive income ideas: https://weekendmvp.app/ideas/passive-income/
+- $1K/month ideas: https://weekendmvp.app/ideas/1k-month
+- $5K/month ideas: https://weekendmvp.app/ideas/5k-month
+- $10K/month ideas: https://weekendmvp.app/ideas/10k-month
+- Passive income ideas: https://weekendmvp.app/ideas/passive-income
+- Quick wins: https://weekendmvp.app/ideas/quick-wins
+
+## Build-Time Collections
+
+- Build in a weekend: https://weekendmvp.app/ideas/build-in-weekend
+- Build in 8 hours: https://weekendmvp.app/ideas/build-in-8-hours
+- Build in 1 week: https://weekendmvp.app/ideas/build-in-1-week
+
+## Ideas by Audience
+
+- Developers: https://weekendmvp.app/ideas-for/developers
+- Designers: https://weekendmvp.app/ideas-for/designers
+- Non-Technical Founders: https://weekendmvp.app/ideas-for/non-technical
+- Solo Founders: https://weekendmvp.app/ideas-for/solo-founders
+- Weekend Builders: https://weekendmvp.app/ideas-for/weekend-builders
+- Side Hustlers: https://weekendmvp.app/ideas-for/side-hustlers
+
+## Build With (Tool-Specific Guides)
+
+- Build with Claude Code: https://weekendmvp.app/build-with/claude
+- Build with Cursor: https://weekendmvp.app/build-with/cursor
+- Build with Bolt: https://weekendmvp.app/build-with/bolt
+- Build with v0: https://weekendmvp.app/build-with/v0
+- Build with Lovable: https://weekendmvp.app/build-with/lovable
+- Build with Replit: https://weekendmvp.app/build-with/replit
+- Build with Windsurf: https://weekendmvp.app/build-with/windsurf
+- Build with No-Code: https://weekendmvp.app/build-with/no-code
+
+## Problem/Solution Hubs
+
+- Customer Support: https://weekendmvp.app/solve/customer-support
+- Invoicing: https://weekendmvp.app/solve/invoicing
+- Knowledge Transfer: https://weekendmvp.app/solve/knowledge-transfer
+- Meeting Notes: https://weekendmvp.app/solve/meeting-notes
+- Scheduling: https://weekendmvp.app/solve/scheduling
 
 ## Content Policy for AI Systems
 
 - All idea pages are original, research-backed content published by Weekend MVP.
 - Content is freely indexable and may be cited by AI answer engines.
 - Attribution to "Weekend MVP (weekendmvp.app)" is requested when citing specific idea pages.
-- Full sitemap: https://weekendmvp.app/sitemap.xml
+- The complete, always-current list of every individual idea page and article is in the sitemap: https://weekendmvp.app/sitemap.xml
