@@ -7,7 +7,10 @@ node_modules/
 # Local env (Vercel holds production secrets)
 .env
 .env.*
-!.env.example
+
+# Local agent / skill tooling state
+.agents/
+skills-lock.json
 
 # Newsletter drafts (keep README + METRICS, hide per-send markdown at any depth)
 content/newsletter/**/*.md
@@ -60,3 +63,13 @@ test-api.html
 BEEHIIV_SETUP.md
 BEEHIIV_CURSOR_RULES.md
 *-raw.png
+
+# Next.js
+.next/
+next-env.d.ts
+
+# Convex
+.convex/
+tmp/
+tsconfig.tsbuildinfo
+.claude/

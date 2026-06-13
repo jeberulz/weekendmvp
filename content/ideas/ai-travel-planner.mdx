@@ -1,0 +1,113 @@
+---
+slug: "ai-travel-planner"
+title: "AI Personal Travel Planner"
+---
+
+## The Problem
+
+Most people spend 10+ hours planning a single trip—Google Flights in one tab, TripAdvisor in another, a Reddit thread about the best neighborhood, a half-finished Google Doc that never quite becomes a real itinerary. The research itself becomes a second job. By the time a booking is made, decision fatigue has replaced anticipation, and half the best restaurants are already fully booked.
+
+The deeper issue is that every trip starts from zero. Someone who has taken forty trips over five years has strong, settled preferences—always direct flights, never chain hotels, prefers walking neighborhoods over resort zones—but no existing tool retains or uses those signals. Expedia optimizes for clicks. Google Trips aggregates confirmation emails. Neither one knows that you spent four days in Tokyo in 2023, so they'll happily resurface every ramen district guide they served you last time.
+
+Business travelers face an additional layer: weaving conferences, client dinners, and personal leisure windows into the same trip requires coordinating at least three apps and usually ends in a spreadsheet. The experience hasn't meaningfully improved since 2010, even as the tools around travel—AI assistants, calendar integrations, real-time pricing APIs—have become dramatically better.
+
+## The Solution
+
+An AI travel companion that works like a knowledgeable friend who remembers everything you've told them about travel. You describe the trip in plain language—"Food-focused long weekend in Lisbon with my partner, mid-range budget, we love walking and hate tourist traps"—and the platform generates a complete, day-by-day itinerary in seconds: flight options filtered to your routing preferences, neighborhoods to base yourself in, restaurant picks with booking links, and activities sequenced so you're not zigzagging across the city.
+
+The differentiation is the preference layer. After each trip you rate what worked and what didn't, and the system updates a persistent travel profile: you always fly direct, you rate food above price, you've already done the Alfama. The next trip prompt starts from that baseline instead of blank slate. One-click bookings consolidate hotel, flight, and activity confirmations in a single dashboard. Real-time price alerts surface better options without requiring a full re-plan.
+
+**How it works:**
+
+1. **Describe** — Tell it the destination, dates, vibe, travel style, and budget in a single sentence or two
+2. **Review** — AI generates a full day-by-day plan—flights, hotels, meals, and activities—personalized to your stored and stated preferences
+3. **Refine & Book** — Swap suggestions, adjust pacing, add notes—then one-click book and sync to calendar
+4. **Debrief** — Rate what you loved and skipped after the trip—every response sharpens your next itinerary
+
+## Market Research
+
+The personalized travel market is in a high-growth phase driven by post-pandemic rebound and accelerating AI adoption. Search interest for AI trip planning has been climbing steeply, and community signals across Reddit, Facebook, and YouTube confirm that demand for genuinely personalized tools outpaces supply by a wide margin.
+
+- **$317.4 billion by 2029** — the global personalized travel and experiences market is projected to grow from $144.45B in 2024 at a sustained 17% CAGR, driven by demand for tailored experiences and AI advancement (Business Research Company, 2024).
+- **78% of business travelers** prefer self-service technology to manage their travel, with a strong appetite for personalization and payment efficiency—a segment currently underserved by existing planning tools (Global Business Travel Association research).
+- **20%+ year-over-year growth** in search interest for "trip planner AI" and related queries, with 408,000 combined monthly searches across "trip planner app," "personal vacation planner," "AI travel planner," and adjacent terms—low-to-medium competition across most keywords.
+- **12 million members** in r/travel actively discuss AI planning tools; Facebook groups like "Italy Travel Planning" (158K+ followers) show high-engagement threads specifically around personalization pain points and AI-assisted solutions.
+- **High willingness to pay** — frequent travelers and busy professionals score highest on price sensitivity research; the value proposition of saving 10+ planning hours per trip is easy to quantify, making the conversion narrative straightforward.
+
+## Competitive Landscape
+
+Existing tools split into two camps: trip organizers that handle what you've already booked, and discovery tools that surface options but don't close the loop into reservations. Neither camp offers true agentic personalization that adapts over time. That's the gap.
+
+- **Wanderlog** — Fast-growing trip planning app with strong collaborative features and real-time updates. Popular among group travelers. Personalization is rule-based rather than AI-driven; no booking integration or preference memory across trips. Freemium · $49/year premium
+- **TripIt** — Parses booking confirmation emails into organized itineraries. Loyal user base, especially among business travelers. Zero planning or discovery capability—it only organizes what you've already done yourself. Free · Pro $49/year
+- **RoutePerfect** — AI-generated routes with affiliate booking links, strong focus on Europe. Good for first-time visitors to a region; light on full trip management and doesn't retain preference history between sessions. Free / affiliate-supported
+- **Google Travel** — Aggregates travel confirmations passively from Gmail and surfaces destination info. Massive distribution advantage but not agentic—no personalized itinerary building, no unified booking flow, and no preference learning. Free (ecosystem play)
+- **Pilot** — Group-centric trip planning with AI suggestions and polling for collective decisions. Modern UI and growing word-of-mouth. Booking and payment not integrated natively; no longitudinal preference model. Free beta / affiliate
+- **Spreadsheets + search** — The dominant workflow for experienced travelers who don't trust apps. Zero marginal cost, complete flexibility—and completely manual. The data disappears after each trip; nothing carries forward. $0 — default until something better exists
+
+**Your Opportunity**
+
+No competitor combines genuine AI personalization, persistent preference memory, and a closed-loop booking experience in one product. The window is open: busy professionals and frequent travelers are actively looking for exactly this, the SEO tail around "AI trip planner" is growing fast with low competition, and the data moat compounds with every trip logged.
+
+## Business Model
+
+Subscription anchored by time savings—not features. The pitch is simple: a single trip's planning hours are worth far more than a month of subscription fees. Affiliate commissions on confirmed bookings layer on top without adding friction to the user. Start with individual plans; expand to business travel as usage data matures.
+
+- **Free** ($0) — 1 trip/month, 3-day max itineraries, basic preference quiz, no booking integration
+- **Solo** ($15/mo) — Unlimited trips, full-length itineraries, preference memory, calendar sync, PDF export
+- **Premium** ($29/mo) — One-click booking integration, real-time price alerts, business travel mode, priority support
+
+**Unit Economics (illustrative)**
+
+- **$25–40** — Target CAC
+- **$20/mo** — Blended ARPU
+- **3–5% per booking** — Affiliate rev
+- **\< 2 months** — Payback
+
+## Recommended Tech Stack
+
+Optimize for fast itinerary generation, preference persistence, and eventual booking API integration. The Claude API handles the heavy lifting on natural-language understanding and synthesis; Supabase keeps the preference layer and trip history tidy in a single managed Postgres instance.
+
+- **Next.js 15 + TypeScript** — App Router for SSR itinerary pages, server actions for AI calls, Edge runtime for low-latency preference lookups.
+- **Claude API (claude-sonnet-4-6)** — Natural-language trip request parsing, preference extraction, structured JSON itinerary generation with day/activity schema.
+- **Supabase** — Auth (email + Google OAuth), Postgres for user profiles, trip history, preferences; Storage for exported PDFs and itinerary assets.
+- **Amadeus / Skyscanner API** — Real-time flight search and pricing, filterable by nonstop preference, cabin class, and budget range. Amadeus has a developer-friendly free tier for MVP validation.
+- **Booking.com Affiliate API** — Hotel search with affiliate commission on confirmed bookings. Pairs well with Google Hotels API for broader coverage and price comparison.
+- **Stripe** — Subscription billing for Solo and Premium tiers, usage-based metering for per-trip plan purchases, customer portal for self-serve upgrades.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 + TypeScript project for TripGenie, an AI-powered personalized travel planner. Set up: App Router with server components, Supabase schema with tables: users, trips, itinerary_days, activities, user_preferences. Authentication via Supabase Auth with email and Google OAuth. API routes: POST /api/plan-trip, GET+PUT /api/preferences, GET+POST /api/trips. Environment variables for ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY, AMADEUS_CLIENT_ID, AMADEUS_CLIENT_SECRET, STRIPE_SECRET_KEY. Include TypeScript types for Trip, ItineraryDay, Activity, and UserPreference. Wire up a basic middleware layer for auth-protected routes.
+```
+
+**2. Core Feature**
+
+```text
+Build the trip-planning engine for TripGenie. When a user submits a natural-language request (e.g., "Food-focused long weekend in Lisbon with my partner, mid-range budget, we love walking and hate tourist traps"), the system should: (1) Parse destination, dates, travel style, budget signals, and party size from the text. (2) Fetch the user's stored preference profile from Supabase (past destinations, hotel tier, flight routing preferences, dietary restrictions). (3) Call the Claude API with a structured prompt combining the request and preferences, producing a day-by-day itinerary as JSON: array of days, each with morning/afternoon/evening activity objects containing name, description, address, estimated cost, and booking URL if available, plus a flight suggestion and hotel recommendation. (4) Store the itinerary in Supabase and return it to the client. User flow: textarea input → loading state with streaming → rendered day-view component with expandable activity cards.
+```
+
+**3. Landing Page**
+
+```text
+Create a landing page for TripGenie using Next.js and Tailwind CSS. Include: (1) Hero with headline "Your AI travel companion that plans the whole trip—not just the flights" and a live demo input pre-filled with "Food-focused long weekend in Lisbon with my partner, boutique hotels, we love walking". (2) Before/After section: "Old way: 47 browser tabs, 6 hours. New way: one sentence, 2 minutes." (3) How-it-works with 4 steps: Describe → Review → Refine & Book → Debrief. (4) Social proof with placeholder testimonials from a remote worker, a frequent flyer, and a travel blogger. (5) Pricing with Free / Solo ($15/mo) / Premium ($29/mo) tiers. (6) Email waitlist capture with CTA "Start planning your next trip." Warm off-white background (#fcfaf7), dark charcoal text, clean sans-serif typography, no hero illustration—just confident type and a subtle gradient.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for TripGenie, an AI travel companion that turns a single sentence into a complete personalized itinerary. Logo: clean wordmark with a minimal route-path or compass-needle icon that works at 16px favicon scale. Color palette: warm sand primary (#F5EFE0), deep charcoal text (#1A1A1A), accent in terracotta (#C4622D) for CTAs and highlights, with a soft sky blue (#A8C8E8) secondary. Typography: Geist or Inter for UI copy paired with a slightly warmer display face (DM Serif Display or Playfair Display) for hero headings only. Provide hex codes, font names, pairing rationale, and guidance on minimum text sizes. Include icon style guidelines: line icons at 1.5px stroke weight, 24px base grid, rounded endcaps.
+```
+
+## Sources
+
+- [Personalized Travel and Experiences Global Market Report — The Business Research Company](https://www.thebusinessresearchcompany.com/report/personalized-travel-and-experiences-global-market-report)
+- [Global Personalized Travel and Experiences Market Outlook — OpenPR](https://www.openpr.com/news/4048810/global-personalized-travel-and-experiences-market-outlook)
+- [Business Travelers Seek Personalized Options and Payment Efficiencies — GBTA](https://www.gbta.org/new-research-business-travelers-seek-personalized-options-payment-efficiencies/)
+- [Business Travelers and Technology: Embracing Self-Service — GBTA](https://www.gbta.org/business-travelers-and-technology-embracing-self-service-and-personalized-travel-options/)
+- [Personalized Tourism Market Report — Research and Markets](https://www.researchandmarkets.com/report/personalized-tourism-market)
+- [Personalized Travel and Experiences Industry Growth — TBRC Blog](https://blog.tbrc.info/2025/02/personalized-travel-and-experiences-industry-growth-3/)

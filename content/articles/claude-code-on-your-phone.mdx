@@ -1,0 +1,120 @@
+---
+slug: "claude-code-on-your-phone"
+title: "Claude Code on Your Phone: How to Ship MVPs from Anywhere"
+description: "Four real workflows for running Claude Code from your iPhone, iPad, or Android. Termius + Tailscale, GitHub Codespaces, the GitHub Action, and Catnip. Ship from the couch."
+category: "Tutorial"
+publishedAt: "2026-05-01"
+wordCount: 1214
+readMinutes: 6
+heroAlt: "small leather-bound pocket notebook open on a dark surface, a lime ribbon-marker draped across a half-written page"
+---
+
+## Why You'd Want This
+
+You're on the train and a fix you need to ship is two lines of code.
+
+You're on a trip without your laptop and your weekend MVP just got a wave of users.
+
+You want to keep building during a long meeting that you don't actually need to be in.
+
+You want your dev environment to follow you, not the other way around.
+
+Phones aren't great for building from scratch. They're excellent for reviewing, fixing, and shipping—the boring last mile. Below are four ways to make that work.
+
+## Before You Start: A Few Honest Limits
+
+Three things to accept up front:
+
+- **1. Don't start a project from scratch on your phone.** — Initial scaffolding (creating folders, picking the stack, writing CLAUDE.md) is much faster on a real keyboard. Phones are for projects you've already started.
+- **2. Speech-to-text is your real keyboard.** — Dictate prompts. Don't peck. Mobile becomes genuinely productive when you stop trying to type.
+- **3. The compute lives somewhere else.** — Claude Code itself isn't an iOS app (yet). Every workflow below runs Claude Code on a remote machine—your laptop, a cloud VM, or GitHub's servers—and gives you a phone window into it.
+
+## Termius + Tailscale + tmux (the indie classic)
+
+What it is: SSH from your phone into your laptop or a cloud VM where Claude Code is already installed.
+
+Best for: People who already have a daily-driver laptop and want a phone to be a remote control for it.
+
+How it works:
+
+- Tailscale creates a secure private network between your phone and your laptop—no port forwarding, no public IPs.
+- Termius (iOS / Android) is the SSH client. It has a mobile-friendly key row with Ctrl, Esc, arrows—so you don't have to fight your keyboard.
+- tmux keeps your Claude Code session alive even when you switch apps or lose signal. Reconnect, attach, keep going.
+
+Cost: Tailscale is free for personal use, Termius has a free tier ($10/month for sync).
+
+Verdict: The most flexible setup. Steepest one-time learning curve. After you set it up once, it just works.
+
+## GitHub Codespaces in your phone browser
+
+What it is: Spin up a cloud dev environment that runs in any browser—including Safari or Chrome on your phone or iPad. Install Claude Code inside it.
+
+Best for: People who don't have a server and don't want to keep their laptop running.
+
+How it works:
+
+- Open your repo on GitHub mobile, hit "Open in Codespaces."
+- You get a full VS Code in the browser, with a real terminal.
+- In that terminal: npm install -g @anthropic-ai/claude-code, then claude.
+- iPad with a Bluetooth keyboard makes this near-desktop. iPhone is workable but tight.
+
+Cost: 60 free hours/month on GitHub Free. Pay-as-you-go after that.
+
+Verdict: The lowest-friction setup. Best on iPad. iPhone is a stretch unless you really need it.
+
+## The Claude Code GitHub Action (issue-to-PR from anywhere)
+
+What it is: An official GitHub Action from Anthropic. You tag @claude in a GitHub issue or PR comment, and Claude Code does the work in the background and opens (or updates) a PR.
+
+Best for: Bug fixes, small features, and review responses you can describe in a sentence. Works great from the GitHub mobile app.
+
+How it works:
+
+- One-time setup: in your terminal, run claude then type /install-github-app. It walks you through installing the GitHub App and adding the secret to your repo.
+- Open an issue from the GitHub mobile app: "@claude the signup form crashes when the email field is empty. Fix it and add a test."
+- A few minutes later, Claude opens a PR with the fix. You review and merge from your phone.
+- You can also tag it on existing PR comments to fix review feedback automatically.
+
+Cost: Anthropic API credits per run. A typical small fix is well under $1.
+
+Verdict: The best workflow when you don't want to *watch* Claude work. You queue tasks. Claude finishes them. You review on the train.
+
+## Catnip (Claude Code on iPhone via Codespaces)
+
+What it is: A community-built iOS shell that runs Claude Code in a GitHub Codespace under the hood, with a UI built for thumbs.
+
+Best for: Pure iPhone users who want a native-feeling experience without configuring Tailscale or a VM.
+
+How it works:
+
+- Connect your GitHub account.
+- Pick a repo. Catnip spins up a Codespace with Claude Code pre-installed.
+- Chat with Claude through the app. Voice input is the killer feature.
+
+Cost: Codespaces hours + your Anthropic plan.
+
+Verdict: Newest of the bunch—rough edges—but the most "just works" iPhone experience available today.
+
+## Which One Should You Pick?
+
+- **If you have a Mac or Linux machine you can leave on:** — Termius + Tailscale + tmux. One setup, lifetime of remote access.
+- **If your main device is an iPad:** — GitHub Codespaces in Safari. Add a Bluetooth keyboard. You're 90% of the way to a desktop.
+- **If you mostly want to dispatch fixes async:** — The Claude Code GitHub Action. Zero need for a terminal. Tag @claude, get a PR.
+- **If you only have an iPhone:** — Catnip first. Fall back to Codespaces in Safari if Catnip's not your speed.
+
+## Five Habits That Make Mobile Building Actually Work
+
+1. 01Dictate, don't type. iOS dictation is excellent. Push the mic button, say the prompt, hit send.
+2. 02Set up shell snippets in Termius. "claude," "git status," "git pull && npm run build"—one tap each.
+3. 03Always run inside tmux. Phones disconnect. tmux makes that a non-event.
+4. 04Keep prompts short. "Fix the loading state on the dashboard—it flickers." Better than five paragraphs.
+5. 05Use plan mode for anything risky. "Plan first, don't write code yet" prevents Claude from rewriting half your repo while you're at lunch.
+
+## TL;DR
+
+- Claude Code isn't a phone app, but four workflows give you mobile access.
+- Termius + Tailscale + tmux — SSH into your own machine.
+- GitHub Codespaces — full VS Code in your browser.
+- @claude GitHub Action — tag it, get a PR.
+- Catnip — native iPhone shell over Codespaces.
+- Dictate prompts. Use tmux. Keep it short.

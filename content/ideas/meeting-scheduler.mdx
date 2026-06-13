@@ -1,0 +1,169 @@
+---
+slug: "meeting-scheduler"
+title: "Smart Meeting Scheduler"
+---
+
+## The Problem
+
+Global teams lose **7+ hours a week** (Ideabrowser #2161 TimeSync market signal) to cross-timezone scheduling. A sales rep in New York trying to schedule a prospect in Sydney. A design team coordinating a cross-functional review across EMEA, APAC, and the Americas. A founder hiring their first engineer in Europe. Current tools either show "everyone's availability" as a raw union (Calendly group polls, When2Meet) or pick a slot without considering that 6am for Singapore is a terrible time to think clearly.
+
+Calendly dominates the scheduling-link category with **20M+ users** and a $3B+ valuation, but charges **$10–$20 per user per month**. For a 10-person team that's $1,200–$2,400/year just for booking links. SavvyCal and Cal.com chip at the edges with better UX and lower pricing, but the "AI conflict resolver that understands working hours" is not yet a standard feature. The wedge is opinionated defaults: never suggest outside a person's working hours, never suggest back-to-back meetings, always prefer slots after lunch.
+
+The second wedge is flat-team pricing. Calendly charges per user even for a round-robin routing group where technically only one person takes the meeting. For a growing company that's pricing friction. Charging $49/mo flat up to 10 team members undercuts Calendly by 80% at team size 10. Cal.com's self-hosted angle is technical overhead that most teams don't want; managed hosted + AI features + flat pricing is the sweet spot.
+
+## The Solution
+
+A Calendly-class scheduling SaaS with three opinionated improvements. One: AI slot suggestion that respects working hours by timezone (never shows 6am Sydney as a "free" slot even if the calendar is empty). Two: team round-robin that distributes incoming bookings across configured teammates based on load balance (not just availability). Three: embeddable widget that drops into any website without iframe hell. Flat pricing: free solo, $19 Solo Pro, $49 Team up to 10 members.
+
+**How it works:**
+
+1. **Connect calendar** — Google / Outlook / iCloud. Set working hours per day.
+2. **Share link** — Booker picks a slot in their own timezone. AI respects yours.
+3. **Auto-confirm + Zoom** — Calendar event created both sides; Zoom/Meet link attached.
+
+The AI conflict resolver uses a simple rule engine + LLM judgment. Rules: within working hours, not back-to-back, not 30 minutes before end-of-day. LLM: for hard cases, "suggest 3 slots where both attendees will have reasonable energy." Over time, user feedback tunes the system ("never Mondays before 10am" as learned preference). This is a genuine differentiator that the incumbents haven't shipped because they optimize for enterprise compliance, not individual ergonomics.
+
+## Market Research
+
+The **online scheduling software market is $5.5B in 2024, projected to $13B by 2030 at 15.6% CAGR** (Grand View Research). Calendly is the clear category leader with a **$3B+ valuation** (2021 Series B at $3B). Cal.com raised **$32M Series A+** (2023) as the open-source challenger. The market validates big outcomes; the question is whether a focused AI + flat-pricing entrant can carve out 1–2% share.
+
+- Calendly has **20M+ users across 100K+ companies** (public stats, 2023). SavvyCal reports strong indie traction. Cal.com GitHub repo has 30K+ stars and 5K+ self-hosted instances.
+- Cross-timezone pain validated by Ideabrowser #2161 (TimeSync, opp 9 pain 9 timing 9) and #2663 (Calendar Shield, opp 9 pain 9 timing 9). Both score high because the pain is universal for remote-first companies.
+- Remote work plateau: **28% fully remote + 30% hybrid** in US knowledge work (McKinsey 2024). Distributed scheduling remains the default, not the exception.
+- Search: "meeting scheduler" 22K/mo, "calendly alternative" 5.4K/mo, "schedule across timezones" 1.3K/mo. CPC **$8–$15** is commercial and competitive.
+- Communities: r/remotework (180K), r/startups (1.8M), Indie Hackers (200K+). LinkedIn "distributed teams" content gets strong engagement. AI schedule-assistant tools are a common builder-community thread.
+
+Stage: *mature but AI-disrupted*. Calendly is entrenched. SavvyCal serves power users. Cal.com serves developers. Motion and Reclaim focus on calendar defragmentation (related but different). A flat-priced, AI-conflict-aware entrant has a 12–18 month window before Calendly bolts in AI suggestions as table stakes.
+
+## Competitive Landscape
+
+Five competitor classes: Calendly + Cal.com (category leaders), SavvyCal (premium UX), Motion + Reclaim (AI calendar defrag adjacent), native calendar group-find-time (Google/Outlook built-in), and Doodle/When2Meet (legacy polls). None combine AI slot suggestions with flat-team pricing and an embeddable widget.
+
+- **Calendly** — Category leader. 20M+ users, $3B valuation. Deep Salesforce/HubSpot integrations. Per-user pricing scales linearly; enterprise focus. Round-robin requires Teams plan at $16/user/mo. $10 Standard → $16 Teams → $20+ Enterprise per user/mo
+- **Cal.com** — Open-source + hosted. Developer darling, 30K+ GitHub stars. Flexible but requires setup. AI features nascent. Hosted pricing is per-user. Self-hosting has ops overhead most SMBs avoid. Free self-hosted; $12/user/mo Teams hosted
+- **SavvyCal** — Premium UX challenger. Overlay feature (see booker's calendar + your calendar at once) is beloved. Priced higher per-user than Calendly; no flat-team tier. No AI slot suggestions yet. $12 Basic → $20 Premium / $40 Team per user/mo
+- **Motion / Reclaim.ai** — AI calendar tools but focused on defragmenting existing calendars and auto-scheduling tasks. Not primarily booking-link tools. Pricing $34–$49/user/mo — overkill for teams that just want scheduling. Motion $34/user/mo; Reclaim.ai $10–$18/user/mo
+
+**Your Opportunity**
+
+Flat $49/mo up to 10 team members. AI slot resolver that respects working hours and energy patterns across timezones. Embeddable widget that works without iframe contortion. Tagline: "Scheduling that feels like it thought about your 8am, not just your calendar."
+
+## Business Model
+
+Flat pricing, not per-user. Free tier for solo indie; Solo Pro for single users who need the advanced AI; Team for small companies. LLM cost per booking is minimal (\<$0.005); infra dominated by calendar API quota. Gross margin stays above 93% at scale.
+
+- **Free** ($0) — 1 event type, 1 calendar, 10 bookings/mo, “Powered by” footer
+- **Solo Pro** ($19/mo) — Unlimited event types, multi-calendar, AI slot resolver, embeddable widget, custom branding
+- **Team** ($49/mo) — Up to 10 members, round-robin routing, team calendars, Salesforce/HubSpot integrations, SSO
+
+**Unit Economics (illustrative)**
+
+- **~$0.60/mo** — Infra cost/tenant
+- **~96%** — Gross margin Solo
+- **$30–$60** — Target CAC
+- **5–9%** — Free → Solo conv.
+
+MRR path: 200 Solo + 30 Team = $5.3K/mo. 1K Solo + 150 Team = $26.4K/mo. At 4K Solo + 600 Team = $105.4K/mo ($1.26M ARR). Switching costs are high once users bake the scheduling link into email signatures, website footers, and CRM workflows.
+
+## Recommended Tech Stack
+
+Calendar OAuth + slot computation + AI layer. The hardest part is handling calendar API quotas and correctly computing free/busy across attendees in different timezones. Rest is SaaS plumbing.
+
+- **Next.js 14 App Router** — Admin + booker-facing pages. `/[username]/[event-type]` public booking URLs as Server Components for fast first paint and SEO.
+- **Supabase + Postgres** — Tables: `users`, `teams`, `calendars`, `event_types`, `bookings`, `routing_rules`. RLS per-user and per-team.
+- **Google + Microsoft Calendar APIs** — Google Calendar API v3 + Microsoft Graph API. OAuth with calendar scopes. Use freebusy endpoints for availability computation; `events.insert` on booking. Handle token refresh per tenant.
+- **Claude Haiku for slot judgment** — When multiple valid slots exist, Claude ranks them considering working hours, both-party timezones, prior bookings patterns, and user-supplied preferences ("never before 10am Mondays"). Invoked only for Pro+ tiers to preserve margin.
+- **Zoom + Google Meet API** — Zoom OAuth for auto-creating meeting URLs on booking confirmation. Google Meet link is free with Google Calendar invites. Microsoft Teams via Graph API for Outlook users.
+- **Stripe Billing + Widget CDN** — Stripe Checkout for Solo/Team. Widget served from Cloudflare CDN as a Shadow-DOM iframe embed; one-line `<script>` install for any website.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Calendar OAuth + Availability**
+
+```text
+Create a Next.js 14 App Router scheduling SaaS. Supabase backend.
+
+Schema:
+- users(id, email, username, timezone, working_hours JSONB, plan, stripe_customer_id)
+- calendars(id, user_id, provider ENUM[google,outlook,icloud], access_token_encrypted, refresh_token_encrypted, calendar_id_external, is_primary bool, is_availability_source bool)
+- event_types(id, user_id OR team_id, slug, title, duration_min, buffer_min, min_notice_hours, max_advance_days, location_type ENUM[zoom,meet,phone,in_person], location_config JSONB)
+- bookings(id, event_type_id, invitee_email, invitee_name, invitee_timezone, start_at, end_at, meeting_url, status ENUM[confirmed,canceled,rescheduled])
+- teams(id, name, plan)
+- team_members(id, team_id, user_id, role)
+- routing_rules(id, event_type_id, strategy ENUM[round_robin,load_balanced,collective], member_ids JSONB)
+
+OAuth flow:
+- /api/calendars/google/connect redirects to https://accounts.google.com/o/oauth2/v2/auth with scopes 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly'.
+- Callback stores refresh_token encrypted via Supabase Vault.
+- Similar for Microsoft Graph with scopes 'Calendars.ReadWrite offline_access'.
+
+Availability computation:
+- For a booking request, fetch freebusy for each attendee from their calendars (cached 5 min).
+- Apply user.working_hours by day of week.
+- Subtract existing bookings from local DB (not-yet-synced double-booking protection).
+- Generate candidate slots matching event_type.duration_min at event_type.buffer_min spacing.
+- Filter: min_notice_hours satisfied, max_advance_days respected.
+```
+
+**2. AI Cross-Timezone Slot Resolver**
+
+```text
+Build the AI slot ranking feature for Pro+ tiers.
+
+When a booker arrives at a booking page, we have:
+- List of 50+ candidate slots from availability computation.
+- Attendee timezones (user's known tz; booker's tz from browser).
+- User working_hours preferences.
+- User's learned preferences (e.g., stored tags like "avoid Mondays before 10am", "prefer afternoons").
+
+Ranking via rule engine + Claude:
+1. Rule pass: filter slots that violate hard rules (outside working hours either side, weekends if not allowed, less than buffer_min after a prior meeting).
+2. Score pass: assign numeric scores by heuristic:
+   - +10 mid-morning (10am-11:30am local)
+   - +5 early afternoon (1:30pm-3pm)
+   - -5 end-of-day (within 30 min of working_hours end)
+   - -15 first-thing (within 30 min of working_hours start)
+   - -10 back-to-back with adjacent meeting
+   - -20 cross-timezone mismatch (one side outside normal working hours)
+3. Claude pass (Pro+ only): top 10 scored slots passed to Claude with user's preferences:
+   "Given these 10 slots and this user's stored preferences {preferences}, rank the top 5 for this meeting. Consider the booker is in {booker_tz} and user is in {user_tz}. Return JSON: {rankings: [{slot_start, reason}]}."
+4. Show top 5 in the booking UI with an optional 'why?' tooltip explaining the AI's reasoning.
+
+Feedback loop:
+- If user deletes/reschedules a booking with source='ai_suggested', note in preferences ('dispreferred Tuesday 4pm'). Claude reads preferences back next time.
+- Rate limit Claude calls: cache per (user, booker_tz, date_range) for 10 min to avoid thundering herd on popular booking pages.
+```
+
+**3. Round-Robin + Embeddable Widget**
+
+```text
+Implement team round-robin routing and the embeddable widget.
+
+Round-robin routing:
+- event_types with team_id and routing_rules with strategy='round_robin' use the following logic:
+  1. On booking request, query all team_members assigned in routing_rules.member_ids who are in team_id.
+  2. Fetch each member's availability for requested slot.
+  3. Load last-booked-at timestamp per member (from bookings table).
+  4. Assign to member with OLDEST last-booked-at among available members (load balancing).
+  5. Create booking with that member as host.
+- Strategy 'collective': require ALL team members available. Strategy 'load_balanced': weight by capacity_per_day setting per member.
+
+Failover: if chosen member unexpectedly declines (e.g., their calendar changed between query and commit), auto-reroute to next-best member before returning error to booker.
+
+Embeddable widget (scheduler.js):
+- ~30KB vanilla JS bundle hosted at https://cdn.product.com/scheduler.js.
+- Embed:
+```
+
+## Sources
+
+- • [Grand View Research — Online Scheduling Software Market ($5.5B 2024 → $13B 2030, 15.6% CAGR)](https://www.grandviewresearch.com/industry-analysis/online-appointment-scheduling-software-market)
+- • [Calendly Pricing — $10–$20 per user/mo](https://calendly.com/pricing)
+- • [Cal.com Pricing — hosted Teams $12/user/mo](https://cal.com/pricing)
+- • [Google Calendar API v3 documentation](https://developers.google.com/calendar/api/v3/reference)
+- • [Microsoft Graph API — Calendar resources](https://learn.microsoft.com/en-us/graph/api/resources/calendar)
+- • Ideabrowser idea #2161 TimeSync (opp 9 pain 9 timing 9) cross-timezone signal + #2663 Calendar Shield adjacent; Calendly $3B valuation referenced from public 2021 Series B press.
+
+Verify Calendly, Cal.com, and SavvyCal pricing on live pages before marketing claims.

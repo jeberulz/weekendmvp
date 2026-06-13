@@ -1,0 +1,197 @@
+{
+  "generatedAt": "2026-06-12T22:26:50.300Z",
+  "ok": [
+    {
+      "slug": "non-technical-founder-stack-2026",
+      "status": "ok",
+      "out": "content/articles/non-technical-founder-stack-2026.mdx",
+      "blocks": 62,
+      "headings": 16,
+      "fences": 0,
+      "publishedAt": "2026-06-03",
+      "category": "Ideas"
+    },
+    {
+      "slug": "5-claude-code-skills-for-solo-founders",
+      "status": "ok",
+      "out": "content/articles/5-claude-code-skills-for-solo-founders.mdx",
+      "blocks": 42,
+      "headings": 10,
+      "fences": 6,
+      "publishedAt": "2026-05-01",
+      "category": "Building"
+    },
+    {
+      "slug": "5-side-projects-that-make-money",
+      "status": "ok",
+      "out": "content/articles/5-side-projects-that-make-money.mdx",
+      "blocks": 44,
+      "headings": 8,
+      "fences": 0,
+      "publishedAt": "2026-01-27",
+      "category": "Ideas"
+    },
+    {
+      "slug": "7-micro-saas-ideas-solo-2026",
+      "status": "ok",
+      "out": "content/articles/7-micro-saas-ideas-solo-2026.mdx",
+      "blocks": 72,
+      "headings": 10,
+      "fences": 0,
+      "publishedAt": "2026-01-22",
+      "category": "Ideas"
+    },
+    {
+      "slug": "7-things-to-build-with-claude-code-this-weekend",
+      "status": "ok",
+      "out": "content/articles/7-things-to-build-with-claude-code-this-weekend.mdx",
+      "blocks": 43,
+      "headings": 9,
+      "fences": 7,
+      "publishedAt": "2026-05-01",
+      "category": "Ideas"
+    },
+    {
+      "slug": "claude-code-48-hour-workflow",
+      "status": "ok",
+      "out": "content/articles/claude-code-48-hour-workflow.mdx",
+      "blocks": 72,
+      "headings": 24,
+      "fences": 9,
+      "publishedAt": "2026-05-01",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "claude-code-for-non-technical-founders",
+      "status": "ok",
+      "out": "content/articles/claude-code-for-non-technical-founders.mdx",
+      "blocks": 68,
+      "headings": 25,
+      "fences": 3,
+      "publishedAt": "2026-05-01",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "claude-code-on-your-phone",
+      "status": "ok",
+      "out": "content/articles/claude-code-on-your-phone.mdx",
+      "blocks": 43,
+      "headings": 9,
+      "fences": 0,
+      "publishedAt": "2026-05-01",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "how-to-build-your-first-app-in-a-weekend",
+      "status": "ok",
+      "out": "content/articles/how-to-build-your-first-app-in-a-weekend.mdx",
+      "blocks": 69,
+      "headings": 21,
+      "fences": 0,
+      "publishedAt": "2026-01-22",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "stop-overthinking-start-building",
+      "status": "ok",
+      "out": "content/articles/stop-overthinking-start-building.mdx",
+      "blocks": 64,
+      "headings": 19,
+      "fences": 0,
+      "publishedAt": "2026-01-22",
+      "category": "Mindset"
+    },
+    {
+      "slug": "the-1k-month-idea",
+      "status": "ok",
+      "out": "content/articles/the-1k-month-idea.mdx",
+      "blocks": 50,
+      "headings": 15,
+      "fences": 0,
+      "publishedAt": "2026-01-23",
+      "category": "Ideas"
+    },
+    {
+      "slug": "the-3-screen-mvp-framework",
+      "status": "ok",
+      "out": "content/articles/the-3-screen-mvp-framework.mdx",
+      "blocks": 32,
+      "headings": 9,
+      "fences": 0,
+      "publishedAt": "2026-04-20",
+      "category": "Building"
+    },
+    {
+      "slug": "validate-startup-idea-48-hours",
+      "status": "ok",
+      "out": "content/articles/validate-startup-idea-48-hours.mdx",
+      "blocks": 74,
+      "headings": 20,
+      "fences": 0,
+      "publishedAt": "2026-01-22",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "vibe-coding-101",
+      "status": "ok",
+      "out": "content/articles/vibe-coding-101.mdx",
+      "blocks": 88,
+      "headings": 29,
+      "fences": 0,
+      "publishedAt": "2026-01-27",
+      "category": "Tutorial"
+    },
+    {
+      "slug": "when-to-quit-your-job",
+      "status": "ok",
+      "out": "content/articles/when-to-quit-your-job.mdx",
+      "blocks": 43,
+      "headings": 8,
+      "fences": 0,
+      "publishedAt": "2026-01-27",
+      "category": "Mindset"
+    },
+    {
+      "slug": "why-chatgpt-cant-give-good-startup-ideas",
+      "status": "ok",
+      "out": "content/articles/why-chatgpt-cant-give-good-startup-ideas.mdx",
+      "blocks": 28,
+      "headings": 7,
+      "fences": 0,
+      "publishedAt": "2026-04-19",
+      "category": "Mindset"
+    },
+    {
+      "slug": "the-real-cost-of-not-shipping",
+      "status": "ok",
+      "out": "content/articles/the-real-cost-of-not-shipping.mdx",
+      "blocks": 57,
+      "headings": 18,
+      "fences": 0,
+      "publishedAt": "2026-05-22",
+      "category": "Mindset"
+    },
+    {
+      "slug": "build-in-public-2026",
+      "status": "ok",
+      "out": "content/articles/build-in-public-2026.mdx",
+      "blocks": 56,
+      "headings": 20,
+      "fences": 0,
+      "publishedAt": "2026-05-22",
+      "category": "Mindset"
+    },
+    {
+      "slug": "ship-it-saturday-framework",
+      "status": "ok",
+      "out": "content/articles/ship-it-saturday-framework.mdx",
+      "blocks": 75,
+      "headings": 27,
+      "fences": 0,
+      "publishedAt": "2026-06-03",
+      "category": "Tutorial"
+    }
+  ],
+  "skipped": [],
+  "compileFailures": []
+}

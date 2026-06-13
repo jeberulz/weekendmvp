@@ -1,0 +1,104 @@
+---
+slug: "remote-team-documentation-tool"
+title: "Automated Documentation Tool for Remote Teams"
+---
+
+## The Problem
+
+Remote teams don’t suffer from lack of meetings—they suffer from **documentation debt**. Decisions live in Zoom chat, Slack threads die after 90 days, and Notion pages rot because nobody owns the Friday cleanup. GitLab’s remote playbook says async teams must write everything down, yet McKinsey estimates knowledge workers spend **nearly 20% of the week** searching for information or recreating context colleagues already discussed.
+
+Notion AI helps edit pages you already wrote; it doesn’t reliably ingest a standup recording and produce a dated, linked wiki entry with owners. Ops leads want *meeting → structured doc → Slack digest* on autopilot, with human approve-before-publish. Tettra and Slite target HR handbooks; Almanac chases collaborative docs—none prioritize low-friction capture from the calls already happening daily.
+
+## The Solution
+
+Weekend MVP: Slack + Zoom integrations, pipeline that drafts wiki pages (Overview, Decisions, Action items, Links), human-in-the-loop approve UI, and publish to your hosted markdown wiki or Notion. v2 adds search across past docs and weekly “what changed” digests for managers.
+
+**How it works:**
+
+1. **Capture** — Zoom cloud recording webhook or Slack /doc command drops raw notes into inbox
+2. **Draft** — LLM maps content to wiki template with cross-links to related pages
+3. **Review** — Assignee approves/edits in diff view; reject sends back for re-prompt
+4. **Publish** — Push to team wiki with version history; post summary to #team-updates
+
+## Market Research
+
+Knowledge management for remote teams is a sustained budget line, not a pandemic blip:
+
+- **Knowledge management software** — Fortune Business Insights estimates the global KM market at roughly **$774B by 2030** (broad definition including enterprise suites); team wiki niches remain fragmented.
+- **Remote workforce** — Buffer’s State of Remote Work reports a majority of remote workers still async-first; documentation tooling spend correlates with distributed headcount.
+- **Notion ecosystem** — Notion surpassed **100M users** (2024 company announcements), proving appetite for flexible docs—gap is automated ingestion, not editors.
+- **Wedge** — Target 10–80 person remote product/engineering teams priced out of Glean and tired of manual Notion hygiene.
+
+## Competitive Landscape
+
+Compete on capture automation and approval workflow, not on being yet another editor:
+
+- **Notion AI** — Inline writing help inside Notion. Requires existing pages; weak automated meeting→wiki pipeline. Notion Plus ~$10/seat/mo + AI add-on ~$10/seat/mo
+- **Slite** — Team knowledge base with AI search. Strong editor; capture from calls is secondary to manual authoring. Free · Standard ~$8/seat/mo · Premium ~$12.50/seat/mo
+- **Tettra** — Internal wiki with Q&A and Slack integration. Better for HR policies than meeting-derived technical specs. Scaling from ~$8.33/user/mo
+- **Almanac** — Collaborative doc workflows and templates. Less focused on auto-ingest from Zoom recordings. Free tier · paid team plans
+
+**Your Opportunity**
+
+Own “meeting-to-wiki autopilot” for small remote teams: approve in two minutes, publish with backlinks, never lose the Q3 roadmap decision again.
+
+## Business Model
+
+Seat-based pricing aligned with Slack/Notion bills. Target **$1k MRR** with ~25 teams on Team ($39/mo) or ~15 teams on Growth ($69/mo).
+
+- **Starter** ($0) — 2 docs/month, Slack notify only
+- **Team** ($39/mo) — 10 seats, unlimited drafts, Notion publish
+- **Growth** ($69/mo) — 25 seats, Zoom auto-ingest, weekly digests
+
+**Expansion revenue**
+
+Charge $5/seat overage · sell onboarding package for wiki migration · affiliate rev share with Notion consultants.
+
+## Recommended Tech Stack
+
+Prioritize integration reliability and human review UX over fancy search in v1.
+
+- **Next.js + TypeScript** — Review inbox UI, diff editor, settings for integrations.
+- **Slack Events API** — Slash commands, channel summaries, approval buttons in messages.
+- **Zoom webhooks** — recording.completed triggers transcript fetch and draft job.
+- **Supabase + pgvector** — Docs, versions, embeddings for v2 semantic search.
+- **OpenAI / Anthropic** — Draft generation with citation anchors back to transcript timestamps.
+- **Notion API** — Publish approved pages; map headings to Notion blocks.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create Next.js 14 app “RemoteWiki” with Supabase multi-tenant schema: teams, members, doc_drafts (source_type zoom|slack, raw_payload, structured_md, status pending|approved), published_docs. Add Slack OAuth and Zoom webhook verification middleware.
+```
+
+**2. Core Feature**
+
+```text
+Build review inbox: side-by-side transcript excerpt vs proposed wiki markdown, approve/reject/request edits actions, auto-suggest related wiki links via embedding similarity. On approve, publish to hosted /wiki/[slug] and optional Notion push.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site: hero “Your meetings deserve a wiki page.” Show flow diagram meeting→draft→approve→Slack ping. Social proof placeholder for remote agencies. Compare vs manual Notion cleanup. Pricing for Team/Growth.
+```
+
+**4. Weekly Digest**
+
+```text
+Cron job compiling approved docs from the week into a single Markdown digest emailed to managers with deep links—include unsubscribe and team-level toggles.
+```
+
+## Sources
+
+Signals compiled from public research and vendor positioning (May 2026). Verify figures before financial projections.
+
+- [Fortune Business Insights — knowledge management market](https://www.fortunebusinessinsights.com/knowledge-management-software-market-102634)
+- [Buffer — State of Remote Work](https://buffer.com/state-of-remote-work/2023)
+- [Notion — 100M users milestone](https://www.notion.so/blog/notion-100-million-users)
+- [Slite — public pricing](https://slite.com/pricing)
+- [Tettra — public pricing](https://tettra.com/pricing/)

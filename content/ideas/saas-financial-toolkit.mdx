@@ -1,0 +1,119 @@
+---
+slug: "saas-financial-toolkit"
+title: "Financial Toolkit for Bootstrapped SaaS Founders"
+---
+
+## The Problem
+
+Bootstrapped SaaS founders navigate by feel. They check Stripe for revenue, the bank for cash, and a spreadsheet for burn—and none of those three numbers talk to each other. Monthly MRR is guesswork when you're manually counting upgrades, downgrades, and failed charges. Runway is a rough mental calculation that's usually optimistic. Pricing experiments live in someone’s head. This isn’t a knowledge problem; it’s a tooling problem.
+
+The category divide is brutal. At the bottom, Baremetrics and ChartMogul handle subscription analytics but ignore operating expenses entirely—you know your MRR but still don’t know if you’re profitable. Xero and QuickBooks nail the accounting side but treat SaaS-specific metrics like MRR cohorts and expansion revenue as afterthoughts. At the top, enterprise financial planning software from eMoney and its peers starts at several thousand dollars a year and is designed for advisory firms and CFO teams, not solo founders sleeping on a Stripe dashboard. The gap between “I track everything in a spreadsheet” and “I have a real-time financial command center” has never had a product designed specifically to close it.
+
+The communities where bootstrapped founders congregate—r/SaaS (317K members), Indie Hackers, MicroConf, SaaStr—surface the same frustrations weekly: “How do I calculate churn correctly?”, “What’s the right way to track MRR when annual plans are involved?”, “I think my runway is eight months but I’m not sure.” These aren’t edge cases; they’re the default state of early-stage SaaS.
+
+## The Solution
+
+A financial command center that pulls Stripe subscription events and bank transaction data into a single dashboard built around the metrics bootstrapped founders actually track. MRR is decomposed automatically: new, expansion, contraction, churn, and reactivation break out without manual calculation. A runway calculator combines Stripe revenue trends with operating expenses pulled from the bank sync. A pricing scenario modeler lets founders run “what if I raise prices 20%?” against their actual churn data before committing. Monthly snapshots produce the investor-ready P&L summary that used to require a bookkeeper. The AI layer surfaces anomalies and narrates the numbers—explaining why MRR declined even though new signups were up, or flagging an expense category that doubled quarter-over-quarter.
+
+**How it works:**
+
+1. **Connect** — Link Stripe with OAuth; connect bank accounts via Plaid. Setup takes under five minutes.
+2. **Analyze** — Dashboard auto-calculates MRR, ARR, churn, LTV, burn rate, and runway from live data—no spreadsheet required.
+3. **Model** — Run pricing experiments and growth scenarios before making changes. Stress-test runway against different churn assumptions.
+4. **Report** — Export monthly P&L summaries, investor-ready reports, and anomaly alerts straight to your inbox.
+
+## Market Research
+
+The financial planning software category is growing fast, and SaaS is the segment driving the most tooling demand. Bootstrapped founders represent a systemically underserved slice of a large and expanding market:
+
+- **Financial planning software market** is valued at $5.74B in 2024 and projected to reach $10.92B by 2029, growing at a 17.5% CAGR—one of the faster-growing software verticals (The Business Research Company).
+- **SaaS market expansion** from $408.21B in 2024 to $1.25T by 2034 means more founders are building subscription businesses that need subscription-specific financial tooling (Precedence Research).
+- **eMoney holds 28% advisory market share** but is priced and structured for financial advisory firms—not the bootstrapped founder segment, which remains largely unserved by purpose-built tools (Statista).
+- **Cash flow forecasting** is the highest-volume keyword with LOW competition at 18,100 searches per month and a $11.36 CPC—meaning buyers actively search for a solution and few advertisers are targeting them.
+- **Community demand signal**: r/SaaS (317K members), Indie Hackers, and MicroConf consistently surface founders struggling with financial visibility as a top operational pain, validating real purchase intent beyond search data.
+
+## Competitive Landscape
+
+The market splits cleanly into two camps: SaaS metrics tools that ignore expenses, and accounting tools that ignore SaaS metrics. Nothing bridges them at bootstrapper-friendly pricing:
+
+- **Baremetrics** — Strong MRR and churn analytics for Stripe businesses. Clean dashboard, good cohort analysis. But expenses and burn rate are entirely outside scope—you still need a separate tool for the other half of the picture. From $108/mo for up to 100 customers; pricing scales steeply with revenue
+- **ChartMogul** — Solid subscription analytics with multi-source data connectors and investor-facing reporting. Positioned toward growth-stage teams and enterprise; UI complexity and pricing reflect that. Starts at $99/mo; meaningful features gated behind higher tiers
+- **ProfitWell (Paddle)** — Free MRR analytics that built a loyal audience before Paddle acquired it. Useful baseline tool but now tightly integrated into the Paddle ecosystem, limiting appeal for Stripe-native businesses. Free tier; advanced features require Paddle billing adoption
+- **Xero / QuickBooks** — Best-in-class accounting tools for small businesses. Excellent at tracking expenses and generating P&L statements. MRR, churn, LTV, and cohort analysis are absent—these are general-purpose tools wearing a SaaS hat. Xero from $15/mo; QuickBooks from $35/mo — accounting-only
+- **eMoney / MoneyGuidePro** — Enterprise financial planning platforms with 28% advisory market share. Comprehensive but priced for RIA firms and wealth advisors—complex onboarding, four-figure annual contracts, and a feature set designed for a completely different customer profile. Enterprise pricing; typically four figures per year, custom contracts
+- **Custom Spreadsheets** — The current default for most bootstrapped founders. Flexible, free, and already familiar. Also manual, error-prone, always out of date, and incapable of scenario modeling at any meaningful scale. $0 but high maintenance cost—fragile, not real-time, doesn’t scale
+
+**Your Opportunity**
+
+Build the one tool that merges SaaS metrics (Baremetrics’ domain) with expense tracking (Xero’s domain) and adds AI-powered forecasting—priced at $49–$100/mo instead of the combined $150–$200/mo founders currently spend on two tools that still leave gaps. The cash flow forecasting keyword alone (18,100 searches/mo, LOW competition) is practically an unlocked acquisition channel waiting for a focused product.
+
+## Business Model
+
+Tiered SaaS with a free entry point to capture founders pre-revenue or early-stage. Each paid tier removes a meaningful constraint rather than just adding features—the jump from free to paid is always triggered by a real pain point hitting a limit. Anchor pricing against the $150–$200/mo founders currently spend across separate tools for half the functionality.
+
+- **Free** ($0) — Cash flow spreadsheet template + MRR tracker download. No login required—designed as a top-of-funnel lead magnet.
+- **Starter Pack** ($49/mo) — Stripe integration, live MRR/churn dashboard, monthly email digest, runway calculator. Up to $50K MRR tracked.
+- **Complete Finances** ($100/mo) — Everything in Starter + bank sync via Plaid, burn rate tracking, cohort analysis, and AI anomaly alerts.
+
+**Enhanced Analytics Add-on**
+
+$200/mo: pricing scenario modeler, investor-ready P&L export, custom metric dashboards, and priority support. Targeted at founders actively fundraising or managing a board.
+
+**Unit Economics**
+
+- **$180** — Target CAC
+- **$90/mo** — Avg. Revenue/Account
+- **5%/mo** — Est. Churn
+- **$1.1k** — LTV (18 mo)
+
+## Recommended Tech Stack
+
+Optimize for fast data ingestion and real-time aggregation. Stripe webhooks feed MRR calculations as events happen; Plaid handles bank sync; Supabase powers both the relational data model and per-user RLS. The AI layer is lightweight—you’re narrating structured numbers, not generating freeform text.
+
+- **Next.js 15 + TypeScript** — App Router for the dashboard workspace; server actions for Stripe webhook processing; streaming for real-time chart updates on data refresh.
+- **Stripe API** — OAuth Connect for multi-account support; Stripe Sigma or raw event webhook replay to backfill historical MRR. Subscriptions, invoices, and charges parsed into standardized MRR events.
+- **Supabase** — Postgres for users, connected accounts, monthly snapshots, and transaction records. Row-level security ensures each founder sees only their own data. Edge functions for nightly bank sync jobs.
+- **Plaid API** — Bank account linking for expense tracking and cash position. Plaid Transactions for categorized spend; combines with Stripe revenue for accurate burn-rate calculations.
+- **Claude API** — Generates plain-language financial narratives: explains anomalies, summarizes monthly performance, and produces the investor-ready digest. Structured output schema keeps hallucinations out of the numbers.
+- **Clerk + Recharts** — Clerk handles auth and billing tier enforcement. Recharts (or Tremor) powers the MRR waterfall, burn rate area chart, and cohort retention heatmap with clean, composable React components.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 15 project with TypeScript and Tailwind CSS for a “SaaS Financial Toolkit” targeting bootstrapped founders. Set up Supabase with tables: users, connected_stripe_accounts (stripe_account_id, access_token, live_mode), mrr_events (account_id, month, new_mrr, expansion_mrr, contraction_mrr, churn_mrr, reactivation_mrr), monthly_snapshots (account_id, month, total_mrr, arr, active_customers, churn_rate, ltv), bank_transactions (account_id, date, amount, category, plaid_transaction_id). Add Clerk for auth, row-level security policies per user, and environment variables for Stripe, Plaid, Anthropic, and Supabase service role. Include Stripe webhook handler skeleton and a Plaid Link component stub.
+```
+
+**2. Core Feature**
+
+```text
+Build the Stripe MRR calculation engine: (1) Stripe OAuth Connect flow to link the founder’s account, (2) Historical sync that replays all subscription and invoice events to populate mrr_events with correct new/expansion/contraction/churn/reactivation breakdown per month using standard SaaS MRR movement logic, (3) Webhook handler for customer.subscription.updated, invoice.payment_succeeded, and invoice.payment_failed events to keep data real-time, (4) A React dashboard with a MRR waterfall chart (Recharts), ARR counter, active customer count, churn percentage, and a Stripe-source attribution table. Handle annual plan proration correctly—recognize revenue monthly, not at invoice date.
+```
+
+**3. Landing Page**
+
+```text
+Build a landing page for “Runway” (working name)—a financial toolkit for bootstrapped SaaS founders. Hero: “Your MRR, burn rate, and runway. In one place. Finally.” Include: problem section showing the spreadsheet + two-tool gap, interactive dashboard screenshot with annotated MRR waterfall, features list (live MRR breakdown, bank sync burn rate, runway calculator, pricing scenario modeler, monthly investor digest), comparison table vs. Baremetrics + Xero combo vs. spreadsheets, three pricing tiers (Free template / $49 Starter / $100 Complete), and email capture with “Get 14 days free” CTA. Palette: warm off-white background, deep charcoal headers, emerald green for positive metrics, muted red for churn. Tone: direct, founder-to-founder, no corporate fluff.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for “Runway”, a financial toolkit for bootstrapped SaaS founders. Logo concept: a clean upward-trending line chart that doubles as a runway strip—simple enough to work at 20px favicon size. Colors: primary #0F1729 (deep navy), background #FAFAF8 (warm white), positive metric accent #10B981 (emerald), negative metric accent #EF4444 (muted red), neutral #6B7280. Typography: Geist Sans for UI numbers and labels (crisp at small sizes), Inter for body text. Deliverables: favicon, sidebar wordmark, empty-state illustration for the “connect your Stripe” screen, and a Twitter/X profile banner targeting the Indie Hackers / MicroConf audience.
+```
+
+## Sources
+
+Market sizing and competitive pricing signals sourced from public research and vendor pages (June 2026). Triangulate before citing in investor materials.
+
+- [The Business Research Company — Financial Planning Software Global Market Report (2024–2029 CAGR)](https://www.thebusinessresearchcompany.com/report/financial-planning-software-global-market-report)
+- [Precedence Research — SaaS Market Size, Share, and Forecast 2024–2034](https://www.precedenceresearch.com/saas-market)
+- [Statista — Financial planning software market share (eMoney 28% advisory segment)](https://www.statista.com/topics/3953/financial-planning-software/)
+- [Pigment — Financial planning software trends and buyer signals](https://www.pigment.com/blog/financial-planning-software)
+- [Baremetrics — current public pricing](https://baremetrics.com/pricing)
+- [ChartMogul — current public pricing](https://chartmogul.com/pricing/)
+
+Research via Ideabrowser MCP (idea_id: 1454). Opportunity score 9/10, pain score 9/10, timing score 9/10.

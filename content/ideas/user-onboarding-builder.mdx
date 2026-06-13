@@ -1,0 +1,194 @@
+---
+slug: "user-onboarding-builder"
+title: "User Onboarding Flow Builder"
+---
+
+## The Problem
+
+Activation is where most SaaS products die quietly. The average SaaS hits **5–10% signup-to-active conversion**. Best-in-class products hit 30%+, and the difference is almost entirely onboarding. A great product tour shown at the right moment lifts day-7 retention 15–25 points. The founders who know this also know they cannot justify Appcues at $249/month or Pendo at "call us" pricing.
+
+So they do one of three things, all bad. They ship no onboarding at all and hope the product speaks for itself. They hack together a modal with Intro.js that breaks every time the app UI changes. Or they pay an agency $5K to build a single onboarding flow that gets stale by the next product release. None of these loops produce a learning system. None tell the founder which step users drop off at.
+
+The deeper pain is that onboarding work is never "done." Every new feature needs a tour. Every new pricing page needs a hotspot. Every new integration needs a checklist. The founder either hires a dedicated PM for onboarding — absurd for sub-$50K MRR — or accepts perpetual half-done onboarding. A no-code builder priced like a Notion template, with AI that writes the first draft of each flow, resolves this loop.
+
+## The Solution
+
+A multi-tenant no-code builder where the admin paints tooltips, modals, checklists, and hotspots onto a live preview of their app, and the system emits an embeddable JS snippet. **The hero feature is screenshot-to-flow**: admin uploads a screenshot of their dashboard, GPT-4 Vision identifies the key UI elements, and the system suggests a 5-step tour with copy drafted in the brand voice. The admin edits, ships, and sees activation funnels within an hour of signup. Priced $29–$99/mo flat.
+
+**How it works:**
+
+1. **Upload screenshot** — AI suggests a 5-step tour with copy drafts
+2. **Edit in the builder** — Visual editor with element picker on live preview
+3. **Paste snippet & ship** — One \<script> tag; analytics light up immediately
+
+The moat is the screenshot feature. Appcues/Userpilot require a visual editor that opens the customer's app in an iframe — which fails on apps with CSP, auth walls, or SPA routing. Screenshot-based AI generation sidesteps all that. The admin never has to wire up an iframe; the AI does the first pass; the admin polishes. Time-to-first-tour drops from an afternoon to ten minutes.
+
+## Market Research
+
+The **Digital Adoption Platform market is $1.2B in 2024, projected to $7B by 2030 at ~35% CAGR** (MarketsAndMarkets). Driven by two forces: every PLG SaaS now ships with in-app education as a default expectation, and enterprise buyers push adoption metrics as a line item in procurement. The indie/mid-market slice is under-served because the category leaders optimize for $50K+ annual contracts.
+
+- **Appcues raised $30M+ Series B** (2021) with public ARR estimates in the $20M+ range. Pendo is a $2.6B-valued unicorn. Category validation is decisive.
+- Best-in-class SaaS onboarding lifts **day-7 retention 15–25 points** (OpenView, ProfitWell studies). For a $50 MRR product, that is $9–$15 additional LTV per cohort member — 30x the cost of the tool.
+- Search: "onboarding software" 3.6K/mo, "user onboarding tool" 1.9K/mo, "appcues alternative" 590/mo — CPCs **$6–$14** indicate strong commercial intent.
+- Indie-tier incumbents: ProductFruits ($79–$139/mo) and HelpHero ($55–$200/mo) both exist but neither has AI flow generation. The widget ecosystem is technically mature; AI is the net-new differentiator.
+- Communities: r/SaaS (220K), r/ProductManagement (180K), r/userexperience (1.5M), Indie Hackers (200K+). Weekly threads on "how to onboard users" and "Appcues alternatives."
+
+Market stage is *mature enterprise, fragmented indie*. Appcues, Pendo, and Userpilot carve up the top. ProductFruits and HelpHero serve the bottom but with 2020-era UX. The 2026 wedge is AI flow generation + indie pricing + embedded widget that ships in under an hour. 12–18 month window before Appcues or Userpilot bolts AI onto their existing editors.
+
+## Competitive Landscape
+
+Four competitor classes, structured by price and sophistication. Appcues+Pendo own enterprise. Userpilot+Chameleon hover upmarket. ProductFruits+HelpHero serve indie but with dated UX and no AI. Open-source (Intro.js, Shepherd) requires engineering time and has no analytics. Your slot: AI-first, indie-priced, widget-included.
+
+- **Appcues / Pendo** — Category leaders. Appcues raised $30M+ and powers 1,700+ customers. Pendo is $2.6B unicorn with enterprise focus. Deep features, polished editors, opaque enterprise pricing. Not priced for sub-$50K MRR. Appcues $249–$879+/mo; Pendo custom enterprise ($10K+/yr)
+- **Userpilot / Chameleon** — Mid-market challengers. Userpilot has strong segment-based targeting; Chameleon focuses on Launchers and checklists. Both gate core features to annual plans and charge per-MAU, not flat. Userpilot $299–$749+/mo; Chameleon $350–$1,500+/mo
+- **ProductFruits / HelpHero / Userflow** — Indie/SMB tier. ProductFruits is the cleanest option at $79–$139 flat; HelpHero $55–$200. Both have 2020-era UX and no AI generation. Userflow ($240+/mo) pushes toward mid-market pricing. ProductFruits $79–$139, HelpHero $55–$200, Userflow $240–$920
+- **Intro.js / Shepherd.js / DIY** — Free open-source tour libraries. Requires engineering work, has no content editor, no analytics, no targeting. The founder who tries this first almost always outgrows it within 3 months when UI changes break every tour. $0; hidden cost is maintenance + no analytics
+
+**Your Opportunity**
+
+Screenshot-to-flow as the hero. Flat $29 Solo / $79 Team pricing, undercuts ProductFruits by 40%. One \<script> tag installation in under 60 seconds. AI suggests copy in the brand voice. Tagline: "What Appcues does for $249, with an AI co-pilot, for $29 flat."
+
+## Business Model
+
+Flat-rate SaaS priced for indie and mid-market SaaS teams. Free tier captures trial users with aggressive limits to seed word-of-mouth. Solo is the steady-state tier for single-product startups. Team handles agencies and multi-product companies. Unit cost is dominated by GPT-4 Vision on the screenshot-to-flow feature, and that only runs on admin-facing generations (not end-user views), so per-customer cost is bounded and predictable.
+
+- **Free** ($0) — 1 flow, 1,000 tour views/mo, “Powered by” badge, 3 AI generations/mo
+- **Solo** ($29/mo) — Unlimited flows, 50K views/mo, no branding, unlimited AI, analytics funnels, segmentation
+- **Team** ($79/mo) — 500K views/mo, 5 seats, multi-product, A/B testing, Segment/Mixpanel integration
+
+**Unit Economics (illustrative)**
+
+- **~$0.80/mo** — Infra cost/tenant
+- **~$0.03** — GPT-4V cost/flow
+- **~92%** — Gross margin Solo
+- **7–11%** — Free → Solo conv.
+
+MRR path: 100 Solo + 10 Team = $3.7K/mo. 500 Solo + 60 Team = $19.2K/mo. At 2K Solo + 200 Team = $73.8K/mo ($886K ARR). Appcues's $20M+ ARR at $249–$879 blended ARPU implies ~5K–8K customers in the category at their price band; capturing even 5% of the sub-Appcues tier at $29–$79 ARPU produces a solid $1M+ ARR business without touching enterprise.
+
+## Recommended Tech Stack
+
+Two parts. Part one is standard multi-tenant SaaS. Part two is the embeddable JS runtime that paints tooltips on the customer's app without breaking their CSP. Read the Pendo/Appcues widget source code for prior art; everything else is stock.
+
+- **Next.js 14 (admin app)** — Admin dashboard: flow library, visual editor (drag-drop steps + element picker from screenshot), analytics. Server Actions for flow CRUD. Vercel hosting.
+- **Vanilla JS widget (runtime)** — Standalone ~25KB minified JS. No framework. Subscribes to route changes via History API; paints tooltips/modals as Shadow DOM elements (avoids style bleed). Element selectors via `data-tour-id` attribute or CSS path fallback.
+- **Supabase** — Tables: `tenants`, `flows`, `steps`, `tour_events` (fires, completes, dismisses), `segments`. RLS per-tenant. Tour events partitioned by month.
+- **GPT-4 Vision for flow generation** — Admin uploads screenshot. Send to `gpt-4o` with structured JSON schema: `{steps: [{target_description, title, body, element_type}]}`. Admin edits in visual editor; picks real elements from live app preview.
+- **Cloudflare CDN for widget.js** — Serve the widget bundle from Cloudflare edge with aggressive cache (`cache-control: public, max-age=3600`). Flow definitions fetched on init via JSON endpoint, cached 60s.
+- **Stripe Billing + usage events** — Stripe Checkout for Solo/Team subscriptions. Track `tour_views_count` via meter events; enforce tier limits (1K free, 50K Solo, 500K Team) server-side. Email before limit, throttle after.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Admin App + Editor**
+
+```text
+Create a Next.js 14 App Router admin SaaS for building product tours. Supabase backend, Tailwind, TypeScript.
+
+Schema:
+- tenants(id, slug, owner_user_id, site_url, stripe_customer_id, plan ENUM[free,solo,team], monthly_views_used INT, created_at)
+- flows(id, tenant_id, name, status ENUM[draft,live,paused], trigger_type ENUM[url_match,event,manual], trigger_config JSONB, segment_rules JSONB)
+- steps(id, flow_id, position INT, step_type ENUM[tooltip,modal,hotspot,checklist], target_selector TEXT, title, body, buttons JSONB)
+- tour_events(id, tenant_id, flow_id, step_id, event ENUM[fired,advanced,completed,dismissed], visitor_id, occurred_at)
+
+Routes:
+- /dashboard (flow list, quick stats)
+- /flows/[id]/edit (visual editor + step list)
+- /flows/[id]/analytics (funnel: started → step 1 → step 2 → completed)
+- /install (snippet copy, docs)
+- /settings (billing, team)
+
+Visual editor:
+- Left panel: ordered step list, drag to reorder, add/remove.
+- Center panel: iframe of tenant.site_url (fallback: image of screenshot). On hover, show element outline; click to set target_selector via unique CSS path generator.
+- Right panel: step properties (type, title, body, buttons, transition).
+
+Preview mode: simulates the tour running on the site_url preview. Use postMessage from iframe to parent for event tracking.
+```
+
+**2. Screenshot-to-Flow (GPT-4 Vision)**
+
+```text
+Implement screenshot-to-flow AI generation. This is the category differentiator.
+
+User flow:
+1. On /flows/new, user uploads a screenshot of their app dashboard (drag-drop, PNG/JPG up to 4MB).
+2. Upload to Supabase Storage; get signed URL.
+3. Call OpenAI Chat Completions with gpt-4o, image_url pointing to the signed URL. System prompt:
+"You analyze SaaS dashboard screenshots and generate 5-step product tours for new users. For each step, identify a key UI element and write a friendly 1-2 sentence tooltip. Return JSON matching: {steps: [{position: 1-5, target_description: 'CSS selector or human description of the element', element_type: 'button|input|card|menu|chart|other', title: 'short', body: 'longer friendly microcopy', reason_for_step: 'why show this step'}]}. Prioritize the elements that enable the user's first success moment."
+4. Use response_format: {type: 'json_schema'}. Validate structure.
+5. Render the 5 generated steps in the visual editor. target_description is prefilled as a placeholder; user clicks on the element in the iframe preview to replace with a real selector.
+6. Show the reason_for_step as an inline comment on each step (coaching, not committed to the flow).
+
+Cost: ~$0.03 per generation. Cap Free tier at 3/month; no cap on Solo/Team. Cache the generation by image hash so re-uploads don't cost twice.
+```
+
+**3. Embeddable JS Runtime**
+
+```text
+Build the standalone widget runtime. This is what ships in customer apps.
+
+widget.js (vanilla, ~25KB minified, no framework):
+
+(function() {
+  const tenantId = document.currentScript.getAttribute('data-tenant');
+  const visitorId = getOrCreateVisitorId(); // localStorage
+  const apiBase = 'https://api.product.com';
+
+  // 1. Fetch live flows for this tenant (cached 60s at CDN)
+  fetch(`${apiBase}/v1/flows?tenant=${tenantId}`).then(r => r.json()).then(({flows}) => {
+    // 2. For each flow, check trigger conditions vs current URL / user segment
+    flows.forEach(flow => evaluateAndRun(flow, visitorId));
+  });
+
+  function evaluateAndRun(flow, visitorId) {
+    // Trigger check: url_match uses minimatch on window.location.pathname
+    if (!matchesTrigger(flow)) return;
+    // Segment check: simple key/value match against window.__product_identify__ or cookie
+    if (!matchesSegment(flow, visitorId)) return;
+    // Mount a Shadow DOM root so our styles don't leak
+    const root = document.createElement('div');
+    root.attachShadow({mode: 'open'});
+    document.body.appendChild(root);
+    runTour(flow, root.shadowRoot, visitorId);
+  }
+
+  function runTour(flow, root, visitorId) {
+    let stepIndex = 0;
+    renderStep(flow.steps[0]);
+    // Send 'fired' event
+    trackEvent('fired', flow.id, flow.steps[0].id, visitorId);
+
+    function renderStep(step) {
+      const target = document.querySelector(step.target_selector);
+      if (!target) {
+        // Retry with MutationObserver for 5 seconds, then skip
+        return waitForElement(step.target_selector, 5000).then(el => renderStep({...step, _target: el})).catch(() => advance());
+      }
+      // Position tooltip/modal relative to target; attach Next/Prev/Skip buttons.
+      // ... render Shadow DOM content ...
+    }
+  }
+
+  function trackEvent(event, flowId, stepId, visitorId) {
+    navigator.sendBeacon(`${apiBase}/v1/events`, JSON.stringify({tenantId, event, flowId, stepId, visitorId, ts: Date.now()}));
+  }
+})();
+
+Customer embed:
+
+Identify API (optional):
+
+Test matrix: React SPA (Next.js dev), Vue SPA (Nuxt), vanilla static site, Shopify/Webflow. Runtime should handle all four without modification.
+```
+
+## Sources
+
+- • [MarketsAndMarkets — Digital Adoption Platform Market ($1.2B 2024 → $7B by 2030, ~35% CAGR)](https://www.marketsandmarkets.com/Market-Reports/digital-adoption-platform-market.asp)
+- • [Appcues Pricing (accessed April 2026, $249–$879+/mo)](https://www.appcues.com/pricing)
+- • [OpenView — SaaS onboarding impact on day-7 retention](https://openviewpartners.com/blog/saas-onboarding/)
+- • [ProfitWell — Onboarding and churn research](https://www.profitwell.com/recur/all/churn-onboarding)
+- • [OpenAI — GPT-4 Vision structured output docs](https://platform.openai.com/docs/guides/vision)
+- • Pendo $2.6B valuation (Series F, 2021) and Appcues $30M+ Series B (2021) referenced from public press coverage. Ideabrowser MCP returned no direct match for user-onboarding-builder wedge.
+
+Competitor pricing (Appcues, Pendo, Userpilot, ProductFruits) shifts frequently; verify live pricing pages before marketing claims.

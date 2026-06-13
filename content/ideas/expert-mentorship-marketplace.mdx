@@ -1,0 +1,107 @@
+---
+slug: "expert-mentorship-marketplace"
+title: "Expert Mentorship Marketplace"
+---
+
+## The Problem
+
+Learners want specific expertise: "How do I price enterprise SaaS as a solo founder?" or "What's the interview loop at Stripe for EM roles?" Generic career coaching does not help. They bounce between free communities (high noise), expensive bootcamps (high commitment), and cold LinkedIn DMs (low response rate).
+
+**ADPList** proved demand for free mentorship at massive scale—but mentors churn because there is no compensation and mentees struggle to get repeatable access to the same expert. **MentorCruise** monetizes long-term subscriptions but skews engineering and design. **Clarity.fm** pioneered per-minute calls yet feels dated. **Plato** targets engineering managers inside companies, not individuals shopping for experts.
+
+Experts with real credentials want lightweight monetization without building a course. Learners want *one great hour*, not a twelve-week curriculum. The gap is a marketplace optimized for single-session and micro-package bookings with semantic matching and escrow payouts—see also [Virtual Knowledge Hub](/ideas/virtual-knowledge-hub) for the executive-tier variant with async libraries.
+
+## The Solution
+
+Experts apply with proof (LinkedIn, portfolio, optional video intro). Learners post a goal or pick a category. The platform embeds expert profiles, runs vector + LLM matching, and surfaces three fits with a one-line "why this expert." Booking via Cal.com embed; payment held until session complete (Stripe Connect). Optional async "written office hours" tier for $49 flat.
+
+**MVP loops:**
+
+- Expert onboarding + manual approval (quality gate)
+- Learner goal form → top 3 matches
+- 30/60-min video session + Stripe payout
+- Post-session review + rebook discount
+- Category landing pages for SEO (pricing, PM, fundraising)
+
+Differentiate from Virtual Knowledge Hub by focusing on **practitioner experts** (IC → senior IC) at $75–$250/session, not VP office hours. Cross-link both properties in Explore More for SEO cluster.
+
+## Market Research
+
+Mentorship and coaching platforms collectively exceed **$3–5B** when you include corporate programs and consumer marketplaces. Post-layoff career anxiety keeps demand counter-cyclical. AI matching is table stakes marketing; real differentiation is supply quality and payout economics experts trust.
+
+- **MentorCruise** lists thousands of mentors—validates willingness to pay $100–300/mo for ongoing access.
+- **ADPList** community scale proves top-of-funnel; monetization layer is the open lane.
+- **Expert economy** (consulting calls, intro.co) normalized paying for time; Stripe Connect makes marketplace payouts a weekend integration.
+- **Category SEO** ("find a fundraising mentor") still wins long-tail against generic LinkedIn search.
+
+Stage: *proven category, room for niche + better economics*. Win a vertical (e.g., B2B SaaS founders) before going horizontal.
+
+## Competitive Landscape
+
+Free peer lists, subscription mentorship, and per-minute legacy calls—none combine curation, semantic match, and session escrow for mid-tier experts.
+
+- **MentorCruise** — Subscription mentorship, strong in tech. Less flexible for one-off sessions; supply skews senior IC coaches. $39–$299/mo typical mentor plans
+- **ADPList** — Free unlimited mentorship. Mentor burnout; no quality gate; hard to book same mentor twice. Free; enterprise upsell
+- **Clarity.fm** — Per-minute expert calls. Aging UX; limited discovery beyond search. Per-minute rates set by expert
+- **Plato** — Mentorship for engineering managers inside companies. B2B SKU, not individual marketplace. Enterprise contracts
+
+**Your Opportunity**
+
+Curated experts, pay-per-session + small async tier, 15% take rate with 85% to expert, vertical landing pages. Start with one niche (SaaS GTM) where you can recruit 30 experts manually.
+
+## Business Model
+
+Marketplace take rate on sessions + optional expert Pro listing ($29/mo) for boosted placement.
+
+- **Learner booking** (Pay per session) — Platform fee 15%; experts set $75–$300/session
+- **Async advice** ($49) — Written answer within 72h; 25% platform fee
+- **Expert Pro** ($29/mo) — Featured placement, analytics, calendar sync
+
+MRR path: 200 sessions/mo at $150 avg × 15% fee = $4.5K/mo + 20 Expert Pro = $580. Hit $5K with modest liquidity in one vertical. Liquidity > features early.
+
+## Recommended Tech Stack
+
+Classic marketplace: profiles, search/match, bookings, payouts. Cal.com + Stripe Connect + pgvector.
+
+- **Next.js 14 + Supabase** — experts, learners, bookings, reviews, expert_embeddings. Status workflow: applied → approved → active.
+- **Stripe Connect Express** — Destination charges; release payout 24h after session marked complete. Dispute table for refunds.
+- **Cal.com embed + Daily.co** — Experts connect Cal availability; video room per booking.
+- **Claude + embeddings** — Match learner goal text to expert bios; re-rank top 10 to top 3 with reasons.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Marketplace Schema**
+
+```text
+Create Next.js marketplace: experts (bio, tags, hourly_rate, stripe_account_id, embedding), learners, bookings (scheduled_at, amount_cents, status), reviews.
+
+Expert application form with LinkedIn URL + 3 expertise tags. Admin /admin/approve queue.
+Public /experts grid with filters. Expert profile /experts/[slug] with Cal embed.
+```
+
+**2. Semantic Match Endpoint**
+
+```text
+POST /api/match { goal, background, budget_max }.
+
+Embed goal with text-embedding-3-large. Retrieve 20 experts. Claude re-rank to 3 with { expert_id, reason } JSON.
+Show reasons on UI cards. Log conversions when booking completes.
+```
+
+**3. Stripe Connect Escrow**
+
+```text
+Implement booking checkout: PaymentIntent on platform account with transfer_data.destination = expert Connect id, application_fee_amount = 15%.
+
+Webhook payment_intent.succeeded → confirm booking. After session, learner confirms → transfer; auto-release after 72h unless disputed.
+```
+
+## Sources
+
+- • [Future Market Insights — coaching platform market](https://www.futuremarketinsights.com/reports/coaching-platform-market)
+- • [MentorCruise — marketplace](https://mentorcruise.com/)
+- • [ADPList — free mentorship](https://adplist.org/)
+
+Verify competitor pricing on live product pages; packaging changes frequently.

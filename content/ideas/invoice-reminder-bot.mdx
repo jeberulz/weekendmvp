@@ -1,0 +1,104 @@
+---
+slug: "invoice-reminder-bot"
+title: "Invoice Reminder Bot"
+---
+
+## The Problem
+
+Freelancers and small agencies live in a cash-flow gap: work ships on time, invoices go out, then silence. FreshBooks and QuickBooks can send a single reminder, but the tone never escalates, follow-ups require manual calendar blocks, and Stripe Invoicing stops nudging after one template. A 2023 QuickBooks survey found **64% of small business owners** had outstanding receivables past due—yet most still copy-paste the same “just checking in” email because automation feels impersonal or requires a Zapier stack they never maintain.
+
+The emotional tax is real. Creators report spending **3–5 hours per month** chasing five-figure clients who “forgot” Net-30 terms. Zapier recipes break when OAuth tokens expire; Bill.com is overkill for a solo designer billing $8k/month. What they want is a dedicated bot that reads invoice status, respects custom escalation ladders (friendly → firm → final notice), and stops the moment payment lands—without becoming another full accounting suite.
+
+## The Solution
+
+Ship a narrow SaaS: connect Stripe Invoicing (weekend MVP) with optional FreshBooks/QuickBooks OAuth in v2. Users define reminder cadences per client tier, preview copy, and let the bot send from their domain via Postmark/Resend. Dashboard shows aging buckets, last touch, and predicted cash-in date. No invoicing creation required—just intelligent collection on top of tools they already use.
+
+**How it works:**
+
+1. **Connect** — OAuth to Stripe; pull open invoices, due dates, and customer emails nightly
+2. **Configure** — Escalation templates: Day 3 friendly, Day 10 firm, Day 21 final with optional late fee note
+3. **Automate** — Cron + edge function sends reminders; pauses on partial payment or client snooze
+4. **Collect** — One-click “mark paid” or webhook from Stripe stops the sequence instantly
+
+## Market Research
+
+Accounts receivable automation sits inside a larger shift toward vertical micro-SaaS for independents. Directional sizing for landing pages—verify before investor decks:
+
+- **Freelance economy** — Upwork’s 2024 report cites **64 million Americans** doing freelance work; even a 1% wedge on payment-chase tools is a large SAM.
+- **Invoicing software market** — Grand View Research sizes the global invoicing software market at roughly **$19B in 2024** with steady growth as solo businesses formalize billing.
+- **Stripe Invoicing adoption** — Stripe processed over **$1T** in payment volume in 2023; invoicing is bundled free, creating a huge install base that still lacks smart dunning.
+- **Wedge** — Bill.com and Harvest target teams; a $19/mo “polite collections bot” wins SEO on “invoice reminder automation” and “Stripe overdue email sequence.”
+
+## Competitive Landscape
+
+You are not replacing accounting—you are the escalation layer incumbents treat as an afterthought:
+
+- **Bill.com** — Full AP/AR platform for SMB finance teams. Powerful but $45+/user, heavy onboarding, overkill for a freelance designer. From ~$45/user/mo · enterprise sales motion
+- **Harvest** — Time tracking plus invoicing with basic reminders. Strong for agencies already on Harvest; weak customizable dunning sequences. Free solo · Pro from $12/seat/mo
+- **AND CO (Fiverr Workspace)** — Freelancer suite with contracts and invoicing. Reminders exist but limited escalation logic and no Stripe-native depth. Free tier · paid plans for teams
+- **Zapier + Gmail** — DIY automation when invoice status changes. Fragile, no preview UI, breaks silently when APIs shift. $20–50/mo Zapier + your time
+
+**Your Opportunity**
+
+Own “payment chase automation” for Stripe-first solos: opinionated templates, client-specific snooze, and a dashboard that answers “who owes me money this week?” in ten seconds—without becoming Bill.com.
+
+## Business Model
+
+Freemium with a hard cap on active invoices mirrors how solos experiment. Target **$1k MRR** with ~55 paying users on Pro or ~40 Pro + a handful of small agency seats.
+
+- **Starter** ($0) — 3 active invoices, 1 reminder sequence, Stripe only
+- **Pro** ($19/mo) — Unlimited invoices, custom domains, QuickBooks sync
+- **Studio** ($49/mo) — 5 seats, client portals, late-fee rules, priority support
+
+**Path to $1K MRR**
+
+Land 50 Pro users via freelance communities and “Stripe overdue” content · CAC under $30 with template lead magnets · 85% gross margin on email + hosting · expand to agencies at $49 after PMF.
+
+## Recommended Tech Stack
+
+Optimize for Stripe webhooks, reliable email delivery, and a dead-simple dashboard. Supabase + Vercel Edge keeps the weekend scope tight.
+
+- **Next.js 14 + TypeScript** — App Router dashboard, server actions for OAuth token storage, Vercel cron for dunning jobs.
+- **Stripe API + Invoicing webhooks** — invoice.paid and invoice.finalized events drive pause/resume logic; Connect optional later.
+- **Supabase Postgres** — Users, connected accounts, invoice snapshots, reminder_logs with RLS per workspace.
+- **Resend or Postmark** — Transactional email with custom domains; template variables for amount, due date, pay link.
+- **Vercel Edge Functions** — Low-latency webhook handlers and scheduled reminder dispatch.
+- **QuickBooks OAuth (v2)** — Read-only invoice sync after Stripe MVP proves retention.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 TypeScript app “InvoiceReminderBot” with Supabase auth, Stripe OAuth connect flow, and tables: workspaces, invoices (external_id, amount, due_at, status), reminder_sequences (day_offset, template_id), reminder_logs (sent_at, channel). Include RLS, Zod validation, and a Vercel cron route /api/cron/dunning that finds overdue invoices and enqueues emails via Resend.
+```
+
+**2. Core Feature**
+
+```text
+Build the dashboard: aging table (0–30, 31–60, 60+ days), sequence editor with live email preview, client snooze toggle, and webhook handler that marks invoices paid and cancels pending reminders. Add escalation templates (friendly, firm, final) with merge tags for {{client_name}}, {{amount}}, {{pay_link}}.
+```
+
+**3. Landing Page**
+
+```text
+Marketing page for Invoice Reminder Bot: hero “Get paid without awkward emails.” Sections: pain (freelancer quote about chasing payments), Stripe connect demo GIF placeholder, comparison vs Zapier DIY and Bill.com, pricing table, FAQ on data security. Palette: warm off-white, black text, green accent for “paid” states.
+```
+
+**4. Integrations**
+
+```text
+Add FreshBooks read-only sync: OAuth, map invoice status to internal model, dedupe against Stripe source of truth. Include error banner when tokens expire and one-click reconnect.
+```
+
+## Sources
+
+Signals compiled from public research and vendor positioning (May 2026). Verify figures before financial projections.
+
+- [QuickBooks — small business late payments research](https://quickbooks.intuit.com/r/payments/small-business-late-payments/)
+- [Grand View Research — invoicing software market size](https://www.grandviewresearch.com/industry-analysis/invoicing-software-market)
+- [Stripe Newsroom — 2023 business review](https://stripe.com/newsroom/news/stripe-2023-review)
+- [Upwork — Freelance Forward 2024](https://www.upwork.com/research/freelance-forward-2024)
+- [Bill.com — accounts receivable product positioning](https://www.bill.com/product/accounts-receivable)

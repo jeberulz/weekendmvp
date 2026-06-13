@@ -1,0 +1,109 @@
+---
+slug: "corporate-knowledge-ai-assistant"
+title: "Corporate Knowledge Base AI Assistant"
+---
+
+## The Problem
+
+Internal knowledge is scattered across Notion workspaces, Confluence spaces, Google Drive folders, and three years of Slack threads. New hires ask the same questions in #general. Tenured employees become human search engines. When someone asks "What's our SOC 2 scope?" the correct answer exists—in a PDF, a Notion page from 2023, and a Slack thread where legal clarified an exception. Nobody has time to stitch it together.
+
+Notion AI and Confluence AI help *inside* their silo. They do not answer across systems with unified permissions. Enterprise buyers with budget buy **Glean** or similar six-figure deployments. Mid-market teams (80–500 employees) are priced out but still drown in duplicate documentation and stale wikis.
+
+The recurring complaint from ops leaders: *"We bought a knowledge base, but people still ping me because search returns twelve conflicting pages."* The opportunity is a permissions-aware RAG layer that cites sources and respects doc-level ACLs—shipped in a weekend-sized stack, sold at $500–$2K/mo instead of enterprise minimums.
+
+## The Solution
+
+A web app that connects to Notion, Confluence, Slack (public channels), and Google Drive via OAuth. Nightly (or hourly) ingestion chunks documents, stores embeddings in pgvector, and maps each chunk to the viewer's access rights. Employees ask questions in a chat UI; responses include **inline citations** with links back to source pages. Admins see query logs, stale-source flags, and "unanswered question" queues to prompt doc updates.
+
+**MVP connectors (ship in order):**
+
+1. Notion API — pages + databases
+2. Slack — public channels, thread replies
+3. Google Drive — Docs/Sheets/PDF text extraction
+4. Confluence — spaces via REST (stretch goal)
+
+Complements [AI Knowledge Transfer](/ideas/ai-knowledge-transfer-platform) (creates knowledge on exit) and [Virtual Knowledge Hub](/ideas/virtual-knowledge-hub) (human expertise). This product is *retrieval* across systems of record.
+
+## Market Research
+
+Enterprise search and "work AI" budgets exploded post-ChatGPT. Analysts size the **enterprise search market around $7–8B in 2025** with double-digit CAGR as copilots move from pilot to production. Mid-market SaaS companies are the underserved segment: too big for "just use Notion AI," too small for Glean's sales motion.
+
+- **Notion** reports 100M+ users; Confluence remains default in Atlassian-heavy engineering orgs—buyers already store truth in these systems.
+- **RAG stack maturity** (embeddings, rerankers, citation UX) is commodity on Vercel + Supabase; differentiation is connectors + permissions.
+- **Security questionnaires** and policy questions are high-intent queries—fast ROI for legal/compliance buyers.
+- **Competitor pricing gap**: Glean/Dashworks target F500; $800/mo flat for 150 seats is an easy mid-market pitch.
+
+Stage: *crowded at enterprise, open in mid-market*. Win on speed to deploy (OAuth Friday, answers Monday) and transparent per-seat pricing.
+
+## Competitive Landscape
+
+Every player searches documents; few ship in a week with mid-market pricing and citation-first UX.
+
+- **Glean** — Enterprise work AI + search across SaaS apps. Best-in-class for F500; long sales cycle, opaque pricing. Typically six figures/year; quote-only
+- **Dashworks** — AI assistant for support and internal teams with connectors. Strong for CS; less focused on wiki hygiene. Custom; team plans quote-based
+- **Notion AI** — Q&A inside Notion only. Cannot see Slack threads or Confluence policies. Add-on ~$10/member/mo on paid Notion plans
+- **Guru** — Cards + AI in browser extension. Requires manual card maintenance; different workflow than crawl-everything RAG. ~$10–$20/user/mo published ranges
+
+**Your Opportunity**
+
+Mid-market RAG with citations, connector breadth (Notion + Slack + Drive first), and permission-aware retrieval. Sell to Head of Ops / IT with "stop Slack ping tax" ROI.
+
+## Business Model
+
+Flat workspace fee by employee band + optional premium connectors. Land with one integration (Notion) and expand.
+
+- **Growth** ($499/mo) — Up to 100 employees, 3 connectors, 5K queries/mo
+- **Scale** ($1,299/mo) — Up to 300 employees, all connectors, SSO, analytics
+- **Enterprise** (Custom) — VPC, DLP review, dedicated sync SLA
+
+MRR path: 4 Scale accounts ≈ $5.2K/mo. Or 10 Growth accounts. Expansion revenue from extra query packs and Confluence connector. Churn fight: weekly "unanswered questions" email to doc owners drives habit.
+
+## Recommended Tech Stack
+
+Connector workers + vector store + chat UI. Hardest part is permission mapping, not the LLM.
+
+- **Next.js 14 + Supabase pgvector** — chunks(id, source, external_id, text, embedding, acl_json). sync_jobs table per connector. Match user ACL at query time.
+- **OpenAI embeddings + Cohere rerank** — text-embedding-3-large for recall; rerank top 20 chunks before Claude synthesis with citations.
+- **Inngest + OAuth vault** — Scheduled syncs; store refresh tokens encrypted. Rate-limit Notion/Slack APIs.
+- **Claude Sonnet** — Answer only from provided chunks; JSON schema \{ answer, citations: [\{chunk_id, quote}] }.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Ingestion + Chunk Pipeline**
+
+```text
+Build a Notion → Supabase ingestion worker (Inngest cron).
+
+Steps: list all pages user token can access → fetch blocks → flatten to markdown → chunk 800 tokens with 100 overlap → embed with text-embedding-3-large → store acl_json { notion_page_id, workspace_id }.
+
+Dedupe by content hash. Log sync_errors. Admin UI: last sync time, page count, failed pages.
+```
+
+**2. Permission-Aware Retrieval API**
+
+```text
+Implement POST /api/ask { question, user_id }.
+
+1) Load user's allowed source IDs from connector ACL tables.
+2) Vector search: WHERE source_id IN (...) ORDER BY embedding <=> query LIMIT 30.
+3) Rerank to top 8.
+4) Claude: answer with citations; if insufficient evidence, say "I don't know" and log to unanswered_questions.
+
+Never return chunks user cannot access—filter in SQL, not post-hoc.
+```
+
+**3. Slack Bot MVP**
+
+```text
+Add Slack Events API bot: @mention in allowed channels triggers same /api/ask pipeline. Reply in thread with answer + up to 3 citation links. Rate limit 10 questions/user/day on Starter plan. Store thread_ts for feedback thumbs up/down.
+```
+
+## Sources
+
+- • [MarketsandMarkets — enterprise search market snapshot](https://www.marketsandmarkets.com/Market-Reports/enterprise-search-market-134919031.html)
+- • [Glean — product positioning](https://www.glean.com/)
+- • [Notion — AI features](https://www.notion.so/product/ai)
+
+Verify competitor pricing on live product pages; packaging changes frequently.

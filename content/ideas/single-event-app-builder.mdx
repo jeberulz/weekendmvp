@@ -1,0 +1,115 @@
+---
+slug: "single-event-app-builder"
+title: "Single-Event App Builder"
+---
+
+## The Problem
+
+Coordinating a large wedding means a guest list in one app, a schedule in another, RSVPs in email, and updates in a group chat half the guests have muted. Corporate retreats and family reunions run the same patchwork. The organizer becomes the integration layer, copying data between tools never designed to work together. Incumbent coordination platforms exist — Whova, Cvent, EventMobi — but they sell monthly subscriptions for events that last a weekend. The shape of the pricing doesn’t match the shape of the use case.
+
+## The Solution
+
+Organizers fill out a short intake form, pick a template (wedding, corporate retreat, reunion), upload branding, and within hours receive a shareable link. Guests open the link to find the schedule, RSVP, share photos, and receive updates as details change. Wedding planners get a deliverable that looks custom-built. Corporate coordinators get a single URL replacing the pre-event email chain. After the event, the app archives into a static keepsake page the organizer keeps.
+
+**How it works:**
+
+1. **Pick a template** — Wedding, corporate retreat, or family reunion
+2. **Brand and share** — Logo, colors, event details → shareable link in hours
+3. **Expire + archive** — After the event, app freezes into a static keepsake page
+
+## Market Research
+
+The event tech market is projected to reach $15B by 2025 with a 15% annual growth rate (Fortune Business Insights). The mobile event apps segment specifically is projected to grow from $1.96B in 2025 to $5.16B by 2034. What doesn’t exist: a product shaped for one-time events. Every incumbent charges recurring monthly fees, but weddings, retreats, and reunions don’t recur.
+
+- Reddit r/weddingplanning (1.6M+ members) runs constant threads about fragmented tool stacks — demand is loud and observable.
+- ~2.2M US weddings per year (The Knot); average spend on weddings tech and coordination exceeds $1,000 per event.
+- Cvent public last quarter reported $193M revenue; Whova and EventMobi each passed 10K+ event customers — paid demand is real.
+- No-code growth (Webflow, Framer) conditioned event planners to expect "branded custom" without a developer — the shape of the market moved.
+
+## Competitive Landscape
+
+Two clusters: enterprise event platforms priced for recurring conferences (Cvent, Whova, EventMobi, Bizzabo) and scattered point tools for weddings (Zola, The Knot). Nobody prices per-event for one-off weddings, retreats, and reunions. The pricing shape mismatch is the opening.
+
+- **Cvent / Bizzabo** — Enterprise event platforms. Rich feature set built for recurring corporate conferences. $5K+ annual contracts; onboarding assumes a dedicated event-ops team. $5K–$50K/yr annual contracts
+- **Whova / EventMobi** — Mid-market mobile event apps. Strong for conferences and multi-day corporate retreats; awkward for weddings and family reunions where the shape is different. $1,500–$5,000 per event (Whova starts “custom”)
+- **Zola / The Knot** — Wedding-specific consumer brands. Strong for registries and websites; weaker on real-time day-of coordination and guest app behavior. Free ad-supported model caps brand polish. Free with upsells; wedding-only
+- **Generic tools (Google Docs, WhatsApp, Eventbrite)** — The status quo. Works but fragmented. Each organizer becomes the integration layer. The Knot’s 2024 Real Weddings Study found organizers juggle 5+ tools per wedding. Free; the cost is the organizer’s time
+
+**Your Opportunity**
+
+Per-event pricing that matches the shape of the use case: $150-$300 per wedding, $500-$1000 per corporate event, $50-$100 per family reunion. Add a $25/mo subscription for frequent organizers and a $10K+/yr agency tier for wedding planners. Cvent’s annual-contract tilt and Whova’s enterprise shape are both the opening.
+
+## Business Model
+
+Per-event pricing shaped to the use case. Reunion tier for price-sensitive families; Wedding tier for the biggest retail slice; Corporate tier for retreats and off-sites where budgets are larger; Agency subscription for wedding planners running 20+ events per year. The per-event anchor feels fair because the event is one-time; the agency subscription layers recurring revenue on top.
+
+- **Reunion** ($75 once) — Family reunion template, up to 100 guests, 90-day active window, keepsake archive
+- **Wedding** ($199 once) — Wedding template, custom domain, up to 300 guests, photo gallery, keepsake archive
+- **Corporate** ($799 once) — Retreat template, branded domain, 500+ attendees, speaker bios, session schedule, analytics
+
+**Unit Economics (illustrative)**
+
+- **$20–50** — Target CAC
+- **~80%** — Gross margin
+- **$200+** — Planner AOV
+- **$10K+/yr** — Agency ARR
+
+## Recommended Tech Stack
+
+Templates are the product. Next.js handles multi-tenant routing via a wildcard domain; each event app lives at `\{slug}.dayframe.app`. Supabase stores the event config; Cloudflare R2 stores uploaded media cheaply. AI customization for brand colors is a nice touch but intake-to-launch speed earns referrals. Ship three hand-built templates first.
+
+- **Next.js 14 multi-tenant** — Wildcard subdomain routing via middleware; each event app reads its config from Supabase and renders the right template. Static generation at publish time for maximum speed.
+- **Supabase** — Auth + Postgres for events (template_id, slug, brand_colors, schedule_json, guests, expires_at), rsvps, photos. RLS per event owner.
+- **Cloudflare R2 + Images** — Cheap object storage for uploaded photos and media. Cloudflare Images for automatic resizing of guest photo uploads. Zero egress fees.
+- **Claude (optional polish)** — Generate brand-aligned color palettes from uploaded logos, write default welcome copy in the organizer’s tone. Nice-to-have; not MVP-critical.
+- **Resend** — Guest invitations, RSVP confirmations, day-of reminders, post-event “your keepsake is ready” email. React Email templates per event template.
+- **Stripe + Vercel Cron** — Stripe Checkout for per-event purchases, Stripe Billing for the Agency subscription. Nightly Vercel Cron flips expired events into keepsake archive mode.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build Single-Event App Builder: a Next.js multi-tenant app that generates branded event apps under unique subdomains.
+
+Requirements:
+- Three hand-built templates: Wedding, Corporate Retreat, Family Reunion (React components with slot props)
+- Intake form: event name, date, timezone, branding (logo upload, 2 colors), schedule items, guest list CSV
+- On submit: create slug, insert event row in Supabase, email organizer a shareable link
+- Wildcard subdomain routing (`*.dayframe.app`) via Next.js middleware; each event renders its template with its config
+- Guest view: schedule, RSVP, photo upload; organizer dashboard: edit event, see RSVPs, download guest list
+
+Ship the Wedding template first — it has the biggest retail slice. Add Corporate and Reunion once first five paid events go live.
+```
+
+**2. Template Generator**
+
+```text
+Build the Wedding template — the biggest retail slice.
+
+Sections:
+1. Hero: couple names, event date countdown, cover photo
+2. Schedule: timeline of ceremony, reception, after-party with venue maps (Google Maps embeds)
+3. RSVP form: yes/no, plus-one toggle, dietary restrictions, song requests
+4. Guestbook: photos guests upload during the event, auto-moderated
+5. Travel + Stay: hotel blocks, rideshare coupons, parking info
+6. Registry: external links to Zola/Amazon/Target registries
+
+Render with brand colors from the organizer intake. Mobile-first layout (90%+ of guest traffic is mobile).
+```
+
+**3. Expiry + Keepsake Archive**
+
+```text
+Ship the expire-to-keepsake flow — the feature that makes this product emotional, not transactional.
+
+Nightly Vercel Cron checks for events past expires_at (event_date + 30 days):
+1. Export all content: schedule, guest list, RSVPs, uploaded photos into a frozen static snapshot
+2. Flip the subdomain from app mode to keepsake mode: no form submissions, no edits, just memory
+3. Email the organizer: "Your [event name] keepsake is ready. This is the permanent link. Share it with guests one more time."
+4. Cloudflare R2 stores the static bundle cheaply forever; domain stays live via a static router
+
+The keepsake mode is the differentiator. Enterprise event platforms kill the app after the event; you preserve the memory.
+```

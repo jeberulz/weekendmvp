@@ -1,0 +1,80 @@
+---
+slug: "2026-04-23-pm"
+title: "Builder Brief: How to build AI Content Repurposing Tool"
+description: "The exact Cursor + Claude stack, hour by hour. One blog in, five platforms out, by Sunday night."
+publishedAt: "2026-04-23"
+edition: "pm"
+ctaUrl: "/startup-ideas"
+---
+
+Yesterday we teared down the AI Content Repurposing Tool. A chunk of you replied with one question: "Great idea — what's the stack?" Here's the answer. The exact Next.js + Claude + Whisper flow that turns one blog post or podcast into a Twitter thread, LinkedIn post, newsletter intro, and YouTube Shorts script before Sunday dinner.
+
+**BUILDER BRIEF**
+
+## How to build AI Content Repurposing Tool this weekend
+
+### The stack
+
+Next.js 14 handles the marketing site, the app, and the API routes in one codebase — no separate frontend/backend context switch. Supabase covers auth, Postgres for brand voices and run history, and storage for uploaded audio or video. Claude with prompt caching is the generation engine; the cache lets you apply one creator's brand voice across every platform prompt at roughly 10% of the token cost after the first call. Whisper handles short audio. AssemblyAI handles podcasts longer than 20 minutes with speaker labels. ffmpeg on a Modal worker runs the v2 video-clip feature — but skip that for v1.
+
+The shape of the compose flow: user pastes a URL or drops an audio file. The server scrapes or transcribes it. The transcript plus three uploaded reference posts get cached in Claude as the brand-voice block. You fire five platform prompts in parallel. Each returns a platform-specific draft. The UI shows them side-by-side in a grid for one-click copy or "schedule to Buffer."
+
+### The build prompt
+
+```text
+Build a Next.js 14 app called "Repurpose" with TypeScript, Tailwind, and shadcn/ui.
+
+Features:
+- Home page: paste URL OR upload audio (mp3, m4a) OR paste text
+- Platform checkboxes: X thread, LinkedIn post, Newsletter intro,
+  Instagram caption, YouTube Shorts script
+- Brand Voice setup: user uploads 3 past posts; extract tone/style into a
+  JSON "voice" object stored in Supabase
+- Run page: streams 5 parallel platform drafts into a 5-column grid with
+  copy-to-clipboard per card
+- "Schedule" button on each card that opens a Buffer OAuth flow for
+  one-click post
+
+Stack specifics:
+- Next.js 14 App Router, Server Actions for the repurpose pipeline
+- Supabase auth + Postgres (tables: workspaces, brand_voices, runs, outputs)
+- Claude API with prompt caching for brand voice; ephemeral cache blocks
+  for reference posts
+- Whisper API for audio under 20 min; AssemblyAI for longer
+- Stripe Checkout for $19 Pro / $49 Creator; Resend for run-complete emails
+- Protect Supabase tables with RLS per workspace
+
+Build the happy path first. Stub the Buffer integration. Ship.
+```
+
+### The hour-by-hour
+
+- **Hour 1:** Spin up Next.js 14 + Supabase. Scaffold `workspaces`, `brand_voices`, `runs`, `outputs` tables with RLS. Auth works end-to-end.
+- **Hour 2:** Build the input form. URL paste plus textarea fallback. Fetch article text with a basic scraper (`@mozilla/readability` is fine). Show it on screen.
+- **Hour 3–4:** Write 5 platform prompt templates. Call Claude once per platform in parallel. Stream drafts into a 5-column grid.
+- **Hour 5–6:** Add brand-voice onboarding. User pastes 3 past posts. Extract tone to JSON. Cache it in Claude for subsequent runs.
+- **Hour 7–8:** Stripe Checkout for $19 Pro. Resend "your repurpose is done" email. Deploy to Vercel. Share the URL in one creator Discord you're already in.
+
+<Cta href="/ideas/content-repurposing-tool">See the full build plan</Cta>
+
+---
+
+**🛠 STEAL THIS — The "cache before you call" rule**
+
+Claude's prompt caching is the difference between a $0.40-per-run product and a $0.04-per-run product. Structure every generation around the cache from the first commit.
+
+- **0–30 min:** Cache the brand voice. Three reference posts plus the "write in this voice" system prompt go in one ephemeral cache block. Every platform call in the same run hits that cache — 90% token discount after the first call.
+- **30–60 min:** Cache the platform rules. "Twitter thread format rules" and "LinkedIn post rules" are static. Put them in a second cached block, not the per-call prompt.
+- **60–90 min:** Keep the source content fresh. The pasted blog post changes every run — that's the one block you never cache. Measure cache-hit ratio in run logs; your goal is >85%.
+
+Miss this and you're burning gross margin on every run. Get it right and Pro tier at $19 holds 75% margin instead of 40%.
+
+---
+
+Sneak peek at tomorrow…
+
+*Weekly recap — the four ideas we broke down this week, ranked by which one I'd actually build first this weekend.*
+
+---
+
+**PS** — Built it? Reply and share the repo. I'll feature the best build in Friday's recap.

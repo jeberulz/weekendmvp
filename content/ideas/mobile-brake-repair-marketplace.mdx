@@ -1,0 +1,109 @@
+---
+slug: "mobile-brake-repair-marketplace"
+title: "Marketplace for Mobile Brake Repair Services"
+---
+
+## The Problem
+
+Brake work is the highest-anxiety, highest-urgency repair most commuters face—and the least convenient to schedule. Shops keep 9–5 hours; tow trucks add $150+ before a wrench turns. National mobile-mechanic brands exist, but discovery is noisy: Thumbtack quotes vary 3× for the same pad job, YourMechanic bundles every service under one brand, and indie mobile techs live on Instagram DMs without insurance verification or standardized brake SKUs.
+
+Drivers describe the pain bluntly: *“I just need pads before the holiday road trip—I don’t have a day to drop the car off.”* NHTSA data consistently ranks brake-related components among the most cited vehicle defect categories in consumer complaints; fear plus scheduling friction pushes owners toward the first shop that answers the phone, not the best price. A brake-only marketplace reduces cognitive load: one job type, transparent packages, mobile fulfillment.
+
+Technicians on the supply side want density without building their own booking stack. A vertical marketplace that handles payments, dispatch, and review reputation lets solo mobile brake specialists focus on wrench time while you earn take rate on every completed job.
+
+## The Solution
+
+Launch a two-sided marketplace where consumers book standardized brake packages (front pads, rear pads, pad+rotor, fluid flush) from verified mobile techs within a configurable radius. VIN or year/make/model drives parts compatibility hints; symptom checklist (squeal, vibration, ABS light) routes to the right SKU. Upfront pricing pulls from a regional rate card you tune with early supply partners—not infinite custom quotes on day one.
+
+Stripe Connect handles split payments: consumer pays at booking, platform fee retained, remainder transferred to the tech after photo proof (old pads, new pads installed, torque spec confirmation). Geo matching ranks available techs by distance, rating, and brake-job completion count. MVP can start in one metro (Austin, Phoenix, Atlanta) where mobile mechanic supply already clusters.
+
+**How it works:**
+
+1. **Request** — Owner enters location, vehicle, symptoms; sees package prices instantly
+2. **Match** — Available mobile techs accept or auto-assign by proximity and rating
+3. **Service** — Tech arrives with parts; uploads before/after photos in-app
+4. **Pay** — Stripe Connect releases payout; owner leaves structured brake review
+
+## Market Research
+
+Mobile vehicle repair is moving from novelty to expectation as fleet age rises and convenience apps train consumers for on-demand everything:
+
+- **Mobile mechanic market** — industry summaries size the US mobile vehicle repair segment in the **multi-billion USD** range with strong growth through 2030 as consumers pay premiums for driveway service (Grand View Research and allied reports cite ~$4B+ US TAM windows depending on definition).
+- **Brake-specific spend** — brake repair remains one of the largest aftermarket subcategories; even a thin slice of US brake jobs fulfilled mobile is a meaningful GMV pool.
+- **Aging fleet tailwind** — S&P Global Mobility reported average US light-vehicle age at **12.6 years in 2024**, increasing wear-item frequency.
+- **Search intent** — “mobile brake repair near me” and “brake service at home” are high-intent, geo-modified queries ideal for city landing pages and supply recruitment funnels.
+
+## Competitive Landscape
+
+- **YourMechanic / Wrench** — National mobile mechanic networks with broad service menus. Strong brand, but brake is one line item among hundreds—harder to optimize pricing transparency for pad jobs alone. Quote-based · effective take rate embedded in labor pricing
+- **Thumbtack / Angi** — Horizontal marketplaces where brake requests compete with plumbers and painters. Leads are sold per intro; quality and pricing variance frustrate brake-specific buyers. Lead fees ~$15–60 per intro · subscription tiers for pros
+- **Local shop + tow** — Traditional bays with static hours. Trusted for complex work, terrible for “fix it in my driveway tonight” urgency. Shop labor $90–150/hr · tow add-on $100–250
+- **Facebook / Nextdoor DMs** — Zero platform fee, zero verification, maximum variance. Dominates informal mobile tech discovery today. $0 platform · high trust risk
+
+**Your Opportunity**
+
+Win the vertical: standardized brake SKUs, verified mobile supply, upfront pricing, and Stripe-native payouts. SEO on city + brake mobile pages compounds while horizontal giants optimize for breadth.
+
+## Business Model
+
+Marketplace monetization on day one: take rate per completed brake job plus optional priority placement for techs. Avoid discount wars—compete on convenience and price transparency.
+
+- **Consumer** (Free) — Pay per completed job; no subscription required
+- **Platform fee** (12–18%) — Take rate on GMV; lower for founding tech cohort
+- **Tech Pro** ($49/mo) — Priority dispatch, lower take rate, branded profile
+
+**Unit Economics (illustrative)**
+
+- **$280–450** — Avg job GMV
+- **15%** — Take rate
+- **200+** — Jobs/mo (1 city)
+- **~150 jobs** — Path to $5K/mo
+
+## Recommended Tech Stack
+
+Next.js for SEO city pages, Supabase + PostGIS for geo queries, Stripe Connect for marketplace payments. Keep dispatch rules simple before building Uber-grade routing.
+
+- **Next.js 14 + TypeScript** — Marketing, booking UI, server actions for job lifecycle.
+- **Supabase + PostGIS** — Tech profiles, job posts, geo radius matching, RLS per role.
+- **Stripe Connect Express** — Onboarding mobile techs, split charges, payout scheduling.
+- **Vercel Edge + Mapbox** — Low-latency geo search; map picker for driveway location.
+- **Twilio SMS** — Arrival windows, tech en-route, review prompts post-job.
+- **Resend** — Booking confirmations and receipt emails with line-item breakdown.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**Project Setup. Scaffold BrakeMobile marketplace: Next.js 14 App Router, Supabase schema (techs, jobs, packages, reviews), Stripe Connect onboarding flow, and PostGIS function matching jobs to techs within 25 miles. Include Zod validation and role-based middleware (consumer, tech, admin).**
+
+```text
+undefined
+```
+
+**Core Feature. Build consumer booking: select brake package (front pads, rear pads, pads+rotors), enter VIN/YMM, pick arrival window, pay via Stripe Checkout with Connect destination charges. Tech app view: accept job, navigate, upload completion photos, mark complete to trigger payout.**
+
+```text
+undefined
+```
+
+**Landing Page. City landing template “Mobile brake repair in \{city}”: hero with upfront pricing table, how-it-works, tech recruitment CTA, FAQ on warranties and parts brands. Safety-orange accent on warm off-white—automotive trust without shop grime aesthetic.**
+
+```text
+undefined
+```
+
+**Supply Onboarding. Tech onboarding wizard: Stripe Connect Express, upload brake certification, set service radius, select supported vehicle classes. Admin dashboard to approve techs and edit regional price cards per metro.**
+
+```text
+undefined
+```
+
+## Sources
+
+Signals compiled from public research (verify before financial projections).
+
+- [Grand View Research — US mobile mechanic services market](https://www.grandviewresearch.com/industry-analysis/us-mobile-mechanic-services-market-report)
+- [S&P Global Mobility — average vehicle age (2024)](https://www.spglobal.com/automotive-insights/en/blogs/2024/5/average-age-vehicles-united-states-2024)
+- [NHTSA — vehicle safety and defect reporting context](https://www.nhtsa.gov/vehicle-safety)
+- [YourMechanic — national mobile mechanic positioning](https://www.yourmechanic.com/)
+- [Wrench — mobile auto repair competitor reference](https://www.wrench.com/)

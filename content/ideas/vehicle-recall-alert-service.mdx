@@ -1,0 +1,114 @@
+---
+slug: "vehicle-recall-alert-service"
+title: "Vehicle Recall Alert Service"
+---
+
+## The Problem
+
+Buying a used car means inheriting someone else’s paperwork mess. The previous owner moved three times, their email bounced, and now there’s a critical airbag recall sitting in NHTSA’s database with no way to reach you. Recalls don’t stop when ownership changes — but the notification system still relies on mail sent to whoever owned the car two years ago. Roughly 1-in-5 recalled vehicles stay unfixed for exactly this reason. People drive around with safety defects because nobody told them.
+
+## The Solution
+
+A dead-simple service that tracks your VIN permanently. Enter it once, get monitored forever. When a recall hits your specific vehicle, you get an SMS and email instantly — no manual NHTSA checks, no relying on outdated mail addresses. The wedge is used car buyers and people who move frequently. Long-term this becomes essential infrastructure for every car owner who wants to stop worrying.
+
+**How it works:**
+
+1. **Enter VIN once** — Web form validates against NHTSA decoder
+2. **Daily monitoring** — Cron polls NHTSA recalls API against your VIN
+3. **Instant alert** — SMS + email with repair details and dealer locator
+
+## Market Research
+
+The automotive safety systems market was valued at $12.4B in 2025 and is projected to reach $47.7B by 2035 (Precedence Research). NHTSA publishes recall data for free via public API, but no consumer service turns that feed into real-time personal alerts. Used cars change hands millions of times per year, and each transfer breaks the notification chain. The addressable market is every car owner, but the wedge is the 40M+ used cars sold annually.
+
+- NHTSA: 1-in-5 recalled vehicles in the US remain unfixed despite existing alerts — structural notification failure, not a marketing problem.
+- Used car sales exceed 40M/year in the US (Edmunds); every sale breaks the recall notification chain because NHTSA mails to the address on file.
+- Reddit r/cars (7.4M members) and r/MechanicAdvice (1.1M) run regular threads about missed recalls and VIN lookup frustration.
+- Carfax monetizes VIN data at scale but bundles it with full vehicle history; no standalone recall-alert product at sub-$10/mo exists.
+
+## Competitive Landscape
+
+Three clusters: free government tools (reactive, no alerts), paid vehicle history (bundled with more than you need), and manufacturer portals (only work if you bought new from that dealer). No standalone consumer service offers lifetime VIN-specific alerts at an impulse price.
+
+- **NHTSA SaferCar / SaferCar.gov** — Official government source. Free, authoritative, but reactive. Requires manual VIN lookups, no push alerts, no SMS. The source of truth, not a product. Free, but DIY lookups only
+- **Carfax VRSS** — Carfax’s Vehicle Recall Safety Service is bundled with their $40/report Vehicle History or dealership subscription. Not standalone, not cheap, not indie-accessible. $40/report or bundled with dealer subscriptions
+- **Manufacturer portals (Ford, Toyota, GM)** — Each OEM has its own portal tied to original purchase. Works great if you bought new from that brand; useless for used-car owners with no account history. Free but single-brand, original-owner-only
+- **BizzyCar** — B2B SaaS for dealerships managing recall campaigns. Enterprise pricing. Wrong end of the market — serves the fixer, not the car owner. Custom dealer pricing, typically $500–$5K/mo
+
+**Your Opportunity**
+
+Standalone B2C product at $3-10/mo or $25 lifetime per VIN. Wedge is used car buyers on Reddit r/cars and used-car Facebook groups. Expansion into dealership partnerships (recommend during sale) and insurance referrals (discount on premiums) layers B2B revenue on top. Carfax’s bundling and NHTSA’s manual-only UX are the opening.
+
+## Business Model
+
+Freemium + lifetime one-time. Free tier gives immediate value (one VIN check) to seed trust. Basic monthly covers the “I just bought used” moment. Lifetime is the premium anchor at $25 — a no-brainer for anyone keeping the car 3+ years. Dealership SaaS tier sells to the fixers who want recall campaigns auto-managed for their customers.
+
+- **Free** ($0) — 1 VIN, email alerts only, weekly check frequency
+- **Basic** ($5/mo) — Up to 3 VINs, SMS + email, daily check, dealer locator
+- **Lifetime** ($25 once) — 1 VIN tracked forever, SMS + email, priority dealer booking
+
+**Unit Economics (illustrative)**
+
+- **$0.008** — SMS cost/alert
+- **~90%** — Gross margin Basic
+- **$3–8** — Target CAC
+- **$1–3/policy** — Insurance referral
+
+## Recommended Tech Stack
+
+This is a minimalist stack. NHTSA provides a public JSON API that returns recalls by make/model/year or VIN. Twilio sends SMS. A nightly cron does the matching. The product differentiator is UX polish + speed-to-alert, not backend sophistication.
+
+- **Next.js 14 + TypeScript** — Landing + VIN entry form + dashboard. Server Actions for VIN validation (calls NHTSA decoder), account creation, and checkout.
+- **Supabase** — Auth + Postgres for users, vehicles (vin, make, model, year, added_at), recall_matches, alerts_sent. RLS per user.
+- **NHTSA API** — Free public API. vPIC endpoint decodes VIN to make/model/year; Recalls endpoint returns all recalls matching that trio. No auth needed; respect rate limits.
+- **Twilio SMS** — SMS is the differentiator. A2P 10DLC registration for US compliance. Include recall summary + remedy description in \<160 chars.
+- **Resend** — Email alert with full recall detail: summary, risk, remedy, dealer locator link. React Email templates.
+- **Stripe + Vercel Cron** — Stripe Billing for Basic monthly; Stripe Checkout one-time for Lifetime ($25). Nightly Vercel Cron polls NHTSA recalls API for each tracked make/model/year and fires matching alerts.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build Vehicle Recall Alert Service: a Next.js + Supabase app that stores VINs, polls NHTSA, and dispatches SMS/email alerts.
+
+Requirements:
+- Landing page with a VIN entry form that validates via NHTSA vPIC decoder API
+- Account flow: email signup, verify SMS number, store VIN + decoded make/model/year
+- Supabase schema: users, vehicles (vin, make, model, year, user_id), recall_matches (vehicle_id, recall_id, nhtsa_campaign_no, sent_at)
+- Nightly Vercel Cron: pull fresh recalls, cross-reference each tracked vehicle, insert matches
+- Alert dispatcher: Twilio SMS + Resend email the moment a match is inserted
+
+Ship the landing + VIN form + first-alert path. Add lifetime tier after monthly tier proves.
+```
+
+**2. NHTSA Sync + Matching**
+
+```text
+Build the recall sync + matching engine.
+
+1. Nightly Vercel Cron (2am UTC) hits NHTSA Recalls API with the full list of distinct make/model/year tuples in your user base
+2. For each tuple, receive any recalls published in the last 24 hours; upsert to a recalls table keyed by NHTSACampaignNumber
+3. For each new recall, find all vehicles matching make + model + year-range and insert a recall_matches row
+4. Dedupe by (vehicle_id, nhtsa_campaign_no) so a user never gets the same alert twice
+5. Queue the alert dispatcher for each new match
+
+Respect the NHTSA rate limit (be a good citizen). Cache responses for 6 hours.
+```
+
+**3. Alert Dispatcher**
+
+```text
+Ship the multi-channel alert.
+
+When a recall_matches row is inserted:
+1. Fetch full recall detail from NHTSA (summary, consequence, remedy)
+2. SMS via Twilio: "Recall alert: [recall summary in 120 chars]. Details: [short link to dashboard]"
+3. Email via Resend with React Email template: full recall text, risk, remedy steps, dealer locator link (NHTSA provides one)
+4. Record alerts_sent with channel + provider message ID for delivery audit
+5. If SMS fails (carrier reject, bounced number), fall back to email with a prompt to update the number
+
+The SMS is the product. A missed or delayed alert erodes trust permanently. Instrument delivery latency tightly.
+```

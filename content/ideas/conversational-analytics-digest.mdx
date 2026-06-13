@@ -1,0 +1,115 @@
+---
+slug: "conversational-analytics-digest"
+title: "Conversational Analytics Digest"
+---
+
+## The Problem
+
+Founders install analytics on day one. The data collects. Traffic climbs. Bounce rates shift. Conversion percentages fill dashboards designed for analysts who think in segments and cohorts. A non-technical founder opens the tab, sees a wall of metrics, closes it. Weeks pass between visits. Decisions get made on instinct because the data that should inform them requires expertise the founder does not have. GA4’s 2023 rollout made this worse — the interface assumes analyst fluency the solo founder never built.
+
+## The Solution
+
+Skip the dashboard entirely. Once a week, an email arrives. Connect Google Analytics, Mixpanel, or Plausible through OAuth. The system pulls raw metrics, runs pattern analysis, and outputs conversational summaries: what is working, what broke, what to investigate next. Instead of bounce rate percentages, founders read that visitors are leaving the pricing page at twice the normal rate. Instead of conversion funnels, they learn which traffic source produces customers and which produces tourists. Each insight ends with one specific action.
+
+**How it works:**
+
+1. **Connect once** — OAuth to GA4, Mixpanel, or Plausible
+2. **AI translates** — Raw metrics → plain-English insights
+3. **Monday email** — 5 insights, one action each, done in 3 minutes
+
+## Market Research
+
+The global SaaS analytics market sits above $500B in 2024 and is growing at roughly 20% annually (IDC, Gartner). But that market was built for analysts. The non-technical founder tier is rapidly expanding thanks to no-code tools and AI pair programmers, and none of the incumbent analytics players speak their language. GA4’s 2023 forced migration alienated exactly this audience.
+
+- Reddit r/startups (1.9M members) and r/indiehackers run weekly threads confessing “I have no idea what my analytics mean” — the pain is loud and observable.
+- Plausible crossed $2M ARR; Mixpanel generates $200M+ ARR — analytics infrastructure is paid-for; the translation layer is the gap.
+- Keyword volumes: “google analytics software” and “sql for data analysis” both up YoY with high commercial intent (Ideabrowser keyword research).
+- 2.1M+ solo consultants plus millions of no-code builders = addressable base for whom the current dashboard-first UX fundamentally doesn’t work.
+
+## Competitive Landscape
+
+The incumbents compete on depth (Mixpanel, Amplitude) or simplicity within the dashboard paradigm (Plausible, Fathom). Nobody abandons the dashboard entirely in favor of a weekly plain-English email. The AI generalists (ChatGPT) can summarize data on request, but the founder has to bring the data themselves — zero integration, zero recurring habit.
+
+- **Mixpanel / Amplitude** — Product analytics giants. Rich event tracking, cohort analysis, retention curves — all requiring analyst literacy. Free tiers exist but the power-user UX is intimidating. Free tier → $28/mo Growth → custom Enterprise
+- **Plausible / Fathom** — Simpler GA4 alternatives. Clean dashboards, privacy-first, but still dashboard-first. Non-technical founders still have to remember to open the tab. $9/mo starter → $69/mo Pro
+- **Zoho Analytics / BI suites** — Business intelligence at SMB prices. Report scheduling exists, but reports are static tables, not conversational insights. Still expects an analyst to interpret. $30/mo Basic → $630/mo Enterprise
+- **ChatGPT / generic AI** — Founders do paste CSVs into ChatGPT for summaries. Works once, not a habit. No OAuth, no scheduled digest, no trend memory week over week. $20/mo, but no integration or cadence
+
+**Your Opportunity**
+
+Own the “no dashboard, just email” positioning for non-technical founders. OAuth in a click, weekly email on Monday, each insight ends with one action. Mixpanel’s analyst-first UX and ChatGPT’s lack of integration are both the opening.
+
+## Business Model
+
+Subscription priced per connected source. Starter tier for solo founders with one analytics source; Pro adds multi-source and multi-site; Agency tier serves freelancers and small consultancies managing multiple client dashboards. LLM cost per weekly digest is $0.05-0.20 with Claude, so Starter alone holds 90%+ gross margin.
+
+- **Starter** ($29/mo) — 1 source (GA4 or Mixpanel or Plausible), weekly email, 5 insights, 30-day history
+- **Pro** ($79/mo) — All sources, 3 sites, weekly + on-demand digests, trend memory, Slack delivery
+- **Agency** ($299/mo) — Unlimited client dashboards, white-label digest, 5 seats, API access, priority support
+
+**Unit Economics (illustrative)**
+
+- **$0.05–0.20** — LLM cost/digest
+- **~90%** — Gross margin Starter
+- **$40–80** — Target CAC
+- **115%+** — Net retention
+
+## Recommended Tech Stack
+
+The hard parts are OAuth into GA4 (Google’s flow is thorny), cost control on weekly LLM generation, and making sure the insights are actually accurate. Next.js handles the app; Supabase stores the OAuth tokens and weekly snapshots; Claude with prompt caching runs the summarization; Resend ships the email.
+
+- **Next.js 14 + TypeScript** — App Router for the marketing site, OAuth callback routes, and the settings UI. Server Actions for manual “generate digest now” for Pro users.
+- **Supabase** — Auth + Postgres for users, sources (encrypted OAuth tokens), weekly_snapshots (metrics), digests (generated content), RLS per user.
+- **GA4 Data API + Mixpanel + Plausible** — GA4 Data API with service account OAuth (consent-heavy but worth it); Mixpanel Events API; Plausible Stats API. Abstract into a unified “sources adapter” interface.
+- **Claude (digest generation)** — Claude with prompt caching: system prompt describes the 5 core questions (where visitors come from, what makes them stay, where they leave, what converts, what changed this week). Cached per source type for 80%+ token savings.
+- **Resend + React Email** — React Email templates render the digest into a clean mobile-friendly email. Each insight card ends with one CTA button linking to a deep-link inside the source dashboard.
+- **Vercel Cron + Stripe** — Sunday night Vercel Cron pulls each user’s metrics, generates the digest, queues the Resend send for Monday 8am local time. Stripe Billing handles Starter/Pro/Agency.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build Conversational Analytics Digest: a Next.js app that lets non-technical founders connect analytics via OAuth and receive a weekly plain-English email.
+
+Requirements:
+- OAuth flows: GA4 (Google Identity + Analytics API scopes), Mixpanel (Service Account key), Plausible (API key)
+- Supabase schema: users, sources (source_type, encrypted_tokens, property_id), weekly_snapshots (metrics_json, week_of), digests (rendered_html, generated_at)
+- Settings UI: connect sources, delivery day/time, digest tone (casual/formal), exclude paths
+- Sunday night Vercel Cron: for each active user, pull metrics for the past 7 days, store snapshot
+- Monday morning send: generate digest via Claude, render React Email, send via Resend
+
+Ship GA4 connector first. Add Mixpanel and Plausible once the weekly loop is reliable.
+```
+
+**2. Insight Engine**
+
+```text
+Build the Claude-powered insight generator.
+
+The generator takes a weekly metrics snapshot and returns 5 insights. Each insight has:
+- headline (one sentence, plain English, no jargon)
+- explanation (2-3 sentences, what the data actually says)
+- why_it_matters (1-2 sentences, tied to founder goals: signups, revenue, retention)
+- action (one specific thing the founder can do this week, with a link back to the source tool)
+
+The 5 insights must answer: where visitors come from, what makes them stay, where they leave, what converts, what changed this week.
+
+Cache the system prompt. Rotate templates monthly to keep the digest fresh. Log each insight so trend memory can reference "this continued from last week" patterns.
+```
+
+**3. Digest Rendering + Send Loop**
+
+```text
+Render the email and ship it at the right local time.
+
+1. React Email template renders 5 insights as stacked cards. Each card: category icon, headline, explanation, why_it_matters, one CTA button
+2. Subject line is the boldest insight of the week, not "Your Weekly Report" (e.g., "Your pricing page is losing 67% of visitors")
+3. Preview text is the second boldest insight so mobile inbox scanners see signal not filler
+4. Send loop: Monday 8am local time (timezone stored per user during onboarding), via Resend
+5. Track opens and click-throughs; if a user hasn't opened 3 digests in a row, send a re-engagement email asking what's not working
+
+The subject line is the conversion lever. Test variants weekly.
+```

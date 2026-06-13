@@ -1,0 +1,433 @@
+{
+  "generatedAt": "2026-06-12T21:39:02.266Z",
+  "ok": [
+    {
+      "slug": "ai-code-coach-tutor",
+      "source": "manifest",
+      "file": "content/ideas/ai-code-coach-tutor.mdx"
+    },
+    {
+      "slug": "ai-agent-error-translator",
+      "source": "manifest",
+      "file": "content/ideas/ai-agent-error-translator.mdx"
+    },
+    {
+      "slug": "ai-coding-classroom-assistant",
+      "source": "manifest",
+      "file": "content/ideas/ai-coding-classroom-assistant.mdx"
+    },
+    {
+      "slug": "last-20-builder-rescue",
+      "source": "manifest",
+      "file": "content/ideas/last-20-builder-rescue.mdx"
+    },
+    {
+      "slug": "ai-zoning-intelligence",
+      "source": "manifest",
+      "file": "content/ideas/ai-zoning-intelligence.mdx"
+    },
+    {
+      "slug": "saas-financial-toolkit",
+      "source": "manifest",
+      "file": "content/ideas/saas-financial-toolkit.mdx"
+    },
+    {
+      "slug": "ai-travel-planner",
+      "source": "manifest",
+      "file": "content/ideas/ai-travel-planner.mdx"
+    },
+    {
+      "slug": "meeting-scheduler",
+      "source": "manifest",
+      "file": "content/ideas/meeting-scheduler.mdx"
+    },
+    {
+      "slug": "habit-tracker",
+      "source": "manifest",
+      "file": "content/ideas/habit-tracker.mdx"
+    },
+    {
+      "slug": "email-to-todo",
+      "source": "manifest",
+      "file": "content/ideas/email-to-todo.mdx"
+    },
+    {
+      "slug": "daily-standup-bot",
+      "source": "manifest",
+      "file": "content/ideas/daily-standup-bot.mdx"
+    },
+    {
+      "slug": "focus-session-timer",
+      "source": "manifest",
+      "file": "content/ideas/focus-session-timer.mdx"
+    },
+    {
+      "slug": "notion-backup-tool",
+      "source": "manifest",
+      "file": "content/ideas/notion-backup-tool.mdx"
+    },
+    {
+      "slug": "user-onboarding-builder",
+      "source": "manifest",
+      "file": "content/ideas/user-onboarding-builder.mdx"
+    },
+    {
+      "slug": "feature-voting-board",
+      "source": "manifest",
+      "file": "content/ideas/feature-voting-board.mdx"
+    },
+    {
+      "slug": "nasm-trainer-marketplace",
+      "source": "manifest",
+      "file": "content/ideas/nasm-trainer-marketplace.mdx"
+    },
+    {
+      "slug": "virtual-knowledge-hub",
+      "source": "manifest",
+      "file": "content/ideas/virtual-knowledge-hub.mdx"
+    },
+    {
+      "slug": "ai-nutrition-planner-trainers",
+      "source": "manifest",
+      "file": "content/ideas/ai-nutrition-planner-trainers.mdx"
+    },
+    {
+      "slug": "client-portal",
+      "source": "manifest",
+      "file": "content/ideas/client-portal.mdx"
+    },
+    {
+      "slug": "expense-report-generator",
+      "source": "manifest",
+      "file": "content/ideas/expense-report-generator.mdx"
+    },
+    {
+      "slug": "single-event-app-builder",
+      "source": "manifest",
+      "file": "content/ideas/single-event-app-builder.mdx"
+    },
+    {
+      "slug": "vehicle-recall-alert-service",
+      "source": "manifest",
+      "file": "content/ideas/vehicle-recall-alert-service.mdx"
+    },
+    {
+      "slug": "conversational-analytics-digest",
+      "source": "manifest",
+      "file": "content/ideas/conversational-analytics-digest.mdx"
+    },
+    {
+      "slug": "recall-radar-ecommerce-sellers",
+      "source": "manifest",
+      "file": "content/ideas/recall-radar-ecommerce-sellers.mdx"
+    },
+    {
+      "slug": "ai-feedback-triage-widget",
+      "source": "manifest",
+      "file": "content/ideas/ai-feedback-triage-widget.mdx"
+    },
+    {
+      "slug": "brakes-maintenance-tracker-app",
+      "source": "manifest",
+      "file": "content/ideas/brakes-maintenance-tracker-app.mdx"
+    },
+    {
+      "slug": "ai-rfp-response-assistant",
+      "source": "manifest",
+      "file": "content/ideas/ai-rfp-response-assistant.mdx"
+    },
+    {
+      "slug": "ai-landing-page-generator-ecommerce",
+      "source": "manifest",
+      "file": "content/ideas/ai-landing-page-generator-ecommerce.mdx"
+    },
+    {
+      "slug": "subscription-analytics-dashboard",
+      "source": "manifest",
+      "file": "content/ideas/subscription-analytics-dashboard.mdx"
+    },
+    {
+      "slug": "customer-feedback-aggregator",
+      "source": "manifest",
+      "file": "content/ideas/customer-feedback-aggregator.mdx"
+    },
+    {
+      "slug": "waitlist-manager",
+      "source": "manifest",
+      "file": "content/ideas/waitlist-manager.mdx"
+    },
+    {
+      "slug": "ai-code-reviewer",
+      "source": "manifest",
+      "file": "content/ideas/ai-code-reviewer.mdx"
+    },
+    {
+      "slug": "ai-resume-tailorer",
+      "source": "manifest",
+      "file": "content/ideas/ai-resume-tailorer.mdx"
+    },
+    {
+      "slug": "social-media-scheduler",
+      "source": "manifest",
+      "file": "content/ideas/social-media-scheduler.mdx"
+    },
+    {
+      "slug": "api-documentation-generator",
+      "source": "manifest",
+      "file": "content/ideas/api-documentation-generator.mdx"
+    },
+    {
+      "slug": "expense-splitter-app",
+      "source": "manifest",
+      "file": "content/ideas/expense-splitter-app.mdx"
+    },
+    {
+      "slug": "content-repurposing-tool",
+      "source": "manifest",
+      "file": "content/ideas/content-repurposing-tool.mdx"
+    },
+    {
+      "slug": "abandoned-cart-recovery",
+      "source": "manifest",
+      "file": "content/ideas/abandoned-cart-recovery.mdx"
+    },
+    {
+      "slug": "ai-accountability-coach",
+      "source": "manifest",
+      "file": "content/ideas/ai-accountability-coach.mdx"
+    },
+    {
+      "slug": "contract-analyzer",
+      "source": "manifest",
+      "file": "content/ideas/contract-analyzer.mdx"
+    },
+    {
+      "slug": "agent-storefront-platform",
+      "source": "manifest",
+      "file": "content/ideas/agent-storefront-platform.mdx"
+    },
+    {
+      "slug": "sms-time-tracker",
+      "source": "manifest",
+      "file": "content/ideas/sms-time-tracker.mdx"
+    },
+    {
+      "slug": "ai-meeting-notes-cleaner",
+      "source": "manifest",
+      "file": "content/ideas/ai-meeting-notes-cleaner.mdx"
+    },
+    {
+      "slug": "invoice-reminder-bot",
+      "source": "manifest",
+      "file": "content/ideas/invoice-reminder-bot.mdx"
+    },
+    {
+      "slug": "personal-wellness-coach",
+      "source": "manifest",
+      "file": "content/ideas/personal-wellness-coach.mdx"
+    },
+    {
+      "slug": "ai-knowledge-transfer-platform",
+      "source": "manifest",
+      "file": "content/ideas/ai-knowledge-transfer-platform.mdx"
+    },
+    {
+      "slug": "corporate-knowledge-ai-assistant",
+      "source": "manifest",
+      "file": "content/ideas/corporate-knowledge-ai-assistant.mdx"
+    },
+    {
+      "slug": "expert-mentorship-marketplace",
+      "source": "manifest",
+      "file": "content/ideas/expert-mentorship-marketplace.mdx"
+    },
+    {
+      "slug": "remote-team-documentation-tool",
+      "source": "manifest",
+      "file": "content/ideas/remote-team-documentation-tool.mdx"
+    },
+    {
+      "slug": "mobile-brake-repair-marketplace",
+      "source": "manifest",
+      "file": "content/ideas/mobile-brake-repair-marketplace.mdx"
+    },
+    {
+      "slug": "brake-repair-cost-estimator",
+      "source": "manifest",
+      "file": "content/ideas/brake-repair-cost-estimator.mdx"
+    },
+    {
+      "slug": "brake-safety-education-platform",
+      "source": "manifest",
+      "file": "content/ideas/brake-safety-education-platform.mdx"
+    },
+    {
+      "slug": "ai-brake-inspection-analyser",
+      "source": "manifest",
+      "file": "content/ideas/ai-brake-inspection-analyser.mdx"
+    },
+    {
+      "slug": "meeting-mood-ai",
+      "source": "manifest",
+      "file": "content/ideas/meeting-mood-ai.mdx"
+    },
+    {
+      "slug": "tiktok-trend-predictor-creators",
+      "source": "manifest",
+      "file": "content/ideas/tiktok-trend-predictor-creators.mdx"
+    },
+    {
+      "slug": "shopify-review-intelligence",
+      "source": "manifest",
+      "file": "content/ideas/shopify-review-intelligence.mdx"
+    },
+    {
+      "slug": "vibe-coders-for-hire",
+      "source": "manifest",
+      "file": "content/ideas/vibe-coders-for-hire.mdx"
+    }
+  ],
+  "quarantined": [
+    {
+      "slug": "changelog-generator",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/changelog-generator.md"
+    },
+    {
+      "slug": "subscription-tracker",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/subscription-tracker.md"
+    },
+    {
+      "slug": "proposal-generator",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/proposal-generator.md"
+    },
+    {
+      "slug": "ai-seo-optimizer",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/ai-seo-optimizer.md"
+    },
+    {
+      "slug": "code-snippet-manager",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/code-snippet-manager.md"
+    },
+    {
+      "slug": "digital-product-delivery",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/digital-product-delivery.md"
+    },
+    {
+      "slug": "ai-email-responder",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/ai-email-responder.md"
+    },
+    {
+      "slug": "product-review-collector",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/product-review-collector.md"
+    },
+    {
+      "slug": "testimonial-video-collector",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/testimonial-video-collector.md"
+    },
+    {
+      "slug": "ai-competitor-tracker",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/ai-competitor-tracker.md"
+    },
+    {
+      "slug": "link-in-bio-builder",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/link-in-bio-builder.md"
+    },
+    {
+      "slug": "startup-financial-dashboard",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/startup-financial-dashboard.md"
+    },
+    {
+      "slug": "ai-podcast-clipper",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/ai-podcast-clipper.md"
+    },
+    {
+      "slug": "domain-name-generator",
+      "source": "draft",
+      "missing": [
+        "competitive",
+        "business",
+        "stack"
+      ],
+      "file": "content/ideas/_quarantine/domain-name-generator.md"
+    }
+  ],
+  "skipped": []
+}

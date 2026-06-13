@@ -1,0 +1,64 @@
+---
+slug: "2026-04-22-pm"
+title: "Builder Brief: AI Content Repurposing Tool (deep dive)"
+description: "One blog post → 10+ pieces. The $1K/mo weekend build that turns creators into their own content machine."
+publishedAt: "2026-04-22"
+edition: "pm"
+ctaUrl: "/startup-ideas"
+---
+
+Here's the creator tax nobody warns you about: write a 1,500-word essay in the morning, then spend the afternoon rewriting it as a Twitter thread, LinkedIn post, newsletter intro, and YouTube script. Most creators either burn out trying to be everywhere or quietly give up on four of the five channels where their audience actually lives.
+
+**BUILDER BRIEF**
+
+## AI Content Repurposing Tool
+
+Creators know they should be omnipresent — Twitter, LinkedIn, YouTube, newsletters, podcasts. But writing unique content for each platform is a second full-time job. Most either burn out trying to be everywhere or concede the channels where their biggest audience lives. The smartest ones repurpose manually, but doing it by hand takes three to five hours per piece.
+
+Paste a blog post URL and get back a Twitter thread, LinkedIn post, newsletter intro, Instagram caption, YouTube Shorts script, and podcast talking points — each tuned to that platform's voice and format. One input, five outputs, under a minute. A creator who ships one essay a week now publishes to five platforms with an hour of editing instead of five of drafting.
+
+**Why it's a weekend build:** ~10h to MVP, $1K/mo target. Stack: Cursor, Claude.
+
+<Cta href="/ideas/content-repurposing-tool">Read the full teardown</Cta>
+
+---
+
+**WHY NOW**
+
+The creator economy crossed $250B last year and keeps compounding. OpusClip hit 5M users and raised $30M on the video-clip angle. Castmagic owns podcast transcripts. Typefully owns X threads. But nobody owns "one long-form artifact in, every platform out" at an indie price point. HubSpot's State of Marketing flagged cross-posting as the #1 time-sink for creators publishing to three-plus platforms — and the average creator now publishes to four. The tooling is fragmented. The demand is not. That's the gap a weekend builder can walk through.
+
+---
+
+**FOUNDER PLAYBOOK**
+
+**Gary Vee built a $200M agency on the repurposing thesis. You don't need the agency — you need the pyramid.**
+
+*The playbook is public. The tools are still fragmented. Pick a lane and ship.*
+
+- **Own one input type.** Blog → everything, OR podcast → everything, OR YouTube → everything. Don't cover all three in v0. Typefully owns X threads. Castmagic owns audio. You pick one source and dominate the workflow from it.
+- **Brand voice is the moat.** Generic AI writers have been shipping since 2022 and didn't win this market because every draft sounds the same. Let users upload three past posts as style references on setup. The tone match is what keeps them pasting.
+- **Ship with scheduling, not without.** Creators don't want another tab with copyable text. They want "draft → schedule → done." Integrate Buffer or Hypefury from day one, even if the UI is ugly.
+
+Read more on Gary Vee's content pyramid → [SOURCE — add link before sending]
+
+---
+
+**🛠 STEAL THIS — The "one-page, five-posts" framework**
+
+Ship a v0 that takes one input and emits five outputs — before you add a single setting.
+
+- **0–30 min:** Build the input form. Paste URL. Fetch the article text with a basic scraper or just a textarea fallback. Show it back on screen.
+- **30–60 min:** Write five prompts — one per platform — as hand-tuned templates. Call Claude once per platform in parallel. Show the drafts side-by-side in a grid.
+- **60–90 min:** Add "copy to clipboard" on each card and a single share URL. Skip scheduling, skip settings, skip user accounts. This is the demo.
+
+Creators will forgive rough UI if the output is good. They will not forgive bad output inside slick UI. Nail the prompts first, everything else later.
+
+---
+
+Sneak peek at tomorrow…
+
+*Behind-the-build: the exact Cursor + Claude stack I'd use to ship the AI Content Repurposing Tool this weekend, hour by hour.*
+
+---
+
+**PS** — What's your current repurposing workflow — manual, a single tool, or nothing yet? Hit reply with your stack. I'll compile the best answers Friday.

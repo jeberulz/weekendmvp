@@ -1,0 +1,188 @@
+---
+slug: "claude-code-48-hour-workflow"
+title: "The Claude Code Workflow: From Idea to Live App in 48 Hours"
+description: "An hour-by-hour Claude Code workflow that takes you from blank repo on Friday night to a live, sharable MVP by Sunday evening. Complete with prompts and checkpoints."
+category: "Tutorial"
+publishedAt: "2026-05-01"
+wordCount: 1328
+readMinutes: 7
+heroAlt: "Open daily planner with a date circled in mint marker under a single overhead lamp"
+---
+
+## Why "48 Hours" Beats "Someday"
+
+A weekend has a hard edge. Monday morning is a deadline you can't negotiate with. That edge is the only thing separating "I'm working on something" from "I shipped something."
+
+Most weekend projects fail not because the tools are slow, but because the builder is wandering. Two days is not enough time to wander. With [Claude Code](/articles/claude-code-for-non-technical-founders) doing the typing, two days is more than enough to ship.
+
+This is the workflow. Hour by hour.
+
+## Friday Night: Plan
+
+### 7:00 PM — Pick the idea (15 min)
+
+Don't pick on Saturday. You'll waste your best building hours debating. Browse [startup ideas](/startup-ideas) or your own backlog and commit to one.
+
+Output: a one-sentence pitch you can text a friend.
+
+### 7:15 PM — Define the 3 screens (30 min)
+
+Use the [3-Screen MVP framework](/articles/the-3-screen-mvp-framework): Landing → Input → Output. Sketch each on paper or Figma. No more than 3.
+
+Output: 3 rough screens with the key fields/buttons named.
+
+### 7:45 PM — Set up the project (30 min)
+
+```text
+mkdir weekend-mvp && cd weekend-mvp
+git init
+claude
+```
+
+Then drop this in:
+
+```text
+"Scaffold a Next.js 15 app with Tailwind CSS, TypeScript, and Supabase. Set up the basic layout: a landing page route, an input route, and an output/dashboard route. Use a dark theme. Don't fill the pages yet—just the scaffold and routing."
+```
+
+Output: a runnable scaffold with three blank pages and routing.
+
+### 8:15 PM — Write a CLAUDE.md (15 min)
+
+Tell Claude what this project *is* so it stays on track all weekend. One file at the project root, ~30 lines.
+
+```text
+"Create a CLAUDE.md file that describes: (1) what this product does in one sentence, (2) the 3 screens, (3) tech stack, (4) coding conventions (Tailwind, no inline styles, dark theme), (5) what we're NOT building this weekend (auth, payments, admin)."
+```
+
+Output: a single source of truth that prevents Claude from drifting.
+
+Friday end-of-day checkpoint
+
+- Idea committed.
+- 3 screens sketched.
+- Scaffold runs locally.
+- CLAUDE.md exists.
+
+Total time: ~90 min. Sleep with the idea.
+
+## Saturday: Build
+
+### 9:00 AM — Build screen 1: the landing (2 hours)
+
+Headline. Subhead. Hero visual placeholder. Three benefit blocks. CTA. Footer. That's it.
+
+```text
+"Fill in the landing page route. Headline: '[your one-liner]'. Subhead: '[the problem you solve]'. Three benefit cards with Lucide icons. Email signup form that POSTs to /api/signup (we'll wire it up later). Hero image placeholder. Make it feel like a Linear or Vercel landing page."
+```
+
+Tip: when something looks off, take a screenshot and paste it back: "fix the spacing on the benefit cards—they're too tight."
+
+### 11:00 AM — Build screen 2: the input (3 hours)
+
+This is the form, upload, or workflow that turns a user's data into something. The most product-specific screen.
+
+```text
+"Build the input page. The user does X. The form has fields A, B, C. On submit, send to /api/process which calls the Claude API to do Y. While processing, show a loading state. Save the result to Supabase under the user's session id."
+```
+
+Mid-checkpoint: try it yourself end-to-end. Bugs found at hour 3 are 10x easier to fix than bugs found at hour 30.
+
+### 2:00 PM — Lunch + walk (45 min)
+
+No laptop. The best refactoring ideas come when you stop typing.
+
+### 3:00 PM — Build screen 3: the output (3 hours)
+
+The result. The thing the user gets. A dashboard, a download, a generated artifact, a confirmation page—whatever it is, this is the payoff.
+
+```text
+"Build the output page. Read the result from Supabase. Display it as [cards / a dashboard / a downloadable file / etc]. Add a 'Copy link to share' button. Add a 'Run again' button that resets back to the input page."
+```
+
+### 6:00 PM — First end-to-end test (1 hour)
+
+Use the app like a real user would. From landing → input → output. Take notes on every bug, every "huh?" moment, every dead end.
+
+```text
+"Here are the issues I found going through the flow:
+1. ...
+2. ...
+3. ...
+Fix all of them. Also, write a quick smoke test that hits the /api/process endpoint and confirms it returns a result."
+```
+
+Saturday end-of-day checkpoint
+
+- All 3 screens work end-to-end on localhost.
+- You've used your own product at least once.
+- Top 5 bugs are fixed.
+
+Stop. Don't keep building features. Sunday is for shipping.
+
+## Sunday: Ship
+
+### 10:00 AM — Polish pass (2 hours)
+
+Visual cleanup. Loading states. Empty states. Error messages that don't sound like an engineer wrote them.
+
+```text
+"Polish the whole app. Make sure: every form has a loading state, every error message is human-readable, every empty state has a helpful prompt, and the meta tags + favicon are set. Also add basic SEO: title, description, OG image."
+```
+
+### 12:00 PM — Ship to production (1 hour)
+
+If it's not on the public internet, it doesn't exist.
+
+```text
+"Push this repo to GitHub (create a new private repo for me). Then deploy it to Vercel and connect it to my Supabase project. Set up the environment variables. Give me the live URL when it's done."
+```
+
+### 1:00 PM — Production smoke test + 5 friends (1 hour)
+
+Use the live URL yourself. Then text 5 specific people: "I built this. 60 seconds. What's broken?"
+
+Don't post publicly yet. Friends will catch obvious bugs in 5 minutes that you'd be embarrassed to find in a public launch.
+
+### 2:00 PM — Fix friend bugs (2 hours)
+
+Paste their feedback verbatim into Claude Code. Fix in batches. Redeploy. Confirm live.
+
+### 5:00 PM — Launch (1 hour)
+
+Pick one channel. Just one. Twitter/X thread, LinkedIn post, the relevant subreddit, your newsletter, Indie Hackers. Don't spread thin.
+
+Format: 1 problem → 1 solution → 1 link. Skip the manifesto.
+
+Sunday end-of-day checkpoint
+
+- Live on the internet at a real URL.
+- 5 friends have used it.
+- You shared it once, publicly.
+
+Monday: read responses. Note the 3 most-requested features. Don't build them yet.
+
+## Common 48-Hour Detours (and How to Avoid Them)
+
+### Detour: "I should add real auth"
+
+Avoid by: Magic-link only. Or skip auth entirely until launch +1 week. CLAUDE.md should explicitly say "no auth this weekend."
+
+### Detour: "Let me redesign the landing"
+
+Avoid by: Pick a reference site at the start (Linear, Vercel, Posthog). Tell Claude "make it feel like X." Don't redesign mid-build.
+
+### Detour: "I need to add Stripe"
+
+Avoid by: A Stripe Payment Link is enough for v1. Real billing is a week-2 problem.
+
+### Detour: "What if it doesn't scale?"
+
+Avoid by: If you have to scale, you've already won. Focus on shipping.
+
+## TL;DR
+
+- Friday night: pick idea, sketch 3 screens, scaffold, write CLAUDE.md.
+- Saturday: build all 3 screens. End-to-end test by 6pm.
+- Sunday: polish, deploy, friend-test, launch on one channel.
+- Avoid auth, billing, redesigns. Add them after launch.

@@ -1,0 +1,114 @@
+---
+slug: "tiktok-trend-predictor-creators"
+title: "TrendScout"
+---
+
+## The Problem
+
+TikTok creators live and die by timing. The difference between 50K and 500K views on the same concept is often whether you posted while a sound was climbing or after it saturated. Yet most creators still discover trends the hard way: endless For You scrolling, copying whatever already hit their feed, or waking up to a viral format they missed by three days. Mid-size creators (50K–500K followers) feel this most acutely—big enough that engagement swings matter, too small to employ a researcher or agency trend desk.
+
+The pain is chronic, not one-off. Ideabrowser community signals show **r/TikTok** at 1.2M+ members and rising search interest in “TikTok challenges” (+30% on Google Trends). YouTube tutorials on challenge participation routinely clear seven figures in views, but they teach you how to execute a trend that already peaked. Existing tools split awkwardly: TikTok’s native analytics tell you what happened yesterday; general trend platforms like Trend Hunter forecast macro consumer trends, not which sound will blow up in beauty vs. comedy niches tomorrow. Creators pay for CapCut Pro and Later anyway—neither predicts. That gap is TrendScout’s wedge: *early* trend intelligence with niche matching and actionable hooks, not another editor or scheduler.
+
+## The Solution
+
+TrendScout is an AI trend radar for TikTok creators. It ingests public signal velocity—sound adoption rate, hashtag acceleration, creator cluster behavior—and scores what is likely to break mainstream in the next 24–48 hours. The dashboard filters trends to your niche (fitness, beauty, comedy, finance, etc.), shows similar creators already gaining traction on each sound, and generates hook scripts plus posting-window suggestions so you can ship before saturation. Beta positioning from Ideabrowser research cites 30–40% engagement lifts when creators catch trends in the growth phase instead of the tail. Agencies get multi-seat workspaces, client tagging, and white-label PDF trend briefs for $99/month.
+
+**How it works:**
+
+1. **Connect niche** — Set content category, audience size, and 3–5 reference creators to calibrate matching.
+2. **Scan signals** — Nightly job ranks sounds/hashtags by velocity, cross-niche bleed, and creator adoption curves.
+3. **Get alerts** — Push/email when a trend crosses your niche-fit threshold with hook ideas and example frames.
+4. **Post & track** — Log which trends you used; close the loop so the model learns what works for your audience.
+
+## Market Research
+
+TikTok is no longer an experiment channel—it is a commerce and culture engine. The stats below come from Ideabrowser competitive analysis and public platform reporting (June 2026). Triangulate before quoting in investor decks:
+
+- **1.2 billion daily active users** spending ~58 minutes/day on TikTok (TekRevol / platform statistics cited in Ideabrowser competitive analysis).
+- **$25B annual platform revenue in 2025**, ~30% YoY growth; valuation ~$220B—signals durable ad and commerce spend (Ideabrowser / TekRevol).
+- **TikTok Shop GMV ~$30B in 2025**, roughly doubling YoY; U.S. shoppers spend ~$1,200/year via in-app commerce (Stack Influence / Ideabrowser).
+- **Search demand:** “TikTok trend prediction tools for creators” tracks ~94K+ monthly search volume (Ideabrowser trend research, topic query).
+- **Creator economy wedge:** 2M+ semi-pro creators globally; mid-tier (50K–500K) is underserved by enterprise tools like Creator IQ ($199+/mo) but will pay $29/mo for a measurable engagement edge.
+
+## Competitive Landscape
+
+Trend intelligence is fragmented. Native tools are free but backward-looking; macro trend platforms are powerful but not TikTok-native; creator suites optimize posting, not prediction. Pricing from Ideabrowser competitive analysis unless noted:
+
+- **TikTok Native Analytics** — Built-in creator tools: post performance, follower insights, basic trend discovery inside the app. Free with creator account; no predictive scoring or niche matching
+- **Trend Hunter / Exploding Topics** — Cross-platform macro trend forecasting; strong data science, weak TikTok-specific sound velocity and hook generation. ~$29–99/month subscriptions
+- **Creator IQ / Grin** — Enterprise creator relationship and campaign management; built for brands, not solo creators hunting the next sound. From ~$199/month enterprise pricing
+- **CapCut / InShot** — Best-in-class mobile editing and templates; tells you how to cut, not what to cut on. Freemium; premium ~$9.99–29.99/month
+- **Later / Planoly** — Scheduling and visual planning for Instagram/TikTok; no predictive trend layer. ~$18–80/month depending on seats
+- **DIY (FYP scrolling)** — Free but costs 1–2 hours/day; always late to sounds that already hit mainstream. $0 direct cost; high opportunity cost
+
+**Your Opportunity**
+
+Own the “predictive creator intelligence” layer between free native analytics and $199+ enterprise suites. Win on three axes incumbents won’t combine: (1) 24–48h forward-looking scores, not yesterday’s top posts; (2) niche-fit matching so a finance creator never sees irrelevant dance trends; (3) hook scripts + posting windows that turn insight into a filmed draft in under 10 minutes. One viral hit pays for a year of subscription—easy ROI story for $29/month.
+
+## Business Model
+
+Freemium bait → creator subscription → agency seats → brand campaigns. Anchor at $29/month for individuals (matches Trend Hunter entry tier and undercuts Creator IQ by an order of magnitude). Expand to agencies managing multiple creator accounts, then sell sponsored trend packages to brands once you have distribution.
+
+- **Creator** ($29/mo) — Niche-matched trend feed, real-time alerts, hook scripts, performance loop
+- **Agency** ($99/mo) — 5 creator seats, client tags, white-label PDF briefs, priority alerts
+- **Brand Campaign** ($10k+) — Sponsored challenge placement, trend co-creation, performance reporting
+
+**Unit Economics**
+
+- **$35** — Target CAC
+- **$32/mo** — ARPU (blended)
+- **8%/mo** — Est. churn
+- **$384** — LTV (12 mo)
+
+Path to $10k MRR: ~310 paying creators *or* ~100 agency accounts. Value ladder also supports $5.99 starter alerts and $19.99 pro toolkit tiers for price-sensitive users upgrading from free quiz lead magnet.
+
+## Recommended Tech Stack
+
+Signal ingestion + scoring pipeline + a dead-simple creator feed. Keep v1 off official TikTok API dependency where possible—use public hashtag/sound pages and third-party datasets, then add OAuth when you have revenue to fund compliance review.
+
+- **Next.js 15 + TypeScript** — App Router dashboard, server actions for alert prefs, ISR for public trend landing pages.
+- **Supabase (Postgres + RLS)** — Tables: creators, niches, sounds, trend_scores, alerts, post_outcomes. pgvector for niche embedding similarity.
+- **Python cron worker** — Nightly scrape + velocity scoring; store time-series in Postgres; trigger webhooks when thresholds cross.
+- **OpenAI / Anthropic** — Generate niche-specific hook scripts and caption variants from trend metadata; cache outputs to control cost.
+- **Clerk + Stripe** — Auth with org model for agency tier; Stripe Billing for Creator/Agency plans.
+- **Resend + Web Push** — Real-time trend alerts via email and optional browser push; React Email templates.
+- **Vercel + Cron** — Host Next.js; trigger ingestion jobs; edge-cache public trend pages for SEO.
+- **PostHog** — Track alert→post→engagement funnel; feed data back into niche-fit scoring.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 + TypeScript project for “TrendScout” with Tailwind and shadcn/ui. Set up Supabase with tables: creators (id, niche_tags[], follower_band), sounds (id, name, usage_count_ts, velocity_score), trend_scores (sound_id, niche, predicted_peak_at, confidence), alerts (creator_id, trend_id, channel, sent_at), post_outcomes (creator_id, trend_id, views, engagement_rate). Add Clerk auth with org support for Agency tier, Stripe subscriptions at $29 Creator and $99 Agency, and env vars for OpenAI, Resend, and a Python worker webhook secret. Enable RLS on all user-owned rows.
+```
+
+**2. Core Feature**
+
+```text
+Build the trend scoring pipeline. (1) Nightly cron ingests public TikTok sound/hashtag metrics into sounds table with time-series JSONB. (2) Compute velocity = delta usage over 24h / baseline; flag sounds crossing niche-specific thresholds. (3) For each flagged sound, call LLM with niche + example creators to output 3 hook scripts and a recommended posting window. (4) Dashboard feed: filterable cards showing trend name, confidence %, niche match, hooks, and “similar creators gaining” list. (5) Alert worker sends email/push when confidence > 0.7 for paid users. Include manual “I posted this” button to log outcomes.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site for TrendScout. Hero: “Post TikTok trends 48 hours before everyone else.” Sections: the FYP-scroll problem, live demo of trend feed (mock data), case study block (“+38% avg engagement in beta”), comparison vs native analytics / Trend Hunter / Later, pricing Creator $29 / Agency $99, FAQ on data sources and TikTok compliance, email capture for free niche quiz lead magnet. Palette: ink #0F1115, paper #FCFAF7, mint accent #7FDBCA for trend sparklines. Voice: creator-native, punchy, no corporate wellness tone.
+```
+
+**4. Branding Package**
+
+```text
+Branding for TrendScout: radar/sonar mark readable at 16px. Colors — ink #0F1115, paper #FCFAF7, mint #7FDBCA (rising trends), coral #FF6B6B (peak warning). Typography: Geist Sans UI, Geist Mono for velocity scores. Deliverables: favicon, empty-state illustration (“scanning 12,847 sounds…”), alert notification mockup, agency PDF brief cover, TikTok-style launch carousel template (1080×1920).
+```
+
+## Sources
+
+Market sizing, competitive landscape, and community signals from Ideabrowser MCP (idea_id 1173). Triangulate before quoting in investor materials.
+
+- [TekRevol — TikTok statistics & analytics (DAU, revenue, valuation)](https://www.tekrevol.com/blogs/tiktok-statistics-analytics/)
+- [Stack Influence — TikTok Shop GMV growth](https://stackinfluence.com/tiktok-shops-2025-should-brands-double-down/)
+- [TikTok What's Next 2025 Trend Report](https://newsroom.tiktok.com/en-us/tiktok-whats-next-2025-trend-report-us)
+- [Single Grain — TikTok marketing trends 2025](https://www.singlegrain.com/social-media/top-tiktok-marketing-trends-reshaping-brands-in-2025/)
+- [ContentGrip — TikTok What's Next 2025 summary](https://www.contentgrip.com/tiktok-whats-next-2025-trends-summary/)

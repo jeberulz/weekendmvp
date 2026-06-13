@@ -1,0 +1,114 @@
+---
+slug: "recall-radar-ecommerce-sellers"
+title: "Recall Radar for E-commerce Sellers"
+---
+
+## The Problem
+
+The FDA publishes recall notices every day. CPSC ticks through dozens more. Health Canada pushes its own feed before breakfast. All the data an Amazon or Shopify seller needs to protect their account is public and free. But nothing on the seller side reads those feeds against an active catalog, so the recall lands first and the seller reads about it second — usually via an account suspension notice. Q1 2025 saw a 90% surge in recall events. Amazon enforcement is automated. Sellers without automated monitoring are one recall away from a lost account.
+
+## The Solution
+
+Recall Radar plugs into Amazon Seller Central and Shopify, syncs the active catalog daily, and runs it against FDA, CPSC, and Health Canada recall feeds. When a match hits — even across UPC, ASIN, or brand-and-model identifiers — the seller gets an SMS, email, and dashboard alert with affected batch numbers, severity, regulatory deadlines, and recommended next steps. Flagged listings can auto-pause before the platform notices.
+
+**How it works:**
+
+1. **Connect catalog** — OAuth to Amazon SP-API and Shopify, nightly sync
+2. **LLM fuzzy-match** — Resolve UPC / ASIN / brand-model across feeds
+3. **Instant alerts** — SMS + email with severity and next action
+
+## Market Research
+
+The recall management market sits at roughly $2.14B in 2026 and is projected to grow to $5.19B by 2030 (Grand View Research, ~24.8% CAGR). The surge is driven by two forces: record recall volumes in 2025 and Amazon’s increasingly automated enforcement. Government databases publish recall data daily and for free — but no one on the seller side runs those feeds against an active catalog in real time. That’s the gap.
+
+- Q1 2025 saw a 90.6% surge in recall events year-over-year; recall volume is structurally higher, not a blip.
+- US e-commerce sales crossed $1.1T annual run-rate in 2024 (US Commerce Dept); the catalog under regulatory scrutiny is enormous.
+- Reddit r/Amazonseller (225K+ members) and r/FulfillmentByAmazon run daily threads on suspension risk; willingness to pay for preventive tooling is observable, not inferred.
+- Current options are either consumer-grade (SaferProducts.gov alerts) or enterprise ($50K+/yr TraceLink). Zero indie-tier SaaS covers this.
+
+## Competitive Landscape
+
+Three clusters: government portals (free but unaggregated), consumer apps (wrong audience), and enterprise compliance suites (priced for Fortune 500 supply-chain teams). Nobody serves the SMB Amazon/Shopify seller who needs daily catalog-matched alerts at under $200/mo.
+
+- **SaferProducts.gov / NHTSA portals** — Official sources. Free, authoritative, but unaggregated and reactive — sellers have to manually check, and there’s no catalog matching or automated alerts. Free — but no automation, no catalog match
+- **TraceLink** — Enterprise supply-chain compliance platform. Rich, comprehensive, built for pharma and regulated industries. $50K+/yr pricing prices out every SMB Amazon seller. Custom enterprise, typically $50K–$500K/yr
+- **Visualping / generic web monitors** — Generic change-detection tools. Can watch a recall page, but can’t resolve product identifiers across feeds or match against an Amazon catalog. DIY glue that breaks. $10–$100/mo, but no e-commerce integration
+- **Yuka / consumer recall apps** — Consumer-facing. Great for individual shoppers; useless for sellers who need seller-perspective workflow (catalog sync, auto-pause, audit trail). Free consumer, wrong audience
+
+**Your Opportunity**
+
+Connect Amazon SP-API + Shopify + multi-feed recall ingestion + LLM fuzzy-matching + SMS/email alerts. Price at $99–$499/mo, hundreds of dollars below enterprise and thousands above consumer tools. The seller-perspective workflow (auto-pause listing, audit-ready documentation) is the moat.
+
+## Business Model
+
+SaaS subscription scaled by SKU count and coverage depth. Free tier for single-category monitoring builds trust; Pro covers the sub-$1M GMV seller; Scale tier covers mid-market brands with 10K+ SKUs. Enterprise tier for big-box marketplaces. One avoided suspension pays for a full year.
+
+- **Free** ($0) — 1 category, 500 SKUs, daily check, email alerts only
+- **Pro** ($99/mo) — All categories, 10K SKUs, hourly check, SMS + email + Slack, audit log
+- **Scale** ($499/mo) — Unlimited SKUs, real-time, auto-pause listings, insurance-ready exports, 5 seats
+
+**Unit Economics (illustrative)**
+
+- **$0.005–0.02** — LLM cost/match
+- **~80%** — Gross margin Pro
+- **$80–200** — Target CAC
+- **120%+** — Net retention
+
+## Recommended Tech Stack
+
+The hard parts are catalog ingestion (Amazon SP-API is rate-limited and auth-heavy) and fuzzy matching product identifiers across feeds. Next.js handles the dashboard, Supabase stores catalog snapshots and match history, and Claude resolves identifier variants (UPC in one feed, ASIN in another, brand-and-model in a third).
+
+- **Next.js 14 + TypeScript** — Dashboard and marketing in one deploy. Server Actions for the OAuth connect flows; Edge runtime for the webhook receivers that ingest recall feed updates.
+- **Amazon SP-API + Shopify Admin API** — OAuth to both. Nightly catalog sync with resume-able paging to stay within SP-API rate limits. Store catalog snapshots so matches can reference the exact SKU state at match time.
+- **Supabase** — Auth + Postgres for sellers, catalogs, recall_feeds, matches. RLS per seller workspace. pgvector index on product embeddings for fuzzy similarity across identifier formats.
+- **Claude (identifier resolution)** — Given a recall notice with vague product descriptions, Claude resolves to structured identifiers (UPC / ASIN / brand+model). Prompt cached per feed source for 80%+ token savings on repeat reads.
+- **Twilio + Resend + Slack** — Twilio SMS for severity-1 alerts (account suspension risk). Resend for email digests. Slack Incoming Webhooks for Scale tier real-time team alerts.
+- **Vercel Cron + Stripe** — Hourly cron polls recall feeds and runs matches. Daily cron syncs the catalog. Stripe Billing for Pro/Scale subscriptions with SKU-count metering.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build Recall Radar: a Next.js dashboard that pulls Amazon SP-API and Shopify catalogs, matches them against FDA/CPSC/Health Canada recall feeds, and sends alerts.
+
+Requirements:
+- OAuth connect flows for Amazon SP-API (Professional Seller only) and Shopify Admin API
+- Nightly Vercel Cron syncs each seller's catalog into Supabase Postgres with resume-able paging
+- Supabase schema: sellers, catalogs, products (sku, asin, upc, title, brand), recall_feeds, recall_items, matches (product_id, recall_id, confidence, status)
+- pgvector index on product embeddings (title + brand + description) for fuzzy matching
+- Dashboard: list of active matches sorted by severity, one-click "pause listing" action via SP-API
+
+Ship Amazon-only first. Add Shopify once SP-API rate-limit handling is battle-tested.
+```
+
+**2. Recall Feed Ingestion + Fuzzy Matcher**
+
+```text
+Build the recall feed ingester and LLM-backed fuzzy matcher.
+
+1. Hourly cron polls FDA (openFDA API), CPSC (SaferProducts.gov data), Health Canada (RSS) for new recall notices
+2. For each notice, parse out the structured fields you can (date, severity, category) and pass the free-text description to Claude for identifier resolution
+3. Claude returns: {upc_candidates[], asin_candidates[], brand_model_candidates[], confidence}
+4. Query the seller catalog for any product matching any candidate with cosine similarity >0.85 on the title embedding
+5. For each match, write a matches row with confidence score; fire the alert pipeline if confidence >0.90 or severity is critical
+
+Target: 95%+ recall on verified matches, <5% false-positive rate per recall feed.
+```
+
+**3. Multi-Channel Alert Pipeline**
+
+```text
+Build the alert dispatch with severity-based escalation.
+
+When a new match lands:
+1. Severity-1 (account-suspension-risk): Twilio SMS + Resend email + Slack webhook within 60 seconds
+2. Severity-2 (list-and-monitor): Resend email within the hour
+3. Severity-3 (FYI): Daily digest email
+4. Every alert links back to the dashboard row with pre-filled action templates: "Pause listing on Amazon," "Pause listing on Shopify," "Acknowledge and document"
+5. Scale tier gets one-click auto-pause that calls SP-API putListingStatus with full audit log
+
+The Severity-1 SMS is the product’s differentiator. Make sure it never silently fails.
+```

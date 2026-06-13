@@ -1,0 +1,109 @@
+---
+slug: "brake-safety-education-platform"
+title: "Brake Safety Education Platform"
+---
+
+## The Problem
+
+Most drivers cannot describe how ABS, brake fade, or pad glazing differ—and panic at the first dashboard light. NHTSA and state DMVs publish brake safety facts, but the material is scattered PDFs, not actionable micro-lessons with local shop next steps. On the technician side, EV regen braking and electronic parking brakes change service procedures faster than informal shop training keeps up.
+
+YouTube teaches generic brake jobs; it does not certify comprehension or hand off to vetted local shops. *“I didn’t know grinding meant stop driving,”* shows up in complaint threads after preventable rotor damage. An education platform that pairs short modules with quizzes, printable checklists, and geo-targeted shop CTAs captures intent earlier in the funnel than estimate tools alone.
+
+Shops want leads that already understand why pads matter—lower advisor education time, higher close rates. Pair this platform with the maintenance tracker and cost estimator ideas in this cluster for a full brake owner journey: learn → estimate → book → log.
+
+## The Solution
+
+Launch a content-led site with two tracks: **Driver Safety** (symptoms, when to stop driving, seasonal checks) and **Tech Micro-Certs** (ABS basics, torque specs, EV regen considerations). Each module is 5–8 minutes reading + 5-question quiz; passing generates a shareable certificate PDF and unlocks partner offers (discounted inspection, tracker app trial).
+
+Monetize via one-time course bundles ($29 driver pack, $79 tech pack), shop affiliate placements, and B2B white-label for regional chains wanting co-branded safety portals. Email capture via Beehiiv drips 7-day “Brake Safety Week” sequence with links to your estimator and marketplace siblings. All lesson content visible in HTML for SEO/AEO crawlers per Weekend MVP standards.
+
+**How it works:**
+
+1. **Learn** — Short modules with diagrams (pad wear stages, fluid hygroscopy)
+2. **Quiz** — Pass threshold 80%; instant feedback on missed questions
+3. **Certify** — PDF certificate + checklist for glovebox
+4. **Connect** — CTA to local partners, tracker app, or estimator
+
+## Market Research
+
+Safety education plus lead-gen sits between content marketing and vertical marketplaces—cheap to start, compounds in SEO:
+
+- **NHTSA safety mandate** — federal campaigns emphasize brake safety in Vehicle Safety Month; authoritative citations boost E-E-A-T for organic search.
+- **Online auto education** — Udemy/YouTube dominate breadth; narrow “brake safety certificate” keywords remain underserved with structured curricula.
+- **Lead value** — educated leads convert higher; shops will pay $20–40 for inspection appointments sourced from safety quizzes.
+- **Cross-sell** — email list fuels newsletter, estimator launches, and tracker app adoption in the same brake cluster.
+
+## Competitive Landscape
+
+- **NHTSA / DMV pamphlets** — Authoritative but static; no quizzes, certificates, or shop handoff. Free public domain
+- **YouTube DIY channels** — Rich video, zero progression tracking, no local shop integration. Ad-supported · $0 consumer
+- **Udemy auto courses** — Broad mechanics bundles; brake safety not standalone or shop-connected. Course sales $15–50
+- **Shop blog posts** — Single-location SEO; inconsistent quality, no cert product. Free marketing · not scalable product
+
+**Your Opportunity**
+
+Productize brake safety as a cert + checklist + shop funnel hub; cross-link the entire brake idea cluster for compound SEO and email LTV.
+
+## Business Model
+
+Hybrid: consumer course sales, shop sponsorships, and affiliate leads. Target $1K/mo with modest traffic plus 2 regional shop partners.
+
+- **Driver course** ($29) — 5 modules, certificate, shop coupon bundle
+- **Tech micro-cert** ($79) — 8 modules, advisor scripts, shop poster kit
+- **Shop sponsor** ($199/mo) — Logo in local module CTAs + 10 lead credits
+
+**Unit Economics (illustrative)**
+
+- **25** — Course sales/mo
+- **$35** — Avg order
+- **3 × $199** — Sponsors
+- **~$1.5K+** — MRR-ish
+
+## Recommended Tech Stack
+
+Static HTML lessons + lightweight quiz API on Vercel, Supabase for progress and certificates, Beehiiv for email, Stripe for course checkout. MDX content keeps iteration fast.
+
+- **Next.js 14 + MDX** — Lesson pages, quiz components, SEO schema (Course, FAQ).
+- **Supabase** — User progress, quiz attempts, certificate IDs.
+- **Stripe Checkout** — One-time course purchases; webhook unlocks modules.
+- **Beehiiv API** — Lesson drip enrollment per BEEHIIV_CURSOR_RULES.
+- **Vercel** — Edge caching for lesson content; fast global reads.
+- **React PDF** — Certificate generation with unique verification URL.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**Project Setup. Build BrakeSafe Academy: Next.js MDX lessons, Supabase progress tracking, quiz JSON per module, certificate PDF route. Include Course schema.org JSON-LD and Beehiiv subscribe on completion.**
+
+```text
+undefined
+```
+
+**Core Feature. Implement quiz engine: 5 questions per module, 80% pass, explain wrong answers with NHTSA citations. On pass, issue certificate UUID page and trigger email drip. Gate tech track behind Stripe purchase.**
+
+```text
+undefined
+```
+
+**Content Generation. Draft driver module outlines: recognizing pad squeal vs grind, when to tow vs drive, seasonal wet-weather braking, dashboard warning lights. Each module 600 words, plain language, one diagram description.**
+
+```text
+undefined
+```
+
+**Partner Funnel. Shop partner landing: sponsor pricing, embed co-branded CTA widget for regional shops, lead tracking dashboard. Cross-link to brakes-maintenance-tracker-app and brake-repair-cost-estimator pages in footer.**
+
+```text
+undefined
+```
+
+## Sources
+
+Signals compiled from public research (verify before financial projections).
+
+- [NHTSA — brake safety resources](https://www.nhtsa.gov/vehicle-safety/brakes)
+- [NHTSA — vehicle safety campaign context](https://www.nhtsa.gov/campaign/dont-be-a-ghost-driver)
+- [Udemy — automotive course market reference](https://www.udemy.com/topic/automotive-repair/)
+- [S&P Global Mobility — aging fleet context](https://www.spglobal.com/automotive-insights/en/blogs/2024/5/average-age-vehicles-united-states-2024)
+- [Weekend MVP — related brake maintenance tracker](https://weekendmvp.app/ideas/brakes-maintenance-tracker-app.html)

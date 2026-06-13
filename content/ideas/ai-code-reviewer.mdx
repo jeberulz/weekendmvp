@@ -1,0 +1,112 @@
+---
+slug: "ai-code-reviewer"
+title: "AI Code Reviewer"
+---
+
+## The Problem
+
+Code reviews are a bottleneck. Senior developers spend hours reviewing PRs, often catching the same issues repeatedly: missing error handling, security vulnerabilities, style inconsistencies. Meanwhile, junior devs wait days for feedback, and bugs slip through when reviewers are rushed or tired.
+
+## The Solution
+
+A GitHub bot that automatically reviews every PR using AI. It catches common bugs, security issues, and code smells instantly—before human reviewers even look at the code. Humans focus on architecture and logic; the bot handles the tedious stuff.
+
+**How it works:**
+
+1. **Install GitHub App** — One-click install on your repos
+2. **Open a PR** — Bot reviews automatically
+3. **Get inline comments** — Suggestions right on the diff
+
+## Market Research
+
+AI code review is one of the fastest-growing subcategories of developer tooling. GitHub Copilot proved developers will pay for code AI; CodeRabbit, Greptile, and Codium followed with PR-review-specific products and raised venture money on the thesis. The opportunity left is indie-tier pricing for solo maintainers and sub-10 dev teams.
+
+- GitHub passed 100M developers in 2023 (Octoverse); the PR review surface is where AI value shows up without changing developer workflow.
+- CodeRabbit publicly reports 10K+ repos on the platform and closed a $16M Series A (TechCrunch, 2024) — category is validated, not invented.
+- Stack Overflow Developer Survey: code review is consistently the 2nd most time-consuming activity after writing code; monetizable pain is structural.
+- Developer tools market is projected past $13B by 2027 (Gartner); Copilot runs at ~$10/seat and normalized a $10–30/dev price band per tool.
+
+## Competitive Landscape
+
+Two clusters: established AI-review platforms priced for mid-market engineering orgs, and GitHub’s own bundled offerings. The gap is a polished indie-friendly tier that installs in under a minute, reviews PRs at OSS budget, and doesn’t require a Series A founder to justify the seat cost.
+
+- **CodeRabbit** — Current category leader. Deep PR context, language coverage, learning per repo. Pricing angles toward mid-market; free tier exists but gates most value behind Pro. Free tier → $15/dev/mo Pro → $30/dev/mo Enterprise
+- **Greptile** — Codebase-indexed AI review with strong architectural context. Fast growing but priced for funded teams; weak free tier for solos and small OSS maintainers. $30/dev/mo Team → custom Enterprise (usage-based on repo size)
+- **GitHub Copilot Code Review** — Bundled into Copilot. Zero-install for teams already on Copilot, but lighter context, less customizable rule sets, and shares seat with the general Copilot budget. $10/user/mo Individual, $19/user/mo Business (bundle)
+- **Sourcery / Codium** — Rules-plus-AI hybrids. Strong for specific languages (Python for Sourcery); weaker cross-language coverage. Indie price band but feels like static analysis with an AI bolt-on. Free OSS → $12/dev/mo Team plans
+
+**Your Opportunity**
+
+Indie-first positioning: 60-second GitHub App install, generous OSS free tier, $9/dev pricing, and a focus on PR-level context rather than whole-repo indexing so margin holds. CodeRabbit’s mid-market tilt and Copilot Review’s bundle tax are both openings.
+
+## Business Model
+
+Per-developer SaaS with a generous OSS tier to seed GitHub App discovery and word-of-mouth inside engineering Slacks. Pro priced below CodeRabbit’s $15 floor; Team tier adds governance and dashboards for sub-50-dev teams who don’t want to evaluate enterprise suites.
+
+- **OSS / Free** ($0) — Public repos, unlimited PRs, standard review depth; personal Pro trial on private repos for 14 days
+- **Pro** ($9/dev/mo) — Private repos, inline PR comments, custom style guide, security and secret scanning, PR summaries
+- **Team** ($19/dev/mo) — Org-wide style rules, review analytics, SSO, required-review policies, Slack/Linear hooks
+
+**Unit Economics (illustrative)**
+
+- **$0.05–0.25** — LLM cost per PR
+- **~70%** — Gross margin Pro
+- **$30–60** — Target CAC
+- **115%+** — Net retention
+
+## Recommended Tech Stack
+
+This is a GitHub App with an LLM behind it. The hard parts are webhook durability, diff context selection (keep token cost sane), and caching repo style guides. Ship Node + Octokit on Fly.io, store reviews in Postgres, use BullMQ for the review queue, and keep the frontend minimal—the product surface is GitHub, not your dashboard.
+
+- **GitHub App + Octokit** — Install-once GitHub App with pull_request and pull_request_review_comment webhooks. Octokit for scoped API calls; signed webhook validation is non-negotiable.
+- **Claude + GPT-4o fallback** — Claude for primary PR review with prompt caching on style guides (huge margin win); GPT-4o fallback for rate-limit or incident failover. Model-agnostic router from day one.
+- **Postgres (Neon or Supabase)** — Installations, repos, reviews, token-usage-per-review for billing. pgvector optional for repo style-guide retrieval on larger plans.
+- **BullMQ + Redis** — Review queue with retry and backoff so a GitHub outage or LLM hiccup doesn’t drop a PR. Per-install concurrency caps for fairness.
+- **Fly.io (Node + TypeScript)** — Multi-region deploy for low-latency webhook acknowledgement, long-running worker processes for review generation, simple Dockerfile, cheap at small scale.
+- **Stripe + Next.js dashboard** — Per-seat metered billing via Stripe Billing. Minimal Next.js dashboard for install status, review history, and style-guide config—keep the product surface inside GitHub.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for an AI Code Reviewer GitHub App.
+
+The app needs:
+- GitHub App OAuth flow for installation
+- Webhook endpoint to receive PR events
+- Dashboard showing: installed repos, recent reviews, settings
+- Landing page explaining the product with "Install" CTA
+
+Use Probot library to simplify GitHub App development.
+Set up webhook handling for pull_request.opened and pull_request.synchronize events.
+```
+
+**2. Core Feature**
+
+```text
+When a PR webhook is received:
+
+1. Fetch the PR diff using GitHub API
+2. For each changed file, send to Claude/GPT-4 with this prompt:
+   "Review this code diff. Identify: bugs, security issues, performance problems, and style issues. For each issue, specify the line number and provide a suggested fix."
+3. Parse the AI response and create GitHub review comments on specific lines
+4. Post a summary comment with overall assessment
+
+Handle rate limits and large PRs by chunking files.
+```
+
+**3. Configuration**
+
+```text
+Add per-repo configuration via .ai-reviewer.yml file:
+
+- review_focus: ["security", "performance", "style"] - what to check
+- ignore_patterns: ["*.test.js", "vendor/*"] - files to skip
+- severity_threshold: "warning" - minimum severity to comment
+- auto_approve: false - whether to approve clean PRs
+
+Parse this config on each review and adjust AI prompt accordingly.
+```

@@ -1,0 +1,113 @@
+---
+slug: "content-repurposing-tool"
+title: "AI Content Repurposing Tool"
+---
+
+## The Problem
+
+Creators know they should be omnipresent—on Twitter, LinkedIn, YouTube, newsletters, podcasts. But creating unique content for each platform is exhausting. Most either burn out trying to be everywhere or neglect platforms where their audience lives. The smartest creators repurpose, but doing it manually takes hours.
+
+## The Solution
+
+Paste a blog post URL and instantly get: a Twitter thread, LinkedIn post, email newsletter intro, Instagram caption, YouTube video script outline, and podcast talking points. Each version is optimized for that platform's style and format.
+
+**How it works:**
+
+1. **Input content** — Paste URL, text, or upload video
+2. **Select platforms** — Choose where to repurpose
+3. **Get all versions** — Copy or schedule each piece
+
+## Market Research
+
+The creator economy has crossed $250B in size (Goldman Sachs 2023 forecast) and content repurposing is a standard growth play. The current tooling splits into two silos: video clippers (OpusClip, Castmagic) and platform-specific text tools (Typefully for X). The gap is a unified, AI-native repurposer that takes one long-form artifact and ships clips, posts, and threads in a single run.
+
+- SignalFire estimates 50M+ people identify as creators globally, with 2M+ earning full-time income—clear monetizable base.
+- OpusClip hit 5M+ users and raised $30M Series A on the video-clip angle (TechCrunch 2024)—category validated at scale.
+- HubSpot State of Marketing: creators now publish to 3+ platforms on average; cross-posting effort is the top-cited time-sink.
+- Gary Vee built a $200M+ agency on the repurposing thesis and teaches the pyramid publicly; playbook is established, tools are still fragmented.
+
+## Competitive Landscape
+
+Three clusters: video-first clippers, platform-specific text tools, and generic AI writers. No single incumbent owns the “one long-form artifact in, every platform out” workflow at an indie price point. That’s the opening.
+
+- **OpusClip** — Video-clip leader. Auto-finds highlight moments, captions, vertical reframing. Great for podcasters/YouTubers; no text-only workflow for blog/newsletter creators. Free with watermark → $19/mo Starter → $29/mo Pro (annual)
+- **Castmagic** — Audio/video in, transcripts and text assets (show notes, tweets, LinkedIn posts) out. Strong for podcasters; weaker for blog/essay creators and no video clip output. $39/mo Starter → $99/mo Pro
+- **Repurpose.io** — OG auto-republish tool — grabs a video from one platform, reformats, posts to others. Workflow automation focused; minimal AI content generation. $15/mo Content Marketer → $35/mo Agency
+- **Typefully / generic AI writers** — Typefully nails X threads; Jasper/Copy.ai cover generic marketing copy. None handle “blog → thread + LinkedIn + newsletter + carousel” as one workflow with brand voice consistency. $12–29/mo depending on tool; no multi-platform repurpose flow
+
+**Your Opportunity**
+
+Own the “one in, everywhere out” workflow for text-native creators: paste a blog post or podcast transcript, pick 3–5 output formats (X thread, LinkedIn post, newsletter snippet, IG carousel copy, YouTube Short script), get brand-voice-tuned drafts in one click. OpusClip’s video-only scope and Castmagic’s podcast-only angle are both the opening.
+
+## Business Model
+
+Usage-based freemium. Free tier seeds creator word-of-mouth; Pro monetizes steady weekly publishers; Creator tier serves agencies and multi-brand operators. Cost per repurpose run is LLM + transcription, so pricing must hold 60%+ gross margin at each tier.
+
+- **Free** ($0) — 3 repurpose runs/mo, 2 output formats per run, basic brand voice
+- **Pro** ($19/mo) — 30 runs/mo, all formats, custom brand voice, schedule to Buffer/Typefully, history
+- **Creator** ($49/mo) — Unlimited runs, 3 brand voices (agency mode), 2 seats, analytics, API access
+
+**Unit Economics (illustrative)**
+
+- **$0.10–0.40** — LLM cost per run
+- **~75%** — Gross margin Pro
+- **$15–35** — Target CAC
+- **5–8%** — Free → Pro
+
+## Recommended Tech Stack
+
+The hard parts are transcription (if input is audio/video), brand-voice retrieval, and staying under the LLM cost-per-run ceiling. Next.js handles the app + marketing; Supabase stores brand voices and run history; Whisper or AssemblyAI does transcription; Claude with prompt caching keeps brand-voice application cheap at the per-run margin.
+
+- **Next.js 14 + TypeScript** — Marketing, app, and API routes. Server Actions for the repurpose pipeline; streaming responses for the long-running run UI.
+- **Supabase** — Auth + Postgres for brand_voices, runs, outputs. RLS per workspace. Storage for uploaded audio/video files with signed URLs.
+- **Claude + prompt caching** — Brand voice + format prompts cached with Claude’s prompt caching — 90% token cost reduction on repeated runs for the same creator. Critical to margin.
+- **Whisper or AssemblyAI** — Whisper via OpenAI API for short audio; AssemblyAI for longer podcast/video with speaker diarization. Gate behind Pro tier—transcription is the cost center.
+- **ffmpeg (video clips)** — v2 feature: chunk podcast/YouTube into 30–60 second clips with burned-in captions. Runs on a Modal or Replicate worker to keep Vercel within its limits.
+- **Stripe + Resend** — Stripe Checkout + Billing Portal for Pro/Creator. Resend for run-complete emails and weekly usage digest that nudges free users toward Pro.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for an AI Content Repurposing Tool.
+
+Features:
+- Input section: URL input (auto-fetches content), or paste text directly
+- Platform selection checkboxes: Twitter thread, LinkedIn post, Newsletter, Instagram, YouTube outline
+- Output section: tabbed view with each platform's version
+- Copy button for each output
+- Save to library feature for future reference
+
+Clean, modern UI with Tailwind. Focus on fast time-to-value.
+```
+
+**2. Core Feature**
+
+```text
+Create API route that takes content and generates platform versions:
+
+For each platform, use Claude with specific prompts:
+- Twitter thread: "Convert to engaging thread. Hook in tweet 1, key points in 2-8, CTA in last. Under 280 chars each. Add relevant emojis sparingly."
+- LinkedIn: "Convert to professional LinkedIn post. Use line breaks, add 3-5 relevant hashtags. Personal tone, insights focus."
+- Newsletter: "Write engaging intro paragraph that makes readers want to continue. Include key takeaway teaser."
+- Instagram: "Create caption with hook, value, CTA. Add 20-30 relevant hashtags in comment format."
+- YouTube: "Create video script outline with hook, 3-5 main points, and call to action."
+
+Return all versions in JSON.
+```
+
+**3. URL Parsing**
+
+```text
+Add smart URL content extraction:
+
+- For blog URLs: Use Mozilla Readability to extract article content
+- For YouTube URLs: Fetch transcript using youtube-transcript-api or similar
+- For podcast URLs: Support Apple Podcasts and Spotify links, extract show notes
+- For Twitter URLs: Expand thread content
+
+Handle edge cases: paywalled content (show error), very long content (summarize first), non-English (detect and translate if needed).
+```

@@ -1,0 +1,48 @@
+/* Page-scoped styles ported from the newsletter.html <style> block.
+   Scoped under .newsletter-accent so they never collide with the
+   articles.css copies of the same legacy utility names. */
+
+.newsletter-accent {
+  --accent: #cc5500;
+  --accent-glow: rgba(204, 85, 0, 0.4);
+}
+
+/* Horizontal rule accent */
+.newsletter-accent .accent-line {
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* Badge pulse */
+.newsletter-accent .badge-pulse {
+  animation: newsletter-pulse-glow 2s ease-in-out infinite;
+}
+@keyframes newsletter-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(204, 85, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(204, 85, 0, 0.2);
+  }
+}
+
+/* Staggered entrance delays */
+.newsletter-accent .stagger-1 {
+  animation-delay: 0.1s;
+}
+.newsletter-accent .stagger-2 {
+  animation-delay: 0.2s;
+}
+.newsletter-accent .stagger-3 {
+  animation-delay: 0.3s;
+}
+
+/* Newsletter archive card */
+.newsletter-accent .nl-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.newsletter-accent .nl-card:hover {
+  border-color: rgba(204, 85, 0, 0.35);
+  transform: translateY(-2px);
+}

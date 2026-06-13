@@ -1,0 +1,109 @@
+---
+slug: "brake-repair-cost-estimator"
+title: "Automated Brake Repair Cost Estimator"
+---
+
+## The Problem
+
+Brake quotes are the poster child for information asymmetry. A commuter hears squealing, calls two shops, and gets estimates spanning $180 to $900 for “maybe pads, maybe rotors—we need to look.” RepairPal and Edmunds offer broad repair estimates, but brake jobs vary wildly by vehicle (German sedans vs. domestic trucks), region (Bay Area labor vs. Midwest), and upsell path (resurface vs. replace rotors). Shop estimator tools exist—Mitchell, ALLDATA—but they are B2B, not consumer-facing.
+
+Consumer forums repeat the same story: *“They quoted $650; I walked out and found $320 down the street.”* Without a credible range before the visit, owners either overpay from fear or delay service until metal-on-metal turns a $250 job into $1,200. A brake-specific estimator that ingests VIN + symptoms + zip code gives negotiating power and reduces no-shows for shops tired of tire-kickers.
+
+The wedge is narrow scope with better UX than horizontal auto sites: no transmission tabs, no oil change noise—just pad, rotor, caliper, fluid, and ABS-related line items explained in plain language.
+
+## The Solution
+
+Ship a static-first web app: user enters VIN (decode via NHTSA vPIC API) or manual year/make/model, selects axle and symptoms (squeal, pulsation, grinding, warning light), and receives an instant estimate band with parts/labor split. Backend rules table maps vehicle class → typical pad set cost, rotor strategy, labor hours; zip code adjusts hourly labor using public BLS metro wage indices or a curated CSV you seed per launch city.
+
+Layer trust features: “fair price” badge when a uploaded shop quote falls inside your band, printable PDF for counter-negotiation, and optional email capture to send three vetted partner shops in-zip (affiliate or pay-per-lead). v2 adds photo upload routed to your AI brake inspection partner idea—but MVP is rules + transparent copy.
+
+**How it works:**
+
+1. **Vehicle** — VIN decode or YMM; classify platform (economy, luxury, truck)
+2. **Symptoms** — Checkbox flow maps to likely SKU (pads only vs. pads+rotors)
+3. **Estimate** — Show low/fair/high with labor rate source cited
+4. **Act** — Book partner shop, save estimate, or export PDF
+
+## Market Research
+
+Auto repair is a massive, fragmented spend category where digital price transparency tools still under-serve brake-specific anxiety:
+
+- **US auto repair market** — industry analysts frequently cite **$100B+** annual US auto repair spend; brake work is among the top three revenue lines for independent shops.
+- **Digital estimator adoption** — RepairPal and Fixd trained consumers to expect online quotes; brake-only SEO (“Honda Civic brake pad cost”) captures high-intent traffic cheaper than generic “car repair” head terms.
+- **Affiliate economics** — shop aggregators monetize $10–40 per booked appointment in competitive metros; even 100 leads/month at $20 clears $1K MRR without consumer subscriptions.
+- **Fleet age** — older vehicles need more frequent brake service; S&P Global Mobility pegged average US vehicle age at **12.6 years (2024)**.
+
+## Competitive Landscape
+
+- **RepairPal Fair Price Estimator** — Horizontal repair estimates across all systems. Useful benchmark, but brake line items lack symptom-driven branching and regional shop matching depth. Free consumer · affiliate/partner revenue
+- **Fixd** — OBD dongle + app with repair cost lookups tied to codes. Hardware friction; brake estimates secondary to check-engine use case. Device ~$60 · premium app tiers
+- **Shop internal estimators (Mitchell1)** — Accurate for pros, inaccessible to consumers. Your product translates their logic into owner-friendly ranges. B2B shop subscriptions $100+/mo
+- **Google + phone calls** — Status quo. High effort, high variance, no saved estimate history. $0 · maximum anxiety
+
+**Your Opportunity**
+
+Own long-tail brake pricing SEO, symptom-aware estimates, and shop lead-gen in 5 launch metros before horizontal players bother to specialize.
+
+## Business Model
+
+Freemium estimator with monetization on shop leads, affiliate parts links, and Pro export—consumer subscription optional once trust is established.
+
+- **Free** ($0) — Unlimited estimates, 1 saved vehicle
+- **Pro** ($4.99/mo) — PDF exports, quote upload checker, price-drop alerts
+- **Shop lead** ($15–35) — Pay-per-booked appointment from estimate flow
+
+**Unit Economics (illustrative)**
+
+- **5K** — Monthly visitors
+- **3%** — Lead conv.
+- **$25** — Lead fee
+- **~$3.7K+** — MRR path
+
+## Recommended Tech Stack
+
+Static-friendly Next.js on Vercel, Supabase for saved estimates and lead routing, edge function for VIN decode. No mobile app required for v1—mobile web is enough.
+
+- **Next.js 14** — SEO programmatic pages per YMM + city; server actions for estimate API.
+- **Supabase Postgres** — Rate tables, saved estimates, shop partners, lead events.
+- **Vercel Edge** — Low-latency estimate API; cache VIN decode responses.
+- **Stripe Checkout** — Pro subscription for PDF export and alert features.
+- **OpenAI (optional v2)** — Explain estimate in plain language; not required for MVP rules engine.
+- **GA4 + Search Console** — Track estimate completions and long-tail landing performance.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**Project Setup. Create BrakeQuote estimator: Next.js 14, Supabase tables (vehicles, rate_cards, estimates, shop_partners), VIN decode via NHTSA vPIC, Zod schemas for estimate request/response. Include regional labor multiplier by zip prefix.**
+
+```text
+undefined
+```
+
+**Core Feature. Build estimate wizard UI: symptom checklist → axle selection → instant low/fair/high card with parts/labor bar chart. Allow user to paste shop quote and highlight overage vs fair band. Generate PDF export server-side.**
+
+```text
+undefined
+```
+
+**SEO Pages. Programmatic SEO template: “\{year} \{make} \{model} brake pad replacement cost” with FAQ schema, internal links to estimator, and city variants. Include canonical tags and sitemap generation script.**
+
+```text
+undefined
+```
+
+**Lead Routing. Partner shop inbox: when user clicks “Book fair-price shop,” send lead to top 3 partners in zip via webhook and email. Track attribution for pay-per-lead billing dashboard.**
+
+```text
+undefined
+```
+
+## Sources
+
+Signals compiled from public research (verify before financial projections).
+
+- [RepairPal — fair price estimator reference](https://www.repairpal.com/estimator)
+- [NHTSA vPIC — VIN decode API](https://vpic.nhtsa.dot.gov/api/)
+- [Fixd — OBD + repair cost competitor](https://www.fixdapp.com/)
+- [S&P Global Mobility — vehicle age stat](https://www.spglobal.com/automotive-insights/en/blogs/2024/5/average-age-vehicles-united-states-2024)
+- [BLS OES — regional wage indices for labor rates](https://www.bls.gov/oes/)

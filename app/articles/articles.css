@@ -1,0 +1,59 @@
+/* Page-scoped styles ported from the articles.html <style> block. */
+
+.articles-accent {
+  --accent: #cc5500;
+  --accent-glow: rgba(204, 85, 0, 0.4);
+}
+
+/* Hero search cursor blink */
+.search-cursor {
+  animation: articles-blink 1s step-end infinite;
+}
+@keyframes articles-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Search input styling */
+.search-input {
+  background: transparent;
+  caret-color: var(--accent);
+}
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+.search-input:focus {
+  outline: none;
+}
+
+/* Horizontal rule accent */
+.accent-line {
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* Badge pulse */
+.badge-pulse {
+  animation: articles-pulse-glow 2s ease-in-out infinite;
+}
+@keyframes articles-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(204, 85, 0, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(204, 85, 0, 0.2);
+  }
+}
+
+/* Staggered entrance delays */
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+.stagger-3 {
+  animation-delay: 0.3s;
+}

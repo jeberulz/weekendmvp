@@ -1,0 +1,112 @@
+---
+slug: "ai-resume-tailorer"
+title: "AI Resume Tailorer"
+---
+
+## The Problem
+
+Job seekers know they should tailor their resume for each application, but it's tedious work. Most just send the same generic resume everywhere and wonder why they never hear back. Meanwhile, 75% of resumes are rejected by ATS systems before a human ever sees them—often because they're missing the right keywords.
+
+## The Solution
+
+Upload your resume once, paste any job description, and get a tailored version optimized for that specific role. AI rewrites bullet points to match keywords, reorders sections for relevance, and provides an ATS compatibility score with improvement suggestions.
+
+**How it works:**
+
+1. **Upload resume** — PDF or paste text of your resume
+2. **Paste job description** — Copy from the job posting
+3. **Get tailored version** — Download optimized resume
+
+## Market Research
+
+Resume tooling is a crowded but segmented market. Most tools focus on templates and formatting; AI-native tailoring (rewriting a base resume to match a specific job description) is a newer lane where Teal, Rezi, and Jobscan have converged. The indie opportunity is speed and price: one click in, tailored PDF out, under $20/mo.
+
+- Glassdoor research: an average corporate job receives 250 resumes; only 4–6 candidates reach interview—tailoring per role is the competitive edge.
+- Jobscan estimates 75%+ of resumes are filtered by ATS before human review; keyword match to the job description is table-stakes for modern applications.
+- BLS reports 5M+ monthly job openings in the US alone in 2024; addressable base of active job seekers willing to pay for any edge is in the tens of millions.
+- Teal raised $5M+ (2022) and Rezi has crossed 1M+ users—category is validated; pricing has settled at $29/mo for most AI-native tools, leaving room for a sub-$20 entrant.
+
+## Competitive Landscape
+
+Three clusters: AI-native career suites (Teal, Rezi), ATS-match specialists (Jobscan, Resume Worded), and templated builders (Kickresume, Canva). None of them combine fast one-click tailoring, clean PDF output, and sub-$20/mo pricing with no dark patterns.
+
+- **Teal** — Full career hub with job tracker, resume builder, and AI tailoring. Strong all-in-one but feels heavy when a user just wants one tailored resume for one role today. Free tier → $29/mo Teal+ (weekly billing available)
+- **Rezi** — AI resume builder with ATS optimization baked in. Fast output, decent templates; pricing model confusing with multiple credit-based tiers that frustrate repeat users. Free limited → $29/mo Pro (lifetime deals common)
+- **Jobscan** — ATS-match veteran. Excellent at scoring a resume against a job description; weaker at the rewriting step—it tells you what’s missing but asks you to fix it yourself. $49.95/mo Premium (weekly option $29.95)
+- **Resume Worded / Kickresume** — Resume Worded leans into LinkedIn + resume scoring; Kickresume is a template-first builder. Neither makes per-job-description tailoring the default first-class flow. Resume Worded $49/mo Pro; Kickresume $19/mo Premium
+
+**Your Opportunity**
+
+Ship the fastest job-to-tailored-PDF experience: paste a job URL, upload a base resume, get a clean tailored PDF with ATS-match score in under 60 seconds. Price at $15/mo, no credits, no dark patterns. Teal’s all-in-one weight and Jobscan’s scoring-without-rewriting gap are both the opening.
+
+## Business Model
+
+Freemium SaaS priced below the $29 AI-native category floor. Free tier seeds organic growth via r/jobs and LinkedIn post engagement; Pro monetizes active job seekers (2–6 month usage window); Career tier wraps in cover letters and LinkedIn optimization for the serious search.
+
+- **Free** ($0) — 3 tailorings/mo, basic template, watermarked PDF
+- **Pro** ($15/mo) — Unlimited tailorings, ATS-match score, 8 templates, cover letter generator
+- **Career** ($39/mo) — LinkedIn optimization, interview prep generator, salary-negotiation scripts, resume reviews
+
+**Unit Economics (illustrative)**
+
+- **$0.05–0.20** — LLM cost per tailoring
+- **~80%** — Gross margin Pro
+- **$8–20** — Target CAC
+- **3–5 mo** — Avg. subscription length
+
+## Recommended Tech Stack
+
+The hard parts are parsing uploaded resumes reliably and generating clean PDFs that stay ATS-friendly. Use Unstructured or LlamaParse for ingestion, Claude for tailoring with prompt caching on the base resume, and React-PDF for deterministic output that always parses back into ATS systems.
+
+- **Next.js 14 + TypeScript** — Marketing, app, API. Server Actions for upload + tailor flow; streaming UI for the tailoring progress so 15–30 s feels instant.
+- **Supabase** — Auth + Postgres for users, base_resumes (structured JSON), tailorings (job_url, output PDF ref, match_score). Storage for uploaded PDFs and generated outputs.
+- **Unstructured / LlamaParse** — Parse the uploaded resume PDF/DOCX into structured JSON (sections, bullets, dates, skills). Fall back to a simple text extractor if the structured parse fails.
+- **Claude + prompt caching** — Base resume + system instructions cached; only the job description varies per tailoring. 80%+ token savings on repeat tailorings by the same user.
+- **React-PDF** — Generate deterministic ATS-friendly PDFs from structured JSON. Single-column layouts, standard fonts, no clever tables—ATS systems fail on anything fancy.
+- **Stripe + Resend** — Stripe Checkout + Billing Portal; pause subscriptions (Stripe supports) for users between job searches—helps retention. Resend for tailoring-ready notifications.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for an AI Resume Tailorer.
+
+The app needs:
+- Upload page: drag-drop for PDF resume OR paste text
+- Job input page: large textarea for job description
+- Results page: side-by-side original vs tailored resume, ATS score, download button
+- Use PDF.js to parse uploaded PDFs
+- Store user's base resume in localStorage for quick repeat use
+
+Modern, minimal styling with Tailwind CSS.
+```
+
+**2. Core Feature**
+
+```text
+Create an API route that takes resume text and job description, then uses Claude/GPT to:
+
+1. Extract key requirements and skills from job description
+2. Identify matching skills/experience in resume
+3. Rewrite bullet points to incorporate relevant keywords naturally
+4. Reorder sections to put most relevant experience first
+5. Calculate ATS compatibility score (0-100) based on keyword match percentage
+6. Return JSON with: tailored_resume, ats_score, suggestions, matched_keywords, missing_keywords
+
+Be careful not to fabricate experience—only rephrase existing content.
+```
+
+**3. PDF Export**
+
+```text
+Add PDF generation for the tailored resume:
+
+- Use @react-pdf/renderer to create clean, ATS-friendly PDF
+- Simple formatting: clear sections, standard fonts, no columns or graphics
+- Include: name/contact, summary, experience, education, skills
+- Allow downloading as both PDF and plain text (for copy-paste)
+- Add option to highlight changes made from original
+```

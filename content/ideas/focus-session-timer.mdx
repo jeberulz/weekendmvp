@@ -1,0 +1,178 @@
+---
+slug: "focus-session-timer"
+title: "Focus Session Timer"
+---
+
+## The Problem
+
+Knowledge workers lose hours per day to context switching. Research from the University of California suggests it takes **23 minutes to re-enter deep focus** after an interruption. The average knowledge worker is interrupted every 3 minutes, half of which is self-inflicted (tabs, Slack, Twitter). The Pomodoro technique works — but the tools built around it either look like 2012 Android apps or charge premium prices for analytics a spreadsheet could do.
+
+Free Pomodoro timers are everywhere, but they stop at "timer that rings." They don't block websites. They don't integrate with calendars. They don't show a heatmap of when the user is actually productive. They don't adapt session lengths to the user's proven rhythm. The upgrade path forces users into $9–$15/mo subscription apps (Forest Premium, Flow Pro, Sessions) that bundle features most people won't use.
+
+The wedge is a clean, indie-priced timer with the *three* features casual users actually want as paid upgrades: website blocking during sessions, streak and heatmap analytics, and calendar write-back so "I did 4 hours of deep work Tuesday" shows up next to meetings. Flat annual pricing beats subscription fatigue. Build once, ship a PWA + browser extension, own the category below the $9/mo price floor.
+
+## The Solution
+
+A PWA Pomodoro timer paired with a lightweight browser extension. User picks a task, sets a session (default 25 min work / 5 min break, adaptive after 2 weeks of data), starts the timer. The extension blocks a user-configurable distraction list during work intervals. Ambient sound library plays optional focus audio. At session end, the completed block is logged and optionally written to Google Calendar as a "Deep Work: \{task}" event. Weekly email summarizes total focused hours, best day, longest streak.
+
+**How it works:**
+
+1. **Pick task, start** — 25/5 default; adaptive to your patterns
+2. **Deep work protected** — Extension blocks distractions; ambient sound on
+3. **Log + review** — Heatmap, streaks, Google Calendar write-back
+
+The adaptive-session feature is the long-term moat. After two weeks of data, the app computes each user's average productive session length (measured by self-reported focus quality + session-completion rate) and suggests tuned intervals. A user who reliably focuses for 48 minutes gets prompted "try 50/10 this week." That one insight turns a free timer into a $29/year upgrade because it feels personalized.
+
+## Market Research
+
+The **brain training and focus app market is projected to reach $130B by 2035** (multiple market reports, Ideabrowser #4076 synthesis). The productivity-app segment inside that is fragmented: Forest has **10M+ downloads** on App Store, Flow has 1M+, Be Focused has 500K+. Distribution is app-store discovery plus productivity YouTubers; the TAM includes knowledge workers, students, and creators.
+
+- **UC Irvine research: 23 minutes to regain focus** after interruption. Gloria Mark's "Attention Span" (2023) documents steady decline from 2.5 minutes of focused attention on screens to 47 seconds.
+- Search: "pomodoro timer" 90K/mo, "focus app" 33K/mo, "deep work app" 8.1K/mo — combined CPC **$1.50–$3.50**. Lower CPC than SaaS, but volume compensates.
+- Forest app generates an estimated **$5M+/year** from its $3.99 one-time purchase + premium tree-planting tie-ins. Flow ($10/mo) serves the indie power-user tier. Category monetizes at scale.
+- Communities: r/productivity (2.4M), r/getdisciplined (1.6M), r/DeepWork (45K). YouTube productivity channels (Ali Abdaal 5M subs, Thomas Frank 3M, Matt D'Avella 4M) convert reliably to Pomodoro-app affiliates.
+- Gen Z/millennial knowledge workers show strong demand for "intentional computing" tools post-2022; TikTok hashtags like #deepwork and #focusvlog drive discoverability outside traditional app stores.
+
+Stage: *mature but polarized*. Free tier is saturated with minimum-viable timers. Premium tier ($9–$15/mo) is crowded by Forest, Flow, Sessions, Session, Focus Keeper Pro. The open lane is the *mid-tier* — $29/year flat with serious analytics + blocker + calendar integration, priced to feel like a one-time purchase with ongoing updates. That SKU is under-served.
+
+## Competitive Landscape
+
+Four tiers. Free apps (Focus Keeper, Be Focused free) cap at basic timer. One-time-purchase apps (Forest $3.99) lock advanced features. Subscription apps (Flow, Sessions) bundle analytics + blocker at $9–$15/mo. Toggl Track does time tracking but not focus. Your slot: flat $29/year with the three paid features unbundled.
+
+- **Forest** — Category leader on mobile, 10M+ downloads, gamified tree-planting metaphor. Upsells to "Forest Pro" ($3.99 one-time) + real tree-planting partnership. Mobile-first, weak desktop/web. No true analytics heatmap. $3.99 one-time (mobile) + in-app purchases
+- **Flow (Meaningful Flow)** — Mac-first focus app with website blocking, strict mode, session stats. Charges subscription for basic features most users consider table stakes. $9.99/mo Pro, $79/year Lifetime
+- **Sessions / Session** — Two different products, both mid-tier. Sessions ($4–$8/mo) adds meeting integration; Session by Philippe Lehoux focuses on minimal aesthetic. Neither has a browser extension or calendar write-back. Sessions $4–$8/mo; Session $4.99 lifetime
+- **Toggl Track / Focus Keeper (free)** — Toggl is billable-hours tracking, not focus. Focus Keeper free tier gives timer only. Neither targets the deep-work-with-analytics use case directly. Toggl $9–$20/user/mo; Focus Keeper free w/ ads
+
+**Your Opportunity**
+
+Flat $29/year, PWA + Chrome/Firefox extension, three hero features nobody bundles: website blocker during sessions, adaptive interval suggestions after 14 days of data, Google Calendar write-back. Tagline: "A Pomodoro that learns your rhythm, priced like a Notion template."
+
+## Business Model
+
+Flat annual pricing. Free tier earns the discovery and "tell a friend" engine. Pro covers individuals. Team handles small co-working groups and study squads (a growing Gen Z niche). Annual-billed avoids subscription fatigue; lifetime tier captures one-time-purchase preferences. Costs are tiny — Supabase + Vercel at indie scale runs \<$0.10/user/month.
+
+- **Free** ($0) — Basic timer, 7-day history, 1 ambient sound, manual intervals only
+- **Pro** ($29/year) — Website blocker, adaptive intervals, full analytics heatmap, calendar write-back, unlimited history, 15 ambient tracks
+- **Lifetime** ($79) — All Pro features forever, early access to new features, priority support
+
+**Unit Economics (illustrative)**
+
+- **~$0.05/mo** — Infra cost/user
+- **~97%** — Gross margin Pro
+- **$5–$12** — Target CAC
+- **4–7%** — Free → Pro conv.
+
+ARR path: 1K Pro + 100 Lifetime = $36.9K ARR. 5K Pro + 500 Lifetime = $184.5K ARR. At 20K Pro + 2K Lifetime the business is at $738K ARR — achievable via YouTube partnership and productivity-community distribution within 24 months. Lifetime revenue amortized over 3 years; effectively ~$26/year equivalent.
+
+## Recommended Tech Stack
+
+PWA + browser extension + minimal backend. No fancy infra — this is a local-first app with cloud sync. Service worker keeps the timer ticking when the tab backgrounds. Browser extension does the blocking.
+
+- **Next.js 14 PWA** — App Router; `next-pwa` for install-to-homescreen. Service worker with periodic-sync API keeps timer accurate when tab is backgrounded. Tailwind + Geist font for the minimal aesthetic.
+- **Chrome/Firefox extension (Manifest V3)** — `declarativeNetRequest` rules block user-configured domains during active sessions. Extension communicates with PWA via `chrome.runtime.sendMessage`; session start/stop events flip block rules.
+- **Supabase** — Auth (magic link), sessions table, blocklist table. IndexedDB caches last 30 days locally for instant load; Supabase syncs in background. Free tier covers 10K users easily.
+- **Google Calendar API** — OAuth with `calendar.events` scope. On session completion, POST an event to primary calendar with title, duration, and task as description. User opts in per-calendar.
+- **Web Audio API + licensed ambient** — Licensed ambient sound library from Epidemic Sound or indie creators; served from CDN. Web Audio API for smooth looping and volume ducking on notification.
+- **Stripe Checkout + Resend** — Stripe Checkout for annual/lifetime; Billing for renewals. Resend for weekly digest email with heatmap image (generated server-side via satori + react-email).
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. PWA Timer + Service Worker**
+
+```text
+Create a Next.js 14 App Router PWA for a focus timer. TypeScript + Tailwind + next-pwa.
+
+Features:
+- / (marketing + demo timer, no auth)
+- /app (authed: active timer, task input, history, settings)
+- /app/history (heatmap calendar, streak counter, weekly chart)
+- /app/blocklist (managed list of distraction domains)
+- /settings (intervals, sounds, calendar connection)
+
+Timer logic:
+- React state holds endTimestamp; component renders remaining time every 1000ms via setInterval cleared on unmount.
+- Service worker registers a periodic-sync listener AND an alarms API fallback. When tab is backgrounded, SW posts a message with remaining ms; main thread restores on resume.
+- On session end: play a chime (Web Audio), show notification via Notifications API, increment DB session counter.
+
+Schema (Supabase):
+- users(id, email, plan ENUM[free,pro,lifetime], stripe_customer_id)
+- sessions(id, user_id, started_at, ended_at, duration_sec, task, quality_rating 1-5 optional, completed bool)
+- blocked_domains(id, user_id, domain)
+- user_preferences(id, user_id, default_work_min, default_break_min, adaptive_enabled, ambient_track, google_calendar_connected bool, google_refresh_token_encrypted)
+
+IndexedDB mirrors last 30 days of sessions for offline; sync on reconnect.
+```
+
+**2. Browser Extension (Website Blocker)**
+
+```text
+Build a Manifest V3 Chrome/Firefox extension that blocks user-configured domains during active focus sessions.
+
+manifest.json:
+{
+  "manifest_version": 3,
+  "name": "Focus Shield",
+  "version": "1.0",
+  "permissions": ["storage","declarativeNetRequest","alarms"],
+  "host_permissions": [""],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html" }
+}
+
+background.js:
+- On install, load blocklist from product.com/api/blocklist?api_key=xxx into chrome.storage.sync.
+- Listen for runtime messages from the PWA (via chrome.runtime.onMessageExternal):
+  {type: 'session_start', duration_ms} → call chrome.declarativeNetRequest.updateDynamicRules to add block rules for every blocked_domain with action redirect to a "Come back after your session" page.
+  {type: 'session_end'} → clear all dynamic rules.
+- Set an alarm as failsafe to clear rules if session_end message is lost.
+
+PWA pairing:
+- User installs extension, clicks "Pair with product.com" in popup.
+- Popup redirects to product.com/app/pair with a random token.
+- User confirms; PWA sends extension a shared secret via chrome.runtime.sendMessage (externally_connectable declared in manifest with product.com).
+- Subsequent session events cryptographically signed with that shared secret.
+
+Edge cases: user disables extension mid-session (PWA detects lost heartbeat, flags session with "unprotected" badge). User opens block domain in private window (declarativeNetRequest still applies; document for users).
+```
+
+**3. Adaptive Intervals + Calendar Sync**
+
+```text
+Implement two Pro-tier features: adaptive interval suggestions and Google Calendar write-back.
+
+Adaptive intervals:
+1. After user accumulates 14+ completed sessions, compute:
+   - avg_completion_duration = average ended_at - started_at across last 30 completed sessions
+   - optimal_work_min = round to nearest 5, clamp [15, 90]
+   - suggest if > current default_work_min + 10 OR < - 10
+2. Show banner on /app: "Your focused sessions average 47 minutes. Switch to 50/10?" with [Accept] [Dismiss for 30 days].
+3. On accept, update user_preferences.default_work_min.
+4. Track acceptance rate as a product metric; re-prompt quarterly.
+
+Google Calendar write-back:
+1. /api/calendar/connect initiates OAuth with scopes ['https://www.googleapis.com/auth/calendar.events'].
+2. Store refresh_token encrypted in user_preferences.google_refresh_token_encrypted (Supabase Vault).
+3. On session completion (where completed=true AND user_preferences.google_calendar_connected):
+   - Refresh access token if needed.
+   - POST to https://www.googleapis.com/calendar/v3/calendars/primary/events:
+     { summary: `Deep Work: ${task || 'Focus Session'}`, description: 'Logged by Focus Timer', start: {dateTime: started_at}, end: {dateTime: ended_at}, transparency: 'transparent' }
+4. User can toggle per-session write-back with a small checkbox. Default on once connected.
+
+Weekly digest email (Sundays 9pm user timezone):
+- Total focused hours, longest streak, best day, best task, week-over-week delta.
+- Render heatmap as SVG via satori, convert to PNG, attach to Resend email.
+```
+
+## Sources
+
+- • [Gloria Mark (UC Irvine) — 23 minutes to regain focus after interruption](https://www.gloriamark.com/)
+- • [Forest App — 10M+ downloads, $3.99 + premium model](https://www.forestapp.cc/)
+- • [Flow (Meaningful Flow) pricing — $9.99/mo / $79 lifetime](https://meaningfulflow.com/)
+- • [Google Calendar API — Events.insert documentation](https://developers.google.com/calendar/api/v3/reference/events/insert)
+- • [Chrome declarativeNetRequest API — block rules docs](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)
+- • Ideabrowser idea #4076 FocusFlow (opp 9, pain 8, timing 8) market signal + brain training $130B by 2035 projection; MCP search surfaced no direct match for Pomodoro-specific wedge.
+
+Forest/Flow pricing and user counts referenced from public product pages; verify before marketing claims.

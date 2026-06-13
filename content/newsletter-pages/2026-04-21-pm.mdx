@@ -1,0 +1,48 @@
+---
+slug: "2026-04-21-pm"
+title: "Builder Brief: Bolt.new in 10 minutes"
+description: "Idea → live URL in one browser tab. Here's the 10-minute path, plus a $1K/mo build to try it on this weekend."
+publishedAt: "2026-04-21"
+edition: "pm"
+ctaUrl: "/startup-ideas"
+---
+
+Most side projects don't die on feature #3. They die on setup. Node version mismatch, the database won't seed, the deploy pipeline wants a credit card you don't want to give it, and suddenly it's Sunday night and you haven't written a line of product code. Bolt.new is the clearest answer to that problem I've used.
+
+**BUILDER BRIEF**
+
+## Bolt.new in 10 minutes
+
+Bolt.new is the fastest path I know from "I have an idea" to "there's a URL I can share." One browser tab. No install, no boilerplate, no local environment. You describe the app in plain English, Bolt scaffolds a full-stack project in the preview pane, you iterate by chatting, and you deploy to a live URL from the same window. The abstraction it removes isn't the code — it's the setup tax that kills 80% of weekend projects before they start.
+
+It's not going to replace Cursor for serious iteration. But for the first 2 hours of any weekend build — when you just need to see the idea running in a browser so you know whether it's worth another six — it's the tool I reach for first.
+
+### Bolt.new in 10 minutes
+
+1. Open **bolt.new** in your browser. Sign in with GitHub — no other setup required.
+2. Describe the app in 2–3 sentences. Be boring on purpose: *"A form that takes X and returns Y. Store submissions in a list. Email me when someone submits."* Vague prompts produce vague apps.
+3. Watch Bolt scaffold the code in the preview pane. Don't touch the file tree yet — just click around the preview and see what it guessed wrong.
+4. Iterate in the chat in plain English: *"add a dark-mode toggle," "save submissions to a Supabase table," "send the email through Resend."* Each prompt is a small diff, not a rewrite.
+5. Hit **Deploy**. Bolt pushes to Netlify and hands you a live URL. Share it with 3 friends before you write another feature.
+
+Try it on: **Invoice Reminder Bot** — ~8h build, $1K/mo target. A tool that nudges your clients about overdue invoices on a schedule so you don't have to send the awkward "just following up" email yourself. Bolt handles the form (upload invoice or paste Stripe link), the dashboard (list of outstanding invoices with next-nudge dates), and the email trigger. You wire in Resend or Postmark for sending, and you're done by Saturday night.
+
+<Cta href="/startup-ideas?tool=bolt">Browse ideas you can build with Bolt</Cta>
+
+---
+
+**🛠 STEAL THIS — The 2-hour "is this worth a weekend" test**
+
+Before you commit a full weekend to any idea, spend 2 hours in Bolt proving the core loop works at all:
+
+- **Prompt 1 — the happy path.** One sentence that describes the single action the user takes. *"A page where a freelancer pastes their Stripe invoice link, and the app drafts three escalating reminder emails 7/14/21 days after the due date."* If Bolt builds something that roughly works, the loop is buildable. If it faceplants, the idea is more complex than you thought — reconsider scope.
+- **Prompt 2 — the ugliest edge case.** *"What happens if the invoice has no due date? Handle that gracefully."* Real apps live or die in the edge cases. Force yourself to hit one early so you know what the Saturday work actually looks like.
+- **Prompt 3 — the share test.** *"Add a simple landing page with a headline, one paragraph, and a 'Join waitlist' email capture."* Deploy. Drop the URL in one Slack or Discord where your target user lives. If nobody clicks, your Saturday is free.
+
+Two hours of Bolt tells you more than two weeks of Notion planning. Use it as a filter, not a finisher.
+
+---
+
+Sneak peek at tomorrow…
+
+*An evergreen idea that turns every overdue client email into a scheduled nudge — no awkward follow-ups required.*
