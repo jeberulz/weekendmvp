@@ -9,7 +9,7 @@ import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/articles";
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 
 type ArticleFrontmatter = {
   slug: string;

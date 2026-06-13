@@ -7,7 +7,7 @@ import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
 
-const SITE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://weekendmvp.app";
+const SITE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.weekendmvp.app";
 
 const BUILD_WITH_SLUGS = [
   "bolt",

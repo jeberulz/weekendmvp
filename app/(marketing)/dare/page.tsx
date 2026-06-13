@@ -69,7 +69,7 @@ export const metadata: Metadata = {
       "A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.",
     images: [
       {
-        url: "https://weekendmvp.app/image/og-image.png",
+        url: "https://www.weekendmvp.app/image/og-image.png",
         alt: "DARE Live, a workshop for designers becoming AI-native founders",
         type: "image/png",
         width: 1200,
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     title: "DARE | Choose your AI product direction in 90 minutes",
     description:
       "A 90-minute live working session for experienced designers. Choose one concrete AI product or AI-powered service and leave with a 4-week plan. $29. Replay included.",
-    images: ["https://weekendmvp.app/image/og-image.png"],
+    images: ["https://www.weekendmvp.app/image/og-image.png"],
   },
 };
 

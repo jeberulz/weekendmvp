@@ -39,7 +39,7 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 
 type CollectionKind = "category" | "revenue" | "buildTime";
 

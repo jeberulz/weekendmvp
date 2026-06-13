@@ -40,12 +40,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    url: "https://weekendmvp.app/",
+    url: "https://www.weekendmvp.app/",
     title: TITLE,
     description: OG_DESCRIPTION,
     images: [
       {
-        url: "https://weekendmvp.app/image/og-image.png",
+        url: "https://www.weekendmvp.app/image/og-image.png",
         alt: "Weekend MVP — ship your product in 48 hours",
         type: "image/png",
         width: 1200,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: OG_DESCRIPTION,
-    images: ["https://weekendmvp.app/image/og-image.png"],
+    images: ["https://www.weekendmvp.app/image/og-image.png"],
   },
   verification: {
     google: "google-site-verification=HCdXKcfa0MioAEpD-uVIkfFOjcb3CodPcmdc7yxAuRM",

@@ -39,7 +39,7 @@ import {
 } from "./collection";
 
 const CONTENT_DIR = "content/ideas";
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 const DEFAULT_OG = "/image/og-image.png";
 
 type IdeaDoc = Doc<"ideas">;

@@ -32,7 +32,7 @@ export const WORKSHOP_DEADLINE = "[[WORKSHOP_DATE_ISO]]";
 
 const DARE_PERSON = {
   "@type": "Person" as const,
-  "@id": "https://weekendmvp.app/#person",
+  "@id": "https://www.weekendmvp.app/#person",
   name: "John Iseghohi",
   jobTitle: "Founder, Weekend MVP",
   url: "https://cal.com/switchtoux",
@@ -44,7 +44,7 @@ const DARE_EVENT = eventSchema({
     "A 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world.",
   startDate: "[[WORKSHOP_DATE_ISO]]",
   url: "/dare",
-  location: { name: "Zoom", url: "https://weekendmvp.app/dare" },
+  location: { name: "Zoom", url: "https://www.weekendmvp.app/dare" },
   offers: {
     price: "29",
     priceCurrency: "USD",

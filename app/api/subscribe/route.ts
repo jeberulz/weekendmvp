@@ -41,7 +41,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
 
   return {
     "Access-Control-Allow-Origin":
-      isAllowed && origin ? origin : "https://weekendmvp.app",
+      isAllowed && origin ? origin : "https://www.weekendmvp.app",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",

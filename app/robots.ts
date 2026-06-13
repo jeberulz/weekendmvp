@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://weekendmvp.app";
+const SITE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.weekendmvp.app";
 
 /**
  * Allowlist mirrors the legacy robots.txt: AI crawlers (GPTBot, ChatGPT-User,

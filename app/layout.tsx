@@ -10,7 +10,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "https://weekendmvp.app",
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.weekendmvp.app",
   ),
   title: {
     default: "Weekend MVP — Validate & Build Your Startup Idea in a Weekend",

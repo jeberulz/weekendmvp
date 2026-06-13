@@ -11,7 +11,7 @@ import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/newsletter-pages";
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 
 type IssueFrontmatter = {
   slug: string;

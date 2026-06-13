@@ -7,7 +7,7 @@
 
 const SITE =
   process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ??
-  "https://weekendmvp.app";
+  "https://www.weekendmvp.app";
 
 const PERSON_ID = `${SITE}/#person`;
 const WEBSITE_ID = `${SITE}/#website`;

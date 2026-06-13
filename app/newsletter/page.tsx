@@ -12,7 +12,7 @@ import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupFo
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { buildGraph } from "@/lib/seo";
 
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/newsletter-pages";
 const TITLE = "The Weekend MVP Newsletter | Daily Ideas for Weekend Builders";
 const DESCRIPTION =

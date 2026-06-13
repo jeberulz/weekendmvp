@@ -24,7 +24,7 @@ import {
   type IdeaCardData,
 } from "./IdeasExplorer";
 
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/ideas";
 const TITLE = "Startup Ideas | Weekend MVP";
 const DESCRIPTION =

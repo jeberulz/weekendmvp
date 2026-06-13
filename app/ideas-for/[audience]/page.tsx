@@ -48,7 +48,7 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */
@@ -296,7 +296,7 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       },
       {
         title: "Weekend MVP",
-        url: "https://weekendmvp.app",
+        url: "https://www.weekendmvp.app",
         description: "Templates and prompts to ship by Sunday",
       },
     ],

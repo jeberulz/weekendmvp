@@ -24,7 +24,7 @@
  *
  * Stripe webhook setup (one-time):
  *   1. Stripe Dashboard → Developers → Webhooks → Add endpoint
- *   2. URL:    https://weekendmvp.app/api/stripe-webhook
+ *   2. URL:    https://www.weekendmvp.app/api/stripe-webhook
  *   3. Events: checkout.session.completed
  *   4. Copy the signing secret (whsec_...) into the Vercel env
  */

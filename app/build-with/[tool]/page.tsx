@@ -48,7 +48,7 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://weekendmvp.app";
+const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */

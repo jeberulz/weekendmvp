@@ -46,7 +46,7 @@ export function ideasItemList(ideas: IdeaDoc[]) {
       "@type": "ListItem",
       position: index + 1,
       name: idea.title,
-      url: `https://weekendmvp.app/ideas/${idea.slug}`,
+      url: `https://www.weekendmvp.app/ideas/${idea.slug}`,
     })),
   };
 }

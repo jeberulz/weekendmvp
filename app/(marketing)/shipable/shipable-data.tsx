@@ -35,21 +35,21 @@ export const WORKSHOP_DEADLINE = "2026-06-27T12:00:00+01:00";
 
 const SHIPABLE_PERSON = {
   "@type": "Person" as const,
-  "@id": "https://weekendmvp.app/#person",
+  "@id": "https://www.weekendmvp.app/#person",
   name: "John Iseghohi",
   jobTitle: "Founder, Weekend MVP",
   url: "https://cal.com/switchtoux",
-  image: "https://weekendmvp.app/image/john-portrait.jpg",
+  image: "https://www.weekendmvp.app/image/john-portrait.jpg",
   sameAs: ["https://twitter.com/weekendmvp", "https://cal.com/switchtoux"],
 };
 
 const SHIPABLE_ORG = {
   "@type": "Organization" as const,
-  "@id": "https://weekendmvp.app/#org",
+  "@id": "https://www.weekendmvp.app/#org",
   name: "Weekend MVP",
-  url: "https://weekendmvp.app/",
-  logo: "https://weekendmvp.app/image/weekendmvp-logo.svg",
-  founder: { "@id": "https://weekendmvp.app/#person" },
+  url: "https://www.weekendmvp.app/",
+  logo: "https://www.weekendmvp.app/image/weekendmvp-logo.svg",
+  founder: { "@id": "https://www.weekendmvp.app/#person" },
   sameAs: ["https://twitter.com/weekendmvp"],
 };
 
@@ -101,7 +101,7 @@ const SHIPABLE_EVENT = {
     url: "/shipable",
     location: {
       name: "Zoom",
-      url: "https://weekendmvp.app/shipable",
+      url: "https://www.weekendmvp.app/shipable",
     },
     offers: {
       price: "9",
@@ -109,16 +109,16 @@ const SHIPABLE_EVENT = {
       availability: "https://schema.org/InStock",
     },
   }),
-  "@id": "https://weekendmvp.app/shipable#event",
+  "@id": "https://www.weekendmvp.app/shipable#event",
   image: [
-    "https://weekendmvp.app/image/hero-cover-desktop.jpg",
-    "https://weekendmvp.app/image/og-image.png",
+    "https://www.weekendmvp.app/image/hero-cover-desktop.jpg",
+    "https://www.weekendmvp.app/image/og-image.png",
   ],
   inLanguage: "en",
   isAccessibleForFree: false,
   maximumAttendeeCapacity: 100,
-  organizer: { "@id": "https://weekendmvp.app/#org" },
-  performer: { "@id": "https://weekendmvp.app/#person" },
+  organizer: { "@id": "https://www.weekendmvp.app/#org" },
+  performer: { "@id": "https://www.weekendmvp.app/#person" },
 };
 
 export const SCHEMA = buildGraph(

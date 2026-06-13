@@ -37,12 +37,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/starter-kit" },
   openGraph: {
     type: "website",
-    url: "https://weekendmvp.app/starter-kit",
+    url: "https://www.weekendmvp.app/starter-kit",
     title: TITLE,
     description: OG_DESCRIPTION,
     images: [
       {
-        url: "https://weekendmvp.app/image/og-image.png",
+        url: "https://www.weekendmvp.app/image/og-image.png",
         alt: "Weekend MVP — ship your product in 48 hours",
         type: "image/png",
         width: 1200,
@@ -54,15 +54,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: OG_DESCRIPTION,
-    images: ["https://weekendmvp.app/image/og-image.png"],
+    images: ["https://www.weekendmvp.app/image/og-image.png"],
   },
 };
 
 const STARTER_KIT_SCHEMA = buildGraph(
   personSchema(),
   breadcrumbSchema([
-    { label: "Home", href: "https://weekendmvp.app/" },
-    { label: "Starter Kit", href: "https://weekendmvp.app/starter-kit" },
+    { label: "Home", href: "https://www.weekendmvp.app/" },
+    { label: "Starter Kit", href: "https://www.weekendmvp.app/starter-kit" },
   ]),
   {
     ...howToSchema({
@@ -84,7 +84,7 @@ const STARTER_KIT_SCHEMA = buildGraph(
         },
       ],
     }),
-    creator: { "@id": "https://weekendmvp.app/#person" },
+    creator: { "@id": "https://www.weekendmvp.app/#person" },
   },
 );
 
