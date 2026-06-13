@@ -20,7 +20,8 @@ Before scheduling the swap, every item in this list must be ✅:
 - [ ] Vercel project env vars set (mirror `.env.example`):
   - [ ] `BEEHIIV_API_KEY`
   - [ ] `BEEHIIV_PUBLICATION_ID`, `BEEHIIV_DEFAULT_FORM_ID`, `BEEHIIV_DEFAULT_AUTOMATION_ID`, `BEEHIIV_SHIPABLE_AUTOMATION_ID`, `BEEHIIV_IDEAS_AUTOMATION_ID`, `BEEHIIV_PAID_AUTOMATION_ID`
-  - [ ] `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+  - [ ] `STRIPE_WEBHOOK_SECRET` (required — webhook signature verification)
+  - [ ] `STRIPE_SECRET_KEY` (OPTIONAL for the current Payment-Link flow; the webhook does signature verification only and never reaches the Stripe API. Set if you later add `checkout.sessions.create`, refunds, or customer/subscription queries.)
   - [ ] `NEXT_PUBLIC_CONVEX_URL`
   - [ ] `REVALIDATE_SECRET` (generate a fresh secret; mirror to Convex env `SITE_URL` + `REVALIDATE_SECRET` so the http action can POST to /api/revalidate)
   - [ ] `NEXT_PUBLIC_BASE_URL=https://weekendmvp.app`

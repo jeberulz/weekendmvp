@@ -69,16 +69,20 @@ async function enrollPaidSubscriber(
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  if (!webhookSecret || !stripeSecretKey) {
-    console.error("STRIPE_WEBHOOK_SECRET / STRIPE_SECRET_KEY not configured");
+  if (!webhookSecret) {
+    console.error("STRIPE_WEBHOOK_SECRET not configured");
     return new Response("Webhook not configured", { status: 500 });
   }
 
   const rawBody = await request.text();
   const signature = request.headers.get("stripe-signature");
 
-  const stripe = new Stripe(stripeSecretKey);
+  // The SDK constructor requires a string but `webhooks.constructEvent` does
+  // signature verification only — it never reaches the Stripe API. Our flow
+  // (Payment Link redirect + webhook ack) makes no server-side Stripe API
+  // calls, so STRIPE_SECRET_KEY is optional. Set it if you later add
+  // checkout.sessions.create, refunds, customer queries, etc.
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "sk_placeholder_unused");
 
   let event: Stripe.Event;
   try {
