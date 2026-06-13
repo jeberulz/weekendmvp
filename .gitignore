@@ -69,3 +69,4 @@ next-env.d.ts
 .convex/
 tmp/
 tsconfig.tsbuildinfo
+.claude/
