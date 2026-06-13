@@ -164,7 +164,10 @@ async function main() {
   const failedKeys = [];
 
   for (const item of items) {
-    const outPath = join(ROOT, item.outputPath);
+    // Cards are served by Next.js from public/. Source outputPath values are
+    // kept relative (image/og/...) so they double as URL paths; resolve them
+    // under public/ for the actual write target.
+    const outPath = join(ROOT, 'public', item.outputPath);
     mkdirSync(dirname(outPath), { recursive: true });
 
     if (existsSync(outPath) && !opts.force) {
