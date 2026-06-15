@@ -6,13 +6,14 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { cn } from "@/lib/utils";
 
 /**
- * Dark page chrome for the standalone hub routes (/ideas-for/*,
- * /build-with/*, /solve/*): legacy body classes + dark MegaNav + dark
- * footer, with the legacy <main> container.
+ * Dark page chrome for the dark hub routes: the standalone hubs
+ * (/ideas-for/*, /build-with/*, /solve/*) and the /ideas/{collection}
+ * hubs. Legacy body classes + dark MegaNav + dark footer, with the legacy
+ * <main> container.
  *
- * The /ideas/{collection} hubs render inside the cream /ideas/[slug]
- * layout instead — they use <HubDarkSection> (no nav/footer) to get the
- * legacy dark canvas without doubling the chrome.
+ * The /ideas/{collection} hubs share the /ideas/[slug] route with the
+ * cream idea-detail pages; that layout renders collection slugs bare so
+ * this dark chrome isn't wrapped in the cream IdeaNav/footer.
  */
 export function HubShell({ children }: { children: React.ReactNode }) {
   return (
@@ -22,21 +23,6 @@ export function HubShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <SiteFooter />
-    </div>
-  );
-}
-
-/**
- * Full-bleed dark canvas for collection hubs living inside the cream
- * /ideas/[slug] layout. The fixed cream IdeaNav stays on top (padding-top
- * clears it, matching the idea pages' 7.5rem offset).
- */
-export function HubDarkSection({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative overflow-x-hidden bg-[#050505] text-white selection:bg-white/20 selection:text-white">
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-[7.5rem] pb-16">
-        {children}
-      </main>
     </div>
   );
 }
