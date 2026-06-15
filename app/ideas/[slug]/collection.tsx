@@ -26,8 +26,8 @@ import {
   HubBreadcrumb,
   HubChip,
   HubCountChip,
-  HubDarkSection,
   HubHero,
+  HubShell,
 } from "@/components/hubs/HubShell";
 import { HubCta } from "@/components/hubs/HubCta";
 import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
@@ -298,7 +298,7 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
   const schema = buildCollectionSchema(def, ideas);
 
   return (
-    <HubDarkSection>
+    <HubShell>
       <JsonLd schema={schema} />
 
       <HubBreadcrumb
@@ -392,7 +392,7 @@ async function CachedCollectionHub({ slug }: { slug: string }) {
         heading="Ready to ship?"
         body="The Weekend MVP Starter Kit has the prompts, templates, and 48-hour plan that turn any of these ideas into a live product."
       />
-    </HubDarkSection>
+    </HubShell>
   );
 }
 
