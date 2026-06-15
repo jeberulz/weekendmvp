@@ -1,0 +1,131 @@
+---
+slug: "freelancer-income-proof-generator"
+title: "Freelancer Income-Proof Generator"
+---
+
+## The Problem
+
+A freelancer can earn $120,000 a year and still get denied for an apartment, a mortgage, or a car loan. The reason is not the income — it is the paperwork. Lenders and landlords are built around a W-2 and a pay stub. A self-employed person has neither. Instead they are asked for two years of personal tax returns, two years of business returns, a year-to-date profit and loss statement, and a balance sheet — documents most freelancers do not have sitting in a folder.
+
+It gets worse. The same write-offs a CPA recommends quietly destroy borrowing power. A freelancer who grosses $120,000 and deducts $40,000 in legitimate expenses shows $80,000 in taxable income, and conventional underwriting can knock qualifying income down another 30 to 50% from there. So the freelancer who is genuinely good for the payment gets treated as if they earn half of what they do, and either gets denied or scrambles for weeks assembling a packet of bank statements and letters from an accountant.
+
+This is a recurring, high-stakes pain for a huge group. There are 57.3 million freelancers in the US, more than 40% of the workforce, and every one of them eventually needs to prove income to someone who only knows how to read a pay stub. The current answer is a manual fire drill every single time.
+
+## The Solution
+
+A tool that turns a freelancer's real financial data into a clean, lender-ready proof-of-income packet on demand. You connect your bank and Stripe/PayPal once, and the app produces a standardized income profile: verified deposits, average monthly income, income trend, client concentration, and a year-to-date profit and loss — formatted the way underwriters and landlords actually want to see it.
+
+The insight is that the freelancer already has the data; what they lack is the packaging. Existing verification companies sell to the lender, charge $60–$100 per pull, and treat the self-employed as an edge case. This flips it: the freelancer owns and generates their own always-ready income proof, then shares a verified link or PDF whenever they apply for anything.
+
+**How it works:**
+
+1. **Connect your income sources** — Link bank, card, and Stripe/PayPal via Plaid in one step
+2. **AI builds your income profile** — Deposits are classified as income vs transfers, then averaged and trended
+3. **Generate a proof packet** — Get a formatted income letter, P&L, and bank-verified summary as a PDF
+4. **Share a verified link** — Send landlords or lenders a read-only, source-verified page that updates live
+
+The wedge is the moment of need: the freelancer who just found an apartment and has 48 hours to "send proof of income." That urgency is the conversion event.
+
+## Market Research
+
+The audience is enormous, the pain is acute and recurring, and the incumbents are all pointed at lenders instead of the freelancers themselves.
+
+- **57.3 million** freelancers operate in the US, representing **over 40% of the workforce** in 2025 (Better, industry data).
+- Conventional underwriting reduces self-employed qualifying income by **30 to 50%**, the single biggest cause of denials for otherwise-qualified gig workers (Better, Griffin Funding).
+- Verification today is priced for institutions: firms pay **$60–$100 per request** through providers like Truework, with consumer-facing alternatives only recently appearing around **$15 per verification** (Truework, Income Checker).
+- The non-QM and bank-statement loan category exists precisely because the standard process fails this group — a structural, growing market rather than a niche.
+
+Every rental application, mortgage pre-approval, and auto loan is a trigger event, and freelancers face several per year.
+
+## Competitive Landscape
+
+The verification market is real and funded, but it sells to the other side of the table. Nobody has built the freelancer-owned version.
+
+- **Truework** — VOIE platform for mortgage lenders, IRS-transcript and bank-connection based. Claims 97% worker coverage. Sold to lenders at **$60–$100 per verification**; the freelancer is the subject, not the customer.
+- **Argyle** — Real-time payroll-connected income and employment verification. Strong for W-2 and gig-platform workers, weak for true 1099 freelancers without a payroll record. Enterprise pricing.
+- **Truv** — Self-employment verification via payroll and bank data, again sold B2B to lenders and background-check firms.
+- **Income Checker** — Consumer-facing one-off verification at **~$14.99**, but it is a single report, not an owned, reusable, freelancer-controlled income profile.
+- **Plaid Income** — Infrastructure for income verification embedded by other apps, not a product a freelancer uses directly.
+
+**Your Opportunity**
+
+Own the freelancer side. Make the person the customer, not the credit risk. A self-serve tool that produces a reusable, bank-verified income packet — refreshed live and shareable in one click — is something none of the B2B incumbents will build, because their buyer is the lender. Win on the urgent moment (apartment application, loan pre-approval) and on a price the freelancer happily pays to avoid a denial.
+
+## Business Model
+
+Freemium with a per-document upgrade and a low monthly tier for people who apply often (active renters, anyone house-hunting). The willingness to pay spikes exactly when something important is on the line.
+
+- **Free** ($0) — Connect accounts, see your income profile and average monthly income in-app.
+- **One Packet** ($12 one-time) — Generate and download a single formatted, bank-verified proof-of-income PDF.
+- **Always-Ready** ($9/mo) — Unlimited packets, a live verified share link, and refreshed monthly income data for ongoing applications.
+
+**Unit Economics (illustrative)**
+
+- **under $0.50** — Plaid + AI cost per generated packet
+- **~88%** — Gross margin on the monthly tier
+- **$20–$45** — Target CAC via freelancer and rental communities
+- **High intent** — Demand spikes at application moments, lowering paid-acquisition cost
+
+A path to ~$1K MRR needs roughly 110 monthly subscribers plus one-off packet sales — reachable from a single viral "how I got approved as a freelancer" thread.
+
+## Recommended Tech Stack
+
+The work is bank connectivity, robust income classification, and clean PDF/share rendering. All weekend-achievable.
+
+- **Next.js + TypeScript (Vercel)** — Onboarding, the income dashboard, and the public verified share page.
+- **Plaid (Assets + Income)** — Bank connections and the asset report that underwriters recognize; this is the trust anchor.
+- **Claude** — Classify deposits as income vs internal transfers vs refunds, detect recurring client payments, and draft the plain-language income summary letter.
+- **Postgres (Supabase)** — Connections, classified transactions, generated packets, and share-link tokens with expiry.
+- **React-PDF or Puppeteer** — Render the formatted income letter and P&L to a clean, print-ready PDF.
+- **Stripe** — One-time packet purchases and the monthly subscription, plus webhook-driven entitlement.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) + TypeScript app called "Freelancer Income-Proof Generator".
+
+Set up:
+- Supabase Postgres: users, connections, transactions, income_profiles, packets, share_links
+- Plaid Link onboarding that pulls 24 months of transactions and an Assets report
+- Auth with Clerk (email + Google)
+- A dashboard showing average monthly income, 12-month income trend, and a "generate packet" button
+- A public /verify/[token] route that renders a read-only, source-verified income summary
+
+Include Plaid webhook validation and env var handling.
+```
+
+**2. Core Feature**
+
+```text
+Build the income classification + packet engine.
+
+1. Pull transactions and the Plaid Assets report
+2. Send deposits to Claude to classify each as: business income, internal transfer, refund, or personal
+3. Compute average monthly income (trailing 12 and 24 months), income trend, and client concentration from recurring payers
+4. Generate a formatted proof-of-income packet: a plain-language income letter, a year-to-date P&L, and a bank-verified deposits summary
+5. Render it to PDF and create a shareable, expiring verified link
+
+Keep all amounts traceable back to source transactions so the output is defensible.
+```
+
+**3. Verified Share Link**
+
+```text
+Add the verified share experience.
+
+- Generate a tokenized /verify/[token] page a landlord or lender can open without an account
+- Show: verified average monthly income, trend chart, last-updated date, and a "data sourced via Plaid" trust badge
+- Let the freelancer toggle which details are visible (hide client names, show only totals)
+- Auto-expire links after 30 days and let the user revoke early
+```
+
+## Sources
+
+- [Mortgage for Self-Employed and Gig Workers — Better](https://better.com/content/mortgage-for-self-employed-gig-workers)
+- [1099 Mortgage Loans for Self-Employed Borrowers — Griffin Funding](https://griffinfunding.com/non-qm-mortgages/1099-mortgage-loans/)
+- [Understanding Income and Employment Verification Pricing — Truework](https://www.truework.com/resource-center/blog/understanding-income-and-employment-verification-pricing)
+- [Best Truework Alternatives — Income Checker](https://incomechecker.com/alternatives/truework-alternatives)

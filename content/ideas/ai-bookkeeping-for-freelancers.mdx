@@ -1,0 +1,130 @@
+---
+slug: "ai-bookkeeping-for-freelancers"
+title: "AI Bookkeeping for Freelancers"
+---
+
+## The Problem
+
+Most freelancers do their books once a year, in a panic, the week before taxes are due. The rest of the time, bookkeeping is a shoebox of bank exports, Stripe payouts, and screenshots of receipts nobody categorized. The tools that are supposed to fix this — QuickBooks, Xero, Zoho Books — were built for accountants and small businesses with staff, not for one person who just wants to know what they owe.
+
+The result is a tool that punishes the people who need it most. QuickBooks expects you to understand debits, credits, chart-of-accounts, and journal entries to get a clean report. Threads on r/Bookkeeping and r/smallbusiness (1.6M+ members) routinely cross 100 comments of solopreneurs complaining that the software is overkill, the pricing creeps every year, and Intuit quietly discontinued QuickBooks Self-Employed — the one tier aimed at freelancers. People are paying $15–$30 a month for features they will never touch, and still ending the year not knowing their real profit.
+
+The pain is acute and recurring: every month transactions pile up, every quarter estimated taxes come due, and every April the freelancer either overpays an accountant to untangle the mess or eats hours of manual data entry. It is the textbook "expensive, complex tool for a job that should be simple" gap.
+
+## The Solution
+
+An AI-first bookkeeping app that does the categorizing, reconciling, and tax-prep for solo operators automatically — and explains everything in plain English instead of accounting jargon. You connect a bank account and a Stripe or PayPal account, and the app keeps your books current in the background. No chart-of-accounts setup. No journal entries. Just "here's your profit this month, here's what you'll likely owe in taxes, and here are three deductions you forgot."
+
+The wedge is narrow on purpose: freelancers and creators making roughly $50K–$250K a year who do not need payroll, inventory, or multi-entity accounting. Strip all of that out, and an AI model can handle 90% of the work a bookkeeper does for this customer — transaction categorization, receipt matching, and a clean P&L — at a fraction of the price.
+
+**How it works:**
+
+1. **Connect your accounts** — Link a bank, card, and Stripe/PayPal via Plaid in one onboarding step
+2. **AI categorizes everything** — Each transaction is auto-classified, with learned rules per client and vendor
+3. **Review in plain English** — A monthly summary flags income, expenses, profit, and likely deductions
+4. **Export tax-ready reports** — One click produces a Schedule C-ready P&L and quarterly estimate
+
+The retention hook is the part freelancers dread most: taxes. Quarterly estimates and a clean year-end report that saves them an accountant's $500–$1,500 fee is the reason they keep paying month after month.
+
+## Market Research
+
+This is a large, proven market in the middle of an AI-driven re-platforming — the best possible timing for a focused entrant.
+
+- The global accounting software market is worth roughly **$15–$20 billion** as of 2025, mature but still fragmented at the solopreneur tier (The CFO Club).
+- The AI-in-accounting segment is the fast mover: from **$4.87B in 2024 to a projected $96.7B by 2033, a 39.6% CAGR** (The Business Research Company / Mordor Intelligence). Software already commands ~85% of that segment.
+- Demand is loud and organic: r/smallbusiness (1.6M members), r/Bookkeeping (74K), and r/QuickBooks (31K) run constant "simpler alternative to QuickBooks" threads, many exceeding 100 comments.
+- The audience educates itself on YouTube — channels like Stewart Gauld average ~196K views per accounting tutorial and Accounting Stuff has 1M+ subscribers — so content distribution is cheap and the buying intent is explicit.
+
+Intuit discontinuing QuickBooks Self-Employed left millions of freelancers actively shopping for a replacement. That is a rare, time-boxed window to capture switchers.
+
+## Competitive Landscape
+
+The market is crowded at the top but thin exactly where solopreneurs live. Incumbents over-serve with features and under-serve on usability.
+
+- **Intuit QuickBooks** — The dominant player, 60–80% US small-business share. Deep features, trusted brand, but widely called too complex and over-priced for one-person businesses. Self-Employed tier discontinued. $15–$100+/mo, no permanent free tier.
+- **Wave Accounting** — Free core accounting, owned by H&R Block. Great price, but feature-thin, limited support, and no AI automation layer. Free core, paid payments/payroll add-ons.
+- **FreshBooks** — Invoicing-first, friendly UI for non-accountants. Strong for service freelancers but pricey relative to features and weak on automated bookkeeping. $17–$55+/mo, no free tier.
+- **Zoho Books** — Affordable and broad, part of the Zoho suite. Powerful but can overwhelm a solo user, and the UI lags. $0–$20/mo entry tiers.
+- **Xero** — Robust global cloud accounting, strong in UK/AU/NZ. Feature-heavy and accountant-oriented, not intuitive for a true solopreneur. $15–$78/mo.
+
+**Your Opportunity**
+
+Nobody owns "bookkeeping that feels like it does itself" for the freelancer. The incumbents bolt AI onto an accountant's mental model; the opening is an AI-native experience with no chart-of-accounts, no jargon, and a price under $25 that captures QuickBooks Self-Employed refugees. Win on onboarding speed (under five minutes from signup to first categorized month) and on the one outcome they care about: a tax number they trust.
+
+## Business Model
+
+Simple subscription with a free lead magnet at the top of the funnel and a clear upgrade path to the tax features that drive retention. Pricing sits deliberately below QuickBooks to make switching a no-brainer.
+
+- **Free — AI Tax Estimate** ($0) — Connect one account, get a current-year tax estimate and a categorized snapshot. The hook that demonstrates the AI and seeds word-of-mouth.
+- **Starter** ($19/mo) — Unlimited accounts, automated categorization, monthly plain-English P&L, receipt capture.
+- **Pro** ($39/mo) — Quarterly tax estimates, deduction finder, year-end Schedule C export, accountant share link.
+
+**Unit Economics (illustrative)**
+
+- **under $0.30** — AI cost per active user per month
+- **~85%** — Gross margin on Pro
+- **$40–$80** — Target CAC via creator and YouTube partnerships
+- **120%+** — Net retention, anchored by the tax features
+
+A path to ~$5K MRR needs only about 150 Pro users — realistic for a weekend build seeded into two or three active freelancer communities.
+
+## Recommended Tech Stack
+
+The hard parts are bank connectivity, reliable categorization, and keeping AI cost per user low. Everything else is a standard SaaS CRUD app, which is why this is genuinely a weekend-scoped MVP.
+
+- **Next.js + TypeScript (Vercel)** — App Router for the dashboard and onboarding; server components keep the transaction views fast.
+- **Plaid** — Bank, card, and balance connectivity. Use the categorization webhook as a baseline, then refine with your own model.
+- **Claude (with prompt caching)** — Primary categorization and the plain-English monthly summary. Cache the per-user rule set and vendor map to hold margin; batch transactions to cut token cost.
+- **Postgres (Supabase or Neon)** — Transactions, categories, learned rules, and per-user token usage for billing. Row-level security per user.
+- **Stripe Billing** — Subscriptions and the metered free-to-Pro upgrade. Also doubles as an income data source to import.
+- **Clerk or Supabase Auth** — Email + Google sign-in; financial data demands clean session handling and MFA on Pro.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) + TypeScript project for "AI Bookkeeping for Freelancers".
+
+Set up:
+- Supabase Postgres with tables: users, connections, transactions, categories, rules, tax_estimates
+- Plaid Link onboarding flow that stores access tokens server-side and pulls 24 months of transactions
+- Auth with Clerk (email + Google), MFA enabled for paid users
+- A dashboard route showing: this month's income, expenses, profit, and an "uncategorized" queue
+
+Use server components for the transaction tables. Include env var handling and Plaid webhook validation.
+```
+
+**2. Core Feature**
+
+```text
+Build the AI categorization engine.
+
+For each new batch of Plaid transactions:
+1. Look up any existing user rule for the merchant; apply it if found
+2. Otherwise send the batch to Claude with the user's category list and prior examples, asking for a category + confidence per transaction
+3. Auto-apply high-confidence results; route low-confidence ones to a review queue
+4. When the user corrects a category, save it as a per-merchant rule so the model improves over time
+
+Then generate a monthly plain-English summary: total income, top expense categories, profit, and 3 likely missed deductions. Keep all accounting jargon out of the output.
+```
+
+**3. Tax Estimate Feature**
+
+```text
+Add a quarterly tax estimate module.
+
+- Compute year-to-date net profit from categorized transactions
+- Estimate self-employment + federal income tax using current US brackets and the 15.3% SE rate
+- Show the next quarterly payment amount and IRS due date with a reminder
+- Produce a Schedule C-ready P&L export (PDF + CSV) and a read-only share link for the user's accountant
+```
+
+## Sources
+
+- [AI in Accounting Global Market Report — The Business Research Company](https://www.thebusinessresearchcompany.com/report/artificial-intelligence-in-accounting-global-market-report)
+- [Artificial Intelligence in Accounting Market — Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/artificial-intelligence-in-accounting-market)
+- [Accounting Software Market Size — The CFO Club](https://thecfoclub.com/operational-finance/accounting-software-market-size/)
+- [AI for Accounting Market Analysis — GM Insights](https://www.gminsights.com/industry-analysis/artificial-intelligence-for-accounting-market)

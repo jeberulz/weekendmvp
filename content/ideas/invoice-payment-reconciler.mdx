@@ -1,0 +1,130 @@
+---
+slug: "invoice-payment-reconciler"
+title: "Where's My Payment Invoice Reconciler"
+---
+
+## The Problem
+
+For a freelancer, sending the invoice is the easy part. The hard part is the silence that follows. Payments trickle in through Stripe, bank transfer, PayPal, and Wise, often without any reference to which invoice they belong to. So the freelancer ends up doing detective work every week: cross-checking a $2,400 deposit against three open invoices, trying to remember if the March retainer ever cleared, and working up the nerve to send another awkward "just following up" email.
+
+The numbers say this is the norm, not the exception. **29% of freelance invoices are paid at least one day late, 85% of freelancers experience late payments**, and the **global average time from invoice to payment is 39 days** — well past standard NET-30 terms. **65% of freelancers wait more than 30 days** and 19% have at least one unpaid invoice at any given moment. Cash flow, the thing a solo business lives or dies on, is held hostage by manual reconciliation and the discomfort of chasing.
+
+The tools that solve this exist, but they are built and priced for finance teams. A one-person business is not going to stand up Upflow at $440/month to chase six invoices. So freelancers keep doing it by hand, lose hours a week, and quietly write off the payments they are too busy or too polite to chase.
+
+## The Solution
+
+A tight tool that does two jobs a freelancer actually needs: figure out which payments matched which invoices, and automatically chase the ones that did not. You connect your payment accounts and your invoicing tool, and the app reconciles incoming money against open invoices, flags what is still outstanding, and sends polite, escalating reminders on a schedule — so the freelancer never has to write the "where's my payment" email again.
+
+The whole product is built around the solo operator: no DSO dashboards, no AR analyst seat, no enterprise onboarding. Just "here's what's paid, here's what's late, and I'm already chasing it for you."
+
+**How it works:**
+
+1. **Connect payments and invoices** — Link Stripe, PayPal, bank, and your invoicing tool (or import a CSV)
+2. **AI matches payments to invoices** — Deposits are auto-matched by amount, payer, and timing, even without a reference
+3. **See a clean status board** — Every invoice shows as paid, partially paid, due, or overdue
+4. **Auto-chase the late ones** — Polite, escalating reminders go out on a schedule until the invoice clears
+
+The hook is getting paid faster: even shaving a week off that 39-day average meaningfully improves a freelancer's cash position, and the reminders do the uncomfortable part for them.
+
+## Market Research
+
+This is a universal freelancer pain with hard numbers behind it and a clear, underserved price point.
+
+- **29%** of invoices from a base of 100,000+ freelancers were paid late; **85%** of freelancers face late payments at least sometimes (Bonsai / Hello Bonsai).
+- The **global average is 39 days** from invoice to payment; platform-mediated payments average 37 days versus 12 for direct (Jobbers Global Freelance Payment Delay Report).
+- **65%** of freelancers wait over 30 days, **33%** wait over 60 days, and **19%** carry at least one unpaid invoice at any time (Jobbers, Clockify).
+- The US freelance workforce is **57.3 million** and growing past 40% of all workers — every one of them invoices and gets paid late.
+
+The pain is recurring monthly, the cost is measured in real unpaid cash, and the existing fix is priced out of reach for the people who feel it most.
+
+## Competitive Landscape
+
+Accounts-receivable automation is a healthy category, but it is aimed up-market. The solo and micro tier is wide open.
+
+- **Chaser** — Multi-channel invoice chasing and cash-flow forecasting for small-to-mid businesses. The closest competitor, but starts around **$49/month for up to 50 invoices** and assumes an accounting stack and someone to run it.
+- **Upflow** — Sophisticated AR automation with DSO tracking and risk scoring. Built for mid-market and enterprise finance teams; starts at **~$440/month**, priced on ARR. Massive overkill for a freelancer.
+- **InvoiceSherpa** — Automated reminders and recurring billing on top of QuickBooks/Xero. Solid, but tied to a full accounting setup rather than a freelancer's actual payment accounts.
+- **Bill.com** — End-to-end AP/AR for SMBs. Powerful, expensive, and far heavier than a one-person business needs.
+- **Manual + spreadsheets** — The real incumbent. Most freelancers track invoices in a sheet and chase from their own inbox, which is exactly the labor this removes.
+
+**Your Opportunity**
+
+Be the AR tool a freelancer can set up in ten minutes for the price of a couple of coffees. The reconciliation half — matching messy real-world payments to invoices automatically — is the part spreadsheets cannot do and the part incumbents bury inside enterprise suites. Pair that with done-for-you chasing and price it for one person, and you own the 57-million-strong segment everyone else priced out.
+
+## Business Model
+
+Low, freelancer-friendly subscription with a free reconciliation hook. The value is denominated in recovered cash and recovered hours, so even a modest price is an easy yes.
+
+- **Free** ($0) — Connect accounts, auto-reconcile, and see your paid/late status board (read-only).
+- **Chaser** ($15/mo) — Automated escalating reminders, custom message templates, and overdue alerts.
+- **Pro** ($29/mo) — Multi-currency matching, partial-payment handling, cash-flow forecast, and client payment-history scoring.
+
+**Unit Economics (illustrative)**
+
+- **under $0.20** — AI + email cost per active user per month
+- **~87%** — Gross margin on paid tiers
+- **$25–$50** — Target CAC via freelancer communities and invoicing-tool integrations
+- **Sticky** — Reconciliation history and reminder cadences raise switching cost over time
+
+A path to ~$5K MRR needs roughly 200 paid users — well within reach given how universal and frequent the pain is.
+
+## Recommended Tech Stack
+
+The core is reliable payment-to-invoice matching plus a durable reminder scheduler. Both are well-trodden, which keeps this in weekend-MVP range.
+
+- **Next.js + TypeScript (Vercel)** — Status board, settings, and reminder template editor.
+- **Stripe + PayPal APIs + Plaid** — Pull payouts and bank deposits; Plaid covers transfers that bypass processors.
+- **Claude** — Fuzzy-match deposits to invoices by amount, payer name, and date when no reference exists; draft tone-appropriate reminder copy.
+- **Postgres (Supabase)** — Invoices, payments, matches, reminder schedules, and message logs.
+- **Inngest or BullMQ + Redis** — Durable scheduled reminders with retries so a chase never silently fails to send.
+- **Resend or Postmark** — Transactional email for the reminders, with reply-tracking to auto-stop on response.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) + TypeScript app called "Invoice Payment Reconciler".
+
+Set up:
+- Supabase Postgres: users, invoices, payments, matches, reminders, message_logs
+- Integrations: Stripe + PayPal payout sync, Plaid bank deposits, and a CSV importer for invoices
+- Auth with Clerk
+- A status board listing every invoice as paid / partial / due / overdue with the matched payment
+
+Include webhook validation for Stripe and Plaid and env var handling.
+```
+
+**2. Core Feature**
+
+```text
+Build the reconciliation engine.
+
+For each incoming payment:
+1. Gather candidate open invoices for the user
+2. Send the payment (amount, payer name, date, memo) plus candidates to Claude to rank the most likely match, handling cases with no invoice reference
+3. Auto-apply high-confidence matches, including partial payments; queue ambiguous ones for one-tap confirmation
+4. Update each invoice's status and recompute outstanding balance and days-overdue
+
+Keep every match reversible and traceable to the source transaction.
+```
+
+**3. Auto-Chase Feature**
+
+```text
+Add the automated reminder system.
+
+- Let users define an escalating cadence (e.g. day 1 friendly, day 7 firm, day 14 final) with editable templates
+- Use a durable scheduler so reminders fire reliably even across outages
+- Personalize each message with invoice number, amount, and days overdue
+- Auto-pause the sequence when the invoice is paid or the client replies, and log every message sent
+```
+
+## Sources
+
+- [The Global Freelance Client Payment Delay Report — Jobbers](https://www.jobbers.io/the-global-freelance-client-payment-delay-report-2025-why-63-of-freelancers-wait-over-30-days-to-get-paid/)
+- [How Often Do Freelancers Get Paid Late — Hello Bonsai](https://www.hellobonsai.com/blog/late-freelance-payment)
+- [Late Invoice Statistics 2025 — Clockify](https://clockify.me/late-invoice-statistics)
+- [Accounts Receivable Software: Upflow vs Chaser — Cledara](https://www.cledara.com/blog/accounts-receivable-software)

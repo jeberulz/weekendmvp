@@ -2654,6 +2654,123 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-bookkeeping-for-freelancers",
+      "title": "AI Bookkeeping for Freelancers",
+      "publishedAt": "2026-06-15",
+      "category": "fintech",
+      "description": "AI-first bookkeeping for freelancers: auto-categorize transactions, find deductions, and get tax-ready reports in plain English. Full weekend build guide.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:1621",
+      "og": {
+        "subject": "A single paper receipt curling on a dark desk beside a laptop edge, soft mint backlight, late night, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_gaps"
+        ],
+        "citations": 4,
+        "wordCount": 1507,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "freelancer-income-proof-generator",
+      "title": "Freelancer Income-Proof Generator",
+      "publishedAt": "2026-06-15",
+      "category": "fintech",
+      "description": "Turn irregular freelance income into a lender-ready, bank-verified proof-of-income packet on demand. Full weekend build guide with AI prompts.",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "draft:freelancer-income-proof-generator",
+      "og": {
+        "subject": "A single approval-stamped document on a dark desk under a soft lavender glow, a laptop edge visible, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors"
+        ],
+        "citations": 4,
+        "wordCount": 1396,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "invoice-payment-reconciler",
+      "title": "Where's My Payment Invoice Reconciler",
+      "publishedAt": "2026-06-15",
+      "category": "fintech",
+      "description": "Auto-match freelance payments to invoices and chase the late ones for you. A weekend-buildable accounts-receivable tool for solo operators.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "draft:invoice-payment-reconciler",
+      "og": {
+        "subject": "A laptop on a dark desk showing a single overdue-invoice card glowing emerald, late night, shallow focus, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors"
+        ],
+        "citations": 4,
+        "wordCount": 1377,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "researchLevel": "standard"
     }
   ],
   "categories": [
