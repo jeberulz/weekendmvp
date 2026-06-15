@@ -1,0 +1,154 @@
+---
+slug: "get-cited-by-chatgpt-and-perplexity"
+title: "How to Get Your App Cited by ChatGPT and Perplexity"
+description: "ChatGPT has 900M weekly users and they're asking it what to use. Here's how to get your app cited in AI answers—GEO basics any solo founder can ship in a weekend."
+category: "Tutorial"
+publishedAt: "2026-06-15"
+wordCount: 1520
+readMinutes: 8
+heroAlt: "An open notebook on a dark desk with a single quotation mark handwritten in mint ink, lit by one narrow side beam, deep shadow around it"
+---
+
+## This One's For You If...
+
+You shipped your app, you're doing SEO, and you just realized half your potential customers aren't Googling anymore — they're asking ChatGPT.
+
+You typed "best tool for [the thing you do]" into ChatGPT and watched it confidently recommend three competitors and not you.
+
+You keep hearing the term "GEO" and quietly nodding without knowing what it means.
+
+You have no idea how an AI even decides which products to name in an answer.
+
+If that's you, this is the playbook. Getting cited by AI answer engines isn't mystical, and the technical foundation takes about a day. The catch is that it works completely differently from Google — and if you optimize the old way, you'll stay invisible.
+
+## Why This Is Suddenly Worth Your Time
+
+The buying journey moved. People used to search, scan ten blue links, and click. Now a huge share of them ask an AI, read one synthesized answer, and act on the handful of products it names.
+
+The scale is not small:
+
+- ChatGPT crossed 900 million weekly active users as of 2026.
+- Perplexity handles around 630 million searches a month.
+- Google AI Overviews now appear on over 40 percent of searches.
+- Gartner expects a 25 percent drop in traditional search volume by the end of 2026.
+
+Here's the part that should grab a solo founder: the overlap between Google's top 10 and what AI engines cite has collapsed from roughly 70 percent to under 20 percent in 18 months. Most AI citations now come from pages that are *not* in Google's top 10. Translation — you don't have to outrank established players on Google to get named by ChatGPT. That's a genuinely open door, and it's open widest for new sites right now.
+
+This is the natural next move after you've landed your [first handful of customers](/startup-ideas) the manual way. GEO is how you stop doing all your distribution by hand.
+
+## What GEO Actually Is
+
+GEO — Generative Engine Optimization — is the practice of structuring your content and site so AI systems cite and recommend you inside their answers.
+
+The one-line difference from SEO: **SEO earns rankings. GEO earns citations.** Google sends you a click. ChatGPT names you inside the answer itself, often with no click at all. Different goal, different tactics.
+
+And the engines don't behave alike. Only about 11 percent of domains get cited by both ChatGPT and Google AI Overviews for the same query. Each engine has its own taste:
+
+- **ChatGPT** leans hard on Wikipedia (around 48 percent of citations) and Reddit (around 11 percent). It rewards *entity presence* — does the wider web know your brand exists?
+- **Perplexity** leans even harder on Reddit (around 47 percent) and community-validated sources, and it does a live web search on every query — so fresh, well-structured pages can show up within days.
+- **Google AI Overviews** still pull heavily from pages that rank well, so traditional SEO plus answer-style formatting matters most here.
+
+You don't optimize for "AI." You optimize for three different readers with three different habits.
+
+## What You Actually Need
+
+No budget, no agency. Just:
+
+- **Access to your site's `robots.txt` and the ability to add a few schema tags.** (If you built with a modern framework, this is a config change.)
+- **A short list of the questions your customers actually ask** — category, problem, and comparison prompts.
+- **A willingness to show up on Reddit as a human**, not a billboard.
+
+That's the whole kit. The technical part is a weekend afternoon; the authority part is an ongoing habit.
+
+## The Framework: From Invisible to Cited
+
+### Step 1: Let the AI Crawlers In
+
+**Point:** If you block AI bots, you can't be cited. Many sites block them by accident.
+
+**Illustration:** Open your `robots.txt` and make sure you are not disallowing GPTBot, ChatGPT-User, PerplexityBot, ClaudeBot, or Google-Extended.
+
+**Explanation:** This is the single most common own-goal. A blanket disallow rule, or a security plugin's default, can quietly keep every AI engine out. Explicitly allow those user-agents. While you're in there, get your page speed respectable — fast first paint correlates strongly with citation frequency, because slow pages get skipped during live retrieval.
+
+### Step 2: Make Your Pages Machine-Readable
+
+**Point:** Add JSON-LD schema so AI knows what your brand is and what it knows about.
+
+**Illustration:** Three schema types do most of the work: `Organization` (with `sameAs` links to your socials and `knowsAbout` for your topics), `Article` (with author and dates), and `FAQPage` (for any FAQ section).
+
+**Explanation:** Schema is structured context — it tells the model "this entity is a company, here's what it does, here's who wrote this and when." Sites with complete primary schema see meaningfully more AI Overview appearances. Optionally, add an `llms.txt` file at your domain root: a plain-text map of your most important pages, written for AI crawlers the way `sitemap.xml` is written for search crawlers.
+
+### Step 3: Write Answer-First, Not Build-Up-First
+
+**Point:** Put the direct answer in the first 150 to 250 words of every page.
+
+**Illustration:** Instead of a 600-word intro before the payoff, lead with: "The best way to do X is Y. Here's why, and how." Then expand.
+
+**Explanation:** AI engines extract *passages*, not whole pages. They grab the tight, self-contained chunk that answers the query and quote it. Front-load the answer, use clear question-shaped headers, and lean on specifics — named sources, real statistics, formatted lists. Pages dense with concrete figures get extracted far more than pages full of adjectives. (Notice this article leads every section with a one-line point — that's the pattern.)
+
+### Step 4: Go Where the Engines Already Look — Reddit
+
+**Point:** Citations follow community validation. For ChatGPT and Perplexity, that overwhelmingly means Reddit.
+
+**Illustration:** Find the two or three subreddits where your customers genuinely hang out. Answer questions. Be useful. When your product is honestly the right answer to a thread, mention it — with the disclosure that it's yours.
+
+**Explanation:** Both engines treat Reddit as a trust signal because it's discussed, debated, and upvoted by real people. A single genuinely helpful, upvoted comment thread can do more for your AI visibility than ten blog posts on your own domain. This is slow, human work — and it's the same muscle you used to get your [first 10 customers](/startup-ideas), pointed at a new goal.
+
+### Step 5: Audit, Then Patch the Gaps
+
+**Point:** Ask the AIs your customers' questions and see who they name.
+
+**Illustration:** Run your category prompt ("best [tool] for [audience]"), your problem prompt, and your "[your brand] vs [competitor]" prompt across ChatGPT, Perplexity, and Google AI Mode. Note who gets cited and which *sources* the answer pulls from.
+
+**Explanation:** The sources cited when the AI recommends your competitors are your exact to-do list. If a specific comparison site, a G2 category, or one industry blog keeps showing up, those are the places you need a presence. You don't have to guess what to do next — the engines tell you, for free, if you ask.
+
+## A Quick Worked Example
+
+Say you built that meeting-transcript-to-action-items tool.
+
+- **Crawlers:** Confirm `robots.txt` allows all five AI user-agents. (It was silently blocking ClaudeBot — fixed.)
+- **Schema:** Add `Organization`, `Article`, and `FAQPage` JSON-LD to the site.
+- **Answer-first:** Rewrite the homepage and one blog post to lead with "The fastest way to turn meeting transcripts into action items is..."
+- **Reddit:** Spend two weeks being useful in an agency-operators subreddit; mention the tool once, in a thread literally asking for it.
+- **Audit:** Ask Perplexity "best meeting notes tool for agencies." It cites a roundup post you're missing from — so you get listed there next.
+
+Within a couple of weeks, Perplexity (fast, fresh-biased) starts naming you. ChatGPT takes longer because it wants broader entity presence — which the Reddit work is quietly building.
+
+## What If You're Still Not Cited?
+
+Be patient in the right order:
+
+- **Perplexity first.** It uses live retrieval and favors fresh content, so it's the easiest engine for a new domain to crack — often within days. If you're nowhere here, recheck crawler access and answer-first formatting.
+- **Google AI Overviews next.** Tied to ranking, so this follows your normal SEO progress.
+- **ChatGPT last.** It rewards entity presence built over time — Reddit, mentions, maybe eventually a Wikipedia-worthy footprint. Slowest to move, stickiest once you're in.
+
+If nothing moves in a month, it's almost always one of: blocked crawlers, no schema, or content that buries the answer.
+
+## Quick Questions
+
+### Is GEO replacing SEO?
+
+No — it's layered on top. For a new site, a good split is roughly 70 percent SEO, 30 percent GEO: you need ranked, structured content to exist before AI engines can cite it. The two reinforce each other.
+
+### How fast can this work?
+
+The technical foundation is a one-day job. Perplexity can start citing fresh, well-structured pages within days. ChatGPT is a months-long game built on entity presence.
+
+### Do I really have to use Reddit?
+
+For ChatGPT and Perplexity, it's the highest-leverage channel there is, because that's where they pull trust from. You don't have to spam — you have to be genuinely useful in the right threads.
+
+### What's the single biggest mistake?
+
+Accidentally blocking AI crawlers in `robots.txt`. Check that first, before anything else.
+
+## TL;DR
+
+- People increasingly ask AI what to use; under 20 percent of AI citations now overlap with Google's top 10 — an open door for new sites.
+- SEO earns rankings; GEO earns citations. Different engines (ChatGPT, Perplexity, Google AI) cite differently.
+- Allow AI crawlers in `robots.txt`, add `Organization` / `Article` / `FAQPage` schema, and write answer-first.
+- Build community presence on Reddit — it's the top trust source for ChatGPT and Perplexity.
+- Audit by asking the AIs your own buyer questions; the sources they cite for competitors are your roadmap.
+- Expect Perplexity to move in days, Google AI in weeks, ChatGPT over months.
+
+Got an app worth recommending? Make it findable by the engines doing the recommending — and [pick your next idea here](/startup-ideas) if you're choosing what to build.

@@ -251,6 +251,42 @@
         "accent": "lavender",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-price-your-weekend-mvp",
+      "title": "How to Price Your Weekend MVP (Without Guessing)",
+      "description": "Most solo founders underprice by 40-60%. Here's how to price your weekend MVP using real data—the $29 sweet spot, why to skip the free plan, and when to add tiers.",
+      "wordCount": 1480,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A small blank price tag on a string resting on a near-black desk, its edge caught by a single lime side-light, very shallow focus, deep shadow surrounding",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "get-cited-by-chatgpt-and-perplexity",
+      "title": "How to Get Your App Cited by ChatGPT and Perplexity",
+      "description": "ChatGPT has 900M weekly users and they're asking it what to use. Here's how to get your app cited in AI answers—GEO basics any solo founder can ship in a weekend.",
+      "wordCount": 1520,
+      "readMinutes": 8,
+      "og": {
+        "subject": "An open notebook on a dark surface with a single quotation mark handwritten in mint ink, lit by one narrow mint beam from the side, very shallow focus, deep shadow elsewhere",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "is-it-too-late-to-build-an-ai-wrapper",
+      "title": "Is It Too Late to Build an AI Wrapper in 2026?",
+      "description": "VCs say AI wrappers are dead. They're half right. Here's why a wrapper is still a great weekend MVP—if you treat it as a wedge, not the whole product.",
+      "wordCount": 1450,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A paperback book on a near-black desk loosely wrapped in a translucent jacket, its lifted edge caught by a single emerald beam, very shallow focus, deep shadow surrounding",
+        "accent": "emerald",
+        "status": "ready"
+      }
     }
   ]
 }
