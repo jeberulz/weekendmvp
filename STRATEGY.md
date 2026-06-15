@@ -47,10 +47,19 @@ The same-day → 14-day sequence that turns a $9 buyer into a $29 DARE Live seat
 
 _Why it serves the approach:_ ship·able is explicitly the front door, not the house. Without an intentional bridge, the loss-leader stays a loss.
 
+### Grow the organic front door (ideas engine)
+
+The programmatic startup-ideas hub (`/startup-ideas` + category / audience / tool / problem hubs) is the SEO/AEO acquisition asset that warms the primary persona for free, before they ever hit a $9 ticket. Current focus: fill lean category hubs so every category is a credible landing page, not a thin shell.
+
+**Fintech batch (shipped 2026-06-15):** category went from **1 → 5 live ideas**, all Ideabrowser-validated and weekend-scoped — AI Bookkeeping for Freelancers, Income-Proof Generator, Invoice Reconciler, and Quarterly Tax Estimator. Same day, fixed the `/ideas/{category}` 404s (7 missing category hubs) and the dark-nav mismatch on collection hubs.
+
+_Why it serves the approach:_ paid acquisition needs a compounding, zero-CAC base. The ideas hub is the proof-of-"weekend-buildable" engine that pulls in stuck builder-designers organically and feeds the same buyer list ship·able is built to qualify.
+
 ## Milestones
 
 - **2026-06-27** — ship·able live workshop, 12:00 PM BST, Zoom (cap 100).
 - **2026-07 (mid)** — DARE Live ($29) first run; ship·able buyers get first access. (DARE page must be de-drafted: real date, real proof, placeholders removed.)
+- **2026-07 (early)** — Resume fintech category fill as Ideabrowser quota resets (caps at 3 research reports/month). Briefs already queued: Subscription Auditor, Client Payment-Risk Scorer, Freelance Rate Calculator, Stablecoin Invoicing. Publish 3 in July → fintech hub at ~8 ideas; 4th in August → ~9. Then top up to 10 with fresh true-fintech concepts if needed.
 
 ## Not working on
 
