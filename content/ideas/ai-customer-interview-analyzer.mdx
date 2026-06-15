@@ -1,0 +1,140 @@
+---
+slug: "ai-customer-interview-analyzer"
+title: "AI Customer Interview Analyzer"
+---
+
+## The Problem
+
+Talking to customers is the one piece of advice every founder hears and the one workflow no tool actually serves. A solo founder or small product team runs five user calls, ends up with five hours of recordings, a messy Notion doc, and a vague feeling about what to build next. The synthesis — pulling out the real pain points, the repeated feature requests, the objections that killed a deal — happens in their head, at midnight, and most of it evaporates by the next sprint.
+
+The tools that exist were built for full-time research teams, not for the person who is also doing sales, support, and shipping. Enterprise research repositories assume a dedicated UX researcher and an annual budget. Generic AI gives you a transcript and a bland summary, but it won't tell you "four of your last six interviews mentioned onboarding confusion" or rank what to fix first. The result is the most important input to product decisions stays trapped in gut feel and scattered transcripts.
+
+- **Synthesis is the bottleneck, not collection.** Recording a call is easy; turning ten calls into a prioritized decision is the part that doesn't scale for a solo operator.
+- **Existing tools are priced and shaped for research teams**, not founders who run interviews between other jobs.
+- **Insights decay.** Without a structured store, last month's interviews are effectively lost, and patterns across calls never surface.
+- **Gut-feel roadmaps** are expensive — building the wrong thing is the most costly mistake an early-stage team makes.
+
+## The Solution
+
+An AI customer interview analyzer built for founders, not research departments. Drop in a call recording or transcript and it does the work a researcher would: transcribes, tags pain points and feature requests, clusters themes across all your interviews, and surfaces a ranked list of what customers actually want — with the verbatim quotes to back each insight.
+
+The wedge is dead-simple synthesis: recording in, prioritized insights out, same day. The depth comes over time as the tool builds a searchable memory of every customer conversation, so patterns that span months become visible instead of forgotten.
+
+**How it works:**
+
+1. **Upload a call** — Drop in a Zoom/Meet recording or paste a transcript; it transcribes and speaker-labels automatically.
+2. **AI tags and clusters** — Pain points, feature requests, and objections are extracted and grouped into themes across all your interviews.
+3. **Get a ranked insight report** — A prioritized list of what to build next, each item backed by verbatim customer quotes you can paste into a PRD or pitch.
+
+## Market Research
+
+User research tooling is a real, growing software category — and AI has already become standard inside it, which validates demand while leaving the founder-grade tier wide open. The money currently flows to enterprise repositories; the underserved buyer is the solo founder and sub-10-person team.
+
+- The UX research software market is projected to grow from **USD 520.1M in 2026 to USD 1,247.6M by 2034, a ~11.6% CAGR** ([Fortune Business Insights via OpenPR](https://www.openpr.com/news/4545276/user-experience-ux-research-software-market-size-accelerated)).
+- A separate estimate puts the broader user research software market at **USD 2,413M in 2026** ([Market Growth Reports](https://www.marketgrowthreports.com/market-reports/user-research-software-market-120399)).
+- Adoption is already mainstream: **97% of researchers have used AI in their workflow for synthesis, transcription, and thematic coding, with 81% using it regularly** ([Usercall](https://www.usercall.co/post/customer-insights-ai-how-top-research-product-teams-turn-raw-feedback-into-revenue)).
+- The capability bar has moved fast — transcript synthesis for a five-interview study has dropped from several days to a single afternoon ([Perspective AI](https://getperspective.ai/blog/best-ai-tools-product-managers-2026-customer-research-stack-ranked)).
+- Founders explicitly name this gap: product teams want tools that capture the "why" and synthesize it, not just collect feedback ([Perspective AI](https://getperspective.ai/blog/product-feedback-tools-in-2026-what-product-teams-actually-need)).
+
+## Competitive Landscape
+
+The category clusters into heavyweight research repositories (built for teams, priced accordingly) and AI-first newcomers. Even the lightweight tools largely target professional researchers — leaving the founder who runs interviews as a side job underserved on both price and workflow.
+
+- **Dovetail** — The category leader and research repository standard. Powerful tagging, highlights, and insights, but built for research teams: Professional starts around **$29/user/mo** and the median enterprise buyer pays roughly **$21,600/yr** ([G2](https://www.g2.com/products/dovetail-research-pty-ltd-dovetail/pricing)). Overkill for a solo founder.
+- **Hey Marvin** — Qualitative analysis and repository with AI features. Pricing starts around **$100/mo**, with standard plans landing near **$500/mo** annually — squarely a team tool ([CleverX](https://cleverx.com/blog/best-dovetail-alternatives-in-2026-10-tools-for-research-synthesis/)).
+- **Looppanel** — AI-first call analysis and auto-tagging, more affordable and lighter than Dovetail, but still positioned for UX researchers and recruiters rather than founders.
+- **Notably** — Praised as the best AI-first lightweight Dovetail alternative; strong synthesis, but again researcher-shaped, not founder-shaped.
+- **ChatGPT / Otter (manual)** — The real default for most founders. Cheap, but you reinvent the prompt every time, get a generic summary, and have no cross-interview memory or prioritization.
+
+**Your Opportunity**
+
+Be the founder-first tool: upload a call, get a prioritized "what to build next" report with quotes, for $39/mo flat — no per-seat enterprise tax, no researcher learning curve. Dovetail and Marvin are too heavy and too expensive for the early-stage buyer; the manual ChatGPT workflow has no memory. Owning "customer interviews → prioritized decisions for founders" is an open lane.
+
+## Business Model
+
+Flat-rate SaaS aimed at individual founders and small teams, with usage-based room to grow. The free tier seeds adoption through indie and PM communities; the paid tier monetizes the synthesis and cross-interview memory that founders can't replicate with a raw LLM.
+
+- **Free** ($0) — 3 interviews/month, transcription + basic theme tagging. Enough to feel the magic and seed word-of-mouth.
+- **Founder** ($39/mo) — Unlimited interviews, cross-interview clustering, prioritized insight reports, quote export to PRD/Notion.
+- **Team** ($99/mo) — Shared workspace, up to 5 seats, tags taxonomy, Slack/Linear push of new insights.
+- **Annual / usage add-on** — Discounted annual plans plus metered minutes for heavy-interview months.
+
+**Unit Economics (illustrative)**
+
+- **$0.30–1.00** — Transcription + LLM cost per interview hour
+- **~80%** — Gross margin on the Founder tier
+- **$40–80** — Target CAC via founder communities and content
+- **under 4%** — Target monthly churn once a workspace holds a team's interview history
+
+## Recommended Tech Stack
+
+The build is a transcription pipeline, an extraction step, and a searchable insight store with a clean dashboard. The hard parts are accurate speaker-labeled transcripts and consistent, structured extraction you can cluster — keep both deterministic enough to trust.
+
+- **Next.js + Vercel** — Dashboard, upload flow, and server actions for the analysis pipeline. Fast to ship, cheap at small scale.
+- **AssemblyAI or Whisper** — Speaker-diarized transcription from uploaded recordings; AssemblyAI for hosted simplicity, Whisper to control cost at volume.
+- **Claude (extraction + clustering)** — Structured extraction of pain points, requests, and objections into JSON, then theme clustering. Prompt-cache the taxonomy for margin and consistency.
+- **Supabase (Postgres + pgvector + Auth)** — Store transcripts, tagged insights, and embeddings; pgvector powers cross-interview semantic search and theme grouping.
+- **Inngest** — Background jobs for transcription and analysis so large uploads process reliably without blocking the UI.
+- **Stripe Billing** — Flat-rate tiers plus metered minutes for the usage add-on.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) app called "AI Customer Interview Analyzer".
+
+Set up:
+- Supabase auth + Postgres schema for: users, workspaces, interviews,
+  transcripts, insights (with type: pain_point | feature_request | objection),
+  themes, usage_events
+- An upload flow that accepts audio/video files and transcript text
+- Dashboard routes: Upload, Interview Detail, Insights (themes view), Settings
+- A landing page aimed at founders: "Turn customer calls into a prioritized
+  roadmap" with an upload CTA
+
+Use TypeScript, server actions, and environment variables for all API keys.
+```
+
+**2. Core Feature — Transcribe, Extract, Cluster**
+
+```text
+Build the analysis pipeline:
+
+1. On upload, send the file to AssemblyAI for speaker-diarized transcription.
+2. Send the transcript to Claude with a structured prompt that returns JSON:
+   an array of insights, each with { type, quote (verbatim), summary,
+   confidence }. Types: pain_point, feature_request, objection.
+3. Embed each insight and store it in Postgres (pgvector).
+4. Cluster insights across ALL interviews in the workspace by semantic
+   similarity, and produce a ranked report: themes ordered by how many
+   distinct interviews mention them, each with its top 3 verbatim quotes.
+
+Keep extraction deterministic by giving Claude a fixed taxonomy and examples.
+```
+
+**3. Insight Report + Export**
+
+```text
+Add a prioritized insight report for AI Customer Interview Analyzer:
+
+- A "What to build next" view that ranks themes by interview frequency and
+  recency, with a one-line rationale and supporting quotes for each.
+- One-click export of any theme to Markdown formatted for a PRD or Notion
+  doc, including the verbatim customer quotes.
+- A weekly digest that surfaces new themes detected since last week and pushes
+  them to Slack or Linear.
+
+Gate cross-interview clustering and exports behind the Founder and Team tiers.
+```
+
+## Sources
+
+- [UX Research Software Market size & CAGR — Fortune Business Insights via OpenPR](https://www.openpr.com/news/4545276/user-experience-ux-research-software-market-size-accelerated)
+- [User Research Software Market — Market Growth Reports](https://www.marketgrowthreports.com/market-reports/user-research-software-market-120399)
+- [Customer Insights AI: turning raw feedback into revenue — Usercall](https://www.usercall.co/post/customer-insights-ai-how-top-research-product-teams-turn-raw-feedback-into-revenue)
+- [Best AI tools for product managers: the customer research stack — Perspective AI](https://getperspective.ai/blog/best-ai-tools-product-managers-2026-customer-research-stack-ranked)
+- [Best Dovetail alternatives in 2026 — CleverX](https://cleverx.com/blog/best-dovetail-alternatives-in-2026-10-tools-for-research-synthesis/)
+- [Dovetail pricing — G2](https://www.g2.com/products/dovetail-research-pty-ltd-dovetail/pricing)

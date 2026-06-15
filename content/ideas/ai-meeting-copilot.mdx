@@ -1,0 +1,139 @@
+---
+slug: "ai-meeting-copilot"
+title: "AI Meeting Copilot"
+---
+
+## The Problem
+
+Remote meetings are where deals stall and energy dies. A sales rep on a video call hits an objection and blanks. A team standup drifts into silence and runs ten minutes long. The pattern repeats billions of times a year across Zoom, Teams, and Meet, and the cost is real: lost deals, video-call fatigue, and meetings that should have been emails.
+
+The tools that exist solve the wrong half of the problem. Otter, Fireflies, and Zoom's own AI are excellent at telling you what happened *after* the call — transcripts, summaries, action items. None of them help you *in the moment*, when the rep needs the right objection response or the facilitator needs a question to break the silence. The live conversation, where outcomes are actually decided, is unassisted. The only "real-time" workaround is alt-tabbing to ChatGPT mid-call, which breaks eye contact and flow.
+
+- **The expensive moment is live, not post-meeting** — a fumbled objection or dead-air silence loses the deal in real time, and no popular tool helps there.
+- **Existing AI meeting tools are documentation-first** — Otter, Fireflies, and Zoom AI Companion focus on summaries, not in-call guidance.
+- **Manual ChatGPT mid-call is clumsy** — switching apps during a live conversation kills presence and rapport.
+- **Sales reps feel it most acutely** — every stalled call is measurable lost revenue, which is why they'll pay for an edge.
+
+## The Solution
+
+AI Meeting Copilot runs quietly alongside Zoom, Teams, or Meet and feeds the speaker live, glanceable prompts: the objection rebuttal a rep needs, a follow-up question when a team call goes quiet, the competitor fact that just came up. It listens to the conversation, reads the flow, and surfaces the right nudge in a sidebar — no app-switching, no breaking eye contact.
+
+The wedge is sales calls, where the ROI is obvious and immediate (one saved deal pays for years of subscription). The expansion is internal team meetings: action-item flagging, engagement scoring, and "this could've been an email" signals. The moat compounds as the copilot learns each team's playbook, objections, and product facts.
+
+**How it works:**
+
+1. **Connect your meeting tool** — Install the Chrome extension or desktop app; it joins your Zoom/Teams/Meet audio.
+2. **Get live prompts in a sidebar** — As the call unfolds, it surfaces objection responses, follow-up questions, and competitive facts, timed to the conversation.
+3. **Review after the call** — A summary, action items, and an engagement score, plus what prompts landed — feeding back into the team playbook.
+
+## Market Research
+
+This is a large, fast-growing market with a clear unserved seam: real-time guidance. The incumbents have validated that teams pay for AI meeting tools; they've simply concentrated on the post-meeting half.
+
+- The intelligent virtual assistant market is projected to grow from **USD 22.37B in 2025 to USD 80.95B by 2029, a ~37.9% CAGR** ([The Business Research Company](https://www.thebusinessresearchcompany.com/report/intelligent-virtual-assistant-global-market-report)).
+- The broader virtual assistant market is forecast at **~USD 27.9B in 2025, growing ~24.2% CAGR** ([Scoop Market.us](https://scoop.market.us/intelligent-virtual-assistant-statistics/)).
+- Demand is loud in community: r/remotework (244K members) and r/productivity (1.6M members) actively complain about meeting inefficiency and disengagement.
+- The pain is structural and growing — video-call fatigue and awkward-silence frustration recur across Reddit and remote-work Facebook groups with 100K+ members.
+- Willingness to pay is proven: incumbents sustain **$17–30/user/mo** plans, anchoring a healthy price band for a tool that improves live outcomes.
+
+## Competitive Landscape
+
+The category is crowded with transcription-and-summary tools and one bundled platform feature. The gap is consistent across all of them: real-time, in-call guidance, especially for sales.
+
+- **Otter.ai** — The brand leader in meeting AI. Excellent transcription, summaries, and basic insights. **$16.99/mo** Pro, **$30/mo** Business. Post-meeting focused; minimal live conversational help.
+- **Fireflies.ai** — Strong transcription, searchable meeting repository, integrations. Free tier, **$18/mo** Pro, **$29/mo** Business. Again, analysis after the fact, not in-the-moment prompts.
+- **Zoom AI Companion** — Bundled free into paid Zoom plans, huge distribution. Summaries and catch-up, but a light feature set and almost no real-time conversational guidance.
+- **Gong / Chorus** — Enterprise revenue-intelligence platforms with deep call analytics. Powerful but priced for funded sales orgs (five-figure annual contracts), not indie or SMB teams, and still primarily after-call coaching.
+- **ChatGPT / Copilot (manual)** — The real-time default. Flexible but requires alt-tabbing mid-call, with no meeting context or timing.
+
+**Your Opportunity**
+
+Be the real-time, sales-first copilot at an SMB price. Land with reps who need live objection handling for $29/user/mo — below Gong's enterprise tax, beyond what Otter/Fireflies do — then expand into internal-team facilitation. The live-guidance seam is open across every incumbent; owning "what to say next, right now" is the differentiated wedge.
+
+## Business Model
+
+Per-seat SaaS with a sales-team wedge and an internal-team expansion tier. A free demo and discounted first month lower adoption friction; the recurring value is the live prompts plus a team playbook the copilot keeps learning. Enterprise licensing captures larger orgs once a few teams adopt bottom-up.
+
+- **Free Demo** ($0) — A capped trial showing live prompts on a real call. The hook.
+- **Sales** ($29/user/mo) — Real-time objection handling, competitive prompts, CRM context, call summaries. The core revenue tier.
+- **Team** ($19/user/mo) — Internal-meeting facilitation: silence-breakers, action-item flagging, engagement scoring.
+- **Enterprise** ($10K–50K+/yr) — SSO, admin controls, custom playbooks, security review, dedicated support.
+
+**Unit Economics (illustrative)**
+
+- **$0.20–0.80** — Transcription + LLM cost per meeting hour
+- **~75%** — Gross margin on the Sales tier
+- **$80–150** — Target CAC via SDR/sales-leader communities (amortized over multi-seat expansion)
+- **115%+** — Net revenue retention as teams add seats and adopt the Team tier
+
+## Recommended Tech Stack
+
+The build is a real-time audio pipeline, a low-latency suggestion engine, and an unobtrusive sidebar UI. The hard parts are streaming transcription with minimal latency and surfacing prompts fast enough to be useful mid-sentence — keep the live path lean and do heavier analysis async.
+
+- **Chrome Extension + Electron (optional desktop)** — Capture meeting audio from the browser tab; an optional desktop app covers native Zoom/Teams clients.
+- **Deepgram or AssemblyAI streaming** — Low-latency streaming transcription so the copilot reacts in near real time, not after the sentence ends.
+- **Claude (live prompts) + fast model for triage** — A cheap, fast model classifies the moment (objection? silence? competitor mention?); Claude generates the high-quality prompt. Cache the team playbook for speed and margin.
+- **Next.js + Vercel dashboard** — Onboarding, playbook config, post-call summaries, analytics. Keep the live surface in the sidebar, the management surface on the web.
+- **Supabase (Postgres + pgvector)** — Teams, playbooks, objection libraries, call history; pgvector retrieves the best-matching rebuttal for the live moment.
+- **Stripe Billing** — Per-seat Sales and Team tiers plus invoiced enterprise licenses.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an AI Meeting Copilot with a Chrome extension front end and a Next.js
+(App Router) dashboard.
+
+Set up:
+- A Chrome extension that captures the active meeting tab's audio and renders a
+  compact sidebar for live prompts
+- Supabase auth + Postgres schema for: users, teams, playbooks, objections,
+  meetings, prompts_shown, summaries
+- Dashboard routes: Playbook, Meeting History, Analytics, Settings, Billing
+- A landing page aimed at sales teams: "Never let a call stall again"
+
+Use TypeScript and environment variables for all API keys.
+```
+
+**2. Core Feature — Real-Time Prompting**
+
+```text
+Build the live prompting pipeline:
+
+1. Stream the captured audio to Deepgram for low-latency transcription.
+2. On each utterance, run a fast classifier (cheap model) to detect the moment
+   type: objection, awkward_silence, competitor_mention, question_asked, or none.
+3. For an actionable moment, retrieve the best matching playbook entry from
+   pgvector and have Claude generate a short, glanceable prompt (under 20 words)
+   for the speaker's sidebar.
+4. Log which prompts were shown for later analytics; do the heavy summary work
+   async after the call ends.
+
+Optimize for latency: the prompt must appear within ~1-2 seconds of the moment.
+```
+
+**3. Post-Call Summary + Playbook Learning**
+
+```text
+Add post-call intelligence to AI Meeting Copilot:
+
+- After each meeting, generate a summary, extracted action items, and an
+  engagement score (talk-time balance, silence count, question count).
+- Show which live prompts were surfaced and let the user mark which ones helped.
+- Feed "helpful" prompts back into the team playbook so retrieval improves over
+  time (a simple feedback loop on the objection/response library).
+
+Gate real-time prompts behind the Sales tier and team analytics behind the
+Team and Enterprise tiers.
+```
+
+## Sources
+
+- [Intelligent Virtual Assistant Global Market Report — The Business Research Company](https://www.thebusinessresearchcompany.com/report/intelligent-virtual-assistant-global-market-report)
+- [Intelligent Virtual Assistant statistics — Scoop Market.us](https://scoop.market.us/intelligent-virtual-assistant-statistics/)
+- [Global Virtual Assistant Market — Dataintelo](https://dataintelo.com/report/global-virtual-assistant-market)
+- [AI Virtual Assistants market growth — PR Newswire (Valuates)](https://www.prnewswire.com/news-releases/ai-virtual-assistants-revolutionizing-industries--market-set-for-16-5-cagr-growth---valuates-reports-302403357.html)
+- [Virtual Meeting Platform Market Report — Cognitive Market Research](https://www.cognitivemarketresearch.com/virtual-meeting-platform-market-report)

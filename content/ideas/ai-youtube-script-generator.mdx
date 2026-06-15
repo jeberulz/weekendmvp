@@ -1,0 +1,141 @@
+---
+slug: "ai-youtube-script-generator"
+title: "ScriptFlow AI"
+---
+
+## The Problem
+
+Scriptwriting is the silent killer of YouTube channels. Mid-tier creators — the 10K to 500K subscriber tier with real audiences but no team — spend 6 to 10 hours a week just writing scripts. It's the single most-cited reason they miss upload schedules or quit entirely. The work never gets easier: every video starts from a blank page, and the pressure to publish consistently turns a creative outlet into a grind.
+
+Generic AI tools don't fix it. ChatGPT will write you a script, but it reads like ChatGPT — flat, hedged, and nothing like how the creator actually talks. So creators paste in the output, then spend almost as long rewriting it back into their own voice. The burnout is real and it's loud: r/NewTubers (174K members) and r/SmallYoutubers (120K members) are full of threads begging for a tool that writes in *their* voice, not a generic one.
+
+- **Content creation burnout** is the #1 churn driver for mid-tier creators — scriptwriting is the most time-consuming, least enjoyable part of the workflow.
+- **Inconsistent posting** tanks the algorithm. Miss a week and watch impressions collapse, which deepens the pressure spiral.
+- **Voice mismatch** makes existing AI useless — creators won't ship something that doesn't sound like them, so the "time saved" evaporates in rewrites.
+- **No analytics loop** — creators write blind, with no signal about what their own audience actually rewards.
+
+## The Solution
+
+ScriptFlow AI is a voice-matched scriptwriting copilot for YouTube. It connects to a creator's channel, learns their cadence and signature phrases from their best-performing videos, and generates full scripts — hook, body, and CTA — that sound authentically like them. Instead of fighting generic output, creators get a first draft that's 80% there on the first pass.
+
+The wedge is voice matching; the moat is the data. Once ScriptFlow has learned a creator's style and what their audience engages with, switching tools means abandoning their "digital writing twin." That's what turns a $29/month subscription into a sticky one.
+
+**How it works:**
+
+1. **Connect your channel** — OAuth into YouTube; ScriptFlow ingests your top videos and transcripts to build a voice profile.
+2. **Pick a topic or paste an idea** — Trend suggestions for your niche, or bring your own.
+3. **Generate a voice-matched script** — Full script with hook options, body, and CTA in your style — ready to record or lightly edit.
+
+## Market Research
+
+The numbers behind creator tooling are unusually clean for an indie bet: a proven, growing market with no dominant brand yet. The script-writing software category is small enough to enter and growing fast enough to matter, while the broader AI content wave provides the tailwind.
+
+- The screen and script-writing software market was **USD 170M in 2024 and is projected to reach USD 550M by 2033** ([Business Research Insights](https://www.businessresearchinsights.com/market-reports/screen-and-script-writing-software-market-110154)).
+- A narrower estimate puts script-writing software at **USD 140.24M (2024) growing to USD 305.91M by 2031 — a ~10.24% CAGR** ([Verified Market Research](https://www.verifiedmarketresearch.com/product/script-writing-software-market/)).
+- The AI-powered content creation market is forecast to grow from **USD 2.9B in 2024 to USD 3.53B in 2025** ([The Business Research Company](https://www.thebusinessresearchcompany.com/report/ai-powered-content-creation-global-market-report)).
+- AI-generated video creation alone is expected to hit **USD 14.8B by 2030 at a 35% CAGR** ([Zebracat](https://www.zebracat.ai/post/ai-video-creation-statistics)).
+- Demand is visible, not theoretical: tutorials on AI script tools regularly pull **200,000+ views** on channels like Think Media, and r/NewTubers' 174K members surface scriptwriting pain weekly.
+
+## Competitive Landscape
+
+The category splits into YouTube-specific script tools and general-purpose AI writers pressed into service. The specific tools win on workflow; the general tools win on brand. Nobody has yet nailed deep voice matching at an indie price — which is exactly the gap.
+
+- **Subscribr AI** — The current category leader, purpose-built for YouTube. Full script generation, title/thumbnail/hook suggestions, trend-aware updates. Strong workflow coverage, but voice personalization for distinctive creators is still its weak point. Subscription-based with premium tiers.
+- **Jasper AI** — Mature, general-purpose AI copywriting with a YouTube script template. Robust models and integrations, but no YouTube workflow depth (no analytics-aware suggestions, no API publishing). Roughly $39–59/mo for solo plans.
+- **Copy.ai / Writesonic** — Affordable general AI writers (free tiers, ~$19–49/mo). Fine for a generic draft, no voice training, no creator-specific workflow.
+- **ChatGPT / Claude (manual)** — The real default. Cheap and flexible, but every creator reinvents their own prompt, gets generic output, and rewrites for voice. This is the workflow ScriptFlow replaces.
+- **Descript / Synthesia** — Video-first tools with overlapping script features, but their center of gravity is editing and avatars, not voice-matched writing.
+
+**Your Opportunity**
+
+Go indie-first and voice-first. A 60-second channel connect, a free snippet generator to seed signups, and $29/mo voice-matched scripts undercut Jasper's price while beating it on relevance. Subscribr tilts toward broad workflow; the general tools have no voice training. Own "scripts that sound exactly like you" before an incumbent — or YouTube itself — bundles it.
+
+## Business Model
+
+Recurring SaaS with a free bait tier to drive word-of-mouth inside creator Discords and subreddits. The value ladder climbs from a free snippet generator to voice-matched Pro, with content-repurposing add-ons for continuity revenue. Voice training is the retention engine — the longer a creator stays, the better and stickier the output.
+
+- **Free — Snippet Generator** ($0) — Hook and intro snippets by niche; demonstrates the voice-matching magic and captures emails.
+- **Basic** ($15/mo) — Script generation and content ideas for weekly creators; no deep voice profile.
+- **Pro** ($29/mo) — Full voice-matched scripts, channel analytics integration, hook A/B options, trend alerts. The core tier.
+- **Repurposing Add-on** (+$15/mo) — Turn each script into a blog post, newsletter, and social thread.
+- **Enterprise / Agency** ($500–2,000/yr) — Multi-channel management, custom integrations, priority support.
+
+**Unit Economics (illustrative)**
+
+- **$0.10–0.40** — LLM cost per generated script (with prompt caching on the voice profile)
+- **~80%** — Gross margin on Pro
+- **$30–60** — Target CAC via creator communities and influencer demos
+- **110%+** — Net retention once voice profiles are trained and add-ons attach
+
+## Recommended Tech Stack
+
+This is a focused SaaS: a voice-profile builder, a generation pipeline, and a thin dashboard. The hard parts are ingesting channel data within YouTube API quotas and caching the voice profile so generation stays cheap and on-brand. Keep the surface small and ship fast.
+
+- **Next.js + Vercel** — App Router for the dashboard, server actions for generation, edge-friendly. Fast to ship, cheap at small scale.
+- **YouTube Data API + OAuth** — Pull a creator's videos, transcripts, and engagement to build the voice and trend signals. Mind the daily quota; cache aggressively.
+- **Claude (voice-matched generation)** — Primary model with prompt caching on the per-creator voice profile (the big margin win). Few-shot the creator's own best lines for cadence.
+- **Supabase (Postgres + Auth)** — Users, channels, voice profiles, generated scripts, usage-per-script for billing. pgvector to retrieve a creator's signature phrasing.
+- **Inngest or BullMQ** — Background jobs for channel ingestion and batch generation so the UI stays snappy and API hiccups retry cleanly.
+- **Stripe Billing** — Metered per-seat subscriptions plus add-on SKUs for repurposing and agency tiers.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) app for "ScriptFlow AI", a voice-matched
+YouTube script generator.
+
+Set up:
+- Supabase auth + Postgres schema for: users, channels, voice_profiles,
+  scripts, usage_events
+- YouTube OAuth flow to connect a creator's channel
+- Dashboard routes: Connect Channel, Generate Script, Script History, Settings
+- A landing page explaining voice-matched scriptwriting with a "Connect your
+  channel" CTA
+
+Use TypeScript, server actions for generation, and environment variables for
+all API keys. Include proper error handling for YouTube API quota limits.
+```
+
+**2. Core Feature — Voice Profile + Generation**
+
+```text
+Build the voice-matching pipeline for ScriptFlow AI:
+
+1. On channel connect, fetch the creator's top 10 videos and their transcripts
+   via the YouTube Data API.
+2. Send transcripts to Claude to extract a "voice profile": tone, pacing,
+   signature phrases, average hook style, typical CTA. Store as JSON.
+3. When the user requests a script for a topic, build a prompt that includes
+   the voice profile + 3 few-shot examples of the creator's own best lines,
+   then generate: 3 hook options, a structured body, and a CTA.
+4. Save the script and log token usage per generation for billing.
+
+Use prompt caching on the voice profile to keep per-script cost low.
+```
+
+**3. Trend Alerts + Repurposing Add-on**
+
+```text
+Add two upsell features to ScriptFlow AI:
+
+- Trend alerts: a daily job that pulls rising topics for the creator's niche
+  (from their YouTube category + search trends) and surfaces 5 script ideas.
+- Repurposing: a one-click action that turns a generated script into a blog
+  post, an email newsletter section, and a 5-tweet thread — all in the
+  creator's voice profile.
+
+Gate both behind the Pro and Repurposing add-on tiers using Stripe entitlements.
+```
+
+## Sources
+
+- [Screen and Script Writing Software Market — Business Research Insights](https://www.businessresearchinsights.com/market-reports/screen-and-script-writing-software-market-110154)
+- [Script Writing Software Market — Verified Market Research](https://www.verifiedmarketresearch.com/product/script-writing-software-market/)
+- [AI-Powered Content Creation Global Market Report — The Business Research Company](https://www.thebusinessresearchcompany.com/report/ai-powered-content-creation-global-market-report)
+- [AI Video Creation Statistics — Zebracat](https://www.zebracat.ai/post/ai-video-creation-statistics)
+- [Subscribr AI overview — Toolify](https://www.toolify.ai/ai-news/subscribr-ai-revolutionizing-youtube-script-writing-in-2025-3323285)
+- [AI Video Scriptwriting Tools Market — Virtue Market Research](https://virtuemarketresearch.com/report/ai-video-scriptwriting-tools-market)

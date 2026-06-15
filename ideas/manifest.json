@@ -2480,6 +2480,180 @@
         "builder_confidence": 9
       },
       "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-youtube-script-generator",
+      "title": "ScriptFlow AI",
+      "publishedAt": "2026-06-15",
+      "category": "creator-tools",
+      "description": "Build ScriptFlow AI, a voice-matched YouTube script generator that learns a creator's style and writes scripts that sound like them. Full build guide with AI prompts.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "ideabrowser:1387",
+      "og": {
+        "subject": "A dark desk at night with a glowing condenser microphone beside a softly lit laptop showing a blinking cursor, lavender backlight, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now",
+          "market_gaps"
+        ],
+        "citations": 6,
+        "wordCount": 1558,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-customer-interview-analyzer",
+      "title": "AI Customer Interview Analyzer",
+      "publishedAt": "2026-06-15",
+      "category": "ai-tools",
+      "description": "Build an AI customer interview analyzer for founders that transcribes calls, extracts pain points, clusters themes, and ranks what to build next. Full guide with AI prompts.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "websearch:research",
+      "og": {
+        "subject": "A dark desk at night with a softly glowing laptop showing a paused audio waveform, a single mint-green highlight line, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:demand"
+        ],
+        "citations": 6,
+        "wordCount": 1543,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "chat-with-historical-figures",
+      "title": "HistoryPal",
+      "publishedAt": "2026-06-15",
+      "category": "education",
+      "description": "Build HistoryPal, an AI tool where students text historical figures in class — grounded in real sources with teacher controls. Full build guide with AI prompts.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "ideabrowser:1122",
+      "og": {
+        "subject": "A dark desk with an old leather-bound book beside a softly glowing phone showing a single chat bubble, warm emerald accent light, shallow focus, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "why_now",
+          "market_gaps"
+        ],
+        "citations": 5,
+        "wordCount": 1500,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-meeting-copilot",
+      "title": "AI Meeting Copilot",
+      "publishedAt": "2026-06-15",
+      "category": "b2b",
+      "description": "Build an AI meeting copilot that gives sales reps and teams live, in-call prompts — objection responses, follow-ups, summaries. Full build guide with AI prompts.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "ideabrowser:1239",
+      "og": {
+        "subject": "A dark desk with a laptop showing a paused video-call grid and a single aubergine-glowing sidebar prompt card, shallow focus, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "why_now",
+          "market_gaps"
+        ],
+        "citations": 5,
+        "wordCount": 1476,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
