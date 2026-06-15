@@ -3,14 +3,20 @@ import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import {
   Boxes,
+  Building2,
   Clock,
   DollarSign,
+  GraduationCap,
+  HeartPulse,
   LayoutGrid,
   Lightbulb,
   Rocket,
+  ShoppingCart,
   Sparkles,
+  Store,
   Target,
   TrendingUp,
+  Video,
   Wallet,
   Zap,
 } from "lucide-react";
@@ -106,6 +112,69 @@ const COLLECTIONS: Record<string, CollectionDef> = {
       "Apps that give knowledge workers their hours back. Note-takers, scheduling tools, calendar layers, focus aids — clear willingness to pay.",
     color: "amber",
     icon: Lightbulb,
+  },
+  marketplace: {
+    slug: "marketplace",
+    kind: "category",
+    title: "Marketplace Startup Ideas",
+    description:
+      "Two-sided marketplace ideas scoped to a weekend MVP. Start with one tight niche, seed the first listings by hand, and take a cut of every transaction.",
+    color: "purple",
+    icon: Store,
+  },
+  education: {
+    slug: "education",
+    kind: "category",
+    title: "Education Startup Ideas",
+    description:
+      "EdTech and learning products you can ship in a weekend. Study tools, course layers, and tutoring helpers with clear demand and willing-to-pay learners.",
+    color: "teal",
+    icon: GraduationCap,
+  },
+  health: {
+    slug: "health",
+    kind: "category",
+    title: "Health & Wellness Startup Ideas",
+    description:
+      "Health, fitness, and wellness products with obvious value and recurring engagement. Trackers, coaching layers, and habit tools you can launch this weekend.",
+    color: "green",
+    icon: HeartPulse,
+  },
+  b2b: {
+    slug: "b2b",
+    kind: "category",
+    title: "B2B Startup Ideas",
+    description:
+      "Business-to-business tools companies happily expense. Niche workflow products with short sales cycles and strong willingness to pay.",
+    color: "slate",
+    icon: Building2,
+  },
+  "creator-tools": {
+    slug: "creator-tools",
+    kind: "category",
+    title: "Creator Tool Startup Ideas",
+    description:
+      "Products that help creators make, publish, and monetize faster. Tight-scope tools for an audience that already pays for its stack.",
+    color: "rose",
+    icon: Video,
+  },
+  fintech: {
+    slug: "fintech",
+    kind: "category",
+    title: "Fintech Startup Ideas",
+    description:
+      "Money tools with clear utility and high willingness to pay. Budgeting layers, invoicing, and finance automations scoped to a weekend build.",
+    color: "cyan",
+    icon: Wallet,
+  },
+  ecommerce: {
+    slug: "ecommerce",
+    kind: "category",
+    title: "E-commerce Startup Ideas",
+    description:
+      "Tools and storefronts for online sellers. Conversion helpers, store add-ons, and niche shops you can stand up in a weekend.",
+    color: "pink",
+    icon: ShoppingCart,
   },
 
   // Revenue goal hubs
