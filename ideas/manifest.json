@@ -2718,7 +2718,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "source": "draft:freelancer-income-proof-generator",
+      "source": "ideabrowser:8364",
       "og": {
         "subject": "A single approval-stamped document on a dark desk under a soft lavender glow, a laptop edge visible, shallow focus, no people, no text",
         "accent": "lavender",
@@ -2726,15 +2726,21 @@
       },
       "provenance": {
         "researchCalls": [
-          "websearch:market",
-          "websearch:competitors"
+          "get_idea_research",
+          "competitive_analysis"
         ],
-        "citations": 4,
-        "wordCount": 1396,
+        "citations": 6,
+        "wordCount": 1484,
         "auditPassed": true,
         "auditRunAt": "2026-06-15T00:00:00Z"
       },
-      "researchLevel": "standard"
+      "researchLevel": "deep",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      }
     },
     {
       "slug": "invoice-payment-reconciler",
@@ -2754,7 +2760,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "source": "draft:invoice-payment-reconciler",
+      "source": "ideabrowser:8365",
       "og": {
         "subject": "A laptop on a dark desk showing a single overdue-invoice card glowing emerald, late night, shallow focus, no people, no text",
         "accent": "emerald",
@@ -2762,15 +2768,64 @@
       },
       "provenance": {
         "researchCalls": [
-          "websearch:market",
-          "websearch:competitors"
+          "get_idea_research",
+          "competitive_analysis"
         ],
-        "citations": 4,
-        "wordCount": 1377,
+        "citations": 6,
+        "wordCount": 1483,
         "auditPassed": true,
         "auditRunAt": "2026-06-15T00:00:00Z"
       },
-      "researchLevel": "standard"
+      "researchLevel": "deep",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      }
+    },
+    {
+      "slug": "quarterly-tax-estimator-freelancers",
+      "title": "Quarterly Tax Estimator for Freelancers",
+      "publishedAt": "2026-06-15",
+      "category": "fintech",
+      "description": "AI quarterly estimated-tax calculator for freelancers: connect income, get your exact next payment, safe-harbor planning, and IRS deadline reminders.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:8366",
+      "og": {
+        "subject": "A dark desk with a laptop showing a single glowing calendar reminder and a lime-tinted tax figure, late night, shallow focus, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1423,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-15T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

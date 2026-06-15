@@ -1,0 +1,129 @@
+---
+slug: "quarterly-tax-estimator-freelancers"
+title: "Quarterly Tax Estimator for Freelancers"
+---
+
+## The Problem
+
+Every quarter, freelancers play a guessing game with the IRS and usually lose. Estimated taxes are due four times a year, and a 1099 worker has to figure out federal income tax plus the 15.3% self-employment tax on income that swings month to month. Guess too low and the penalty notice arrives. Guess too high and you have handed the government an interest-free loan while your own cash flow tightens.
+
+The tools that should help make it worse. Quarterly estimates are buried three menus deep inside TurboTax or QuickBooks Self-Employed, behind a setup flow built for accountants. So freelancers fall back on a rule of thumb ("save 25–30% of every invoice") that ignores deductions and safe-harbor rules entirely, or they email their CPA each quarter and wait. The result is a recurring, high-stakes chore that most people get wrong until a penalty teaches them.
+
+The pain is loud and well-documented. r/personalfinance (17.1M members) and r/tax (465K) are full of threads from freelancers confused about what they owe and when, and many do not even learn that quarterly payments are required until the IRS penalizes them once. It is a textbook "narrow job nobody owns" gap.
+
+## The Solution
+
+A single-purpose tool that watches your income in real time and tells you exactly what to pay and when. You connect your bank, Stripe, and PayPal through Plaid; it computes year-to-date net self-employment profit, applies federal brackets plus the 15.3% SE tax, and shows your next quarterly payment with the IRS due date and a reminder. No chart of accounts, no tax jargon, no April surprise.
+
+The wedge is the 1099 worker who has been burned before: the Uber driver, the Upwork freelancer, the Substack writer who got a penalty notice and never wants another. The whole product is built around one promise: tell me what to pay before the IRS comes knocking.
+
+**How it works:**
+
+1. **Connect your income** — Link bank, Stripe, and PayPal via Plaid in one step
+2. **See your real number** — Year-to-date profit, federal + 15.3% SE tax, and your next payment due
+3. **Plan with safe harbor** — A slider models the 100%/110% safe-harbor rules so you never overpay out of fear
+4. **Never miss a deadline** — Reminders fire before each IRS quarterly due date with the exact amount
+
+Accuracy is the moat. A recent benchmark found frontier AI models correctly compute fewer than one in three tax returns, so the engine pairs a deterministic, rules-based safe-harbor calculator with AI only for the plain-English explanations. Trust, not "AI magic," is what gets a freelancer to rely on the number.
+
+## Market Research
+
+A massive audience, an acute and recurring pain, and a maturing AI-tax infrastructure make the timing ideal for a focused entrant.
+
+- **57M+ US freelancers**, over 40% of the workforce; a realistic serviceable market is the **15–25M** with material 1099 income and low withholding (Ideabrowser market analysis).
+- The IRS requires estimated payments whenever you expect to owe **$1,000 or more** after withholding — a bright line that defines the high-intent user (IRS rules).
+- Demand is explicit on search and social: high-CPC keywords like "1099 tax calculator" and "quarterly tax payments" pull volumes from 2.7K to 27K+ per term, and r/tax (465K) runs constant quarterly-payment threads.
+- CPA creators monetize this exact confusion: channels like Not Your Dad's CPA (~95K views/video) and Jasmine DiLucci (~315K) prove a cheap, high-intent acquisition channel.
+
+AI estimated-tax engines that read real-time data and apply safe-harbor rules already exist, but they sell B2B or sit inside bloated suites. No one owns the freelancer-facing "quarterly tax copilot."
+
+## Competitive Landscape
+
+The category is validated by adjacent players, but every one of them treats quarterly estimates as a side feature rather than the main job.
+
+- **Keeper (Keeper Tax)** — Year-round AI write-off finder plus filing for freelancers. Strong, but deduction-first and heavier than "what do I pay June 15?"; around **$16+/mo plus filing fees**.
+- **Everlance** — Mileage and expense tracker with an AI self-employment tax calculator bolted on. Great for drivers, but tax is one feature in a tracking app; roughly **$8–$10/mo** tiers.
+- **FlyFin** — AI tax prep and filing for freelancers with CPA review. Filing-centric and pricier; not a continuous quarterly dashboard.
+- **Hive Tax AI** — Freelancer-branded AI filing and deduction discovery. Emerging, focused on annual filing rather than safe-harbor-aware quarterly estimation.
+- **QuickBooks Self-Employed / TurboTax** — The incumbents. Estimated-tax features exist but are buried in broad, accountant-oriented products; $15–$30/mo and up.
+
+**Your Opportunity**
+
+Own the narrow job: "tell me exactly what to pay this quarter and remind me." A single-purpose, freelancer-first dashboard with conservative, rules-driven accuracy and a $9 price undercuts Keeper and out-focuses QuickBooks. Real-time Plaid integration is now table stakes, so the wins are positioning, safe-harbor UX, and trust built on visible penalty-avoidance.
+
+## Business Model
+
+Freemium with a free estimate as the lead magnet and a low monthly tier for ongoing tracking. The willingness to pay spikes right before each deadline, so reminders double as conversion events.
+
+- **Free** ($0) — Connect one account, get a current estimate and your next payment amount.
+- **Plus** ($9/mo) — All accounts, automatic recalculation as income changes, safe-harbor calculator, and deadline reminders.
+- **Pro** ($20/mo) — Year-round profit tracking, scenario modeling ("if Q4 looks like Q3…"), and state estimates.
+
+**Unit Economics (illustrative)**
+
+- **under $0.25** — Plaid + AI cost per active user per month
+- **~88%** — Gross margin on Plus
+- **$30–$60** — Target CAC via CPA-creator partnerships
+- **Deadline-driven** — Four predictable retention and reactivation moments a year
+
+A path to ~$5K MRR needs roughly 400 Plus users or a mix with Pro — reachable from a couple of CPA-creator collaborations into r/tax and r/selfemployed.
+
+## Recommended Tech Stack
+
+The hard part is a correct, defensible tax engine; the rest is a standard SaaS dashboard, which keeps this weekend-scoped.
+
+- **Next.js + TypeScript (Vercel)** — Onboarding, the quarterly dashboard, and the safe-harbor scenario slider.
+- **Plaid** — Real-time income from bank, Stripe, and PayPal; the trust anchor for "verified" numbers.
+- **Deterministic tax rules engine** — Hand-built federal bracket + 15.3% SE tax + safe-harbor (100%/110%) logic. Do not let an LLM do the math; correctness is the product.
+- **Claude** — Plain-English explanations ("why this number?"), reminder copy, and deduction nudges layered on top of the rules engine.
+- **Postgres (Supabase)** — Income, computed estimates, payment history, and reminder schedules with row-level security.
+- **Resend + Vercel Cron** — Deadline reminders tied to the four IRS quarterly dates, with safe-harbor-progress alerts.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js (App Router) + TypeScript app called "Quarterly Tax Estimator for Freelancers".
+
+Set up:
+- Supabase Postgres: users, connections, income, estimates, reminders
+- Plaid Link onboarding pulling year-to-date transactions from bank, Stripe, and PayPal
+- Auth with Clerk (email + Google), MFA for paid users
+- A dashboard showing: YTD net profit, federal + self-employment tax, and the next quarterly payment with its IRS due date
+
+Include Plaid webhook validation and env var handling.
+```
+
+**2. Core Feature**
+
+```text
+Build a DETERMINISTIC quarterly estimated-tax engine (no LLM math).
+
+1. Compute year-to-date net self-employment profit from classified income minus expenses
+2. Apply current federal income tax brackets plus the 15.3% self-employment tax
+3. Implement safe-harbor logic: pay the lesser of 90% of current-year tax or 100%/110% of last year's
+4. Output the exact next quarterly payment and the IRS due date
+
+Expose a scenario function: given a projected Q4 income, return the adjusted total and per-quarter payment. Unit-test against known IRS examples.
+```
+
+**3. Reminders + Explanations**
+
+```text
+Add reminders and plain-English explanations.
+
+- Schedule reminders before each IRS quarterly deadline (Apr 15, Jun 15, Sep 15, Jan 15) with the exact amount due
+- Send a safe-harbor-progress alert if the user is behind ("pay an extra $X to stay penalty-safe")
+- Use Claude to generate a short "why this number?" explanation from the rules-engine output, in plain English, with no tax jargon
+- Never let the model alter the computed figures; it only explains them
+```
+
+## Sources
+
+- [AI Estimated Tax Filing: A Guide for Taxpayers — OpenLedger](https://www.openledger.com/ai-tax-software-automation/ai-estimated-tax-filing-a-guide-for-taxpayers-in-2025)
+- [Calculate Your Taxes with an AI Self-Employment Tax Calculator — Everlance](https://www.everlance.com/blog/calculate-your-taxes-with-an-ai-self-employment-tax-calculator)
+- [Best Tax Prep Software for Freelancers — Zenith Financial Advisors](https://zenithfinancialadvisors.com/best/best-tax-prep-software-for-freelancers)
+- [How Well Do LLMs Compute Taxes? (benchmark) — arXiv](https://arxiv.org/html/2507.16126v1)
