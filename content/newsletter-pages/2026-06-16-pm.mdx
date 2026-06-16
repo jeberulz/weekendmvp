@@ -1,0 +1,54 @@
+---
+slug: "2026-06-16-pm"
+title: "Builder Brief: Cursor in 10 minutes"
+description: "It's not that you can't build the idea — it's the blank repo. Here's the 10-minute Cursor workflow past it."
+publishedAt: "2026-06-16"
+edition: "pm"
+ctaUrl: "/startup-ideas?tool=cursor"
+---
+
+![Reading lamp on a dark desk with a lavender glow on an open laptop, Cursor build sprint](/image/email/newsletter/2026-06-16-pm.jpg)
+
+The idea was never the hard part. You've got a notes app full of them. The wall is the blank repo on Friday night — the empty folder, the "where do I even start," the config rabbit hole that eats the whole weekend before you've written a line that matters.
+
+**BUILDER BRIEF**
+
+## Cursor in 10 minutes
+
+Cursor is an AI-native code editor: a familiar VS Code surface with an agent that can read your whole project, scaffold across many files at once, and make edits in plain English. What it really removes from your weekend is the cold start — instead of wiring up a Next.js + database skeleton by hand, you describe the app and let the agent stand up the bones while you stay in "what should this do?" mode.
+
+The trick is to drive it like a contractor, not a search box: give it one clear job at a time, review the diff, then move to the next. Here's the first ten minutes on a real build.
+
+### Cursor in 10 minutes
+
+1. **Scaffold from the spec.** Open Composer (agent mode) and paste the idea's "Project Setup" prompt verbatim — it stands up the Next.js + Supabase skeleton and the table schema in one pass.
+2. **Wire one integration with Cmd-K.** Select the empty payments file, hit Cmd-K, and ask for the Stripe + Plaid payout sync. Inline, scoped, reviewable.
+3. **Hand it the core engine.** Back in agent mode, paste the "Core Feature" prompt so it builds the matching logic across the model, the API route, and the queue together.
+4. **Tab through the UI.** Let Tab-completion fill the status-board list as you type the component — paid / partial / due / overdue rows in a couple of minutes.
+5. **Ask the codebase, not Google.** Use "@codebase" chat — "where do I add the reminder scheduler?" — and let it point at the exact files instead of you spelunking.
+
+Try it on: **Where's My Payment Invoice Reconciler** — ~10h to MVP, $5K/mo target. It's the perfect Cursor demo because the hard part is *multi-file* — Stripe, PayPal, Plaid, a matching engine, and a durable scheduler all touching each other — which is exactly what agent-mode scaffolding does better than you typing it cold.
+
+<Cta href="/startup-ideas?tool=cursor">Browse ideas you can build with Cursor</Cta>
+
+---
+
+**🛠 STEAL THIS — The One-Job-at-a-Time Loop**
+
+The fastest way to lose a weekend in Cursor is asking for everything at once and trusting the wall of output. Run this loop instead:
+
+- **Scope it** — one feature, one prompt, the smallest unit that's testable on its own.
+- **Read the diff** — never accept a multi-file change you haven't skimmed; that's where the silent bugs hide.
+- **Run it before the next prompt** — green check, then move on. A broken base compounds with every generation on top of it.
+
+Three tight loops beat one giant prompt every time — and you actually understand the code you shipped.
+
+---
+
+Sneak peek at tomorrow…
+
+*An evergreen idea getting the deep-dive treatment — the kind of unglamorous workflow tool that quietly clears $1K/mo.*
+
+---
+
+**PS** — What's the tool you keep meaning to learn but haven't? Reply with it — top answer becomes a future 10-minute spotlight.
