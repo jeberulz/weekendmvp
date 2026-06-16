@@ -155,6 +155,30 @@
         "status": "ready",
         "emailStatus": "ready"
       }
+    },
+    {
+      "slug": "2026-06-16-am",
+      "title": "Idea of the Day: AI Bookkeeping for Freelancers",
+      "publishedAt": "2026-06-16",
+      "edition": "am",
+      "description": "QuickBooks killed its freelancer tier. Here's the AI-first books-that-do-themselves app you could ship this weekend.",
+      "og": {
+        "subject": "A coffee mug on a near-black kitchen counter with a single mint LED clock glow catching the rim, very early morning, no people",
+        "status": "ready",
+        "emailStatus": "ready"
+      }
+    },
+    {
+      "slug": "2026-06-16-pm",
+      "title": "Builder Brief: Cursor in 10 minutes",
+      "publishedAt": "2026-06-16",
+      "edition": "pm",
+      "description": "It's not that you can't build the idea — it's the blank repo. Here's the 10-minute Cursor workflow past it.",
+      "og": {
+        "subject": "A reading lamp on a near-black desk casting a single lavender glow over an open laptop and a closed notebook, quiet evening, no people",
+        "status": "ready",
+        "emailStatus": "ready"
+      }
     }
   ]
 }
