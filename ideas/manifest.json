@@ -2826,6 +2826,55 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "markdown-publish-everywhere",
+      "title": "Markdown Publish Everywhere for Creators",
+      "publishedAt": "2026-06-26",
+      "category": "creator-tools",
+      "description": "Fmttr turns one markdown file into blog, newsletter, LinkedIn, and X thread outputs—with Ghost and Buffer publish—in under ten minutes. Weekend MVP guide.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8024",
+      "og": {
+        "subject": "A dark desk with a laptop showing a split preview of markdown on one side and social post cards on the other, mint accent backlight, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend",
+          "research_market_insight"
+        ],
+        "citations": 7,
+        "wordCount": 1850,
+        "auditPassed": true,
+        "auditRunAt": "2026-06-26T12:00:00.000Z",
+        "publishNotes": "research_market_insight MCP call hit pro-tier monthly limit; market stats sourced from competitive_analysis, base MCP record, and research_trend keyword volume."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 10
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

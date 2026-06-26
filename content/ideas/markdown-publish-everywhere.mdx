@@ -1,0 +1,141 @@
+---
+slug: "markdown-publish-everywhere"
+title: "Markdown Publish Everywhere for Creators"
+---
+
+## The Problem
+
+You finish a newsletter draft in Obsidian at 10 p.m. It reads perfectly in markdown. Then the real work starts: paste into Ghost for the blog, strip headings for Substack, rewrite the intro for LinkedIn, split the middle into a Twitter thread, fix the links that broke on copy, and realize you already published a version with the wrong CTA. Most solo creators who write in markdown lose 45–90 minutes per piece just on distribution—not editing, not research, just reformatting the same ideas for four surfaces.
+
+The pain is loudest in technical creator communities. r/Markdown (13.7K members) and r/ObsidianMD (48K) run weekly threads on conversion fidelity—PDF exports that drop tables, Word pastes that murder list nesting, HTML previews that look nothing like the source file. Ideabrowser community analysis surfaced 110+ comments on a single r/Markdown thread about bulk conversion alone. The workflow everyone actually runs: write once in a markdown editor, manually fork into Ghost or Substack, then open Buffer or Typefully and hand-craft social variants. ChatGPT can reformat on demand, but every session starts from scratch—no saved brand voice, no one-click publish, no sync when you fix a typo in the source file.
+
+Multi-channel publishing is no longer optional for indie founders and newsletter writers who also post on X and LinkedIn. The stack is fragmented by design: Ghost owns blog→email, Buffer owns social scheduling, Typeshare owns thread templates—but nobody treats a single `.md` file as the canonical artifact and pushes formatted outputs everywhere. That gap is where an hour per week becomes an hour per post.
+
+## The Solution
+
+Fmttr is a write-once publisher for markdown-native creators. Paste or sync one markdown file; the app renders channel-specific outputs—blog HTML, newsletter body, LinkedIn post, and an X thread—with formatting rules baked in (heading maps, character limits, link handling, callout blocks). An AI layer reshapes structure without inventing facts: shorten intros for social, split long sections into thread tweets, generate subject-line variants for email. You preview each surface side-by-side, tweak if needed, then publish or export to Ghost, Buffer, and your ESP from one dashboard. The markdown file stays the source of truth; when you edit a paragraph, all downstream drafts refresh.
+
+**How it works:**
+
+1. **Import markdown** — Paste from Obsidian, VS Code, or upload a `.md` file; Fmttr parses the AST and loads your saved brand template (tone, CTA footer, link style)
+2. **Generate outputs** — One click produces blog HTML, email HTML, LinkedIn copy, and a numbered X thread with platform-specific formatting enforced automatically
+3. **Preview and tune** — Side-by-side editor lets you adjust any channel without breaking the others; AI suggestions stay within your style guide
+4. **Publish or schedule** — Push to connected Ghost, Buffer, or Substack accounts—or copy clean exports if you prefer manual control
+
+The wedge is speed with consistency: not “AI writes your post,” but “your post arrives correctly everywhere in under ten minutes.”
+
+## Market Research
+
+Markdown adoption has crossed from developer docs into mainstream creator workflows—Obsidian, Ghost, Git-backed blogs, and Notion exports all normalize `.md` as the authoring format. Adjacent search demand validates the category: Ideabrowser trend research on “markdown publishing automation content repurposing” surfaced 54,640 combined monthly searches across related keywords, with “markdown reader” alone at 27,100 volume and low competition. “Content repurposing” sits in the same cluster as high-intent conversion queries (“markdown converter,” “convert markdown to html”), signaling buyers who already feel format pain.
+
+- **Creator economy scale:** AI writing and content-tool SaaS products routinely price at **$10–$99/month**, proving willingness to pay for publishing productivity (Jasper, Copy.ai, Buffer AI tier, and comparable tools in the competitive set).
+- **Community demand:** r/ObsidianMD (48K), r/Markdown (13.7K+), and r/SideProject (267K) combine into a reachable audience already discussing conversion, bulk export, and multi-channel workflows—not abstract “creator economy” chatter.
+- **Repurposing paradigm:** Repurpose.io validated “publish once, distribute everywhere” for video; the text-native equivalent remains unserved at the same workflow depth—schedulers and CMS tools cover one leg each, not the full markdown→blog→email→social loop.
+- **Timing:** Multi-channel weekly publishing is baseline for indie hackers and newsletter operators; markdown is the preferred format for that segment because it diffs cleanly in Git and survives editor churn.
+
+Stage: *emerging niche inside a mature adjacent market*. Social schedulers and CMS platforms are late-growth; markdown-first multi-surface publishing has no category leader yet.
+
+## Competitive Landscape
+
+Every incumbent solves one leg of the loop. None accepts a canonical markdown file and returns a complete publishing package.
+
+- **Ghost** — Markdown-native blog + newsletter in one stack; excellent owned publishing. No social thread generation, no LinkedIn-specific formatting, no cross-platform repurposing engine. Managed plans roughly **$9–$199/month** depending on audience size
+- **Substack** — Frictionless newsletter + web archive; rich-text first, not markdown-canonical. Takes ~**10%** of paid subscription revenue. No systematic social repurposing from a single source file
+- **Buffer** — Multi-network scheduling with AI-assisted social copy from URLs or prompts. Social-only—no blog or newsletter outputs, no markdown source concept. Freemium plus paid tiers roughly **$6–$120+/month**
+- **Typeshare** — Opinionated templates for X threads and LinkedIn; strong social UX. Skips blog and email entirely; content lives inside Typeshare, not your `.md` repo. Typical creator pricing **~$10–$30/month**
+- **Repurpose.io** — Proves automation demand for “one input → many outputs,” but video/audio-centric—not text or markdown semantics. Tiered plans roughly **$25–$149/month**
+- **ChatGPT / Claude (manual)** — Flexible reformatting on paste; zero persistence, no templates, no publish pipeline, no sync when the source edits. **$0–$20/month** but hidden cost is 30–60 minutes per post in prompt repetition
+
+**Your Opportunity**
+
+Position as the **infrastructure layer above Ghost + Buffer**, not a CMS replacement: markdown stays canonical, Fmttr owns transformation + optional publish. Win on (1) format fidelity—lists, callouts, and links survive the pipeline, (2) deterministic templates vs one-off AI prompts, and (3) a price band (**$15–$49/month**) between free ChatGPT hacks and stacking Ghost + Buffer + Typeshare separately. Deep Obsidian and Ghost integrations create distribution moats incumbents are unlikely to prioritize.
+
+## Business Model
+
+Freemium SaaS with usage caps on outputs, not features—creators feel value on the first successful “one file → four surfaces” run. Target **$5K MRR** at roughly 170 Pro subscribers or a blend of Starter + Pro + small teams.
+
+- **Free** ($0) — 2 platform outputs per document (e.g., blog + thread), Fmttr branding on exports, manual copy-only publish
+- **Starter** ($15/mo) — All supported outputs, 20 documents/month, Ghost + Buffer connect, basic brand template
+- **Pro** ($49/mo) — Unlimited documents, custom style guides, AI rewrite within voice guardrails, analytics tying performance back to source markdown, priority integrations (Substack, LinkedIn export)
+- **Team** ($99/mo) — 5 seats, shared template library, approval workflow, API access for programmatic publish
+
+Backend ladder (post-PMF): **Enterprise** at **$5,000+/year** for white-label API, custom integrations, and SSO—aligned with Ideabrowser value-ladder research.
+
+**Unit Economics**
+
+- **~$0.08–0.15** — LLM cost per full multi-channel generation (one 2K-word doc → 4 outputs via gpt-4o-mini / Claude Haiku with prompt caching)
+- **~85%** — Gross margin at $29 blended ARPU after API + hosting
+- **$25–40** — Target CAC via community-led growth (Obsidian, Indie Hackers, dev Twitter)
+- **~$180** — LTV at 12-month retention (high—manual repurposing pain returns immediately if they churn)
+
+## Recommended Tech Stack
+
+The hard parts are markdown AST fidelity, per-channel template rules, and reliable OAuth to publishing APIs—not raw LLM calls. Ship a deterministic transform layer first; use AI only for structural reshaping (thread splits, intro shortening) with strict “no new facts” prompts.
+
+- **Next.js 14 + Vercel** — App Router dashboard, Server Actions for generation jobs, Edge runtime for quick preview renders
+- **remark / unified + mdast** — Parse markdown to AST; custom plugins map nodes to Ghost HTML, email-safe HTML, and plain-text social variants without regex hacks
+- **Supabase** — Postgres for documents, templates, OAuth tokens (encrypted), generation history; RLS per user
+- **Claude Haiku 4.5 + gpt-4o-mini fallback** — Channel-specific transforms with JSON-schema output; cache brand style guides in prompts to hold margin
+- **Ghost Admin API + Buffer Publish API** — MVP integrations (blog/newsletter + social queue); export-only modes for Substack and LinkedIn until OAuth complexity justifies it
+- **Stripe Billing** — Starter / Pro / Team tiers; metered overage on free tier document count
+- **Inngest or Vercel Cron** — Retry failed publishes, refresh expiring OAuth tokens, batch “sync all channels after source edit” jobs
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 App Router SaaS called Fmttr — markdown publish everywhere for creators.
+
+Set up:
+- Supabase auth (magic link) + Postgres schema: users, documents (markdown source), outputs (channel, rendered_body, status), templates, platform_connections (encrypted tokens)
+- Dashboard routes: /documents, /documents/[id]/preview, /settings/integrations, /settings/brand-voice
+- Stripe Billing with Free / Starter ($15) / Pro ($49) tiers
+- Landing page with hero "Write once in markdown. Publish everywhere." and a live demo textarea
+
+Use TypeScript strict mode, Tailwind v4, and server-only secrets for API keys.
+```
+
+**2. Core Feature — Multi-Channel Generation**
+
+```text
+Build the Fmttr generation pipeline for a single markdown document:
+
+1. Parse input with remark/unified into mdast
+2. Run deterministic transforms per channel:
+   - blog: Ghost-compatible HTML with heading anchors
+   - newsletter: inline-CSS email HTML, preheader extraction
+   - linkedin: plain text with line breaks, hook in first 210 chars
+   - twitter: split into numbered thread tweets under 280 chars each
+3. Optional AI pass (Claude Haiku): only restructure—never add facts—using a user style guide
+4. Store each output in Supabase outputs table with preview URLs
+5. Return side-by-side preview UI with per-channel edit + "regenerate from source" button
+
+Handle edge cases: code blocks (skip thread split), images (upload to CDN placeholder), broken links (lint before publish).
+```
+
+**3. Publish Integrations**
+
+```text
+Add publish actions for Fmttr document outputs:
+
+- Ghost Admin API: create/update post with html field, optional newsletter email flag
+- Buffer Publish API: queue LinkedIn post and X thread as scheduled updates
+- Export fallbacks: downloadable .html, .md thread bundle, copy-to-clipboard
+
+Implement OAuth connect flows with token refresh. On source markdown edit, mark downstream outputs stale and offer one-click "republish all connected channels."
+
+Include error handling with user-visible retry and idempotent publish IDs to prevent duplicate posts.
+```
+
+## Sources
+
+- [Ideabrowser idea #8024 — Markdown-to-everywhere tool for daily creators](https://ideabrowser.com) (MCP research base record, scores, value ladder)
+- [Competitive landscape analysis — write-once markdown publisher](https://blog.hubspot.com/marketing/competitive-analysis-kit) (Ghost, Substack, Buffer, Typeshare, Repurpose.io positioning and pricing bands)
+- [Ideabrowser trend research — markdown publishing automation cluster](https://ideabrowser.com) (54,640 combined monthly search volume across related keywords)
+- [r/Markdown and r/ObsidianMD community signals](https://www.reddit.com/r/Markdown/) (conversion pain, 110+ comment threads on bulk export — via Ideabrowser community analysis)
+- [Startup and creator community engagement patterns](https://ortto.com/learn/startup-communities/) (Indie Hackers, SideProject distribution channels)
+- [Online community strategy for workflow tools](https://fluentcommunity.co/blog/types-of-online-communities/) (high-intent micro-community GTM)
+- [Small business owner networks and local entrepreneur groups](https://www.uschamber.com/co/start/strategy/local-organizations-for-small-business-owners) (adjacent solo-founder reach)
