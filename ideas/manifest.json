@@ -30,7 +30,7 @@
       "og": {
         "subject": "A laptop in a dim room showing a code editor with one function gently highlighted and a soft margin note, no people, shallow focus, emerald accent light",
         "accent": "emerald",
-        "status": "pending"
+        "status": "ready"
       },
       "provenance": {
         "researchCalls": [
@@ -74,7 +74,7 @@
       "og": {
         "subject": "A calm dashboard on a dark screen turning a cryptic error into a plain sentence, no people, shallow focus, lavender accent light",
         "accent": "lavender",
-        "status": "pending"
+        "status": "ready"
       },
       "provenance": {
         "researchCalls": [
@@ -117,7 +117,7 @@
       "og": {
         "subject": "A dark instructor dashboard showing a grid of student tiles, a few glowing amber, no people, shallow focus, mint accent light",
         "accent": "mint",
-        "status": "pending"
+        "status": "ready"
       },
       "provenance": {
         "researchCalls": [
@@ -162,7 +162,7 @@
       "og": {
         "subject": "A laptop showing a screen-share between two code windows with a progress bar near full, no people, shallow focus, lime accent light",
         "accent": "lime",
-        "status": "pending"
+        "status": "ready"
       },
       "provenance": {
         "researchCalls": [
@@ -666,6 +666,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T10:57:05.909Z",
         "backfillNotes": "THIN (12.3KB, 378 words, 4/7 sections) → PASS full rewrite. No direct Ideabrowser match for feature-voting-board wedge (two queries returned 0). Backfilled via web research + category knowledge. Competitive Landscape (Canny $360-$900+/mo + 2024 Permanent Capital acquisition, ProductBoard $450M+ raised $1.7B valuation, Nolt+Frill 2019-vintage indie tier, DIY Trello/GitHub/Notion free). Business Model (Free 1 board 100 submissions / $19 Pro unlimited + custom domain + AI dedup / $49 Team unlimited boards + 5 seats + API, ~94% gross margin, ~$0.02/submission LLM cost via Haiku). Tech Stack (Next.js 14 middleware multi-tenant + Supabase RLS with FTS candidate retrieval + Claude Haiku 4.5 dedup + Upstash rate limiting + Resend with Team custom domain + Stripe Billing + Vercel Custom Domains API + embeddable iframe widget with postMessage auth bridge). Market stats cite Grand View CFM market ($12B+ 2024, 16-20% CAGR), Canny 1K+ teams ~$10M ARR, ProductBoard $1.7B valuation, Intercom 25-35% churn reduction from public roadmap, keyword search volumes + CPCs from Google/Ahrefs. Differentiator: AI dedup is unclaimed in Nolt/Frill indie tier. Verify Canny/Nolt pricing pages before marketing claims."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -706,6 +709,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:53:19.812Z",
         "backfillNotes": "STUB (1.75KB, 0 words, 0/7 sections) → PASS full 7-section build. No direct Ideabrowser match for credential-verified trainer marketplace wedge. Competitive Landscape (Thumbtack/Angi/Bark general marketplaces no verification, Mindbody/ClassPass studio-ops vs group-class consumer, Trainerize/TrueCoach/MyPTHub supply-side SaaS, FYT/Bold in-home competitors with no verification+escrow). Business Model (Client 5% service fee + Trainer Basic free with 15%/8% take + Trainer Pro $19/mo priority + $49 one-time verification badge, ~10% blended take, Mindbody precedent $1.9B). Tech Stack (Next.js 14 + Supabase PostGIS geo queries + Algolia faceted search + Stripe Connect Express manual_capture = escrow primitive + Persona ID verification + manual NASM/ACE cert cross-check + Daily.co virtual + Twilio SMS reminders). Market stats cite Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), BLS fitness trainers (340K workforce), IHRSA ($35B US, $97B global), Mindbody Vista Equity 2019 $1.9B, Stripe manual capture docs. NOTE: replaced originally-planned expert-mentorship-marketplace to avoid duplicate content with virtual-knowledge-hub (both would have been executive mentorship). Verify Mindbody acquisition figures from press before marketing use."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -742,6 +748,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:44:56.043Z",
         "backfillNotes": "STUB (1.9KB, 0 words, 0/7 sections) → PASS full 7-section build. Competitive Landscape (MentorCruise/GrowthMentor/Intro consumer 1:1, ADPList free-unsustainable, Reforge/Maven/On Deck cohort courses, MentorcliQ/Chronus/Together enterprise HCM). Business Model (Free / $49 Aspiring / $149 Serious + 80% mentor payout via Stripe Connect, ~72% gross margin on sub). Tech Stack (Next.js 14 + Supabase with pgvector + two-stage matching (OpenAI text-embedding-3-large + Claude Sonnet re-rank) + Stripe Connect Standard + Cal.com embed + Daily.co video + Resend + PostHog). Market stats cite Business Research Insights mentoring market ($0.81-1.7B 2026 → $4.92-5.12B 2035), Future Market Insights coaching platform market, Mentorloop (98% F500 adoption, 72% retention lift), SkyQuest (52% platforms claim AI matching), Ideabrowser #5658 opp 9 pain 9 timing 9. Verify competitor pricing on live pages before marketing push."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -781,6 +790,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:36:32.209Z",
         "backfillNotes": "STUB (1.7KB, 0 words, 0/7 sections) → PASS (38.9KB, 2218 words). Full 7-section write from scratch. Competitive Landscape (Trainerize/TrueCoach/My PT Hub workout-first, That Clean Life/Nutrium dietitian-upmarket, MyFitnessPal/Cronometer/Macrofactor consumer-only, Notion/Docs/Excel free workarounds). Business Model (Free / $29 Pro / $79 Studio + ~$0.08/plan LLM cost at ~88% gross margin). Recommended Tech Stack (Next.js 14 multi-tenant + Supabase RLS + Claude Sonnet 4.6 primary w/ GPT-4o fallback + USDA FoodData Central validation loop + react-pdf + Resend + Stripe Billing). Market stats cite Future Market Insights coaching platform market, BLS fitness trainers (340K workforce, 14% growth), Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), USDA FDC API, Ideabrowser #1591 TrainerShield tangential + #3506 FamilyFeast meal-planning adjacent. No direct MCP match for B2B-trainer-nutrition angle; positioning is fresh wedge between Trainerize (thin nutrition) and That Clean Life (dietitian-priced). Verify trainer SaaS pricing pages before marketing push."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
@@ -827,6 +839,9 @@
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:30:04.190Z",
         "backfillNotes": "Backfilled Competitive Landscape (HoneyBook, Dubsado, 17hats, Softr/WeWeb/Notion), Business Model (Free / $29 Solo / $99 Agency + $0.80/tenant infra and ~95% gross margin via Stripe Connect pass-through), Recommended Tech Stack (Next.js 14 multi-tenant middleware + Supabase RLS + Vercel Custom Domains API + Stripe Connect Standard + Resend custom-domain + Tailwind CSS-variables theming). Market stats cite MAK Data Insights client portal report ($5.8B->$16.2B, 11.4% CAGR), Custom Market Insights AI website builder market (17.7% CAGR, 22.3% custom AI code gen), Upwork Freelance Forward 2024 (57M US freelancers), Ideabrowser #6761 scores 9/9/9/9. Verify competitor pricing pages before marketing push."
+      },
+      "og": {
+        "status": "ready"
       }
     },
     {
