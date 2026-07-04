@@ -10,6 +10,7 @@ import {
   Code2,
   HeartHandshake,
   Lightbulb,
+  Megaphone,
   MessageCircle,
   Palette,
   Rocket,
@@ -334,6 +335,54 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       },
     ],
   },
+  marketers: {
+    slug: "marketers",
+    name: "Marketers",
+    title: "Startup Ideas for Marketers",
+    metaDescription:
+      "Curated startup ideas for marketers and growth teams. Build content tools, campaign automation, and conversion products you can ship in a weekend.",
+    description:
+      "Ideas built for growth marketers, performance teams, and content operators. Ship tools that automate campaigns, repurpose content, and improve conversion.",
+    color: "pink",
+    icon: Megaphone,
+    skillChip: "Mixed skill level",
+    timeChip: "8-12 hours build time",
+    positioning:
+      "Marketers have a unique edge: you know what channels convert, what copy resonates, and what workflows teams actually pay for. While engineers build features, you build distribution. These ideas let you productize that knowledge—content automation, landing page tools, ad workflows, and conversion products that solve problems you've lived firsthand.",
+    accentAdvantages: true,
+    advantages: [
+      {
+        icon: Target,
+        title: "Channel & Funnel Expertise",
+        description:
+          "You know which metrics matter and where buyers drop off. Build tools that fix real funnel leaks.",
+      },
+      {
+        icon: TrendingUp,
+        title: "Built-In Distribution",
+        description:
+          "Your network, newsletter, and audience are launch channels. Ship to people who already trust you.",
+      },
+      {
+        icon: Zap,
+        title: "Fast Validation Loops",
+        description:
+          "Test with ad spend, landing pages, or content experiments before writing a line of code.",
+      },
+    ],
+    resources: [
+      {
+        title: "Marketing Examples",
+        url: "https://marketingexamples.com",
+        description: "Real marketing tactics and case studies to inspire your build",
+      },
+      {
+        title: "r/marketing",
+        url: "https://www.reddit.com/r/marketing/",
+        description: "Community of marketing professionals sharing tactics and tools",
+      },
+    ],
+  },
 };
 
 export const AUDIENCE_SLUGS = Object.keys(AUDIENCE_PAGES);
@@ -351,6 +400,7 @@ const AUDIENCE_TILES: Array<{
   { slug: "solo-founders", label: "Solo Founders", icon: User, iconClass: "text-blue-400" },
   { slug: "weekend-builders", label: "Weekend Builders", icon: Calendar, iconClass: "text-purple-400" },
   { slug: "side-hustlers", label: "Side Hustlers", icon: Briefcase, iconClass: "text-cyan-400" },
+  { slug: "marketers", label: "Marketers", icon: Megaphone, iconClass: "text-pink-400" },
 ];
 
 /* ------------------------------------------------------------------ */

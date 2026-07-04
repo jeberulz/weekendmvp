@@ -61,7 +61,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "non-technical"
+        "non-technical",
+        "marketers"
       ],
       "source": "ideabrowser:7458",
       "scores": {
@@ -1154,7 +1155,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "marketers"
       ],
       "source": "ideabrowser:20",
       "scores": {
@@ -1373,7 +1375,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "designers"
+        "designers",
+        "marketers"
       ],
       "description": "Build a simple social media scheduler that posts to Twitter, LinkedIn, and threads. AI-powered caption suggestions included. Full build guide.",
       "source": "mode-b:backfill",
@@ -1482,7 +1485,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "marketers"
       ],
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
       "source": "mode-b:backfill",
@@ -1519,7 +1523,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "marketers"
       ],
       "description": "Build an automated abandoned cart recovery system for e-commerce stores. AI-personalized emails that bring customers back. Full build guide included.",
       "source": "mode-b:backfill",
@@ -2253,7 +2258,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "marketers"
       ],
       "description": "AI TikTok trend predictor for creators: catch sounds and challenges 24–48h before they peak. Cited market data, competitor pricing, and a weekend MVP build plan.",
       "researchLevel": "deep",
@@ -2497,7 +2503,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "developers"
+        "developers",
+        "marketers"
       ],
       "source": "ideabrowser:1387",
       "og": {
@@ -2844,7 +2851,8 @@
       "audiences": [
         "solo-founders",
         "developers",
-        "weekend-builders"
+        "weekend-builders",
+        "marketers"
       ],
       "source": "ideabrowser:8024",
       "og": {
@@ -3007,6 +3015,104 @@
         "pain": 9,
         "timing": 9,
         "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-cart-rescue-emotional-emails",
+      "title": "AI Cart Rescue: Emotional Recovery Emails",
+      "publishedAt": "2026-07-04",
+      "category": "E-commerce",
+      "description": "Shopify app that writes abandoned-cart recovery emails from session behavior — sizing doubts, shipping friction, price hesitation — not generic discount blasts. Recover lost revenue on autopilot.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "shopify"
+      ],
+      "audiences": [
+        "solo-founders",
+        "ecommerce-founders",
+        "shopify-merchants"
+      ],
+      "source": "ideabrowser:1395",
+      "og": {
+        "subject": "A lone shopping bag on a dark checkout counter, one abandoned-cart email glowing on a phone beside it, mint accent rim-light, shallow focus, no people, no legible text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 1859,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-04T20:30:00.000Z",
+        "publishNotes": "research_market_insight queued async (insight_id daf7cc5a-e070-444e-ba4d-9b44937ace4e); market stats sourced from competitive_analysis citations, base MCP record, and research_trend keyword volume."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "gutcheck-ai-ad-optimization",
+      "title": "GutCheck: AI Ad Creative Testing",
+      "publishedAt": "2026-07-04",
+      "category": "saas",
+      "description": "AI incremental ad testing across Meta and Google—find winning creatives faster, measure true lift, and stop killing ads on gut instinct.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:38",
+      "og": {
+        "subject": "A dark desk with a laptop showing split Meta and Google ad dashboards and a green lift chart, emerald backlight, shallow focus, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 1680,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-04T20:30:00.000Z",
+        "publishNotes": "research_market_insight queued async (insight_id ea6b2df8-95aa-4e2e-a9bb-87aaa7dd0209); market stats sourced from base MCP record, competitive_analysis citations, and research_trend keyword volume."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
       },
       "researchLevel": "deep"
     }
@@ -3877,6 +3983,52 @@
           "title": "r/SideProject",
           "url": "https://reddit.com/r/SideProject",
           "description": "Reddit community for side project builders"
+        }
+      ]
+    },
+    {
+      "slug": "marketers",
+      "name": "Marketers",
+      "displayName": "Startup Ideas for Marketers",
+      "description": "Ideas for growth marketers, performance marketers, and content teams. Build tools that automate campaigns, content, and conversion workflows.",
+      "icon": "lucide:megaphone",
+      "filters": {
+        "categories": [
+          "creator-tools",
+          "ai-tools",
+          "saas",
+          "ecommerce"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for marketers",
+        "secondary": [
+          "marketing tool ideas",
+          "growth marketing side projects",
+          "martech startup ideas"
+        ],
+        "volume": "210/mo"
+      },
+      "traits": [
+        "Deep understanding of channels and funnels",
+        "Can validate with ad spend or audience access",
+        "Comfortable with analytics and iteration",
+        "Know what tools marketing teams actually pay for"
+      ],
+      "resources": [
+        {
+          "title": "Marketing Examples",
+          "url": "https://marketingexamples.com",
+          "description": "Real marketing tactics and case studies"
+        },
+        {
+          "title": "r/marketing",
+          "url": "https://www.reddit.com/r/marketing/",
+          "description": "Community for marketing professionals"
         }
       ]
     }
