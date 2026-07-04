@@ -287,6 +287,18 @@
         "accent": "emerald",
         "status": "ready"
       }
+    },
+    {
+      "slug": "build-an-ai-agent-app-in-a-weekend",
+      "title": "How to Build an AI Agent App in a Weekend (Not Just Another Wrapper)",
+      "description": "Wrappers are dying. Agents aren't. Here's the weekend framework for building an AI agent that does real work, has a moat, and someone will actually pay for.",
+      "wordCount": 1620,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A row of dominoes on a near-black desk, the first one tilting forward to start the chain reaction, caught by a single lime beam from the side, very shallow focus, deep shadow surrounding",
+        "accent": "lime",
+        "status": "ready"
+      }
     }
   ]
 }
