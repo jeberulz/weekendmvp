@@ -27,8 +27,10 @@ const DEFAULT_UTM_CAMPAIGN = "starter-kit";
 const ALLOWED_UTM_CAMPAIGNS = new Set([
   DEFAULT_UTM_CAMPAIGN,
   "shipable-workshop",
+  "dare-workshop",
   "newsletter",
   "idea-page",
+  "validation-checklist",
   "404-page",
 ]);
 

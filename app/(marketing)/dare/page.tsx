@@ -46,8 +46,10 @@ import {
     [[WORKSHOP_DATE_ISO]]  deadline passed to the countdown
     [[DATE]] [[TIME]] [[TZ]]  human-readable schedule
     [[STAT_YEARS]] [[STAT_SHIPPED]]  credibility numbers
-    [[CHECKOUT_URL]]  payment link (currently captures seat
-      via Beehiiv /api/subscribe waitlist — see DareSeatForm)
+    NEXT_PUBLIC_DARE_CHECKOUT_URL  Stripe Payment Link env var —
+      until it is set (and a fresh build runs), DareSeatForm
+      captures the seat via the Beehiiv /api/subscribe waitlist;
+      once set, the form redirects to Stripe checkout.
     [[TZ_*]]  local-time conversions
    ============================================================ */
 

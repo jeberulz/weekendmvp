@@ -16,10 +16,13 @@ import {
   articleSchema,
   breadcrumbSchema,
   buildGraph,
+  faqPageSchema,
   howToSchema,
   personSchema,
   softwareApplicationSchema,
+  type FaqEntry,
 } from "@/lib/seo";
+import { ChecklistCta } from "@/components/ideas/ChecklistCta";
 import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
@@ -278,6 +281,55 @@ export async function generateMetadata({
 
 const HOWTO_STEP_NAMES = ["Project Setup", "Core Feature", "Landing Page"];
 
+/**
+ * Question-phrased FAQs generated from the idea's Convex metadata — the
+ * structures answer engines quote (self-contained answers, concrete numbers).
+ * Rendered on-page AND emitted as FAQPage JSON-LD; both must stay in sync,
+ * so both read from this one builder. Empty when Convex is unavailable.
+ */
+function ideaFaqs(title: string, idea: IdeaDoc | null): FaqEntry[] {
+  if (!idea) return [];
+  const faqs: FaqEntry[] = [];
+
+  if (/^\d+$/.test(idea.buildTime)) {
+    faqs.push({
+      question: `How long does it take to build ${title}?`,
+      answer: `Around ${idea.buildTime} hours for a working MVP — scoped so a solo builder can ship it in a weekend using AI coding tools. The build breaks down into project setup, the core feature, and a landing page; the AI Prompts section on this page gives you ready-to-use prompts for each step.`,
+    });
+  }
+
+  if (idea.tools.length > 0) {
+    const names = idea.tools.map(toolName);
+    const list =
+      names.length > 1
+        ? `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`
+        : names[0];
+    faqs.push({
+      question: `What tools should I use to build ${title}?`,
+      answer: `${list} can all build this MVP — you don't need to write code from scratch. The Recommended Tech Stack section on this page names the exact framework, database, and hosting, and the AI build prompts are written to paste straight into these tools.`,
+    });
+  }
+
+  faqs.push({
+    question: `How much money can ${title} make?`,
+    answer: `This idea is scoped toward a ${revenueName(idea.revenueGoal)} revenue goal. The Business Model section on this page breaks down suggested pricing tiers, unit economics, and the path to that monthly recurring revenue.`,
+  });
+
+  if (idea.scores) {
+    faqs.push({
+      question: `Is ${title} a good startup idea right now?`,
+      answer: `In our research scoring, ${title} rates ${idea.scores.opportunity}/10 for market opportunity, ${idea.scores.pain}/10 for problem pain, ${idea.scores.timing}/10 for timing, and ${idea.scores.builder_confidence}/10 for builder confidence — ${
+        idea.scores.opportunity +
+        idea.scores.pain +
+        idea.scores.timing +
+        idea.scores.builder_confidence
+      }/40 overall. The Market Research and Competitive Landscape sections above show the data behind those scores so you can judge the fit for yourself.`,
+    });
+  }
+
+  return faqs;
+}
+
 function buildSchema(slug: string, resolved: ResolvedIdea) {
   const { title, description, content, idea, ogImage } = resolved;
   const url = `${SITE}/ideas/${slug}`;
@@ -299,6 +351,8 @@ function buildSchema(slug: string, resolved: ResolvedIdea) {
     : undefined;
   const buildHours =
     idea && /^\d+$/.test(idea.buildTime) ? idea.buildTime : undefined;
+
+  const faqs = ideaFaqs(title, idea);
 
   return buildGraph(
     personSchema(),
@@ -327,6 +381,7 @@ function buildSchema(slug: string, resolved: ResolvedIdea) {
       { label: "Startup Ideas", href: "/startup-ideas" },
       { label: title, href: url },
     ]),
+    faqs.length > 0 ? faqPageSchema(faqs) : null,
   );
 }
 
@@ -411,6 +466,7 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
   const { title, description, content, idea } = resolved;
   const toc = tocFromMarkdown(content);
   const schema = buildSchema(slug, resolved);
+  const faqs = ideaFaqs(title, idea);
   const CategoryIcon = idea ? CATEGORY_META[idea.category]?.icon : undefined;
 
   return (
@@ -594,6 +650,33 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                   <RelatedIdeas slug={slug} />
                 </div>
               ) : null}
+
+              {/* FAQ — mirrors the FAQPage JSON-LD emitted in buildSchema */}
+              {faqs.length > 0 ? (
+                <div id="section-faq" className="mt-12 mb-12 scroll-mt-[7.5rem]">
+                  <h2 className="text-2xl font-medium mb-6 text-black tracking-tight">
+                    Frequently Asked Questions
+                  </h2>
+                  <dl className="space-y-6">
+                    {faqs.map((faq) => (
+                      <div
+                        key={faq.question}
+                        className="p-6 bg-neutral-100 border border-neutral-200 rounded-2xl"
+                      >
+                        <dt className="text-base font-medium text-neutral-900 mb-2">
+                          {faq.question}
+                        </dt>
+                        <dd className="text-sm text-neutral-600 leading-relaxed">
+                          {faq.answer}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ) : null}
+
+              {/* Content upgrade: 48-hour validation checklist */}
+              <ChecklistCta ideaTitle={title} />
 
               {/* CTA */}
               <div className="p-12 bg-black rounded-[3rem] text-center mt-12">

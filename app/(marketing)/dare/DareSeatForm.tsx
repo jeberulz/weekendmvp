@@ -7,13 +7,26 @@ import { ArrowRight } from "lucide-react";
 import "@/lib/track";
 
 /**
- * DARE seat form, ported from the dare.html inline subscribe handler.
- * Captures the lead via Beehiiv (/api/subscribe) — wire [[CHECKOUT_URL]]
- * (Stripe/Gumroad) for live payment once the checkout is ready.
+ * DARE seat form. Two modes, decided by NEXT_PUBLIC_DARE_CHECKOUT_URL:
+ *
+ *  - Checkout mode (URL set): the ShipableCheckoutForm sequence — validate,
+ *    fire begin_checkout (GA) + InitiateCheckout (Meta), fire-and-forget
+ *    Beehiiv waitlist subscribe, redirect to the Stripe Payment Link with
+ *    prefilled_email + client_reference_id. The Stripe webhook
+ *    (checkout.session.completed) handles paid enrollment server-side.
+ *
+ *  - Waitlist mode (URL unset — the pre-launch draft state): capture the
+ *    lead via Beehiiv (/api/subscribe) only, as before.
+ *
+ * NEXT_PUBLIC_* vars are inlined at build time — after setting the payment
+ * link in Vercel, trigger a fresh build (see CLAUDE.md analytics gotcha).
  */
 
-const DEFAULT_MESSAGE =
-  "Your inbox gets: Zoom link · DARE worksheets · 4-Week Plan template · replay after the session. One-time $29.";
+const DARE_CHECKOUT_URL = process.env.NEXT_PUBLIC_DARE_CHECKOUT_URL ?? "";
+
+const DEFAULT_MESSAGE = DARE_CHECKOUT_URL
+  ? "One-time $29 · Secured by Stripe · Live on Zoom · Replay included."
+  : "Your inbox gets: Zoom link · DARE worksheets · 4-Week Plan template · replay after the session. One-time $29.";
 
 type Status = "idle" | "loading" | "success" | "error";
 type Tone = "neutral" | "muted" | "accent" | "success";
@@ -31,15 +44,57 @@ export function DareSeatForm() {
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [tone, setTone] = useState<Tone>("neutral");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const trimmed = email.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setMessage("Please enter a valid email.");
-      setTone("accent");
-      return;
+  const subscribePayload = (trimmed: string) =>
+    JSON.stringify({
+      email: trimmed,
+      utm_campaign: "dare-workshop",
+      utm_source: "dare",
+      utm_medium: DARE_CHECKOUT_URL ? "waitlist" : "website",
+    });
+
+  const startCheckout = (trimmed: string) => {
+    setStatus("loading");
+    setMessage("Sending you to Stripe checkout…");
+    setTone("muted");
+
+    // Fire pre-checkout intent events
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "begin_checkout", {
+        currency: "USD",
+        value: 29,
+        items: [
+          {
+            item_id: "dare-live",
+            item_name: "DARE Live Seat",
+            price: 29,
+            quantity: 1,
+          },
+        ],
+      });
+    }
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "InitiateCheckout", { currency: "USD", value: 29 });
     }
 
+    // Best-effort waitlist subscribe; never block checkout if it fails.
+    try {
+      fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: subscribePayload(trimmed),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      /* never block checkout */
+    }
+
+    const url = new URL(DARE_CHECKOUT_URL);
+    url.searchParams.set("prefilled_email", trimmed);
+    url.searchParams.set("client_reference_id", trimmed.slice(0, 200));
+    window.location.href = url.toString();
+  };
+
+  const saveSeat = async (trimmed: string) => {
     setStatus("loading");
     setMessage("Saving…");
     setTone("muted");
@@ -48,12 +103,7 @@ export function DareSeatForm() {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: trimmed,
-          utm_campaign: "dare-workshop",
-          utm_source: "dare",
-          utm_medium: "website",
-        }),
+        body: subscribePayload(trimmed),
       });
       if (!res.ok) throw new Error("Subscribe failed");
 
@@ -76,8 +126,26 @@ export function DareSeatForm() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setMessage("Please enter a valid email.");
+      setTone("accent");
+      return;
+    }
+    if (DARE_CHECKOUT_URL) startCheckout(trimmed);
+    else void saveSeat(trimmed);
+  };
+
   const buttonLabel =
-    status === "success" ? "Seat saved ✓" : "Save my seat · $29";
+    status === "loading"
+      ? DARE_CHECKOUT_URL
+        ? "Sending you to checkout…"
+        : "Saving…"
+      : status === "success"
+        ? "Seat saved ✓"
+        : "Save my seat · $29";
 
   return (
     <>
@@ -105,7 +173,7 @@ export function DareSeatForm() {
           disabled={status === "loading" || status === "success"}
           className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white text-[#1a1a1a] rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <span>{status === "loading" ? "Saving…" : buttonLabel}</span>
+          <span>{buttonLabel}</span>
           <ArrowRight size={14} aria-hidden="true" />
         </button>
       </form>

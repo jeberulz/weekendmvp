@@ -18,7 +18,10 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   authors: [{ name: "John Iseghohi" }],
-  alternates: { canonical: "/articles" },
+  alternates: {
+    canonical: "/articles",
+    types: { "application/rss+xml": "/articles/feed.xml" },
+  },
   openGraph: {
     type: "website",
     url: `${SITE}/articles`,

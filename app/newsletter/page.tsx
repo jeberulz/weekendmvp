@@ -11,6 +11,10 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { buildGraph } from "@/lib/seo";
+import {
+  NewsletterArchive,
+  type IssueCard as IssueCardBase,
+} from "./NewsletterArchive";
 
 const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/newsletter-pages";
@@ -22,7 +26,10 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   authors: [{ name: "John Iseghohi" }],
-  alternates: { canonical: "/newsletter" },
+  alternates: {
+    canonical: "/newsletter",
+    types: { "application/rss+xml": "/newsletter/feed.xml" },
+  },
   openGraph: {
     type: "website",
     url: `${SITE}/newsletter`,
@@ -47,16 +54,8 @@ export const metadata: Metadata = {
   },
 };
 
-type IssueCard = {
-  slug: string;
-  title: string;
-  description?: string;
-  edition: "am" | "pm";
+type IssueCard = IssueCardBase & {
   publishedAt?: number;
-  /** Preformatted "May 22, 2026" (server-side, deterministic). */
-  displayDate?: string;
-  /** YYYY-MM-DD for <time datetime> */
-  isoDate?: string;
 };
 
 /** ms-epoch or "2026-05-22" → "May 22, 2026" (cached scope only). */
@@ -149,48 +148,6 @@ async function getIssues(): Promise<IssueCard[]> {
     // Convex unavailable (e.g. at build time) — serve frontmatter listing.
     return fsItems;
   }
-}
-
-/** Archive card ported from the legacy newsletter-cards grid markup. */
-function IssueCardLink({ issue }: { issue: IssueCard }) {
-  const am = issue.edition === "am";
-  return (
-    <Link
-      href={`/newsletter/${issue.slug}`}
-      data-nl-card
-      data-nl-slot={issue.edition}
-      data-nl-date={issue.isoDate}
-      className="nl-card group block p-6 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl hover:border-white/20 transition-all"
-    >
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <span
-          className={`px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider border ${
-            am
-              ? "bg-[#CC5500]/10 border-[#CC5500]/30 text-[#CC5500]"
-              : "bg-white/5 border-white/10 text-neutral-300"
-          }`}
-        >
-          {am ? "AM · Idea of the Day" : "PM · Builder Brief"}
-        </span>
-        <time
-          className="text-[11px] font-mono text-neutral-500"
-          dateTime={issue.isoDate}
-        >
-          {issue.displayDate}
-        </time>
-      </div>
-      <h3 className="text-lg font-medium text-white mb-2 leading-snug group-hover:text-[#CC5500] transition-colors">
-        {issue.title}
-      </h3>
-      <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2">
-        {issue.description}
-      </p>
-      <div className="mt-4 flex items-center gap-2 text-xs text-neutral-600 group-hover:text-[#CC5500] transition-colors">
-        <span>Read</span>
-        <ArrowRight size={14} aria-hidden="true" />
-      </div>
-    </Link>
-  );
 }
 
 export default async function NewsletterPage() {
@@ -308,14 +265,7 @@ async function CachedNewsletterPage() {
             </p>
           </header>
 
-          <div
-            id="newsletter-grid"
-            className="grid grid-cols-1 md:grid-cols-2 gap-5"
-          >
-            {issues.map((issue) => (
-              <IssueCardLink key={issue.slug} issue={issue} />
-            ))}
-          </div>
+          <NewsletterArchive issues={issues} />
         </div>
       </section>
 

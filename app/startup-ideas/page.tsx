@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
-import { Calendar } from "lucide-react";
+import { Calendar, Trophy } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
@@ -34,7 +35,10 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   authors: [{ name: "John Iseghohi" }],
-  alternates: { canonical: "/startup-ideas" },
+  alternates: {
+    canonical: "/startup-ideas",
+    types: { "application/rss+xml": "/feed.xml" },
+  },
   openGraph: {
     type: "website",
     url: `${SITE}/startup-ideas`,
@@ -168,6 +172,11 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
         categoryLabel: null,
         researchLevel: null,
         buildTime: null,
+        buildTimeHours: null,
+        revenueGoal: null,
+        tools: [],
+        audiences: [],
+        scores: null,
       };
     }),
   );
@@ -192,6 +201,7 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
   const applicationCategories: Record<string, string> = {};
   const ideas: IdeaCardData[] = rows.map((idea) => {
     applicationCategories[idea.slug] = idea.applicationCategory;
+    const hours = Number.parseInt(idea.buildTime, 10);
     return {
       slug: idea.slug,
       title: idea.title,
@@ -201,6 +211,11 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
       categoryLabel: humanizeSlug(idea.category),
       researchLevel: idea.researchLevel ?? "quick",
       buildTime: idea.buildTime,
+      buildTimeHours: Number.isFinite(hours) ? hours : null,
+      revenueGoal: idea.revenueGoal,
+      tools: idea.tools,
+      audiences: idea.audiences,
+      scores: idea.scores ?? null,
     };
   });
   return { source: "convex", ideas, filters, applicationCategories };
@@ -307,13 +322,22 @@ async function CachedStartupIdeasPage() {
                     idea to see the full breakdown.
                   </p>
                 </div>
-                <NavExternalLink
-                  href="https://cal.com/switchtoux/mvp-sprint"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <Calendar size={16} aria-hidden="true" />
-                  Want me to build one?
-                </NavExternalLink>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/startup-ideas/top"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Trophy size={16} aria-hidden="true" />
+                    Top-scored ideas
+                  </Link>
+                  <NavExternalLink
+                    href="https://cal.com/switchtoux/mvp-sprint"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-medium hover:bg-white/10 transition-colors"
+                  >
+                    <Calendar size={16} aria-hidden="true" />
+                    Want me to build one?
+                  </NavExternalLink>
+                </div>
               </div>
 
               <IdeasExplorer

@@ -91,9 +91,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const rootPages: Entry[] = [
     entry("/", { priority: 1.0, changeFrequency: "weekly" }),
     entry("/startup-ideas", { priority: 0.95, changeFrequency: "daily" }),
+    entry("/startup-ideas/top", { priority: 0.85, changeFrequency: "weekly" }),
+    entry("/ideas/today", { priority: 0.9, changeFrequency: "daily" }),
+    entry("/ideas/previous", { priority: 0.8, changeFrequency: "daily" }),
     entry("/articles", { priority: 0.9, changeFrequency: "weekly" }),
     entry("/newsletter", { priority: 0.9, changeFrequency: "daily" }),
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
+    entry("/validation-checklist", {
+      priority: 0.8,
+      changeFrequency: "monthly",
+    }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/privacy-policy", {
       priority: 0.3,
