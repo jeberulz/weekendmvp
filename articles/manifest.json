@@ -299,6 +299,18 @@
         "accent": "lime",
         "status": "ready"
       }
+    },
+    {
+      "slug": "stop-selling-ai-subscriptions-start-selling-ai-work",
+      "title": "Stop Selling AI Subscriptions, Start Selling AI-Powered Work",
+      "description": "Cheap AI subscriptions churn 30% faster than average. Here's why selling the finished work, not tool access, is the higher-margin, lower-churn model in 2026.",
+      "wordCount": 1368,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A hand-signed contract page on a near-black desk, its lifted corner catching a single mint beam from the side, very shallow focus, deep shadow surrounding, no readable text visible",
+        "accent": "mint",
+        "status": "ready"
+      }
     }
   ]
 }
