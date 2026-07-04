@@ -1,0 +1,152 @@
+---
+slug: "static-ad-to-video-generator"
+title: "Static Ad to Video Generator"
+---
+
+## The Problem
+
+Performance marketers live in a split reality. Creative teams ship beautiful static banners—1200×628 Meta carousels, 1080×1920 story frames, square Shopify promos—and then the media buyer gets told the account needs video to unlock reach. TikTok and Instagram Reels deprioritize static. YouTube Shorts won't even accept a PNG. The brand has twenty winning static variants from last quarter's test, but rebuilding each one as motion graphics means opening After Effects, briefing a freelancer, or paying an agency $800 per fifteen-second cut.
+
+The workaround is worse. Teams screen-record a Canva slide deck, slap a trending audio track underneath, and call it a video ad. Engagement ticks up briefly, then quality scores tank because the motion is lazy and the CTA disappears off-frame in vertical crop. Reddit's r/PPC and r/FacebookAds threads repeat the same complaint weekly: "We have static winners—we just need them as video without rebuilding from scratch." r/aivideo (221K members) and r/ArtificialInteligence (1.5M) show the same hunger from the tool side: dozens of AI video generators, almost none optimized for *ad* conversion—aspect-ratio presets, safe zones, hook timing, platform export specs.
+
+The cost is measurable. Video ads consistently deliver roughly **34% higher conversion rates** than static placements on the same audience (Ideabrowser pain research, cross-platform benchmarks). Yet **86%+ of businesses now use video in marketing** while most still produce static creative first because it is faster to iterate. That gap—static creative velocity on the design side, video requirement on the distribution side—is where budget bleeds. A DTC brand running fifty static variants per month but only five videos is effectively leaving reach and ROAS on the table every time Meta's algorithm favors motion.
+
+## The Solution
+
+AdMotion is a web app that ingests a static ad—PNG, JPG, or layered export from Figma/Canva—and outputs platform-ready video files in under three minutes. Upload the creative, pick a motion template (Ken Burns pan, parallax layers, text stagger, product zoom), choose target formats (9:16, 1:1, 16:9), and the pipeline generates captioned MP4s with CTA safe zones baked in. Optional AI voiceover reads the headline; optional background music pulls from a licensed library synced to beat drops. The output is not cinematic—it is *ad* motion: hooks in the first two seconds, legible text, thumb-stopping movement without re-authoring the layout.
+
+The wedge is static-to-video for performance marketers who already know which image wins. You are not replacing a creative director; you are multiplying assets the team already validated. Batch mode accepts a ZIP of ten statics and returns a folder of matched videos—exactly the workflow agency media buyers need for creative testing at scale.
+
+**How it works:**
+
+1. **Upload static creative** — Drop PNG/JPG or paste a Figma/Canva export URL; the system detects text layers, product cutouts, and background regions for motion planning
+2. **Pick motion + formats** — Select a template (parallax, zoom-reveal, text-stagger), choose 9:16 / 1:1 / 16:9, set duration (6–15s) and optional AI voiceover from the headline copy
+3. **Generate + export** — FFmpeg renders preview in-browser; full-quality MP4 downloads or pushes directly to Meta Ads Library / Google Drive folder for the media buyer
+
+## Market Research
+
+Digital video advertising is in a hyper-growth phase—and AI tooling is collapsing production time at the same moment platforms bias harder toward motion:
+
+- **Global digital video advertising** is projected at **$140.18 billion in 2025**, up from $104.65 billion in 2024—a **34% CAGR**—and expected to reach **$458.37 billion by 2029** (Statista / industry analyst consensus cited in Ideabrowser competitive analysis).
+- **Short-form video ad spend** alone is forecast at **$169.17 billion by 2030** (8.79% CAGR), driven by TikTok, Reels, and YouTube Shorts placement growth.
+- **Social video spend** hit **$23.4 billion in 2024** with **20% year-over-year growth** (IAB digital video report)—the segment where static-to-video conversion matters most.
+- **Search demand validates the category:** "ai video generator" alone carries **~1.5M monthly searches**; "ai video generation platform" shows **60K+ volume at $4.02 CPC** with low competition (Ideabrowser trend research, July 2026)—commercial intent is real, not hypothetical.
+- **Community scale:** Reddit AI video communities exceed **2M combined members**; Facebook groups like "AI ANIMATION & AI VIDEO" (140K+) and "AI Art Universe" (657K+) discuss tool quality and workflow gaps weekly—exactly the audience that will trial a focused static-to-video product.
+- **Venture signal:** **$1B+** has flowed into AI video startups (Runway, Synthesia, HeyGen, Pika)—category is funded, but almost no player owns the narrow "static ad in → ad video out" workflow for SMB performance marketers.
+
+Stage: *emerging-to-competitive*. RunwayML and InVideo AI generate video from scratch; Canva adds motion to designs you build inside Canva. Nobody owns the job of "I already have a static ad that converts—give me the video version in sixty seconds with correct safe zones."
+
+## Competitive Landscape
+
+Four clusters surround this wedge. General AI video tools optimize for creators, not ad ops. Design suites assume you live inside their editor. Manual editors are powerful but slow. Your product is the batch conversion layer between creative and media buying.
+
+- **RunwayML** — Best-in-class generative video (text/image-to-video, inpainting). Powerful for cinematic content, not ad-format presets or batch static conversion. Freemium → paid Pro; API pricing for enterprise. Weak on CTA safe zones and platform export specs out of the box.
+- **InVideo AI** — Cloud video ads with large template library and strong onboarding. Generates from prompts, not from *your* existing static winner. Subscription tiers (~$25–$60/mo range). Generic outputs; limited "upload my banner, preserve my layout" fidelity.
+- **Canva (Video + AI)** — Massive user base; seamless if you designed in Canva. Pro ~$13/mo, Teams higher. Motion is basic compared to dedicated video tools; not built for bulk static-to-video or Meta/Google export compliance. Cannibalizes only Canva-native assets.
+- **Animoto / Lumen5 / Pictory** — Legacy image/slide-to-video tools. Template-driven, dated motion aesthetics, weak AI. $20–$50/mo. Prove the workflow exists but feel like 2019—opening for modern AI motion + ad-spec awareness.
+- **Manual (Premiere / After Effects + freelancer)** — Gold standard quality, unacceptable velocity. Agency rate **$500–$2,000+ per fifteen-second cut**; internal editor time measured in hours per asset. The default for brands with budget; the blocker for everyone else.
+- **DIY screen-record + trending audio** — Free, ubiquitous, and exactly why quality scores suffer. Zero moat, zero repeatability, no batch mode.
+
+**Your Opportunity**
+
+Win the narrow job: **static winner in → platform-ready video out**, with batch mode, ad safe zones, and aspect-ratio presets Meta/TikTok/Google actually accept. Runway won't move down-market to $39/mo batch conversion—it fights Adobe. Canva won't optimize for Figma exports. Position as the performance marketer's multiplier: "Turn last month's static winners into this week's video tests."
+
+## Business Model
+
+Subscription SaaS with usage caps on renders—variable cost is GPU/FFmpeg compute plus optional voiceover API calls. Freemium demo converts agencies running high creative volume.
+
+- **Free** ($0) — 3 conversions/month, watermark, 720p, single format—the Product Hunt / Reddit demo tier
+- **Starter** ($39/mo) — 50 conversions, 1080p, all aspect ratios, no watermark, batch ZIP upload (10 assets)
+- **Pro** ($99/mo) — 200 conversions, AI voiceover, licensed music library, Meta/Google export presets, team folder
+- **Agency** ($299/mo) — 1,000 conversions, 5 seats, white-label download pages, API access, priority render queue
+
+Continuity add-on: **Analytics** ($49/mo) — ties conversion exports to manual ROAS input so users see which motion template correlated with lower CPA (sticky retention hook).
+
+Backend: **Enterprise custom** ($2,500+/mo) — SSO, dedicated render pool, brand motion libraries, SLA for holding companies.
+
+**Unit Economics**
+
+- **~$0.15–0.40** — Render cost per 15s video (cloud GPU + storage)
+- **~75%** — Gross margin at Starter tier (50 conversions)
+- **$40–$80** — Target CAC (Reddit + YouTube tutorial SEO)
+- **~$470** — LTV (12-mo Pro retention at 70%)
+
+MRR path: 200 Starter subs = $7.8K/mo. 500 Starter + 100 Pro = $29.4K/mo. 1,000 mixed + 30 Agency = ~$85K/mo (~$1M ARR). The math works because each customer multiplies existing static spend—they are not buying video production from zero.
+
+## Recommended Tech Stack
+
+The product is an upload → motion-plan → render pipeline with a thin dashboard. Heavy lifting is FFmpeg and optional image-to-video API calls—not a custom ML lab on day one.
+
+- **Next.js 14 + Vercel** — App Router for dashboard, Edge route for upload webhooks, Vercel Blob for temp assets. Server Actions trigger render jobs.
+- **Remotion or FFmpeg (via fluent-ffmpeg on a worker)** — Remotion if you want React-defined motion templates; raw FFmpeg for Ken Burns / crossfade if you need faster MVP. Start FFmpeg-only for weekend scope; migrate hot templates to Remotion later.
+- **Runway / Replicate API (optional)** — Image-to-video for product cutout layers when static parallax isn't enough. Gate behind Pro tier to protect margin.
+- **Supabase** — Users, projects, render jobs (status, input_url, output_urls JSONB), template preferences. RLS per user.
+- **Inngest or BullMQ + Redis** — Render queue with retry, progress webhooks, concurrency limits per plan tier.
+- **Stripe Billing** — Starter/Pro/Agency subscriptions; metered overage at $0.75/extra render.
+- **Cloudflare R2 or S3** — Output MP4 storage with signed download URLs; lifecycle rule deletes after 30 days on free tier.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called AdMotion for converting static ad images into platform-ready video ads.
+
+Supabase schema:
+- users(id, email, plan ENUM[free,starter,pro,agency], stripe_customer_id, renders_used_this_period INT)
+- projects(id, user_id, name)
+- assets(id, project_id, user_id, original_url, width, height, detected_layers JSONB, created_at)
+- render_jobs(id, asset_id, user_id, template TEXT, formats TEXT[], duration_seconds INT, status ENUM[queued,processing,done,failed], output_urls JSONB, error TEXT, created_at)
+
+RLS: users see only their rows. Stripe products: Free ($0), Starter ($39), Pro ($99), Agency ($299).
+
+Routes:
+- /dashboard (project list + usage meter)
+- /dashboard/upload (dropzone + format picker)
+- /dashboard/jobs/[id] (progress + download)
+- POST /api/render (enqueue job)
+- POST /api/webhooks/stripe
+
+Env: SUPABASE_*, STRIPE_*, REDIS_URL, R2_* or S3_*, optional REPLICATE_API_TOKEN.
+```
+
+**2. Motion Render Pipeline**
+
+```text
+Build the static-to-video render worker for AdMotion using FFmpeg (Node worker, BullMQ consumer).
+
+Input: PNG/JPG path, template enum (ken_burns | parallax | text_stagger | zoom_reveal), target formats [{ratio:'9:16',width:1080,height:1920}, {ratio:'1:1',width:1080,height:1080}, {ratio:'16:9',width:1920,height:1080}], duration 6-15s.
+
+For ken_burns: slow zoompan from 1.0 to 1.15 scale with subtle pan direction based on image aspect. For text_stagger: OCR or user-provided text regions (x,y,w,h); fade each region in at 0.5s intervals using overlay filters. Burn in optional headline from asset metadata.
+
+Output: one MP4 per format, H.264, 30fps, yuv420p, under 30MB for 15s. Upload to R2, patch render_jobs.output_urls, set status done. On failure, capture stderr tail in render_jobs.error and retry once.
+
+Include a 480p preview render for in-browser progress (first format only) returned within 20s.
+```
+
+**3. Landing Page + Batch Upload**
+
+```text
+Design a marketing landing page for AdMotion targeting performance marketers and Shopify DTC brands.
+
+Hero: "Your static ads already win. Now make them video." Sub: "Upload a banner. Download 9:16, 1:1, and 16:9 MP4s in under three minutes—safe zones included."
+
+Sections: problem (platforms demand video, rebuilding creative is slow), live before/after (static PNG animating into vertical video on scroll), how it works (3 steps matching the product), pricing table (Free/Starter/Pro/Agency), FAQ (quality vs Runway, Meta specs, batch limits, watermark on free).
+
+Add a /dashboard/batch page: ZIP upload of up to 10 PNGs, shared template selection, email when ZIP of outputs is ready. Geist font, dark hero, lime accent (#84cc16), generous whitespace. CTA: "Convert your first ad free."
+```
+
+## Sources
+
+Market sizing, competitive positioning, and community demand collated from Ideabrowser MCP idea #42 (April–July 2026 research stack). Triangulate before citing in investor materials.
+
+- [Statista — Digital Video Advertising Worldwide Outlook](https://www.statista.com/outlook/amo/advertising/tv-video-advertising/digital-video-advertising/worldwide)
+- [IAB — Digital Video Ad Spend Growing Nearly 80% Faster Than Media Overall](https://www.iab.com/news/digital-video-ad-spend-growing-nearly-80-faster-than-media-overall/)
+- [Statista — Digital Video Advertising United States](https://www.statista.com/outlook/amo/advertising/tv-video-advertising/digital-video-advertising/united-states?currency=usd)
+- [Grand View Research — Digital Content Creation Market Report](https://www.grandviewresearch.com/industry-analysis/digital-content-creation-market-report)
+- [The Business Research Company — Digital Video Advertising Global Market Report](https://www.thebusinessresearchcompany.com/report/digital-video-advertising-global-market-report)
+- [QuickFrame — Video vs Static Performance Comparison](https://quickframe.com/blog/video-vs-static/)
+- [Crafted — From Static to Video: Why Video Ads Dominate Digital Marketing](https://www.usecrafted.com/blog/from-static-to-video-why-video-ads-dominate-digital-marketing-today)
+- [River Valley Media Group — Why Video Is Beating Static Advertising](https://rivervalleymediagroup.com/why-video-is-beating-static-advertising/)

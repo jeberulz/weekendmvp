@@ -2959,6 +2959,56 @@
         "publishNotes": "Draft idea published via publish-idea pipeline. MDX committed in 134ab35; manifest + seed + OG completed in follow-up."
       },
       "researchLevel": "summary"
+    },
+    {
+      "slug": "static-ad-to-video-generator",
+      "title": "Static Ad to Video Generator",
+      "publishedAt": "2026-07-04",
+      "category": "saas",
+      "description": "Turn static ad images into platform-ready video ads in minutes. AI motion, captions, and multi-format export for Shopify brands and performance marketers.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt",
+        "v0"
+      ],
+      "audiences": [
+        "marketers",
+        "solo-founders",
+        "startup-founders"
+      ],
+      "source": "ideabrowser:42",
+      "og": {
+        "subject": "A static banner on a dark desk animating into a vertical phone screen with subtle motion blur, lime accent glow, late night, shallow focus, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 8,
+        "wordCount": 2002,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-04T20:15:00.000Z",
+        "publishNotes": "research_market_insight queued async (insight_id 35a2f2d8-230f-4faf-abb9-57b3e82acbce); market stats sourced from competitive_analysis citations, base MCP record, and research_trend keyword volume."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
