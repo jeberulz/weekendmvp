@@ -2875,6 +2875,90 @@
         "builder_confidence": 10
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-sentiment-landing-page-design",
+      "title": "SentimentLP: AI Landing Pages Informed by Market Signal",
+      "publishedAt": "2026-07-04",
+      "category": "saas",
+      "description": "AI landing pages built from Reddit and forum sentiment—not templates. Scrape market language, generate conversion copy, and publish a validation page in one weekend.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "startup-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:31",
+      "og": {
+        "subject": "A laptop on a dark desk showing a split view of Reddit threads and a glowing landing page draft, lavender backlight, late night, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 8,
+        "wordCount": 1650,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-04T19:10:00.000Z",
+        "publishNotes": "research_market_insight queued async (insight_id 1b40cd3c-5f32-4cdc-abec-79f20a6a3f80); market stats sourced from base MCP record, competitive_analysis, and research_trend keyword volume."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "gamified-money-habit-app",
+      "title": "Gamified Money-Habit App",
+      "publishedAt": "2026-07-04",
+      "category": "fintech",
+      "description": "A gamified money-habit app that turns real bank transactions into 3-minute daily challenges so Gen Z builds spending discipline—not just finance literacy.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "replit"
+      ],
+      "audiences": [
+        "side-hustlers",
+        "solo-founders"
+      ],
+      "source": "draft:unknown",
+      "og": {
+        "subject": "A phone on a dark desk showing a streak counter beside a blurred bank notification, soft mint glow, late night, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [],
+        "citations": 6,
+        "wordCount": 1765,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-04T19:06:00.000Z",
+        "publishNotes": "Draft idea published via publish-idea pipeline. MDX committed in 134ab35; manifest + seed + OG completed in follow-up."
+      },
+      "researchLevel": "summary"
     }
   ],
   "categories": [
