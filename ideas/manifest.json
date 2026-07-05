@@ -3115,6 +3115,53 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-api-cost-optimizer-indie-builders",
+      "title": "AI API Cost Optimizer for Indie Builders",
+      "publishedAt": "2026-07-05",
+      "category": "developer-tools",
+      "description": "Solo builders juggle OpenAI, Anthropic, and Gemini bills with zero visibility. Build a cost-tracking proxy that shows exactly where the money goes.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1565",
+      "og": {
+        "subject": "A laptop on a dark desk showing a single glowing cost-savings percentage on an otherwise dark dashboard, aubergine backlight, very shallow focus, deep shadow surrounding",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 6,
+        "wordCount": 2150,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-05T00:00:00.000Z",
+        "publishNotes": "research_market_insight (insight_id 18ed1fd7-af88-4e16-877c-58c0aa5efe8c) was queued async and not incorporated; research_trend returned off-topic HR-management keywords (semantic drift on the discover-mode topic expansion) and was excluded. Market stats sourced from the base MCP record and competitive_analysis citations instead."
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
