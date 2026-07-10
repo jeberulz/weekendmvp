@@ -1,0 +1,144 @@
+---
+slug: "ai-wiki-keeper"
+title: "AI Wiki Keeper"
+---
+
+## The Problem
+
+Every engineering team says the same thing about its internal wiki: it's wrong. Not maliciously, just quietly — a Confluence page describes a deploy process that changed three sprints ago, a Notion onboarding doc still tells new hires to use a Slack channel that got archived, and the "source of truth" for how billing actually works lives in a thread nobody can find. The work of updating docs never disappears from anyone's job description, but it always loses to the next sprint, the next incident, the next customer call. One team captured the whole problem in a single sentence Ideabrowser's community research surfaced verbatim: *"We haven't written a doc in 3 months and nothing's gone stale"* is the sentence every team wants to say and none can.
+
+The pain is structural, not incidental. Engineers change code but rarely update the docs that describe it, because updating docs is a second, unrewarded job layered on top of the first one. Support and onboarding teams then waste hours hunting through wikis that no longer match reality, second-guessing whether a page is current or a fossil. Knowledge that does get captured — in a Slack thread, a Zoom call, a PR description — gets trapped there, one search query away from being lost forever. Reddit's r/selfhosted (542K+ members) and r/automation (85.8K+) surface this constantly: threads about integration pain, privacy concerns with AI tools touching internal docs, and a recurring wish for something that updates "without anyone lifting a finger." r/MachineLearning, at 1.9M members, shows the same appetite from the other direction — teams actively discussing AI-driven document processing as the obvious next step past manual wikis.
+
+The two forces compounding this: remote and hybrid work removed the hallway conversation that used to patch over stale docs, and AI tools have gone from "can summarize a meeting" to "can plausibly draft an accurate doc update" only in the last cycle of model releases. Teams are stuck between two bad options — pay someone to babysit the wiki, or accept that "check with someone" is the actual documentation system. Neither scales past a 10-person team.
+
+## The Solution
+
+WikiKeeper is an AI agent that watches the places your team's knowledge already changes — GitHub commits and PR descriptions, Slack threads, Zoom/meeting transcripts, Notion edits — and drafts the corresponding wiki update automatically, instead of waiting for a human to remember. It doesn't replace your wiki; it sits on top of Confluence, Notion, or a GitHub-native docs folder and keeps it honest. Every change ships with a diff-style summary of what was updated and why, so nothing gets silently rewritten without a trail.
+
+The wedge is narrow on purpose: start with a GitHub App that reads merged PRs and their descriptions, and use an LLM to translate the technical diff into a plain-English documentation patch, proposed as a review rather than auto-published. Once a team trusts the GitHub integration, you add Slack (watching pinned threads and channels tagged `#sop`) and then meeting transcripts, so a decision made out loud in a call becomes a wiki edit within the hour instead of never.
+
+**How it works:**
+
+1. **Connect your tools** — One-click OAuth into GitHub, Slack, and Notion (Zoom transcripts follow in v2); WikiKeeper indexes your existing wiki structure so it knows what page maps to what topic.
+2. **Detect a change** — A PR merges, a decision lands in a tagged Slack thread, or a meeting transcript mentions a process update; WikiKeeper's classifier flags which wiki pages are affected.
+3. **Draft the update** — An LLM generates a diff-style edit to the specific section of the affected page, written in the team's existing doc voice, with a one-line "what changed and why."
+4. **Review and publish** — The proposed edit posts to a Slack approval channel (or auto-publishes below a configurable trust threshold); every change keeps a full audit log for compliance-minded teams.
+
+## Market Research
+
+The category sits inside enterprise wiki and knowledge-management software, which Cognitive Market Research projects growing at a steady double-digit CAGR through 2033 — a mature market with no single player who has claimed the "hands-free" niche. Underneath that TAM number, the demand signal for AI-specific documentation tooling is showing up directly in search behavior: keyword research around AI document processing tools ("document ai," "ai document," "document intelligence") shows over 107,000 combined monthly searches with low-to-medium competition and CPCs up to $10.76 — high commercial intent with room to rank before the category gets crowded.
+
+- **Enterprise wiki software market projected for sustained double-digit CAGR through 2033** (Cognitive Market Research), driven by remote/hybrid work and digital-transformation budgets that specifically fund knowledge-management tooling.
+- **107,590 combined monthly searches** across AI-documentation-adjacent keywords ("document ai," "ai document," "document intelligence," "ai pdf maker"), most rated LOW competition — a market actively searching for a solution category that doesn't yet have a household-name leader.
+- **r/MachineLearning (1.9M members), r/automation (85.8K+), and r/selfhosted (542K+)** show sustained, high-engagement discussion of AI document automation and workflow integration — the buyer is already fluent in the problem and actively comparing tools, not waiting to be educated.
+- Meeting-summarizer tools (Otter, Fireflies, tl;dv, Grain) have already proven teams will adopt AI for capturing knowledge from calls — validating half the workflow WikiKeeper automates, without any of them closing the loop back into the wiki itself.
+
+## Competitive Landscape
+
+No incumbent has built true hands-free, cross-platform wiki updating — every current player still requires a human to open the page and type:
+
+- **Atlassian Confluence** — The enterprise wiki category leader, with deep Jira/Slack integration and strong compliance/permissioning. Its "AI" features summarize and search existing pages; nothing rewrites the page itself when the underlying reality changes. Free (up to 10 users) / Standard ~$5.16/user/mo / Premium ~$9.73/user/mo (annual)
+- **Notion** — Dominant with startups and digital-first teams on flexibility and speed of adoption, with light AI assist for summarization and Q&A layered on top. Still fundamentally a blank canvas that depends on someone remembering to update it. Free / Plus $10/user/mo / Business $18/user/mo / Enterprise custom
+- **Guru** — Positions itself as AI-driven knowledge surfacing, with a browser extension and Slack integration that pushes the right card into a conversation. Strong at retrieval, but content still requires human authorship and validation — it surfaces stale info faster, it doesn't fix it. Starter ~$10/user/mo / Builder ~$20/user/mo / Enterprise custom
+- **Tettra / Nuclino / Slab / Slite** — The lightweight-wiki cluster: fast onboarding, clean UX, competitive pricing, popular with small teams and agencies. All are manual-first tools with, at most, AI-assisted search or Q&A bolted on. Tettra: Basic ~$4/user/mo / Scaling ~$8/user/mo / Professional custom
+- **DIY: Zapier / n8n / Power Automate** — Technical teams already stitch together fragile automations that push a Slack message into a Notion page. It works until an API changes or the person who built it leaves — and it never generates the actual prose, just the plumbing.
+
+**Your Opportunity**
+
+Every incumbent above is optimized for humans typing into a box; none of them own "hands-free, always-current, zero-effort" as a brand promise, because doing it well requires exactly the kind of LLM orchestration that's only become reliable in the last model generation. The wedge is a GitHub-first entry point (a technical buyer who already trusts automation), a Slack-approval loop that keeps a human in the review path without requiring one to do the writing, and an audit trail that turns "AI wrote this" from a liability into a compliance feature for regulated teams.
+
+## Business Model
+
+Land with a GitHub-only free tier that proves the "we haven't written a doc in months and nothing's stale" promise on a single integration, then expand the same account into Slack, Notion, and eventually meeting transcripts as paid tiers.
+
+- **Free** ($0) — GitHub-only integration, up to 3 wiki pages watched, proposed edits require manual approval — the trust-building wedge
+- **Starter** ($49/user/mo) — Full GitHub + Slack integration, unlimited watched pages, weekly digest of what changed and why
+- **Pro** ($50–150/user/mo, scales with team size) — Adds Notion sync, auto-publish below a configurable confidence threshold, and priority support
+- **Compliance Add-On** ($200/mo) — Full audit trail, change-approval workflows, and data-residency controls for regulated industries
+- **Enterprise** ($10K–$100K+/year) — Custom integrations, dedicated onboarding, and SSO for organizations with complex tool stacks
+
+**Unit Economics**
+
+- **$600** — Target CAC (self-serve trial → sales-assisted close for teams over 20 seats)
+- **~$420/mo** — Avg. Revenue per Account (blended across an ~8-seat team on Starter/Pro)
+- **~75%** — Gross Margin (LLM inference + embedding storage is the main variable cost)
+- **~$7,500** — LTV (24-mo, assuming median 18-month retention once a team's docs depend on it)
+
+At $420/mo blended ARPA, roughly 24 paying accounts clears $10K MRR; 200 accounts clears $1M ARR — well within reach of a GitHub-App-first distribution motion before any enterprise deals close.
+
+## Recommended Tech Stack
+
+The hard problem isn't generating prose — it's reliably detecting *which* wiki page a given commit, thread, or transcript actually affects, and keeping that mapping current as the wiki itself evolves.
+
+- **Next.js + Vercel** — Dashboard for connected integrations, pending-edit review queue, and audit log; Vercel Cron for the weekly digest and re-indexing sweep.
+- **GitHub App + Octokit** — Install-once GitHub App listening on `pull_request` merge and PR-description events; this is the free-tier wedge and the cheapest integration to ship first.
+- **Slack App (Bolt SDK)** — Watches tagged channels/threads for the approval workflow and posts proposed edits as interactive messages a human can approve or reject in one click.
+- **Postgres + pgvector (Supabase or Neon)** — Stores the wiki's page structure as embeddings so incoming changes can be matched to the *specific* affected section, not just "somewhere in the docs."
+- **Claude for drafting, GPT-4o as fallback** — Claude drafts the diff-style page edit in the team's existing voice (with prompt caching on each team's style guide for margin); GPT-4o covers rate-limit or incident failover.
+- **BullMQ + Redis** — Queues incoming events (a burst of commits, a long meeting transcript) so classification and drafting never block the webhook response.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "WikiKeeper."
+Provision Postgres (Supabase) with pgvector enabled. Tables: teams (id, name, plan),
+integrations (id, team_id, provider TEXT CHECK provider IN ('github','slack','notion'),
+access_token, installed_at), wiki_pages (id, team_id, source_url, title, content,
+embedding VECTOR(1536), last_synced_at), proposed_edits (id, team_id, wiki_page_id,
+diff_summary, full_draft, source_event TEXT, status TEXT DEFAULT 'pending', created_at).
+Wire a GitHub App manifest with pull_request webhook scope and a Slack app with Bolt SDK
+for the approval flow. Add env vars for GITHUB_APP_ID, GITHUB_PRIVATE_KEY, SLACK_BOT_TOKEN,
+ANTHROPIC_API_KEY, OPENAI_API_KEY. Set up BullMQ with a Redis connection for the event queue.
+```
+
+**2. Core Feature: Change Detection + Draft Generation**
+
+```text
+Build a worker that processes incoming GitHub pull_request.merged webhooks:
+
+1. Fetch the PR diff and description via Octokit.
+2. Embed the PR description + changed file paths, and run a pgvector similarity
+   search against wiki_pages.embedding to find the top 3 candidate affected pages.
+3. Send the PR diff, description, and candidate page content to Claude with this
+   instruction: "Given this code change and the existing wiki page below, draft a
+   minimal diff-style edit to the page that reflects the change. Preserve the page's
+   existing tone and structure. Output the edit as a unified diff plus a one-sentence
+   summary of what changed and why."
+4. Insert a row into proposed_edits with status 'pending' and post the diff summary
+   to the team's configured Slack channel as an interactive message with Approve/Reject
+   buttons.
+5. On Slack button click, update proposed_edits.status and, if approved, push the
+   accepted edit to the wiki's underlying API (Confluence/Notion/GitHub docs folder).
+
+Handle the case where no candidate page exists above a similarity threshold — file
+these as "new page suggestions" instead of edits.
+```
+
+**3. Configuration & Trust Threshold**
+
+```text
+Add a per-team settings page for:
+- auto_publish_threshold: float (0.0-1.0) - similarity/confidence score above which
+  edits publish automatically instead of requiring Slack approval
+- watched_channels: string[] - Slack channel IDs to monitor for tagged threads
+- excluded_paths: string[] - GitHub file paths to ignore when generating PR-based edits
+- digest_frequency: enum ('daily', 'weekly') - cadence for the summary email/Slack digest
+
+Store settings in a team_settings table and read them in the worker before deciding
+whether a proposed edit needs human approval or can auto-publish.
+```
+
+## Sources
+
+- [Cognitive Market Research — Enterprise Wiki Software Market Report](https://www.cognitivemarketresearch.com/enterprise-wiki-software-market-report)
+- [Nuclino — Wiki Software Category Overview](https://www.nuclino.com/solutions/wiki-software)
+- [Atlassian Confluence — Pricing](https://www.atlassian.com/software/confluence/pricing)
+- [Notion — Pricing](https://www.notion.so/pricing)
+- [Guru — Pricing](https://www.getguru.com/pricing)
+- [Tettra — Pricing](https://tettra.com/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 1424): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, product_offerings. `research_market_insight` (topic mode) hit the monthly quota (5/mo, pro tier) and `research_trend` (discover mode) returned generic "document AI" keyword volume rather than a wiki-specific signal — both noted in provenance; market stats instead sourced from the base MCP record's `why_now_analysis` and its cited market report.
