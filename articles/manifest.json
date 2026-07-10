@@ -311,6 +311,66 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "landing-page-that-converts-before-you-build",
+      "title": "How to Write a Landing Page That Converts Before You've Built Anything",
+      "description": "Learn how to write a landing page that converts using a pre-launch landing page, before writing a line of product code. Validate your idea in one weekend.",
+      "wordCount": 1741,
+      "readMinutes": 9,
+      "og": {
+        "subject": "A sealed cream envelope resting on a dark desk, single lavender light source catching the edge of its wax stamp, everything else falling into shallow shadow, very shallow focus, late-night atmosphere, no text or people visible",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "weekend-founder-legal-checklist",
+      "title": "The Weekend Founder's Legal Checklist: LLC, ToS, and Privacy Policy in One Afternoon",
+      "description": "A startup legal checklist for indie founders: when you need an LLC, cheap formation options, and free terms of service and privacy policy templates for launch.",
+      "wordCount": 1618,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A stamped legal document resting on a dark desk, single mint desk-lamp glow, a pen resting beside the signature line, very shallow focus, late-night atmosphere",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-to-retain-your-first-customers",
+      "title": "Retention Is the New Growth: How to Keep the First 10 Customers You Just Got",
+      "description": "You landed your first 10 customers—here's how to retain first customers with an onboarding checklist, activation moments, and founder-led retention tactics.",
+      "wordCount": 1699,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A brass house key resting on a worn wooden desk, single emerald light source from the side, very shallow focus, late-night atmosphere",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "niching-down-weekend-mvp",
+      "title": "Niching Down: Why 'For Everyone' Kills Weekend MVPs",
+      "description": "Why niche down your startup idea instead of chasing a broad audience. The data behind riches in the niches and why 'for everyone' products fail to launch.",
+      "wordCount": 1431,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A magnifying glass resting on a dark wooden desk, its lens catching a single lime-glowing line on a page beneath it, everything else falling into shadow, very shallow focus, late-night atmosphere, no people, no visible text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "solo-founder-90-day-plan",
+      "title": "The Solo Founder's 90-Day Plan: From Shipped to Sustainable",
+      "description": "Shipped your MVP and don't know what's next? Here's a solo founder 90 day plan with weekly checkpoints, from first customers to a clean keep-or-kill call.",
+      "wordCount": 1592,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A desk calendar with three month tabs, the middle tab dog-eared and slightly worn, single lavender light source from the side, dark surface, very shallow focus, late-night atmosphere, no people, no faces, no legible text",
+        "accent": "lavender",
+        "status": "ready"
+      }
     }
   ]
 }
