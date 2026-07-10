@@ -1,1 +1,0 @@
-After the rewrite has been approved, delete the source file, and keep the rewritten file
