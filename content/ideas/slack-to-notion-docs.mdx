@@ -1,0 +1,123 @@
+---
+slug: "slack-to-notion-docs"
+title: "SlackToDoc: Turn Team Chatter Into Organized Knowledge"
+---
+
+## The Problem
+
+A product decision gets made at 11:47 p.m. in a thread twelve messages deep, buried under three unrelated conversations and a GIF. Two weeks later, a new hire asks "why did we pick Postgres over Mongo?" and the honest answer is "someone knows, scroll up." Slack is where knowledge-intensive teams actually think out loud, but Slack was never built to be a system of record — it's a stream, and streams don't preserve context once they scroll past the fold.
+
+The pain is loud and specific in the communities where it lives. Reddit's r/Slack (29.5K+ members) runs a steady drumbeat of threads about integration gaps and lost information in messy channels; r/PKMS (51K+ members) is full of people trying to bolt AI summarization onto their personal knowledge stack because nothing does it natively. Facebook groups like "Slack Apps & Hacks" and "The Future of AI Knowledge Management & General Productivity" show the same audience — tech-forward operators — comparing workarounds because no dedicated tool exists. Search interest in Slack workflow automation has grown 40 to 70% year-over-year, and YouTube tutorials on Slack automation routinely pull 10,000 to 200,000+ views, which is a strange amount of attention for a "just copy-paste it" problem.
+
+The downstream cost compounds in two specific ways. First, documentation goes stale the moment it's written — a Confluence page written in January is describing a process that changed in March, because updating it means someone has to notice, remember, and manually rewrite it. Second, onboarding becomes an oral tradition: new hires learn "how we actually do things" by pinging a teammate and waiting, because the canonical decision lives in someone's Slack history, not in a doc anyone can search. For regulated teams — healthcare, finance, legal — that gap is worse than inconvenient: a compliance-relevant decision made in a DM thread with no audit trail is a real liability, not just a productivity tax.
+
+## The Solution
+
+SlackToDoc sits inside the channels where decisions already happen and turns the useful 10% of the conversation into a living document, without anyone changing how they talk. Tag @SlackToDoc in a thread, or point it at a channel to watch continuously, and it reads for signal: decisions made, action items assigned, open questions, and anything flagged as policy-relevant. It writes that into a structured, versioned page in Notion (Confluence next), tags the source thread so anyone can jump back to the original context, and updates the page in near-real time as the conversation continues rather than producing a one-time dump.
+
+The bet is that documentation only gets maintained when it costs nothing extra to maintain. Nobody schedules "go update the runbook" time; they will, however, keep talking in Slack, because that's already their job. SlackToDoc converts that existing behavior into an asset instead of letting it evaporate. For compliance-sensitive teams, every extracted decision carries a timestamp, an author, and a link back to the source message — an audit trail that didn't exist before and that nobody had to build by hand.
+
+**How it works:**
+
+1. **Tag or watch** — Add @SlackToDoc to a thread for one-off capture, or subscribe a whole channel so it runs continuously in the background
+2. **Extract the signal** — An LLM-backed context model separates decisions, action items, and open questions from small talk and noise, using message threading and reactions as extra signal
+3. **Write structured docs** — Extracted content is formatted into a Notion page (headings, owners, due dates, linked source messages) inside the team's existing workspace structure
+4. **Sync and flag** — As the thread evolves, the doc updates instead of forking; compliance-relevant content (policy mentions, PII, financial terms) gets auto-flagged for review before it syncs
+
+## Market Research
+
+The category SlackToDoc sits in is the intersection of conversation intelligence and intelligent document processing, and both are growing fast without a dominant player who owns the specific "Slack to living doc" workflow.
+
+- **The conversation intelligence software market is projected to grow from $25.3B in 2025 to $55.7B by 2035, an 8.2% CAGR** (Future Market Insights), which is the closest direct-comparable category to what SlackToDoc sells.
+- **The broader conversational systems market is forecast to go from $289.8B in 2025 to over $6.76 trillion by 2037, a 29.5% CAGR** (Research Nester) — the infrastructure and AI-context tooling this product depends on is being built out regardless of what SlackToDoc does, which lowers the technical risk of betting on it now.
+- **Search interest for Slack workflow automation is up 40–70% year over year**, and commercial-intent keywords like "slack workflow," "slack enterprise," and "intelligent document processing" all carry medium-to-high commercial intent per keyword research tied to this idea — evidence that people are actively shopping for this, not just complaining about it.
+- **The Slack App Directory sees 1M+ weekly active users browsing for integrations**, and existing category-adjacent tools like Fireflies.ai report 70,000+ business customers — proof the "AI turns conversation into structured output" purchase decision is one teams already make.
+- Community engagement data backs the demand signal: ProductHunt launches for Slack integrations routinely draw 300 to 1,000+ upvotes, and the market is explicitly characterized in competitive research as "late-early to early-growth" — meaning real adoption curves are forming, but no entrenched winner has locked up the Slack-to-living-doc workflow specifically.
+
+The market's own gap analysis calls out real-time, incremental documentation (as opposed to one-time exports), AI-driven context and permission awareness, and compliance-ready audit trails as underserved feature sets — all three map directly onto what SlackToDoc would need to ship in a v1.
+
+## Competitive Landscape
+
+Nobody has built specifically for "Slack chat becomes a living Notion doc, continuously." The closest players all approach the problem from an adjacent angle — meeting transcription, generic workflow automation, or platform-native but shallow integrations.
+
+- **Grain** — Best-in-class meeting-intelligence NLP: records calls, surfaces highlights, pushes summaries into Slack and Notion. Strong integrations, easy onboarding, but its whole design center is the meeting, not the ongoing chat thread — chat gets treated as an afterthought, not a first-class input. Free tier / advanced features $19–$39/seat/month.
+- **Fireflies.ai** — The category leader by customer count (70K+ businesses), with transcription, summarization, and CRM/Notion/Slack push. Chat context is handled the same way meeting audio is, which means it isn't optimized for the specific job of watching a live thread and updating a doc as it evolves. $10–$29/seat/month, plus enterprise licensing.
+- **tl;dv** — Fast-moving, LLM-forward summarization tool that started in video and is expanding into chat contexts. Aggressive feature velocity but Slack isn't its home turf, and outputs skew toward summaries rather than structured, ownership-tagged docs. Freemium plus $20–$40/user/month premium plans.
+- **Slack Workflow Builder (native)** — Zero-friction, built into paid Slack tiers, and trusted because it's first-party. But it's rule-based, not context-aware: it can move a message into a channel or trigger a webhook, but it cannot read a 40-message thread and decide what's actually a decision versus banter. Included in Slack's paid tiers.
+- **Zapier / n8n / Make.com** — General workflow automation that can technically wire a Slack trigger to a Notion action, but requires manual setup per rule and has no native understanding of conversational context. Usage-based pricing, roughly $20–$70/month for the automation volume this use case needs.
+- **Manual copy-paste into Notion/Confluence** — Still the actual default at most companies. Free, and the real cost is the 3–5 hours a week someone spends doing it badly, inconsistently, and usually only for the threads someone remembered to flag.
+
+**Your Opportunity**
+
+Every direct competitor treats chat as a secondary input bolted onto a meeting-transcription product, and every workflow-automation tool treats it as a plumbing problem instead of a comprehension problem. The wedge is narrow and defensible: be the tool that is *only* about continuous, context-aware Slack-to-living-doc conversion, ship compliance logging and audit trails as a first-class feature rather than an enterprise afterthought, and price low enough ($9–$29/user/month) that a 20-person startup adopts it the same week Legal or Ops asks "where's the paper trail for that decision."
+
+## Business Model
+
+Per-seat SaaS with a free interactive demo as the top of funnel, a usage-gated free tier to seed Slack App Directory discovery, and compliance features reserved for the tier where they actually get paid for — enterprise. LLM inference is the only meaningful variable cost, and it's small: a single extraction-and-format pass runs a few thousand tokens, so cost per active seat stays well under a dollar a month even at heavy usage.
+
+- **Free** ($0) — One watched channel, manual @-tag capture only, "powered by SlackToDoc" footer on synced pages — the Slack App Directory discovery wedge
+- **Starter** ($9/user/month) — Unlimited channels and threads, continuous background watching, Notion sync, no branding
+- **Team** ($29/user/month) — Everything in Starter plus multi-workspace support, custom taxonomy/tagging, Confluence sync, Slack + email digest summaries
+- **Enterprise** (custom, $100K–$500K+/year) — Compliance flagging (HIPAA/SOC 2/GDPR-aware), full audit trails with immutable change history, SSO, dedicated data-residency options, and custom integration work
+
+**Unit Economics**
+
+- **~$0.10** — LLM cost per extraction-and-sync pass
+- **~85%** — Blended gross margin at Starter/Team pricing
+- **$40–$70** — Target CAC (self-serve, Slack App Directory + community-led)
+- **$350+** — 12-month LTV at Team tier with typical 5-seat team accounts
+
+At 500 Team-tier accounts averaging 5 seats each ($145/account/month), that's roughly $72.5K MRR before a single enterprise deal — and one signed compliance-tier customer at $150K/year covers that whole self-serve base's infrastructure cost for the year.
+
+## Recommended Tech Stack
+
+The hard part isn't the AI call, it's reliable context extraction from noisy threads and a sync layer that updates a doc idempotently instead of duplicating it every time the conversation continues.
+
+- **Next.js 14 + Vercel** — Admin dashboard for connecting workspaces, choosing watched channels, and reviewing flagged content; Edge functions handle the Slack event webhook for low-latency acknowledgement.
+- **Slack Bolt SDK + Events API** — Subscribe to `message.channels` and `app_mention` events; Slack requires a response within 3 seconds, so acknowledge immediately and do the LLM work asynchronously in a background job.
+- **Claude Sonnet (structured output) + GPT-4o fallback** — One prompt classifies each message batch into decision / action item / open question / noise with a confidence score; a second prompt formats the classified content into Notion block syntax. Prompt-cache the workspace's existing doc structure to hold down cost per pass.
+- **Notion API + Confluence API (v2 later)** — Use the Notion API's block-append endpoints to update pages incrementally rather than overwriting, so a page's edit history stays meaningful and nothing gets clobbered mid-conversation.
+- **Supabase (Postgres + Auth)** — Tables for workspaces, watched_channels, extracted_items (with source message permalink, author, timestamp, sync status), and audit_log for compliance customers. Row-level security scoped per workspace.
+- **BullMQ + Redis** — Queue for the extraction pipeline so a Slack burst (20 messages in a minute) doesn't overwhelm the LLM calls or blow past Notion's API rate limits; retries and backoff protect against silent sync failures.
+- **Stripe Billing** — Per-seat metering across Free/Starter/Team, with a manual enterprise contract path for compliance-tier customers who need a signed DPA before they'll connect anything.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called SlackToDoc. Provision Supabase with these tables: workspaces (id, slack_team_id UNIQUE, notion_workspace_id, plan TEXT default 'free', created_at), watched_channels (id, workspace_id, slack_channel_id, mode TEXT CHECK mode IN ('mention','continuous'), notion_page_id), extracted_items (id, workspace_id, channel_id, source_message_ts, source_permalink, item_type TEXT CHECK item_type IN ('decision','action_item','open_question','flagged'), content, author_slack_id, synced_to_notion BOOLEAN default false, created_at), audit_log (id, workspace_id, item_id, action, actor, occurred_at). Enable row-level security scoped to workspace_id. Set up Stripe with four products: Free, Starter ($9/seat/mo), Team ($29/seat/mo), and a placeholder Enterprise product for manual invoicing. Install the Slack Bolt SDK, the Notion SDK, and the Vercel AI SDK. Add env vars for SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, NOTION_API_KEY, and ANTHROPIC_API_KEY.
+```
+
+**2. Slack Event Handler + Extraction Pipeline**
+
+```text
+Build a Slack Events API webhook at POST /api/slack/events using the Bolt SDK. Verify the request signature, then immediately return a 200 to satisfy Slack's 3-second ack window before doing any real work. For app_mention events, enqueue the full thread (parent + replies) into a BullMQ job. For continuous-mode channels, batch incoming messages in 2-minute windows before enqueueing, to avoid firing one LLM call per message.
+
+In the worker: send the batched messages to Claude with a system prompt that classifies each message into { type: 'decision'|'action_item'|'open_question'|'noise'|'flagged', summary, owner?, due_date?, confidence }. Discard 'noise' below a confidence threshold. For anything not noise, write a row to extracted_items with the source permalink (use Slack's chat.getPermalink API) and author. Then call the Notion API to append or update a block in the workspace's configured page — use a stable block ID keyed to source_message_ts so re-processing the same thread updates in place instead of duplicating content. Write an audit_log row for every sync action.
+```
+
+**3. Compliance Flagging + Enterprise Config**
+
+```text
+Add a compliance layer that runs only for workspaces on the Enterprise plan. Extend the classification prompt with a second pass: given an already-classified 'decision' or 'flagged' item, check it against a configurable policy list (e.g., "flag anything mentioning patient data," "flag anything referencing contract terms or pricing") and set a compliance_flag boolean plus a matched_policy field. Flagged items must NOT auto-sync to Notion — instead they go into a review queue at /admin/review where a designated approver sees the source message, the extracted content, and the matched policy, and can approve, edit, or reject before it syncs. Every review action writes to audit_log with actor, timestamp, and before/after content diff, since this audit trail is the entire value proposition for regulated customers.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and community demand signals collated from Ideabrowser MCP idea #1688 (competitive_analysis, community_analysis, go_to_market, keyword_list). The `research_market_insight` and `research_trend` MCP calls hit monthly plan limits at research time; market-sizing figures below are sourced from the citations `competitive_analysis` itself returned, not fabricated.
+
+- [Future Market Insights — Conversation Intelligence Software Market ($25.3B 2025 → $55.7B by 2035, 8.2% CAGR)](https://www.futuremarketinsights.com/reports/conversation-intelligence-software-market)
+- [Research Nester — Conversational Systems Market ($289.8B 2025 → $6.76T by 2037, 29.5% CAGR)](https://www.researchnester.com/reports/conversational-systems-market/4181)
+- [Virtue Market Research — AI Conversational Tools Market](https://virtuemarketresearch.com/report/ai-conversational-tools-market)
+- [GMI Insights — Conversational System Market Analysis](https://www.gminsights.com/industry-analysis/conversational-system-market)
+- [Juniper Research — Conversational AI Research Report](https://www.juniperresearch.com/research/telecoms-connectivity/communication-services/conversational-ai-research-report/)
+- [Grain — pricing reference (Free / $19–$39 seat/mo)](https://grain.com/pricing)
+- [Fireflies.ai — pricing reference (70K+ businesses, $10–$29 seat/mo)](https://fireflies.ai/pricing)
+- [tl;dv — pricing reference ($20–$40/user/mo)](https://tldv.io/pricing)
+- [Reddit r/Slack — community demand signal (29.5K+ members)](https://www.reddit.com/r/Slack/)
+- [Reddit r/PKMS — personal knowledge management community (51K+ members)](https://www.reddit.com/r/PKMS/)
+
+Page sourced via Ideabrowser MCP (idea_id 1688): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis. Verify current competitor pricing on live product pages before citing in investor materials — SaaS packaging shifts quarterly.
