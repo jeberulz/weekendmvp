@@ -1,0 +1,139 @@
+version: 1
+project_name: Replace Me
+
+truth_docs:
+  - AGENTS.md
+  - PRD.md
+  - README.md
+  - design.md
+
+work_package:
+  registry: docs/PROJECT_STRATEGY.md
+  directory: docs/wp
+  branch_prefix: feat/
+  story_template: docs/wp/templates/wp-stories-template.md
+  progress_template: docs/wp/templates/wp-progress-template.md
+
+program:
+  manifest: docs/wp/program-manifest.md
+  session_ledger: docs/wp/session-ledger.md
+  wave_gate_report: docs/wp/wave-gate-report.md
+  backup_restore: docs/wp/backup-restore.md
+  audit_first: true
+  manifest_is_source_of_truth: true
+  workers_may_rescope: false
+  unknown_means_stop: true
+  irreversible_requires:
+    - restore_marker
+    - backup_inventory
+    - dry_run_inventory
+    - owner_approval
+    - post_run_verification
+  default_waves:
+    - audit_manifest
+    - reversible_docs_tests_tooling
+    - reversible_code
+    - data_touching_code
+    - production_data_mutation
+    - schema_narrowing_or_irreversible_cleanup
+    - docs_agent_knowledge_closeout
+
+small_fix:
+  max_files: 2
+  disallowed:
+    - schema
+    - auth
+    - billing
+    - publishing
+    - prompts
+    - dependencies
+    - migrations
+    - shared_contracts
+    - ux_redesign
+
+worktrees:
+  default: false
+  root: .worktrees
+  allowed_when:
+    - parallel_work_packages
+    - gate_run
+    - risky_isolated_experiment
+  never_create_sibling_folders: true
+  cleanup_required: true
+
+orchestration:
+  default: single_agent
+  use_subagents_when:
+    - parallel_work_packages
+    - independent_review
+    - gate_run
+    - context_isolation_needed
+  roles:
+    orchestrator:
+      writes_code: false
+      owns:
+        - planning
+        - file_boundaries
+        - sequencing
+        - rulings
+        - gate_assignments
+    worker:
+      scope: one_wp_or_story
+      writes_code: true
+      cannot:
+        - make_product_rulings
+        - expand_file_boundaries
+    reviewer:
+      writes_code: false
+      output_order: findings_first
+    gate_runner:
+      writes_code: false
+      owns:
+        - checks
+        - critical_flows
+        - scoped_failure_report
+
+model_routing:
+  principle: route_by_risk_not_size
+  high:
+    - orchestrator
+    - architecture
+    - security_auth_payments_publishing
+    - production_data
+    - migrations
+    - ai_prompt_behavior
+    - final_review
+  mid:
+    - standard_wp
+    - focused_ui
+    - tests
+    - documented_integrations
+    - contained_refactor
+  low:
+    - story_scaffolding
+    - inventory
+    - docs_cleanup
+    - run_checks
+    - mechanical_lint_fixes
+  escalate_when:
+    - repeated_failure
+    - ambiguous_scope
+    - product_decision_needed
+    - risk_increased
+
+required_checks:
+  standard:
+    - npm run typecheck
+    - npm run lint
+    - npm test
+    - npm run build
+  small_fix:
+    - npm test
+  gate:
+    - npm run typecheck
+    - npm run lint
+    - npm test
+    - npm run build
+
+critical_flows: []
+permanent_guardrails: []

@@ -73,3 +73,6 @@ next-env.d.ts
 tmp/
 tsconfig.tsbuildinfo
 .claude/
+
+# Agentic workflow worktrees
+.worktrees/
