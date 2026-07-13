@@ -3995,6 +3995,321 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-verified-freelancer-marketplace",
+      "title": "AI-Verified Freelancer Marketplace",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "A directory that only lists freelancers who pass a hands-on AI skills challenge — verified badges, graded work samples, no self-reported skill tags.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "Startup founders hiring AI talent",
+        "AI-skilled freelancers"
+      ],
+      "source": "ideabrowser:1430",
+      "og": {
+        "subject": "a single stamped verification seal resting on a dark desk, sharp shallow focus, no people or faces or text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2312,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-app-security-badge",
+      "title": "AI App Security Trust Badge",
+      "publishedAt": "2026-07-13",
+      "category": "Developer",
+      "description": "Fast, fixed-price security audits from vetted ethical hackers for indie and AI-built apps — an embeddable trust badge from $199, no $10K SOC 2 required.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "indie app builders",
+        "AI-focused startups"
+      ],
+      "source": "ideabrowser:1616",
+      "og": {
+        "subject": "a dark obsidian shield-shaped seal resting on a workbench, single emerald glow along its edge, shallow depth of field, no people or text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 9,
+        "wordCount": 2464,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "tiktok-shop-fulfillment-automation",
+      "title": "TikTok Shop Fulfillment Automation",
+      "publishedAt": "2026-07-13",
+      "category": "E-commerce",
+      "description": "Automate TikTok Shop order sync, batch shipping labels, and tracking updates so sellers stop drowning in manual fulfillment.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "TikTok Shop sellers",
+        "e-commerce entrepreneurs"
+      ],
+      "source": "ideabrowser:2078",
+      "og": {
+        "subject": "dark warehouse-adjacent scene, a single shipping label glowing under lamp light, one orange accent color, no people/faces/text, shallow focus",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2308,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "bnpl-for-digital-products",
+      "title": "Buy Now, Pay Later for SaaS and Online Courses",
+      "publishedAt": "2026-07-13",
+      "category": "Fintech",
+      "description": "Split-pay checkout for SaaS and online courses, with access tied to installments instead of shipping. Built where Klarna and Affirm don't underwrite.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "online course creators",
+        "SMB SaaS founders"
+      ],
+      "source": "ideabrowser:4147",
+      "og": {
+        "subject": "a single credit card sliced into four glowing lime-green segments, floating above a dark desk, shallow focus, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2211,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "chargeback-protection-for-ecommerce-sellers",
+      "title": "Chargeback Protection for Ecommerce Sellers",
+      "publishedAt": "2026-07-13",
+      "category": "E-commerce",
+      "description": "Predictive fraud screening and automated chargeback dispute responses for Shopify, Amazon, and eBay sellers losing revenue to buyer scams.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "ecommerce sellers",
+        "online resellers"
+      ],
+      "source": "ideabrowser:1472",
+      "og": {
+        "subject": "A single locked shipping label glowing under dim warehouse light, motion-blurred conveyor belt behind it, shallow focus, mint accent glow on the barcode, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2205,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "anti-ghosting-recruitment-crm",
+      "title": "Anti-Ghosting Recruitment CRM",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "A recruitment CRM add-on that scores client engagement and fires psychology-timed nudges before hiring managers ghost mid-process, saving $10K-$30K placements.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "independent recruiters",
+        "small recruiting agencies"
+      ],
+      "source": "ideabrowser:1595",
+      "og": {
+        "subject": "a single amber signal light glowing on a dark rotary phone in shadow, no people/faces/text, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2459,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "daily-ai-checkin-calls-for-seniors",
+      "title": "Daily AI Check-In Calls for Independent Seniors",
+      "publishedAt": "2026-07-13",
+      "category": "Health",
+      "description": "Daily AI voice calls check in on seniors living alone and flag concerning patterns to family — proactive peace of mind, not another emergency pendant.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "Adult children of aging parents",
+        "Senior care professionals"
+      ],
+      "source": "ideabrowser:7292",
+      "og": {
+        "subject": "a single old rotary-style phone receiver resting off the hook on a dark wooden table, warm emerald light spilling from one side, shallow focus, no people or faces or text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2483,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

@@ -1,0 +1,108 @@
+---
+slug: "anti-ghosting-recruitment-crm"
+title: "Anti-Ghosting Recruitment CRM"
+---
+
+## The Problem
+
+An independent recruiter spends three weeks sourcing, screening, and presenting a shortlist to a hiring manager who seemed genuinely excited on the intro call. Then the emails stop. No rejection, no "we went another direction," no signal at all — just silence through the exact window where the deal was supposed to close. The recruiter has already sunk 15-20 hours of unbilled sourcing work into the search, and the commission that would have paid for it (typically 15-25% of a placed candidate's first-year salary, often landing between $10,000 and $30,000 per placement) evaporates with it. Do that twice a quarter and it is the difference between a stable desk and a feast-or-famine year.
+
+This is not candidate ghosting, which recruiting media covers constantly — it is the mirror-image problem, client-side, and it is underreported. The 2025 Ghosting Index found 76% of recruiters report being ghosted at some point in the past year, and 57% say the behavior is more common now than ever, a trend most of that reporting frames as candidates disappearing on recruiters rather than the reverse. But recruiters describe the client-side version constantly in their own communities: a hiring manager goes quiet mid-process with no "yes," no "no," just silence — and the staffing firm is left holding sourcing costs it can never recover. Reddit's r/Recruitment (126,000 members) and r/recruiting (125,000+) surface this weekly in threads about clients disappearing after a submitted shortlist; r/CRM (19,300 members) and r/smallbusiness (1.5 million) echo the same theme from the tooling side — recruiters asking what system actually tracks a cooling relationship before it goes cold.
+
+The tools they already own do not solve this. Bullhorn, Recruit CRM, and Crelate track pipeline stage and log activity, but none of them are built to detect the pattern that precedes a ghost — slowing response times, skipped calls, one-word replies — and intervene before the client goes silent for good. Independent recruiters and agencies under 50 seats (widely estimated at 200,000+ in the U.S. alone) run this risk on every open req, with no IT department and no data science team to build the early-warning system themselves. That gap — a CRM that treats client disengagement as a preventable, trackable event instead of a mystery you notice too late — is the wedge.
+
+## The Solution
+
+A recruitment CRM add-on layer, sitting alongside (not replacing) whatever ATS a recruiter already runs, that watches client engagement signals — email open and reply latency, call pickup rate, portal logins, message sentiment — and fires a sequenced, psychology-informed follow-up before a cooling client goes fully dark. Instead of one more generic "just checking in" email, the system times outreach around known decision-fatigue windows, layers in social proof (comparable placements closed, market urgency data), and shifts channel — email to text to a short video update — when a given channel stops getting responses. Call it Persist: it is not a full pipeline replacement, it is the specific muscle recruiters are missing.
+
+**How it works:**
+
+1. **Connect your pipeline** — Link Persist to your existing ATS/CRM (Bullhorn, Recruit CRM, Crelate, or a CSV import) via API or a lightweight webhook; it reads deal stage, last-contact timestamp, and message history without requiring a data migration.
+2. **Score engagement in real time** — A behavioral model tracks reply latency, open rates, call answer rates, and portal activity per client contact, assigning a live "cooling risk" score that updates as new signals come in.
+3. **Trigger the right nudge at the right time** — When a contact crosses a risk threshold, Persist fires a pre-built, psychology-backed sequence (loss-aversion framing, social proof, a channel switch) instead of a generic reminder, timed to the hours and days when replies actually happen.
+4. **Learn and adapt per client** — Every reply, ignore, or unsubscribe feeds back into the scoring model, so follow-up timing and tone tighten to what has worked for that specific recruiter's client base over time.
+
+## Market Research
+
+The recruitment software category is large, growing, and structurally under-served on the retention side specifically:
+
+- **The global recruitment CRM market is projected to grow from $2.71B in 2026 to $5.38B by 2035, a 7.9% CAGR** (Business Research Insights). The broader recruitment software market, which includes ATS and analytics, is separately projected to reach $4.05B by 2030 at a 9.9% CAGR (Mordor Intelligence) — two independent estimates that agree the category is expanding at a healthy, durable clip, not a bubble.
+- **76% of recruiters report being ghosted in the past year, and 57% say it's more common than ever before** (The Interview Guys, 2025 Ghosting Index). Most of that reporting frames ghosting as a candidate-side problem, which is exactly why the client-ghosting angle is underserved — the pain is real and documented, but nobody has built the tool for the specific direction that costs recruiters commission.
+- **"AI recruitment tools" search volume is up roughly 46% and "AI recruitment software" up roughly 89%** year over year, alongside 135,000 monthly searches for candidate relationship management systems (Ideabrowser keyword research, idea 1595) — proof that recruiters are actively shopping for AI-assisted engagement tools right now, not being introduced to the category cold.
+- **Independent recruiters and small agencies (2-49 staff) number over 200,000 in the U.S.** and represent the fastest-growing, least-served segment of the market — priced out of enterprise suites like Bullhorn's custom-quote tiers and stuck choosing between spreadsheets and CRMs that were never built to flag a cooling relationship.
+- **A single lost placement costs $10,000-$30,000 in forfeited commission** given typical 15-25% fee structures on placements, meaning even a low single-digit reduction in ghosted deals pays for a year of subscription cost inside one saved placement — a payback story that sells itself in a sales call.
+
+## Competitive Landscape
+
+The category is mature on pipeline tracking and thin on retention — every direct competitor treats a cooling client the same as an active one until it is too late to act:
+
+- **Bullhorn** — The dominant recruitment ATS/CRM, serving 10,000+ staffing firms globally with deep integrations and a broad partner ecosystem. Pricing is entirely custom-quoted (no public list price), with practitioners reporting roughly $99-$129/user/month for the core Team tier and $199+/user/month for the Corporate/Bullhorn One suite, typically on annual contracts with a 5-10 seat minimum. It logs every touchpoint but has no built-in behavioral scoring or ghosting-specific alerting — you only notice a client went quiet by manually scanning "last activity" columns.
+- **Recruit CRM** — A modern, fast-growing ATS/CRM built for small and mid-size agencies. Pro starts at $85/user/month (annual) up to $165/user/month on Enterprise, with monthly billing running higher. Strong on usability and pipeline visualization, but its automation is limited to scheduled reminders — it has no engagement-risk scoring and no channel-switching logic when a client stops responding.
+- **Crelate** — An ATS/CRM hybrid popular with boutique and growth-stage agencies. The Business plan runs $119/user/month billed annually with a 5-seat minimum, putting a 10-recruiter team at roughly $14,280/year before the contract's built-in annual increase. Good workflow automation, but engagement tracking stops at open/click rates — there's no psychology-informed sequencing or risk model behind it.
+- **Loxo** — An AI-forward ATS/CRM with a genuinely free entry tier, then a Basic plan at $169/user/month once you need job board distribution and resume parsing. Positions itself as AI-native, but the AI is aimed at sourcing and candidate matching, not client retention — the ghosting problem isn't part of its product thesis at all.
+
+**Your Opportunity**
+
+None of these platforms will build a dedicated ghosting-prevention layer soon, because it cannibalizes nothing and adds engineering scope to products already optimized around candidate sourcing and pipeline visualization, not client psychology. The wedge is to sit alongside these tools rather than replace them: a lightweight integration layer that plugs into whatever ATS a recruiter already pays for, adds the one capability none of them have (real-time cooling-risk scoring plus behaviorally-timed intervention), and prices low enough ($79-$299/month) that switching costs stay near zero. Win on specificity — "the tool that stops clients from ghosting" is a category no incumbent currently owns, and it is a message that lands instantly with an audience that has felt this exact pain personally and repeatedly.
+
+## Business Model
+
+Subscription SaaS priced per recruiter, positioned well under the incumbent ATS/CRM per-seat tiers since Persist is an add-on layer, not a full pipeline replacement — the pitch is "keep your Bullhorn or Recruit CRM seat, add this on top."
+
+- **Starter** ($79/mo) — Up to 2 connected pipelines, engagement scoring for up to 50 active clients, email + one nudge sequence template, weekly risk digest
+- **Pro** ($149/mo) — Unlimited pipelines, full behavioral sequence library, multi-channel nudges (email, SMS, LinkedIn reminders), per-client adaptive learning, CRM two-way sync
+- **Agency** ($299/mo per 3 seats, volume pricing beyond) — Team-wide risk dashboards, manager alerts on at-risk deals across the desk, white-labeled client-facing update pages, priority support and onboarding
+
+**Unit Economics**
+
+- **$45** — Target blended CAC (content + community-led, low paid spend)
+- **$140/mo** — Average revenue per account across tiers
+- **~78%** — Gross margin (LLM + SMS/email delivery costs stay under $10/account/month at Pro-tier usage)
+- **~$1,900** — 12-month LTV at a modest 85% monthly retention, given the payback story is one saved placement
+
+Path to revenue: launch free with a "Follow-Up Effectiveness Assessment" — a short diagnostic that scores a recruiter's current follow-up cadence against known ghosting-risk patterns — as the lead magnet, convert into a 14-day Starter trial, then upsell Pro once a recruiter sees their first at-risk save. A $1,000-$5,000/year Agency Licensing tier for 10+ seat firms becomes the backend offer once word-of-mouth inside recruiting Slack and Facebook communities starts generating inbound.
+
+## Recommended Tech Stack
+
+The hard engineering problem here is not the AI messaging — it's reliable, low-latency ingestion from third-party CRMs and a scoring model that updates on every new signal without falling behind.
+
+- **Next.js 14 (App Router) + Vercel** — Dashboard, onboarding flow, and API routes in one repo; Vercel Cron handles the nightly risk-recalculation sweep and weekly digest emails.
+- **Postgres (Supabase or Neon)** — Core tables: accounts, connected_pipelines, contacts, engagement_events, risk_scores, sequences, sequence_runs. Row-level security scoped to account_id keeps multi-tenant data isolated by default.
+- **BullMQ + Redis** — Event queue for inbound engagement signals (email opens, replies, call logs) and outbound sequence triggers, with retry and backoff so a webhook hiccup from a connected CRM never silently drops a signal.
+- **OpenAI or Claude (via Vercel AI SDK)** — One prompt to classify inbound reply sentiment (cooling vs. engaged vs. neutral), one to draft channel-appropriate nudge copy from a sequence template plus deal context, with a confidence score gating auto-send versus human review.
+- **Twilio + Resend** — Twilio for SMS nudges (A2P 10DLC registration required for U.S. sends), Resend for transactional and sequence email with open/click tracking feeding straight back into the risk model.
+- **Stripe Billing** — Per-seat metered subscriptions across Starter/Pro/Agency tiers, with a self-serve customer portal for plan changes and seat additions.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Persist" — an anti-ghosting layer for recruitment CRMs. Provision a Postgres database (Supabase) with these tables: accounts (id, name, plan TEXT default 'starter', seats INT), users (id, account_id, email UNIQUE, role TEXT), connected_pipelines (id, account_id, provider TEXT CHECK provider IN ('bullhorn','recruitcrm','crelate','csv'), credentials_encrypted TEXT, last_synced_at TIMESTAMPTZ), contacts (id, account_id, pipeline_id, name, email, phone, deal_stage TEXT, last_contact_at TIMESTAMPTZ), engagement_events (id, contact_id, type TEXT CHECK type IN ('email_open','email_reply','call_answered','call_missed','portal_login'), occurred_at TIMESTAMPTZ, metadata JSONB), risk_scores (id, contact_id, score FLOAT, computed_at TIMESTAMPTZ), sequences (id, account_id, name, trigger_score_threshold FLOAT, steps JSONB), sequence_runs (id, contact_id, sequence_id, current_step INT, status TEXT). Enable row-level security scoped to account_id on every table. Wire Stripe with three products: Starter $79/mo, Pro $149/mo, Agency $299/mo per 3 seats. Add env vars for OPENAI_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, RESEND_API_KEY.
+```
+
+**2. Engagement Scoring + Nudge Engine**
+
+```text
+Build a scoring worker that runs on a schedule (Vercel Cron, every 15 minutes) and on-demand when a new engagement_events row is inserted. For each contact, compute a cooling-risk score from 0-100 using a weighted model: reply latency versus that contact's historical average, ratio of ignored to answered calls over the last 14 days, days since last portal login, and a sentiment score from the most recent reply (call OpenAI with a strict JSON schema: sentiment "positive"|"neutral"|"cooling"|"unknown", confidence FLOAT). Store the result in risk_scores. When a contact's score crosses a sequence's trigger_score_threshold and no sequence_run is already active for that contact, create a sequence_run at step 0 and enqueue the first step via BullMQ. Each sequence step should specify a channel (email or sms), a template with merge fields (contact name, recent deal context, days since last contact), and a wait period before evaluating whether to advance to the next step (skip if the contact replied in the interim). Log every send and every reply back into engagement_events so the loop is self-reinforcing.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for Persist. Hero headline: "Stop losing placements to client ghosting." Sub-headline: "Persist watches your pipeline for the warning signs of a cooling client and fires the right follow-up before they go dark — plugs into Bullhorn, Recruit CRM, or Crelate in under 10 minutes." Sections: a live risk-score demo widget showing a mock contact list with color-coded risk badges, problem section framing the average lost placement at $10,000-$30,000 in forfeited commission, how it works (the 4-step flow: connect, score, trigger, learn), pricing table (Starter $79 / Pro $149 / Agency $299 per 3 seats) anchored against a callout comparing it to adding one more seat on Bullhorn or Recruit CRM, social proof section for beta results, and an FAQ covering CRM integration security, data privacy, and how nudges avoid feeling spammy. Use the Geist font, a dark near-black background with a single warm amber accent for risk indicators, generous whitespace. Primary CTA: "Run your free Follow-Up Effectiveness Assessment."
+```
+
+## Sources
+
+- [Business Research Insights — Recruitment CRMs Market ($2.71B in 2026 to $5.38B by 2035, 7.9% CAGR)](https://www.businessresearchinsights.com/market-reports/recruitment-crms-market-116876)
+- [Mordor Intelligence — Recruitment Software Market Size &amp; Forecast](https://www.mordorintelligence.com/industry-reports/recruitment-software-market)
+- [The Interview Guys — The 2025 Ghosting Index](https://blog.theinterviewguys.com/the-2025-ghosting-index/)
+- [Recruit CRM — Pricing ($85-$165/user/mo)](https://recruitcrm.io/pricing/)
+- [Crelate — Pricing Plans ($119/user/mo Business, 5-seat minimum)](https://www.crelate.com/pricing)
+- [Loxo — Pricing Overview ($169/user/mo Basic, free entry tier)](https://www.loxo.co/pricing)
+- [Bullhorn — Pricing (custom-quoted, ~$99-$129/user/mo Team tier reported)](https://www.bullhorn.com/pricing/)
+
+Page sourced via Ideabrowser MCP (idea_id 1595): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis. Competitor pricing and market-size figures cross-checked against current public pricing pages and market research reports (July 2026 snapshot); triangulate before citing in investor materials.
