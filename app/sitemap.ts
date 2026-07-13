@@ -93,6 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry("/startup-ideas", { priority: 0.95, changeFrequency: "daily" }),
     entry("/articles", { priority: 0.9, changeFrequency: "weekly" }),
     entry("/newsletter", { priority: 0.9, changeFrequency: "daily" }),
+    entry("/links", { priority: 0.9, changeFrequency: "daily" }),
     entry("/starter-kit", { priority: 0.85, changeFrequency: "monthly" }),
     entry("/shipable", { priority: 0.85, changeFrequency: "weekly" }),
     entry("/privacy-policy", {
