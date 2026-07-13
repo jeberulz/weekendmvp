@@ -3725,6 +3725,276 @@
         "builder_confidence": 9
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-video-editor-for-creators",
+      "title": "AI Video Editor for Creators",
+      "publishedAt": "2026-07-13",
+      "category": "Creator",
+      "description": "AI video editor that turns raw footage into a graded, paced, publish-ready cut in minutes using natural-language edit commands.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2272",
+      "og": {
+        "subject": "dark editing suite scene, a single film reel or clapperboard in shallow focus, one aubergine accent light, no people/faces/text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2476,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-flash-sale-creator-for-shopify",
+      "title": "AI Flash Sale Creator for Shopify Stores",
+      "publishedAt": "2026-07-13",
+      "category": "E-commerce",
+      "description": "AI that reads your Shopify inventory and margin data, then auto-builds flash sale campaigns: discount codes, timers, and urgency copy in one click.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "ecommerce-sellers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1397",
+      "og": {
+        "subject": "a single dark countdown-timer clock face resting on a stack of shipping boxes, one lime-green digit glowing, no people or faces, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2486,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "kdp-niche-finder",
+      "title": "Niche Finder for KDP Publishers",
+      "publishedAt": "2026-07-13",
+      "category": "Creator",
+      "description": "Automatically scan Amazon KDP categories for profitable, low-competition book niches — with opportunity scores, keywords, and revenue estimates.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:3089",
+      "og": {
+        "subject": "a single open book on a dark desk with a soft lavender glow rising from its pages, no people/faces/text, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 9,
+        "wordCount": 2237,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "rental-property-maintenance-dashboard",
+      "title": "Home Maintenance Dashboard for Rental Property Owners",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "AI dashboard that flags failing water heaters, HVAC units, and roofs before they cost rental owners thousands in emergency repairs and compliance fines.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "real-estate-investors",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:4969",
+      "og": {
+        "subject": "dark scene, a single wall-mounted water heater pressure gauge glowing mint, no people/faces/text, shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2243,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-material-estimator",
+      "title": "AI Material Estimator for Home Renovations",
+      "publishedAt": "2026-07-13",
+      "category": "Productivity",
+      "description": "AI-powered app that scans room photos and turns them into exact, waste-adjusted material shopping lists for DIY renovations.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "diy-renovators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:3515",
+      "og": {
+        "subject": "a single ceramic tile lying on dark plywood under raking side-light, a curled measuring tape beside it, one emerald accent, shallow focus, no people/faces/text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2305,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-storybook-generator-for-kids",
+      "title": "AI Storybook Generator for Kids",
+      "publishedAt": "2026-07-13",
+      "category": "Creator",
+      "description": "AI storybook generator that makes kids the illustrated hero of their own story — personalized plot, consistent likeness, priced under every incumbent.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "parents",
+        "educators"
+      ],
+      "source": "ideabrowser:5268",
+      "og": {
+        "subject": "dark scene, a single open storybook glowing faintly at the spine, one warm aubergine accent light, no people/faces/text, shallow focus",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2491,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
