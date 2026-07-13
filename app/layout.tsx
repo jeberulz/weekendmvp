@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.weekendmvp.app",
   ),
+  icons: { icon: "/image/favicon.png" },
   title: {
     default: "Weekend MVP — Validate & Build Your Startup Idea in a Weekend",
     template: "%s | Weekend MVP",
