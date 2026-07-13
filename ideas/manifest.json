@@ -3455,6 +3455,276 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "creator-launch-kit",
+      "title": "Creator Launch Kit",
+      "publishedAt": "2026-07-13",
+      "category": "Creator",
+      "description": "Turn a finished product into a complete launch in an afternoon: AI-generated video scripts, carousels, an email sequence, an FAQ page, and a support agent trained on your product. Built for solo creators with no marketing team.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2456",
+      "og": {
+        "subject": "A single smartphone on a dark desk glowing with a soft emerald ring-light reflection, launch-day glow, one tactile object, shallow focus, late evening",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2182,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T12:22:54Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "branded-client-portal-builder-for-freelancers",
+      "title": "Branded Client Portal Builder for Freelancers",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "A no-code, white-label client portal freelancers brand and launch in 15 minutes to replace scattered Drive, Slack, and invoice links.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "boutique-agencies"
+      ],
+      "source": "ideabrowser:1745",
+      "og": {
+        "subject": "dark scene, a single glowing branded ID card floating above a dark desk, one lavender accent light, no people/faces/text, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2202,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "chattracker",
+      "title": "ChatTracker: Turn Support Chats Into Revenue Insights",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "A plug-and-play analytics tool that reads support chats and surfaces plain-language revenue insights for small businesses, starting at $29/month.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "marketing-teams"
+      ],
+      "source": "ideabrowser:2164",
+      "og": {
+        "subject": "dark scene, single warm amber glow on a chat bubble icon etched into matte metal, shallow focus, no people/faces/text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2066,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "career-transition-escape-plan",
+      "title": "Career Transition Escape Plan",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "AI-personalized career transition planner that turns your salary, savings, and family constraints into a dated 6-month/1-year/2-year exit roadmap.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "mid-career-professionals",
+        "burned-out-high-earners"
+      ],
+      "source": "ideabrowser:3529",
+      "og": {
+        "subject": "a single lit compass resting on a dark wooden desk, one emerald glow, shallow focus, no people/faces/text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2172,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-product-data-cleaner-for-ecommerce",
+      "title": "AI Product Data Cleaner for E-commerce",
+      "publishedAt": "2026-07-13",
+      "category": "E-commerce",
+      "description": "AI tool that cleans messy supplier product data (CSV, Excel, PDF) into standardized, marketplace-ready catalogs for wholesalers and e-commerce sellers.",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-wholesalers",
+        "ecommerce-sellers"
+      ],
+      "source": "ideabrowser:1993",
+      "og": {
+        "subject": "dark scene, a single stack of mismatched paper price lists dissolving into clean glowing grid lines, one lime accent light, no people/faces/text, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2118,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "three-minute-money-habit-app",
+      "title": "Three-Minute Daily Money Habit App",
+      "publishedAt": "2026-07-13",
+      "category": "Fintech",
+      "description": "A bank-linked app that turns your own transactions into 3-minute daily challenges, builds real money habits, and sells to HR wellness programs.",
+      "buildTime": "10-14",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "young-adults",
+        "hr-benefits-teams"
+      ],
+      "source": "ideabrowser:6285",
+      "og": {
+        "subject": "A single coin balanced on the edge of a smartphone screen showing a faint progress ring, dark background, mint accent glow, shallow depth of field, no people or text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 13,
+        "wordCount": 2281,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
