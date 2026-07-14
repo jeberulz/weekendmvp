@@ -1,0 +1,120 @@
+---
+slug: "government-contract-finder"
+title: "Government Contract Finder for Small Businesses"
+---
+
+## The Problem
+
+A three-person HVAC company in Ohio is exactly the kind of business federal agencies are mandated to buy from. There is a set-aside for them, a certification path built for them, and a Base Realignment contract at the nearby installation that they could fulfill with their existing crew. They will never see it. The contract gets posted on SAM.gov, sits open for 21 days, and gets awarded to a company three states away that pays a full-time capture manager to watch the portal. The work was public the entire time. The Ohio company just did not have anyone whose job was to look.
+
+This is the structural unfairness of government contracting: everything is transparent and almost nobody can afford to act on the transparency. Contracts are posted, deadlines are listed, requirements are published — all free, all open. But translating a raw solicitation into "yes, this fits us, and here is the paperwork before Friday" takes a back office that a small business does not have. The award goes to whoever finds it first and files correctly, which today means the company with the biggest overhead, not the best price.
+
+The pain shows up loudly in the communities where these owners gather. Reddit's r/GovernmentContracting has 41,300+ members trading war stories about SAM.gov registration and lost bids, while r/smallbusiness (2.4M members) routinely runs 60-to-80-comment threads debating whether a $6,000 consultant is worth it just to get started. Facebook groups like "U.S. Government Contracting Made Easy" (9,200+ members) and "Secure Federal Government Contracts" exist because the official tools failed the exact people the set-asides were written for. The federal government spent roughly $163 billion with small businesses last year — about 25% of all contract dollars — and a meaningful slice of that budget cycles through the same well-staffed incumbents every year because the little firms literally cannot see their own opportunities in time.
+
+## The Solution
+
+Tendly matches a small business to the government contracts it actually qualifies for, then gets it to the deadline before the window closes. The owner enters their industry codes (NAICS), location, certifications, and past work once. A scraper pulls live postings from SAM.gov, Grants.gov, and state procurement portals; an AI layer parses each solicitation's requirements and scores it against the business profile; and the platform surfaces a short ranked list of genuinely winnable opportunities instead of a firehose of 4,000 irrelevant listings. Every bid the owner acts on (or ignores) sharpens the match. What makes this a now-or-never wedge is that large language models can now read a 40-page RFP and compare it to a business profile in seconds — a capability that simply did not exist at this price point two years ago.
+
+**How it works:**
+
+1. **Build a profile once** — Owner enters NAICS codes, location, certifications (8(a), WOSB, SDVOSB, HUBZone), and capability statement; the platform stores it as a reusable matching key.
+2. **Scan every source** — A scheduled scraper pulls fresh postings from SAM.gov, Grants.gov, and state portals daily, normalizing them into one searchable feed.
+3. **Match and rank** — Claude parses each solicitation's eligibility and scope, scores fit against the profile, and surfaces only the opportunities the business can realistically win.
+4. **Alert and checklist** — The owner gets a deadline-aware alert plus an auto-generated document checklist (registrations, past-performance references, required certs) so nothing gets missed before filing.
+
+## Market Research
+
+The government contracting software category is expanding on every axis that matters to a discovery-and-matching product, and the underlying procurement spend is measured in trillions:
+
+- **The government contracting software market was worth $1,085 million in 2025 and is projected to reach $2,006 million by 2032, a 9.3% CAGR** (OpenPR market report). This software layer sits on top of more than $10 trillion in annual global government procurement spending — the tooling is a rounding error against the money it helps unlock.
+- **Contract Discovery and Analytics Software — the segment this idea lives in — was valued at $2.14 billion in 2026 and is projected to hit $5.99 billion by 2035, a 12.5% CAGR** (Business Research Insights). This is the fastest-growing adjacent market and it exists specifically to match opportunities to organizations.
+- **The US procurement software market is growing from $2.9 billion in 2025 to $6.22 billion by 2034, roughly 8.8% CAGR** (US Procurement Software forecast), with the report calling out small business adoption and supplier-diversity initiatives as primary demand drivers.
+- **The federal government directed about $163 billion to small businesses last year — around 25% of all contract dollars** (iQuasar / FedBizAccess 2026). That is the addressable prize sitting behind a visibility gap, not behind a lack of budget.
+- **Cloud-based solutions already command 81.3% of the government contracting software market, and the top ten players hold about 53% of revenue** (OpenPR). Delivery is settled (SaaS wins) and the leaders are all pointed up-market, leaving the SMB tier open.
+
+## Competitive Landscape
+
+Government-opportunity intelligence is a real category — it is just priced and packaged for capture teams at mid-market and enterprise contractors, not for a three-person shop. The tools that exist are either free-but-unusable or usable-but-unaffordable:
+
+- **SAM.gov** — The official federal system for award management and opportunity posting. It is free and has the same raw data everyone else resells. But it is a compliance database, not a discovery tool: no fit scoring, weak saved-search alerts, and a notorious registration flow that small business owners try once and abandon. Free — and that is exactly why owners still miss contracts.
+- **GovWin IQ (Deltek)** — The enterprise standard for capture teams, with pre-RFP intelligence and pipeline tracking. Deep and authoritative, but priced for staffed business-development departments, typically several thousand dollars per seat per year. Roughly $5,000+/year, custom quote — a non-starter for the SMB budget.
+- **Bloomberg Government (BGOV)** — Policy, spending, and contract intelligence bundled for lobbyists and large contractors. Excellent data, enterprise positioning. About $5,700/year per seat — priced for organizations, not sole proprietors.
+- **EZGovOpps** — The closest thing to a mid-tier competitor, aimed at small and mid contractors with opportunity search and market intelligence. Standard runs around $1,188/year (about $99/mo) with pricier Enterprise tiers. Still an annual-commitment tool built for someone who already knows they belong in govcon.
+- **GovTribe** — Search and tracking across federal awards, agencies, and vendors, now under Deltek. Cleaner UX than SAM.gov, but priced near $1,895/year per seat and oriented toward analysts, not first-time small business owners.
+
+**Your Opportunity**
+
+Every serious competitor makes the same two bets: annual pricing and a user who already identifies as a government contractor. That leaves the entire on-ramp uncovered. Win on three things the incumbents will not chase: (1) a monthly price under $80 that an owner can approve without a procurement meeting, (2) AI fit-scoring that answers "can I actually win this?" instead of returning 4,000 keyword hits, and (3) an onboarding built for someone who has never filed a bid. SAM.gov gives away the data; nobody makes it usable on a small business timeline. That is the whole company.
+
+## Business Model
+
+Subscription SaaS with a free educational top-of-funnel that converts on urgency, not feature gates. The math is generous because a single win pays for years of subscription: at $79/mo, one $50,000 contract award covers more than seven years of fees, which makes churn a story about the owner giving up on govcon entirely, not about price.
+
+- **Basic** ($29/mo) — Daily matched alerts, saved profile, deadline reminders, one set of NAICS codes — the wedge for owners testing whether govcon is worth it.
+- **Pro** ($79/mo) — Advanced filtering, AI fit-scoring, document checklists, multi-code and multi-state matching, and past-performance tracking — the core recurring product.
+- **Enhanced Alerts add-on** ($19/mo) — Real-time push on new postings and expiring set-asides for owners who bid actively.
+- **Backend services** ($2,000–$10,000/project) — Bid-writing assistance and compliance tracking sold to the same buyer at far higher willingness to pay — the natural expansion path once trust is established.
+
+**Unit Economics**
+
+- **Under $100** — Target CAC (for the $49-blended-tier owner)
+- **Over $1,200** — LTV at 24-month-plus retention
+- **Over 70%** — Gross margin (scraper plus LLM parsing cost per user is low and fixed)
+- **Over 5%** — Free-to-paid conversion target from the webinar-and-checklist funnel
+
+## Recommended Tech Stack
+
+The hard part is not the AI — it is data freshness, reliable scraping across portals that change their markup, and parsing messy solicitations into structured eligibility fields without hallucinating a match. Build the scraper and the checklist before you build a pretty dashboard.
+
+- **Next.js (App Router) + Vercel** — Server-rendered dashboard, Vercel Cron for the daily scrape-and-match sweep, Edge functions for alert delivery. One repo, minimal infrastructure.
+- **Supabase (Auth + Postgres)** — Tables for users, profiles (NAICS, certs, location), opportunities (normalized postings), and matches (score, status). Row-level security keyed to the owner. pgvector for semantic matching of scope-of-work text to capability statements.
+- **SAM.gov + Grants.gov APIs (with a Playwright fallback scraper)** — Prefer the official Opportunities and Entity Management APIs where they exist; fall back to a headless Playwright crawler for state portals that offer no API. Normalize everything into one schema on ingest.
+- **Claude (Anthropic API)** — Parse each solicitation into structured eligibility fields, score fit against the profile with a confidence value, and generate the plain-English "why this matches" summary and document checklist. Prompt-cache the profile for margin.
+- **Stripe Billing** — Basic / Pro tiers plus the alerts add-on and an annual prepay SKU; customer portal for self-serve upgrades.
+- **Resend + Twilio** — Email digests for daily matches and SMS for deadline-critical alerts on expiring set-asides.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Tendly" for a government contract matching platform. Provision Supabase with these tables: users (id, email, plan default 'basic'), profiles (id, user_id, naics_codes TEXT[], certifications TEXT[], state TEXT, capability_statement TEXT), opportunities (id, source TEXT CHECK source IN ('sam','grants','state'), external_id, title, agency, naics TEXT[], set_aside TEXT, response_deadline TIMESTAMPTZ, raw_text TEXT, embedding VECTOR(1536)), matches (id, user_id, opportunity_id, fit_score FLOAT, reason TEXT, status TEXT default 'new'). Enable row-level security so each user only reads their own profiles and matches. Wire Stripe with two products (Basic $29/mo, Pro $79/mo) plus a $19/mo alerts add-on. Add env vars SAM_API_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, RESEND_API_KEY, TWILIO_AUTH_TOKEN. Install the Anthropic SDK, the Supabase client, and Playwright.
+```
+
+**2. Core Feature**
+
+```text
+Build a daily Vercel Cron job at /api/scan that:
+1. Fetches new postings from the SAM.gov Opportunities API and Grants.gov, plus a Playwright crawl of two configured state portals, since the last run.
+2. Normalizes each posting into the opportunities table and generates an embedding of its scope-of-work text.
+3. For every active user profile, retrieves candidate opportunities by NAICS overlap and vector similarity, then sends each candidate to Claude with a strict JSON schema:
+   { fit_score: number 0-1, eligible: boolean, reason: string, missing_requirements: string[] }
+   Instruct Claude to check set-aside eligibility against the user's certifications and flag any hard disqualifiers.
+4. Writes rows to matches for any fit_score above 0.6, then queues a digest.
+Handle portal markup changes and API rate limits with retries and backoff so one failing source never blocks the run.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for Tendly. Hero headline: "The government already wants to buy from you. Tendly makes sure you see it in time." Sub: "Enter your industry and certifications once. We scan every federal, grant, and state posting daily and alert you only to the contracts you can actually win." Sections: problem (small businesses miss set-asides written for them because nobody watches the portal), how it works (the 4 profile-to-alert steps with icons), a live demo showing a matched contract card with a fit score and a document checklist, pricing (Basic $29 / Pro $79) anchored against a "capture managers cost $80,000 a year" callout, and an FAQ covering data freshness, SAM.gov registration help, and how fit scoring works. Use the Geist font, an off-white background, near-black text, and a single lime accent. Primary CTA: "Find my first contract" opening an email capture.
+```
+
+## Sources
+
+Market sizing, competitor pricing, and demand signals collated from Ideabrowser MCP idea #6378 and the public research it cites (March 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [OpenPR — Government Contracting Software Market ($1,085M in 2025 to $2,006M by 2032, 9.3% CAGR)](https://www.openpr.com/news/4411726/government-contracting-software-market-report-the-global)
+- [Business Research Insights — Contract Discovery and Analytics Software Market ($2.14B in 2026 to $5.99B by 2035, 12.5% CAGR)](https://www.businessresearchinsights.com/market-reports/contract-discovery-and-analytics-software-market-113045)
+- [United States Procurement Software Market Size and Forecast 2026-2034 ($2.9B to $6.22B)](https://vocal.media/trader/united-states-procurement-software-market-size-and-forecast-2026-2034)
+- [iQuasar — Federal Contracting in 2026: Key Updates, Policy Shifts, and Market Trends ($163B small business spend)](https://iquasar.com/blog/federal-contracting-in-2026-key-updates-policy-shifts-and-market-trends/)
+- [FedBizAccess — Emerging Government Contracting Trends for Small Businesses 2026](https://fedbizaccess.com/emerging-government-contracting-trends-small-businesses-2026/)
+- [SAM.gov — official federal opportunities and entity registration (free)](https://sam.gov)
+- [GovWin IQ (Deltek) — federal market intelligence for capture teams](https://iq.govwin.com)
+- [Bloomberg Government (BGOV) — contract and policy intelligence](https://about.bgov.com)
+- [EZGovOpps — government contract opportunity search pricing](https://www.ezgovopps.com)
+- [GovTribe — federal contract and award tracking](https://govtribe.com)
+
+Page sourced via Ideabrowser MCP (idea_id 6378): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

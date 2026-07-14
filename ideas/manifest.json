@@ -4310,6 +4310,276 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "n8n-freelancer-academy",
+      "title": "n8n Freelancer Academy",
+      "publishedAt": "2026-07-13",
+      "category": "Education",
+      "description": "Training, certification, and a job board that turn self-taught n8n builders into well-paid automation freelancers — with pricing templates and a commercial workflow vault.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "n8n freelancers",
+        "small automation agencies"
+      ],
+      "source": "ideabrowser:1680",
+      "og": {
+        "subject": "dark desk scene, a single tactile brass certificate seal on matte paper, one mint accent glow, no people, no faces, no text, shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2175,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "supply-chain-transparency-platform",
+      "title": "Supply Chain Transparency Platform",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "An AI-first SaaS that turns a midsize brand's messy supplier PDFs into a verified supply chain map, passing audit reports, and a scannable consumer transparency label.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "midsize-brand-operations-teams",
+        "sustainability-and-compliance-directors"
+      ],
+      "source": "ideabrowser:1694",
+      "og": {
+        "subject": "dark scene, one tactile object, one lavender accent, no people/faces/text, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2242,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "postpartum-recovery-platform",
+      "title": "Postpartum Recovery Support Platform",
+      "publishedAt": "2026-07-13",
+      "category": "Health",
+      "description": "A digital-first postpartum support platform pairing recovery tracking, certified professional access, and birth-month peer cohorts for new mothers in year one.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "new-mothers",
+        "pregnant-women"
+      ],
+      "source": "ideabrowser:1695",
+      "og": {
+        "subject": "a softly glowing aubergine night-light on a dark wooden nightstand beside a folded muslin swaddle, shallow focus, no people, no faces, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2227,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "hr-insight-engine",
+      "title": "HR Insight Engine",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "No-code people analytics for mid-sized companies: connect your HRIS, auto-clean the data, and surface attrition risk, engagement, and turnover in minutes.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "hr-people-ops-leaders",
+        "smb-founders-operators"
+      ],
+      "source": "ideabrowser:1776",
+      "og": {
+        "subject": "dark scene, a single glass dashboard panel glowing on a desk, one emerald data line, no people, no text, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2281,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "government-contract-finder",
+      "title": "Government Contract Finder for Small Businesses",
+      "publishedAt": "2026-07-13",
+      "category": "SaaS",
+      "description": "Match your small business to the government contracts it actually qualifies for. AI scans SAM.gov, grants, and state portals daily and alerts you before deadlines.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solopreneurs"
+      ],
+      "source": "ideabrowser:6378",
+      "og": {
+        "subject": "dark walnut desk, a single embossed government seal on cream paper catching light, one lime paperclip accent, no people, no faces, no text, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 10,
+        "wordCount": 2217,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "quickbooks-escape-ramp",
+      "title": "QuickBooks Escape Ramp",
+      "publishedAt": "2026-07-13",
+      "category": "Fintech",
+      "description": "A flat-fee service that migrates small businesses off sunsetting QuickBooks Desktop to Xero, Zoho, or FreshBooks with penny-accurate, guaranteed data fidelity.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "bookkeepers-and-accountants"
+      ],
+      "source": "ideabrowser:1458",
+      "og": {
+        "subject": "dark desk scene, a single closed ledger book with a mint bookmark ribbon, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 6,
+        "wordCount": 2429,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-13T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 10,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

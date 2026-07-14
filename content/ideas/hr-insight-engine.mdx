@@ -1,0 +1,118 @@
+---
+slug: "hr-insight-engine"
+title: "HR Insight Engine"
+---
+
+## The Problem
+
+A People Ops lead at a 280-person company gets a Slack message on a Thursday afternoon: the CFO wants turnover by department, by tenure band, and by manager, for the board deck on Monday. The data exists—some of it in the HRIS, some in the payroll system, some in a performance tool nobody has logged into since the last review cycle, and a lot of it in a spreadsheet one analyst maintains by hand. Pulling it together means three CSV exports, a weekend of VLOOKUPs, and a pivot table that will be stale the moment someone resigns. By the time the chart is ready, the question has already moved on to "so why are the top performers the ones leaving?"—and there is no time left to answer it.
+
+This is not an edge case; it is the default operating condition of mid-market HR. Ideabrowser's research on this idea leads with a stat that keeps surfacing across the industry press: 79% of HR leaders report being unable to use their data effectively. The pain is chronic and, per the community signals, intensifying—not because the data is missing but because the tooling assumes one of two extremes. Either you are a Fortune 500 with a Visier contract and a dedicated people-analytics team, or you are stitching dashboards together in Excel and Power BI by hand. The 100-to-1,000-employee company in the middle has executive-grade questions and a spreadsheet-grade toolkit.
+
+The downstream cost is strategic, not just clerical. Attrition among high performers, pay-equity exposure, and manager-level retention gaps are exactly the metrics a board asks about—and exactly the ones that take weeks to assemble manually, by which point the answer is a post-mortem instead of an intervention. There are more than 200,000 mid-sized companies in the US alone, most of them running an HRIS that emits data faster than any human can reconcile it. The gap between "we have the data" and "we can act on it" is where this product lives.
+
+## The Solution
+
+HR Insight Engine is a no-code people-analytics layer that sits on top of the systems an HR team already runs. It connects to the HRIS, payroll, and ATS through a unified integration, auto-cleans the messy employee records those systems emit, and renders executive-ready dashboards—turnover trends, attrition risk, engagement, compensation bands, hiring funnel health—from pre-built templates a non-technical HR manager can deploy in an afternoon. No SQL, no data analyst, no six-figure enterprise contract. The wedge is a single question answered fast: "which managers retain talent best, and which are quietly bleeding it?"—surfaced in minutes instead of the weeks a manual pull would take.
+
+The defensible part is not the charts; it is the plumbing underneath them. HR data is notoriously inconsistent—duplicate records, mismatched department names, half-filled compensation fields—so an AI cleaning and normalization step that turns three raw exports into one trustworthy model is the real moat. On top of that, an LLM layer translates plain-language questions ("show me regretted attrition in Sales over the last two quarters") into the right chart, and flags retention risk before a resignation lands.
+
+**How it works:**
+
+1. **Connect** — HR admin authorizes the HRIS, payroll, and ATS through a unified API (BambooHR, Workday, ADP, Gusto); records sync automatically, no engineering required
+2. **Clean** — An AI normalization pass deduplicates employees, reconciles department and title taxonomies, and fills gaps, producing one trusted workforce model
+3. **Template** — The admin picks from pre-built dashboards—turnover, attrition risk, DEI, compensation, hiring—and each renders instantly against live data
+4. **Ask and act** — A plain-language query box answers ad-hoc executive questions and flags managers or cohorts with rising retention risk before people leave
+
+## Market Research
+
+The HR software market is large, growing, and—critically for a wedge player—fragmented enough that the mid-market sits underserved between cheap HRIS add-ons and expensive analytics suites.
+
+- **The global HR software market is projected to reach $54.6B in 2025**, growing at roughly 9.3% CAGR toward at least $76.9B by 2029 (Global HR Software Market Insights 2025). This is the pond; people-analytics is the fastest-warming corner of it.
+- **The HR analytics sub-segment is forecast to surpass $9.89B by 2031 at a 14.9% CAGR** (PR Newswire / market research, 2025)—materially faster than the parent market, which is what "emerging category inside a mature one" looks like on a chart.
+- **84% of HR leaders expect to deploy AI or analytics dashboards by 2026** (five.co HR dashboard research). The buying intent is already committed; the open question is which tool captures it in the mid-market.
+- **79% of HR leaders report being unable to use their data effectively** (industry survey cited across Ideabrowser research). That is not a niche complaint—it is a near-universal admission of unmet need from the exact buyer you are selling to.
+- **Reddit's r/humanresources has 177K+ members and r/analytics 224K+**, with r/PowerBI at 146K+ and the niche r/HRAnalytics concentrated at 5.2K. Threads on HRIS integration and dashboard building routinely draw 20-30+ engaged replies—demand you route, not create.
+- **Facebook groups like "People Analytics (The Science of HR)" and "HR Analytics Hub" (3.7K+)** run continuous requests for dashboard templates and integration help, and YouTube channels such as AIHR and MyOnlineTrainingHub pull 50K to 1M+ views on HR-dashboard tutorials—a content gap you can convert into a distribution channel.
+
+## Competitive Landscape
+
+People analytics is crowded at the top and thin in the middle. Every serious incumbent either assumes an enterprise budget or a data analyst on staff—which is precisely the gap:
+
+- **Visier** — The category leader in enterprise people analytics: deep AI/ML, benchmarking, 8,000+ customers, best-in-class predictive insights. Also the reason the mid-market is underserved—complex UI for non-technical users, long onboarding, and pricing reported to start around $6,000+/year for mid-market and climb steeply from there.
+- **BambooHR (Dashboards)** — The mid-market HRIS favorite with 27,000+ customers, clean UX, and native dashboards for its own data. Pricing from roughly $8.75/user/month. The ceiling is that its analytics only see BambooHR data—cross-system turnover, comp, and ATS mashups are exactly what it cannot do.
+- **ChartHop** — Modern, visual, org-chart-centric people analytics for high-growth teams; strong UX, good integration roster, tiered SaaS reported from about $4/user/month and up. Feature depth still trails Visier, and some analytics require technical setup that pushes it back toward the "needs an analyst" problem.
+- **Microsoft Power BI (HR templates)** — The default DIY path at $10/user/month for Pro. Infinitely flexible, but the flexibility is the tax: it expects an analyst to build and maintain the model, so HR teams without data support end up back in spreadsheets.
+- **Excel and BI DIY (Tableau, Looker)** — Free-to-cheap and universal, but every refresh is manual, error-prone, and one departure away from stale. Still dominant among resource-constrained teams, which is the loudest signal that the market need is real.
+
+**Your Opportunity**
+
+No incumbent wants the exact seat you are taking. Visier will not move down-market without cannibalizing its enterprise pricing; BambooHR is structurally locked to its own data; Power BI will always need an analyst. The wedge is a no-code, cross-system, AI-cleaned analytics layer priced for the 100-to-1,000-employee company—install in an afternoon, one price for the org rather than per-analyst, and pre-built templates that answer the board's questions without a data hire. Win on three things they will not chase: automated multi-HRIS cleaning, plain-language querying for non-technical HR, and mid-market pricing that sits in the open $99-to-$800/month lane between cheap add-ons and enterprise suites.
+
+## Business Model
+
+Subscription SaaS priced per company, not per analyst—the whole pitch is that HR should not need to hire a data team, so charging by seat would undercut the story. Tiers scale by headcount and integration depth, with annual contracts standard for B2B retention. A free workforce-data audit acts as the lead magnet: connect one system, get one cleaned dashboard, feel the "oh, that took thirty seconds" moment that converts.
+
+- **Starter** ($99/mo) — One HRIS connection, core templates (turnover, headcount, hiring funnel), up to 250 employees. The wedge that gets you inside the account.
+- **Growth** ($349/mo) — Multi-system sync (HRIS + payroll + ATS), attrition-risk flags, compensation and DEI dashboards, plain-language query, up to 1,000 employees.
+- **Scale** ($799/mo) — Predictive retention modeling, manager-level scorecards, custom templates, SSO, priority support, and anonymized benchmarking for larger mid-market orgs.
+- **Integrations add-on** ($2,000-$5,000/yr) — Premium or custom HRIS connectors and white-label dashboards for HR consultancies reselling to their book.
+
+**Unit Economics**
+
+- **$600** — Target blended CAC (content + community + partner-led)
+- **$350/mo** — Avg. revenue per account (blended across tiers)
+- **~85%** — Gross margin (unified-API and LLM costs are the main variable)
+- **~$6,300** — LTV at an 18-month average B2B contract life
+
+At a $350 blended ARPU, roughly 2,400 paying accounts clears $10M ARR—well within reach of a 200,000-company US mid-market, before counting the consultancy white-label channel or international expansion into EMEA and LATAM, where local HRIS vendors ship almost no dashboard tooling.
+
+## Recommended Tech Stack
+
+The hard part is never the charts—it is reliable, multi-system integration and trustworthy data cleaning. Buy the integration layer, spend your build time on the normalization and template engine, and keep the AI as a thin, well-scoped layer on top.
+
+- **Next.js 14 + Vercel** — App Router for the dashboard, server components for fast data-dense views, Vercel Cron for nightly sync and cleaning jobs. One repo, minimal infra.
+- **Finch or Merge.dev (unified HRIS/payroll API)** — This is the single most important choice. Instead of building and maintaining dozens of fragile HRIS connectors, one unified API normalizes BambooHR, Workday, ADP, Gusto, and more. It collapses the biggest technical and time barrier in the whole plan.
+- **Convex or Postgres (Neon/Supabase)** — Store the cleaned workforce model: employees, departments, comp history, events (hire, promote, terminate with regretted/non-regretted flags), and dashboard configs. Row-level security keyed to the org—HR data compliance is non-negotiable.
+- **Claude (Anthropic API)** — Two scoped jobs: (1) an AI cleaning pass that deduplicates and reconciles messy records into one model, and (2) plain-language-to-chart translation with a strict schema so a query returns a defined visualization, never freeform prose.
+- **Tremor or Recharts** — Pre-built React dashboard and chart primitives so you ship executive-ready visuals fast instead of hand-rolling a charting library.
+- **Stripe Billing + SOC 2 path** — Per-company tiered billing via Stripe. Budget early for SOC 2 and GDPR/CCPA posture; for this buyer, compliance is a sales gate, not a nice-to-have.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project for "HR Insight Engine," a no-code people-analytics dashboard for mid-sized companies. Provision Postgres (Neon or Supabase) with these tables: orgs (id, name, plan TEXT default 'starter', employee_count INT), connections (id, org_id, provider TEXT, unified_api_token TEXT, last_synced_at TIMESTAMPTZ), employees (id, org_id, external_id, name, department TEXT, title TEXT, manager_id, hired_at DATE, terminated_at DATE, termination_type TEXT CHECK termination_type IN ('regretted','non_regretted','active'), comp_cents INT), dashboards (id, org_id, template TEXT, config JSONB). Enable row-level security so every query is scoped to the org. Integrate Finch or Merge.dev as the unified HRIS/payroll API. Wire Stripe with three products: Starter $99/mo, Growth $349/mo, Scale $799/mo. Add env vars for the unified API key, ANTHROPIC_API_KEY, and Stripe keys.
+```
+
+**2. Core Feature**
+
+```text
+Build the sync-and-clean pipeline. On a nightly Vercel Cron job, for each org connection: pull employees, departments, and compensation from the unified HRIS/payroll API. Then run an AI cleaning pass with Claude that (1) deduplicates employees by fuzzy-matching name plus external_id, (2) reconciles inconsistent department and title strings into one canonical taxonomy per org, and (3) flags records with missing manager_id or comp data. Return a strict JSON schema: { canonical_employees: [...], department_map: {...}, data_quality_flags: [...] }. Write the cleaned result into the employees table. Then compute the turnover dashboard: monthly and rolling-12-month attrition by department, by tenure band, and by manager, separating regretted from non-regretted exits. Expose it as a server-rendered dashboard page using Tremor charts.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for HR Insight Engine. Hero headline: "Answer the board's people questions in minutes, not weekends." Sub: "Connect your HRIS, payroll, and ATS. We clean the data and build the dashboards. No analyst required." Sections: a live demo showing a turnover-by-manager dashboard rendering from connected data; the problem (79% of HR leaders can't use their data effectively); how it works (4 steps matching the solution section); pricing (Starter $99 / Growth $349 / Scale $799) anchored against a "Visier starts at $6,000+/year" callout; a trust strip covering SOC 2, GDPR, and CCPA; and an FAQ on supported HRIS platforms and data security. Use the Geist font, an off-white background, near-black text, and a single emerald accent. Primary CTA: "Get your free workforce data audit."
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #1776 and the public research it cites (July 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Global HR Software Market Insights 2025 ($54.6B in 2025, ~$76.9B by 2029)](https://www.einpresswire.com/article/813973233/global-human-resource-hr-software-market-insights-2025-key-trends-market-size-and-growth-forecast)
+- [PR Newswire — HR Analytics Market to surpass $9.89B, 14.9% CAGR 2025-2031](https://www.prnewswire.com/news-releases/hr-analytics-market-size-to-surpass-usd-9-89-billion-cagr-of-14-9-during-20252031--302492353.html)
+- [five.co — HR Dashboard Software (84% AI/analytics adoption by 2026)](https://five.co/blog/hr-dashboard-software/)
+- [AIHR — HR Dashboard examples and best practices](https://www.aihr.com/blog/hr-dashboard/)
+- [Lattice — HR dashboards: examples and best practices](https://lattice.com/articles/hr-dashboards-examples-and-best-practices)
+- [Coherent Market Insights — HR and payroll management software market](https://www.coherentmarketinsights.com/industry-reports/hr-payroll-management-software-market)
+- [Visier — people analytics platform (enterprise pricing reference)](https://www.visier.com/)
+- [BambooHR — pricing reference (from ~$8.75/user/month)](https://www.bamboohr.com/pricing/)
+- [ChartHop — pricing reference (tiered from ~$4/user/month)](https://www.charthop.com/pricing)
+- [Microsoft Power BI — pricing reference ($10/user/month Pro)](https://powerbi.microsoft.com/pricing/)
+
+Page sourced via Ideabrowser MCP (idea_id 1776): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
