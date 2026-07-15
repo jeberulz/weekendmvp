@@ -5,6 +5,9 @@ const LEGACY_ORIGIN =
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  outputFileTracingIncludes: {
+    "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
+  },
   turbopack: {
     root: __dirname,
   },

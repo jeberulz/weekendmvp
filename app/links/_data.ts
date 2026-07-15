@@ -2,90 +2,51 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { cacheLife, cacheTag } from "next/cache";
 
-const CAMPAIGN_SLUG = "2026-07-audience-growth";
-const CAMPAIGN_FILE = path.join(
-  process.cwd(),
+import {
+  CATEGORY_LABELS,
+  parseCampaignCsv,
+  selectReleasedRows,
+} from "./_archive-core.mjs";
+
+const CAMPAIGNS_DIRECTORY = path.join(
+  /* turbopackIgnore: true */ process.cwd(),
   "content/social/reels/campaigns",
-  CAMPAIGN_SLUG,
-  "calendar.csv",
 );
 const FALLBACK_IMAGE = "/image/og-image.png";
 
 type CampaignRow = {
   date: string;
   day: string;
-  week: string;
   slug: string;
   title: string;
   format: string;
+  category: string;
   source_url: string;
+  campaignSlug: string;
+  pathname: string;
+  kind: "idea" | "article";
 };
 
 export type VideoLink = {
+  isoDate: string;
   date: string;
   day: string;
+  slug: string;
   title: string;
   format: string;
+  category: string;
+  categoryLabel: string;
   href: string;
   image: string;
   kind: "idea" | "article";
 };
 
-function parseCsvLine(line: string): string[] {
-  const cells: string[] = [];
-  let current = "";
-  let quoted = false;
+export const CATEGORY_OPTIONS: ReadonlyArray<{
+  slug: string;
+  label: string;
+}> = Object.entries(CATEGORY_LABELS).map(([slug, label]) => ({ slug, label }));
 
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index];
-    const next = line[index + 1];
-
-    if (char === '"' && quoted && next === '"') {
-      current += '"';
-      index += 1;
-    } else if (char === '"') {
-      quoted = !quoted;
-    } else if (char === "," && !quoted) {
-      cells.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  cells.push(current.trim());
-  return cells;
-}
-
-function parseCampaignCsv(raw: string): CampaignRow[] {
-  const [headerLine, ...lines] = raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (!headerLine) return [];
-
-  const headers = parseCsvLine(headerLine);
-  return lines.flatMap((line) => {
-    const values = parseCsvLine(line);
-    const row = Object.fromEntries(
-      headers.map((header, index) => [header, values[index] ?? ""]),
-    ) as CampaignRow;
-
-    if (
-      !row.date ||
-      !row.day ||
-      !row.week ||
-      !row.slug ||
-      !row.title ||
-      !row.source_url
-    ) {
-      return [];
-    }
-
-    return [row];
-  });
-}
+const categoryLabels = CATEGORY_LABELS as Readonly<Record<string, string>>;
 
 function formatDate(date: string, options: Intl.DateTimeFormatOptions): string {
   const [year, month, day] = date.split("-").map(Number);
@@ -107,55 +68,82 @@ async function imageFor(pathname: string, slug: string): Promise<string> {
   }
 }
 
-function trackedHref(pathname: string, slug: string): string {
+function trackedHref(
+  pathname: string,
+  slug: string,
+  campaignSlug: string,
+): string {
   const params = new URLSearchParams({
     utm_source: "link_in_bio",
     utm_medium: "social",
-    utm_campaign: CAMPAIGN_SLUG,
+    utm_campaign: campaignSlug,
     utm_content: slug,
   });
   return `${pathname}?${params.toString()}`;
 }
 
-export async function getVideoLinkForDate(
-  scheduledDate: string,
-): Promise<VideoLink | null> {
+async function campaignCalendarFiles(): Promise<
+  Array<{ campaignSlug: string; filename: string }>
+> {
+  const entries = await fs.readdir(CAMPAIGNS_DIRECTORY, {
+    withFileTypes: true,
+  });
+
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => ({
+      campaignSlug: entry.name,
+      filename: path.join(CAMPAIGNS_DIRECTORY, entry.name, "calendar.csv"),
+    }))
+    .sort((left, right) => left.filename.localeCompare(right.filename));
+}
+
+export async function getReleasedVideoLinks(
+  currentDate: string,
+): Promise<VideoLink[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("social-video-links");
 
   try {
-    const rows = parseCampaignCsv(await fs.readFile(CAMPAIGN_FILE, "utf8"));
-    const row = rows.find((candidate) => candidate.date === scheduledDate);
-    if (!row) return null;
-
-    let pathname: string;
-    try {
-      pathname = new URL(row.source_url).pathname.replace(/\/$/, "");
-    } catch {
-      return null;
-    }
-
-    const kind = pathname.startsWith("/articles/")
-      ? "article"
-      : pathname.startsWith("/ideas/")
-        ? "idea"
-        : null;
-    if (!kind) return null;
-
-    return {
-      date: formatDate(row.date, {
-        day: "numeric",
-        month: "short",
+    const calendars = await campaignCalendarFiles();
+    const parsedCalendars = await Promise.all(
+      calendars.map(async ({ campaignSlug, filename }) => {
+        try {
+          return parseCampaignCsv(
+            await fs.readFile(filename, "utf8"),
+            campaignSlug,
+          ) as CampaignRow[];
+        } catch {
+          return [];
+        }
       }),
-      day: row.day,
-      title: row.title,
-      format: row.format,
-      href: trackedHref(pathname, row.slug),
-      image: await imageFor(pathname, row.slug),
-      kind,
-    };
+    );
+    const releasedRows = selectReleasedRows(
+      parsedCalendars.flat(),
+      currentDate,
+    ) as CampaignRow[];
+
+    return Promise.all(
+      releasedRows.map(async (row) => ({
+        isoDate: row.date,
+        date: formatDate(row.date, {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+        day: row.day,
+        slug: row.slug,
+        title: row.title,
+        format: row.format,
+        category: row.category,
+        categoryLabel: categoryLabels[row.category] ?? row.category,
+        href: trackedHref(row.pathname, row.slug, row.campaignSlug),
+        image: await imageFor(row.pathname, row.slug),
+        kind: row.kind,
+      })),
+    );
   } catch {
-    return null;
+    return [];
   }
 }
