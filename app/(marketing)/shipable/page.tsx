@@ -46,7 +46,7 @@ export const metadata: Metadata = {
       "ship·able | Build & Ship Your MVP Live in 90 Minutes ($9 Workshop)",
   },
   description:
-    "Build and ship a real MVP in 90 minutes. Live $9 workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Sat Jun 27, 2026 · Live on Zoom · Lifetime replay.",
+    "Build and ship a real MVP in 90 minutes. Live $9 workshop with John Iseghohi for non-technical founders using AI tools. Walk out with a deployed URL, a 48-hour build plan, and your first users. Sat Aug 1, 2026 · Live on Zoom · Lifetime replay.",
   keywords:
     "MVP workshop, build MVP in a weekend, non-technical founder MVP, ship MVP live, AI MVP builder, 90 minute MVP, weekend MVP workshop",
   authors: [{ name: "John Iseghohi" }],
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     url: "/shipable",
     title: "ship·able · Build your MVP live in 90 minutes for $9",
     description:
-      "Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Sat Jun 27, 2026 at 12 PM BST. Replay included.",
+      "Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Sat Aug 1, 2026 at 5 PM BST. Replay included.",
     images: [
       {
         url: "https://www.weekendmvp.app/image/og-image.png",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     site: "@weekendmvp",
     title: "ship·able · Build your MVP live in 90 minutes for $9",
     description:
-      "Live $9 workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Sat Jun 27, 2026 · 12 PM BST.",
+      "Live $9 workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Sat Aug 1, 2026 · 5 PM BST.",
     images: [
       {
         url: "https://www.weekendmvp.app/image/og-image.png",
@@ -100,8 +100,8 @@ export default function ShipablePage() {
           deadline={WORKSHOP_DEADLINE}
           eyebrow="Workshop starts in"
           timezone="BST"
-          dateLabel="Sat, Jun 27"
-          timeLabel="12:00 PM"
+          dateLabel="Sat, Aug 1"
+          timeLabel="5:00 PM"
           italicClass="text-[#e9a06a]"
           meta="90 minutes live · Q&A after"
         />
@@ -252,9 +252,9 @@ export default function ShipablePage() {
             <>
               Workshop runs{" "}
               <strong className="font-semibold text-[#1a1a1a]">
-                12:00 PM BST
+                5:00 PM BST
               </strong>{" "}
-              on Sat, Jun 27. Set a reminder for your local time below.
+              on Sat, Aug 1. Set a reminder for your local time below.
             </>
           }
           rows={TIMEZONES}

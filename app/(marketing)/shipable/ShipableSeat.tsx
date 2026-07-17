@@ -101,8 +101,8 @@ function SeatPaid() {
         </span>
       </h2>
       <p className="mt-4 text-neutral-300">
-        Your Zoom link, Ship Sheet, and bonuses are on the way. Sat Jun 27 ·
-        12:00 PM BST.
+        Your Zoom link, Ship Sheet, and bonuses are on the way. Sat Aug 1 ·
+        5:00 PM BST.
       </p>
       <p className="mt-2 text-xs text-neutral-400">
         If you don&apos;t see the confirmation in 5 minutes, check spam or

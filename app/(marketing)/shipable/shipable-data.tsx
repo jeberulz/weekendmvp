@@ -25,7 +25,7 @@ import type {
 } from "@/components/marketing/workshop/WorkshopTicket";
 import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/WorkshopTimezones";
 
-export const WORKSHOP_DEADLINE = "2026-06-27T12:00:00+01:00";
+export const WORKSHOP_DEADLINE = "2026-08-01T17:00:00+01:00";
 
 /* JSON-LD: Person + Organization + Event + FAQPage + Breadcrumb (SEO + AEO).
    Person/Organization carry workshop-specific fields (jobTitle "Founder,
@@ -62,7 +62,7 @@ export const FAQS: FaqEntry[] = [
   {
     question: "When is the ship·able workshop?",
     answer:
-      "Saturday June 27, 2026 at 12:00 PM BST (7:00 AM EDT, 4:00 AM PDT, 12:00 PM WAT). Live on Zoom. If you can't make it live, you get the full lifetime replay.",
+      "Saturday August 1, 2026 at 5:00 PM BST (12:00 PM EDT, 9:00 AM PDT, 5:00 PM WAT). Live on Zoom. If you can't make it live, you get the full lifetime replay.",
   },
   {
     question: "How much does the workshop cost?",
@@ -96,8 +96,8 @@ const SHIPABLE_EVENT = {
     name: "ship·able · Build your MVP live in 90 minutes",
     description:
       "A 90-minute live workshop where you turn the idea you've been sitting on into a real, deployed MVP with a live URL. Non-technical welcome, built with AI tools. Includes the Ship Sheet, 48-hour build plan, AI MVP Builder, and the Weekend MVP Starter Kit.",
-    startDate: "2026-06-27T12:00:00+01:00",
-    endDate: "2026-06-27T14:00:00+01:00",
+    startDate: "2026-08-01T17:00:00+01:00",
+    endDate: "2026-08-01T19:00:00+01:00",
     url: "/shipable",
     location: {
       name: "Zoom",
@@ -153,7 +153,7 @@ export const TLDR_ITEMS: WorkshopTldrItem[] = [
     lead: <>It&apos;s a 90-minute live workshop</>,
     rest: (
       <>
-        on Sat, Jun 27, 12:00 PM BST, on Zoom. Can&apos;t make it live? You get
+        on Sat, Aug 1, 5:00 PM BST, on Zoom. Can&apos;t make it live? You get
         the full replay.
       </>
     ),
@@ -328,12 +328,12 @@ export const VALUE_STACK: WorkshopValueItem[] = [
 ];
 
 export const TICKET_DETAILS: WorkshopTicketDetail[] = [
-  { label: "Date", value: "Sat, Jun 27" },
+  { label: "Date", value: "Sat, Aug 1" },
   {
     label: "Start",
     value: (
       <>
-        12:00 PM <span className="accent-italic text-neutral-700">BST</span>
+        5:00 PM <span className="accent-italic text-neutral-700">BST</span>
       </>
     ),
   },
@@ -359,10 +359,10 @@ export const TICKET_LINES: WorkshopTicketLine[] = [
 ];
 
 export const TIMEZONES: WorkshopTimezoneRow[] = [
-  { city: "New York", date: "Sat Jun 27 · EDT", time: "7:00 AM" },
-  { city: "London", date: "Sat Jun 27 · BST", time: "12:00 PM" },
-  { city: "Lagos", date: "Sat Jun 27 · WAT", time: "12:00 PM" },
-  { city: "Los Angeles", date: "Sat Jun 27 · PDT", time: "4:00 AM" },
+  { city: "New York", date: "Sat Aug 1 · EDT", time: "12:00 PM" },
+  { city: "London", date: "Sat Aug 1 · BST", time: "5:00 PM" },
+  { city: "Lagos", date: "Sat Aug 1 · WAT", time: "5:00 PM" },
+  { city: "Los Angeles", date: "Sat Aug 1 · PDT", time: "9:00 AM" },
 ];
 
 export const TEACHER_CHIPS: React.ReactNode[] = [
