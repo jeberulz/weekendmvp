@@ -4580,6 +4580,231 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-website-redesign-service",
+      "title": "24-Hour AI Website Redesigns",
+      "publishedAt": "2026-07-17",
+      "category": "SaaS",
+      "description": "A productized service that redesigns outdated small-business websites with AI in 24 hours for a flat $199 — mobile-first, brand-preserving, with a recurring care plan.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "local-service-businesses"
+      ],
+      "source": "ideabrowser:15",
+      "og": {
+        "subject": "dark studio scene, a single vintage desktop monitor on a desk, one lavender screen glow as the accent, no people, no faces, no text, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 9,
+        "wordCount": 2491,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-17T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-api-docs-generator",
+      "title": "AI API Documentation Generator",
+      "publishedAt": "2026-07-17",
+      "category": "Developer",
+      "description": "Turn any repo, OpenAPI spec, or legacy Excel/Word file into a clean, always-current API reference — with a CI check that reopens a PR the moment docs drift from code.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "technical-writers"
+      ],
+      "source": "ideabrowser:27",
+      "og": {
+        "subject": "dark developer desk, a single open manual/spec booklet catching one emerald edge of light, shallow focus, no people, no faces, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 9,
+        "wordCount": 2288,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-17T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "youth-sports-team-messaging-hub",
+      "title": "Youth Sports Team Messaging Hub",
+      "publishedAt": "2026-07-17",
+      "category": "SaaS",
+      "description": "A cross-channel messaging hub for youth sports teams: coaches post once, parents get every update by text, email, and push, plus RSVP, carpool, and fees.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "youth-sports-coaches",
+        "parents"
+      ],
+      "source": "ideabrowser:2107",
+      "og": {
+        "subject": "dark locker-room bench at dusk, a single worn soccer ball resting under one lime-green stripe of light, shallow focus, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2360,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-17T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 10,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "renter-deposit-documentation-app",
+      "title": "Renter Deposit Documentation App",
+      "publishedAt": "2026-07-17",
+      "category": "SaaS",
+      "description": "Build a renter move-in/move-out documentation app that captures time-stamped photos, generates condition reports, and drafts state-specific deposit dispute letters.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "renters-and-tenants",
+        "tenant-rights-advocates"
+      ],
+      "source": "ideabrowser:3883",
+      "og": {
+        "subject": "dark scene, a single smartphone on a bare hardwood floor of an empty apartment, screen glowing with a faint mint accent, shallow focus, no people, no faces, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2552,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-17T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 10,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "adspark",
+      "title": "AdSpark: One-Click AI Ad Creative Generator",
+      "publishedAt": "2026-07-17",
+      "category": "SaaS",
+      "description": "Turn a product link or short brief plus a brand-tone quiz into correctly-sized ad visuals, copy, and A/B variations in under a minute — built for small marketing teams.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-marketers",
+        "marketing-agencies"
+      ],
+      "source": "ideabrowser:37",
+      "og": {
+        "subject": "dark studio scene, a single blank ad frame on matte surface catching one aubergine light streak, shallow focus, no people, no faces, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2347,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-17T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 10,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

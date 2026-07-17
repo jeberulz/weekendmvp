@@ -1,0 +1,117 @@
+---
+slug: "ai-api-docs-generator"
+title: "AI API Documentation Generator"
+---
+
+## The Problem
+
+Every engineering team ships an API faster than it documents one. A backend developer merges a new endpoint on Friday, renames a field on Monday, and by the time the technical writer gets to it, the published reference is already lying to whoever reads it. The docs live in a different place than the code—a Word file, a Confluence page, a spreadsheet a product manager keeps by hand—so they drift the instant the code changes. The result is the single most common complaint in developer relations: "the docs are wrong," which quietly becomes "the API is broken" in the mind of every integrator who trusts them.
+
+The pain is loud and specific online. Reddit's r/technicalwriting (52.7K members) is a running catalog of writers hand-converting API specs between formats and begging for automation; r/learnprogramming (2.1M) and r/ArtificialInteligence (362K) surface the developer side of the same wound—people who just want readable reference docs without becoming full-time doc maintainers. One of the original signals behind this idea was a developer literally asking a tool to "convert my API input and output Excel file to a Word doc API documentation." That is not an exotic edge case. Legacy and enterprise teams still hand off API contracts as spreadsheets and Word files, and someone downstream burns hours turning them into something a partner can actually read.
+
+The downstream cost is money and trust. Searches for "automated API documentation" are climbing roughly 15% year over year, and the reason is structural: API usage is exploding across every industry, but the documentation layer is still treated as a manual chore that happens after the real work. A tool that treats the code—or the messy Excel/Word spec that stands in for it—as the source of truth, and keeps a clean reference in sync automatically, is not a nice-to-have. It removes the gap where accuracy dies.
+
+## The Solution
+
+A platform that turns whatever you already have—a GitHub repo, an OpenAPI/Swagger file, or a legacy Excel or Word spec—into a clean, current, branded API reference, and then keeps it current on every merge. The parser does the deterministic work (pull endpoints, parameters, schemas, status codes); an LLM does the human work (write descriptions, generate request/response examples, flag where the docs and the code disagree). Output is both a hosted docs site and an exportable Word/PDF/Markdown bundle, so the same source feeds a public developer hub and the compliance PDF an enterprise partner demands. The wedge is the boring conversion nobody wants to do by hand; the retention hook is the CI check that reopens a pull request the moment your docs drift from your code.
+
+**How it works:**
+
+1. **Connect a source** — Point at a GitHub repo, upload an OpenAPI/Swagger file, or drop in a legacy Excel or Word spec; the app detects the format and maps it to a normalized schema
+2. **Parse and normalize** — A deterministic parser extracts endpoints, params, and schemas; Claude fills descriptions, generates realistic examples, and flags fields present in code but missing from docs
+3. **Generate** — Render a branded docs site plus exportable Word/PDF/Markdown, with a side-by-side diff preview before anything publishes
+4. **Keep current** — A GitHub check re-runs on every merge and opens a PR when the reference drifts from the code, so the docs can never silently go stale
+
+## Market Research
+
+Two curves are converging: AI has made document normalization cheap enough to sell for pennies, and API adoption has made stale documentation a universal, recurring cost. That intersection is the window.
+
+- **The AI API market is projected to grow from $44.41B in 2025 to $179.14B by 2030, a 32.2% CAGR** (Grand View Research / MarketsandMarkets). Documentation and doc-parsing APIs are an explicit segment of that number—the rails you would build on are being funded and standardized around you.
+- **Searches for "automated API documentation" are rising roughly 15% year over year** (Ideabrowser community and keyword analysis, idea #27). Intent keywords like "ai documentation," "api documentation," and "excel to word" show high volume with comparatively low competition—demand you route rather than create.
+- **GitHub passed 100M developers in 2023** (GitHub Octoverse), and API-first development means nearly every one of them ships a contract that someone has to document. The install surface for a GitHub-native docs tool is the entire modern developer population.
+- **Reddit's technical-writing and developer communities alone total 2.5M+ members**—r/technicalwriting (52.7K), r/learnprogramming (2.1M), r/ArtificialInteligence (362K)—actively trading complaints and workarounds about manual documentation (Ideabrowser community analysis). This is a self-identified, reachable buyer pool.
+- **The developer-tools market is forecast past $13B by 2027** (Gartner), and Copilot normalized a $10–30/developer price band per tool. A docs product that installs in a minute fits cleanly inside a budget line teams already approve.
+
+The strategic point: incumbents in this space price and position for funded teams. The volume of the demand—solo maintainers, small startups, and legacy enterprise teams still shipping specs as spreadsheets—sits underneath them, largely unserved.
+
+## Competitive Landscape
+
+API-docs tooling is crowded at the top and thin at the bottom. Every strong incumbent assumes you already maintain a clean OpenAPI spec or want a full docs platform. Nobody owns the cheap, format-agnostic on-ramp that turns messy source—including Excel and Word—into a current reference and keeps it that way:
+
+- **Mintlify** — The modern favorite: MDX-based docs, AI-assisted writing, auto-generation from an OpenAPI spec. Beautiful output, strong DX. Priced and positioned for funded startups—the paid floor prices out solo maintainers and OSS. Free (Hobby) / Pro roughly $150/mo / Growth roughly $550/mo / Enterprise custom
+- **ReadMe** — Interactive API hubs with a "try it" console and usage metrics. Excellent for a polished public developer portal, but hub-centric and setup-heavy, and the real value gates behind the paid tiers rather than "point it at my repo and go." Free / Startup roughly $99/mo / Business roughly $399/mo / Enterprise custom
+- **SwaggerHub (SmartBear)** — The OpenAPI design-and-host standard: spec editing, versioning, hosted reference. It documents a spec you already keep clean—it does not reconstruct docs from code or a legacy Excel/Word file. Free / Team roughly $21/designer/mo (annual) / Enterprise custom
+- **Theneo** — The closest direct competitor: AI-powered API-docs generation from a spec. Strong on generation, but priced for teams and thin on the legacy-format conversion wedge that gets non-developers in the door. Free / paid plans starting around $120/mo / Enterprise custom
+- **Postman** — Auto-generates docs as a byproduct of collections. Ubiquitous, but you must live inside Postman and the public docs it produces are basic. Free / Basic $14/user/mo / Professional $29/user/mo / Enterprise $49/user/mo
+- **Google Cloud Document AI / manual scripts** — The generic fallback: usage-priced document parsing (around $1.50 per 1,000 pages) or hand-rolled Python/VBA. Powerful primitives, zero opinion about API documentation—all assembly is on you.
+
+**Your Opportunity**
+
+Own the on-ramp the platforms skip. Win on three things they will not chase: (1) format-agnostic ingestion—repo, OpenAPI, and the legacy Excel/Word specs that enterprise teams actually hand off; (2) an indie-friendly price point that makes "why am I paying $150/mo to publish docs for one API" the obvious switching pitch; and (3) a drift-detection CI check that turns a one-time conversion into a subscription reason. Mintlify's funded-startup tilt and SwaggerHub's spec-first assumption are both open doors.
+
+## Business Model
+
+Per-project SaaS with a free tier that converts on limits, not locked features, plus a pay-per-use conversion API for the legacy-import crowd who want one clean Word doc without a subscription. The path to $1M ARR runs through roughly 3,000 paid projects blended across Solo and Team, or a mix of subscriptions and enterprise conversion contracts. LLM cost per generated doc is small and cacheable—prompt-cache the schema and style guide and variable cost stays well under a dollar per project per month—so blended gross margin lands around 80%.
+
+- **Free** ($0) — 1 project, public docs site, OpenAPI import, watermark on exports—the lead-gen wedge
+- **Solo** ($19/mo) — Unlimited projects, GitHub sync, Word/PDF/Markdown export, AI examples, no watermark
+- **Team** ($49/mo) — Drift-detection CI check, custom branding, private docs, multi-format import (Excel/Word), review workflow
+- **Enterprise** (from $10,000/yr) — SSO, on-prem or VPC deploy, compliance-format exports, custom integrations (Jira, GitHub Enterprise), priority support
+
+A pay-per-use conversion API ($0.02–0.05/document) extends the ladder for high-volume legacy migrations and captures the "just convert this Excel to a Word doc" buyer who never wanted a seat. Annual prepay removes friction for the "bill me once" segment.
+
+**Unit Economics**
+
+- **$0.10–0.60** — LLM cost per generated doc
+- **~80%** — Blended gross margin
+- **$40–80** — Target CAC (developer channels)
+- **110%+** — Net revenue retention (drift check drives expansion)
+
+## Recommended Tech Stack
+
+Optimize for: ingest any source, normalize to one schema, render fast, and re-check on every merge without babysitting infrastructure. The hard part is not the AI—it is reliable parsing across messy formats and a CI check that never fails silently.
+
+- **Next.js 14 + Vercel** — App Router for the dashboard and hosted docs, Edge routes for the GitHub webhook, Vercel Cron for scheduled re-syncs. One repo, no infra to babysit.
+- **Claude (with prompt caching) + GPT-4o fallback** — Claude for description writing, example generation, and drift detection; cache the schema and style guide per project for a large margin win. Model-agnostic router so a rate limit never blocks a build.
+- **swagger-parser + custom Excel/Word adapters** — Deterministic extraction for OpenAPI; SheetJS for Excel and a docx/mammoth pipeline for Word, all mapped into one normalized internal schema before the LLM touches anything.
+- **Supabase (Auth + Postgres)** — Tables for users, projects, sources, generated_docs, and drift_events. Row-level security keyed on user; store token usage per generation for pay-per-use billing.
+- **GitHub App + Octokit** — Install-once app with push and pull_request webhooks; post the drift check as a status and open a PR with the regenerated reference. Signed webhook validation is non-negotiable.
+- **Stripe Billing + docx/PDF export** — Free / Solo / Team / annual SKUs plus a metered pay-per-use conversion product. Generate Word via the `docx` library and PDF via a headless renderer so the same normalized schema feeds site and file exports.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "DocForge," an AI API documentation generator. Provision Supabase with these tables: users (id, email, plan TEXT default 'free'), projects (id, user_id, name, source_type TEXT CHECK source_type IN ('openapi','github','excel','word'), style_json JSONB), sources (id, project_id, raw_ref TEXT, parsed_schema JSONB, imported_at TIMESTAMPTZ), generated_docs (id, project_id, format TEXT, url TEXT, token_cost INT, created_at TIMESTAMPTZ), drift_events (id, project_id, field TEXT, kind TEXT, detected_at TIMESTAMPTZ). Enable row-level security so users only read/write rows where user_id matches auth.uid(). Wire Stripe with four products (Free, Solo $19/mo, Team $49/mo, annual) plus a metered pay-per-use conversion SKU. Add env vars ANTHROPIC_API_KEY, OPENAI_API_KEY, GITHUB_APP_ID, GITHUB_PRIVATE_KEY. Install @apidevtools/swagger-parser, sheetjs (xlsx), mammoth, docx, and the Vercel AI SDK.
+```
+
+**2. Core Feature — Ingest, Normalize, Generate**
+
+```text
+Build POST /api/generate. Input: a project_id and a source (an uploaded OpenAPI file, a GitHub repo ref, an .xlsx, or a .docx). Step 1: detect the format and run the matching deterministic parser — swagger-parser for OpenAPI, SheetJS for Excel, mammoth for Word — and map the result into one normalized schema: { endpoints: [{ method, path, summary, params: [{ name, in, type, required, description }], request_example, responses: [{ status, schema, example }] }] }. Step 2: for any field missing a description or example, call Claude with a strict JSON schema to fill descriptions and generate realistic request/response examples; cache the project style guide as a system prompt to keep token cost low. Step 3: compare the freshly parsed schema against the last stored parsed_schema and record every added, removed, or changed field as a drift_event. Step 4: render a docs site (MDX) and export Word (docx) and PDF from the same normalized object, store URLs in generated_docs with token_cost, and return a diff preview. Persist every generation for audit and billing.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for DocForge. Hero headline: "Your API docs, always current — generated from your code." Sub: "Point it at a repo, an OpenAPI file, or a legacy Excel or Word spec. Get a clean, branded reference that updates itself on every merge." Sections: live demo (an animated before/after showing a messy Excel spec turning into a polished API reference on scroll), problem (docs drift the moment code changes, and integrators lose trust), how it works (the 4 steps with icons), pricing (Free / Solo $19 / Team $49) anchored against a "$150/mo elsewhere" callout, and an FAQ covering supported formats, drift detection, export options, and data privacy. Use the Geist font, an off-white background, near-black text, and a single emerald accent. Primary CTA: "Connect your repo" with a fallback file-upload demo.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #27 and the public research it cites (2026 snapshot). Verify current pricing on each vendor page before quoting in investor materials.
+
+- [Grand View Research — AI API Market Report ($44.41B in 2025 to $179.14B by 2030, 32.2% CAGR)](https://www.grandviewresearch.com/industry-analysis/ai-api-market-report)
+- [MarketsandMarkets — AI API Market press release (market growth and segmentation)](https://www.marketsandmarkets.com/PressReleases/ai-api.asp)
+- [GitHub Octoverse — 100M+ developers on the platform](https://octoverse.github.com/)
+- [Mintlify — pricing reference (Hobby free to Pro/Growth)](https://mintlify.com/pricing)
+- [ReadMe — pricing reference (Free to Business)](https://readme.com/pricing)
+- [SwaggerHub — pricing reference (Free to Team)](https://swagger.io/tools/swaggerhub/pricing/)
+- [Theneo — AI API documentation generator and pricing](https://www.theneo.io/)
+- [Postman — API platform pricing ($14 to $49/user/mo)](https://www.postman.com/pricing/)
+- [Google Cloud Document AI — usage-based document parsing pricing](https://cloud.google.com/document-ai)
+
+Page sourced via Ideabrowser MCP (idea_id 27): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.
