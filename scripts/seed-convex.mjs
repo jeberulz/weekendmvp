@@ -90,9 +90,64 @@ const IDEA_KEYS = [
   'scores', 'og', 'provenance', 'researchLevel',
 ];
 
+/**
+ * Canonical category slugs from ideas/manifest.json `categories[]`.
+ * Historical publishes wrote display names ("SaaS", "Creator") which
+ * fragmented /startup-ideas filter chips — normalize at seed time.
+ */
+const CATEGORY_ALIASES = {
+  saas: 'saas',
+  SaaS: 'saas',
+  productivity: 'productivity',
+  Productivity: 'productivity',
+  health: 'health',
+  Health: 'health',
+  'Health & Wellness': 'health',
+  marketplace: 'marketplace',
+  Marketplace: 'marketplace',
+  'ai-tools': 'ai-tools',
+  'AI Tools': 'ai-tools',
+  automation: 'automation',
+  Automation: 'automation',
+  education: 'education',
+  Education: 'education',
+  b2b: 'b2b',
+  B2B: 'b2b',
+  'developer-tools': 'developer-tools',
+  Developer: 'developer-tools',
+  'Developer Tools': 'developer-tools',
+  ecommerce: 'ecommerce',
+  'E-commerce': 'ecommerce',
+  'E-Commerce': 'ecommerce',
+  Ecommerce: 'ecommerce',
+  'creator-tools': 'creator-tools',
+  Creator: 'creator-tools',
+  'Creator Tools': 'creator-tools',
+  fintech: 'fintech',
+  Fintech: 'fintech',
+};
+
+function normalizeCategory(raw) {
+  if (!raw || typeof raw !== 'string') return raw;
+  const trimmed = raw.trim();
+  if (CATEGORY_ALIASES[trimmed]) return CATEGORY_ALIASES[trimmed];
+  const lower = trimmed.toLowerCase();
+  if (CATEGORY_ALIASES[lower]) return CATEGORY_ALIASES[lower];
+  return lower.replace(/\s+/g, '-');
+}
+
 function buildIdea(raw, { draft }) {
   const idea = pick(raw, IDEA_KEYS);
   idea.publishedAt = parsePublishedAt(raw.publishedAt, raw.slug);
+  if (idea.category) {
+    const normalized = normalizeCategory(idea.category);
+    if (normalized !== idea.category) {
+      console.warn(
+        `  note: ${raw.slug}${draft ? ' [draft]' : ''} category "${idea.category}" → "${normalized}"`,
+      );
+      idea.category = normalized;
+    }
+  }
   if (idea.og) idea.og = pick(idea.og, ['subject', 'accent', 'status']);
   const hasMdx = fs.existsSync(path.join(contentIdeasDir, `${raw.slug}.mdx`));
   if (hasMdx) {

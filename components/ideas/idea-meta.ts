@@ -40,6 +40,56 @@ export const CATEGORY_META: Record<string, { name: string; icon: LucideIcon }> =
     fintech: { name: "Fintech", icon: Wallet },
   };
 
+/**
+ * Map legacy / mis-cased idea.category values onto the canonical
+ * `ideas/manifest.json` `categories[].slug` set. Historical publishes used
+ * display names ("SaaS", "Creator") which split the /startup-ideas filter
+ * chips and broke category hub lookups.
+ */
+const CATEGORY_ALIASES: Record<string, keyof typeof CATEGORY_META> = {
+  saas: "saas",
+  SaaS: "saas",
+  productivity: "productivity",
+  Productivity: "productivity",
+  health: "health",
+  Health: "health",
+  "Health & Wellness": "health",
+  marketplace: "marketplace",
+  Marketplace: "marketplace",
+  "ai-tools": "ai-tools",
+  "AI Tools": "ai-tools",
+  automation: "automation",
+  Automation: "automation",
+  education: "education",
+  Education: "education",
+  b2b: "b2b",
+  B2B: "b2b",
+  "developer-tools": "developer-tools",
+  Developer: "developer-tools",
+  "Developer Tools": "developer-tools",
+  ecommerce: "ecommerce",
+  "E-commerce": "ecommerce",
+  "E-Commerce": "ecommerce",
+  Ecommerce: "ecommerce",
+  "creator-tools": "creator-tools",
+  Creator: "creator-tools",
+  "Creator Tools": "creator-tools",
+  fintech: "fintech",
+  Fintech: "fintech",
+};
+
+/** Collapse display-case / alias category strings to a canonical slug. */
+export function normalizeCategorySlug(raw: string | null | undefined): string {
+  if (!raw) return "";
+  const trimmed = raw.trim();
+  if (CATEGORY_ALIASES[trimmed]) return CATEGORY_ALIASES[trimmed];
+  const lower = trimmed.toLowerCase();
+  if (CATEGORY_ALIASES[lower]) return CATEGORY_ALIASES[lower];
+  const kebab = lower.replace(/\s+/g, "-");
+  if (kebab in CATEGORY_META) return kebab;
+  return lower;
+}
+
 export const REVENUE_NAMES: Record<string, string> = {
   "1k-month": "$1K/Month",
   "5k-month": "$5K/Month",
@@ -77,7 +127,8 @@ export function humanizeSlug(slug: string): string {
 }
 
 export function categoryName(slug: string): string {
-  return CATEGORY_META[slug]?.name ?? humanizeSlug(slug);
+  const normalized = normalizeCategorySlug(slug);
+  return CATEGORY_META[normalized]?.name ?? humanizeSlug(normalized || slug);
 }
 
 export function revenueName(slug: string): string {

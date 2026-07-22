@@ -411,7 +411,9 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
   const { title, description, content, idea } = resolved;
   const toc = tocFromMarkdown(content);
   const schema = buildSchema(slug, resolved);
-  const CategoryIcon = idea ? CATEGORY_META[idea.category]?.icon : undefined;
+  const CategoryIcon = idea
+    ? CATEGORY_META[normalizeCategorySlug(idea.category)]?.icon
+    : undefined;
 
   return (
     <>
