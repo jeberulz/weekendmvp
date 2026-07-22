@@ -28,3 +28,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Checks run: MDX JSX awk (0 hazards); 3 CTAs each to /startup-ideas; meta 150-160
 - Result: Content ready for seed/OG/PR
 - Next: seed convex, og:generate, commit/push/PR
+
+## 2026-07-22 - WP03-S6 seed/OG/push
+
+- Actions taken: Pushed branch; og:generate failed (no RECRAFT/OPENAI keys) → og.status=failed; local+prod Convex articles seed succeeded (5 new slugs present in `articles:list --prod`)
+- Checks run: MDX JSX awk; seed:convex --only articles; seed:convex --only articles --prod; convex run articles:list --prod
+- Result: Content + prod index data ready; OG PNGs pending keys; page HTML needs Vercel deploy via PR merge
+- Gotchas: Cloud env lacks image API keys; heroes 404 until `npm run og:generate` with keys
+- Next: Open PR; note OG retry for human with keys

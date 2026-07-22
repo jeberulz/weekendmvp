@@ -42,7 +42,7 @@ Definition of done: Five new articles live in MDX + manifest, seeded to Convex (
   - Verification:
     - MDX safety; manifest entry
 
-- [ ] `WP03-S6` - Seed, OG, commit, PR
+- [x] `WP03-S6` - Seed, OG, commit, PR
   - Scope: seed scripts, OG PNGs, git
   - Acceptance criteria:
     - `npm run seed:convex -- --only articles` (+ `--prod` if auth)
