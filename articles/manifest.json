@@ -381,7 +381,7 @@
       "og": {
         "subject": "A clipboard with a short checklist resting on a near-black desk, one lime checkmark catching a single side lamp, very shallow focus, deep shadow beyond, no readable text",
         "accent": "lime",
-        "status": "failed"
+        "status": "ready"
       }
     },
     {
@@ -393,7 +393,7 @@
       "og": {
         "subject": "A neat stack of blank index cards on a dark wooden desk, the top card edged in mint side-light, very shallow focus, late-night atmosphere, no text visible",
         "accent": "mint",
-        "status": "failed"
+        "status": "ready"
       }
     },
     {
@@ -405,7 +405,7 @@
       "og": {
         "subject": "Three pencils of uneven lengths lying parallel on a near-black desk, only the middle one lit by a narrow lavender beam, very shallow focus, no people or text",
         "accent": "lavender",
-        "status": "failed"
+        "status": "ready"
       }
     },
     {
@@ -417,7 +417,7 @@
       "og": {
         "subject": "A single weathered paper receipt curled on a dark desk, lit by one lime side beam, ink shapes deliberately illegible, very shallow focus, deep shadow",
         "accent": "lime",
-        "status": "failed"
+        "status": "ready"
       }
     },
     {
@@ -429,7 +429,7 @@
       "og": {
         "subject": "An open notebook on a near-black surface with a single mint-glowing handwritten line visible, very shallow focus, late-night atmosphere, no readable words",
         "accent": "mint",
-        "status": "failed"
+        "status": "ready"
       }
     }
   ]
