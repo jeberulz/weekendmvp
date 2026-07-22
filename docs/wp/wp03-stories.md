@@ -7,7 +7,7 @@ Definition of done: Five new programmatic hubs live in config (3 audiences + 2 p
 
 ## Stories
 
-- [ ] `WP03-S1` - Tag ideas + audience ref blocks in `ideas/manifest.json`
+- [x] `WP03-S1` - Tag ideas + audience ref blocks in `ideas/manifest.json`
   - Scope: `ideas/manifest.json` — tag freelancers / creators / small-business-owners on ≥5 ideas each; add matching `manifest.audiences[]` ref blocks
   - Acceptance criteria:
     - Each new audience slug appears on ≥5 ideas
@@ -15,7 +15,7 @@ Definition of done: Five new programmatic hubs live in config (3 audiences + 2 p
   - Verification:
     - `node` count script; `npm run seed:convex` (dev + prod if credentials allow)
 
-- [ ] `WP03-S2` - Audience hubs: freelancers, creators, small-business-owners
+- [x] `WP03-S2` - Audience hubs: freelancers, creators, small-business-owners
   - Scope: `app/ideas-for/[audience]/page.tsx` (`AUDIENCE_PAGES` + `AUDIENCE_TILES`)
   - Acceptance criteria:
     - Three typed entries with SEO meta (<60 title / <160 description), AEO-friendly positioning
@@ -23,7 +23,7 @@ Definition of done: Five new programmatic hubs live in config (3 audiences + 2 p
   - Verification:
     - `npm run typecheck`
 
-- [ ] `WP03-S3` - Problem hubs: lead-generation, content-creation
+- [x] `WP03-S3` - Problem hubs: lead-generation, content-creation
   - Scope: `app/solve/[problem]/page.tsx` (`PROBLEM_PAGES`)
   - Acceptance criteria:
     - Two typed entries with HowTo steps, stats, `categoryMatches` from existing categories

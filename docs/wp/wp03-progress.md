@@ -21,5 +21,15 @@ Append-only progress log. Do not rely on chat history for project state.
 
 ## 2026-07-22 - WP03-S1
 
-- Actions taken: (pending)
-- Next: tag ideas + audience refs, then launch parallel config workers
+- Actions taken: Tagged freelancers (11), creators (9), small-business-owners (8) on ideas; added matching `manifest.audiences[]` ref blocks
+- Decisions made: See RULINGS — hub set frozen to 3 audiences + 2 problems
+- Checks run: node count script
+- Result: pass
+- Next: parallel config workers
+
+## 2026-07-22 - WP03-S2 / WP03-S3
+
+- Actions taken: Sub-agents added AUDIENCE_PAGES (freelancers/creators/small-business-owners) + PROBLEM_PAGES (lead-generation/content-creation). Fixed pre-existing missing `normalizeCategorySlug` import so typecheck gates.
+- Checks run: `npm run typecheck` — pass
+- Result: five hubs in config; sitemap auto via SLUGS exports
+- Next: seed Convex, commit, push, PR
