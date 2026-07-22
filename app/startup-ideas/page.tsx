@@ -203,6 +203,7 @@ function cardFromManifest(idea: ManifestIdea): IdeaCardData {
     categoryLabel: category ? categoryName(category) : null,
     researchLevel: idea.researchLevel ?? "quick",
     buildTime: idea.buildTime ?? null,
+    publishedAt: Date.parse(idea.publishedAt ?? "") || 0,
   };
 }
 
