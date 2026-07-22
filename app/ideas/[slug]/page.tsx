@@ -28,6 +28,7 @@ import {
   CATEGORY_META,
   audienceName,
   categoryName,
+  normalizeCategorySlug,
   revenueName,
   tocFromMarkdown,
   toolName,
