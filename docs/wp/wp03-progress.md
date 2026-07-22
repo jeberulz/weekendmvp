@@ -27,9 +27,9 @@ Append-only progress log. Do not rely on chat history for project state.
 - Result: pass
 - Next: parallel config workers
 
-## 2026-07-22 - WP03-S2 / WP03-S3
+## 2026-07-22 - Seed / closeout
 
-- Actions taken: Sub-agents added AUDIENCE_PAGES (freelancers/creators/small-business-owners) + PROBLEM_PAGES (lead-generation/content-creation). Fixed pre-existing missing `normalizeCategorySlug` import so typecheck gates.
-- Checks run: `npm run typecheck` — pass
-- Result: five hubs in config; sitemap auto via SLUGS exports
-- Next: seed Convex, commit, push, PR
+- Actions taken: `npm run typecheck` pass; `npm run seed:convex` failed — no `CONVEX_DEPLOYMENT` / `.env.local` in cloud env
+- Result: hubs staged in PR; audience idea tags land after human runs `npm run seed:convex` + `--prod`
+- Docs: WP03 stories checked off; strategy status → PR ready
+- Next: push + open draft PR
