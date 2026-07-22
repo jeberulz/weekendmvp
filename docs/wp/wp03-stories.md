@@ -1,44 +1,63 @@
-# WP03 Stories - Publish 5 Programmatic SEO Hubs
+# WP03 Stories - Publish 5 AEO/SEO Articles
 
-Branch: `cursor/publish-5-programmatic-hubs-8e5e`
+Branch: `cursor/publish-5-articles-aeo-seo-f2aa`
 Lane: Work Package
 Registry: `docs/PROJECT_STRATEGY.md`
-Definition of done: Five new programmatic hubs live in config (3 audiences + 2 problems), ideas tagged + seeded, typecheck passes, PR open.
+Definition of done: Five new articles live in MDX + manifest, seeded to Convex (dev + prod when auth allows), OG cards generated or marked failed non-blocking, committed and PR'd; each article has FAQ + early answer + 3 CTAs to `/startup-ideas`.
 
 ## Stories
 
-- [x] `WP03-S1` - Tag ideas + audience ref blocks in `ideas/manifest.json`
-  - Scope: `ideas/manifest.json` — tag freelancers / creators / small-business-owners on ≥5 ideas each; add matching `manifest.audiences[]` ref blocks
+- [x] `WP03-S1` - Product Hunt solo launch playbook
+  - Scope: `content/articles/product-hunt-launch-solo-founder-2026.mdx`, `articles/manifest.json`
   - Acceptance criteria:
-    - Each new audience slug appears on ≥5 ideas
-    - Ref blocks include description, keywords, traits, resources for Convex override
+    - How-To article with 2026 PH stats, FAQ, 3+ `/startup-ideas` CTAs
   - Verification:
-    - `node` count script; `npm run seed:convex` (dev + prod if credentials allow)
+    - `awk` MDX JSX safety; slug in manifest
 
-- [x] `WP03-S2` - Audience hubs: freelancers, creators, small-business-owners
-  - Scope: `app/ideas-for/[audience]/page.tsx` (`AUDIENCE_PAGES` + `AUDIENCE_TILES`)
+- [x] `WP03-S2` - Reddit customer discovery guide
+  - Scope: `content/articles/find-customers-on-reddit-saas.mdx`, `articles/manifest.json`
   - Acceptance criteria:
-    - Three typed entries with SEO meta (<60 title / <160 description), AEO-friendly positioning
-    - Icons imported; valid `HubColor`; tiles updated
+    - How-To with problem-keyword system, FAQ, CTAs
   - Verification:
-    - `npm run typecheck`
+    - MDX safety; manifest entry
 
-- [x] `WP03-S3` - Problem hubs: lead-generation, content-creation
-  - Scope: `app/solve/[problem]/page.tsx` (`PROBLEM_PAGES`)
+- [x] `WP03-S3` - Cursor vs Claude Code vs Lovable comparison
+  - Scope: `content/articles/cursor-vs-claude-code-vs-lovable-2026.mdx`, `articles/manifest.json`
   - Acceptance criteria:
-    - Two typed entries with HowTo steps, stats, `categoryMatches` from existing categories
-    - Meta optimized for "how to automate …" intent
+    - Comparison/listicle with decision matrix, FAQ, CTAs
   - Verification:
-    - `npm run typecheck`
+    - MDX safety; manifest entry
+
+- [x] `WP03-S4` - Stripe payments for weekend MVP
+  - Scope: `content/articles/add-stripe-to-weekend-mvp.mdx`, `articles/manifest.json`
+  - Acceptance criteria:
+    - How-To Checkout/subscriptions path, FAQ, CTAs
+  - Verification:
+    - MDX safety; manifest entry
+
+- [x] `WP03-S5` - Micro-SaaS SEO + AEO content engine
+  - Scope: `content/articles/micro-saas-seo-aeo-content-2026.mdx`, `articles/manifest.json`
+  - Acceptance criteria:
+    - How-To content playbook with 2026 AEO stats, FAQ, CTAs
+  - Verification:
+    - MDX safety; manifest entry
+
+- [x] `WP03-S6` - Seed, OG, commit, PR
+  - Scope: seed scripts, OG PNGs, git
+  - Acceptance criteria:
+    - `npm run seed:convex -- --only articles` (+ `--prod` if auth)
+    - `npm run og:generate` for each slug `--non-blocking`
+    - Commit + push + PR
+  - Verification:
+    - Seed logs; og.status ready|failed; PR open
 
 ## Out Of Scope
 
-- New tools / categories / revenue / build-time hubs
-- New idea MDX content
-- Sitemap hand-edits (audience + problem slugs auto-export)
+- Rewriting existing articles
+- New site chrome / layout changes
+- Ideas MDX / programmatic hubs
 
 ## Notes
 
-- Sitemap auto-imports `AUDIENCE_SLUGS` / `PROBLEM_SLUGS`.
-- Problems reuse existing categories → no idea retag for S3.
-- Promote unknown product decisions to `docs/wp/RULINGS.md`.
+- Topics queue (`topics/research.md`) missing; all prior queue topics already published — these five are net-new.
+- Docs update: registry + this WP pair only (content publish, no architecture change).

@@ -371,6 +371,66 @@
         "accent": "lavender",
         "status": "ready"
       }
+    },
+    {
+      "slug": "product-hunt-launch-solo-founder-2026",
+      "title": "How to Launch on Product Hunt as a Solo Founder in 2026",
+      "description": "A Product Hunt launch playbook for solo founders in 2026: timing, gallery assets, a 50-person crew, and converting Top 5 finishes into real trial users.",
+      "wordCount": 1230,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A clipboard with a short checklist resting on a near-black desk, one lime checkmark catching a single side lamp, very shallow focus, deep shadow beyond, no readable text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "find-customers-on-reddit-saas",
+      "title": "How to Find Paying Customers on Reddit (Without Getting Banned)",
+      "description": "How to find paying SaaS customers on Reddit without getting banned: problem keywords, fresh threads, human replies, plus a weekly acquisition cadence.",
+      "wordCount": 1186,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A neat stack of blank index cards on a dark wooden desk, the top card edged in mint side-light, very shallow focus, late-night atmosphere, no text visible",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cursor-vs-claude-code-vs-lovable-2026",
+      "title": "Cursor vs Claude Code vs Lovable: Which Should You Use in 2026?",
+      "description": "Cursor vs Claude Code vs Lovable in 2026: which AI builder fits demos, daily shipping, or agentic weekends—and when solo founders should switch tools.",
+      "wordCount": 1211,
+      "readMinutes": 6,
+      "og": {
+        "subject": "Three pencils of uneven lengths lying parallel on a near-black desk, only the middle one lit by a narrow lavender beam, very shallow focus, no people or text",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "add-stripe-to-weekend-mvp",
+      "title": "How to Add Stripe Payments to Your Weekend MVP",
+      "description": "How to add Stripe Checkout to a weekend MVP: one price, hosted checkout, signed webhooks that unlock access, and no custom card forms until you ship it.",
+      "wordCount": 1114,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A single weathered paper receipt curled on a dark desk, lit by one lime side beam, ink shapes deliberately illegible, very shallow focus, deep shadow",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "micro-saas-seo-aeo-content-2026",
+      "title": "The Micro-SaaS Content Engine: SEO + AEO That Works in 2026",
+      "description": "A micro-SaaS SEO and AEO content engine for 2026: answer-first pages, sourced stats, FAQ sections, and a weekly publishing system solo founders can run.",
+      "wordCount": 1347,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open notebook on a near-black surface with a single mint-glowing handwritten line visible, very shallow focus, late-night atmosphere, no readable words",
+        "accent": "mint",
+        "status": "ready"
+      }
     }
   ]
 }

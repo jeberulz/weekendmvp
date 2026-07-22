@@ -37,7 +37,12 @@ export type IdeaCardData = {
   /** "deep" → Deep Research badge, anything else → Quick Idea. */
   researchLevel: string | null;
   buildTime: string | null;
+  /** Publish timestamp (ms) — drives the newest/oldest sort. 0 on the MDX
+   *  fallback, where the sort control is hidden anyway. */
+  publishedAt: number;
 };
+
+export type SortOrder = "newest" | "oldest";
 
 export type CategoryFilter = {
   slug: string;
@@ -55,22 +60,27 @@ const INACTIVE_BTN =
 function readUrlState(categories: Set<string>): {
   category: string;
   query: string;
+  sort: SortOrder;
 } {
   const params = new URLSearchParams(window.location.search);
   const category = params.get("category") ?? "all";
   return {
     category: categories.has(category) ? category : "all",
     query: params.get("q") ?? "",
+    sort: params.get("sort") === "oldest" ? "oldest" : "newest",
   };
 }
 
-function writeUrlState(category: string, query: string) {
+function writeUrlState(category: string, query: string, sort: SortOrder) {
   try {
     const url = new URL(window.location.href);
     if (category === "all") url.searchParams.delete("category");
     else url.searchParams.set("category", category);
     if (query) url.searchParams.set("q", query);
     else url.searchParams.delete("q");
+    // "newest" is the default server order — keep it out of the URL.
+    if (sort === "oldest") url.searchParams.set("sort", sort);
+    else url.searchParams.delete("sort");
     window.history.replaceState(
       window.history.state,
       "",
@@ -122,6 +132,7 @@ export function IdeasExplorer({
 }) {
   const [category, setCategory] = React.useState("all");
   const [query, setQuery] = React.useState("");
+  const [sort, setSort] = React.useState<SortOrder>("newest");
   const [page, setPage] = React.useState(1);
   // Pre-hydration (and in the server HTML) every card is visible; the
   // legacy page behaved identically until its DOMContentLoaded filter ran.
@@ -138,6 +149,7 @@ export function IdeasExplorer({
       const state = readUrlState(categorySlugs);
       setCategory(state.category);
       setQuery(state.query);
+      setSort(state.sort);
       setPage(1);
     };
     apply();
@@ -149,16 +161,30 @@ export function IdeasExplorer({
   function selectCategory(next: string) {
     setCategory(next);
     setPage(1);
-    writeUrlState(next, query);
+    writeUrlState(next, query, sort);
   }
 
   function search(next: string) {
     setQuery(next);
     setPage(1);
-    writeUrlState(category, next);
+    writeUrlState(category, next, sort);
   }
 
-  const filtered = ideas.filter((idea) => matches(idea, category, query));
+  function selectSort(next: SortOrder) {
+    setSort(next);
+    setPage(1);
+    writeUrlState(category, query, next);
+  }
+
+  // Reorder by publish date after hydration. Pre-hydration we keep the prop
+  // order (Convex newest-first) so the client's first render matches the
+  // server HTML; React then reconciles the keyed cards into sorted order.
+  const ordered = React.useMemo(() => {
+    if (!ready || sort === "newest") return ideas;
+    return [...ideas].sort((a, b) => a.publishedAt - b.publishedAt);
+  }, [ideas, ready, sort]);
+
+  const filtered = ordered.filter((idea) => matches(idea, category, query));
   const shown = ready
     ? new Set(
         filtered.slice(0, page * IDEAS_PER_PAGE).map((idea) => idea.slug),
@@ -171,22 +197,52 @@ export function IdeasExplorer({
       {/* Search and Filters */}
       {showFilters ? (
         <div className="mb-8 space-y-4">
-          {/* Search Input */}
-          <div className="relative">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              id="idea-search"
-              placeholder="Search ideas..."
-              aria-label="Search startup ideas"
-              value={query}
-              onChange={(e) => search(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
-            />
+          {/* Search + sort */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                id="idea-search"
+                placeholder="Search ideas..."
+                aria-label="Search startup ideas"
+                value={query}
+                onChange={(e) => search(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+              />
+            </div>
+
+            {/* Sort by publish date */}
+            <div
+              className="flex items-center gap-2 shrink-0"
+              role="group"
+              aria-label="Sort ideas by publish date"
+            >
+              <span
+                className="text-xs text-neutral-500 shrink-0"
+                aria-hidden="true"
+              >
+                Sort
+              </span>
+              <button
+                className={sort === "newest" ? ACTIVE_BTN : INACTIVE_BTN}
+                aria-pressed={sort === "newest"}
+                onClick={() => selectSort("newest")}
+              >
+                Newest
+              </button>
+              <button
+                className={sort === "oldest" ? ACTIVE_BTN : INACTIVE_BTN}
+                aria-pressed={sort === "oldest"}
+                onClick={() => selectSort("oldest")}
+              >
+                Oldest
+              </button>
+            </div>
           </div>
 
           {/* Category Filters */}
@@ -222,7 +278,7 @@ export function IdeasExplorer({
         id="ideas-grid"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {ideas.map((idea) => (
+        {ordered.map((idea) => (
           <IdeaCard
             key={idea.slug}
             idea={idea}
