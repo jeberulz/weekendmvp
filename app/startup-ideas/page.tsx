@@ -226,6 +226,7 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
         categoryLabel: null,
         researchLevel: null,
         buildTime: null,
+        publishedAt: 0,
       };
     }),
   );
@@ -270,6 +271,7 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
       categoryLabel: categoryName(category),
       researchLevel: idea.researchLevel ?? "quick",
       buildTime: idea.buildTime,
+      publishedAt: idea.publishedAt,
     };
   });
 
