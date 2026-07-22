@@ -59,6 +59,19 @@ type ResolvedIdea = {
 /* Markdown helpers (deterministic string parsing, cached scope only)  */
 /* ------------------------------------------------------------------ */
 
+const AUTHOR_NAME = "John Iseghohi";
+
+/** Human-readable publish date, formatted in UTC so it is deterministic
+ *  across build/runtime timezones (matches the ISO date in the JSON-LD). */
+function formatPublishedDate(ms: number): string {
+  return new Date(ms).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function stripMd(text: string): string {
   return text
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -476,6 +489,30 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                 <p className="text-xl text-neutral-500 font-light">
                   {description}
                 </p>
+                {idea ? (
+                  <p className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-5 text-sm text-neutral-500">
+                    <span>
+                      By{" "}
+                      <span className="font-medium text-neutral-700">
+                        {AUTHOR_NAME}
+                      </span>
+                    </span>
+                    <span className="text-neutral-300" aria-hidden="true">
+                      ·
+                    </span>
+                    <span>
+                      Published{" "}
+                      <time
+                        dateTime={new Date(idea.publishedAt)
+                          .toISOString()
+                          .slice(0, 10)}
+                        className="text-neutral-700"
+                      >
+                        {formatPublishedDate(idea.publishedAt)}
+                      </time>
+                    </span>
+                  </p>
+                ) : null}
                 {idea?.scores ? (
                   <ul className="flex flex-wrap gap-2 mt-6" aria-label="Idea scores">
                     {SCORE_LABELS.map(({ key, label }) => (
