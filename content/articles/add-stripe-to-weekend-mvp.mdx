@@ -1,0 +1,162 @@
+---
+slug: "add-stripe-to-weekend-mvp"
+title: "How to Add Stripe Payments to Your Weekend MVP"
+description: "How to add Stripe Checkout to a weekend MVP: one price, hosted checkout, signed webhooks that unlock access, and no custom card forms until you ship it."
+category: "Tutorial"
+publishedAt: "2026-07-22"
+wordCount: 1114
+readMinutes: 6
+heroAlt: "A weathered paper receipt on a dark desk lit by a single lime side light, shallow focus, no readable text"
+---
+
+## Quick Answer
+
+For a weekend MVP, use **Stripe Checkout** (hosted) + one Product/Price + a webhook that unlocks access when `checkout.session.completed` fires. Skip custom card elements, skip five pricing tiers, skip building a billing portal on day one. Charge money before you perfect the product. If payments fail later, remember: Baremetrics still pegs failed payments at roughly **9% of MRR** for the average subscription business — but that's a month-10 problem. Your weekend problem is getting the first successful charge.
+
+## Who This Is For
+
+You have a working app and a "Coming soon — payments" badge you're tired of.
+
+You're scared of PCI, webhooks, and "subscription billing" blog posts that assume a fintech team.
+
+You want the minimum path: customer pays → they get access → you get notified.
+
+You're fine with Stripe's hosted UI looking like Stripe.
+
+If you don't have something worth charging for yet, validate with a [landing page and idea](/startup-ideas) first — collecting card details for vaporware is how you get angry emails.
+
+## Why Hosted Checkout Wins the Weekend
+
+Custom payment forms feel "pro." They're also where weekends go to die.
+
+Hosted Checkout gives you:
+
+- PCI burden mostly on Stripe
+- Apple Pay / Link / wallets with little setup
+- Localization and tax-adjacent helpers as you grow
+- A URL you can paste into cold emails and Reddit replies
+
+Your job is product access logic — not reinventing card input.
+
+## The Weekend Payments Checklist
+
+### 1. One Product, One Price
+
+In Stripe Dashboard:
+
+- Create a Product ("Pro" is fine)
+- Create a Price — monthly subscription **or** one-time, not both on day one
+- Copy the Price ID
+
+Pricing tip: pick a number you'd be embarrassed to undercharge. Early customers signal willingness to pay; $9 and $29 teach different lessons. Pair this with [how to price your weekend MVP](/articles/how-to-price-your-weekend-mvp) if you're stuck.
+
+### 2. Checkout Session From Your App
+
+When the user clicks Upgrade:
+
+1. Your backend creates a Checkout Session with that Price ID
+2. You redirect the browser to the session URL
+3. Success URL → `/app?paid=1` (or similar)
+4. Cancel URL → `/pricing`
+
+Pseudo-shape (framework-agnostic):
+
+```text
+Create Checkout Session
+  mode: subscription (or payment)
+  line_items: [{ price: price_xxx, quantity: 1 }]
+  success_url / cancel_url
+  client_reference_id or metadata.userId = current user
+Redirect to session.url
+```
+
+Pass **your user id** in metadata. You'll need it in the webhook.
+
+### 3. Webhook = Source of Truth
+
+Never unlock paid features only because the success URL loaded. Users can hit that URL without paying.
+
+Listen for:
+
+- `checkout.session.completed` → mark user paid / attach `stripeCustomerId` + `subscriptionId`
+- `customer.subscription.updated` / `deleted` → sync status
+- `invoice.payment_failed` → soft-lock or warn (later)
+
+Verify the webhook signature. Use the Stripe CLI (`stripe listen --forward-to localhost:...`) while developing.
+
+### 4. Gate the Feature, Not the Whole App
+
+Paywall the value, not the login. Let people experience aha, then charge. For true "pay before use" tools, gate generation/export/seats — whatever the scarce thing is.
+
+### 5. Customer Portal (Day 2, Not Hour 2)
+
+Stripe Billing Portal lets customers update cards and cancel. Turn it on after your first five payments. Until then, you can manually help people from the Dashboard — yes, that's allowed when n is tiny.
+
+## Subscription vs One-Time for MVPs
+
+| Model | Use when | Watch-out |
+|-------|----------|-----------|
+| Subscription | Ongoing value (SaaS) | Failed payments / involuntary churn later |
+| One-time | Setup tools, reports, kits | Harder to fund ongoing support |
+| Annual | Stronger cash, fewer dunning events | Higher commitment — offer monthly first unless buyers ask |
+
+Failed cards are real: industry writeups summarizing Baremetrics/Paddle put **involuntary churn at ~20–40% of total churn**, with ~**9% of MRR** at risk from payment failures on average. Stripe Smart Retries help; dedicated dunning helps more. Install that after you have enough volume to care — not before your first customer.
+
+## Legal and Entity Notes (Short)
+
+You can often test charges while still figuring out entity paperwork, but don't ignore compliance forever. If you need the formation path, Stripe Atlas is still a common $500 Delaware C-corp/LLC route with bank + Stripe activation bundled ([Stripe Atlas](https://stripe.com/atlas)). For a broader weekend legal pass, see our [founder legal checklist](/articles/weekend-founder-legal-checklist).
+
+## Minimal Data Model
+
+You need almost nothing in your database on weekend one:
+
+- `stripeCustomerId` (string)
+- `stripeSubscriptionId` (optional string)
+- `planStatus`: `free` | `active` | `past_due` | `canceled`
+- `paidAt` (timestamp)
+
+On `checkout.session.completed`, set status to `active` and store the IDs from the session. On `customer.subscription.deleted`, flip to `canceled`. Resist the urge to mirror every Stripe field.
+
+## Common Weekend Failure Modes
+
+**Webhook never fires in production.** You forgot to add the endpoint on the live Stripe account (test vs live keys mixup).
+
+**User pays twice.** Success URL retries + no idempotent unlock. Key off `session.id` / subscription id.
+
+**"Paid" in UI, feature still locked.** Frontend optimistic UI without DB flag. Always read access from your database.
+
+**Test clocks confuse you.** Fine for dunning experiments later; ignore them this weekend.
+
+**You built Elements too early.** Custom card forms add SCA edge cases and UI debt. Hosted Checkout is the boring win until a customer asks for embedded checkout.
+
+## Ship Path for This Weekend
+
+Friday night: Product + Price + Checkout button on pricing page.
+
+Saturday: Webhook + access flag + happy-path test with a real card in test mode, then one live $1–$5 charge to yourself if you're going live.
+
+Sunday: Paste the upgrade link into conversations with people who already want the outcome — including folks you meet via [Reddit problem threads](/articles/find-customers-on-reddit-saas) or your [first-10 outreach](/articles/how-to-get-your-first-10-customers).
+
+Still choosing what to sell? Start from a [concrete startup idea](/startup-ideas) with an obvious buyer and a billable wedge.
+
+## FAQ
+
+### Do I need Stripe Billing or is Checkout enough?
+
+Checkout Sessions can create subscriptions. Billing Portal and Customer objects come along as you grow. Start with Checkout.
+
+### Should I build usage-based billing on weekend one?
+
+No. Pick a flat price. Usage metering is a product decision you make after someone asks for it.
+
+### Test mode vs live mode — when do I switch?
+
+Stay in test mode until the unlock path is boringly reliable. Then switch keys, recreate the webhook on the live account, and charge a friendly user.
+
+### What about VAT/sales tax?
+
+Enable Stripe Tax when you have cross-border volume or your accountant says so. Don't block launch on nexus research if you're still finding ICP.
+
+## TL;DR
+
+One Price. Hosted Checkout. Signed webhooks. Access flag in your DB. Portal later. Dunning later. Charge someone this week. If you need a product worth putting behind that paywall, grab a [weekend MVP idea](/startup-ideas) and build the thin paid version — not the perfect billing platform.
