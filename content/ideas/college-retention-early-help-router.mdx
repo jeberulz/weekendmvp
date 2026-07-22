@@ -1,0 +1,137 @@
+---
+slug: "college-retention-early-help-router"
+title: "Catchup: College Retention Early-Help Router"
+---
+
+## The Problem
+
+Most college retention systems wake up after the damage is already visible. A student misses two assignments, bombs a quiz, disappears from the LMS, and only then enters the official support workflow. By that point, the student is not just confused about one topic. They are often embarrassed, behind on deadlines, and already telling themselves a story that they are failing college rather than struggling with one specific week.
+
+That lag matters because the first year is still the danger zone. The National Student Clearinghouse reported that of the 2.62 million students who started college in fall 2024, only 77.1 percent were still enrolled anywhere by fall 2025, and only 69.1 percent were still at their starting institution. The gaps are wider for the students colleges most want to protect: second-fall persistence was 74.5 percent for Hispanic students, 70.0 percent for Black students, and 65.7 percent for Native American students.
+
+The financial penalty is large enough that retention software has moved from a nice-to-have to a budget line. Genio’s 2025 churn analysis estimates that U.S. higher education loses $10.72 billion a year to student dropout, with first-year churn alone accounting for $4.85 billion. Public four-year institutions absorb the biggest annual hit at $3.99 billion, and even a modest 5 percent improvement in first-year retention would save the average institution about $258,982 per year. That is why advising, tutoring, and student-success teams keep buying new systems even when they are dissatisfied with the old ones.
+
+The deeper problem is workflow design. EAB has openly written that “coordinating early alerts” was the top pain point raised by member institutions, despite early-alert programs existing for more than 15 years. New America’s community-college research shows why: many colleges still struggle to connect alerts to the right intervention, staff capacity is thin, and student outreach often feels generic or punitive. In one example from New America, a first-generation student asked a professor for help, then received a stream of failing-warning messages that left him feeling betrayed and confused rather than supported. On EdTech made the same point more bluntly in 2025: many institutions have used early-alert systems for years without knowing whether they actually moved the needle.
+
+Students do not experience risk as a dashboard. They experience it as a moment: “I do not understand derivatives, this quiz is on Friday, and I do not know whether to ask the professor, the tutor, or nobody.” Catch that moment early and the institution can still help. Wait until the risk score turns red and the college is managing fallout instead of preventing it.
+
+## The Solution
+
+Catchup is an early-help router for colleges. Instead of waiting for faculty flags or midterm grades, it gives students a low-friction place to admit confusion the minute it appears. A student types a plain-language message such as “I am lost on derivatives and we have a quiz this week.” Catchup pulls the course shell, checks the syllabus, looks at upcoming deadlines, and responds with an immediate action plan: what to review tonight, what office hours or tutoring options match the course, and a draft message the student can send to the professor or TA. If the student keeps engaging, Catchup stays lightweight and private. If the student stops responding or misses the next checkpoint, the system routes the case to advising with context intact.
+
+This is a different product shape than a classic early-alert dashboard. Traditional systems start from institutional observation. Catchup starts from student self-report plus live course context. That makes it better suited for first-gen students, commuters, working students, and anyone who hesitates to raise a hand until they are already in academic trouble. The first version does not need to replace the campus retention stack either. It can sit in front of it, plug into Canvas or Blackboard, and push structured escalations into the institution’s existing CRM or advising queue.
+
+**How it works:**
+
+1. **Student signals confusion early** — A student opens the campus-branded chat, describes the problem in plain language, and authorizes Catchup to read the course syllabus, assignment calendar, and available support resources for that class.
+2. **Catchup builds a concrete recovery plan** — The app turns that signal into a checklist with study steps, tutoring links, office hours, and a ready-to-send message for the professor, then asks the student to confirm the next action and next check-in.
+3. **The case escalates only when needed** — If the student misses the check-in, ignores repeated nudges, or piles up new risk signals, Catchup forwards a structured summary to advising or the student-success office so staff can intervene with context instead of starting cold.
+
+## Market Research
+
+The market is attractive because both the pain and the budget are real. Category labels vary, but the direction is consistent. Growth Market Reports estimated the broader student success platform market at $5.3 billion in 2024, while Market Research Reports sized the narrower higher-education predictive student retention software slice at about $1.42 billion in 2024 with a projected 13.3 percent CAGR through 2032. DataIntelo’s 2025 tracker placed the student success platform market at $2.8 billion in 2025. The exact top line depends on how the analyst defines the category, but colleges are clearly already spending real money on persistence infrastructure.
+
+North America remains the center of gravity at roughly 38 percent of global student-success-platform revenue, and more than 35 U.S. states now tie at least part of higher-ed funding to outcome metrics. That matters because the budget case for retention tooling is not hypothetical anymore. Genio shows how expensive attrition has become, while the Clearinghouse data shows that persistence has improved only modestly. Colleges cannot recruit their way out of demographic pressure if current students are quietly drifting.
+
+That creates room for a lighter wedge. You do not need to win a campus-wide replacement deal on day one. A first-gen support office, tutoring center, TRIO program, or college-success pilot can buy a focused product that solves a smaller but sharper problem: intercept confusion before it becomes attrition.
+
+## Competitive Landscape
+
+- **EAB Navigate** is the category benchmark for large coordinated-care deployments. Vendor pricing is custom, but public contracts show the real scale: Portland Community College approved a five-year Navigate renewal worth up to $1.20 million from 2023 to 2028, with annual costs starting at $227,344 and rising to $254,936, while Austin Peay State University listed Navigate at $278,000 annually. This is a serious enterprise purchase, not an impulse tool for one struggling program.
+- **Starfish** still shows up across many campuses as the classic advising and early-alert platform. CUNY board documents from 2023 noted that six community colleges were using Starfish at a total annual cost of $444,380 before moving toward Navigate, which works out to roughly $74,000 per campus per year before implementation and local staffing overhead. Pricing is still largely opaque and quote-based.
+- **Civitas Learning** sells a more analytics-heavy student-success stack. Public procurement documents show a 2024 Texas A and M University Central Texas purchase order totaling $21,169.35 for a three-month subscription and premium support, while City College of San Francisco recorded a $53,324 software subscription in 2023. Other market summaries put Civitas deals in the mid-five-figure to low-six-figure range depending on scope and onboarding.
+- **Degree Analytics and adjacent behavior-data vendors** attack the problem from data collection rather than advising workflow, using engagement and attendance signals to surface risk. They are useful as infrastructure or analytics layers, but they still leave the “student is confused right now, what happens next?” moment unresolved.
+
+**Your Opportunity**
+
+Catchup should not try to beat these vendors on feature count. It should beat them on timing and shape. The incumbent stack activates after behavior is visible to the institution: missed attendance, poor grades, low LMS engagement, or a predictive-risk score. Catchup activates when the student feels the problem but before the institution can see it clearly. Because it can sit on top of Canvas or Blackboard and hand structured cases into the existing advising system, the first sale is smaller and faster. And because the interface feels like study rescue first, not surveillance first, it is more likely to win student adoption.
+
+## Business Model
+
+- **Free lead magnet** — A downloadable Student Success Guide for first-gen and commuter students, plus a lightweight “am I falling behind?” quiz for colleges to use in orientation or tutoring-center outreach.
+- **Pilot** — $99 per month for a small advisor, tutor, or student-success team that wants to run a limited cohort pilot outside a full procurement cycle. Think one support office, one academic-support program, or one scholarship cohort.
+- **Program plan** — $1,000 to $5,000 per year for one department, one TRIO or first-gen initiative, or one tutoring center with branded flows, LMS ingestion, and outcome reporting.
+- **Campus plan** — Starting around $15,000 per year and scaling upward by enrollment, number of connected systems, and escalation workflows. This is where the real business sits once a few pilots prove that earlier intervention reduces support lag and improves persistence.
+
+Four campus plans at $15,000 each put the business at $60,000 ARR, while twenty put it at $300,000 ARR without a giant sales team. Unit economics are favorable because the core workflow is mostly software, not labor. LLM classification and plan generation can stay under $0.01 per interaction if prompts are tight, and the expensive part is implementation, not inference. That is why the product should minimize custom work and sell against the much larger spend colleges already accept for full retention suites.
+
+## Recommended Tech Stack
+
+- **Next.js on Vercel** for the student chat UI, staff dashboard, and campus-branded landing pages. App Router is plenty for a product with mostly authenticated views and a few public pages.
+- **Supabase Postgres** for users, institutions, course connections, support resources, interaction history, escalation states, and audit logs. Row-level security helps keep institution data partitioned cleanly.
+- **Canvas and Blackboard integrations** for syllabus data, assignment deadlines, and course metadata. Add Brightspace later if pilots demand it.
+- **Claude or GPT-class model routing** for intent extraction, action-plan generation, tone-safe outreach drafts, and case summaries. Keep prompts deterministic and store every generated recommendation for auditability.
+- **Inngest or Trigger.dev** for reminder sequences, missed-checkpoint evaluation, and escalation jobs so follow-up is reliable even when staff are offline.
+- **Postmark or SendGrid, with optional Twilio** for nudges across email and text.
+
+The non-negotiables are FERPA-aware permissions, full audit trails, and configurable human-review rules.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 16 and Supabase project for “Catchup,” a college retention early-help router.
+
+Requirements:
+- multi-tenant architecture by institution
+- student and staff roles
+- FERPA-friendly audit logging on every generated recommendation
+- Canvas and Blackboard connector stubs
+- TypeScript strict mode
+
+Return the SQL schema, API route map, and folder structure first.
+```
+
+**2. LMS Ingestion and Deadline Parser**
+
+```text
+Build the ingestion workflow for Catchup.
+
+When a student connects a course:
+1. Pull syllabus text, assignment titles, due dates, office hours references, and tutoring links from Canvas or Blackboard.
+2. Normalize all deadlines into a single table with timezone handling.
+3. Extract likely support triggers such as upcoming quiz, missing prerequisite concept, attendance concern, and tutoring availability.
+4. Save a compact course summary the chat assistant can use quickly.
+
+Include retry logic, connector health statuses, and a manual override for staff to edit or approve extracted resources.
+```
+
+**3. Student Help Flow and Escalation Logic**
+
+```text
+Design the main Catchup chat flow for a student who says something like “I am lost on derivatives and we have a quiz this week.”
+
+The system should:
+- classify the problem
+- identify the course and nearest deadline
+- generate a same-day recovery plan with 3 to 5 actions
+- suggest the most relevant campus resource
+- draft a professor email in a supportive tone
+- ask the student to commit to a next step and a check-in time
+
+Then define escalation rules:
+- escalate if the student ignores two nudges
+- escalate if there is a new missed deadline
+- escalate immediately for crisis keywords
+
+Output the conversation states, database mutations, and edge cases.
+```
+
+## Sources
+
+- [National Student Clearinghouse Research Center: Persistence and Retention Report, June 2026](https://nscresearchcenter.org/persistence-retention/)
+- [Genio: The Cost of Student Churn in Higher Education](https://genio.co/resources/research-and-insights/cost-of-student-churn-report)
+- [EAB: 3 reasons why your early-alert program is falling short](https://eab.com/resources/blog/student-success-blog/3-reasons-why-your-early-alert-program-is-falling-short/)
+- [On EdTech: Early Alerts and Unintended Consequences](https://onedtech.philhillaa.com/p/early-alerts-and-unintended-consequences)
+- [New America: The Importance of Including Student Voices within Early Alert Systems at Community Colleges](https://www.newamerica.org/insights/the-importance-of-including-student-voices-within-early-alert-systems-at-community-colleges/)
+- [Portland Community College Board Item 23-166, EAB Navigate contract renewal](https://www.pcc.edu/board/wp-content/uploads/sites/165/2023/06/23-166.pdf)
+- [Austin Peay State University project details for EAB Navigate](https://govstech.apsu.edu/TDClient/2071/Portal/Projects/Details/?TID=428775)
+- [CUNY Board Resolution extending EAB Navigate and noting Starfish annual cost](https://policy.cuny.edu/wp-content/uploads/sites/4/page-assets/about/trustees/meetings-of-the-board/CAL0523-1.pdf)
+- [Texas A and M University Central Texas purchase order for Civitas Learning](https://www.tamuct.edu/wp-content/uploads/2025/06/Summary-PO-AB0944467.pdf)
+- [City College of San Francisco February 2023 PO report listing Civitas subscription spend](https://www.ccsf.edu/sites/default/files/2023/document/february-2023-po-report.pdf)
+- [Market Research Reports: Higher Education Predictive Student Retention Software Market](https://www.marketresearchreports.com/reports/global-higher-education-predictive-student-retention-software-market-strategic-research-report)
+- [Growth Market Reports: Student Success Platform Market Research Report 2033](https://growthmarketreports.com/report/student-success-platform-market)
+- [DataIntelo: Student Success Platform Market Research Report 2034](https://dataintelo.com/report/student-success-platform-market)

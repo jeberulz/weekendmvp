@@ -1,0 +1,183 @@
+---
+slug: "contractor-osha-safety-grade"
+title: "Hardhire: A-to-F Contractor Safety Grades"
+---
+
+## The Problem
+
+Hiring a contractor is still a trust exercise disguised as a search flow. Homeowners compare star ratings, skim a few before-and-after photos, and hope the lowest reasonable quote also comes from a crew that runs a disciplined, safe operation. Small and mid-size general contractors do something similar when they need a roofing sub, concrete crew, demolition team, or HVAC installer on short notice. The modern buying stack is great at surfacing reviews and availability, but terrible at surfacing whether a company racks up serious citations, repeats the same violations, or quietly changes names after safety problems pile up.
+
+That gap matters because contractor demand is not small or niche. Houzz reports that 54% of homeowners undertook renovation projects in 2024, and 9 in 10 renovating homeowners hired pros. Nearly 3 in 10 hired a general contractor, while 49% hired specialty service providers directly. Houzz also says finding the right service providers was the top challenge for 33% of renovating homeowners. Harvard's Joint Center for Housing Studies adds the spending side: home improvement and repair spending jumped from $404 billion in 2019 to $611 billion in 2022 and is expected to remain above $600 billion through 2025.
+
+The irony is that some of the underlying safety data is already public. OSHA's Establishment Search lets anyone search inspection history by company name and dig into citations. OSHA says the database covers over 3 million inspections since 1972 and is updated daily from more than 120 OSHA Area and State Plan offices. But raw public access is not the same thing as decision-ready information. A homeowner does not know how to translate "repeat violation, contested, reduced penalty" into "should I let this crew on my property?"
+
+The real product gap is interpretation and identity resolution. OSHA itself warns that establishment names are not unique and that close attention to addresses is necessary to avoid misinterpretation. That means the hard part is not building a search box. It is normalizing "ABC Roofing LLC," "ABC Roofing and Exteriors," and "ABC Roofing Services" into the right business record, weighting severity and recency correctly, and turning public enforcement data into a simple signal that non-experts can act on.
+
+## The Solution
+
+Hardhire is a contractor safety lookup tool that converts OSHA inspection and citation history into an A-to-F grade a homeowner or GC can understand in seconds. You type in a contractor name, service area, or address, and the app returns a grade, a confidence score, and a short explanation of what drove the result. An A-grade contractor might have little or no serious federal inspection history, or older minor issues with clean follow-through. A D or F-grade contractor would show patterns like repeat or willful violations, recent serious citations, multiple incidents across aliases, or unresolved-looking histories that deserve a second conversation before money changes hands.
+
+The MVP does not need to replace enterprise compliance. It needs to answer one decision question well: "Is this contractor's public safety history clean enough that I feel comfortable shortlisting them?" Start with OSHA inspection and citation data, a fuzzy-matching alias layer, a deterministic grading rubric, and a clean report page that explains the score in plain English.
+
+**How it works:**
+
+1. **Search the contractor** - The buyer enters a company name plus city, ZIP, or address, and Hardhire matches that input against OSHA establishment records and known aliases.
+2. **Resolve the entity** - A matching layer scores name similarity, address overlap, NAICS context, and known alternate spellings so the report groups likely duplicate identities instead of showing a confusing pile of raw records.
+3. **Grade the safety record** - A rules engine weights severity, frequency, recency, and response patterns to produce the A-to-F grade, then generates a plain-language explanation of the biggest risk factors.
+4. **Take the next step** - The buyer unlocks a detailed report with citations, penalty history, timeline, and questions to ask before signing, or saves the contractor to a watchlist for ongoing monitoring.
+
+That last mile is what makes this feel different from OSHA's own interface. Hardhire is not selling raw data access. It is selling confidence, speed, and translation. A homeowner gets a one-page answer before hiring a roofer. A residential builder gets a vendor-intake shortcut that is lighter than ISNetworld or Avetta.
+
+## Market Research
+
+The timing works because three trends are colliding: public safety data is searchable, home-services hiring remains huge, and safety software budgets are moving up instead of down. OSHA's public data footprint is broader than many buyers realize. The agency maintains inspection and citation data, injury and illness data, severe injury reports, work-related fatality data, and chemical exposure datasets that employers, workers, and safety professionals can view and download. Its Establishment Search alone covers more than 3 million inspections and refreshes daily.
+
+Grand View Research estimates the global workplace safety market at $18.79 billion in 2024 and projects it to reach $46.38 billion by 2030, a 16.9% CAGR from 2025 through 2030. In the more software-specific slice, Grand View pegs the environmental health and safety software segment at $760.6 million in 2024 and expects it to reach $2.19 billion by 2030, growing at 19.9% annually. That matters because Hardhire does not need to teach the market that safety matters; it only needs to package safety data for smaller buyers.
+
+The home-renovation side supports the wedge. Houzz's 2025 U.S. Houzz and Home Study says 54% of homeowners undertook renovation projects in 2024, 52% plan projects in 2025, and the median renovation spend in 2024 was $20,000. The same study says the vast majority of renovating homeowners hired professionals, with 49% hiring specialty service providers and nearly 3 in 10 hiring general contractors. Harvard's Joint Center for Housing Studies says the share of owners with at least one improvement project remained at a two-decade high of 29.7% in 2023.
+
+The strongest signal is the mismatch between project size and diligence quality. People will spend five figures on a bathroom, kitchen, roof, or HVAC job, but they still do contractor screening with reviews, referrals, and gut feel. Existing marketplaces are optimized to create contact, not to summarize operational risk. Existing compliance platforms are optimized for large hiring organizations, not everyday buyers.
+
+## Competitive Landscape
+
+Buyers currently patch together several imperfect substitutes: raw public data, enterprise contractor-compliance networks, lead marketplaces, and generic safety software.
+
+- **OSHA Establishment Search** - Free and authoritative for federal inspection history. The upside is obvious: direct access to public enforcement data with over 3 million inspections in the database. The downside is equally obvious: no score, no homeowner-grade interpretation, and OSHA explicitly warns that establishment names are not unique and may require address-level care to avoid mistakes. Pricing: free.
+- **ISNetworld** - The heavyweight for contractor and supplier qualification in industrial settings. ISN's official FAQ says contractors pay an annual subscription fee plus a one-time setup fee, and Software Advice lists contractor pricing starting at $875 per year, with hiring-client plans at $50,000 per year. Great for industrial procurement. Completely mismatched for a homeowner or a five-person remodeler who just wants a fast risk screen.
+- **Avetta** - Similar network logic, but more multi-industry and supply-chain focused. Avetta does not publish a simple self-serve price card, but its supplier plans are tiered by risk level and client requirements, and third-party pricing roundups place basic supplier plans around $450 to $900 per year, with higher tiers and upgrades as client connections expand. Useful for enterprise qualification, not for instant residential hiring decisions.
+- **SafetyCulture / iAuditor** - Strong adjacency, weak direct overlap. SafetyCulture is excellent for running inspections, issue tracking, and internal safety workflows. Its public pricing is clear: free tier, Premium at $24 per seat per month billed annually or $29 monthly, and custom enterprise pricing. The gap is that it helps a contractor manage its own operations; it does not help a buyer compare public enforcement histories across contractors.
+- **Angi** - Dominant on demand generation and reviews. Angi's help center says lead fees vary by task, location, and demand, and pros can operate with a monthly budget or annual subscription structure. Homeowner requests are matched with no more than five pros. Useful if you want multiple bids quickly. Not useful if you want a normalized safety score before choosing among those pros.
+- **Thumbtack** - Cleaner than Angi on merchant-side messaging. Thumbtack says there are no signup, annual, or subscription fees for pros; they pay when an interested customer contacts them and can set their own lead prices and weekly budgets. Great lead flow for service pros, but again it is a marketplace, not a safety-intelligence layer.
+
+**Your Opportunity**
+
+The opening is not to beat marketplaces at reviews or beat enterprise networks at corporate compliance. It is to become the default "check safety before you hire" layer that neither side has built. Hardhire wins if the product is faster than OSHA, far simpler than ISNetworld, and more decision-useful than Angi or Thumbtack.
+
+## Business Model
+
+The seed pricing already points to the right ladder: free lookup for discovery, a tiny one-off fee for people in an urgent decision moment, then a professional subscription for recurring users.
+
+- **Free** - Search by contractor name and location, see the letter grade, a short rationale, and whether the result has high or medium confidence.
+- **Detailed Report** - $1 per report for the timeline, citation details, penalty context, related aliases, and a printable "questions to ask before hiring" checklist.
+- **Core Safety Pro** - $50 per month for saved vendors, watchlists, monthly monitoring alerts, PDF exports, team access, and simple intake workflows for small GCs or property managers.
+- **API / Platform Licensing** - Custom pricing for marketplaces, lenders, warranty providers, and insurer or broker workflows that want a safety-grade endpoint embedded into their own product.
+
+The economics can work because the expensive part is front-loaded system design, not per-report data cost. OSHA data is public. The recurring cost stack is storage, scheduled ingestion, fuzzy matching, and a small amount of LLM summarization on top of deterministic scoring. If the detailed report uses cached citation data and only spends tokens on explanation, variable cost should stay under $0.40 per report.
+
+**Unit Economics (illustrative)**
+
+- **$1** - Detailed report price for one-time buyers
+- **$50 per month** - Core Safety Pro subscription
+- **under $0.40** - Estimated variable cost per detailed report with cached source data
+- **80% to 90%** - Plausible gross margin once ingestion and matching are stable
+
+The path to the user's stated $5,000 per month goal is also clean. One hundred Core Safety Pro accounts gets there directly. So does a blended mix like 50 Pro accounts plus 2,500 paid reports per month, which is only about 83 paid reports per day.
+
+## Recommended Tech Stack
+
+This is a data-normalization product wearing a consumer UX hat. The core risk is false matches, so the stack should bias toward deterministic record handling first and AI second.
+
+- **Next.js 16 + Vercel** - Search UI, report pages, checkout flow, and a simple marketing site in one codebase.
+- **Postgres with pg_trgm** - Store establishments, inspections, citations, aliases, addresses, and manual overrides. Trigram search is enough for an MVP.
+- **Scheduled ingestion worker** - A Node or Python job that pulls OSHA source data daily, normalizes records, and computes deltas.
+- **Deterministic scoring engine** - Keep the letter grade explainable. Weight severity, repeat patterns, recency, and citation counts in code.
+- **LLM summarization layer** - Use Claude or GPT only to turn structured signals into plain-English report copy. Do not let the model decide the score.
+- **Stripe + lightweight auth** - Stripe Checkout for the $1 report and $50 plan, plus magic-link auth for saved watchlists.
+
+For a 12-hour weekend MVP, the smart cut is to limit the surface area: one search field, one report template, one grade rubric, and one manual-review queue for ambiguous matches. You are trying to prove that buyers will pay for translated safety context before hiring.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. MVP Scaffold**
+
+```text
+Build a Next.js 16 App Router project called Hardhire.
+
+Product goal:
+- Search contractors by company name plus city or ZIP
+- Return an A-to-F safety grade
+- Sell a $1 detailed report and a $50/month Pro subscription
+
+Use TypeScript, Tailwind, Postgres, and Stripe Checkout.
+
+Core tables:
+- establishments
+- establishment_aliases
+- inspections
+- citations
+- grade_snapshots
+- report_purchases
+- saved_contractors
+
+Requirements:
+- Server-rendered search
+- Magic-link auth
+- Clear empty state for low-confidence matches
+- Audit log for manual overrides
+```
+
+**2. Entity Resolution + Grading**
+
+```text
+Implement the Hardhire matching and scoring engine.
+
+Input:
+- contractor_name
+- city
+- state
+- optional street address
+
+Tasks:
+1. Fuzzy match names with trigram similarity
+2. Boost scores when city, state, ZIP, or street overlap
+3. Group likely aliases into one canonical contractor profile
+4. Compute an A-to-F grade using severity, repeat patterns, recency, inspection frequency, and penalty history
+5. Return the grade, confidence score, top reasons, and matched aliases
+
+Rules:
+- The score must be deterministic and explainable
+- AI may summarize the result but may not decide the grade
+- Add a manual-review queue for ambiguous matches
+```
+
+**3. Detailed Report Experience**
+
+```text
+Design the paid report page for Hardhire.
+
+The page should show:
+- Current letter grade
+- Confidence badge
+- Plain-English explanation
+- Timeline of inspections and citations
+- Severity summary
+- Related business names or aliases
+- Questions the buyer should ask before signing
+
+Conversion goals:
+- Show a strong preview with a $1 unlock CTA for non-paying users
+- Unlock the full report automatically for Pro users
+- Add PDF export
+```
+
+## Sources
+
+- [OSHA Establishment Search Help](https://www.osha.gov/help/establishment-search)
+- [OSHA Data](https://www.osha.gov/data)
+- [Grand View Research - Workplace Safety Market Size & Share](https://www.grandviewresearch.com/industry-analysis/workplace-safety-market-report)
+- [Grand View Research - EHS Software Workplace Safety Market Outlook](https://www.grandviewresearch.com/horizon/statistics/workplace-safety-market-outlook/safety-equipment-systems/environmental-health-safety-ehs-software/global)
+- [2025 U.S. Houzz and Home Study PDF](https://st.hzcdn.com/static/econ/2025-US-Houzz-and-Home.pdf)
+- [Harvard Joint Center for Housing Studies - Improving America's Housing 2025 Key Facts PDF](https://www.jchs.harvard.edu/sites/default/files/interactive-item/files/Harvard_JCHS_Improving_Americas_Housing_2025_Key_Facts.pdf)
+- [SafetyCulture Pricing](https://safetyculture.com/pricing)
+- [Thumbtack for Pros](https://www.thumbtack.com/pro)
+- [Thumbtack Jobs for Pros](https://www.thumbtack.com/pro/jobs)
+- [Angi Opportunities and Leads FAQ](https://intercom.help/angi/en/articles/6221483-opportunities-and-leads-frequently-asked-questions)
+- [Angi Billing FAQ](https://intercom.help/angi/en/articles/11024858-billing-frequently-asked-questions)
+- [ISNetworld FAQs](https://www.isnetworld.com/en/faqs)
+- [Software Advice - ISNetworld Pricing](https://www.softwareadvice.com/scm/isnetworld-profile/)
+- [Avetta Supplier Membership Plans](https://www.avetta.com/plans)
+- [Avetta Renewal and Upgrade Disclosure](https://www.avetta.com/legal/renewal)
+- [ExpiryEdge - Avetta vs ISNetworld 2026 Pricing Comparison](https://expiryedge.com/articles/avetta-vs-isnetworld-comparison/)
+
