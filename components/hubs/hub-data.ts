@@ -12,6 +12,7 @@ import { fetchQuery } from "convex/nextjs";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
+import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
 
 export type IdeaDoc = Doc<"ideas">;
 
@@ -49,10 +50,19 @@ export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
   return safe(() => fetchQuery(api.ideas.byTool, { tool }), []);
 }
 
+/**
+ * Category hub lookup. Convex indexes are exact-match on `category`, but
+ * historical rows used display casing ("SaaS"). Drain the archive and
+ * filter with normalizeCategorySlug so hubs stay complete until a reseed.
+ */
 export async function fetchIdeasByCategory(
   category: string,
 ): Promise<IdeaDoc[]> {
-  return safe(() => fetchQuery(api.ideas.byCategory, { category }), []);
+  const canonical = normalizeCategorySlug(category);
+  const all = await fetchAllIdeas();
+  return all
+    .filter((idea) => normalizeCategorySlug(idea.category) === canonical)
+    .sort((a, b) => b.publishedAt - a.publishedAt);
 }
 
 export async function fetchIdeasByRevenueGoal(
@@ -65,11 +75,26 @@ export async function fetchIdeasByRevenueGoal(
  * Full idea set (≤ a few hundred rows) — used by the collection hubs whose
  * legacy filters don't map to a single index (build-time pages, the
  * quick-wins / 10k-month fallbacks in generate-programmatic-pages.js).
+ * Drains pagination so we don't silently drop ideas past the first page.
  */
 export async function fetchAllIdeas(): Promise<IdeaDoc[]> {
-  const result = await safe(
-    () => fetchQuery(api.ideas.list, { limit: 500 }),
-    null,
-  );
-  return result?.page ?? [];
+  const ideas: IdeaDoc[] = [];
+  let cursor: string | null = null;
+  try {
+    do {
+      const result: {
+        page: IdeaDoc[];
+        isDone: boolean;
+        continueCursor: string;
+      } = await fetchQuery(api.ideas.list, {
+        limit: 200,
+        cursor,
+      });
+      ideas.push(...result.page);
+      cursor = result.isDone ? null : result.continueCursor;
+    } while (cursor);
+  } catch {
+    return ideas;
+  }
+  return ideas;
 }

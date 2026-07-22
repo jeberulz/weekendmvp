@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { cacheLife, cacheTag } from "next/cache";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { fetchQuery } from "convex/nextjs";
 import { Calendar } from "lucide-react";
 
@@ -8,7 +10,12 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { CATEGORY_META, humanizeSlug } from "@/components/ideas/idea-meta";
+import {
+  CATEGORY_META,
+  categoryName,
+  humanizeSlug,
+  normalizeCategorySlug,
+} from "@/components/ideas/idea-meta";
 import {
   breadcrumbSchema,
   buildGraph,
@@ -120,11 +127,16 @@ async function fetchAllIdeas(): Promise<IdeaDoc[]> {
  * manifest category that has ideas, labeled "{name} ({count})", in manifest
  * order. Convex `categories` (seeded from the manifest) is the live
  * equivalent; CATEGORY_META covers a missing/unreachable reference table.
+ *
+ * Counts use normalizeCategorySlug so legacy "SaaS" / "Creator" values
+ * collapse onto the canonical chip instead of spawning orphan filters.
  */
-async function buildFilters(ideas: IdeaDoc[]): Promise<CategoryFilter[]> {
+async function buildFilters(ideas: IdeaCardData[]): Promise<CategoryFilter[]> {
   const counts = new Map<string, number>();
   for (const idea of ideas) {
-    counts.set(idea.category, (counts.get(idea.category) ?? 0) + 1);
+    const cat = idea.category ? normalizeCategorySlug(idea.category) : "";
+    if (!cat) continue;
+    counts.set(cat, (counts.get(cat) ?? 0) + 1);
   }
 
   let order: string[] = [];
@@ -153,11 +165,57 @@ async function buildFilters(ideas: IdeaDoc[]): Promise<CategoryFilter[]> {
     }));
 }
 
+type ManifestIdea = {
+  slug: string;
+  title: string;
+  description?: string;
+  category?: string;
+  researchLevel?: string;
+  buildTime?: string;
+  applicationCategory?: string;
+  publishedAt?: string;
+};
+
+/** Manifest metadata — fills Convex gaps so newly published MDX ideas
+ * appear in the grid/search before `seed:convex --prod` lands. */
+function readManifestIdeas(): ManifestIdea[] {
+  try {
+    const raw = readFileSync(
+      path.join(process.cwd(), "ideas/manifest.json"),
+      "utf8",
+    );
+    const data = JSON.parse(raw) as { ideas?: ManifestIdea[] };
+    return Array.isArray(data.ideas) ? data.ideas : [];
+  } catch {
+    return [];
+  }
+}
+
+function cardFromManifest(idea: ManifestIdea): IdeaCardData {
+  const category = idea.category
+    ? normalizeCategorySlug(idea.category)
+    : null;
+  return {
+    slug: idea.slug,
+    title: idea.title,
+    description: idea.description ?? "",
+    category,
+    categoryLabel: category ? categoryName(category) : null,
+    researchLevel: idea.researchLevel ?? "quick",
+    buildTime: idea.buildTime ?? null,
+  };
+}
+
 /** MDX-only fallback: slug + frontmatter title + first-paragraph excerpt. */
 async function loadFromMdx(): Promise<StartupIdeasData> {
+  const manifestBySlug = new Map(
+    readManifestIdeas().map((idea) => [idea.slug, idea]),
+  );
   const slugs = await listMdxSlugs(CONTENT_DIR);
   const ideas: IdeaCardData[] = await Promise.all(
     slugs.map(async (slug) => {
+      const fromManifest = manifestBySlug.get(slug);
+      if (fromManifest) return cardFromManifest(fromManifest);
       const file = await readMdxFile(CONTENT_DIR, slug);
       const fmTitle = file?.frontmatter.title;
       return {
@@ -171,13 +229,25 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
       };
     }),
   );
-  return { source: "mdx", ideas, filters: [], applicationCategories: {} };
+  const filters = await buildFilters(ideas);
+  const applicationCategories: Record<string, string> = {};
+  for (const idea of readManifestIdeas()) {
+    if (idea.applicationCategory) {
+      applicationCategories[idea.slug] = idea.applicationCategory;
+    }
+  }
+  return {
+    source: "mdx",
+    ideas,
+    filters,
+    applicationCategories,
+  };
 }
 
 /**
- * Convex is the real source (category/research/buildTime metadata lives
- * only there); when it is unreachable — e.g. a build without a deployment —
- * the page degrades to a server-rendered MDX grid with the filter UI hidden.
+ * Convex is the primary source; merge any manifest/MDX ideas missing from
+ * Convex (e.g. published but not yet prod-seeded) so search/filters stay
+ * complete. Categories are normalized so legacy casing collapses.
  */
 async function loadStartupIdeas(): Promise<StartupIdeasData> {
   let rows: IdeaDoc[];
@@ -188,21 +258,39 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
   }
   if (rows.length === 0) return loadFromMdx();
 
-  const filters = await buildFilters(rows);
   const applicationCategories: Record<string, string> = {};
   const ideas: IdeaCardData[] = rows.map((idea) => {
     applicationCategories[idea.slug] = idea.applicationCategory;
+    const category = normalizeCategorySlug(idea.category);
     return {
       slug: idea.slug,
       title: idea.title,
       description: idea.description,
-      category: idea.category,
-      // Legacy card badge label: naive word-capitalized slug ("Ai Tools").
-      categoryLabel: humanizeSlug(idea.category),
+      category,
+      categoryLabel: categoryName(category),
       researchLevel: idea.researchLevel ?? "quick",
       buildTime: idea.buildTime,
     };
   });
+
+  const seen = new Set(ideas.map((idea) => idea.slug));
+  const mdxSlugs = new Set(await listMdxSlugs(CONTENT_DIR));
+  const missing = readManifestIdeas()
+    .filter((idea) => !seen.has(idea.slug) && mdxSlugs.has(idea.slug))
+    .sort((a, b) => {
+      const aMs = Date.parse(a.publishedAt ?? "") || 0;
+      const bMs = Date.parse(b.publishedAt ?? "") || 0;
+      return bMs - aMs;
+    });
+
+  for (const idea of missing) {
+    ideas.unshift(cardFromManifest(idea));
+    if (idea.applicationCategory) {
+      applicationCategories[idea.slug] = idea.applicationCategory;
+    }
+  }
+
+  const filters = await buildFilters(ideas);
   return { source: "convex", ideas, filters, applicationCategories };
 }
 
@@ -319,7 +407,7 @@ async function CachedStartupIdeasPage() {
               <IdeasExplorer
                 ideas={data.ideas}
                 filters={data.filters}
-                showFilters={data.source === "convex"}
+                showFilters={data.filters.length > 0}
               />
             </div>
           </div>
