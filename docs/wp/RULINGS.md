@@ -4,3 +4,6 @@ Append-only owner/orchestrator decisions for questions not settled by project do
 
 | Date | Scope | Question | Ruling | Decider |
 |---|---|---|---|---|
+| 2026-07-22 | WP04 | Which 5 programmatic hubs next given full original inventory? | Publish audiences `freelancers`, `creators`, `small-business-owners` and problems `lead-generation`, `content-creation`. Highest SEO/AEO fit to Weekend MVP (AI weekend MVPs for indie builders) with enough taggable ideas; skip new tools (all AI builders covered) and new categories (already complete). | Orchestrator |
+| 2026-07-22 | WP04 | Parallelize how? | Manifest tagging stays with orchestrator. Parallel workers: (1) audience route file only, (2) problem route file only. No worktrees — shared-file conflict avoided by file boundaries. | Orchestrator |
+| 2026-07-22 | WP03/WP04 | Both branches claimed WP03? | Keep articles work as WP03 (landed on main first via #22). Renumber programmatic hubs work to WP04 on `cursor/publish-5-programmatic-hubs-8e5e`. | Orchestrator |

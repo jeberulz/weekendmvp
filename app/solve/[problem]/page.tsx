@@ -7,7 +7,9 @@ import {
   FileText,
   Headphones,
   Library,
+  PenLine,
   Receipt,
+  Target,
   Wrench,
 } from "lucide-react";
 
@@ -84,6 +86,58 @@ export const PROBLEM_PAGES: Record<string, SolvePage> = {
       { name: "Monitor and improve", text: "Track resolution rates and customer satisfaction to continuously improve responses." },
     ],
     categoryMatches: ["ai-tools", "saas", "automation", "productivity"],
+  },
+  "lead-generation": {
+    slug: "lead-generation",
+    shortTitle: "Automate Lead Generation",
+    metaTitle: "How to Automate Lead Generation | Weekend MVP",
+    metaDescription:
+      "How to automate lead generation with startup ideas for AI prospecting tools you can validate and build this weekend.",
+    title: "How to Automate Lead Generation",
+    description:
+      "Turn scattered prospect lists into a repeatable pipeline. Build AI-powered lead research, scoring, and outreach workflows that help founders find buyers faster.",
+    color: "orange",
+    icon: Target,
+    problemIntro:
+      "Lead generation breaks when founders rely on cold spreadsheets, generic lists, and one-off outreach bursts. The hard part is not finding more names — it is spotting high-intent buyers, personalizing the first message, and following up without losing context. AI can turn research, qualification, and reminders into a weekend build that creates pipeline while you focus on sales calls.",
+    problemStats: [
+      { stat: "Most B2B teams need 8+ touches before a prospect replies, but founders rarely follow up consistently." },
+      { stat: "Generic lead lists waste 30%+ of outreach on poor-fit accounts before qualification." },
+      { stat: "Personalized prospect research can take 10-15 minutes per lead, making manual outbound hard to scale." },
+    ],
+    steps: [
+      { name: "Choose a narrow ICP", text: "Define the buyer role, company size, trigger event, and pain point your lead generation tool should target first." },
+      { name: "Collect and enrich signals", text: "Pull prospect data from public profiles, directories, forms, or CRM records and enrich it with AI-generated context." },
+      { name: "Score and personalize", text: "Rank leads by fit and intent, then generate short outreach angles tied to each prospect's likely problem." },
+      { name: "Automate follow-up loops", text: "Send reminders, route warm replies, and update your CRM so every qualified lead gets the next best action." },
+    ],
+    categoryMatches: ["saas", "ai-tools", "automation", "b2b"],
+  },
+  "content-creation": {
+    slug: "content-creation",
+    shortTitle: "Automate Content Creation",
+    metaTitle: "How to Automate Content Creation | Weekend MVP",
+    metaDescription:
+      "How to automate content creation with AI content creation tools, startup ideas, and weekend MVP workflows for publishing faster.",
+    title: "How to Automate Content Creation",
+    description:
+      "Move from blank page to publish-ready assets faster. Build AI tools that turn raw expertise into briefs, drafts, repurposed posts, and reusable content workflows.",
+    color: "violet",
+    icon: PenLine,
+    problemIntro:
+      "Content creation slows down when every post starts from a blank page and every channel needs a different format. Founders and creators have ideas, calls, notes, and customer questions, but turning that raw material into consistent publishing takes hours. AI content creation tools can capture inputs, shape drafts, and repurpose assets so a weekend MVP becomes a repeatable content engine.",
+    problemStats: [
+      { stat: "A single long-form asset can become 10+ short posts, emails, or scripts when repurposing is automated." },
+      { stat: "Creators often spend 50%+ of content time on editing, formatting, and channel-specific rewrites." },
+      { stat: "Teams that publish weekly need 4-8 reusable briefs or outlines every month to keep momentum." },
+    ],
+    steps: [
+      { name: "Capture source material", text: "Collect calls, notes, transcripts, customer questions, and product updates that already contain useful content ideas." },
+      { name: "Generate briefs and angles", text: "Use AI to turn raw inputs into titles, audience hooks, outlines, and channel-specific content angles." },
+      { name: "Draft reusable assets", text: "Create first drafts for posts, newsletters, scripts, or landing sections while preserving your voice and proof points." },
+      { name: "Repurpose and schedule", text: "Break each approved asset into smaller formats, add review steps, and queue the content for publishing." },
+    ],
+    categoryMatches: ["creator-tools", "ai-tools", "saas", "productivity"],
   },
   invoicing: {
     slug: "invoicing",

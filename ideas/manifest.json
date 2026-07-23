@@ -1024,7 +1024,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "freelancers"
       ],
       "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
       "_needsBackfill": true,
@@ -1070,7 +1071,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "non-technical"
+        "non-technical",
+        "freelancers"
       ],
       "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
       "_needsBackfill": true,
@@ -1352,7 +1354,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "small-business-owners"
       ],
       "source": "web-research:mode-b",
       "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library\u2014priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.",
@@ -1707,7 +1710,8 @@
         "developers",
         "solo-founders",
         "side-hustlers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
       "source": "mode-b:backfill",
@@ -1831,7 +1835,8 @@
       "audiences": [
         "solo-founders",
         "non-technical",
-        "side-hustlers"
+        "side-hustlers",
+        "small-business-owners"
       ],
       "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons\u2014for solo founders and small businesses who can't justify $500/hour attorney bills.",
       "og": {
@@ -1938,7 +1943,8 @@
       "audiences": [
         "side-hustlers",
         "solo-founders",
-        "non-technical"
+        "non-technical",
+        "freelancers"
       ],
       "description": "A two-command SMS time tracker for gig workers, drivers, and weekend consultants who'll never open another app\u2014text \"start\" and \"stop\", get an invoice-ready weekly summary.",
       "og": {
@@ -2032,7 +2038,9 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers",
+        "small-business-owners"
       ],
       "description": "Invoice Reminder Bot helps freelancers and small businesses get paid faster with automated, escalating payment reminders. Connect Stripe or QuickBooks and let the bot handle awkward follow-ups.",
       "researchLevel": "deep",
@@ -2480,7 +2488,8 @@
       "audiences": [
         "solo-founders",
         "side-hustlers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "description": "AI TikTok trend predictor for creators: catch sounds and challenges 24\u201348h before they peak. Cited market data, competitor pricing, and a weekend MVP build plan.",
       "researchLevel": "deep",
@@ -2725,7 +2734,8 @@
       "audiences": [
         "solo-founders",
         "developers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:1387",
       "og": {
@@ -2899,7 +2909,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:1621",
       "og": {
@@ -2944,7 +2955,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:8364",
       "og": {
@@ -2986,7 +2998,9 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers",
+        "small-business-owners"
       ],
       "source": "ideabrowser:8365",
       "og": {
@@ -3028,7 +3042,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:8366",
       "og": {
@@ -3073,7 +3088,8 @@
         "solo-founders",
         "developers",
         "weekend-builders",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:8024",
       "og": {
@@ -3496,7 +3512,8 @@
       ],
       "audiences": [
         "side-hustlers",
-        "solo-founders"
+        "solo-founders",
+        "creators"
       ],
       "source": "ideabrowser:1732",
       "og": {
@@ -3549,7 +3566,8 @@
       "audiences": [
         "solo-founders",
         "developers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:1586",
       "og": {
@@ -3596,7 +3614,8 @@
       "audiences": [
         "solo-founders",
         "side-hustlers",
-        "startup-founders"
+        "startup-founders",
+        "freelancers"
       ],
       "source": "ideabrowser:1473",
       "og": {
@@ -5940,6 +5959,141 @@
           "title": "r/marketing",
           "url": "https://www.reddit.com/r/marketing/",
           "description": "Community for marketing professionals"
+        }
+      ]
+    },
+    {
+      "slug": "freelancers",
+      "name": "Freelancers",
+      "displayName": "Startup Ideas for Freelancers",
+      "description": "Ideas that productize freelance workflows\u2014client portals, invoicing, proposals, bookkeeping, and scope control you can ship in a weekend.",
+      "icon": "lucide:briefcase",
+      "filters": {
+        "categories": [
+          "saas",
+          "fintech",
+          "productivity",
+          "b2b"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for freelancers",
+        "secondary": [
+          "freelance tool ideas",
+          "side project ideas for freelancers",
+          "SaaS ideas for freelancers"
+        ],
+        "volume": "720/mo"
+      },
+      "traits": [
+        "Live the client-delivery grind daily",
+        "Need cash-flow and admin automation",
+        "Can sell to peers in freelancer communities"
+      ],
+      "resources": [
+        {
+          "title": "r/freelance",
+          "url": "https://www.reddit.com/r/freelance/",
+          "description": "Peer community for freelancers sharing tools and workflows"
+        },
+        {
+          "title": "Indie Hackers",
+          "url": "https://indiehackers.com",
+          "description": "Bootstrapped builders shipping products for service businesses"
+        }
+      ]
+    },
+    {
+      "slug": "creators",
+      "name": "Creators",
+      "displayName": "Startup Ideas for Creators",
+      "description": "Ideas for YouTubers, newsletter writers, and indie creators\u2014repurposing, scripting, publishing, and monetization tools scoped to a weekend build.",
+      "icon": "lucide:video",
+      "filters": {
+        "categories": [
+          "creator-tools",
+          "ai-tools",
+          "saas"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for creators",
+        "secondary": [
+          "creator tool ideas",
+          "YouTube tool startup ideas",
+          "creator economy SaaS ideas"
+        ],
+        "volume": "880/mo"
+      },
+      "traits": [
+        "Already produce content weekly",
+        "Feel the multi-platform publishing grind",
+        "Have built-in audiences for launch"
+      ],
+      "resources": [
+        {
+          "title": "Creator Economy Report",
+          "url": "https://www.signal.nfx.com/creator-economy",
+          "description": "Market maps and trends for creator infrastructure"
+        },
+        {
+          "title": "r/NewTubers",
+          "url": "https://www.reddit.com/r/NewTubers/",
+          "description": "Growing YouTube creators sharing tools and tactics"
+        }
+      ]
+    },
+    {
+      "slug": "small-business-owners",
+      "name": "Small Business Owners",
+      "displayName": "Startup Ideas for Small Business Owners",
+      "description": "Ideas for SMB operators\u2014contracts, invoicing, websites, and ops tools that replace expensive agencies with weekend-shippable software.",
+      "icon": "lucide:store",
+      "filters": {
+        "categories": [
+          "saas",
+          "fintech",
+          "b2b",
+          "automation"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month",
+          "10k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for small business owners",
+        "secondary": [
+          "SMB SaaS ideas",
+          "small business software ideas",
+          "tools for local businesses"
+        ],
+        "volume": "1.2K/mo"
+      },
+      "traits": [
+        "Pay for tools that save time or recover cash",
+        "Hate agency retainers and bloated suites",
+        "Need simple UX over enterprise complexity"
+      ],
+      "resources": [
+        {
+          "title": "SCORE Mentoring",
+          "url": "https://www.score.org",
+          "description": "Free mentoring and resources for small business owners"
+        },
+        {
+          "title": "r/smallbusiness",
+          "url": "https://www.reddit.com/r/smallbusiness/",
+          "description": "Operators discussing tools, cash flow, and growth"
         }
       ]
     }
