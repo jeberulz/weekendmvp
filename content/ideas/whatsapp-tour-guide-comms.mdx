@@ -1,0 +1,128 @@
+---
+slug: "whatsapp-tour-guide-comms"
+title: "WhatsApp Tour Guide Guest Comms"
+---
+
+## The Problem
+
+Independent tour guides do not lose bookings because their tours are bad. They lose them in the twenty-four hours before departure—when a guest opens the wrong Google Maps pin, shows up at last week's meeting point, or simply never arrives because the confirmation email landed in spam while they were on a flight. The guide is up at 11pm copying the same WhatsApp message to twelve different chats: "Meet at the blue door, not the main entrance. Bring water. Rain tomorrow—light jacket." By morning, three people have replied "Got it," four have not read it, and one is still asking where to meet even though they booked three weeks ago.
+
+This is not a technology problem for the guest. WhatsApp is already on their phone. The problem is that guides are running a mini call center by hand. Every booking channel—Viator, GetYourGuide, direct website, walk-up cash—feeds a different inbox. There is no single automation layer that fires the right message at the right time in the channel guests actually read. Peek Pro and FareHarbor solve payments and inventory for operators running fifty tours a week; they do not solve the guide who runs two walking tours a day from their personal phone and cannot justify $300/month in booking SaaS.
+
+The pain compounds with no-shows and bad reviews. A guest who misses the pin leaves angry and one-stars the tour before the guide can explain. A guide who forgets the day-before weather note gets blamed for guests in flip-flops on a muddy trail. Post-tour, the review request dies in the same chat thread as seventeen other unread messages. Guides on Reddit's r/TourGuide and r/digitalnomad describe the same ritual: manually messaging every guest the night before, every single day, with copy-paste errors that cost real money. The workflow has not changed since WhatsApp became the default travel channel—only the volume has gone up as OTAs push more bookings to independent operators.
+
+## The Solution
+
+TourChat (working name: Tour Buddy) is WhatsApp-first guest communications for independent guides—not another booking system. A guide connects their WhatsApp Business number once, imports bookings from a simple calendar or CSV, and the platform handles the entire pre-tour and post-tour message sequence automatically. Guests stay in WhatsApp, where they already expect travel updates. The guide stops being a copy-paste machine and starts showing up to tours with guests who know where to meet, what to wear, and how to reach help if they are running late.
+
+The MVP is deliberately narrow: no marketplace, no payment processing, no complex operator dashboard. It is the communication layer that sits on top of however the guide already gets booked—direct site, Airbnb Experiences, Viator, or a paper sign-up sheet typed in at night. An AI FAQ bot answers the repetitive questions ("Is this wheelchair accessible?" "Can we store luggage?") in the guide's voice, escalating only what needs a human. Every message template is editable, but the defaults are tuned for walking tours, food tours, and adventure day trips out of the box.
+
+**How it works:**
+
+1. **Connect WhatsApp** — Link a WhatsApp Business account via the Cloud API; verify the number and set the guide's display name, default language, and timezone.
+2. **Import bookings** — Add tours manually, sync from Google Calendar, or upload a CSV from Viator/GetYourGuide exports; each row becomes a guest thread with name, phone, tour date, and meeting point.
+3. **Automations fire on schedule** — Booking confirmation instantly; day-before reminder with meeting pin and map link; morning-of weather and packing note; post-tour review request two hours after end time.
+4. **AI handles FAQs** — Claude answers common guest questions from the guide's saved policy doc; unknown questions notify the guide in-app with one-tap reply.
+5. **Track and recover** — Delivery and read receipts show who has not opened the pin; one-click "resend pin" or SMS fallback for guests who have not read by cutoff time.
+
+## Market Research
+
+Tourism is rebounding globally, and the long tail of independent guides is expanding faster than enterprise booking software can serve them. WhatsApp has crossed from "nice to have" to infrastructure: Meta reports over 2 billion users worldwide, and in Europe, Latin America, and much of Asia-Pacific it is the default channel for local service businesses. The WhatsApp Business Platform and Cloud API have matured to the point where a solo developer can send templated, compliant messages without negotiating enterprise contracts—exactly the unlock this product needs.
+
+- **$11.7 trillion projected global travel and tourism market by 2030**, growing at roughly 5.6% CAGR from a 2023 base of $8.5 trillion (Grand View Research). Within that, guided experiences and on-the-ground interpretation sit in the experiences layer that OTAs and marketplaces are actively pushing—more volume landing on independent operators, not fewer.
+- **$17.8B to $56.7B tourism guidance market** depending on whether analysts count only professional guiding services or the broader experiential tour segment (Ideabrowser market summary, idea #3820). Even at the low bound, the slice of independent guides paying out of pocket for software is large: tens of thousands of operators globally who run fewer than five departures per week.
+- **Adventure tourism growing at ~15% CAGR** through 2030 (industry estimates cited in Ideabrowser research), pulling new guides into the market who are mobile-native and already live in WhatsApp—but have no ops stack beyond a spreadsheet.
+- **WhatsApp Business API adoption accelerating** — Meta's Cloud API documentation and partner ecosystem lowered integration friction; template messaging, location pins, and interactive buttons are now standard primitives a weekend MVP can ship against ([WhatsApp Cloud API docs](https://developers.facebook.com/docs/whatsapp/cloud-api)).
+- **High willingness to pay for no-show reduction** — A single recovered seat on a $45 walking tour pays for a month of subscription; guides feel the pain daily and compare against lost revenue, not against free group chat.
+
+## Competitive Landscape
+
+The market splits into booking-first platforms built for operators, messaging platforms built for sales teams, and DIY glue that breaks the moment a guide is on a tour without Wi-Fi. None of them own the independent guide's pre-tour communication workflow end to end in WhatsApp.
+
+- **Peek Pro** — Full tour-operator stack: booking, payments, POS, and guest messaging for high-volume operators. Strong for zipline parks and multi-guide companies. Pricing typically runs hundreds per month once inventory and terminals are included—overkill and misaligned for a solo guide running two departures daily. Messaging exists but sits inside Peek's ecosystem, not as a lightweight WhatsApp layer on top of existing bookings ([Peek](https://www.peek.com/)).
+- **Rezdy** — Reseller-friendly booking and channel management for experience providers. Excellent distribution plumbing; guest comms are email-centric notifications, not conversational WhatsApp sequences with pins and weather. Mid-market pricing scaled to booking volume—not built for "$19/month and done."
+- **FareHarbor** — Booking and waiver platform widely used by kayak shops and boat tours. Guest communication is transactional confirmation email, not a timed WhatsApp cadence with read tracking. Free software model funded by payment processing—guides who already take cash or Stripe direct see little reason to migrate their entire stack.
+- **Wati** — WhatsApp Business inbox with broadcast, chatbot, and CRM features. Pricing is seat- and conversation-based; a guide must configure every automation from scratch, write templates, and maintain flows with no tour-specific defaults. Powerful for ecommerce support teams, wrong shape for "import tomorrow's roster and fire the pin" ([Wati](https://www.wati.io/)).
+- **Respond.io** — Omnichannel messaging hub (WhatsApp, Instagram, Telegram) with workflow builder and AI assist. Starts around tens per seat per month and scales with contacts; built for sales and support teams, not a guide standing at a cathedral square at 8:55am wondering if six people got the pin ([respond.io](https://www.respond.io/)).
+- **Zapier + WhatsApp DIY** — Technically possible: Google Sheet row triggers a WhatsApp send. Fragile template approval, no read receipts in one view, no tour-specific UX, and a guide pays Zapier tasks plus Meta conversation fees without a safety net when something fails silently. The "competitor" is really abandoned automation after the first broken webhook.
+
+**Your Opportunity**
+
+Booking platforms will not unbundle messaging for the long tail—they monetize GMV and terminals. Generic WhatsApp tools will not ship tour-native defaults— they sell horizontal seats. Win on the seam: (1) tour-specific automation templates out of the box (pin, weather, review) requiring zero workflow design, (2) import-from-anywhere booking ingest so guides keep Peek/Rezdy/Viator and add TourChat as a $29/month comms layer, and (3) no-show recovery dashboards that translate read receipts into "message these three people now" before cutoff. Price at $19–$39/month—one recovered guest pays for the year.
+
+## Business Model
+
+Per-guide subscription SaaS with usage caps that map to how independent operators actually work: a handful of tours per week, a few dozen guests, and zero interest in per-seat sales-team pricing. SMS fallback is the main variable cost; keep it opt-in and metered so margins stay predictable.
+
+- **Starter** ($19/mo) — One WhatsApp number, up to 40 guest conversations per month, core automations (confirm, day-before pin, post-tour review), manual booking entry, basic FAQ bot with 20 saved answers.
+- **Pro** ($39/mo) — Up to 150 conversations, calendar and CSV import, weather-aware packing messages, read-receipt dashboard with resend actions, Claude FAQ trained on the guide's full policy doc, priority template approval support.
+- **Team** ($79/mo) — Three numbers or sub-guides, shared template library, multi-language templates, Stripe billing for optional add-on upsells (private tour upgrade links in chat).
+
+**Unit Economics**
+
+- **$30** — Target CAC (guide Facebook groups, r/TourGuide, partner referrals from walking-tour creator TikTok)
+- **$28/mo** — Blended ARPU (mix of Starter and Pro)
+- **~85%** — Gross margin at Pro tier before SMS fallback
+- **~$336** — LTV at 12-month retention (guides who adopt pre-tour automations rarely churn mid-season)
+
+Path to $30K MRR: roughly 1,070 guides at blended ARPU—a small fraction of the independent operators active on Viator and GetYourGuide in major European and LATAM cities alone.
+
+## Recommended Tech Stack
+
+The hard parts are Meta template approval, reliable scheduled sends across timezones, and idempotent message delivery so a cron retry never double-texts a guest at 3am. Optimize for a guide onboarding in under fifteen minutes with a working day-before automation the same night.
+
+- **Next.js 15 (App Router) + TypeScript** — Marketing site, guide dashboard, and API routes for webhooks. Server actions for booking CRUD; Edge-friendly timezone helpers for send scheduling.
+- **WhatsApp Cloud API (Meta)** — Template messages for outbound automations; session messages for guest replies inside the 24-hour window; location messages for meeting pins; webhook verification for delivery and read events ([Cloud API reference](https://developers.facebook.com/docs/whatsapp/cloud-api)).
+- **Supabase (Auth + Postgres)** — Tables for guides, tours, bookings, guests, message_templates, scheduled_jobs, message_log, faq_entries. Row-level security per guide account. pg_cron or external scheduler triggers due jobs.
+- **Stripe Billing** — Subscription tiers, customer portal, webhook for plan limits (conversation caps per billing period).
+- **Claude API (claude-sonnet-4-6)** — FAQ answering grounded on the guide's uploaded policy text; strict system prompt to never invent meeting times; escalate flag when confidence is low.
+- **OpenWeather One Call API** — Morning-of packing suggestion based on tour start location and hour; cached per lat/lng to minimize API spend.
+- **Vercel (hosting + Cron)** — Deploy the Next.js app; Vercel Cron polls due scheduled_jobs every five minutes and enqueues WhatsApp sends with retry and dead-letter logging.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 (App Router, TypeScript, Tailwind) project called "TourChat" for WhatsApp tour guide guest communications. Provision Supabase with tables: guides (id, user_id, whatsapp_phone_id TEXT, display_name, timezone, plan TEXT default 'starter'), tours (id, guide_id, name, default_meeting_lat DECIMAL, default_meeting_lng DECIMAL, default_meeting_note TEXT), bookings (id, tour_id, guest_name, guest_phone E164, starts_at TIMESTAMPTZ, meeting_override TEXT), message_templates (id, guide_id, kind TEXT CHECK kind IN ('confirm','day_before','morning_of','review','faq')), scheduled_jobs (id, booking_id, kind TEXT, run_at TIMESTAMPTZ, status TEXT, attempts INT default 0), message_log (id, booking_id, wa_message_id TEXT, kind TEXT, status TEXT, read_at TIMESTAMPTZ), faq_entries (id, guide_id, question TEXT, answer TEXT). Enable RLS so guides only access their rows. Add API routes: POST /api/webhooks/whatsapp (verify Meta signature, log delivery/read), POST /api/bookings/import-csv, GET /api/cron/send-due (protected by CRON_SECRET). Env vars: WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN, SUPABASE keys, STRIPE keys, ANTHROPIC_API_KEY, OPENWEATHER_API_KEY. Install @supabase/supabase-js and stripe SDK.
+```
+
+**2. Core Feature**
+
+```text
+Build the scheduled WhatsApp automation engine for TourChat. When a booking is created with guest_phone and starts_at: (1) enqueue scheduled_jobs for confirm (immediate), day_before (starts_at minus 24h in guide timezone), morning_of (starts_at minus 3h), review (starts_at plus tour duration default 2h plus 2h). (2) Implement GET /api/cron/send-due: fetch jobs where run_at <= now and status = pending, mark processing, send via WhatsApp Cloud API using approved template names tour_confirm, tour_reminder, tour_weather, tour_review. For day_before and morning_of, include a location message with meeting lat/lng and a URL button to Google Maps. (3) On webhook delivery/read events, update message_log and bookings.guest_acknowledged boolean when read. (4) If day_before is sent and not read within 6 hours, create a high_priority notification for the guide dashboard. Use idempotency keys on wa_message_id to prevent duplicate sends on cron retry. Return structured errors for template not approved and log to message_log.
+```
+
+**3. FAQ Bot**
+
+```text
+Implement the Claude-powered FAQ handler for TourChat. On inbound WhatsApp session messages (POST /api/webhooks/whatsapp): match guest_phone to an active booking, load faq_entries plus tour and guide policy text from Supabase, call claude-sonnet-4-6 with system prompt: "You are the assistant for {guide_name}. Answer only from the provided policy and FAQ. Never invent meeting times, prices, or cancellation rules. If unsure, reply EXACTLY: ESCALATE:{reason}." If response starts with ESCALATE, create a guide notification and send guest: "Great question—{guide_name} will reply shortly." Otherwise send the answer as a WhatsApp text message and log to message_log. Include rate limit: max 10 FAQ replies per guest per hour. Provide the full TypeScript handler and prompt template.
+```
+
+**4. Landing Page**
+
+```text
+Design a single-page marketing site for TourChat targeting independent tour guides. Hero headline: "Stop copy-pasting meeting pins at midnight." Subhead: "WhatsApp automations for confirmations, day-before pins, weather notes, and review requests—$19/month, not $300 operator software." Sections: pain (no-shows, wrong pin, spam folder confirmations); how it works (5 steps from the solution); comparison table TourChat vs Peek vs Wati vs DIY Zapier on price, setup time, tour-specific templates, read receipts; pricing Starter $19 / Pro $39 / Team $79; FAQ covering Meta template approval, using alongside existing booking tools, and GDPR guest phone storage. Aesthetic: warm stone background, deep teal accent, Geist font, one screenshot mock of a read-receipt dashboard. Primary CTA: "Start free 14-day trial."
+```
+
+**5. Branding Package**
+
+```text
+Create a branding package for TourChat, WhatsApp guest comms for independent tour guides. Wordmark plus icon: a location pin merged with a chat bubble tail. Palette: deep teal primary (#0D6E6E), warm sand background (#F7F3ED), coral accent for alerts (#E07A5F), charcoal text (#1C1C1C). Typography: Geist for UI, Geist Mono for timestamps and phone numbers. Voice rules: talk like a fellow guide not enterprise SaaS; never say "leverage" or "synergy"; emphasize recovered seats and sleep before early tours. Deliver hex codes, three sample day-before WhatsApp template messages under 1024 characters with {{guest_name}} and {{meeting_note}} placeholders, and favicon SVG concept.
+```
+
+## Sources
+
+Market sizing and competitive positioning collated from Ideabrowser MCP idea #3820 and public research. Verify figures before investor materials.
+
+- [Grand View Research — Travel and Tourism Market Size Report](https://www.grandviewresearch.com/industry-analysis/travel-tourism-market)
+- [Meta — WhatsApp Cloud API Documentation](https://developers.facebook.com/docs/whatsapp/cloud-api)
+- [Peek — Tour Operator Booking Platform](https://www.peek.com/)
+- [Wati — WhatsApp Business Platform](https://www.wati.io/)
+- [Respond.io — Omnichannel Messaging Platform](https://www.respond.io/)
+- [Rezdy — Booking Software for Tour Operators](https://www.rezdy.com/)
+- [FareHarbor — Booking and Dashboard Software](https://fareharbor.com/)
+
+Page sourced via Ideabrowser MCP (idea_id 3820): get_idea_research, competitive_analysis, market sizing summary.

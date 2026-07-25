@@ -1,0 +1,111 @@
+---
+slug: "helpdesk-workflow-migration-cloner"
+title: "Helpdesk Workflow Migration Cloner"
+---
+
+## The Problem
+
+A support ops lead signs a contract with a new help desk on Friday and opens the migration checklist Monday morning. Tickets? Covered — every vendor and third-party tool in the category knows how to copy subject lines, requester emails, and comment threads. Macros, triggers, SLA policies, routing rules, and the conditional automations that actually keep first-response times honest? Those stay behind on the old platform, and nobody warned her until the cutover date was already printed on the all-hands slide.
+
+The result is predictable and expensive. Agents re-type the same macro responses for two weeks because nobody rebuilt them. A trigger that auto-escalated VIP accounts silently stops firing, and churn spikes before anyone notices the routing gap. SLAs that took three quarters to tune get rebuilt from memory in a spreadsheet, one policy at a time, by whoever still remembers why "Enterprise — EU — billing" had a four-hour window instead of eight. Intercom's own migration guide frames the job as weeks of planning and manual reconfiguration — not a weekend CSV import — because the hard part was never the tickets. It was the logic wrapped around them.
+
+Help desk switching is accelerating for a reason that has nothing to do with feature envy. AI add-ons and seat-based pricing on legacy platforms are pushing mid-market teams toward Freshdesk, Help Scout, Gorgias, and cheaper Zendesk tiers at the same time. SupportBee's migration writeup captures the buyer psychology: teams delay moves for months because they fear losing operational muscle memory, even when the new tool is clearly cheaper. Data-only migration vendors solved the ticket half of that fear. The workflow half — the part that determines whether agents can actually work on day one — is still a consulting project, a Zapier graveyard, or a heroic internal sprint nobody budgeted for.
+
+## The Solution
+
+Helpdesk Workflow Migration Cloner is a migration layer that treats automations as first-class citizens, not an afterthought bolted onto ticket export. You connect read-only API credentials on the source help desk and write credentials on the destination, pick a route pair — Zendesk to Freshdesk, Intercom to Help Scout, Zendesk to Gorgias as the v1 matrix — and the product inventories every macro, trigger, automation, SLA policy, and routing rule it can see. Claude translates each rule into the destination platform's native object model, assigns a confidence score, and surfaces a reconciliation dashboard that sorts outcomes into three buckets: clean equivalents ready to deploy, partial matches that need a human tweak, and no-equivalent rules that require a documented workaround before cutover.
+
+The MVP is deliberately not "magic full parity." It is a structured clone with honest gaps. Clean rows deploy in one click. Partial rows open a side-by-side diff — source condition in plain English on the left, proposed destination rule on the right — so a support lead can approve or edit before anything goes live. No-equivalent rows land in a cutover checklist with suggested manual steps, estimated effort, and links to the vendor docs that matter. Ticket history can still ride along via existing data migration partners; this product owns the operational layer that determines whether your team hits SLA on day three instead of day thirty.
+
+**How it works:**
+
+1. **Connect and scan** — OAuth into source and destination help desks; a read-only inventory job pulls macros, triggers, automations, SLAs, views, and routing rules into a staging database with stable source IDs
+2. **Translate rules** — Claude maps each source rule to destination-native syntax with structured JSON output, confidence scores, and explicit notes when a condition has no direct equivalent on the target platform
+3. **Reconcile in the dashboard** — Every rule lands as clean, partial, or no-equivalent; partial and no-equivalent items queue for human review with side-by-side diffs and cutover checklists
+4. **Deploy and verify** — Approved rules push to the destination via platform APIs; a post-deploy smoke test fires sample tickets through routing and SLA paths and flags anything that did not behave as expected
+
+## Market Research
+
+The macro tailwind is bigger than "help desks exist." Enterprise data migration — the parent category that ticket export tools sell into — is already a multi-billion-dollar market growing at high-teens CAGR through the mid-2020s, with broader migration-services projections climbing toward roughly $114B by 2035 in Ideabrowser analysis on idea #8492. Help desk switching is a subset of that spend, but it is accelerating on its own timeline because AI pricing and seat economics are forcing re-platforming decisions that used to wait for contract renewal.
+
+- **Data migration services sit north of $25B globally in the mid-2020s**, with high-teens compound growth driven by cloud re-platforming, M&amp;A integration, and SaaS sprawl (Ideabrowser market analysis on idea #8492). Ticket export is a thin slice of that pie; workflow reconstruction is the upsell incumbents leave on the table.
+- **Help desk migration guides from Intercom, Zendesk partners, and independent operators consistently describe multi-week projects** where ticket import is the easy first week and automation rebuild is the long second week — evidence that buyers already pay for time, not just bytes moved ([Intercom helpdesk migration guide](https://www.intercom.com/learning-center/helpdesk-migration-guide)).
+- **Relokia's Help Desk Migration product advertises automated ticket migration starting around $37 per job** on Zendesk Marketplace — a price anchor that proves teams expect migration to be purchasable, but the listing and customer reviews center on tickets, users, and attachments, not triggers or SLAs ([Zendesk Marketplace — Help Desk Migration by Relokia](https://www.zendesk.com/marketplace/partners/1065/help-desk-migration-by-relokia-automated-data-migration-to-zendesk-consulting/)).
+- **SupportBee's migration overview notes that teams often delay platform switches specifically because operational workflows feel harder to move than historical tickets** — the fear this product names and prices ([SupportBee — help desk migration](https://supportbee.com/blog/help-desk-migration)).
+- **Commercial-intent search around "Zendesk to Freshdesk migration," "help desk migration tool," and "support automation" carries medium-to-high CPC** in Ideabrowser keyword research on idea #8492, which suggests buyers are already shopping with a credit card out, not just reading forum threads.
+
+## Competitive Landscape
+
+Every incumbent solves the archive problem. Almost nobody productizes the automation problem at a fixed, reviewable price:
+
+- **Help Desk Migration by Relokia** — The clearest price anchor in the category: automated ticket, user, and attachment migration advertised from roughly **$37+ per migration job**, with higher tiers for large datasets and premium support ([help-desk-migration.com](https://help-desk-migration.com)). Strong Zendesk Marketplace presence and a mature self-serve funnel. Gap: data-only — macros, triggers, SLAs, and routing logic are explicitly out of scope; customers still rebuild ops by hand or hire consultants.
+- **Import2** — General-purpose SaaS-to-SaaS migration with project-based fees rather than a published per-rule price. Handles structured object moves well for teams that already know their field mappings. Gap: not help-desk-native, no automation semantics, no reconciliation dashboard for rule parity — you get records, not runbooks.
+- **Vendor professional services (Zendesk, Freshdesk, Intercom PS and partner networks)** — Custom statements of work, often five figures for mid-size instances with complex routing. High trust, high latency, low repeatability. Gap: consulting economics — every migration is a bespoke project, which is exactly what a 40-person support org cannot budget or schedule.
+- **Zapier / n8n / Make.com workarounds** — Teams stitch together webhook triggers and delayed actions to approximate old automations on the new platform. Usage-based pricing roughly **$20–$70/month** for the automation volume a busy support stack needs, plus ongoing maintenance every time either vendor changes an API. Gap: fragile, unaudited, and nobody gives you a parity report before cutover night.
+
+**Your Opportunity**
+
+Relokia proved help desk migration can be self-serve and cheap for tickets. Nobody has productized the same experience for workflows at a price support ops can approve without a procurement cycle. Win on four wedges incumbents will not copy quickly: (1) a reconciliation dashboard that tells the truth before cutover — clean, partial, or no-equivalent — instead of pretending parity exists; (2) LLM-assisted rule translation with human-in-the-loop approval, which collapses weeks of manual rebuild into a review session; (3) dual monetization — **$500–$5,000 per migration** for one-shot moves plus **$49–$299/month** SaaS for teams that migrate often or run continuous drift checks between sandbox and prod; and (4) route-pair depth on Zendesk↔Freshdesk, Intercom↔Help Scout, and Zendesk↔Gorgias first, where switching volume and API maturity are highest. Ticket export becomes a partnership or upsell, not your core IP — you own the layer that determines whether agents are productive on day one.
+
+## Business Model
+
+Hybrid productized service plus SaaS: charge for the scary one-time cutover, then rent the reconciliation engine to teams that re-platform often or manage multiple brands on different help desks.
+
+- **Discovery Scan** ($0) — Read-only inventory of source automations with counts by type and a red/yellow/green parity preview. Captures the ops lead who is six weeks from contract signature and needs ammunition for internal sign-off.
+- **Workflow Clone — Standard** ($500–$1,500) — One route pair, up to a capped rule count, reconciliation dashboard, human-reviewed deploy of clean and approved partial rules, cutover checklist for no-equivalent items. Priced against Relokia's ticket-only floor so the buyer sees workflow migration as a logical upsell, not a mystery quote.
+- **Workflow Clone — Complex** ($2,000–$5,000) — Large rule sets, multi-brand routing, SLA-heavy instances, or two-way sandbox-to-prod promotion. Same dashboard; adds dedicated review hours and post-cutover smoke testing.
+- **Migration SaaS** ($49–$149/month) — Ongoing drift detection when source and destination both stay live during phased cutover; re-scan and diff when admins change rules on either side.
+- **Ops Platform** ($299/month) — Unlimited route pairs within the supported matrix, team seats, audit logs, API access for MSPs, and white-label reports for agencies that sell migration as a service.
+
+**Unit Economics**
+
+- **~$1,200** — Blended revenue per one-time migration (mix of Standard and Complex)
+- **~$110** — Blended monthly SaaS ARPU at scale (Migration SaaS + Ops Platform attach)
+- **~75%** — Gross margin on migrations once rule-translation prompts and deploy scripts are templated per route pair
+- **~$2,800** — LTV assuming 40% of migration customers attach SaaS for six months post-cutover
+
+At roughly nine Standard migrations a month — or a thinner mix of Complex jobs plus SaaS — the business clears **$10K MRR** without enterprise sales. MSPs running five client cutovers a quarter on Ops Platform are the multiplier.
+
+## Recommended Tech Stack
+
+The product is an opinionated ETL pipeline for rules, not tickets — optimize for semantic mapping, human review, and idempotent deploys.
+
+- **Next.js 14 + Vercel** — Customer-facing reconciliation dashboard, migration job status, and side-by-side rule diffs. App Router for the portal; Edge functions for OAuth callbacks from Zendesk, Freshdesk, Intercom, Help Scout, and Gorgias.
+- **Postgres (Supabase or Neon)** — Staging tables for source_rules, translated_rules (with confidence, status enum: clean | partial | no_equivalent), deploy_runs, and smoke_test_results. Row-level security per organization — you are holding API tokens and operational logic.
+- **Platform APIs — Zendesk, Freshdesk, Intercom, Help Scout, Gorgias** — Read triggers, macros, automations, and SLA policies from source; write native objects to destination. Normalize into an internal intermediate representation so each route pair is a mapper module, not a rewrite.
+- **Claude (structured JSON output)** — Rule translation with a fixed schema: destination object type, conditions, actions, confidence, gap_notes. Prompt-cache the per-platform capability matrix ("Zendesk trigger X maps to Freshdesk Y") to keep per-rule cost negligible at scale.
+- **BullMQ + Redis** — Durable queue for inventory scans and batched deploys; rate-limit aware workers per vendor API.
+- **Stripe Billing** — One-time Checkout for migration tiers plus metered or seat-based subscriptions for SaaS plans; collect deposit before deploy stage unlocks.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "Helpdesk Workflow Migration Cloner." Provision Postgres (Supabase) with: organizations (id, name, plan TEXT default 'free'), connections (id, org_id, platform TEXT CHECK platform IN ('zendesk','freshdesk','intercom','help_scout','gorgias'), role TEXT CHECK role IN ('source','destination'), oauth_tokens JSONB, created_at), migrations (id, org_id, source_connection_id, dest_connection_id, route_pair TEXT, status TEXT default 'inventory', quoted_cents INT), source_rules (id, migration_id, external_id, rule_type TEXT, raw_json JSONB, title TEXT), translated_rules (id, migration_id, source_rule_id, dest_payload JSONB, parity_status TEXT CHECK parity_status IN ('clean','partial','no_equivalent'), confidence FLOAT, gap_notes TEXT, human_approved BOOL default false), deploy_runs (id, migration_id, started_at, finished_at, rules_deployed INT, errors JSONB). Enable RLS per org_id. Wire Stripe products: Standard Migration ($500–$1500 range via Price IDs), Complex Migration ($2000–$5000), Migration SaaS ($49/mo and $149/mo), Ops Platform ($299/mo). Add OAuth env vars for Zendesk, Freshdesk, Intercom, Help Scout, Gorgias, plus ANTHROPIC_API_KEY.
+```
+
+**2. Rule Inventory and Translation Pipeline**
+
+```text
+Build a BullMQ worker pipeline for help desk rule migration. Stage 1 INVENTORY: given a migration_id, call the source platform API (start with Zendesk) and paginate through triggers, automations, macros, SLA policies, and views; normalize each into source_rules with a stable external_id. Stage 2 TRANSLATE: for each source_rule, call Claude with a system prompt that includes a platform capability matrix for the route pair (e.g. zendesk_to_freshdesk) and require strict JSON output: { dest_object_type, dest_payload, parity_status: 'clean'|'partial'|'no_equivalent', confidence: number, gap_notes: string, suggested_manual_steps: string[] }. Write to translated_rules. Stage 3 REVIEW GATE: expose translated_rules in a dashboard table filterable by parity_status; partial and no_equivalent rows show a side-by-side diff component. Stage 4 DEPLOY: only push rows where human_approved=true OR parity_status='clean' with confidence >= 0.9; call destination platform APIs idempotently using a hash of dest_payload as dedupe key; log to deploy_runs.
+```
+
+**3. Reconciliation Dashboard and Smoke Tests**
+
+```text
+Build the migration reconciliation dashboard at /migrations/[id]/reconcile. Top summary cards: count of clean, partial, and no-equivalent rules with percentage of total. Main table columns: rule title, rule type, parity_status badge, confidence, gap_notes tooltip, approve checkbox, deploy status. Bulk actions: "Approve all clean," "Export no-equivalent checklist as PDF." For partial rows, render a split pane: left shows source rule as readable bullet conditions/actions (parsed from raw_json), right shows proposed destination rule with editable JSON before approval. After deploy, run SMOKE TESTS: create synthetic tickets that hit VIP routing, SLA breach paths, and macro-applied replies; record pass/fail in smoke_test_results and surface failures prominently on the migration overview page. Add a marketing landing page section comparing this product to ticket-only migration ("Relokia moves your history; we move your runbook") with pricing anchors $500–$5000 per migration vs ~$37 ticket-only jobs.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and migration workflow pain points collated from Ideabrowser MCP idea #8492 and the public research it cites. Verify live competitor pricing before investor materials — SaaS packaging shifts quarterly.
+
+- [Help Desk Migration by Relokia — product site and pricing entry points](https://help-desk-migration.com)
+- [SupportBee — Help Desk Migration overview (buyer fear and workflow rebuild)](https://supportbee.com/blog/help-desk-migration)
+- [Intercom — Helpdesk Migration Guide (planning timeline, manual reconfiguration)](https://www.intercom.com/learning-center/helpdesk-migration-guide)
+- [Zendesk Marketplace — Help Desk Migration by Relokia (automated data migration listing, ~$37+ positioning)](https://www.zendesk.com/marketplace/partners/1065/help-desk-migration-by-relokia-automated-data-migration-to-zendesk-consulting/)
+
+Page sourced via Ideabrowser MCP (idea_id 8492): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

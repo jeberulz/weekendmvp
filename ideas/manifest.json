@@ -5045,6 +5045,226 @@
         "builder_confidence": 7
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "voice-desktop-workflow-macros",
+      "title": "Voice Desktop Workflow Macros",
+      "publishedAt": "2026-07-25",
+      "category": "productivity",
+      "description": "Record desktop chores once and replay them by voice with checkpoints, approvals, and undo\u2014no scripting required for freelancers and small teams.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:8292",
+      "og": {
+        "subject": "dark desk, a glowing microphone next to a laptop trackpad with a lavender accent light, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2087,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-agency-automation-control-panel",
+      "title": "AI Agency Automation Control Panel",
+      "publishedAt": "2026-07-25",
+      "category": "saas",
+      "description": "One ops dashboard for AI automation agencies: deploy Make/n8n/Zapier workflows, catch errors early, bill usage, and prove ROI across every client.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8736",
+      "og": {
+        "subject": "dark multi-monitor ops desk with emerald status LEDs and a single empty client dashboard glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2123,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "helpdesk-workflow-migration-cloner",
+      "title": "Helpdesk Workflow Migration Cloner",
+      "publishedAt": "2026-07-25",
+      "category": "saas",
+      "description": "Clone macros, triggers, SLAs, and routing when switching help desks\u2014so day-one support keeps working after Zendesk, Freshdesk, or Intercom migrations.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8492",
+      "og": {
+        "subject": "dark server rack reflection on a mint-lit switch cable coiled on a desk, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2458,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "whatsapp-tour-guide-comms",
+      "title": "WhatsApp Tour Guide Guest Comms",
+      "publishedAt": "2026-07-25",
+      "category": "saas",
+      "description": "Automate WhatsApp guest messaging for tour guides\u2014confirmations, meeting pins, weather packing lists, FAQs, and review asks that still sound personal.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:3820",
+      "og": {
+        "subject": "dark travel desk with a phone showing a blank chat bubble and a lime map pin beside a worn tour badge, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2599,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "inbox-zero-agent",
+      "title": "Inbox Zero Agent",
+      "publishedAt": "2026-07-25",
+      "category": "productivity",
+      "description": "An AI inbox agent that prioritizes mail, drafts replies in your voice, schedules sends, and surfaces only the threads that need you\u2014Gmail and Outlook.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "marketers"
+      ],
+      "source": "ideabrowser:2486",
+      "og": {
+        "subject": "dark office desk, empty inbox tray with a single aubergine envelope under a focused desk lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2231,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
