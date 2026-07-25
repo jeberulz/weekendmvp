@@ -8,6 +8,8 @@ import {
   breadcrumbSchema,
   buildGraph,
   howToSchema,
+  organizationSchema,
+  PERSON_ID,
   personSchema,
 } from "@/lib/seo";
 
@@ -60,6 +62,7 @@ export const metadata: Metadata = {
 
 const STARTER_KIT_SCHEMA = buildGraph(
   personSchema(),
+  organizationSchema(),
   breadcrumbSchema([
     { label: "Home", href: "https://www.weekendmvp.app/" },
     { label: "Starter Kit", href: "https://www.weekendmvp.app/starter-kit" },
@@ -84,7 +87,7 @@ const STARTER_KIT_SCHEMA = buildGraph(
         },
       ],
     }),
-    creator: { "@id": "https://www.weekendmvp.app/#person" },
+    creator: { "@id": PERSON_ID },
   },
 );
 

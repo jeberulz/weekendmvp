@@ -11,7 +11,13 @@
 import * as React from "react";
 import { ArrowRight } from "lucide-react";
 
-import { eventSchema, breadcrumbSchema, buildGraph } from "@/lib/seo";
+import {
+  eventSchema,
+  breadcrumbSchema,
+  buildGraph,
+  personSchema,
+  organizationSchema,
+} from "@/lib/seo";
 
 import type { WorkshopStatItem } from "@/components/marketing/workshop/WorkshopStats";
 import type { WorkshopTldrItem } from "@/components/marketing/workshop/WorkshopTldr";
@@ -25,18 +31,7 @@ import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/Worksh
 
 export const WORKSHOP_DEADLINE = "[[WORKSHOP_DATE_ISO]]";
 
-/* JSON-LD: Person + Event + Breadcrumb. The dare Person uses
-   jobTitle "Founder, Weekend MVP" (different from the homepage's
-   "Product Builder & MVP Specialist"), so we hand-build the Person
-   member and compose it with the seo.ts helpers for Event + Breadcrumb. */
-
-const DARE_PERSON = {
-  "@type": "Person" as const,
-  "@id": "https://www.weekendmvp.app/#person",
-  name: "John Iseghohi",
-  jobTitle: "Founder, Weekend MVP",
-  url: "https://cal.com/switchtoux",
-};
+/* JSON-LD: Person + Organization + Event + Breadcrumb via lib/seo.ts. */
 
 const DARE_EVENT = eventSchema({
   name: "DARE Live · Choose your AI product direction in 90 minutes",
@@ -53,7 +48,8 @@ const DARE_EVENT = eventSchema({
 });
 
 export const SCHEMA = buildGraph(
-  DARE_PERSON,
+  personSchema(),
+  organizationSchema(),
   DARE_EVENT,
   breadcrumbSchema([
     { label: "Home", href: "/" },

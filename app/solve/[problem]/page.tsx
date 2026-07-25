@@ -28,6 +28,7 @@ import {
   breadcrumbSchema,
   buildGraph,
   howToSchema,
+  organizationSchema,
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
@@ -297,6 +298,7 @@ function buildSchema(page: SolvePage) {
   const url = `${SITE}/solve/${page.slug}`;
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     howToSchema({
       name: page.title,

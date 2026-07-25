@@ -113,12 +113,12 @@ export function IdeaFooter() {
             </p>
             <p className="text-neutral-400 text-xs">
               Created by{" "}
-              <NavExternalLink
-                href="https://cal.com/switchtoux"
+              <Link
+                href="/john-iseghohi"
                 className="hover:text-neutral-600 transition-colors"
               >
                 John Iseghohi
-              </NavExternalLink>
+              </Link>
             </p>
           </div>
 
@@ -132,6 +132,22 @@ export function IdeaFooter() {
               Resources
             </h4>
             <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/about"
+                  className="text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/john-iseghohi"
+                  className="text-neutral-500 hover:text-neutral-900 transition-colors"
+                >
+                  John Iseghohi
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/starter-kit"
