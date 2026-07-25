@@ -23,6 +23,7 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import {
   buildGraph,
   faqPageSchema,
+  organizationSchema,
   personSchema,
   softwareApplicationSchema,
   websiteSchema,
@@ -70,6 +71,7 @@ export default function HomePage() {
       <JsonLd
         schema={buildGraph(
           personSchema(),
+          organizationSchema(),
           websiteSchema(),
           softwareApplicationSchema({
             name: "Weekend MVP Starter Kit",

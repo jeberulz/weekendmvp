@@ -21,6 +21,7 @@ import {
   buildGraph,
   collectionPageSchema,
   faqPageSchema,
+  organizationSchema,
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
@@ -328,6 +329,7 @@ const FAQ = [
 function buildSchema(data: StartupIdeasData) {
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     {
       ...collectionPageSchema({

@@ -47,6 +47,7 @@ import {
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
+  organizationSchema,
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
@@ -617,6 +618,7 @@ function buildSchema(
   const url = `${SITE}/ideas-for/${page.slug}`;
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     {
       ...collectionPageSchema({

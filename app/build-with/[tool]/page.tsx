@@ -43,6 +43,7 @@ import {
   breadcrumbSchema,
   buildGraph,
   howToSchema,
+  organizationSchema,
   personSchema,
   softwareApplicationSchema,
   websiteSchema,
@@ -576,6 +577,7 @@ function buildSchema(page: ToolPage, data: ToolData) {
   const url = `${SITE}/build-with/${page.slug}`;
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     softwareApplicationSchema({
       name: page.name,

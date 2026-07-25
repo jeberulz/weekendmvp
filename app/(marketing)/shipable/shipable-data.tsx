@@ -12,6 +12,10 @@ import {
   faqPageSchema,
   breadcrumbSchema,
   buildGraph,
+  personSchema,
+  organizationSchema,
+  PERSON_ID,
+  ORG_ID,
   type FaqEntry,
 } from "@/lib/seo";
 
@@ -28,30 +32,7 @@ import type { WorkshopTimezoneRow } from "@/components/marketing/workshop/Worksh
 export const WORKSHOP_DEADLINE = "2026-08-01T17:00:00+01:00";
 
 /* JSON-LD: Person + Organization + Event + FAQPage + Breadcrumb (SEO + AEO).
-   Person/Organization carry workshop-specific fields (jobTitle "Founder,
-   Weekend MVP", sameAs arrays, logos, portrait image) so we hand-build
-   those two members and compose them with the seo.ts helpers for
-   Event/FAQ/Breadcrumb. */
-
-const SHIPABLE_PERSON = {
-  "@type": "Person" as const,
-  "@id": "https://www.weekendmvp.app/#person",
-  name: "John Iseghohi",
-  jobTitle: "Founder, Weekend MVP",
-  url: "https://cal.com/switchtoux",
-  image: "https://www.weekendmvp.app/image/john-portrait.jpg",
-  sameAs: ["https://twitter.com/weekendmvp", "https://cal.com/switchtoux"],
-};
-
-const SHIPABLE_ORG = {
-  "@type": "Organization" as const,
-  "@id": "https://www.weekendmvp.app/#org",
-  name: "Weekend MVP",
-  url: "https://www.weekendmvp.app/",
-  logo: "https://www.weekendmvp.app/image/weekendmvp-logo.svg",
-  founder: { "@id": "https://www.weekendmvp.app/#person" },
-  sameAs: ["https://twitter.com/weekendmvp"],
-};
+   Person/Org come from lib/seo.ts (canonical /john-iseghohi + #organization). */
 
 export const FAQS: FaqEntry[] = [
   {
@@ -117,13 +98,13 @@ const SHIPABLE_EVENT = {
   inLanguage: "en",
   isAccessibleForFree: false,
   maximumAttendeeCapacity: 100,
-  organizer: { "@id": "https://www.weekendmvp.app/#org" },
-  performer: { "@id": "https://www.weekendmvp.app/#person" },
+  organizer: { "@id": ORG_ID },
+  performer: { "@id": PERSON_ID },
 };
 
 export const SCHEMA = buildGraph(
-  SHIPABLE_PERSON,
-  SHIPABLE_ORG,
+  personSchema(),
+  organizationSchema(),
   SHIPABLE_EVENT,
   faqPageSchema(FAQS),
   breadcrumbSchema([
