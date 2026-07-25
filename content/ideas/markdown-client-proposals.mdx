@@ -1,0 +1,101 @@
+---
+slug: "markdown-client-proposals"
+title: "Client-Ready Proposals from Markdown"
+---
+
+## The Problem
+
+Technical freelancers write proposals in VS Code or Obsidian — fast, structured, clean. Then they paste into Google Docs or Canva to add a logo, fix fonts, and export a branded PDF. Thirty to sixty minutes dies on formatting. By the time the client receives it, polishing cost more time than writing. Branding drifts across proposals because nobody maintains a master template.
+
+PandaDoc and Proposify own visual proposal editors with e-sign. Pandoc converts markdown but ships ugly defaults. Canva is pretty and slow for long scopes. r/Markdown, r/freelance, and Indie Hackers regularly ask for "markdown to nice PDF" without a designer in the loop. Markdown usage is rising among technical freelancers who bill $10K+ projects and refuse to live in Word.
+
+## The Solution
+
+Markmint takes a markdown file, applies a branded template (colors, typography, logo), and exports a client-ready PDF in seconds. Brand settings save once. Templates cover proposals, scopes of work, and project briefs. Later: template marketplace and open-tracking analytics.
+
+**How it works:**
+
+1. **Upload or paste markdown** — Or sync from a folder / Obsidian vault path.
+2. **Pick brand kit** — Logo, fonts, colors, cover block — saved per account.
+3. **Choose template** — Proposal, SOW, brief; live preview.
+4. **Export PDF** — One click; optional share link with view tracking.
+5. **Reuse** — Variables (client_name, price, date) for next proposal in seconds.
+
+Weekend MVP: web upload → Playwright/PDF rendering with CSS templates → Stripe $19/month. Obsidian plugin phase 2.
+
+## Market Research
+
+- Document automation, proposal software, and markdown tooling are large overlapping markets; even a thin freelancer slice supports a bootstrap SaaS ([Ideabrowser #8023](https://www.ideabrowser.com)).
+- Search interest in markdown-to-PDF workflows has grown; Obsidian's audience expanded beyond pure engineers.
+- Community: r/Markdown (70K+), r/graphic_design, r/webdevelopment discussions on conversion and branding; YouTube tutorials on markdown PDF pipelines draw strong views.
+- Freelancers already pay for PandaDoc/HelloSign — willingness exists; they hate the editor switch.
+
+## Competitive Landscape
+
+- **PandaDoc / Proposify** — Full proposal platforms with e-sign; visual editors; typically tens of $/user/month. Not markdown-native.
+- **Canva** — Design polish; painful for long structured scopes.
+- **Pandoc / md-to-pdf CLIs** — Free, powerful, ugly without custom CSS expertise.
+- **Notion export** — Convenient, weakly branded PDFs.
+- **APITemplate / Anvil** — API-centric; not a focused freelancer SaaS UX.
+
+**Your Opportunity**
+
+Own markdown-native branded export at **$19–$49/month** with a template marketplace take rate. Position: *Write in Obsidian. Send a designer-grade PDF.*
+
+## Business Model
+
+- **Starter** — $19/month, brand kit, 50 exports.
+- **Pro** — $49/month, unlimited exports, analytics, team kits.
+- **Templates** — $5–$25 marketplace purchases; platform cut ~30%.
+- **Enterprise** — custom CSS + SSO for agencies.
+
+**Unit Economics (illustrative)**
+
+- PDF render cost pennies
+- Path: 800 × $29 ≈ $23K MRR
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — app + auth.
+- **Playwright or Typst/WeasyPrint** — HTML/CSS → PDF.
+- **S3/R2** — assets and exports.
+- **Postgres** — brands, templates, export history.
+- **Stripe** — subscriptions + template purchases.
+- **PostHog** — funnel analytics.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Renderer**
+
+```text
+Build Markmint: accept markdown string + brand JSON (primaryColor, logoUrl, fontHeading, fontBody). Convert markdown to HTML, wrap in a CSS template, render PDF with Playwright, return download URL.
+```
+
+**2. Brand Kit UI**
+
+```text
+Create an onboarding form to upload logo and set colors/fonts. Persist to user.brand_kit. Preview a sample proposal before first export.
+```
+
+**3. Variables**
+
+```text
+Support {{client_name}}, {{price}}, {{date}} in markdown. Show a form to fill variables before export. Save last-used values per client record.
+```
+
+Speed is the brand. If export takes longer than pouring coffee, power users bounce back to Pandoc scripts. Cache brand CSS, prerender previews, and keep the PDF pipeline under three seconds for typical 6-page proposals. Offer a VS Code command-palette extension that uploads the current markdown buffer — meeting freelancers inside the editor is stronger than asking them to visit a web app every time.
+
+Compete on taste. Ship three opinionated templates (Studio, Editorial, Technical) designed by a real designer, not generic Bootstrap. Side-by-side landing page: Markmint PDF vs default Pandoc vs Canva export. Template marketplace comes after 200 paying users so designers have an audience. Analytics (open rates on share links) becomes the upsell that PandaDoc owners expect without forcing the PandaDoc editor.
+
+Add optional e-sign later via Dropbox Sign API only after export retention is proven — do not become a worse PandaDoc. The core loop is write → brand → send. Everything else is distraction until weekly active exporters clear a hundred users.
+
+Freelancer Twitter/X threads about proposal formatting are free distribution if replies include a 20-second export demo.
+
+## Sources
+
+- [Ideabrowser #8023 research](https://www.ideabrowser.com)
+- [PandaDoc (competitor)](https://www.pandadoc.com/)
+- [r/Markdown community](https://www.reddit.com/r/Markdown/)
+- [Pandoc (adjacent converter)](https://pandoc.org/)

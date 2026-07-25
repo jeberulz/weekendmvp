@@ -1,0 +1,99 @@
+---
+slug: "one-star-attack-detection"
+title: "One-Star Attack Detection for Local Businesses"
+---
+
+## The Problem
+
+A restaurant's Google rating drops from 4.8 to 3.9 overnight. Ten one-star reviews from brand-new accounts, identical phrasing, posted between 2 a.m. and 5 a.m. Morning coffee is when a regular mentions the drop. By then customers book elsewhere. Platform appeals take weeks. Revenue bleeds in hours.
+
+Enterprise ORM suites (Podium ~$399/month, Chatmeter, Birdeye) bury alerts inside marketing dashboards built for multi-location brands. ReviewPush and Reputology offer real-time alerts from roughly $39–$49/month but still optimize for "every new review," not coordinated attack patterns. Native Google/Yelp emails are easy to miss. Single-location owners need one job: SMS when a rating is under attack, with evidence and a 10-minute response playbook.
+
+## The Solution
+
+Ratingwire monitors Google and Yelp listings for review velocity, account age proxies, and sentiment shocks. When patterns break — cluster of new accounts, sentiment crash, 3× review speed — an SMS fires within minutes with dispute templates and suggested replies. No enterprise dashboard required.
+
+**How it works:**
+
+1. **Link listing + phone** — Connect Google Business Profile / Yelp; verify SMS number.
+2. **Baseline learning** — First two weeks learn normal review velocity for that location.
+3. **Anomaly detect** — Score spikes: volume, one-star clustering, text similarity, off-hours bursts.
+4. **Instant SMS** — Alert with links, evidence bullets, and copy-paste dispute/response templates.
+5. **Incident log** — Timestamped record for platform appeals and agency handoff.
+
+Weekend MVP: polling Google/Yelp data sources + Twilio SMS + threshold rules. Tune false positives with 10 restaurants before opening signup.
+
+## Market Research
+
+- Online reputation management is a multi-billion-dollar mature market; search for reputation services shows high CPC and commercial intent ([Ideabrowser #8946](https://www.ideabrowser.com)).
+- 90%+ of consumers use reviews in purchase decisions in widely cited surveys — rating drops have immediate local SEO and conversion impact.
+- Community: r/smallbusiness and ORM Facebook groups complain about fake review attacks and overpriced suites.
+- Regulatory attention on fake reviews increases value of documented incident evidence.
+
+## Competitive Landscape
+
+- **Podium** — Full local messaging + reviews suite; often ~**$399/month**. Overkill for alert-only needs.
+- **ReviewPush** — Real-time alerts from ~**$39/month**; general monitoring, not attack-specific.
+- **Reputology** — Multi-location aggregation from ~**$49/month**; enterprise-leaning.
+- **Reviewflowz / ReviewBot** — Leaner SMB tools and micro-SaaS notifiers; still mostly "new review" alerts.
+- **Native Google/Yelp notifications** — Free; no anomaly detection or SMS urgency layer.
+
+**Your Opportunity**
+
+Own single-location **attack detection** at **$10–$20/month** — insurance pricing. White-label to local marketing agencies. Data from labeled incidents becomes the detection moat.
+
+## Business Model
+
+- **Basic** — $10/month/location Google + Yelp SMS alerts.
+- **Pro** — $20/month advanced patterns + extra platforms.
+- **Add-ons** — $5–$15/platform.
+- **Agency white-label** — volume pricing + markup room.
+
+**Unit Economics (illustrative)**
+
+- Twilio SMS pennies per alert; polling infra dominates cost
+- Path: 2,000 locations × $12 ARPU = $24K MRR
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — onboarding + billing.
+- **Worker (Fly/Railway)** — poll listings, run anomaly rules.
+- **Twilio** — SMS alerts.
+- **Postgres** — locations, reviews, incidents, baselines.
+- **Stripe** — per-location subscriptions.
+- **Optional NLP** — embedding similarity for copy-paste attack clusters.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Ingest + Baseline**
+
+```text
+Build Ratingwire worker: every 15 minutes fetch latest reviews for a location. Store review_id, rating, text, created_at. Maintain rolling 14-day baseline of reviews_per_day and avg_rating.
+```
+
+**2. Attack Rules**
+
+```text
+Trigger alert if: (reviews in 6h >= 3x baseline) AND (share of 1-star >= 70%) OR (avg_rating drop >= 0.4 in 24h). Deduplicate alerts for 12h. Include top review excerpts in payload.
+```
+
+**3. SMS Playbook**
+
+```text
+On alert, send Twilio SMS with rating delta, count of new 1-stars, and link to /incidents/[id] showing dispute template and suggested public reply. Require STOP opt-out.
+```
+
+False positives kill this product. A normal bad-dinner rush of three honest one-stars must not look like an attack. Tunable sensitivity, quiet hours, and a "this was fine" button that trains the model are mandatory before paid launch. Lead with restaurants and salons — high review volume and clear revenue sensitivity — then expand to dentists and home services.
+
+Agency channel: white-label SMS that says "via Your Agency Review Defense." Agencies already sell reputation retainers; giving them an attack detector increases perceived responsiveness without building ML. Compliance: SMS opt-in, Google/Yelp API ToS, and careful storage of review text. Market with incident postmortems ("How a taco shop caught a 12-review bomb at 3 a.m.") rather than feature matrices against Podium.
+
+Price annually at a discount ($100/year) for owners who hate monthly cards. Churn will cluster after quiet months; counter with a monthly "all clear" SMS so the product stays visible when attacks do not.
+
+## Sources
+
+- [Ideabrowser #8946 competitive analysis](https://www.ideabrowser.com)
+- [Best review monitoring tools roundups](https://www.marketingseodirectory.com/blog/best-review-monitoring-tools/)
+- [Reviewflowz on review monitoring software](https://www.reviewflowz.com/blog/review-monitoring-software)
+- [Chatmeter review management overview](https://www.chatmeter.com/resource/blog/best-review-management-software/)

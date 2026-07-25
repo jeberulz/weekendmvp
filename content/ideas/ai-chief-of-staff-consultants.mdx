@@ -1,0 +1,98 @@
+---
+slug: "ai-chief-of-staff-consultants"
+title: "AI Chief of Staff for Solo Consultants"
+---
+
+## The Problem
+
+Solo consultants bill $150–$300 an hour and lose roughly 20% of the week to $15/hour work: scheduling ping-pong, proposal follow-ups, client file wrangling, invoice nudges. That is tens of thousands of dollars a year in unbilled time. They hire a VA when chaos peaks, then underutilize them because context lives in Gmail and Google Drive, not a handbook.
+
+Motion and Reclaim optimize calendars. Otter and Fireflies summarize meetings. ChatGPT drafts one-off emails. None own the consultant workflow around the calendar: confirm meetings, chase silent prospects, keep client folders sane, and remind about invoices — context-aware busywork that turns admin hours back into billable ones. r/freelancing (340K+) and VA Facebook groups constantly debate hiring vs tools. Intelligent virtual assistant markets are projected from tens of billions toward ~$100B by early 2030s at ~30% CAGR ([Ideabrowser #5309](https://www.ideabrowser.com)).
+
+## The Solution
+
+Billable (working name) is an AI chief of staff for solo consultants. It schedules without email tennis, follows up on proposals when prospects go dark, organizes client files across Drive/Notion, and manages the calendar like an assistant who understands consulting workflows.
+
+Wedge: scheduling + proposal follow-ups first — the universal pain. Expand into invoices, onboarding sequences, and status updates.
+
+**How it works:**
+
+1. **Connect Gmail + Calendar** — OAuth; index recent sent mail for tone and common templates.
+2. **Scheduling agent** — Detects scheduling threads; proposes slots inside working hours; sends confirmations.
+3. **Proposal watchdog** — Tracks sent proposals; auto-drafts polite follow-ups at day 3 / day 7 if no reply.
+4. **Client file hygiene** — Suggests folder structures and filing rules for attachments and notes.
+5. **Weekly billable report** — Hours saved estimate, follow-ups sent, meetings booked — proof for the subscription.
+
+Weekend MVP: Gmail + Calendar + Claude for draft generation; Zapier/Calendly bridge; onboard 10 consultants manually.
+
+## Market Research
+
+- Global intelligent virtual assistant market cited around **$25.7B (2026)** growing toward **~$99.6B by 2031** (~31% CAGR) in Ideabrowser synthesis.
+- Solo consultant and freelancer populations are large and digitally reachable via LinkedIn, Reddit, and Facebook VA groups.
+- Willingness to pay: consultants already pay humans $15–$40/hour for VA work; $29–$99/month software is an easy ROI if it recovers even two billable hours monthly.
+- Adjacent proof: Motion ($19–$34), Otter, Fireflies show paid AI productivity adoption.
+
+## Competitive Landscape
+
+- **Motion / Reclaim** — AI calendar optimization roughly **$19–$34/user/month**. Strong at time blocking; weak at proposal follow-ups and client file ops.
+- **Otter.ai / Fireflies** — Meeting notes and summaries; not a chief of staff for email workflows.
+- **ChatGPT / Claude apps** — General AI; no persistent Gmail/Calendar agent loop.
+- **Human VAs (Belay, Upwork)** — High trust, high cost and management overhead; $1K+/month retainers common.
+
+**Your Opportunity**
+
+Own consultant-specific workflow automation at **$29 / $99/month** — cheaper than a VA, more specialized than Motion. Position: *Recover billable hours, keep Gmail.*
+
+## Business Model
+
+- **Core** — $29/month scheduling + follow-up drafts.
+- **Full suite** — $99/month files, invoices, templates, multi-client views.
+- **Annual** — two months free.
+- **Enterprise** — $5K–$20K/year for small firms needing shared rules.
+
+**Unit Economics (illustrative)**
+
+- LLM cost cents per draft with Haiku triage
+- Path: 300 × $49 blended ARPU ≈ $14.7K MRR
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — app + billing.
+- **Gmail API + Google Calendar** — core connectors; Microsoft Graph phase 2.
+- **Claude API** — drafts and classification.
+- **Postgres** — users, rules, follow-up state machine.
+- **Stripe** — subscriptions.
+- **Resend** — weekly reports.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Connectors**
+
+```text
+Build Billable MVP: Next.js with Google OAuth for Gmail and Calendar. Store encrypted refresh tokens. List unread threads and upcoming events on a dashboard.
+```
+
+**2. Follow-up State Machine**
+
+```text
+Detect emails with subject containing Proposal or attached PDFs sent by the user. If no reply in 3 days, create a draft follow-up in the user's voice. Require one-click approve before send.
+```
+
+**3. Working Hours Scheduler**
+
+```text
+Parse scheduling threads. Propose 3 slots inside user.working_hours next 5 business days, excluding busy Calendar events. Draft a reply with the options.
+```
+
+The product dies if drafts send without approval. Keep a human-in-the-loop approve button for every external email in v1. Consultants will forgive a missing feature; they will not forgive a weird follow-up to their biggest client. Log every approval and edit distance so the model learns voice without unsupervised sends. Position against human VAs with a calculator: "If you bill $200/hour and save 3 hours/month, Billable paid for itself 20×."
+
+GTM: LinkedIn content for solo consultants, sponsorships in freelance newsletters, and a cohort onboarding Zoom for the first fifty users. Measure hours saved via before/after time-tracking diary for ten design partners. If median saved hours stay under 2 per week, tighten the scheduling wedge before building file organization. Expand later into proposal generation that fills from discovery-call notes — but only after the follow-up watchdog has retention proof.
+
+## Sources
+
+- [Ideabrowser #5309 research summaries](https://www.ideabrowser.com)
+- [r/freelancing community signals](https://www.reddit.com/r/freelancing/)
+- [Motion AI calendar (competitor)](https://www.usemotion.com/)
+- [Otter.ai meeting assistant (adjacent)](https://otter.ai/)

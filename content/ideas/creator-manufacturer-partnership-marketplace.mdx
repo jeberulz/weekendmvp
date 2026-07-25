@@ -1,0 +1,104 @@
+---
+slug: "creator-manufacturer-partnership-marketplace"
+title: "Creator–Manufacturer Partnership Marketplace"
+---
+
+## The Problem
+
+A creator with 200K followers gets a DM pitching a supplement line. Terms arrive over text. Equity stays verbal. Three months later the deal dies on promises. Another creator ships on a handshake and waits 90 days for a short payout. Each failed partnership makes the next cold outreach harder.
+
+Influencer platforms (TikTok Creator Marketplace, Instagram, Aspire, CreatorIQ) optimize for short campaigns and media fees — not co-owned product lines with royalties, milestones, and escrowed payouts. Mid-tier creators (10K–500K) are too small for brand studios and too busy to learn supply chains. Operators who know DTC ops cannot systematically find trustworthy audiences. Reddit's r/influencermarketing (130K+) and Facebook collab groups complain about low pay, ghosting, and opaque terms.
+
+The gap is structured deal flow: verified parties, written economics, tracked sales, and payouts against delivery.
+
+## The Solution
+
+Handsel is a partnership marketplace matching creators with verified brand operators/manufacturers. Creators list niche, audience size, and engagement. Operators pitch royalty splits, equity, and projections. Signed deals live on-platform with contracts, sale tracking, and milestone payouts so funds move on proof — not vibes.
+
+Revenue: ~7% of gross sales through the platform plus $500–$2,000 premium matchmaking. Buyers are mid-tier creators who can sell out drops but cannot vet ops partners.
+
+**How it works:**
+
+1. **Dual onboarding** — Creators verify audience metrics; operators pass portfolio + reference checks.
+2. **Structured pitches** — Operators submit templated terms (royalty %, equity, MOQ, timeline).
+3. **Deal room** — E-sign agreement; escrow schedule tied to milestones (sample, PO, first ship).
+4. **Sales tracking** — Shopify/Stripe hooks attribute revenue; platform computes payouts.
+5. **Reputation graph** — Completion rate and on-time pay history unlock better matches.
+
+Weekend MVP: Airtable + Stripe + DocuSign-style templates for 10 hand-matched deals in one vertical (e.g., supplements or apparel).
+
+## Market Research
+
+- Influencer marketing platforms ~**$34.2B in 2025** toward **$116B+ by 2033** (~14% CAGR) ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/influencer-marketing-platform-market)).
+- Creator commerce / creator-led marketplaces called out as fast-growing ecommerce models ([Shipturtle guide](https://www.shipturtle.com/blog/creator-led-marketplace-guide)).
+- Mid-tier creators are numerous and underserved for product co-ownership vs campaign marketplaces ([Brandwatch glossary](https://www.brandwatch.com/social-media-glossary/creator-marketplace/)).
+- Community pain (pay, trust, transparency) is loud in r/influencermarketing and creator–brand Facebook groups.
+
+## Competitive Landscape
+
+- **TikTok / Meta Creator Marketplaces** — Free matching for campaigns; platform lock-in; not built for equity/royalty product ops.
+- **Aspire / CreatorIQ / Upfluence** — Enterprise SaaS (often multi-thousand $/month). Campaign analytics; weak product P&L tooling for mid-tier.
+- **Brand collab apps** — Low-friction mobile matching; weak vetting and complex deal structures.
+- **Shopify + multi-vendor tools** — Commerce rails after a partner exists; do not solve matchmaking or escrowed terms.
+
+**Your Opportunity**
+
+Be the co-founder marketplace for creators: 7% of attributed sales + premium match fees. Start in one category, publish deal templates, and make payout history the moat.
+
+## Business Model
+
+- **Take rate** — ~7% of gross sales on platform-tracked deals.
+- **Premium matchmaking** — $500–$2,000 for curated intros.
+- **Verified operator badge** — ~$500/year.
+- **Analytics subscription** — $50–$200/month.
+
+**Unit Economics (illustrative)**
+
+- Payment + infra under 1% of GMV
+- Path: 100 active deals × $8K/month GMV × 7% ≈ $56K/month at early density
+
+## Recommended Tech Stack
+
+- **Next.js + Convex or Supabase** — profiles, deals, messages.
+- **Stripe Connect** — milestone payouts.
+- **Shopify Admin API** — sales attribution.
+- **PandaDoc / HelloSign** — contracts.
+- **PostHog** — funnel analytics.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Marketplace Shell**
+
+```text
+Build Handsel: two-sided Next.js marketplace. Creators and operators have profiles. Operators submit Pitch objects (royalty_bps, equity_bps, timeline_weeks). Creators accept/reject. Store Deal with status draft|active|completed.
+```
+
+**2. Milestone Payouts**
+
+```text
+Implement Stripe Connect escrow-like flow: on deal accept, create payment schedule for milestones sample_approved, po_placed, first_shipment. Release funds only when both parties confirm milestone.
+```
+
+**3. Reputation**
+
+```text
+After deal completion, both sides leave scores (1-5) for reliability and communication. Show aggregate on profiles. Block new pitches if operator payout dispute rate exceeds 10%.
+```
+
+Trust is the scarce resource. Creators remember the brand that paid late; operators remember the creator who ghosted after samples. A reputation graph with on-time payout rates, sample-to-PO conversion, and completed deal counts becomes the moat that cold DMs cannot copy. Publish anonymized deal comps ("typical royalty for beauty creators with 100K–250K is X–Y%") so both sides arrive with realistic expectations and fewer dead pitches.
+
+Legal templates matter more than fancy matching AI at the start. Ship three agreement flavors: royalty-only, royalty + equity, and white-label manufacturing with volume commitments. Use e-sign and store the executed PDF with the deal record. Stripe Connect milestone releases tied to sample approval, purchase order, and first shipment keep money moving with the work.
+
+Go-to-market: Instagram creator-economy newsletters, r/influencermarketing AMAs with a free "deal checklist" lead magnet, and outbound to 50 mid-tier supplement and apparel operators who already sell DTC but lack creator co-brands. Hand-match the first ten deals; instrument every step; only automate matching after you know which pitch fields predict acceptance. The weekend MVP is a Notion + Stripe + DocuSign stack with a thin Next.js shell — density of closed deals beats feature count.
+
+
+Category density beats horizontal scale early. Win beauty or apparel first so operators refer each other and creators see familiar brand names. Cross-category marketplace liquidity is a myth at seed stage — five closed beauty deals in one city teach more than fifty empty profiles across six niches. Publish a monthly "partnership index" with anonymized royalty bands; that content becomes inbound for both sides and compounds SEO around "creator brand partnership deal."
+
+## Sources
+
+- [Influencer Marketing Platform Market (Grand View)](https://www.grandviewresearch.com/industry-analysis/influencer-marketing-platform-market)
+- [Creator Marketplace Definition (Brandwatch)](https://www.brandwatch.com/social-media-glossary/creator-marketplace/)
+- [Creator-Led Marketplace Guide (Shipturtle)](https://www.shipturtle.com/blog/creator-led-marketplace-guide)
+- [How to Build an Influencer Marketplace (Sharetribe)](https://www.sharetribe.com/create/how-to-build-marketplace-for-social-media-influencers/)

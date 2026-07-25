@@ -1,0 +1,110 @@
+---
+slug: "small-town-storefront-marketplace"
+title: "Small-Town Storefront Marketplace"
+---
+
+## The Problem
+
+Opening a bakery on Main Street should not require a private detective. An aspiring owner calls five brokers who never call back, guesses at foot traffic from a gut feeling, decodes zoning PDFs at city hall, and hunts for grants buried in municipal archives. Rent hides behind "call for details." Permitted uses take three phone calls. Many quit before they start because the information barrier sits higher than the rent.
+
+Municipalities feel the other side of the same pain. Downtown vacancy above 12 percent drains sales tax, kills walkability, and leaves economic development directors staring at empty windows while another Dollar General opens on the highway. Their tools are spreadsheets, Facebook posts, and a dusty "available properties" page that nobody updates. National CRE portals list square footage for brokers — not whether a bakery, repair shop, or studio can realistically survive on that block.
+
+Reddit's r/smallbusiness (millions of members) and local Facebook groups like Ocala Small Businesses (19K+) show the same loop: owners want space, towns want tenants, and both drown in fragmented data. Walking Main Street with a notebook is still the default "research" method. That is not a marketplace. It is friction that keeps storefronts empty and local entrepreneurship stuck.
+
+## The Solution
+
+StorefrontMatch is a marketplace that connects aspiring local businesses with verified vacant storefronts in towns of roughly 10,000–50,000 people. Each listing packs what national portals skip: verified rent ranges, permitted uses in plain language, renovation cost estimates, foot-traffic proxies, available incentives, and a direct line to the zoning contact who actually answers.
+
+Towns and downtown associations list inventory and pay for the pipeline. Entrepreneurs browse by use case ("bakery," "studio," "repair") and compare towns side by side. When a lease signs, the platform takes a success fee. The wedge is revitalization — locally owned businesses, not another chain — with municipalities as the paying buyer and founders as the demand side.
+
+**How it works:**
+
+1. **Town onboarding** — Economic development staff upload storefronts (photos, rent band, size, condition) or start from a curated Airtable inventory the team helps seed.
+2. **Viability layer** — Zoning overlays, census and Google Places proxies for foot traffic, and manually researched grant programs attach to each listing.
+3. **Entrepreneur search** — Founders filter by use type, rent ceiling, and town; request intros; message the listing contact.
+4. **Lease close + success fee** — When a tenant signs, the town pays a 1–3% success fee (or flat fee) and the listing updates status.
+5. **Dashboard for towns** — Vacancy rate, pipeline of inquiries, and filled spaces become the reporting towns already need for grants and councils.
+
+Weekend MVP: five pilot towns, Airtable-backed listings, public directory, and Stripe invoicing for municipal subscriptions. Layer APIs and self-serve later.
+
+## Market Research
+
+Commercial real estate tech is a multi-billion-dollar category, but small-town Main Streets are an underserved micro-segment inside it. National retail vacancy can look "tight" while older downtown corridors still sit empty — distress concentrated where brokers and LoopNet-style portals rarely prioritize.
+
+- Many municipalities under 5,000–50,000 residents struggle with empty storefronts and underutilized buildings ([UW Extension / Main Street research](https://economicdevelopment.extension.wisc.edu/files/2021/09/Creative-Uses-for-Downtown-Buildings-030317.pdf)).
+- Localism and resistance to big-box displacement keep pressure on towns to recruit locally owned tenants ([Better Cities Project](https://better-cities.org/economic-prosperity/small-town-america-vs-big-box-stores/)).
+- Guides for small-town business ideas still tell founders to "scout locations" manually — proof the discovery layer remains broken ([NerdWallet](https://www.nerdwallet.com/business/learn/small-town-business-ideas)).
+- Community demand shows up in large small-business forums and town Facebook groups actively asking where to open and how to fill vacancies.
+
+SAM: thousands of U.S. towns with visible vacancy and an economic development budget. At $200–$500/month per municipality plus success fees, 200 towns at $300/month plus ~50 closes/year at ~$2,000 each is an ~$820K ARR path with a lean team.
+
+## Competitive Landscape
+
+- **Appear Here** — Short-term / pop-up retail marketplace focused on major cities (London, NYC). Strong booking UX; weak for long-term small-town leases and municipal buyers. Commission on bookings.
+- **LoopNet / CoStar** — Dominant CRE listing portal. Broker-oriented subscriptions and premium placement; millions of listings. Little viability context for "can a bakery work here?" and no municipal revitalization workflow.
+- **Crexi** — Modern CRE exchange with marketing/CRM for brokers. Growing inventory; still generic CRE, not Main Street entrepreneur tooling.
+- **Municipal DIY portals / Main Street spreadsheets** — Free but stale; no foot-traffic or grant layer; no cross-town discovery for founders.
+
+**Your Opportunity**
+
+Own B2G Main Street inventory: towns pay $200–$500/month, founders browse free, and you earn success fees on signed leases. Position against LoopNet as "viability for local entrepreneurs," not "listings for brokers." First-mover density in one state (municipal leagues + downtown conferences) is the distribution moat.
+
+## Business Model
+
+- **Municipal subscription** — $200–$500/month for unlimited listings, inquiry CRM, and vacancy reporting.
+- **Featured placement** — ~$50/listing boost for hot blocks.
+- **Success fee** — 1–3% of lease value or flat $1,500–$3,000 per signed tenant.
+- **Later** — API / data access for lenders and contractors; white-label for regional EDAs.
+
+**Unit Economics (illustrative)**
+
+- under $5/month — hosting + maps APIs per active town at early scale
+- ~75%+ — gross margin on SaaS once onboarding is templated
+- $500–$2,000 — CAC via state associations and case-study outbound
+- Path: 50 towns × $300 = $15K MRR; add success fees for cash spikes
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — Public directory, town admin, auth.
+- **Postgres (Supabase)** — towns, storefronts, inquiries, lease events.
+- **Mapbox / Google Places** — maps and foot-traffic proxies.
+- **Stripe Billing** — municipal subscriptions + success invoices.
+- **Airtable (MVP seed)** — inventory before full CMS polish.
+- **Resend / Postmark** — inquiry and intro emails.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Build a Next.js 14 App Router marketplace called StorefrontMatch for small-town vacant storefronts.
+
+Schema: towns, storefronts (rent_min, rent_max, sqft, permitted_uses[], photos[], status), inquiries, users (role: entrepreneur|town_admin).
+
+Pages: / (search), /towns/[slug], /listings/[id], /admin/town (CRUD listings), /api/inquiries.
+
+Auth with Clerk. Use Tailwind. Seed 3 demo towns with 8 listings each.
+```
+
+**2. Viability Layer**
+
+```text
+Add a Storefront viability panel: permitted uses (plain English), estimated renovation band, foot-traffic score (1-10) from a mock Google Places density function, and grants[] with title + url.
+
+Town admins can edit these fields. Entrepreneurs can filter search by use type and max rent.
+```
+
+**3. Billing**
+
+```text
+Integrate Stripe Checkout for Municipal Pro ($300/month). Gate unlimited listings behind active subscription. Add a success_fee invoice flow when a listing status flips to leased.
+```
+
+## Sources
+
+- [Creative Uses for Downtown Buildings (UW Extension)](https://economicdevelopment.extension.wisc.edu/files/2021/09/Creative-Uses-for-Downtown-Buildings-030317.pdf)
+- [Small Town America vs Big-Box Stores](https://better-cities.org/economic-prosperity/small-town-america-vs-big-box-stores/)
+- [Small-Town Business Ideas (NerdWallet)](https://www.nerdwallet.com/business/learn/small-town-business-ideas)
+- [Successful Business Ideas for Small Towns (Lightspeed)](https://www.lightspeedhq.com/blog/successful-business-ideas-for-small-towns/)

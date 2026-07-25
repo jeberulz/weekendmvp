@@ -1,0 +1,98 @@
+---
+slug: "shopify-trust-scanner"
+title: "Shopify Trust Scanner"
+---
+
+## The Problem
+
+Traffic without sales is the silent Shopify killer. Merchants blame ads, product, or price — then a stranger lands, sees stock photos, missing reviews, surprise shipping fees, and closes the tab before conscious thought. Ten thousand sketchy sites trained buyers' scam radar. Founders who built the store trust it completely. Visitors arrive with a verdict before the scroll.
+
+r/shopify (550K+) has a daily "traffic but no sales" genre. CRO YouTubers and Facebook groups like Conversion Rate Optimization Junkies debate badges and policy placement. Review apps (Judge.me) and email tools (Klaviyo) own adjacent spend. Almost nobody sells an automated trust-signal audit ranked by conversion impact and effort. Baymard-style research exists; merchants do not have time to read it.
+
+## The Solution
+
+Trust Layer scans a Shopify storefront for trust signals: payment badges, review count and placement, return policy visibility, shipping transparency, contact information. Each gap scores by conversion impact and ranks by effort. Fix the top three, re-scan, watch the needle move.
+
+**How it works:**
+
+1. **Paste store URL** — Capture homepage, PDP, and checkout-ish templates via headless browser.
+2. **Detect signals** — Vision + DOM heuristics for badges, reviews, policies, contact, SSL cues.
+3. **Score vs benchmarks** — Map gaps to Baymard-style conversion impact bands.
+4. **Fix list** — Ranked checklist with Shopify admin pointers (apps, theme sections).
+5. **Monitor** — Monthly re-scan alerts when reviews go stale or badges break.
+
+Weekend MVP: Puppeteer screenshots + Claude Vision checklist + PDF report. $99 one-time audit. Sell $29/month monitoring after proof.
+
+## Market Research
+
+- Shopify ecosystem: millions of stores globally with strong merchant CAGR in public analyses (~20%+ cited in Ideabrowser #5360 synthesis).
+- Community: r/shopify and r/ecommerce obsess over conversion and trust badges; Neil Patel / CRO YouTube content draws hundreds of thousands of views.
+- Regulatory and privacy shifts raise the bar for transparent policies — trust copy is not optional.
+- Adjacent spend proves wallets: Judge.me, Loox, Klaviyo, Chargeflow.
+
+## Competitive Landscape
+
+- **Judge.me / Loox** — Review collection apps; do not audit overall trust layout.
+- **Klaviyo** — Email/SMS retention; not a trust scorer for cold traffic.
+- **Generic CRO agencies** — $2K+ audits; slow; not productized SaaS.
+- **Lighthouse / PageSpeed** — Performance, not trust psychology.
+- **StoreScore-style tools** — Partial overlap; niche still open for conversion-ranked trust gaps.
+
+**Your Opportunity**
+
+Own "why won't they buy?" diagnosis at **$99 audit + $29/month monitoring**, with **$199/month** agency white-label. Benchmark dataset from re-scans is the moat.
+
+## Business Model
+
+- **One-time audit** — $99–$299.
+- **Monitoring** — $29/month.
+- **Agency** — $199/month white-label reports.
+- **Enterprise** — $500+/month multi-store.
+
+**Unit Economics (illustrative)**
+
+- Scan cost dollars not cents at MVP; still fine at $99 price
+- Path: 100 audits/month + 400 monitors = ~$21.5K MRR mix
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — UI + Stripe.
+- **Playwright/Puppeteer** — page capture worker.
+- **Claude Vision** — detect badges/reviews/policies from screenshots + HTML.
+- **Postgres** — stores, scans, findings history.
+- **Resend** — report delivery and monitor alerts.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Capture Pipeline**
+
+```text
+Build Trust Layer: API accepts a Shopify URL, enqueues a Playwright job that screenshots homepage, a product page, and cart. Store images in S3/R2 and HTML text in Postgres.
+```
+
+**2. Scoring**
+
+```text
+Send screenshots + extracted text to Claude. Return JSON findings: {signal, present:boolean, severity:1-5, effort:1-5, fix}. Compute trust_score 0-100 as weighted sum. Render a ranked fix list.
+```
+
+**3. Monetization**
+
+```text
+Stripe Checkout $99 for single audit PDF. After purchase, offer $29/month subscription that re-runs the scan monthly and emails deltas.
+```
+
+Merchants ignore generic scores. Tie every finding to a concrete example: "Your shipping cost appears only on step 3 of checkout — Baymard associates late shipping reveals with elevated abandonment." Show a before/after mockup when possible. Offer a public trust badge only after score ≥ 80 to avoid becoming another meaningless icon. For agencies, batch scan twenty client stores overnight and drop a CSV of top gaps — that workflow alone justifies $199/month.
+
+Validation loop: free scans for twenty r/shopify posters who share "traffic but no sales," ask them to implement the top three fixes, and collect self-reported conversion deltas. Publish anonymized results as the marketing engine. WooCommerce and BigCommerce adapters are mostly selector packs once the Shopify rubric stabilizes — do not build them until Shopify monitoring churn is under control.
+
+Ship the checklist as a free PDF lead magnet identical to the scanner categories so SEO captures "shopify trust badges" intent while the product automates what the PDF makes tedious. Retarget audit buyers who never subscribed with a "your reviews went stale" monitor pitch at day 30.
+
+## Sources
+
+- [Ideabrowser #5360 research](https://www.ideabrowser.com)
+- [r/shopify community](https://www.reddit.com/r/shopify/)
+- [Baymard Institute UX research (benchmarks)](https://baymard.com/)
+- [Judge.me (adjacent review tooling)](https://judge.me/)

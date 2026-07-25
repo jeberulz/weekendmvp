@@ -1,0 +1,104 @@
+---
+slug: "wedding-event-staffing-marketplace"
+title: "Wedding Event-Day Staffing Marketplace"
+---
+
+## The Problem
+
+Peak wedding season runs fifteen to twenty consecutive weekends. Each one needs a full crew: second shooters, day-of coordinators, setup assistants. Wedding vendors fill these roles through group chats, last-minute DMs, and favors from friends of friends. One flake reshuffles the entire day. One bad backup hire leaves a Google review that follows the vendor for years.
+
+r/weddingplanning (1.6M+) and Facebook groups like "Wedding Marketplace" (100K+) show constant vendor coordination pain. Photographers, planners, and florists all ask the same question the week of an event: who is free Saturday and will actually show up? GigSalad and Thumbtack sell consumer-to-vendor discovery. HoneyBook runs client CRM. Nobody owns vendor-to-vendor day-of staffing with escrow and reliability scores.
+
+The gap is B2B staffing for wedding professionals — structured posts, vetted backups, calendar sync, and payments that lock both sides before the weekend.
+
+## The Solution
+
+Gigvow is a staffing marketplace for wedding vendors. A photographer posts date, role, and rate. Vetted local shooters claim shifts. Booking confirmation, calendar sync, and escrow payment lock both sides. After the event, mutual ratings compound. A shooter with forty completed gigs and 98% reliability gets claimed within hours.
+
+Start in one metro with photographers (highest density and clearest role definitions), then expand to planners and florists.
+
+**How it works:**
+
+1. **Vendor post** — Date, role (second shooter, setup, coordinator), rate, location, gear requirements.
+2. **Claim + confirm** — Eligible backups claim; both parties confirm; calendar invites fire.
+3. **Escrow payment** — Client vendor funds the gig; payout releases after check-in or event end.
+4. **Day-of status** — SMS reminders; no-show flagging; emergency re-post if someone drops.
+5. **Ratings** — Reliability and quality scores update profiles; low scores lose claim priority.
+
+Weekend MVP: Airtable matching for 10 photographers + 20 backups in one city, Stripe Checkout for gigs, manual SMS confirmations. Automate after 50 bookings.
+
+## Market Research
+
+- U.S. wedding services market cited around **$65B** with roughly **6.8% CAGR** in recent industry summaries ([Ideabrowser #7923](https://www.ideabrowser.com)).
+- Gig economy normalization makes flexible day-of labor culturally acceptable for both sides.
+- Community evidence: peak-season staffing chaos dominates vendor Facebook groups and Reddit professional threads.
+- Adjacent platforms (The Knot, WeddingWire) prove wedding B2B spend; they do not solve backup labor.
+
+SAM: photographers and planners in the top 50 U.S. metros. One city with 500 active vendors and 2,000 annual bookings at 9% take rate is a meaningful bootstrap ARR.
+
+## Competitive Landscape
+
+- **Thumbtack** — Consumer lead marketplace; not vendor-to-vendor staffing. Lead fees dominate pricing.
+- **GigSalad** — Entertainment/event talent for clients; weak for second-shooter workflows among pros.
+- **HoneyBook / Seventeen** — Client CRM and contracts for wedding pros; no backup labor marketplace.
+- **Facebook groups / Instagram DMs** — Free but unstructured; no escrow, no reliability graph, high flake risk.
+
+**Your Opportunity**
+
+Own wedding pro staffing at **8–10% booking fees** plus **$29–$79/month** vendor subscriptions for unlimited posts and premium placement. Density in one city is the moat — then expand to corporate events on the same rails.
+
+## Business Model
+
+- **Booking fee** — 8–10% per completed gig.
+- **Vendor subscription** — $29–$79/month for priority placement and unlimited posts.
+- **Pay-per-post** — ~$10 for occasional users.
+- **Verified badge** — $20–$100/month for enhanced trust.
+
+**Unit Economics (illustrative)**
+
+- Path: 200 bookings/month × $250 average gig × 9% = $4.5K/month fees in one dense city before subscriptions
+
+## Recommended Tech Stack
+
+- **Next.js + Supabase** — posts, claims, profiles, ratings.
+- **Stripe Connect** — escrow and payouts.
+- **Twilio** — SMS confirmations and day-of alerts.
+- **Google Calendar API** — sync booked shifts.
+- **Airtable (pilot)** — manual ops until volume justifies automation.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Gig Board**
+
+```text
+Build Gigvow: Next.js app where wedding vendors post shifts (date, role, rate, city) and backups claim them.
+
+Schema: vendors, workers, gigs (status open|claimed|confirmed|completed|noshow), reviews.
+
+Include city filter and role enum: second_shooter, setup_assistant, day_of_coordinator.
+```
+
+**2. Payments**
+
+```text
+Add Stripe Connect: when a gig is confirmed, charge the posting vendor and hold funds. Release to worker 24h after event_end unless a dispute is opened.
+```
+
+**3. Reliability Score**
+
+```text
+Compute worker.reliability = completed / (completed + noshow + late_cancel). Sort claim priority by reliability desc, then rating. Suspend workers below 0.85 after 5 gigs.
+```
+
+Density beats features. Do not launch nationally. Pick one wedding-heavy metro, recruit photographers first (clear role definitions and high willingness to pay for backups), and refuse to expand until same-week fill rates exceed 70%. Publish a weekly "open shifts" digest in local vendor Facebook groups. After one season of ratings data, open planners and florists on the same reliability rails. Corporate events and private parties become the off-season filler that keeps workers active year-round without diluting the wedding brand.
+
+Trust operations beat matching algorithms in year one. Require ID verification and a short portfolio for second shooters before they can claim Saturday premium rates. Offer a "backup guarantee": if a confirmed worker cancels inside 48 hours, the platform re-fills at no extra fee or refunds the booking fee. That guarantee becomes the Facebook group one-liner that free tools cannot match. Track fill time and no-show rate as north-star metrics; vanity GMV without reliability kills the category.
+
+## Sources
+
+- [Ideabrowser idea #7923 research](https://www.ideabrowser.com)
+- [Wedding planning communities on Reddit](https://www.reddit.com/r/weddingplanning/)
+- [Thumbtack / GigSalad as adjacent marketplaces](https://www.thumbtack.com/)
+- [HoneyBook for wedding vendor CRM (adjacent)](https://www.honeybook.com/)
