@@ -65,4 +65,4 @@ Fill thin categories: marketplace 3→8 and b2b 3→8 by publishing 10 Ideabrows
 ## Exit criteria
 - [x] Dev + prod Convex seed
 - [x] OG PNGs in `public/image/og/idea/`
-- [ ] Git push + live 200s on all 10 `/ideas/{slug}`
+- [x] Git push + live 200s on all 10 `/ideas/{slug}`

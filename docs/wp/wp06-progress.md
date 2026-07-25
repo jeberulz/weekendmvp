@@ -1,7 +1,7 @@
 # WP06 Progress — Marketplace + B2B batch
 
 ## Status
-Ready to push — MDX, manifest, Convex (dev+prod), OG all done.
+Complete — all 10 live at 200 on weekendmvp.app (2026-07-25).
 
 ## Branch
 `content/marketplace-b2b-batch-10`
@@ -28,8 +28,8 @@ Ready to push — MDX, manifest, Convex (dev+prod), OG all done.
 - [x] `npm run seed:convex` (dev)
 - [x] `npm run seed:convex -- --prod`
 - [x] `npm run og:generate` ×10 → `public/image/og/idea/*.png`
-- [ ] Commit + push (+ merge main for Vercel)
-- [ ] Live `/ideas/{slug}` 200s
+- [x] Commit + push (+ merge main for Vercel)
+- [x] Live `/ideas/{slug}` 200s
 
 ## Notes
 - Categories forced to `marketplace` / `b2b` for category-fill goal.
