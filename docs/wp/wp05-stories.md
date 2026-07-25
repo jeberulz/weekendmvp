@@ -36,4 +36,4 @@ Ship five Ideabrowser-sourced automation ideas to `/ideas/{slug}` with MDX, mani
 ### S6 — Batch publish finish
 - [x] `npm run seed:convex` + `--prod`
 - [x] OG generate for all 5
-- [ ] Commit + push + live 200 checks
+- [x] Commit + push + live 200 checks
