@@ -25,8 +25,12 @@ type Entry = MetadataRoute.Sitemap[number];
 async function listMdxFrontmatter(
   dir: string,
 ): Promise<{ slug: string; publishedAt?: number }[]> {
+  // Must be rooted at process.cwd() — a bare relative path resolves against
+  // the serverless function's cwd in production, silently yielding zero
+  // entries and dropping every MDX page from the sitemap.
+  const root = path.join(process.cwd(), dir);
   try {
-    const files = await fs.readdir(dir);
+    const files = await fs.readdir(root);
     const mdx = files.filter(
       (f) => f.endsWith(".mdx") && !f.startsWith("_"),
     );
@@ -34,7 +38,7 @@ async function listMdxFrontmatter(
       mdx.map(async (filename) => {
         const slug = filename.replace(/\.mdx$/, "");
         try {
-          const raw = await fs.readFile(path.join(dir, filename), "utf8");
+          const raw = await fs.readFile(path.join(root, filename), "utf8");
           const { data } = matter(raw);
           const value = data?.publishedAt;
           const publishedAt =
@@ -55,7 +59,13 @@ async function listMdxFrontmatter(
       }),
     );
     return rows;
-  } catch {
+  } catch (error) {
+    // Don't fail the whole sitemap over one unreadable dir, but do surface it —
+    // swallowing this silently is what let the cwd bug above go unnoticed.
+    console.error("sitemap: could not list MDX dir", {
+      dir: root,
+      error: String(error),
+    });
     return [];
   }
 }

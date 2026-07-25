@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   outputFileTracingIncludes: {
     "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
+    // sitemap.xml enumerates MDX at request time, so the content dirs must be
+    // traced into its function bundle or it emits hub pages only.
+    "/sitemap.xml": [
+      "./content/ideas/**/*.mdx",
+      "./content/articles/**/*.mdx",
+      "./content/newsletter-pages/**/*.mdx",
+    ],
   },
   turbopack: {
     root: __dirname,
