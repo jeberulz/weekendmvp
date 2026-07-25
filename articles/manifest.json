@@ -431,6 +431,66 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-find-a-startup-idea-2026",
+      "title": "How to Find a Startup Idea in 2026 (6 Places That Actually Work)",
+      "description": "Six repeatable places to find a startup idea in 2026 — review mining, Upwork demand signals, subreddit phrase hunting — plus how to score one before you build.",
+      "wordCount": 1620,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A loose stack of blank index cards on a near-black desk, one card lifted at an angle and caught by a single lavender side beam, very shallow focus, deep shadow, no text",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "vibe-coding-security-for-founders",
+      "title": "Vibe Coding Security: The 7 Things AI Ships That Will Burn You",
+      "description": "AI-generated code introduces vulnerabilities in a large share of tasks. Here are the seven failure modes to check before your vibe-coded MVP touches real users.",
+      "wordCount": 1652,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A single worn house key lying on a near-black surface, its cut edge sharply lit by one narrow lime beam, rest of the frame falling into deep shadow, very shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "what-it-costs-to-run-an-ai-app",
+      "title": "What It Actually Costs to Run an AI App (2026 Cost Math)",
+      "description": "Real unit-economics math for AI apps in 2026: cost per user, why output tokens dominate, and the caching, batching, and routing levers that cut bills up to 95%.",
+      "wordCount": 1678,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A long weathered paper receipt curling off the edge of a dark desk, lit by one emerald beam from the side, printed marks deliberately illegible, very shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-to-talk-to-customers-mom-test",
+      "title": "How to Talk to Customers Without Lying to Yourself",
+      "description": "The Mom Test for weekend builders: how to run 10 customer interviews that produce real evidence, which questions to ban, and how to tell a signal from politeness.",
+      "wordCount": 1614,
+      "readMinutes": 8,
+      "og": {
+        "subject": "An open paper planner on a dark surface with one date ringed in pencil, a single mint beam raking across the page from the left, very shallow focus, no readable words",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "add-auth-to-your-weekend-mvp",
+      "title": "How to Add Login to Your Weekend MVP (Without Building Auth)",
+      "description": "Add login to a weekend MVP in an afternoon: how to choose between Clerk, Supabase Auth, and Better Auth, what the free tiers really cover, and what to skip.",
+      "wordCount": 1695,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A small brass key resting on the cover of a closed notebook on a near-black desk, lit by one narrow lavender beam, very shallow focus, deep shadow behind",
+        "accent": "lavender",
+        "status": "ready"
+      }
     }
   ]
 }
