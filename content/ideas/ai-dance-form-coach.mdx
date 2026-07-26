@@ -1,0 +1,162 @@
+---
+slug: "ai-dance-form-coach"
+title: "AI Dance Form Coach"
+---
+
+## The Problem
+
+Most people learning dance at home never get real feedback. You follow a YouTube tutorial, mirror a TikTok routine, or replay a Zumba class on demand—and you have no idea whether your hips are actually rotating, your knees are tracking over your toes, or you're hitting the beat. Mirrors help, but they flatten depth: you can't see whether your spine is neutral or your shoulders are creeping up toward your ears. Recording yourself and rewinding frame-by-frame is tedious, and even then you don't know what "good" looks like for that specific move.
+
+Studios solve this with instructors who walk the floor and correct form in real time. That works—but it's expensive, schedule-bound, and intimidating for beginners who don't want to perform badly in front of a class. A single drop-in hip-hop or contemporary class runs $15–$30 in most US cities; unlimited studio memberships often exceed $150/month. For the millions of people who dance for fitness, self-expression, or social content rather than professional training, that price and friction keep feedback out of reach.
+
+The pain shows up everywhere online. Reddit communities like [r/xxfitness](https://www.reddit.com/r/xxfitness/) (600K+ members) and [r/poledancing](https://www.reddit.com/r/poledancing/) (146K+ members) are full of posts asking strangers to critique form from phone videos—because there is no affordable, always-on coach in their living room. Dance-with-video apps stream choreography beautifully but treat the camera as a one-way mirror: you watch them; they never watch you. Wearables track heart rate and steps, not whether your arabesque line is clean or your weight is stacked over your standing leg.
+
+The gap is structural. Home dance exploded during and after the pandemic—Peloton-style fitness, TikTok choreography challenges, online pole and heels classes—but the feedback layer never caught up. Learners want the correction loop of a private lesson without the $80/hour invoice.
+
+## The Solution
+
+An AI Dance Form Coach turns your phone camera into a private instructor. Point the front-facing camera at yourself, pick a routine or follow-along mode, and the app tracks your body in real time using on-device pose estimation. It scores alignment, rhythm, and key shape checkpoints—then speaks or displays corrections in plain language: "Drop your shoulders," "Rotate from the rib cage, not the lower back," "You're half a beat early on the syncopation."
+
+Unlike passive video libraries, the product closes the loop. You dance; it measures; you adjust; it confirms improvement across reps and sessions. Progress history shows which moves you nail consistently and which patterns need drill work—useful for TikTok creators polishing a 15-second hook as much as Zumba regulars who want safer knee tracking during pivots.
+
+**How it works:**
+
+1. **Calibrate your space** — Stand in frame, set camera height (waist or full-body), and run a 10-second posture baseline so the model learns your proportions and floor plane
+2. **Pick a routine or free practice** — Choose from bundled follow-alongs (hip-hop grooves, heels foundations, pole spins, Zumba-style cardio) or dance freestyle while the coach watches for common fault patterns
+3. **Get live corrections and a session score** — Real-time overlays highlight joint angles and timing against the reference track; after each segment you receive a breakdown, drill suggestions, and optional AI-generated coaching copy tailored to your recurring errors
+
+The MVP is mobile-first: React Native or Expo for cross-platform camera access, MediaPipe or TensorFlow Lite for pose landmarks at 15–30 fps on mid-range phones, and Claude (or similar) to turn raw angle deltas into human-readable coaching—not robotic joint-degree dumps. Offline-first pose runs on device to keep latency low and API costs near zero during the actual dance; cloud calls happen for session summaries and personalized drill plans.
+
+## Market Research
+
+Online dance training is a fast-growing slice of the broader fitness and creator economy. Multiple industry reports converge on double-digit growth driven by at-home workouts, influencer-led choreography, and hybrid studio models that sell digital memberships alongside in-person classes.
+
+- The global online dance training market was valued at approximately **$1.49 billion in 2023** and is projected to reach **$5.33 billion by 2030**, growing at a **~20% CAGR** through the decade ([For Insights Consultancy](https://www.forinsightsconsultancy.com/reports/online-dance-training-market)). That trajectory reflects sustained demand for on-demand instruction—not a pandemic-only spike.
+- Broader dance training and education spend—including in-person studios, camps, and digital—sits in a **multi-billion-dollar market** with online channels taking an increasing share as Gen Z and millennial learners expect mobile-native experiences ([Future Data Stats](https://www.futuredatastats.com/dance-training-market)).
+- Dance fitness specifically—Zumba-style cardio, barre-adjacent flows, hip-hop fitness—anchors a **~$10 billion** adjacent category where form quality directly affects injury risk and retention; apps that reduce dropout by making beginners feel competent capture outsized LTV ([Cognitive Market Research](https://www.cognitivemarketresearch.com/online-dance-training-market-report)).
+
+Behavioral tailwinds reinforce the TAM. TikTok and Instagram Reels normalized learning 8-counts from short clips; phone cameras are already the default capture device for progress posts. AI pose estimation matured on consumer hardware—MediaPipe and Apple Vision frameworks run on-device without GPU servers per user. The monetization pattern is proven: fitness apps at $10–$20/month (Peloton Digital, Alo Moves, Steezy) trained consumers to pay for movement content; the whitespace is **interactive correction**, not another passive catalog.
+
+SAM for an indie MVP: English-speaking home dancers aged 18–40 who already pay for or would pay for digital dance/fitness content—roughly low tens of millions globally, with concentrated communities on Reddit, Discord, and TikTok dance tags. A realistic Year 1 goal is 500–2,000 paying subscribers at $12/month ($6K–$24K MRR) before studio licensing upsells.
+
+## Competitive Landscape
+
+The category splits into **content libraries** (great choreography, zero personalized form feedback) and **generic fitness AI** (rep counting, not dance-specific line and musicality). No dominant player owns "Duolingo for dance form" yet—creating an opening for a focused indie product with tight pose rulesets per style.
+
+- **Dance with Madhuri** — Bollywood-focused streaming platform with structured courses and celebrity-led instruction. Strong brand in India and diaspora communities; pricing typically **$5–$15/month** depending on plan and region. Content depth is high; there is no real-time pose correction or beat-sync scoring against the learner's body.
+- **Hip Shake Fitness** — Female-focused dance cardio (hip-hop, Latin, club-style) with weekly new routines and a supportive community vibe. Subscription runs **~$18/month**. Excellent for motivation and follow-along energy; form feedback remains self-assessment via mirror cues in the video, not computer vision on the user.
+- **Learn Dance Online / Dance Vision** — Ballroom and social dance instruction with syllabus-style progression and multi-dance coverage. Plans often land in the **$10–$25/month** range for digital access. Professional pedagogical structure; no mobile AR-style overlay or AI coach summarizing your session faults.
+- **STEEZY Studio** — Category leader for urban dance styles (hip-hop, house, krump, etc.) with top choreographers and crisp production. Typical pricing **~$19/month**. Sets the quality bar for content and UI; explicitly lacks AI form correction—learners still film themselves and compare visually. The gap between STEEZY's polish and its one-way video model is the strategic wedge.
+
+**Your Opportunity**
+
+Position as the **feedback layer** that sits beside content apps, not against them: "Import any routine" or partner with indie choreographers while the core IP is pose + rhythm scoring. Undercut studio private lessons by 10x ($12/month vs. $80/hour), beat generic fitness AI on dance-specific metrics (plie depth, spotting, heel alignment, arm pathways), and ship a generous free demo (one routine, three sessions) that converts TikTok and Reddit traffic. Studio licensing ($5K–$15K/year) opens B2B for pole gyms, heels studios, and boutique fitness brands that want white-label form tracking without building CV in-house.
+
+## Business Model
+
+Freemium consumer SaaS with a clear value ladder and optional B2B licensing for physical studios that already sell memberships. Price anchor at **$12/month**—below STEEZY and Hip Shake, aligned with Spotify/Netflix mental accounting, above commodity fitness apps.
+
+- **Free demo** ($0) — One bundled routine, three tracked sessions per month, basic score and top-3 corrections per session; watermark on shareable recap clips for organic TikTok posting
+- **Starter pack** ($9.99 one-time) — Single style pack (e.g., "Heels Foundations" or "Hip-Hop Grooves") with 10 follow-alongs, unlimited replays for 90 days, full session history; converts trial users who won't commit to subscription yet
+- **Pro** ($12/month) — Unlimited sessions, all style packs, progress analytics, custom drill plans, beat-grid timing mode, export clean recap videos without watermark
+- **Studio license** ($5K–$15K/year) — White-label app skin, multi-student dashboards for instructors, aggregate class analytics, priority support; sold to pole studios, dance fitness franchises, and online cohort programs
+
+**Unit Economics (illustrative)**
+
+- **Under $0.01 per minute danced** — On-device pose inference; cloud spend limited to session summary LLM calls (roughly 500–1,500 tokens per session)
+- **~85% gross margin on Pro** — At $12/month and average 8 sessions, LLM + storage + auth under $0.50/user/month at modest scale
+- **$8–$15 CAC target** — TikTok UGC, Reddit community seeding, choreographer affiliate codes; avoid paid social until retention proves out
+- **60%+ Month-3 retention goal** — Dance apps churn when content feels stale; personalized fault tracking and visible score improvement are the retention hook
+- **Path to $10K MRR** — ~835 Pro subscribers, or hybrid of 600 Pro + 2 studio licenses at $7.5K average
+
+## Recommended Tech Stack
+
+Mobile-first computer vision with a thin cloud backend for auth, billing, and AI-generated coaching copy. Keep inference on the phone so sessions stay responsive and marginal cost stays flat as usage grows.
+
+- **React Native + Expo** — Single codebase for iOS and Android; Expo Camera and Vision Camera for stable preview streams; EAS Build for TestFlight and Play Store pipelines without native shop day-one
+- **MediaPipe Pose or TensorFlow Lite MoveNet** — Real-time 33-keypoint skeleton on device; MediaPipe for cross-platform parity, MoveNet Lightning if you need lighter models on older Android. Precompute angle thresholds per move template offline
+- **Claude (API)** — Post-session coaching narratives: turn structured fault payloads (fault type, severity score, rep count) into actionable cues and 3-drill micro-workouts. Prompt-cache common correction templates to shave cost
+- **Supabase** — Auth (magic link + Apple/Google), Postgres for user profiles, session scores, move templates, and studio org tables; Row Level Security for multi-tenant studio dashboards
+- **Stripe** — Consumer subscriptions ($12/month Pro), one-time Starter packs ($9.99), and annual studio invoices; Customer Portal for self-serve cancel/upgrade
+- **Vercel + optional Expo web landing** — Marketing site, SEO for "dance form app" and style-specific long-tail pages; deep links into app install. Backend webhooks for Stripe and Supabase edge functions if you prefer serverless over a long-lived Node API
+
+Weekend MVP scope: one dance style (hip-hop grooves or heels basics), 5 canned routines with pre-authored pose checkpoints, live angle overlay, end-of-session score + Claude summary, Stripe paywall after third free session.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an Expo (React Native) app called "AI Dance Form Coach."
+
+Requirements:
+- Expo SDK 52+, TypeScript, Expo Router for navigation
+- Screens: onboarding (camera permission + calibration), routine picker, live coaching camera view, session results
+- Supabase auth (email magic link + Apple Sign In on iOS)
+- Stripe subscription paywall after 3 free sessions
+
+Use expo-camera or react-native-vision-camera for the preview stream.
+Structure: /app for routes, /lib for pose math, /components for UI overlays.
+Include a README with local dev steps and env vars (SUPABASE_URL, STRIPE_PUBLISHABLE_KEY, ANTHROPIC_API_KEY).
+```
+
+**2. Core Feature — Pose Tracking and Scoring**
+
+```text
+Implement on-device pose estimation and dance scoring for the live coaching screen.
+
+1. Integrate @tensorflow-models/pose-detection (MoveNet Lightning) OR react-native-mediapipe-pose — pick whichever has better Expo compatibility and document the choice
+2. From 33 landmarks, compute these angles each frame: hip-knee-ankle (both legs), shoulder-hip-knee, elbow-shoulder-hip
+3. Load a JSON "move template" per routine segment with target angle ranges and beat timestamps (ms from song start)
+4. Score each segment 0–100: 40% joint angle compliance, 40% beat proximity (within 150ms = full credit), 20% hold stability (variance over 500ms)
+5. Render skeleton overlay on camera preview; flash green/yellow/red when key joints drift outside thresholds
+6. Persist session summary to Supabase: user_id, routine_id, segment_scores[], top_faults[]
+
+Optimize for 15+ fps on iPhone 12 / Pixel 6 class devices. Fall back to lower resolution if FPS drops under 12.
+```
+
+**3. AI Coaching Copy Generator**
+
+```text
+Build a Supabase Edge Function (or Next.js API route) that generates post-session coaching text.
+
+Input JSON:
+{
+  "style": "heels" | "hiphop" | "zumba",
+  "top_faults": [{"code": "knee_valgus", "count": 6, "avg_severity": 0.72}, ...],
+  "segment_scores": [88, 74, 91],
+  "user_level": "beginner"
+}
+
+Call Claude with this system prompt:
+"You are a supportive dance instructor. Given biomechanical fault codes and scores, write: (1) 2-sentence session summary, (2) three bullet corrections in plain language—no medical claims, (3) one 5-minute drill plan. Tone: encouraging, specific, never shaming."
+
+Return structured JSON: { summary, corrections[], drill_plan }
+Cache responses by fault-code hash for 24h to reduce API spend.
+Add unit tests for the prompt with two fixture inputs (heels beginner, hiphop intermediate).
+```
+
+**4. Studio Dashboard (B2B stretch)**
+
+```text
+Add a Next.js admin dashboard (Vercel) for studio license customers.
+
+Features:
+- Studio owner invites instructors via email (Supabase org roles)
+- Table: students (anonymized IDs), sessions this week, average score trend, most common faults across cohort
+- Export CSV for a given date range
+- White-label settings: logo URL, primary hex color — stored in studio_settings table
+
+Auth: Supabase RLS so instructors only see their studio's rows.
+Use shadcn/ui tables and charts (recharts). No PII beyond display names users opt into.
+```
+
+## Sources
+
+- [For Insights Consultancy — Online Dance Training Market Report](https://www.forinsightsconsultancy.com/reports/online-dance-training-market)
+- [Future Data Stats — Dance Training Market](https://www.futuredatastats.com/dance-training-market)
+- [Cognitive Market Research — Online Dance Training Market Report](https://www.cognitivemarketresearch.com/online-dance-training-market-report)
+- [r/xxfitness](https://www.reddit.com/r/xxfitness/) — Reddit fitness community (~600K members)
+- [r/poledancing](https://www.reddit.com/r/poledancing/) — Reddit pole dance community (~146K members)

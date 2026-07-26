@@ -1,0 +1,123 @@
+---
+slug: "ai-course-tutor-companion"
+title: "AI Course Tutor Companion"
+---
+
+## The Problem
+
+Course creators sell transformation, but most students never finish. MOOC and cohort completion rates routinely sit in the **5–15%** range industry-wide — not because the content is bad, but because one instructor cannot be in five hundred inboxes at 2 a.m. when a student hits Module 3 and freezes on a concept that was obvious in the live call. The creator's business model depends on testimonials, upsells, and referrals from people who *completed*; every silent dropout is lost LTV, a refund risk, and a hole in the social proof flywheel.
+
+The pain shows up in predictable places. Teachable and Thinkific dashboards light up with "stuck" students who haven't logged in for two weeks. Facebook groups and Skool communities fill with the same question asked twelve different ways because the instructor answered it once on a Zoom and never wrote it down. Support email becomes a second job: "Where is the worksheet?" "Does this apply to my niche?" "I don't understand step 4." Creators respond with more live Q&amp;A calls, office hours, and bonus modules — all of which scale linearly with the creator's calendar, not with enrollment.
+
+Students feel it too. Generic ChatGPT gives plausible nonsense about *your* framework because it was never trained on *your* slides, *your* worksheets, or *your* sequencing. LMS-native "AI assistants" bundled into platform plans often feel like search bars with a chat skin: they summarize marketing copy, not the actual lesson PDFs locked behind Module 2. The gap is not "more content." It is **always-on, content-faithful tutoring** that knows what you taught, in what order, and can nudge a learner back on path before they ghost.
+
+## The Solution
+
+Course Tutor Companion is a white-label AI tutor trained exclusively on a creator's course materials — video transcripts, PDFs, slide decks, worksheets, and community FAQs — so every answer cites *their* curriculum, not the internet's. Students get adaptive paths, 24/7 Q&amp;A, struggle detection when they repeat the same wrong question or stall on a module, and creators get analytics that show where cohorts bleed out. The product sits beside Teachable, Thinkific, or Kajabi; creators do not migrate LMS. They connect webhooks, upload assets once, and embed a tutor widget or branded subdomain their students treat as "the course helper."
+
+The wedge is outcome optimization for mid-market creators ($10K–$500K/year course revenue) who already pay for an LMS and will not rip it out for an AI-first platform. You win on completion rate and support deflection, not on hosting videos.
+
+**How it works:**
+
+1. **Upload and ingest** — Creator connects Teachable or Thinkific via OAuth and webhooks; drags PDFs, slides, and transcript exports into a ingestion queue. Embeddings land in pgvector with chunk metadata tied to module, lesson, and asset type.
+2. **Train the tutor on YOUR content** — RAG pipeline grounds every reply in retrieved passages; system prompt enforces "answer only from course materials" with citation links back to the exact lesson. Optional tone profile learns from the creator's welcome video script.
+3. **Adaptive learning paths** — On enrollment, the tutor maps prerequisites from the syllabus and adjusts suggested next steps based on quiz scores, time-on-lesson, and question patterns — surfacing remedial clips before pushing Module 4.
+4. **24/7 Q&amp;A with guardrails** — Students ask in chat or voice; tutor responds with step-by-step hints before full answers when `hint_mode` is on. Escalation routes ambiguous medical, legal, or off-curriculum questions to "ask in community" or creator inbox.
+5. **Struggle detection** — Background jobs flag accounts with three failed quiz attempts, &gt;48h idle after starting a module, or semantically similar repeat questions. Creator dashboard shows a daily "at-risk" list with suggested intervention copy.
+6. **Creator analytics** — Heatmaps of confused topics, completion funnel by module, tutor conversation themes, and estimated support hours saved. Export for testimonial requests when a student crosses the finish line.
+
+Weekend MVP: single creator, manual CSV upload, one embeddable chat widget, Stripe billing on active student count, and a weekly email digest of stuck learners.
+
+## Market Research
+
+Three markets overlap: AI companions, online education, and creator-led cohort products. All three are growing fast; none has solved completion at scale for independent course businesses.
+
+- **The global AI companion market was valued at roughly $18.35 billion in 2025** and is projected to reach **$54.19 billion by 2034**, reflecting strong adoption of conversational AI across education, wellness, and productivity ([Business Research Insights](https://www.businessresearchinsights.com/market-reports/ai-companion-market-117494); [DataIntelo](https://dataintelo.com/report/global-ai-companion-market)). Education is a cited vertical in these reports — learners expect Khanmigo-style tutoring UX even in paid cohorts.
+- **E-learning broadly exceeds $300 billion** when corporate training, higher ed, and creator economies are combined; The Business Research Company and adjacent syndicated reports track double-digit CAGR through the early 2030s as hybrid learning normalizes ([The Business Research Company — AI companion report](https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-companion-global-market-report)).
+- **MOOC and self-paced completion remains 5–15%** in most public benchmarks — the single largest leak in creator funnels. Even a 5-point absolute lift on a 500-student cohort at $500 ASP is $12,500+ in retained revenue and upsell surface, before counting support time saved.
+- **Creator economy tailwind**: mid-market educators on Teachable/Thinkific/Kajabi run high-margin programs ($297–$2,000) where one extra completion drives referrals; they already pay $39–$399/month for LMS seats and will pay for add-ons that move completion metrics.
+
+Demand signal is behavioral, not hypothetical: students already paste lesson questions into ChatGPT; creators already run duplicate office hours. The product formalizes what is happening off-platform and ties it to the creator's outcomes.
+
+## Competitive Landscape
+
+The space splits into LMS-native AI, generic RAG chatbots, AI-first LMS platforms, and consumer tutoring benchmarks. Each leaves a lane for a white-label, outcome-optimized companion.
+
+- **Teachable / Thinkific / Kajabi (LMS-native AI)** — Increasingly bundle "AI" features inside creator plans: content outlines, quiz generation, lightweight student chat. Pricing is **bundled into LMS tiers** (often $39–$399/month platform fees). Strength: distribution and zero incremental vendor. Weakness: tutors are not deeply trained on private assets across formats; analytics rarely expose struggle signals; creators on competing LMS cannot use them cross-platform.
+- **Generic RAG course chatbots (CustomGPT, Chatbase, SiteGPT, etc.)** — Upload docs, embed widget, pay **~$20–$200/month** by message volume or bot count. Fast to ship; weak on adaptive paths, LMS enrollment sync, quiz-aware remediation, and creator-grade completion analytics. Most fail the "only answer from my curriculum" test under adversarial student prompts.
+- **AI-first LMS (Sana, 360Learning AI, Docebo)** — Enterprise-leaning platforms at **~$20–$100 per learner per month**. Powerful for L&amp;D departments; overkill and misaligned GTM for solo creators who refuse to migrate off Teachable. Sales cycles measured in quarters, not self-serve weekends.
+- **Khan Academy Khanmigo** — B2C tutoring UX benchmark: Socratic hints, safety rails, conversational practice. Not white-label for creators; sets student expectations for what "good" AI tutoring feels like in 2026.
+- **Human cohort TAs and community managers** — $500–$3,000/month per cohort for live support. High trust, zero scale; creators burn out or hire under-trained moderators who contradict the syllabus.
+
+**Your Opportunity**
+
+Mid-market creators will not switch LMS for AI, but they *will* pay for a bolt-on tutor that proves completion lift. Win with: (1) deep ingestion of *their* messy asset mix, (2) struggle detection tied to revenue events (refunds, upsell eligibility), (3) white-label branding and optional **$10K–$50K/year** agency deals for coaching businesses running multiple cohorts per year.
+
+## Business Model
+
+SaaS priced on active student volume, with a pro tier for multi-cohort creators and enterprise white-label for coaching franchises.
+
+- **Starter** — **$50/month** up to ~100 active students; single course, embed widget, weekly struggle digest.
+- **Growth** — **$50–$200/month** sliding by active students (e.g., 101–500, 501–2,000); adaptive paths, quiz sync, Slack/email alerts for at-risk learners.
+- **Pro** — **$200–$500/month** for unlimited courses, custom domain tutor, API access, A/B hint modes, and priority ingestion for new modules.
+- **White-label / Enterprise** — **$10K–$50K/year** for branded mobile shell, SSO, multi-tenant creator accounts, and dedicated success manager; target coaching orgs with 5–50 creators under one roof.
+
+**Unit Economics (illustrative)**
+
+- **Embedding + inference**: ~$0.05–$0.30 per active student per month at Claude Haiku/Sonnet blend with aggressive caching of hot chunks
+- **Gross margin**: 75–85% at Growth tier once ingestion is amortized
+- **Path to $30K MRR**: ~150 Growth customers at ~$170 blended ARPU, or 30 Pro customers plus 5 white-label logos — reachable via Teachable/Thinkific partner newsletters and "completion rate" case studies
+
+Upsell levers: certified completion badges, automated testimonial requests when the tutor detects success moments, and rev-share on upsell modules suggested by gap analytics.
+
+## Recommended Tech Stack
+
+Built as a multi-tenant B2B2C app: creators configure, students chat, webhooks keep enrollment fresh.
+
+- **Next.js 14 (App Router) on Vercel** — Marketing site, creator dashboard, embedded student chat (iframe + postMessage), server actions for uploads; Edge middleware for tenant resolution on custom domains.
+- **Supabase (Postgres + pgvector)** — Organizations, courses, modules, assets, chunks with embeddings, student enrollments, conversation logs, struggle events. Row-level security isolates each creator's corpus.
+- **Claude API (Anthropic)** — Tutor replies, hint-vs-answer mode, struggle summarization for creator digests; structured outputs for "cited passages" JSON.
+- **Stripe Billing** — Metered or tiered plans keyed off `active_students` synced nightly from LMS webhooks; customer portal for upgrades.
+- **Teachable + Thinkific webhooks** — `enrollment.created`, `progress.updated`, `quiz.completed` drive adaptive state and at-risk scoring without manual CSVs.
+- **Ingestion workers** — Background jobs (Vercel cron or Supabase Edge Functions) for PDF text extraction, transcript parsing, chunking, and embedding refresh when creators publish new lessons.
+- **Resend** — Weekly creator digests and optional student nudge emails ("You're one step from finishing Module 2").
+
+Phase 2: Kajabi connector, SCORM/xAPI import for corporate resellers, and voice mode via streaming speech APIs for accessibility.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) app "Course Tutor Companion" with Supabase. Tables: organizations (id, name, slug, stripeCustomerId, plan), courses (id, orgId, title, teachableCourseId), modules (id, courseId, title, orderIndex), assets (id, moduleId, type: pdf|transcript|slide, storagePath), chunks (id, assetId, content, embedding vector(1536), metadata jsonb), students (id, orgId, email, externalLmsId), enrollments (id, studentId, courseId, progress jsonb, lastActiveAt), conversations (id, enrollmentId, messages jsonb), struggle_events (id, enrollmentId, reason, severity, resolved). Enable pgvector. Add Stripe products Starter ($50), Growth (tiered), Pro ($299). Implement Teachable webhook route verifying signature and upserting enrollments.
+```
+
+**2. Grounded Tutor Chat**
+
+```text
+Build the student chat API route. Given enrollmentId and user message: (1) embed the question, (2) retrieve top 8 chunks from pgvector filtered by courseId with similarity > 0.75, (3) call Claude with system prompt: "You are a tutor for {courseTitle}. Answer ONLY using provided excerpts. If insufficient, say so and suggest the relevant module. Prefer Socratic hints when hint_mode=true." Return answer plus citations [{moduleTitle, assetType, excerpt}]. Log messages to conversations. Refuse medical/legal/financial advice outside course scope.
+```
+
+**3. Struggle Detection Digest**
+
+```text
+Nightly cron: for each organization, find enrollments where lastActiveAt > 48h ago AND progress < 80%, OR quiz_fail_count >= 3, OR last 5 student questions have embedding cosine similarity > 0.9 (repeat confusion). Write struggle_events. Email creators via Resend a digest table: student email (hashed option), module stuck, suggested outreach copy generated by Claude from their course tone. Include estimated completion rate delta if they intervene within 24h (static heuristic for v1).
+```
+
+Ship the tutor with citation links on day one — creators trust the product when they can click through to the exact PDF paragraph. Never auto-email students without a creator toggle; false-positive "struggle" alerts erode trust fast. Measure v1 success on two numbers: median time-to-first-tutor-question (engagement) and support ticket volume per 100 enrollments (deflection). Completion lift takes a cohort cycle to prove; lead with support savings in early sales.
+
+## Sources
+
+Market sizing and competitor pricing collated from Ideabrowser MCP idea #4170 and public research (July 2026 snapshot). Triangulate before citing in investor materials.
+
+- [Business Research Insights — AI Companion Market Report](https://www.businessresearchinsights.com/market-reports/ai-companion-market-117494)
+- [DataIntelo — Global AI Companion Market](https://dataintelo.com/report/global-ai-companion-market)
+- [The Business Research Company — Artificial Intelligence (AI) Companion Global Market Report](https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-companion-global-market-report)
+- [Ideabrowser #4170 — AI Course Tutor Companion research synthesis](https://www.ideabrowser.com)
+- [Khan Academy — Khanmigo (tutoring UX benchmark)](https://www.khanacademy.org/khan-labs)
+- [Teachable — creator platform and pricing reference](https://teachable.com/pricing)
+- [Thinkific — creator platform and pricing reference](https://www.thinkific.com/pricing/)
+
+Page sourced via Ideabrowser MCP (idea_id 4170): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis.

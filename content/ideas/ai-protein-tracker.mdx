@@ -1,0 +1,141 @@
+---
+slug: "ai-protein-tracker"
+title: "AI Protein Tracker"
+---
+
+## The Problem
+
+For bodybuilders, CrossFit athletes, and anyone on a medically restricted diet, protein is not a nice-to-have macro — it is the constraint that determines whether a training block pays off or a recovery plan falls apart. The target is often precise: 180 grams per day for a 200-pound lifter cutting fat, or 140 grams for someone managing kidney-friendly portions while still preserving muscle. Hit the number and progress feels inevitable. Miss it repeatedly and stalls, injuries, and mood crashes follow.
+
+The tools that exist treat protein as one line item inside a calorie spreadsheet. MyFitnessPal, Cronometer, and Lifesum all technically track protein grams, but the daily workflow still feels like homework. Weigh the chicken breast. Search a database for the exact brand of Greek yogurt. Adjust serving sizes when the label does not match what is on the plate. Repeat for every snack, pre-workout shake, and post-gym meal. Athletes in r/MealPrepSunday — a community of 5.6 million members — and high-protein Facebook groups totaling roughly 790,000 people do not complain that information is unavailable. They complain that logging is tedious enough to abandon after two weeks, right when consistency matters most.
+
+Dietary limits make the problem sharper. Someone lactose-intolerant cannot default to whey shakes. A vegetarian lifter needs complementary proteins across meals. A post-surgery patient may have temporary caps on red meat or sodium that generic apps ignore entirely. When logging feels like data entry and the app does not learn what you actually eat, hitting protein becomes a nightly math exam instead of a habit. Venture capital has already validated the broader thesis: roughly $2.3 billion has flowed into personalized nutrition startups, signaling that investors believe software can close the gap between generic dietary advice and individual adherence. The pain point left on the table is narrow and acute: protein-first tracking that respects real eating patterns instead of punishing users for not living inside a perfect food database.
+
+## The Solution
+
+AI Protein Tracker is a mobile app built for people who care about protein before anything else. Instead of opening a search bar and guessing portion weights, the user snaps a photo of the meal. A vision model estimates protein grams, flags obvious gaps against the daily target, and remembers corrections so the next similar plate logs in one tap. The product learns your staples — the meal-prepped chicken rice bowl you eat four times a week, the post-workout shake from the same tub, the restaurant order you repeat after leg day — and stops treating every entry like a stranger.
+
+The MVP is deliberately not a full macro suite. Calories, carbs, and fat can appear as secondary context, but the home screen, notifications, and weekly recap center on one question: did you hit your protein goal today, and if not, what is the smallest fix for the remaining meals? That focus matters for retention. Generic calorie apps optimize for breadth; this product optimizes for the single macro that high-intent fitness and medical audiences already prioritize.
+
+Grocery and restaurant helpers extend the loop beyond logging. When a user is 40 grams short at 7 p.m., the app suggests high-protein options that match their restrictions — canned tuna and edamame for someone avoiding dairy, rotisserie chicken and lentil soup for a low-prep household, or a specific menu item at a chain they visit often. Over time, the suggestion engine weights what the user actually buys and orders, not what a textbook clean-eating list recommends.
+
+**How it works:**
+
+1. **Set your protein target** — Enter goal grams, dietary tags (dairy-free, vegetarian, low-sodium, and similar), and optional training schedule so daily targets can flex on rest days
+2. **Snap a meal photo** — The vision model identifies foods, estimates portion size, and returns a protein breakdown with confidence scores; low-confidence items prompt a quick confirm or edit
+3. **Correct once, learn forever** — When you fix an estimate, the app stores that meal fingerprint so repeat logs become one-tap approvals instead of fresh AI calls
+4. **Track the daily gap** — A simple progress ring shows grams remaining; push nudges fire before the window closes, not after you have already gone to bed
+5. **Fill the gap with context** — Shortfall suggestions pull from your saved staples, nearby grocery picks, and restaurant items you have logged before
+6. **Review weekly patterns** — A recap highlights which meals reliably hit target, which days slip, and whether your average protein is trending up without adding logging burden
+
+The honest constraint is vision accuracy on mixed plates and sauced restaurant food. The MVP should ship with fast correction UX and meal-memory as the retention moat, not with a promise of perfect first-pass estimates. Validate with 30 beta lifters who log seven consecutive days; if corrected entries drop below three taps on average by day five, the learning loop is working.
+
+## Market Research
+
+Three overlapping markets make the timing favorable. AI-driven meal planning apps were valued at roughly $972 million in 2024 and are projected to reach $11.56 billion by 2034, a 28.1% compound annual growth rate according to market.us and corroborating industry reports. That growth reflects consumer willingness to pay for software that reduces decision fatigue around food — exactly the job protein tracking fails at today.
+
+The global protein market — powders, bars, fortified foods, and adjacent categories — is on a path toward $67.2 billion by 2035 as fitness participation and health-conscious eating stay mainstream. Protein is no longer a niche bodybuilding ingredient; it is a default label claim in grocery aisles. Apps that help people actually consume enough of what they already buy sit downstream of that tailwind.
+
+Personalized nutrition, the broader category that includes DNA-informed plans, clinical diet tooling, and adaptive coaching, is forecast near $11.57 billion by 2034 per InsightAce Analytic and related research. AI Protein Tracker occupies a practical wedge inside that space: not a full clinical platform, but personalized enough to learn individual eating patterns and restrictions without requiring a dietitian on every push notification.
+
+Community scale reinforces demand-side signal. r/MealPrepSunday at 5.6 million members and high-protein Facebook groups around 790,000 members are not abstract TAM slides — they are concentrated pools of people already batch-cooking and sharing macros, yet still asking for easier logging workflows in comment threads every week. The product does not need to educate users that protein matters; it needs to remove friction from a behavior they already want.
+
+## Competitive Landscape
+
+Incumbent nutrition apps own distribution but optimize for calorie counting first. Pricing clusters in the high single digits per month, which sets a natural anchor for a focused alternative.
+
+- **MyFitnessPal** — Category giant with enormous food database and barcode scanning. Freemium with premium near $9.99 per month. Strength is breadth; weakness is protein feels like one field among dozens, and photo logging is bolted on rather than core to the workflow.
+- **Noom** — Psychology-forward weight program priced around $60 per month. Strong on behavior change narratives, weak on precision protein tracking for lifters who already know what to eat but cannot stay consistent logging it.
+- **Cronometer** — Micronutrient-depth favorite for data-heavy users at roughly $5.99 per month. Excellent for dietitians and biohackers; intimidating for someone who only wants a daily protein number without studying charts.
+- **Eat This Much** — Meal planning automation near $9 per month. Generates full-day menus; less useful when you already meal prep the same four containers every Sunday and just need accurate logging.
+- **Lifesum** — Lifestyle-branded tracker at roughly $8 to $10 per month. Polished UX, generic goals, limited learning from repeat meals or dietary restriction profiles.
+
+**Your Opportunity**
+
+None of these competitors will narrow to protein-first photo logging without cannibalizing their calorie-centric onboarding funnels. MyFitnessPal’s database moat is real, but it is also a legacy constraint — maintaining millions of user-submitted entries matters more than shaving logging time for a power user subset. AI Protein Tracker can win a beachhead among bodybuilders, CrossFit boxes, and diet-restricted athletes by doing one job exceptionally well: photograph the plate, learn your repeats, close the daily protein gap with grocery and restaurant helpers that respect what you actually eat. At $9.99 per month or $79 per year, it matches familiar price anchors while delivering a sharper value proposition than another generic calorie dashboard.
+
+## Business Model
+
+Subscription SaaS with a free tier tight enough to prove the vision loop and a paid tier that unlocks learning, suggestions, and history. Annual pricing at $79 per year (~$6.58 per month effective) gives a clear upgrade path for committed lifters who already spend more on powder each month.
+
+- **Free** ($0) — Manual protein logging, daily target ring, seven-day history, three AI photo scans per day with basic estimates
+- **Pro** ($9.99/mo) — Unlimited photo scans, meal memory and one-tap repeat logs, dietary restriction profiles, grocery and restaurant gap-fill suggestions, weekly pattern recap, export for coach or dietitian review
+- **Annual** ($79/yr) — Full Pro feature set billed yearly; positioned as two months free versus monthly for retention-focused athletes
+
+**Unit Economics (illustrative)**
+
+- **$0.02–0.08** — Vision API cost per photo scan at GPT-4o or Claude vision rates with image compression and caching on repeat meals
+- **~75–80%** — Gross margin on Pro at steady-state scan volume once meal memory reduces duplicate inference calls
+- **$15–35** — Target blended CAC via fitness micro-influencers, CrossFit affiliate partnerships, and r/MealPrepSunday organic posts
+- **110%+** — Net revenue retention if annual plans and coach referral loops convert seasonal cutters into year-round subscribers
+
+Path to $10K MRR: roughly 1,000 Pro monthly subscribers, achievable with focused community distribution rather than broad paid social. A single regional CrossFit affiliate bundle or a popular meal-prep creator demo video can spike installs more efficiently than competing head-on with MyFitnessPal brand search.
+
+## Recommended Tech Stack
+
+Mobile-first, photo-in and protein-out. The backend stays thin: auth, meal records, learned fingerprints, and billing. Heavy lifting is vision inference plus a correction-learning layer, not exotic infrastructure.
+
+- **Expo + React Native (TypeScript)** — Single codebase for iOS and Android; native camera access, fast iteration on the scan-and-confirm loop that defines daily engagement.
+- **GPT-4o or Claude vision API** — Primary meal analysis from photos; route through a small abstraction so you can swap models on cost or quality. Compress images client-side before upload to control token spend.
+- **Supabase (Postgres + Storage)** — Tables for users, daily_targets, meals, meal_fingerprints, corrections, and suggestion_cache. Store meal photos in Supabase Storage with signed URLs; row-level security on every user-owned row.
+- **Clerk** — Authentication and social sign-in out of the box; sync Clerk user IDs to Supabase via webhook so the mobile app never handles raw session secrets.
+- **Stripe Billing** — Monthly and annual subscriptions; use Stripe Customer Portal for self-serve plan changes and receipt history.
+- **Expo Push Notifications** — Evening nudge when protein gap exceeds a threshold; optional pre-gym reminder on training days configured in user profile.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an Expo (React Native, TypeScript) app called "AI Protein Tracker."
+
+Requirements:
+- Clerk authentication (email + Apple/Google sign-in)
+- Supabase client with tables: profiles (user_id, daily_protein_goal, dietary_tags text[], training_days int[]), meals (id, user_id, photo_url, items jsonb, total_protein_g, logged_at), fingerprints (id, user_id, label, embedding_or_hash, corrected_protein_g, last_used_at), scans (id, user_id, raw_vision_response jsonb, confidence float)
+- Stripe subscription checkout for Pro ($9.99/mo) and Annual ($79/yr) plans
+- Home screen: protein progress ring, "Scan meal" camera button, today's meal list
+- Enable row-level security so users only access their own rows
+
+Use expo-camera for capture and expo-image-manipulator to resize photos before upload.
+```
+
+**2. Core Feature — Photo to Protein**
+
+```text
+Build the meal scan flow:
+
+1. User captures or picks a photo
+2. Upload compressed image to Supabase Storage
+3. Send image URL to GPT-4o vision (or Claude vision) with this system prompt:
+   "You are a nutrition assistant focused ONLY on protein. Identify visible foods, estimate portion sizes, return JSON: items array with name, estimated_protein_g, confidence 0-1. Sum total_protein_g. Flag items below 0.6 confidence. Respect these dietary tags: [USER_TAGS]."
+4. Display results for user confirmation; allow per-item edits
+5. On save, insert into meals table; if user corrected values, upsert a fingerprint keyed by a simple visual hash or user-provided label for one-tap future logging
+6. Update daily progress ring
+
+Handle API errors gracefully with manual entry fallback.
+```
+
+**3. Gap-Fill Suggestions**
+
+```text
+When daily_protein_g remaining is greater than 15g and local time is after 5pm:
+
+1. Query user's top fingerprints and recent meals for high-protein repeats
+2. Filter by dietary_tags (exclude dairy if dairy-free, etc.)
+3. Call LLM with structured context — NOT the photo — to generate 3 short suggestions:
+   - one from meal prep / home staples
+   - one grocery grab under 10 minutes
+   - one restaurant-style option if user has logged chain meals before
+4. Cache suggestions per user per day in suggestion_cache table
+5. Show as cards on home screen with estimated protein grams each
+
+Keep copy concise; lifters want grams and speed, not essays.
+```
+
+## Sources
+
+- [AI-Driven Meal Planning Apps Market Report](https://market.us/report/ai-driven-meal-planning-apps-market/)
+- [AI-Driven Meal Planning Apps Market Insights 2025](https://www.thebusinessresearchcompany.com/market-insights/ai-driven-meal-planning-apps-market-insights-2025)
+- [AI in Personalized Nutrition Market Report](https://www.insightaceanalytic.com/report/ai-in-personalized-nutrition-market/2691)
