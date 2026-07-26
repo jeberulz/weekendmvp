@@ -1,6 +1,228 @@
 {
   "ideas": [
     {
+      "slug": "ai-dance-form-coach",
+      "title": "AI Dance Form Coach",
+      "category": "health",
+      "description": "Phone-camera AI that corrects dance form in real time for home dancers, Zumba fans, and TikTok choreography learners at a fraction of studio lesson cost.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "expo"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2302",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "A smartphone on a dark studio floor reflecting a dancer silhouette as pose-tracking dots, lavender backlight, no faces, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 2257,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "ai-protein-tracker",
+      "title": "AI Protein Tracker",
+      "category": "health",
+      "description": "Photo-first AI that makes protein goals stick—log meals in seconds, adapt plans to real eating habits, and skip the MyFitnessPal homework grind.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "expo"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1829",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "A plate of high-protein food beside a phone showing a soft protein progress ring, mint accent light on a dark counter, no people, shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 3,
+        "wordCount": 2213,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "aws-cert-ai-study-buddy",
+      "title": "AWS Cert AI Study Buddy",
+      "category": "education",
+      "description": "Adaptive AI tutor that finds your AWS certification weak spots and drills only what will fail you—not another 40-hour generic video dump.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2709",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "A dark desk with AWS console glow on a laptop and a sparse quiz card stack, emerald accent light, no people, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2507,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "ai-course-tutor-companion",
+      "title": "AI Course Tutor Companion",
+      "category": "education",
+      "description": "Turn any online course into a 24/7 AI tutor trained on your content so creators lift completion rates without answering every 2am student question.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4170",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "A course lesson video paused on a laptop with a soft chat bubble of a tutor reply, lime accent light, dark desk, no people, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2041,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "shopify-ai-support-context",
+      "title": "Shopify AI Support Context Layer",
+      "category": "ecommerce",
+      "description": "Shopify context layer that feeds order, return, and ticket history into Gorgias, Tidio, or custom AI agents so repeat customers never re-explain themselves.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:7459",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "A Shopify admin-style screen on a dark desk showing a customer timeline cards stack, aubergine accent light, no people, shallow focus",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 2461,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
       "slug": "freelance-scope-creep-detector",
       "title": "ScopeGuard: Detect Freelance Scope Creep and Upsell It",
       "publishedAt": "2026-07-22",
