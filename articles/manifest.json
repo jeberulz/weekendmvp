@@ -503,6 +503,54 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "claude-projects-for-founders",
+      "title": "Claude Projects for Founders: Setups That Ship Real Work",
+      "description": "How to set up a Claude Project so you stop re-explaining your business every session — with seven concrete project setups solo founders actually use.",
+      "wordCount": 1745,
+      "readMinutes": 9,
+      "og": {
+        "subject": "A small stack of index cards fanned across a near-black desk, the top card lit by one narrow lavender beam from the left, very shallow focus, no readable writing",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "programs-solo-founders-idea-to-mvp",
+      "title": "What Programs Help Solo Founders Go From Idea to MVP?",
+      "description": "The honest answer for solo founders: which accelerators, equity-free programs, and self-directed paths actually get you from idea to a shipped MVP in 2026.",
+      "wordCount": 1452,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A single clipboard holding one short handwritten checklist on a near-black desk, one narrow emerald beam raking from the left, very shallow focus, no readable text",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "lovable-examples-what-to-build",
+      "title": "Lovable Examples: 9 Apps Worth Building This Weekend",
+      "description": "Real examples of what people build with Lovable, plus the scoping rules that separate an app you ship on Sunday from one you abandon on Tuesday.",
+      "wordCount": 1508,
+      "readMinutes": 8,
+      "og": {
+        "subject": "One square sticky note curling at a corner on a near-black desk, lit by a single narrow lime beam from above, very shallow focus, no readable writing",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "replit-project-ideas-weekend",
+      "title": "Replit Project Ideas: 8 Apps to Ship Without Burning Credits",
+      "description": "Eight Replit project ideas scoped to finish in a weekend, plus how Agent credit billing actually works so your build doesn't cost more than it should.",
+      "wordCount": 1488,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open paperback resting face-down on a near-black desk beside one folded paper receipt, a narrow mint beam across the spine, very shallow focus, no readable text",
+        "accent": "mint",
+        "status": "ready"
+      }
     }
   ]
 }
