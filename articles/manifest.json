@@ -491,6 +491,18 @@
         "accent": "lavender",
         "status": "ready"
       }
+    },
+    {
+      "slug": "mvp-for-non-technical-founders",
+      "title": "How to Build an MVP as a Non-Technical Founder (2026)",
+      "description": "A step-by-step MVP guide for non-technical founders: what to cut, which tools to use, and why you don't need a technical co-founder to ship your first version.",
+      "wordCount": 1905,
+      "readMinutes": 10,
+      "og": {
+        "subject": "A single sharpened pencil resting mid-page on an open notebook on a near-black desk, one narrow mint beam raking across the paper, very shallow focus, no readable writing",
+        "accent": "mint",
+        "status": "ready"
+      }
     }
   ]
 }
