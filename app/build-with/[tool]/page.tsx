@@ -40,6 +40,7 @@ import {
   type IdeaDoc,
 } from "@/components/hubs/hub-data";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   howToSchema,
@@ -49,7 +50,6 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */

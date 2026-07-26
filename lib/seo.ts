@@ -7,9 +7,12 @@
  * Person canonical URL is /john-iseghohi (not Cal.com). Cal stays in sameAs + UI CTAs.
  */
 
-const SITE =
-  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ??
-  "https://www.weekendmvp.app";
+/** Canonical site origin. Empty/missing env falls back to www (Vercel primary). */
+export const SITE = (
+  process.env.NEXT_PUBLIC_BASE_URL || "https://www.weekendmvp.app"
+)
+  .trim()
+  .replace(/\/$/, "");
 
 /** First-party Person entity page — use for author @id / url everywhere. */
 export const PERSON_PATH = "/john-iseghohi";

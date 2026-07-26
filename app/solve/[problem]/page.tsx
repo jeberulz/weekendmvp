@@ -25,6 +25,7 @@ import { HubIdeasGrid } from "@/components/hubs/HubIdeasGrid";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import { fetchAllIdeas } from "@/components/hubs/hub-data";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   howToSchema,
@@ -33,7 +34,6 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */

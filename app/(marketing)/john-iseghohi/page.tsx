@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   faqPageSchema,
@@ -17,7 +18,6 @@ import {
   personSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const TITLE = "John Iseghohi";
 const DESCRIPTION =
   "John Iseghohi is the founder of Weekend MVP. He helps non-technical founders ship MVPs in a weekend — with 400+ builders in the community and dozens of research-backed startup ideas broken down on weekendmvp.app.";

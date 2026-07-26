@@ -17,6 +17,7 @@ import {
   normalizeCategorySlug,
 } from "@/components/ideas/idea-meta";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
@@ -32,7 +33,6 @@ import {
   type IdeaCardData,
 } from "./IdeasExplorer";
 
-const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/ideas";
 const TITLE = "Startup Ideas | Weekend MVP";
 const DESCRIPTION =

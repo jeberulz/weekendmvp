@@ -34,6 +34,7 @@ import {
   ShipableProblemBody,
   ShipableProof,
 } from "./shipable-data";
+import { SITE } from "@/lib/seo";
 
 /* Checkout: live Stripe Payment Link wired in ShipableCheckoutForm.tsx.
    The form does a fire-and-forget Beehiiv subscribe, then redirects to
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
       "Turn the idea you've been sitting on into a real, live MVP. 90 minutes, live on Zoom. Sat Aug 1, 2026 at 5 PM BST. Replay included.",
     images: [
       {
-        url: "https://www.weekendmvp.app/image/og-image.png",
+        url: `${SITE}/image/og-image.png`,
         alt: "ship·able, a Weekend MVP workshop",
         type: "image/png",
         width: 1200,
@@ -77,7 +78,7 @@ export const metadata: Metadata = {
       "Live $9 workshop. Turn an idea you've been sitting on into a deployed MVP in 90 minutes. Sat Aug 1, 2026 · 5 PM BST.",
     images: [
       {
-        url: "https://www.weekendmvp.app/image/og-image.png",
+        url: `${SITE}/image/og-image.png`,
         alt: "ship·able, a Weekend MVP workshop",
       },
     ],

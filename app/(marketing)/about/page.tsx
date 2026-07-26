@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { AuraBackground } from "@/components/marketing/AuraBackground";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   ORG_ID,
@@ -13,7 +14,6 @@ import {
   personSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const TITLE = "About Weekend MVP";
 const DESCRIPTION =
   "Weekend MVP helps non-technical founders pick a validated idea, build a 3-screen MVP, and launch a waitlist in a weekend — with research-backed ideas, guides, and a free starter kit.";

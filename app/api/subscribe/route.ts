@@ -21,6 +21,7 @@ import { after } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { beehiivSubscribe } from "@/lib/beehiiv";
+import { SITE } from "@/lib/seo";
 
 const DEFAULT_UTM_CAMPAIGN = "starter-kit";
 
@@ -41,7 +42,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
 
   return {
     "Access-Control-Allow-Origin":
-      isAllowed && origin ? origin : "https://www.weekendmvp.app",
+      isAllowed && origin ? origin : SITE,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",

@@ -13,6 +13,7 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import {
+  SITE,
   articleSchema,
   breadcrumbSchema,
   buildGraph,
@@ -40,7 +41,6 @@ import {
 } from "./collection";
 
 const CONTENT_DIR = "content/ideas";
-const SITE = "https://www.weekendmvp.app";
 const DEFAULT_OG = "/image/og-image.png";
 
 type IdeaDoc = Doc<"ideas">;

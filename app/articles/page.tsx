@@ -5,10 +5,9 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { breadcrumbSchema, buildGraph } from "@/lib/seo";
+import { SITE, breadcrumbSchema, buildGraph } from "@/lib/seo";
 import { ArticlesIndex, type ArticleCard } from "./ArticlesIndex";
 
-const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/articles";
 const TITLE = "Articles | Weekend MVP";
 const DESCRIPTION =
