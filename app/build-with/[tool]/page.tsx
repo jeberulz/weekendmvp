@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowDown,
   Blocks,
   Brain,
   Database,
@@ -30,11 +31,17 @@ import {
   HubShell,
 } from "@/components/hubs/HubShell";
 import { HubCta } from "@/components/hubs/HubCta";
+import { HubEmailCapture } from "@/components/hubs/HubEmailCapture";
+import {
+  HubFeaturedIdeas,
+} from "@/components/hubs/HubFeaturedIdeas";
 import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
+import { HubPrimaryCta } from "@/components/hubs/HubPrimaryCta";
 import { HubPromptCard } from "@/components/hubs/HubPromptCard";
 import { HubTracker } from "@/components/hubs/HubTracker";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
+  fetchIdeasBySlugs,
   fetchIdeasByTool,
   fetchRefTables,
   type IdeaDoc,
@@ -62,6 +69,28 @@ const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 type ToolPrompt = { label: string; prompt: string };
 
+/**
+ * Editorial "start here" block. The Convex tool tags are deliberately broad
+ * (128 of 135 ideas are tagged `claude`), so the grid alone can't tell a
+ * visitor where to begin. Slugs are hand-picked here — the same
+ * hardcoded-TS-config pattern the other programmatic hubs use — and resolved
+ * via indexed per-slug lookups so curation is independent of the hub query's
+ * 30-idea cap. Missing or retagged slugs are dropped silently.
+ */
+type ToolFeatured = {
+  slugs: string[];
+  heading: string;
+  intro: string;
+};
+
+/** Newsletter capture copy. Must describe the real newsletter, nothing else. */
+type ToolEmailCapture = {
+  eyebrow: string;
+  heading: string;
+  body: string;
+  buttonLabel: string;
+};
+
 type ToolPage = {
   slug: string;
   name: string;
@@ -82,6 +111,10 @@ type ToolPage = {
   strengths: string[];
   gettingStarted: string[];
   prompts: ToolPrompt[];
+  /** Optional curated set rendered above the full ideas grid. */
+  featured?: ToolFeatured;
+  /** Optional tool-specific newsletter hook (falls back to generic copy). */
+  emailCapture?: ToolEmailCapture;
 };
 
 const TOOL_PAGES: Record<string, ToolPage> = {
@@ -183,6 +216,35 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           "I'm getting this error: [ERROR MESSAGE]. Here's the relevant code: [CODE]. What's causing this and how do I fix it? Walk me through your debugging process.",
       },
     ],
+    featured: {
+      // Hand-picked for what Claude is actually good at: reasoning over
+      // messy input, code explanation, long-form writing, and analysis.
+      // Ordered best-first, all builder_confidence 8-9. Resolved by indexed
+      // slug lookup (fetchIdeasBySlugs), not by filtering the grid's own
+      // set — `byTool` caps at 30, which would silently drop picks as more
+      // high-confidence ideas ship.
+      slugs: [
+        "ai-agent-error-translator",
+        "ai-code-coach-tutor",
+        "inbox-zero-agent",
+        "markdown-client-proposals",
+        "conversational-analytics-digest",
+        "ai-chief-of-staff-consultants",
+        "freelance-scope-creep-detector",
+        "ai-coding-agent-dashboard",
+        "ai-coding-classroom-assistant",
+        "markdown-publish-everywhere",
+      ],
+      heading: "Start here: the best Claude projects to build this weekend",
+      intro:
+        "Almost every idea on the site is tagged for Claude, which makes the tag a weak filter. These are the ones that lean on what Claude is genuinely best at — reasoning over messy input, explaining code, drafting long-form copy, and turning raw data into something readable.",
+    },
+    emailCapture: {
+      eyebrow: "Free newsletter",
+      heading: "You already have Claude. Get something to build with it.",
+      body: "The Weekend MVP newsletter: a validated idea with the stack, the build plan, and prompts you can paste straight into Claude. No download, no course — just the next thing worth building.",
+      buttonLabel: "Send me ideas",
+    },
   },
   bolt: {
     slug: "bolt",
@@ -488,6 +550,7 @@ const STRENGTH_ICONS: LucideIcon[] = [Layers, Brain, GitBranch, Database, Plug];
 
 type ToolData = {
   ideas: IdeaDoc[];
+  featured: IdeaDoc[];
   description: string;
   url: string;
   strengths: string[];
@@ -500,13 +563,15 @@ async function getToolData(slug: string): Promise<ToolData> {
   cacheLife("hours");
 
   const page = TOOL_PAGES[slug];
-  const [ideas, refTables] = await Promise.all([
+  const [ideas, featured, refTables] = await Promise.all([
     fetchIdeasByTool(slug),
+    fetchIdeasBySlugs(page.featured?.slugs),
     fetchRefTables(),
   ]);
   const row = refTables?.tools.find((t) => t.slug === slug) ?? null;
   return {
     ideas,
+    featured,
     description: row?.description ?? page.description,
     url: row?.url ?? page.url,
     strengths: row?.strengths ?? page.strengths,
@@ -629,6 +694,20 @@ async function CachedToolHub({ slug }: { slug: string }) {
   const schema = buildSchema(page, data);
   const ideaCount = data.ideas.length > 0 ? data.ideas.length : page.legacyCount;
 
+  // Editorial curation. Slugs that no longer resolve (unpublished, retagged,
+  // or below the byTool cap) are dropped, so the section either renders a
+  // real set or disappears — the full grid below is unaffected either way.
+  const featuredIdeas = data.featured;
+  const featuredSlugs = new Set(featuredIdeas.map((idea) => idea.slug));
+  const restIdeas = data.ideas.filter((idea) => !featuredSlugs.has(idea.slug));
+
+  const emailCopy = page.emailCapture ?? {
+    eyebrow: "Free newsletter",
+    heading: "Get your next build idea by email",
+    body: `The Weekend MVP newsletter: a validated idea with the stack, the build plan, and the prompts to ship it — including ideas suited to ${page.name}.`,
+    buttonLabel: "Send me ideas",
+  };
+
   return (
     <HubShell>
       <JsonLd schema={schema} />
@@ -653,13 +732,15 @@ async function CachedToolHub({ slug }: { slug: string }) {
               <Lightbulb size={14} aria-hidden="true" />
               {ideaCount} project ideas
             </HubChip>
-            <NavExternalLink
-              href={data.url}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-neutral-400 hover:text-white hover:border-white/20 transition-colors"
-            >
-              <ExternalLink size={14} aria-hidden="true" />
-              Visit {page.name}
-            </NavExternalLink>
+            {featuredIdeas.length > 0 ? (
+              <Link
+                href="#start-here"
+                className="inline-flex items-center gap-2 px-4 py-1.5 bg-white text-black border border-white rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
+              >
+                <ArrowDown size={14} aria-hidden="true" />
+                Start here
+              </Link>
+            ) : null}
           </>
         }
       />
@@ -695,18 +776,41 @@ async function CachedToolHub({ slug }: { slug: string }) {
         </section>
       ) : null}
 
+      {/* Curated "start here" set — editorial, above the full grid */}
+      {page.featured && featuredIdeas.length > 0 ? (
+        <HubFeaturedIdeas
+          heading={page.featured.heading}
+          intro={page.featured.intro}
+          ideas={featuredIdeas}
+          panelClassName={color.border20}
+          eyebrowClassName={color.text}
+        />
+      ) : null}
+
       {/* Project Ideas */}
-      {data.ideas.length > 0 ? (
+      {restIdeas.length > 0 ? (
         <section aria-labelledby="ideas-heading">
           <h2
             id="ideas-heading"
             className="text-2xl font-medium text-white mb-8"
           >
-            Project Ideas for {page.name}
+            {featuredIdeas.length > 0
+              ? `More Project Ideas for ${page.name}`
+              : `Project Ideas for ${page.name}`}
           </h2>
-          <HubIdeasGrid ideas={data.ideas} />
+          <HubIdeasGrid ideas={restIdeas} />
         </section>
       ) : null}
+
+      {/* Newsletter capture — the only client boundary on this page */}
+      <HubEmailCapture
+        eyebrow={emailCopy.eyebrow}
+        heading={emailCopy.heading}
+        body={emailCopy.body}
+        buttonLabel={emailCopy.buttonLabel}
+        trackingProps={{ tool_name: page.name, surface: "build_with_hub" }}
+        panelClassName={color.border20}
+      />
 
       {/* Getting Started */}
       {data.gettingStarted.length > 0 ? (
@@ -736,6 +840,23 @@ async function CachedToolHub({ slug }: { slug: string }) {
         </section>
       ) : null}
 
+      {/* Outbound tool link — deliberately quiet: useful, but this page's job
+          is to send the visitor to an idea, not to {page.name}'s homepage. */}
+      <p className="mt-6 text-sm text-neutral-400">
+        Need the tool itself?{" "}
+        <NavExternalLink
+          href={data.url}
+          className="rounded text-neutral-300 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        >
+          Visit {page.name}
+          <ExternalLink
+            size={12}
+            className="inline ml-1 align-baseline"
+            aria-hidden="true"
+          />
+        </NavExternalLink>
+      </p>
+
       {/* Starter Prompts */}
       {page.prompts.length > 0 ? (
         <section className="mt-24" aria-labelledby="prompts-heading">
@@ -760,15 +881,30 @@ async function CachedToolHub({ slug }: { slug: string }) {
         </section>
       ) : null}
 
-      {/* Other Tools */}
-      <section className="mt-24" aria-labelledby="other-tools-heading">
+      {/* Primary conversion path — /startup-ideas. This used to be the 8th
+          tile in the grid below, visually identical to "go look at Cursor
+          instead". It now owns the loudest block on the lower page. */}
+      <HubPrimaryCta
+        eyebrow="Next step"
+        heading={`Pick your next ${page.name} project`}
+        body={`Browse every validated idea on Weekend MVP — filter by category, build time, and revenue goal, then open the one you'd actually ship with ${page.name}.`}
+        href="/startup-ideas"
+        ctaLabel="Browse all startup ideas"
+        note="Every idea includes the stack, the build plan, and what it could earn."
+        panelClassName={`${page.gradient} ${color.border20}`}
+        iconClassName={color.text}
+      />
+
+      {/* Other Tools — kept for internal linking, deliberately low-contrast
+          so it no longer competes with the CTA above. */}
+      <section className="mt-16" aria-labelledby="other-tools-heading">
         <h2
           id="other-tools-heading"
-          className="text-2xl font-medium text-white mb-8"
+          className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-4"
         >
-          Explore Other Tools
+          Using a different tool?
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {TOOL_TILES.filter((tile) => tile.slug !== slug)
             .slice(0, 3)
             .map((tile) => {
@@ -777,30 +913,24 @@ async function CachedToolHub({ slug }: { slug: string }) {
                 <Link
                   key={tile.slug}
                   href={`/build-with/${tile.slug}`}
-                  className="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
+                  className="group flex items-center gap-3 p-4 bg-white/[0.03] border border-white/10 rounded-xl hover:border-white/20 hover:bg-white/[0.06] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505]"
                 >
                   <TileIcon
-                    size={32}
-                    className={`${tile.iconClass} mb-3 mx-auto`}
+                    size={20}
+                    className={`${tile.iconClass} flex-shrink-0`}
                     aria-hidden="true"
                   />
-                  <p className="text-white font-medium text-sm">{tile.label}</p>
-                  <p className="text-neutral-500 text-xs mt-1">{tile.sub}</p>
+                  <span className="min-w-0">
+                    <span className="block text-neutral-200 font-medium text-sm truncate">
+                      {tile.label}
+                    </span>
+                    <span className="block text-neutral-400 text-xs truncate">
+                      {tile.sub}
+                    </span>
+                  </span>
                 </Link>
               );
             })}
-          <Link
-            href="/startup-ideas"
-            className="group p-6 bg-white/5 border border-white/10 rounded-2xl hover:border-white/20 hover:bg-white/[0.07] transition-all text-center"
-          >
-            <Lightbulb
-              size={32}
-              className="text-emerald-400 mb-3 mx-auto"
-              aria-hidden="true"
-            />
-            <p className="text-white font-medium text-sm">All Ideas</p>
-            <p className="text-neutral-500 text-xs mt-1">Browse All</p>
-          </Link>
         </div>
       </section>
 
