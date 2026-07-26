@@ -51,8 +51,8 @@
     {
       "slug": "7-things-to-build-with-claude-code-this-weekend",
       "title": "7 Things You Can Build This Weekend with Claude Code",
-      "description": "Seven shippable project ideas you can build with Claude Code in a single weekend, even if you've never coded. Each comes with a starter prompt you can paste straight in.",
-      "wordCount": 1217,
+      "description": "Seven real Claude Code projects you can build in a single weekend, even if you've never coded — what people actually ship, plus a starter prompt for each.",
+      "wordCount": 1166,
       "readMinutes": 6,
       "og": {
         "subject": "A small notecard on a dark desk showing a numbered list with one item checked off in lime, single overhead lamp catching the checked line, deep shadow elsewhere",
@@ -489,6 +489,18 @@
       "og": {
         "subject": "A small brass key resting on the cover of a closed notebook on a near-black desk, lit by one narrow lavender beam, very shallow focus, deep shadow behind",
         "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "mvp-for-non-technical-founders",
+      "title": "How to Build an MVP as a Non-Technical Founder (2026)",
+      "description": "A step-by-step MVP guide for non-technical founders: what to cut, which tools to use, and why you don't need a technical co-founder to ship your first version.",
+      "wordCount": 1905,
+      "readMinutes": 10,
+      "og": {
+        "subject": "A single sharpened pencil resting mid-page on an open notebook on a near-black desk, one narrow mint beam raking across the paper, very shallow focus, no readable writing",
+        "accent": "mint",
         "status": "ready"
       }
     }

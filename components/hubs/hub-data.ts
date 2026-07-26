@@ -51,6 +51,30 @@ export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
 }
 
 /**
+ * Resolve an editorial slug list to ideas, preserving the given order.
+ *
+ * Deliberately indexed point lookups rather than filtering a hub's own
+ * result set: `byTool`/`byAudience` cap at 30 by builder_confidence, so a
+ * hand-picked slug silently vanishes from a curated rail once enough
+ * higher-scoring ideas ship. Curation must not depend on that cap.
+ * Missing slugs are dropped so a stale pick degrades instead of throwing.
+ */
+export async function fetchIdeasBySlugs(
+  slugs: readonly string[] | undefined,
+): Promise<IdeaDoc[]> {
+  if (!slugs || slugs.length === 0) return [];
+  const found = await Promise.all(
+    slugs.map((slug) => safe(() => fetchQuery(api.ideas.bySlug, { slug }), null)),
+  );
+  const seen = new Set<string>();
+  return found.filter((idea): idea is IdeaDoc => {
+    if (!idea || seen.has(idea.slug)) return false;
+    seen.add(idea.slug);
+    return true;
+  });
+}
+
+/**
  * Category hub lookup. Convex indexes are exact-match on `category`, but
  * historical rows used display casing ("SaaS"). Drain the archive and
  * filter with normalizeCategorySlug so hubs stay complete until a reseed.
