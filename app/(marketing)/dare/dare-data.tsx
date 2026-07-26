@@ -12,6 +12,7 @@ import * as React from "react";
 import { ArrowRight } from "lucide-react";
 
 import {
+  SITE,
   eventSchema,
   breadcrumbSchema,
   buildGraph,
@@ -39,7 +40,7 @@ const DARE_EVENT = eventSchema({
     "A 90-minute live working session for experienced designers. Choose one concrete AI/agentic product or AI-powered service and leave with a 4-week plan to move it into the real world.",
   startDate: "[[WORKSHOP_DATE_ISO]]",
   url: "/dare",
-  location: { name: "Zoom", url: "https://www.weekendmvp.app/dare" },
+  location: { name: "Zoom", url: `${SITE}/dare` },
   offers: {
     price: "29",
     priceCurrency: "USD",

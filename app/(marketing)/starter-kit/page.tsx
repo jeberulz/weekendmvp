@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   howToSchema,
@@ -39,12 +40,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/starter-kit" },
   openGraph: {
     type: "website",
-    url: "https://www.weekendmvp.app/starter-kit",
+    url: `${SITE}/starter-kit`,
     title: TITLE,
     description: OG_DESCRIPTION,
     images: [
       {
-        url: "https://www.weekendmvp.app/image/og-image.png",
+        url: `${SITE}/image/og-image.png`,
         alt: "Weekend MVP — ship your product in 48 hours",
         type: "image/png",
         width: 1200,
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: OG_DESCRIPTION,
-    images: ["https://www.weekendmvp.app/image/og-image.png"],
+    images: [`${SITE}/image/og-image.png`],
   },
 };
 
@@ -64,8 +65,8 @@ const STARTER_KIT_SCHEMA = buildGraph(
   personSchema(),
   organizationSchema(),
   breadcrumbSchema([
-    { label: "Home", href: "https://www.weekendmvp.app/" },
-    { label: "Starter Kit", href: "https://www.weekendmvp.app/starter-kit" },
+    { label: "Home", href: `${SITE}/` },
+    { label: "Starter Kit", href: `${SITE}/starter-kit` },
   ]),
   {
     ...howToSchema({

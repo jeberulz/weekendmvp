@@ -44,6 +44,7 @@ import {
   fetchRefTables,
 } from "@/components/hubs/hub-data";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
@@ -52,7 +53,6 @@ import {
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */
@@ -300,7 +300,7 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       },
       {
         title: "Weekend MVP",
-        url: "https://www.weekendmvp.app",
+        url: SITE,
         description: "Templates and prompts to ship by Sunday",
       },
     ],

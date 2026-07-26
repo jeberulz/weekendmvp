@@ -38,6 +38,7 @@ import {
   fetchIdeasByRevenueGoal,
 } from "@/components/hubs/hub-data";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
@@ -45,8 +46,6 @@ import {
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
-
-const SITE = "https://www.weekendmvp.app";
 
 type CollectionKind = "category" | "revenue" | "buildTime";
 

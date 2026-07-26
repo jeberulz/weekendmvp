@@ -32,7 +32,8 @@ export const run = internalAction({
       // No secret configured — nothing to do (local dev / preview).
       return null;
     }
-    const base = process.env.SITE_URL ?? "https://weekendmvp.app";
+    // Canonical host is www (docs/wp/RULINGS.md WP10); apex 308s to www.
+    const base = process.env.SITE_URL ?? "https://www.weekendmvp.app";
     for (const tag of tags) {
       const url = `${base}/api/revalidate?tag=${encodeURIComponent(tag)}&secret=${encodeURIComponent(secret)}`;
       try {

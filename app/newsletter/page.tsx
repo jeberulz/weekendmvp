@@ -10,9 +10,8 @@ import { MegaNav } from "@/components/layout/MegaNav";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { buildGraph } from "@/lib/seo";
+import { SITE, buildGraph } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/newsletter-pages";
 const TITLE = "The Weekend MVP Newsletter | Daily Ideas for Weekend Builders";
 const DESCRIPTION =

@@ -8,6 +8,7 @@ import * as React from "react";
 import { ArrowRight } from "lucide-react";
 
 import {
+  SITE,
   eventSchema,
   faqPageSchema,
   breadcrumbSchema,
@@ -82,7 +83,7 @@ const SHIPABLE_EVENT = {
     url: "/shipable",
     location: {
       name: "Zoom",
-      url: "https://www.weekendmvp.app/shipable",
+      url: `${SITE}/shipable`,
     },
     offers: {
       price: "9",
@@ -90,10 +91,10 @@ const SHIPABLE_EVENT = {
       availability: "https://schema.org/InStock",
     },
   }),
-  "@id": "https://www.weekendmvp.app/shipable#event",
+  "@id": `${SITE}/shipable#event`,
   image: [
-    "https://www.weekendmvp.app/image/hero-cover-desktop.jpg",
-    "https://www.weekendmvp.app/image/og-image.png",
+    `${SITE}/image/hero-cover-desktop.jpg`,
+    `${SITE}/image/og-image.png`,
   ],
   inLanguage: "en",
   isAccessibleForFree: false,

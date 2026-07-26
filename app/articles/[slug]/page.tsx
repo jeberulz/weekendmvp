@@ -5,10 +5,9 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { articleSchema } from "@/lib/seo";
+import { SITE, articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/articles";
-const SITE = "https://www.weekendmvp.app";
 
 type ArticleFrontmatter = {
   slug: string;
