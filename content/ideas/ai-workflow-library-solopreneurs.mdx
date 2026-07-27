@@ -1,0 +1,130 @@
+---
+slug: "ai-workflow-library-solopreneurs"
+title: "AI Workflow Library for Solopreneurs"
+---
+
+## The Problem
+
+Solopreneurs do not fail at automation because they lack tools. They fail because they cannot decide what to automate. Zapier, Make, and n8n sit open in browser tabs while the founder doomscrolls template galleries full of "when new row in Sheets, post to Slack" recipes that have nothing to do with client onboarding or content repurposing. They buy another SaaS, connect two accounts, break a zap, and quietly return to copy-paste.
+
+Decision fatigue is the product. Non-technical coaches, consultants, and creators know they should automate contracts → folders → kickoff calls, or podcast → transcript → clips → newsletter. They do not know which of fifty templates is trustworthy, which apps they actually need, or how to recover when step three fails at midnight. Community forums (r/automation, r/nocode, Facebook "automate your workflow" groups) are full of the same confession: *I spent the weekend in Zapier hell and still do it manually.*
+
+Platforms optimize for breadth — thousands of integrations, infinite graphs. Solopreneurs need curated outcomes: "client onboarded," "content atomized," "lead nurtured." Until someone sells opinionated, AI-aware workflows with one-click install into the tools they already pay for, the category keeps growing while individual founders stay stuck.
+
+## The Solution
+
+AI Workflow Library for Solopreneurs (working name: FlowLibrary) is a curated marketplace of pre-built, zero-code automation templates organized by business outcome — not by connector trivia. Pick a use case, connect accounts, install. Templates target Zapier, Make, and n8n export so you are not locked into a new runtime on day one. An AI quiz recommends the next three workflows based on your business type and hours wasted.
+
+Price: **$29–$99/month** for library access; free starter pack of three templates as bait. Later: creator marketplace with revenue share.
+
+**How it works:**
+
+1. **Outcome quiz** — "I run a coaching business and waste Sundays on onboarding" → ranked template list with time-saved estimates.
+2. **Preview the flow** — Visual step map, required apps, sample data, failure modes explained in plain English.
+3. **One-click install / export** — Push to Zapier/Make via partner APIs or download n8n JSON. Guided connect screens.
+4. **Dashboard of active workflows** — Health status, last run, one-click pause. Modify parameters (folder names, email subjects) without opening the raw graph.
+5. **Vertical expansion** — Bundles for coaches, indie hackers, ecommerce sellers, real-estate solos — same library UX, different packs.
+
+Moat is curation quality and vertical bundles, not owning another Zapier. When AI agents auto-build flows, trusted libraries still win on taste and proven defaults.
+
+## Market Research
+
+Workflow automation and AI spend are both compounding. The gap is curation for non-technical solos.
+
+- Global **workflow automation** is projected around **USD 23.77 billion in 2025** rising toward **USD 37.45 billion by 2030** at roughly **9.52% CAGR** (figures widely cited across automation market summaries; treat vendor reports as directional).
+- Broader **AI** market estimates land near **USD 757B+ in 2025** with long-run forecasts into the trillions and high-teens CAGRs ([Precedence Research](https://www.precedenceresearch.com/artificial-intelligence-market), [JetRuby AI adoption stats](https://jetruby.com/blog/ai-adoption-2025-stats-market-growth-and-insight/)).
+- Community proof: **r/automation** (~234k), **r/nocode** (~73.5k), and large Facebook automation groups obsess over integrations and "what should I automate?" — classic library demand.
+- YouTube beginner AI workflow content routinely clears **100k–200k+ views**, signaling appetite for guided, not raw, automation education.
+
+SAM: solopreneurs already paying for Zapier/Make who will pay $29–99/mo for curated installs that save decision time. Upsell vertical bundles and creator templates.
+
+## Competitive Landscape
+
+Infrastructure players own runtime. FlowLibrary owns taste and install UX for solos.
+
+- **Zapier** — Market leader, millions of users, enormous template gallery. Templates are often generic and shallow on AI steps. **Free**; premium roughly **$19.99–69.99/month**.
+- **Make (Integromat)** — Strong visual builder, flexible logic, competitive pricing. Steeper learning curve; fewer curated AI outcome packs. **Free**; paid about **$9–29/month**.
+- **n8n** — Open-source power and privacy. Great for developers; intimidating for coaches. **Free self-host**; cloud roughly **$20–50/month**.
+- **HubSpot Workflows** — Excellent if you live in HubSpot. Ecosystem-locked; not a cross-tool library for solos on Notion + Stripe + ConvertKit. Bundled into **HubSpot paid tiers**.
+
+**Your Opportunity**
+
+Be the "Allrecipes" on top of the kitchens. Position as *Stop browsing zaps. Install outcomes.* Partner with coaches and indie hacker influencers who recommend three templates that change someone's Monday.
+
+## Business Model
+
+Freemium library → Pro subscription → marketplace take rate.
+
+- **Free** — Three starter templates + quiz.
+- **Pro** ($29/month) — Full library (50+ templates), install guides, email support.
+- **Premium** ($99/month) — Unlimited + priority new vertical packs + AI "build me a variant" assistant.
+- **Marketplace** (later) — Creators sell templates; platform takes ~10–20%.
+- **Annual** — Two months free to improve cash.
+
+**Unit Economics (illustrative)**
+
+- **High margin** — Digital templates; main costs are curation labor and support
+- **$20–60** — CAC via SEO ("automate client onboarding zapier") and influencer affiliate
+- Path: 400 Pro @ $29 ≈ $11.6K MRR; 50 Premium @ $99 ≈ +$5K MRR
+
+## Recommended Tech Stack
+
+You are shipping a content + install product first, not a new automation engine.
+
+- **Next.js + Vercel** — Catalog, quiz, dashboard, docs.
+- **Postgres** — users, templates, installs, ratings, quiz answers.
+- **Template pack format** — Versioned JSON describing steps + export targets (zapier blueprint / make scenario / n8n workflow).
+- **Zapier Partner / Make / n8n** — Export and deep links; manual "copy this" fallback for MVP.
+- **Claude** — Quiz recommendations and "adapt this template to my tool stack" chat.
+- **Stripe** — Subscriptions + future marketplace payouts.
+- **Mux or MDX** — Short Loom-style setup videos per template.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Catalog + Quiz MVP**
+
+```text
+Build Next.js 14 app FlowLibrary.ai.
+
+Features:
+- Template catalog with tags: onboarding, content, leads, ops
+- Each template: title, outcome, apps_required[], time_saved_hours, difficulty, export_targets[]
+- Quiz: 5 questions (business type, weekly hours on admin, tools used, goal) → top 3 template recommendations via Claude
+- Auth + Stripe ($29 Pro, $99 Premium)
+
+Seed 10 hard-coded templates including "Coach Client Onboarding" and "Podcast to Newsletter".
+Headline: "Automation without the Zapier rabbit hole."
+```
+
+**2. Template JSON + n8n Export**
+
+```text
+Define a TemplatePack TypeScript type:
+{ id, version, outcome, steps: {name, app, action, config}[], exports: { n8n_json_url, make_blueprint_url, zapier_guide_md } }
+
+Build an admin page to create packs.
+Build a user "Install" page that:
+1. Checks connected apps checklist
+2. Offers Download n8n JSON
+3. Shows step-by-step Zapier rebuild guide generated from steps[]
+
+Include one full sample pack for client onboarding: Typeform → Stripe payment check → Google Drive folder → Notion client row → Calendly invite.
+```
+
+**3. AI Variant Builder**
+
+```text
+Add /api/adapt-template:
+Input: template_id, user_tools[], business_description
+Claude returns adapted steps[] swapping apps (e.g. Notion→Airtable, Calendly→SavvyCal) and a short setup checklist.
+Gate behind Premium plan. Store adaptations for curation review.
+```
+
+## Sources
+
+- [AI Adoption 2025 Stats — JetRuby](https://jetruby.com/blog/ai-adoption-2025-stats-market-growth-and-insight/)
+- [Artificial Intelligence Market — Precedence Research](https://www.precedenceresearch.com/artificial-intelligence-market)
+- Zapier, Make, n8n, and HubSpot pricing referenced from public tiers — verify before marketing.
+- Workflow automation TAM/CAGR figures summarized from industry market reports cited in Ideabrowser competitive analysis — verify primary sources before investor materials.
