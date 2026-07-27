@@ -1,6 +1,226 @@
 {
   "ideas": [
     {
+      "slug": "tattoo-dm-booking-agent",
+      "title": "Tattoo DM Booking Agent",
+      "category": "automation",
+      "description": "AI agent that turns tattoo artist Instagram DMs into paid appointments — voice-matched replies, Stripe deposits, and calendar booking.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4968",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "tattoo studio desk with phone showing Instagram DMs and a calendar book under warm amber lamp, no people, no text",
+        "accent": "amber",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1599,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "real-estate-workflow-automation",
+      "title": "Real Estate Workflow Automation",
+      "category": "automation",
+      "description": "Workflow automation layer that connects Zillow, CRM, docs, and email into templated real-estate flows for agents drowning in tool sprawl.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:7077",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "real estate agent desk with house keys and connected app icons flowing into one notebook, teal desk lamp, no people, no text",
+        "accent": "teal",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1475,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "ai-workflow-library-solopreneurs",
+      "title": "AI Workflow Library for Solopreneurs",
+      "category": "automation",
+      "description": "Curated library of pre-built AI automation templates for solopreneurs — install outcomes into Zapier, Make, or n8n without Zapier hell.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1427",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "minimal desk with a library of glowing workflow cards stacked neatly beside a laptop, soft lime light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1177,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "on-device-privacy-ai",
+      "title": "On-Device Privacy AI",
+      "category": "ai-tools",
+      "description": "Privacy-first AI that runs document Q&A on your machine or private cloud so sensitive files never upload to third-party models.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1125",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "locked laptop on a dark desk with a local glow around a document folder icon, no cloud, no people, no text",
+        "accent": "steel",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1304,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "ai-writing-coach-freelancers",
+      "title": "AI Writing Coach for Freelancers",
+      "category": "ai-tools",
+      "description": "Membership that teaches freelance writers practical AI workflows — prompt labs, live workshops, and voice-preserving client deliverables.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1215",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 10,
+        "builder_confidence": 7
+      },
+      "og": {
+        "subject": "writer desk with notebook, fountain pen, and a soft screen glow showing a prompt checklist, aubergine lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1173,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
       "slug": "ai-dance-form-coach",
       "title": "AI Dance Form Coach",
       "category": "health",

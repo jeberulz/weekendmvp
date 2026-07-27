@@ -1,0 +1,132 @@
+---
+slug: "on-device-privacy-ai"
+title: "On-Device Privacy AI"
+---
+
+## The Problem
+
+Every regulated or reputation-sensitive team wants AI and fears the upload button. Lawyers paste contracts into ChatGPT and hope nobody notices. Clinic ops managers summarize intake PDFs they should not put on a public model. Finance teams draft board memos with figures that would trigger a security review if they left the building. CISOs say no. Employees do it anyway on personal accounts. That shadow-AI pattern is the real competitor — and the reason "just use Claude API" fails procurement.
+
+Cloud AI vendors encrypt in transit and at rest. That does not satisfy buyers whose policy is **data never leaves our systems**. Apple Core ML and Google TensorFlow Lite prove on-device inference works — for developers with weeks to integrate, not for a 12-person firm that needs PDF chat on Tuesday. Edge Impulse and industrial vision vendors serve IoT and factories. SMBs in legal, health ops, and finance are stuck between free DIY (Ollama terminal commands) and six-figure enterprise LLM gateways.
+
+Privacy regulation tightens (GDPR, CCPA, sector rules). On-device and edge AI markets are growing at mid-20s CAGRs. Communities like r/privacy (millions of members) treat local inference as table stakes. The product gap is packaging: **one-click local AI for documents**, with licensing and support a business can buy — not another framework README.
+
+## The Solution
+
+On-Device Privacy AI (working name: LocalLedger AI — or simply LocalDocs) is a privacy-first AI toolkit that runs document Q&A, summarization, and sensitive workflow assists **on the customer's machine or private VPC**. Data never uploads to a third-party LLM API unless the user explicitly opts in. The weekend wedge is brutally simple: drag-and-drop PDF/DOCX chat for law firms, clinics' ops teams, and finance SMBs who already say "we can't put that in ChatGPT."
+
+Pricing wedge for B2B: **$499/month** startups (single team deploy), **$2,499/month** mid-market (multi-seat + admin), enterprise custom. Optional lighter seats later. Wrap Ollama/llama.cpp (or similar) with a polished installer, license server, and audit log — do not try to out-silicon Apple.
+
+**How it works:**
+
+1. **Install local runtime** — One-click installer pulls a supported open model (e.g. Llama-class) via Ollama; health check confirms GPU/CPU path.
+2. **Index local folders** — Point at a client-matters directory; embeddings stay on disk. No cloud sync by default.
+3. **Ask in plain language** — "Summarize the indemnity clause in agreement_v3.pdf" with citations to page snippets.
+4. **Audit trail** — Every query logged locally for compliance officers; exportable for GDPR/CCPA evidence.
+5. **Optional private cloud** — Same binary on a company GPU box; seats authenticate against your license server.
+
+Expansion: vertical packs (HIPAA-oriented redaction prompts, financial statement extractors) once the core "never leaves" promise is trusted.
+
+## Market Research
+
+On-device / edge AI is no longer a research niche. Hardware NPUs, open weights, and privacy law create a commercial window for packaged local inference.
+
+- Specialized **on-device AI** forecasts put the market near **USD 10.6 billion in 2025** growing toward **USD 57.7 billion by 2033** at roughly **25% CAGR** ([DataInsightsMarket](https://www.datainsightsmarket.com/reports/on-device-ai-455626)).
+- Broader AI market trackers show multi-hundred-billion baselines with continued double-digit growth ([Precedence Research](https://www.precedenceresearch.com/artificial-intelligence-market)).
+- Industry overviews of on-device AI emphasize smartphones, edge hardware, and enterprise privacy use cases as primary adoption vectors ([360iResearch](https://www.360iresearch.com/library/intelligence/on-device-ai)).
+- Consumer and builder interest in local LLMs (Ollama, LM Studio) exploded alongside general AI adoption stats ([Exploding Topics AI statistics](https://explodingtopics.com/blog/ai-statistics)).
+- Community: **r/privacy** (~1.5M+), GDPR-focused Facebook groups, and cybersecurity subs continuously discuss local processing vs cloud risk.
+
+SAM: US/EU SMBs in legal, health operations, and finance who already rejected public ChatGPT for client data and will pay $499+/mo for a supported local doc AI.
+
+## Competitive Landscape
+
+Platform frameworks are free and powerful. Packaged SMB privacy AI is thin.
+
+- **Apple Core ML** — Excellent on-device ML, privacy marketing, Neural Engine. Free framework. Locked to Apple ecosystem; not a turnkey doc product for Windows law firms.
+- **Google TensorFlow Lite** — Cross-platform, huge community, free/open. Implementation complexity kills non-ML teams. Privacy is not the primary product story.
+- **Edge Impulse** — End-to-end edge ML toolchain. Freemium with paid enterprise. Strong for IoT/sensors; not pitched as "local PDF chat for compliance."
+- **Neurala** — Vision AI on edge devices; custom industrial pricing. Wrong job-to-be-done for knowledge-worker documents.
+- **Ollama / LM Studio** — Free DIY local LLMs. Perfect for hackers; zero procurement, audit logs, or vendor support for a risk committee.
+
+**Your Opportunity**
+
+Productize the DIY stack. Position as *ChatGPT for files that never leave the building.* Sell to the partner who already manages IT for three law firms. Your moat is installer UX, audit exports, and vertical prompt packs — not model weights.
+
+## Business Model
+
+Seat/deploy subscriptions with a sharp mid-market jump.
+
+- **Startup Deploy** ($499/month) — One machine or small VPC, up to 5 seats, email support, standard models.
+- **Mid-Market** ($2,499/month) — Multi-machine, SSO-ish seat invites, priority support, custom retention policies.
+- **Enterprise** (custom) — Air-gapped install help, BAAs where applicable, dedicated models, on-prem license server.
+- **Services** (optional) — Paid onboarding to index legacy file shares.
+
+**Unit Economics (illustrative)**
+
+- **Software margin high** — Inference cost is customer's electricity/GPU
+- **Support is the COGS** — Budget human help for installs; productize FAQs aggressively
+- Path: 20 Startup = $10K MRR; 4 Mid-Market = +$10K MRR
+
+## Recommended Tech Stack
+
+Ship a thin control plane + thick local runtime.
+
+- **Local runtime** — Ollama or llama.cpp; embedding model for RAG; Chroma/sqlite-vss on disk.
+- **Desktop shell** — Tauri or Electron for Windows/Mac app; or pure local web UI on localhost.
+- **License + updates** — Small Next.js control plane on Vercel for keys, billing, model allow-lists (no document content).
+- **Postgres** — customers, licenses, seat counts (metadata only).
+- **Stripe** — Startup and Mid-Market subs.
+- **Claude (dev only)** — You use cloud AI to build; customer data path stays local.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Local Doc Chat MVP**
+
+```text
+Build a local-first document Q&A app "On-Device Privacy AI".
+
+Requirements:
+- Runs entirely on localhost
+- User selects a folder of PDFs
+- Ingest with local embeddings (sentence-transformers or Ollama embed model)
+- Chat UI cites filename + page/snippet
+- Explicit banner: "No data leaves this machine"
+- Settings: model name (ollama), temperature, retention days for chat history (local only)
+
+Tech: Python FastAPI + simple React UI, or Next.js pointing at local API.
+Include a LICENSE_KEY check that only validates online once per week (metadata ping), never uploads docs.
+```
+
+**2. Installer + Health Check**
+
+```text
+Write an install script and first-run wizard for macOS and Windows that:
+1. Detects Ollama; if missing, opens download instructions
+2. Pulls a default 7B-8B instruct model
+3. Runs a sample prompt "Reply with OK" as health check
+4. Creates default data directory for indexes
+5. Prints next step: open http://127.0.0.1:8787
+
+Fail loudly if less than 8GB RAM.
+```
+
+**3. Audit Log Export**
+
+```text
+Add compliance features:
+- Append-only local SQLite table: timestamp, user, query_hash, files_touched[], latency_ms
+- Export CSV/JSON for last 90 days
+- Redact query text option (hash-only mode for stricter policies)
+- Admin screen listing seat activity without sending data to cloud
+```
+
+## Sources
+
+- [On-Device AI Market — DataInsightsMarket](https://www.datainsightsmarket.com/reports/on-device-ai-455626)
+- [Artificial Intelligence Market — Precedence Research](https://www.precedenceresearch.com/artificial-intelligence-market)
+- [On-Device AI Intelligence — 360iResearch](https://www.360iresearch.com/library/intelligence/on-device-ai)
+- [AI Statistics — Exploding Topics](https://explodingtopics.com/blog/ai-statistics)
+- Apple Core ML, TensorFlow Lite, Edge Impulse, and Neurala positioning summarized from public materials — verify pricing before marketing.
