@@ -40,8 +40,8 @@ import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubTracker } from "@/components/hubs/HubTracker";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
+  fetchAudienceReference,
   fetchIdeasByAudience,
-  fetchRefTables,
 } from "@/components/hubs/hub-data";
 import {
   SITE,
@@ -657,11 +657,10 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
   cacheLife("hours");
 
   const page = AUDIENCE_PAGES[slug];
-  const [ideas, refTables] = await Promise.all([
+  const [ideas, audienceRow] = await Promise.all([
     fetchIdeasByAudience(slug),
-    fetchRefTables(),
+    fetchAudienceReference(slug),
   ]);
-  const audienceRow = refTables?.audiences.find((a) => a.slug === slug) ?? null;
 
   // Reference-table copy drives the hero when Convex is reachable; the
   // static port (same manifest data) is the build-time fallback.

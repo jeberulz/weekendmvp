@@ -43,7 +43,7 @@ import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
   fetchIdeasBySlugs,
   fetchIdeasByTool,
-  fetchRefTables,
+  fetchToolReference,
   type IdeaDoc,
 } from "@/components/hubs/hub-data";
 import {
@@ -563,19 +563,18 @@ async function getToolData(slug: string): Promise<ToolData> {
   cacheLife("hours");
 
   const page = TOOL_PAGES[slug];
-  const [ideas, featured, refTables] = await Promise.all([
+  const [ideas, featured, toolRow] = await Promise.all([
     fetchIdeasByTool(slug),
     fetchIdeasBySlugs(page.featured?.slugs),
-    fetchRefTables(),
+    fetchToolReference(slug),
   ]);
-  const row = refTables?.tools.find((t) => t.slug === slug) ?? null;
   return {
     ideas,
     featured,
-    description: row?.description ?? page.description,
-    url: row?.url ?? page.url,
-    strengths: row?.strengths ?? page.strengths,
-    gettingStarted: row?.gettingStarted ?? page.gettingStarted,
+    description: toolRow?.description ?? page.description,
+    url: toolRow?.url ?? page.url,
+    strengths: toolRow?.strengths ?? page.strengths,
+    gettingStarted: toolRow?.gettingStarted ?? page.gettingStarted,
   };
 }
 

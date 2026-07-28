@@ -143,8 +143,8 @@ async function buildFilters(ideas: IdeaCardData[]): Promise<CategoryFilter[]> {
   let order: string[] = [];
   const names: Record<string, string> = {};
   try {
-    const refs = await fetchQuery(api.referenceTables.all, {});
-    for (const cat of refs.categories) {
+    const categories = await fetchQuery(api.referenceTables.allCategories, {});
+    for (const cat of categories) {
       order.push(cat.slug);
       const name = cat.name ?? cat.displayName;
       if (name) names[cat.slug] = name;

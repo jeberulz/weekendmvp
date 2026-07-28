@@ -45,6 +45,15 @@ export const all = query({
   },
 });
 
+/** Categories only, for the startup-ideas filter chips. */
+export const allCategories = query({
+  args: {},
+  returns: v.array(categoryDoc),
+  handler: async (ctx) => {
+    return await ctx.db.query("categories").take(100);
+  },
+});
+
 /** Single category by slug, or null. */
 export const categoryBySlug = query({
   args: { slug: v.string() },
