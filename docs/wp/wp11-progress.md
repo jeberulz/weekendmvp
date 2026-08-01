@@ -102,3 +102,16 @@ Append-only progress log. Do not rely on chat history for project state.
   - Observe the next complete billing window.
   - Plan facet relation rows only if the run rate stays above budget.
   - Inventory approved production row sizes/category density before considering a digest or document split.
+
+## 2026-08-01 - Ship undeployed WP11 to production
+
+- Actions taken:
+  - Scanned commit history vs GitHub Production deployments and live `www.weekendmvp.app`.
+  - Confirmed every `main` commit through `227149b` (WP09) already has a successful Vercel Production deploy and is live (ideas/articles/hubs return 200; grid includes WP09 slugs).
+  - Identified the only undeployed code push: `feat/wp11-convex-performance-audit` @ `1e8f7bb` (Preview only; never merged).
+  - Opened `cursor/deploy-wp11-convex-perf-d2d5` from that tip to merge into `main` for Vercel production.
+- Decisions made:
+  - Safe to merge Next.js callers ahead of Convex function deploy: hubs/`allCategories` degrade via existing fallbacks; `relatedFor` remains backward-compatible until `npx convex deploy`.
+- Next:
+  - Merge PR → confirm Vercel Production deploy for the merge SHA.
+  - Run `npx convex deploy` (needs `CONVEX_DEPLOY_KEY` / owner login) so prod picks up indexed `relatedFor` + `allCategories`.
