@@ -115,3 +115,10 @@ Append-only progress log. Do not rely on chat history for project state.
 - Next:
   - Merge PR → confirm Vercel Production deploy for the merge SHA.
   - Run `npx convex deploy` (needs `CONVEX_DEPLOY_KEY` / owner login) so prod picks up indexed `relatedFor` + `allCategories`.
+
+## 2026-08-01 - Vercel Production deploy confirmed
+
+- Merged #29 → `8efd712` on `main`.
+- GitHub Production deployment `5706961851` succeeded; Vercel status success.
+- Live smoke on `www.weekendmvp.app`: `/`, `/startup-ideas`, `/ideas/tattoo-dm-booking-agent`, `/build-with/claude`, `/ideas-for/developers`, `/about` all HTTP 200; homepage cache age ~1s post-deploy.
+- Convex MCP/CLI: no `CONVEX_DEPLOY_KEY` / login in this agent env — backend function deploy still owner-side.
