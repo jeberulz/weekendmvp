@@ -12,6 +12,34 @@ const ideaDoc = v.object({
   _creationTime: v.number(),
 });
 
+/** Card fields consumed by the related-ideas rail. */
+const relatedIdeaDoc = v.object({
+  slug: v.string(),
+  title: v.string(),
+  category: v.string(),
+});
+
+const DEFAULT_RELATED_LIMIT = 3;
+const MAX_RELATED_LIMIT = 12;
+
+function relatedLimit(limit: number | undefined): number {
+  if (limit === undefined) return DEFAULT_RELATED_LIMIT;
+  if (!Number.isFinite(limit)) return 0;
+  return Math.max(0, Math.min(Math.trunc(limit), MAX_RELATED_LIMIT));
+}
+
+function relatedIdeaCard(idea: {
+  slug: string;
+  title: string;
+  category: string;
+}) {
+  return {
+    slug: idea.slug,
+    title: idea.title,
+    category: idea.category,
+  };
+}
+
 /** Look up a single idea by slug. Returns null when not found. */
 export const bySlug = query({
   args: { slug: v.string() },
@@ -150,9 +178,13 @@ export const latest = query({
  */
 export const relatedFor = query({
   args: { slug: v.string(), limit: v.optional(v.number()) },
-  returns: v.array(ideaDoc),
+  returns: v.array(relatedIdeaDoc),
   handler: async (ctx, { slug, limit }) => {
-    const max = limit ?? 3;
+    const max = relatedLimit(limit);
+    if (max === 0) {
+      return [];
+    }
+
     const self = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
@@ -160,21 +192,50 @@ export const relatedFor = query({
     if (!self) {
       return [];
     }
-    const all = await ctx.db
+
+    // The rail prioritizes category matches, so fill it from the existing
+    // category/publishedAt index. `max + 1` accounts for `self` appearing in
+    // the range without turning this hot path into a full-table scan.
+    const categoryCandidates = await ctx.db
+      .query("ideas")
+      .withIndex("by_category_publishedAt", (q) =>
+        q.eq("category", self.category),
+      )
+      .order("desc")
+      .take(max + 1);
+    const related = categoryCandidates
+      .filter((idea) => idea.slug !== slug)
+      .slice(0, max)
+      .map(relatedIdeaCard);
+
+    if (related.length === max) {
+      return related;
+    }
+
+    // Array membership is not indexable in the current schema. Preserve the
+    // legacy audience fallback exactly, but stop newest-first iteration as
+    // soon as the remaining card slots are full. With current seeded data,
+    // every category fills the public four-card rail above and this fallback
+    // reads nothing.
+    const selfAudiences = new Set(self.audiences);
+    const newestIdeas = ctx.db
       .query("ideas")
       .withIndex("by_publishedAt")
-      .order("desc")
-      .collect();
-    const others = all.filter((idea) => idea.slug !== slug);
-    const sameCategory = others.filter(
-      (idea) => idea.category === self.category,
-    );
-    const sameAudience = others.filter(
-      (idea) =>
-        idea.category !== self.category &&
-        idea.audiences.some((a) => self.audiences.includes(a)),
-    );
-    return [...sameCategory, ...sameAudience].slice(0, max);
+      .order("desc");
+    for await (const idea of newestIdeas) {
+      if (
+        idea.slug === slug ||
+        idea.category === self.category ||
+        !idea.audiences.some((audience) => selfAudiences.has(audience))
+      ) {
+        continue;
+      }
+      related.push(relatedIdeaCard(idea));
+      if (related.length === max) {
+        break;
+      }
+    }
+    return related;
   },
 });
 
