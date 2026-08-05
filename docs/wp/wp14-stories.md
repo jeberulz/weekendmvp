@@ -15,7 +15,7 @@ Definition of done: `https://www.weekendmvp.app/` exists as a verified URL-prefi
   - Verification:
     - Sites API list/get (2026-08-05): property present at `siteUnverifiedUser`.
 
-- [ ] `WP14-S2` - Owner verifies property + grants SA Owner (manual)
+- [x] `WP14-S2` - Owner verifies property + grants SA Owner (manual)
   - Scope: Google Search Console UI (owner Google account)
   - Acceptance criteria:
     - `https://www.weekendmvp.app/` is verified under the owner account (Domain ownership usually auto-verifies URL-prefix).
@@ -23,7 +23,7 @@ Definition of done: `https://www.weekendmvp.app/` exists as a verified URL-prefi
   - Verification:
     - Sites API `get` returns `siteOwner` (or Full) for the SA; `list_sitemaps` no longer 403s.
 
-- [ ] `WP14-S3` - Submit sitemap + point MCP/scripts at www prefix
+- [x] `WP14-S3` - Submit sitemap + point MCP/scripts at www prefix
   - Scope: `scripts/gsc-submit-sitemap.mjs`, `docs/runbooks/gsc-www-prefix.md`, `~/.mcp.json` `GSC_SITE_URL` note
   - Acceptance criteria:
     - Script submits `https://www.weekendmvp.app/sitemap.xml` successfully.
