@@ -4,6 +4,7 @@ Append-only owner/orchestrator decisions for questions not settled by project do
 
 | Date | Scope | Question | Ruling | Decider |
 |---|---|---|---|---|
+| 2026-07-22 | MCP / Cloud Agents | Why can't Cloud Agents use Ideabrowser MCP? | Desktop/global MCP is not inherited. Wire Ideabrowser as Cloud Agent HTTP MCP at `https://www.ideabrowser.com/api/mcp/http` with `Authorization: Bearer ib_…` via cursor.com/agents MCP dropdown (and/or `IDEABROWSER_API_KEY` + `.cursor/mcp.json`). Never use `/api/mcp/sse` on Cloud Agents. | cloud-agent |
 | 2026-07-22 | WP04 | Which 5 programmatic hubs next given full original inventory? | Publish audiences `freelancers`, `creators`, `small-business-owners` and problems `lead-generation`, `content-creation`. Highest SEO/AEO fit to Weekend MVP (AI weekend MVPs for indie builders) with enough taggable ideas; skip new tools (all AI builders covered) and new categories (already complete). | Orchestrator |
 | 2026-07-22 | WP04 | Parallelize how? | Manifest tagging stays with orchestrator. Parallel workers: (1) audience route file only, (2) problem route file only. No worktrees — shared-file conflict avoided by file boundaries. | Orchestrator |
 | 2026-07-25 | WP07 | About vs author URL model? | Split: `/about` (product) + `/john-iseghohi` (Person entity). Person `@id`/`url` = first-party author page; Cal only in sameAs + CTAs. | Owner |
