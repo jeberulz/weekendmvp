@@ -1,6 +1,6 @@
 # WP15 Stories - Build-with growth push
 
-Branch: `feat/wp15-build-with-growth`
+Branch: `cursor/wp15-build-with-growth`
 Lane: Work Package
 Registry: `docs/PROJECT_STRATEGY.md`
 Definition of done: Lovable/no-code/replit/cursor titles match high-impression queries; those hubs (plus no-code) have featured rails and no-code has MVP prompts; `/build-with/claude-code` is live, sitemapped, and linked from Claude + nav/footers.

@@ -2,7 +2,7 @@
 
 ## Status
 
-Complete on `feat/wp15-build-with-growth`. Local smoke passed; www verification after merge/deploy.
+Complete on `cursor/wp15-build-with-growth`. Local smoke passed; www verification after merge/deploy.
 
 ## S1 — CTR title/meta
 
