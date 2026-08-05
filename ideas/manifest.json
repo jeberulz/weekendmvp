@@ -6366,6 +6366,386 @@
         "builder_confidence": 6
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-grant-writing-assistant-nonprofits",
+      "title": "AI Grant Writing Assistant for Nonprofits",
+      "publishedAt": "2026-08-05",
+      "category": "b2b",
+      "description": "AI drafts funder-specific grant proposals and LOIs from one org profile, tracks deadlines and outcomes — built for nonprofits too small to afford a grant writer.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "non-technical-founders",
+        "freelancers",
+        "solo-founders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A single desk lamp casts warm light on a stack of grant application folders in an otherwise dark office, one deep-aubergine folder tab glowing among plain manila ones",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 12,
+        "wordCount": 2560,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "local-seo-citation-manager",
+      "title": "AI Local SEO Citation and Google Business Profile Manager",
+      "publishedAt": "2026-08-05",
+      "category": "saas",
+      "description": "AI tool that audits NAP consistency across Google, Yelp, Apple Maps & Bing for multi-location businesses, then drafts corrected listings and GBP posts.",
+      "buildTime": "10-14",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "claude",
+        "cursor",
+        "v0"
+      ],
+      "audiences": [
+        "agencies",
+        "developers",
+        "weekend-builders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dark, cinematic desk scene: a single physical business signpost with mismatched address plates stacked on it, one plate glowing soft mint, everything else in shadow, no people or text.",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 11,
+        "wordCount": 2639,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-qa-test-case-generator-nocode",
+      "title": "AI QA Test Case Generator for No-Code Apps",
+      "publishedAt": "2026-08-05",
+      "category": "developer-tools",
+      "description": "Turn a described user flow or app screenshots into an exportable QA checklist with edge cases, so no-code builders can regression-test releases in minutes.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "non-technical-founders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A single cracked phone screen glowing mint in an otherwise dark, cluttered desk of tangled charging cables — no people, no text, no faces.",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 11,
+        "wordCount": 2663,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "field-service-job-costing-tracker",
+      "title": "Field Service Job Costing and Profitability Tracker",
+      "publishedAt": "2026-08-05",
+      "category": "b2b",
+      "description": "HVAC, plumbing, and electrical contractors quote jobs blind to true cost. This tool logs tech time, materials, and drive time in seconds and shows real-time margin per job.",
+      "buildTime": "10-14",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "non-technical-founders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dim job-site workbench at dusk, a battered clipboard with a torn work order under a single emerald desk-lamp glow, a phone face-down beside it — no people, no faces, no text.",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 12,
+        "wordCount": 2265,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-insurance-claim-appeal-writer",
+      "title": "AI Insurance Claim Denial Appeal Writer",
+      "publishedAt": "2026-08-05",
+      "category": "health",
+      "description": "AI drafts insurer-ready appeal letters from your denial letter and EOB, citing the exact reason code and tracking every deadline so appeals never lapse.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "side-hustlers",
+        "solo-founders",
+        "non-technical-founders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dark, softly lit desk at night: a crumpled insurance denial letter beside a single sheet of formal appeal correspondence, one lime-green highlighter stroke underlining a line of text, no people or on-page text.",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 10,
+        "wordCount": 2633,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "vacation-rental-turnover-coordinator",
+      "title": "Vacation Rental Turnover Coordinator",
+      "publishedAt": "2026-08-05",
+      "category": "automation",
+      "description": "Sync Airbnb/VRBO calendars, auto-schedule cleaners, and flag tight same-day turnovers before they cause missed cleanings and bad reviews.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "side-hustlers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dim laundry-adjacent utility hallway at dusk, a folded stack of white towels on a stainless shelf lit by one lavender-tinted wall sconce, a cleaning cart with a single spray bottle just out of focus in the foreground.",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 11,
+        "wordCount": 2513,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "warranty-service-plan-tracker",
+      "title": "Warranty and Service Plan Tracker for Retailers",
+      "publishedAt": "2026-08-05",
+      "category": "ecommerce",
+      "description": "Small electronics and appliance retailers track warranty coverage in spreadsheets. Build the tool that logs plans, verifies coverage in 5 seconds, and auto-sends renewal reminders.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "non-technical-founders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dark stockroom counter at night, a single emerald desk-lamp glow pooling on a torn paper warranty receipt stapled to a filing folder, everything else in shadow — no people, no faces, no text.",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 12,
+        "wordCount": 2505,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "micro-influencer-deliverable-tracker",
+      "title": "Micro-Influencer Deliverable and Payment Tracker",
+      "publishedAt": "2026-08-05",
+      "category": "creator-tools",
+      "description": "Centralize micro-influencer contracts, deliverable approvals, and payment triggers so a small team can run a 50-creator campaign without losing track.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "agencies",
+        "weekend-builders"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "Close-up on a dark walnut desk: a stapled contract page beside a small stack of printed content proofs, one lime-green paperclip pinning a payment receipt to the top sheet, moody single-source desk-lamp light, shallow focus.",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 10,
+        "wordCount": 2446,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-job-post-applicant-screener",
+      "title": "AI Job Post Writer and Applicant Screener for Small Business Hiring",
+      "publishedAt": "2026-08-05",
+      "category": "b2b",
+      "description": "AI writes SMB job posts from a short brief, publishes free, then ranks resumes with a plain-English fit explanation per candidate — no black-box scores.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical-founders",
+        "solo-founders",
+        "agencies"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dim, closed restaurant office at night — a single desk lamp casts a lavender glow across a thick stack of printed resumes fanned across a worn wooden desk, one folder in sharp focus, no people or faces or text visible.",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 13,
+        "wordCount": 2437,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "ai-compliance-policy-generator-smbs",
+      "title": "AI Compliance Policy Generator for SMBs",
+      "publishedAt": "2026-08-05",
+      "category": "saas",
+      "description": "Generate SOC 2-ready privacy, security, and retention policies plus a gap checklist in minutes — the paperwork starter kit priced under Vanta and Drata.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "non-technical-founders",
+        "developers"
+      ],
+      "source": "mode-b:websearch",
+      "og": {
+        "subject": "A dark, minimalist desk scene: a single manila folder tab glowing with a faint aubergine highlight, a fountain pen resting across it, no visible text or people.",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "websearch:market",
+          "websearch:competitors",
+          "websearch:tech"
+        ],
+        "citations": 11,
+        "wordCount": 2445,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "researchLevel": "standard"
     }
   ],
   "categories": [

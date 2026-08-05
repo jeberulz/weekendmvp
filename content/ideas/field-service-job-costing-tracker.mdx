@@ -1,0 +1,148 @@
+---
+slug: "field-service-job-costing-tracker"
+title: "Field Service Job Costing and Profitability Tracker"
+---
+
+## The Problem
+
+An HVAC contractor quotes a duct replacement at $4,200. The crew shows up, the job runs long because of an access problem nobody scoped, a tech drives back to the supply house twice for parts, and the invoice still reads $4,200 when it closes. Nobody flags it. The revenue looks fine on the P&L, the owner cashes the check, and three months later the same "standard duct job" line item is quietly the least profitable thing the company sells — and no one in the business can tell you that, because nobody tracked labor hours, drive time, and materials against that specific ticket.
+
+This is not a knowledge problem; it is a measurement problem. Trade contractors are disciplined about revenue and hopeless about job-level cost. Most HVAC contractors can tell you their revenue within a few thousand dollars, but ask about net margin per job type and you get a shrug or a number pulled from last year's tax return. Industry benchmarks bear this out: HVAC contractors run on razor-thin average net margins of roughly 2.5% to 3.5%, even though the trade should support far more, because underpriced or overrun jobs bleed out silently against the well-priced ones (contractorincharge.com). Electrical contractors look healthier on paper — 65-67% gross margin is typical — but that collapses to just 10-20% net once labor burden, drive time, and callbacks are counted, and most shops have no system that shows them which job categories are the ones doing the collapsing (profitabilitypartners.io).
+
+The tools that exist don't fix this. QuickBooks shows company-wide P&L, not job-level margin. ServiceTitan and Jobber are built for scheduling and dispatch first, with job costing bolted on as an enterprise-tier feature few small shops configure. And the field service software adoption data explains why: only 52% of small field service businesses (under 50 technicians) have adopted any field service technology at all, versus 84% of large enterprises — the tools that exist are priced and built for the operators who least need this problem solved (provalet.io). A 3-tech plumbing outfit isn't going to configure a $245/tech/month enterprise platform to find out one job type is losing money. They need something a tech can use from a truck in under 20 seconds, and something an owner can glance at on a Friday to see which job category is quietly eating the business.
+
+## The Solution
+
+A lightweight mobile-first tool that captures true job cost at the moment work happens, and turns it into a live margin dashboard the owner actually looks at. Techs log time against a job with one tap (start/stop, or "add 45 min — access delay"), snap a photo of a supply-house receipt instead of typing line items, and log drive time automatically via GPS start/stop. Every entry rolls up in real time against the original quote, so the owner sees margin per job, per crew, and per job-type-per-week — not at month-end reconciliation, but the day the job closes. When a job category (say, "duct replacement — standard") consistently comes in under 15% margin across a rolling 30 days, the system doesn't just log it; it flags it, so the owner can reprice the category before it becomes ten more money-losing jobs instead of one.
+
+**How it works:**
+
+1. **Tech logs the job in seconds** — Open the app on a job, tap start/stop for labor time, snap a photo of any materials receipt (AI extracts line-item costs), and GPS auto-tracks drive time to and from the site
+2. **System computes true cost against the quote** — Labor hours × loaded rate (wage + burden) + materials + drive time is reconciled against the original quoted price the instant the job is marked complete
+3. **Owner sees margin in real time, not at month-end** — A dashboard ranks every open and closed job by margin percentage, rolls up by crew and by job type/week, and flags any category trending under a configurable margin floor for three or more jobs running
+
+Nothing here requires the tech to learn a new workflow beyond tapping two buttons and taking a photo — the entire design bet is that job costing dies the moment it asks a tradesperson to do desk work.
+
+## Market Research
+
+Trade contractors are a large, underserved software market sitting on top of a genuine, measurable margin problem — the two facts that make this worth building now rather than a "nice idea."
+
+- **The global field service management software market was valued at roughly $6.1B in 2025 and is projected to reach $13.8B by 2033 at an 11% CAGR** — steady, well-funded category growth, but one still dominated by scheduling/dispatch platforms rather than cost-per-job tools (globalgrowthinsights.com).
+- **The US field service management software market alone is estimated at $3.1B in 2026**, a large enough base that a narrow, job-costing-specific wedge doesn't need to win the category to build a real business (ibisworld.com).
+- **HVAC contractors average just 2.5%-3.5% net profit margin**, despite tracking revenue closely — the gap between what they think they're earning and what job-level costs are actually leaving them is the exact problem this product surfaces (contractorincharge.com).
+- **Electrical contractors run 65-67% gross margin but only 10-20% net** once labor burden and overhead are properly allocated — a swing large enough that misclassifying even a handful of jobs as profitable when they aren't materially changes a shop's year (profitabilitypartners.io).
+- **There are 117,000+ HVAC contractor businesses in the US alone**, employing 400,000+ HVAC-R technicians — and that's one of three trades (HVAC, plumbing, electrical) this product targets, each with its own dense concentration of small owner-operator shops (leads4build.com).
+- **Only 52% of small field service businesses (fewer than 50 technicians) have adopted any field service software**, compared with 84% of large enterprises — the segment least served by existing FSM suites is exactly the segment that needs a five-minute, phone-native tool the most (provalet.io).
+
+Stage: *emerging within an established category*. Full-suite FSM platforms have existed for a decade; a dedicated, dead-simple, mobile-first job costing and margin layer for the sub-20-tech shop has not been built and marketed as a standalone product.
+
+## Competitive Landscape
+
+The incumbents fall into two camps: full field service suites where job costing is a buried, enterprise-tier feature, and accounting-adjacent job costing tools built for general contractors rather than service trades. Neither is designed to be opened by a tech mid-job.
+
+- **ServiceTitan** — The category leader for larger trade shops. Deep scheduling, dispatch, marketing, and reporting, including job costing — but it is priced and built for shops with real back-office staff. $245-$398 per technician per month plus $5,000-$50,000 in setup/onboarding fees and a 12-month minimum contract (tooleduppro.com)
+- **Housecall Pro** — Popular with solo operators and small crews; strong scheduling, invoicing, and payments. Job costing exists but is shallow compared to its scheduling depth, and per-job margin reporting isn't the product's center of gravity. Basic $79/mo (1 user), Essentials $189/mo (5 users), MAX $329/mo, monthly billing (schedulingkit.com)
+- **Jobber** — Well-loved for its clean UX and quoting-to-invoice workflow across home service trades. Job costing/profitability reporting is a Grow-plan-and-up feature, not the core pitch. Core $39/mo, Connect $119/mo, Grow $199/mo, Plus $599/mo (tekpon.com)
+- **FieldPulse** — Flexible FSM platform aimed at small-to-mid trade businesses, with job costing as one module among many (dispatch, CRM, invoicing, fleet). No published pricing; industry estimates put it around $99/user/month scaling to $399+/month for larger crews before add-ons (serviceagent.ai)
+- **Knowify** — The closest existing analog: a job-costing-first tool, but built primarily for general and specialty construction contractors doing project-based, multi-phase work rather than same-day service trades. Plans start around $99-$149/month billed yearly across Essentials, Advanced, and Enterprise tiers, with a separate Service Pro add-on bolted on for dispatch (projul.com)
+
+**Your Opportunity**
+
+Every incumbent above treats job costing as a module you configure inside a bigger platform, which is exactly why most small trade shops never turn it on — it requires setting up cost codes, labor rates, and reporting dashboards before it produces a single useful number. Win by inverting that: ship a product where job costing and margin visibility *is* the whole app, onboarding takes one job to prove value (log a single job, see its real margin), pricing undercuts the FSM suites because there's no scheduling/dispatch/marketing bloat to build or maintain, and the AI-flagged "this job category is losing money" alert is the single feature that gets an owner to open the app every Friday.
+
+## Business Model
+
+Per-company subscription priced by crew size, positioned meaningfully below the full FSM suites since this product does one thing extremely well rather than everything adequately. The free tier is deliberately capped low enough to prove the "aha" moment (your real margin, not your invoiced number) without giving away the ongoing tracking that owners come to depend on.
+
+- **Free** ($0) — 1 user, up to 5 active jobs/month, 30-day history, manual receipt entry — proves the core "here's your real margin" moment
+- **Crew** ($49/mo) — Up to 5 techs, unlimited jobs, AI receipt photo capture, real-time job/crew margin dashboard
+- **Company** ($129/mo) — Up to 20 techs, job-type/week margin trends, underpriced-category alerts, QuickBooks/Xero labor rate sync, CSV/PDF export for the accountant
+
+Variable cost per job is small and shrinking: receipt OCR runs roughly $0.01-0.02 per photo at API list pricing, and the AI parsing/flagging layer (structured extraction plus weekly category-flagging) adds another $0.02-0.05 per job in LLM inference — call it $0.05-0.10 in fully-loaded AI cost per completed job. At the Company tier's typical usage (a 10-tech shop closing ~150 jobs/month), that's under $15/month in variable cost against $129/month in revenue.
+
+**Unit Economics**
+
+- **~$0.08** — Blended AI + OCR cost per job
+- **~85%** — Gross margin at the Crew/Company tiers
+- **$150-$250** — Target CAC (trade contractors are a harder, more relationship-driven channel than consumer SaaS)
+- **~$3,100** — Estimated 24-month LTV at the Company tier (financial tools tied to daily workflow churn slowly once trusted)
+
+MRR path: 100 Crew customers ($4,900) + 50 Company customers ($6,450) clears $11,350/mo. Scaling to 400 Crew + 250 Company crosses $52K MRR. The realistic near-term target for a solo builder is the first 100-150 paying shops, reached primarily through trade Facebook groups, HVAC/plumbing/electrical trade associations, and contractor-focused YouTube and podcast sponsorships rather than paid search, where CAC in this vertical runs high.
+
+## Recommended Tech Stack
+
+The hard engineering problem here is not the AI — it's making the tech-facing capture flow work reliably from a job site with one bar of signal, and making the owner-facing dashboard feel instant even though data is trickling in from crews in the field all day.
+
+- **React Native + Expo** — The tech-facing mobile app. Expo Router for navigation, camera module for receipt capture, background location for drive-time tracking. Offline-first by design: every log (start/stop, receipt, note) writes to a local queue first and syncs when connectivity returns, so a dead zone at a job site never loses data.
+- **Next.js 14 (App Router) + Vercel** — The owner-facing web dashboard: live margin-per-job table, crew leaderboards, job-type/week trend charts. Server Components keep the dashboard fast even as job history grows into the thousands of rows.
+- **Supabase (Postgres + Auth + Storage)** — Tables: `companies`, `technicians`, `jobs` (quoted_price, job_type, crew_id, status), `time_entries` (job_id, tech_id, started_at, ended_at, source), `materials` (job_id, receipt_image_url, extracted_line_items JSONB, cost_cents), `drive_segments`. Row-level security scoped by `company_id` — this is financial data and access must be airtight.
+- **Veryfi Receipt OCR API** — Photo-to-structured-data extraction for supply-house receipts (Home Depot, Ferguson, Grainger). Returns itemized line costs so a tech never types a material list by hand; ~$0.01-0.02 per receipt at scale (veryfi.com)
+- **Claude (Anthropic API)** — Two jobs: (1) reconcile ambiguous or partial time/material entries into clean structured job-cost records, and (2) run the weekly "which job category is systematically underpriced" analysis across a company's closed jobs and write the plain-English flag the owner sees Friday morning.
+- **QuickBooks Online / Xero API + Stripe Billing** — Pull real loaded labor rates (wage + burden) from the contractor's existing accounting system so margin math reflects true cost, not a guessed hourly rate; Stripe Billing runs the Free/Crew/Company subscription tiers with a self-serve customer portal.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a monorepo with a Next.js 14 (App Router, TypeScript, Tailwind) web dashboard and a React Native + Expo mobile app for a field service job costing tool called "MarginTrack."
+
+Provision Supabase with these tables:
+- companies (id, name, trade_type, plan)
+- technicians (id, company_id, name, phone, loaded_hourly_rate_cents, role)
+- jobs (id, company_id, job_type, crew_id, quoted_price_cents, status, opened_at, closed_at)
+- time_entries (id, job_id, technician_id, started_at, ended_at, source ENUM['app','manual'])
+- materials (id, job_id, receipt_image_url, extracted_line_items JSONB, total_cost_cents, added_by)
+- drive_segments (id, job_id, technician_id, started_at, ended_at, miles, source ENUM['gps','manual'])
+
+Enable row-level security so every table is scoped to company_id via the authenticated user's company membership. Set up Stripe Billing with three products: Free, Crew ($49/mo), Company ($129/mo). Add env vars for SUPABASE_URL, SUPABASE_ANON_KEY, ANTHROPIC_API_KEY, VERYFI_CLIENT_ID, VERYFI_API_KEY, QUICKBOOKS_CLIENT_ID.
+```
+
+**2. Mobile Time + Materials Logging (Offline-First)**
+
+```text
+Build the React Native + Expo screens for a technician's job-logging flow. Requirements:
+
+1. Job list screen: shows the tech's assigned open jobs for today, pulled from Supabase, cached locally for offline access.
+2. Job detail screen: a large [Start Timer] / [Stop Timer] button that writes a time_entries row locally first (using a local SQLite queue), then syncs to Supabase in the background when connectivity returns. Show a "queued, will sync" badge when offline.
+3. Materials capture: camera button opens the device camera, captures a receipt photo, uploads to Supabase Storage when online (queues locally when offline), and calls the Veryfi receipt OCR API server-side to extract line items and total cost. Show the extracted line items to the tech for a one-tap confirm before saving to the materials table.
+4. Drive time: request background location permission; auto-start a drive_segments entry when the tech leaves a geofence around the previous job site, auto-stop on arrival at the next job's address.
+
+Handle sync conflicts by last-write-wins on the local queue, with a visible "3 items syncing" indicator. Every screen must remain fully usable with zero connectivity.
+```
+
+**3. Owner Margin Dashboard + Underpriced-Category Flagging**
+
+```text
+Build the owner-facing Next.js dashboard for MarginTrack.
+
+Main view: a live table of jobs (open and closed in the last 90 days) with columns: job_type, crew, quoted_price, actual_labor_cost (sum of time_entries * technician.loaded_hourly_rate), actual_materials_cost (sum of materials.total_cost_cents), actual_drive_cost (drive_segments.miles * $0.67 IRS mileage rate as a proxy), computed_margin_pct. Sort by margin ascending by default so the worst jobs surface first. Support filters by crew and by job_type.
+
+Rollup views: margin by crew (bar chart, this week vs last 4 weeks average), margin by job_type/week (trend line per job type over the last 12 weeks).
+
+Weekly flagging job (run via a scheduled Supabase Edge Function or Vercel Cron every Monday):
+- Query all job_types with 3+ closed jobs in the trailing 30 days
+- For any job_type averaging under a configurable margin floor (default 15%), call the Anthropic API with the job_type's cost breakdown and ask it to write a 2-3 sentence plain-English summary of why the category is underpriced and a suggested reprice range
+- Store the flag and summary, surface it as a dismissible banner at the top of the dashboard, and email/SMS the owner a digest via Resend/Twilio
+
+Use Claude with a strict JSON schema for the flagging summary: { job_type, avg_margin_pct, jobs_analyzed, likely_cause, suggested_price_adjustment_pct, summary_text }.
+```
+
+## Sources
+
+- [GlobalGrowthInsights — Field Service Management Software Market ($6.1B 2025 → $13.8B by 2033, 11% CAGR)](https://www.globalgrowthinsights.com/market-reports/field-service-management-software-market-122644)
+- [IBISWorld — Field Service Management Software in the US Market Size ($3.1B, 2026)](https://www.ibisworld.com/united-states/market-size/field-service-management-software/5393/)
+- [Contractor In Charge — Average Profit Margins for HVAC & Plumbing in 2026 (2.5%-3.5% net)](https://contractorincharge.com/blog/average-profit-margins-for-hvac-and-plumbing-companies)
+- [Profitability Partners — Electrical Contractor Profit Margins (65-67% gross, 10-20% net)](https://profitabilitypartners.io/electrical-contractor-profit-margins/)
+- [ProValet — Field Service Software Adoption Rates (52% small business vs 84% enterprise)](https://www.provalet.io/guides-posts/field-service-software-adoption-rates-444f3)
+- [Leads4Build — 2025 HVAC Industry Statistics (117,000+ contractor businesses, 400K+ technicians)](https://leads4build.com/insights/hvac-statistics-trends)
+- [Tooled Up Pro — ServiceTitan Pricing 2026 ($245-$398/tech/mo, setup fees)](https://tooleduppro.com/guides/servicetitan-pricing/)
+- [SchedulingKit — Housecall Pro Pricing 2026 (Basic $79, Essentials $189, MAX $329)](https://schedulingkit.com/pricing-guides/housecall-pro-pricing)
+- [Tekpon — Jobber Pricing 2026 (Core $39 to Plus $599/mo)](https://tekpon.com/software/jobber/pricing/)
+- [ServiceAgent.ai — FieldPulse Pricing 2026 (~$99/user/mo base)](https://serviceagent.ai/blogs/fieldpulse-pricing/)
+- [Projul — Knowify Pricing Breakdown 2026 ($99-$149/mo tiers)](https://projul.com/blog/knowify-pricing-breakdown/)
+- [Veryfi — Receipt OCR API (structured line-item extraction, ~$0.01-0.02/receipt)](https://www.veryfi.com/receipt-ocr-api/)
+
+Verify competitor pricing on live product pages before publishing anywhere pricing accuracy is load-bearing (e.g. paid ads, comparison pages) — trade-software packaging shifts frequently and several vendors above do not publish list pricing at all.
