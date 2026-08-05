@@ -21,7 +21,8 @@
     "extract:newsletter": "node scripts/extract-newsletter-to-mdx.mjs",
     "publish:newsletter": "node scripts/publish-newsletter.mjs",
     "seed:convex": "node scripts/seed-convex.mjs",
-    "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run"
+    "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run",
+    "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs"
   },
   "keywords": [],
   "author": "",
