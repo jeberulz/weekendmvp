@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Script from "next/script";
 
+import { trackValidationEvent } from "@/lib/track";
 import { useConsent } from "./ConsentProvider";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -19,6 +21,32 @@ const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
  */
 export function AnalyticsScripts() {
   const { consent } = useConsent();
+
+  useEffect(() => {
+    if (consent !== true) return;
+
+    const trackStarterKitClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) return;
+      const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor) return;
+
+      const destination = new URL(anchor.href, window.location.href);
+      if (
+        destination.origin !== window.location.origin ||
+        destination.pathname !== "/starter-kit"
+      ) {
+        return;
+      }
+
+      trackValidationEvent("starter_kit_clicked", {
+        cta_id: anchor.dataset.ctaId ?? "starter-kit",
+        source_surface: anchor.dataset.sourceSurface ?? "site_link",
+      });
+    };
+
+    document.addEventListener("click", trackStarterKitClick);
+    return () => document.removeEventListener("click", trackStarterKitClick);
+  }, [consent]);
 
   if (consent !== true) {
     return null;

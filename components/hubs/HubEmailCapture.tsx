@@ -4,7 +4,7 @@ import * as React from "react";
 import { ArrowRight, Mail } from "lucide-react";
 
 import { subscribeViaApi } from "@/lib/beehiiv-client";
-import { trackEvent } from "@/lib/track";
+import { trackEvent, trackValidationEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
 /**
@@ -91,6 +91,11 @@ export function HubEmailCapture({
       setStatus("success");
       setMessage("You're in. Check your inbox to confirm your subscription.");
       trackEvent("signup_form_success", { ...trackingProps });
+      trackValidationEvent("newsletter_subscribed", {
+        ...trackingProps,
+        source_surface: "hub_email_capture",
+        cta_id: "newsletter-subscribe",
+      });
       return;
     }
 
@@ -171,10 +176,7 @@ export function HubEmailCapture({
               id={messageId}
               role="status"
               aria-live="polite"
-              className={cn(
-                "mt-2 min-h-5 text-sm",
-                MESSAGE_CLASS[status],
-              )}
+              className={cn("mt-2 min-h-5 text-sm", MESSAGE_CLASS[status])}
             >
               {message}
             </p>

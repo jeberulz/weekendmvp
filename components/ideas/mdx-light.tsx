@@ -32,7 +32,7 @@ function isBlockCode(props: ElProps<"code">) {
   return "data-language" in props || "data-theme" in props;
 }
 
-export const ideaMdxComponents: MDXComponents = {
+const ideaMdxComponents: MDXComponents = {
   h2: ({ children, ...props }: ElProps<"h2">) => (
     <h2
       id={ideaHeadingId(childrenToText(children))}
@@ -86,7 +86,6 @@ export const ideaMdxComponents: MDXComponents = {
   hr: (props: ElProps<"hr">) => (
     <hr className="border-neutral-200 my-12" {...props} />
   ),
-  pre: (props: ElProps<"pre">) => <CopyablePre {...props} />,
   code: (props: ElProps<"code">) =>
     isBlockCode(props) ? (
       <code {...props} />
@@ -117,3 +116,12 @@ export const ideaMdxComponents: MDXComponents = {
     <td className="px-5 py-4 text-neutral-600" {...props} />
   ),
 };
+
+export function createIdeaMdxComponents(ideaSlug: string): MDXComponents {
+  return {
+    ...ideaMdxComponents,
+    pre: (props: ElProps<"pre">) => (
+      <CopyablePre {...props} ideaSlug={ideaSlug} />
+    ),
+  };
+}

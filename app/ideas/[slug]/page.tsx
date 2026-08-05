@@ -24,7 +24,7 @@ import {
 import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
-import { ideaMdxComponents } from "@/components/ideas/mdx-light";
+import { createIdeaMdxComponents } from "@/components/ideas/mdx-light";
 import {
   CATEGORY_META,
   audienceName,
@@ -184,8 +184,7 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
     const fmTitle = file.frontmatter.title;
     return {
       source: "mdx",
-      title:
-        idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
+      title: idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
       description: idea?.description ?? excerpt(file.content),
       content: file.content,
       idea,
@@ -517,7 +516,10 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                   </p>
                 ) : null}
                 {idea?.scores ? (
-                  <ul className="flex flex-wrap gap-2 mt-6" aria-label="Idea scores">
+                  <ul
+                    className="flex flex-wrap gap-2 mt-6"
+                    aria-label="Idea scores"
+                  >
                     {SCORE_LABELS.map(({ key, label }) => (
                       <li
                         key={key}
@@ -533,7 +535,7 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
               {/* Body — server-rendered MDX (or Convex-stored markdown) */}
               <Mdx
                 source={content}
-                components={ideaMdxComponents}
+                components={createIdeaMdxComponents(slug)}
                 codeTheme="github-light"
               />
 

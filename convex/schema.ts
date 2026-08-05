@@ -35,6 +35,17 @@ export default defineSchema({
     ),
     provenance: v.optional(v.any()),
     researchLevel: v.optional(v.string()),
+    validation: v.optional(
+      v.object({
+        audience: v.string(),
+        hypothesis: v.string(),
+        primaryAction: v.union(
+          v.literal("idea_prompt_copied"),
+          v.literal("newsletter_subscribed"),
+          v.literal("starter_kit_clicked"),
+        ),
+      }),
+    ),
     bodyMode: v.union(v.literal("mdx"), v.literal("convex")),
     body: v.optional(v.string()),
   })

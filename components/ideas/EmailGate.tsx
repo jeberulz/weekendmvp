@@ -27,7 +27,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
-import { trackEvent } from "@/lib/track";
+import { trackEvent, trackValidationEvent } from "@/lib/track";
 import {
   isValidEmail,
   resolveAccess,
@@ -67,9 +67,8 @@ export function EmailGate({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const email = (
-      form.elements.namedItem("email") as HTMLInputElement | null
-    )?.value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement | null)
+      ?.value;
     const firstName =
       (form.elements.namedItem("first_name") as HTMLInputElement | null)
         ?.value ?? "";
@@ -82,6 +81,11 @@ export function EmailGate({
       trackEvent("signup_form_success", {
         form_id: "ideas_gate",
         idea_slug: slug,
+      });
+      trackValidationEvent("newsletter_subscribed", {
+        idea_slug: slug,
+        source_surface: "idea_email_gate",
+        cta_id: "unlock-idea",
       });
       setState("unlocked");
       window.scrollTo({ top: 0, behavior: "smooth" });

@@ -87,7 +87,7 @@ function quarantineBody(slug) {
 const IDEA_KEYS = [
   'slug', 'title', 'description', 'summary', 'category', 'buildTime',
   'revenueGoal', 'applicationCategory', 'tools', 'audiences', 'source',
-  'scores', 'og', 'provenance', 'researchLevel',
+  'scores', 'og', 'provenance', 'researchLevel', 'validation',
 ];
 
 /**

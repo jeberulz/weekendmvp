@@ -45,6 +45,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Generated validation digest artifacts
+reports/validation/*.md
+
 # Internal Claude / Cursor workflows (local-only IP)
 .claude/skills/
 .cursor/plans/
