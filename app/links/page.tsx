@@ -19,8 +19,8 @@ import {
   getReleasedVideoLinks,
   type VideoLink,
 } from "./_data";
+import { SITE } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const CAMPAIGN_TIME_ZONE = "Europe/London";
 const PAGE_SIZE = 8;
 

@@ -16,10 +16,12 @@ import {
   Rocket,
   ShieldCheck,
   Sparkles,
+  Store,
   Target,
   Terminal,
   TrendingUp,
   User,
+  Video,
   Zap,
 } from "lucide-react";
 
@@ -38,18 +40,19 @@ import { HubIdeasGrid, ideasItemList } from "@/components/hubs/HubIdeasGrid";
 import { HubTracker } from "@/components/hubs/HubTracker";
 import { COLOR_STYLES, type HubColor } from "@/components/hubs/hub-theme";
 import {
+  fetchAudienceReference,
   fetchIdeasByAudience,
-  fetchRefTables,
 } from "@/components/hubs/hub-data";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
+  organizationSchema,
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
 
-const SITE = "https://www.weekendmvp.app";
 const OG_IMAGE = `${SITE}/image/og-image.png`;
 
 /* ------------------------------------------------------------------ */
@@ -297,7 +300,7 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       },
       {
         title: "Weekend MVP",
-        url: "https://www.weekendmvp.app",
+        url: SITE,
         description: "Templates and prompts to ship by Sunday",
       },
     ],
@@ -383,6 +386,156 @@ const AUDIENCE_PAGES: Record<string, AudiencePage> = {
       },
     ],
   },
+  freelancers: {
+    slug: "freelancers",
+    name: "Freelancers",
+    title: "Startup Ideas for Freelancers",
+    metaDescription:
+      "Startup ideas for freelancers and SaaS ideas for freelancers: AI weekend MVPs that productize client pain, admin work, and niche expertise.",
+    description:
+      "AI-assisted MVP ideas freelancers can ship between client work: productized tools for outreach, proposals, reporting, and niche service workflows.",
+    color: "teal",
+    icon: HeartHandshake,
+    skillChip: "Mixed skill level",
+    timeChip: "8-12 hours build time",
+    positioning:
+      "Freelancers see expensive workflow gaps before software teams do because clients explain them in every kickoff, revision, and invoice cycle. You already know which manual tasks buyers tolerate, which outcomes they pay for, and what language makes the pain obvious. Weekend MVPs let you turn repeated service work into focused SaaS ideas for freelancers without abandoning your client pipeline.",
+    accentAdvantages: true,
+    advantages: [
+      {
+        icon: HeartHandshake,
+        title: "Client Pain on Repeat",
+        description:
+          "You hear the same bottlenecks across accounts, making it easier to spot problems worth productizing.",
+      },
+      {
+        icon: Target,
+        title: "Niche Buyer Insight",
+        description:
+          "Your specialty gives you precise ICPs, sharper positioning, and real examples for landing page copy.",
+      },
+      {
+        icon: Zap,
+        title: "Service-to-SaaS Path",
+        description:
+          "Automate one repeatable deliverable first, then sell it as a lightweight product to similar clients.",
+      },
+    ],
+    resources: [
+      {
+        title: "Freelancers Union",
+        url: "https://www.freelancersunion.org",
+        description:
+          "Practical resources for independent workers, contracts, benefits, and freelance business operations.",
+      },
+      {
+        title: "Millo",
+        url: "https://millo.co",
+        description:
+          "Advice on pricing, client acquisition, and turning freelance skills into stronger businesses.",
+      },
+    ],
+  },
+  creators: {
+    slug: "creators",
+    name: "Creators",
+    title: "Startup Ideas for Creators",
+    metaDescription:
+      "Startup ideas for creators and creator tool ideas: AI weekend MVPs for content repurposing, audience growth, and monetization workflows.",
+    description:
+      "Creator tool ideas you can build in a weekend: repurposing systems, audience analytics, sponsorship workflows, and products that turn content into revenue.",
+    color: "rose",
+    icon: Video,
+    skillChip: "Mixed skill level",
+    timeChip: "8-12 hours build time",
+    positioning:
+      "Creators have an unfair advantage because you feel the content treadmill, platform shifts, and monetization pressure firsthand. You can test a tool with your own workflow, explain the value in public, and recruit early users from adjacent creators. AI-assisted weekend MVPs are especially strong here because the best creator products save time or unlock one more revenue stream immediately.",
+    accentAdvantages: true,
+    advantages: [
+      {
+        icon: Video,
+        title: "Workflow as Test Lab",
+        description:
+          "Your own publishing process reveals painful tasks you can automate and validate before selling.",
+      },
+      {
+        icon: Sparkles,
+        title: "Audience-Led Launches",
+        description:
+          "Your content, newsletter, or social channels can generate feedback before the product is polished.",
+      },
+      {
+        icon: TrendingUp,
+        title: "Monetization Instinct",
+        description:
+          "You know which tools help creators earn more, repurpose faster, or package expertise into products.",
+      },
+    ],
+    resources: [
+      {
+        title: "Creator Science",
+        url: "https://creatorscience.com",
+        description:
+          "Interviews and playbooks on creator businesses, audience growth, and sustainable monetization.",
+      },
+      {
+        title: "The Tilt",
+        url: "https://www.thetilt.com",
+        description:
+          "Creator economy research and practical guidance for building content-led businesses.",
+      },
+    ],
+  },
+  "small-business-owners": {
+    slug: "small-business-owners",
+    name: "Small Business Owners",
+    title: "Startup Ideas for Small Business Owners",
+    metaDescription:
+      "Startup ideas for small business owners and SMB SaaS ideas: AI weekend MVPs for local ops, lead follow-up, reviews, and admin automation.",
+    description:
+      "Weekend MVP ideas for small business owners who know local workflows firsthand. Build simple SaaS that saves time, captures leads, or automates repeat admin.",
+    color: "amber",
+    icon: Store,
+    skillChip: "Mixed skill level",
+    timeChip: "8-12 hours build time",
+    positioning:
+      "Small business owners have unfair insight into the messy, high-value work hidden behind the counter: missed calls, late invoices, reviews, scheduling, and follow-up. You understand buyer urgency because you are the buyer, and you can test tools against real daily operations immediately. The best SMB SaaS ideas start narrow, save obvious time, and prove ROI without a long sales cycle.",
+    accentAdvantages: true,
+    advantages: [
+      {
+        icon: Store,
+        title: "Operational Reality",
+        description:
+          "You know which tasks break during busy days and which automation would actually get used.",
+      },
+      {
+        icon: HeartHandshake,
+        title: "Local Trust Network",
+        description:
+          "Nearby owners, vendors, and operators can become early testers because they share similar pain.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "ROI-First Judgment",
+        description:
+          "You can quickly reject nice-to-have ideas and focus on tools that save time or recover revenue.",
+      },
+    ],
+    resources: [
+      {
+        title: "SCORE",
+        url: "https://www.score.org",
+        description:
+          "Free mentoring, templates, and workshops for small business planning and operations.",
+      },
+      {
+        title: "U.S. Small Business Administration",
+        url: "https://www.sba.gov",
+        description:
+          "Official small business guidance on funding, operations, local assistance, and growth.",
+      },
+    ],
+  },
 };
 
 export const AUDIENCE_SLUGS = Object.keys(AUDIENCE_PAGES);
@@ -401,6 +554,9 @@ const AUDIENCE_TILES: Array<{
   { slug: "weekend-builders", label: "Weekend Builders", icon: Calendar, iconClass: "text-purple-400" },
   { slug: "side-hustlers", label: "Side Hustlers", icon: Briefcase, iconClass: "text-cyan-400" },
   { slug: "marketers", label: "Marketers", icon: Megaphone, iconClass: "text-pink-400" },
+  { slug: "freelancers", label: "Freelancers", icon: HeartHandshake, iconClass: "text-teal-400" },
+  { slug: "creators", label: "Creators", icon: Video, iconClass: "text-rose-400" },
+  { slug: "small-business-owners", label: "Small Business Owners", icon: Store, iconClass: "text-amber-400" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -462,6 +618,7 @@ function buildSchema(
   const url = `${SITE}/ideas-for/${page.slug}`;
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     {
       ...collectionPageSchema({
@@ -500,11 +657,10 @@ async function CachedAudienceHub({ slug }: { slug: string }) {
   cacheLife("hours");
 
   const page = AUDIENCE_PAGES[slug];
-  const [ideas, refTables] = await Promise.all([
+  const [ideas, audienceRow] = await Promise.all([
     fetchIdeasByAudience(slug),
-    fetchRefTables(),
+    fetchAudienceReference(slug),
   ]);
-  const audienceRow = refTables?.audiences.find((a) => a.slug === slug) ?? null;
 
   // Reference-table copy drives the hero when Convex is reachable; the
   // static port (same manifest data) is the build-time fallback.

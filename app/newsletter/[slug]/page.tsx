@@ -8,10 +8,9 @@ import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NewsletterSignupForm } from "@/components/newsletter/NewsletterSignupForm";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { articleSchema } from "@/lib/seo";
+import { SITE, articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/newsletter-pages";
-const SITE = "https://www.weekendmvp.app";
 
 type IssueFrontmatter = {
   slug: string;

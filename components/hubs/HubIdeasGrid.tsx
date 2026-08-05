@@ -1,6 +1,7 @@
 import { IdeaCard } from "@/components/primitives/IdeaCard";
 import type { IdeaDoc } from "@/components/hubs/hub-data";
 import { categoryColor, categoryLabel } from "@/components/hubs/hub-theme";
+import { SITE } from "@/lib/seo";
 
 /**
  * Idea card grid for hub pages. Thin wrapper around the shared IdeaCard
@@ -46,7 +47,7 @@ export function ideasItemList(ideas: IdeaDoc[]) {
       "@type": "ListItem",
       position: index + 1,
       name: idea.title,
-      url: `https://www.weekendmvp.app/ideas/${idea.slug}`,
+      url: `${SITE}/ideas/${idea.slug}`,
     })),
   };
 }

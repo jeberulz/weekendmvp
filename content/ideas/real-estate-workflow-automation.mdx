@@ -1,0 +1,137 @@
+---
+slug: "real-estate-workflow-automation"
+title: "Real Estate Workflow Automation"
+---
+
+## The Problem
+
+Real estate agents do not lack software. They drown in it. A typical solo agent pays for a CRM, an IDX or lead source, an e-sign/transaction tool, an email drip platform, and a dialer — often **$200–500/month** combined — and still types the same client name into three systems by hand. Leads arrive in Zillow or a Facebook form. Showings get booked in a calendar. Documents live in Dotloop. Follow-ups run in Follow Up Boss. Each product works alone. Connecting them is unpaid ops work the agent does between showings.
+
+When a lead sits unanswered for an hour, conversion collapses. When disclosure packets are assembled from memory, deals risk compliance mistakes. Transaction coordinators inherit half-finished checklists. Teams with five agents multiply the chaos: nobody knows which automation broke, only that a client asked "did you get my offer?" twice. Agents talk about this constantly in Reddit real-estate tech communities and Facebook referral groups — not as a nice-to-have CRM feature, but as daily friction that costs deals.
+
+Incumbent CRMs automate sequences inside their walls. They do not own the glue across the stack agents already refuse to rip out. Zapier can connect tools, but agents do not want to become integration engineers. They want five workflows that just work: lead intake, showing confirmation, offer writeup, disclosure prep, and close-day logistics.
+
+## The Solution
+
+Real Estate Workflow Automation (working name: Transom) is a workflow automation layer for agent tech stacks. It connects lead sources, CRM, e-sign/docs, and email into pre-built real-estate flows. A Zillow lead can spawn a CRM contact, start a drip, assign a showing task, and ping the team in one pass. Contract signed can trigger disclosure packet generation and inspection scheduling. Agents start from templates with concrete time-savings claims, then tweak edge cases.
+
+Not "replace Follow Up Boss on day one." Wedge: solo agents and small teams who already pay for 4+ tools and will buy templates before a full subscription. Template packs **$49–$199** each; SaaS **$199/month** solo, **$399/month** teams.
+
+**How it works:**
+
+1. **Connect the stack** — OAuth or API keys for email, Follow Up Boss (or CSV/webhook CRM sync), Google Calendar, and Dotloop or DocuSign. Zapier/Make bridges for MVP where native connectors are not ready.
+2. **Install a template** — Pick Lead Intake, Showing Confirm, Offer Writeup, Disclosure Prep, or Close Day. Each template lists trigger → actions → failure alerts.
+3. **Run with guardrails** — Every automation logs runs. Broken steps email/Slack the agent immediately — reliability is the product.
+4. **Customize lightly** — Swap drip copy, add a team assignee, change disclosure checklist by state.
+5. **Expand** — Buy more templates; team plan adds shared libraries and brokerage admin.
+
+Retention: once fifteen workflows are live, ripping Transom out means recreating glue by hand. Brokerage contracts follow when one rainmaker evangelizes.
+
+## Market Research
+
+PropTech AI moved from slideware to pilots. Agents still live in fragmented stacks, which is the opening for a workflow layer rather than another monolithic CRM.
+
+- Industry coverage notes **92% of commercial real estate firms** running AI pilots (up sharply from single-digit adoption a few years prior), with workflow execution — not demos — as the next phase ([The Real Deal / Keyway](https://therealdeal.com/sponsored/keyway/ais-next-phase-in-real-estate-from-pilots-to-real-workflow-execution/)).
+- McKinsey frames **agentic AI** as a way to reshape real-estate operating models across leasing, transactions, and ops ([McKinsey](https://www.mckinsey.com/industries/real-estate/our-insights/how-agentic-ai-can-reshape-real-estates-operating-model)).
+- Practitioner guides document how AI already touches daily agent workflows — follow-ups, listing copy, lead response — without solving cross-tool glue ([Realtor.com](https://www.realtor.com/marketing/resources/how-ai-is-transforming-the-daily-workflow-for-real-estate-agents/), [National Mortgage Professional](https://nationalmortgageprofessional.com/news/ai-becomes-routine-industry-embraces-workflow-automation)).
+- Morgan Stanley-style analyses cited in PropTech research point to tens of billions in potential labor efficiency in real estate AI by 2030 — directional, but consistent with heavy tool spend and headcount pressure.
+- Community signal: **r/RealEstateTechnology** (~170k) and **r/realtors** (~181k) plus Facebook agent groups (hundreds of thousands of members) continuously debate CRM fragmentation and automation.
+
+SAM: US residential agents and small teams already paying for CRMs who will buy a $49 template to kill one painful workflow this week.
+
+## Competitive Landscape
+
+CRMs own lead databases. General automation owns connectors. Missing: real-estate-templated workflows with reliability SLAs agents trust.
+
+- **Follow Up Boss** — Dominant agent CRM for lead capture, smart lists, dialer integrations. Excellent inside its box. Not a visual cross-stack builder. Roughly **$50–100/user/month**.
+- **kvCORE / Lofty / Real Geeks / Sierra Interactive** — Brokerage suites with IDX, lead routing, websites. Comprehensive and expensive. Workflows stay siloed. Agency plans often **$300–500/month**.
+- **Zapier** — Universal connectors agents already hack together. Powerful but generic; no opinionated RE templates or transaction-aware guardrails. **Free**; paid from about **$19.99–69.99/month**.
+- **AppFolio Lisa** — Strong agentic leasing assistant for property management. Wrong buyer for residential sales agent daily ops.
+
+**Your Opportunity**
+
+Sell the glue and the templates. Position as *Your stack, finally connected.* Start with template revenue (low commitment), convert to $199–399 SaaS when five workflows are sticky. Partner later with CRMs rather than declaring war on day one.
+
+## Business Model
+
+Template-led revenue, then subscription. Brokerage deals are backend ACV.
+
+- **Templates** ($49–$199 one-time) — Single workflow packs with setup checklist and Loom.
+- **Solo** ($199/month) — Unlimited runs on connected stack, five included templates, run logs, email failure alerts.
+- **Team** ($399/month) — Shared template library, seats, admin roles, Slack alerts.
+- **Brokerage** (custom, often six figures ARR at 50+ agents) — SSO, compliance logging, dedicated onboarding.
+
+**Unit Economics (illustrative)**
+
+- **Low variable cost** — Zapier task fees early; migrate hot paths to native APIs to protect margin
+- **70–85%** — Gross margin at Solo once native connectors cover the top five apps
+- **$80–250** — CAC via agent Facebook groups and webinar funnels (peer referral beats paid search here)
+- Path: 50 Solo = ~$10K MRR; template attach rate funds early cash
+
+## Recommended Tech Stack
+
+Ship reliability before breadth. Five templates that never silently fail beat fifty flaky ones.
+
+- **Next.js + Vercel** — Marketing, template store, workflow editor (simple form-based at first, visual later).
+- **Postgres** — users, connections, workflows, runs, templates, alert preferences.
+- **Zapier Platform / Make API** — MVP connectors; replace with native Follow Up Boss, Google, Dotloop when volume justifies.
+- **Claude** — Listing description drafts, offer email tone, disclosure checklist suggestions by state.
+- **Stripe** — Template checkout + subscriptions.
+- **Resend + optional Slack webhooks** — Failure alerts within minutes of a broken step.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Template Store + Workflow Runner**
+
+```text
+Build Next.js 14 SaaS "Transom — Real Estate Workflow Automation".
+
+Weekend MVP:
+- Auth + Stripe for template purchases ($49/$99/$199) and Solo sub ($199/mo)
+- Template catalog: Lead Intake, Showing Confirm, Offer Writeup, Disclosure Prep, Close Day
+- Each template is JSON: trigger type, steps[], required connections[]
+- Workflow runner: execute steps sequentially, write run log, email on failure
+
+Schema:
+- users, connections(provider, credentials_encrypted), templates, workflows, runs(status, step_logs jsonb, error)
+
+Landing: "Five workflows. Eighty percent of the copy-paste."
+TypeScript throughout.
+```
+
+**2. Lead Intake Template via Webhook**
+
+```text
+Implement Lead Intake for Transom.
+
+Trigger: inbound webhook from Zapier when Zillow/Facebook lead arrives (name, email, phone, listing_url, source).
+Steps:
+1. Upsert contact in Follow Up Boss via API (or POST to user webhook if no native key)
+2. Create Google Calendar task "Call lead within 5 minutes"
+3. Send email drip #1 using Claude-generated first-touch copy with listing_url
+4. Notify agent SMS/email with lead summary
+
+If any step fails, mark run failed and alert. Include idempotency key on lead email+source.
+```
+
+**3. Disclosure Prep Checklist Generator**
+
+```text
+Build Disclosure Prep template.
+
+Trigger: deal stage moves to "under contract" (manual button in UI for MVP).
+Inputs: state, property type, buyer/seller side.
+Claude returns ordered checklist of disclosure documents + owner for each item.
+Create Dotloop or Google Drive folder structure labels (names only if API limited).
+Email checklist to agent and TC. Store checklist on the deal record.
+```
+
+## Sources
+
+- [AI's Next Phase in Real Estate — The Real Deal / Keyway](https://therealdeal.com/sponsored/keyway/ais-next-phase-in-real-estate-from-pilots-to-real-workflow-execution/)
+- [How Agentic AI Can Reshape Real Estate — McKinsey](https://www.mckinsey.com/industries/real-estate/our-insights/how-agentic-ai-can-reshape-real-estates-operating-model)
+- [How AI Is Transforming Daily Workflow for Agents — Realtor.com](https://www.realtor.com/marketing/resources/how-ai-is-transforming-the-daily-workflow-for-real-estate-agents/)
+- [AI Becomes Routine — National Mortgage Professional](https://nationalmortgageprofessional.com/news/ai-becomes-routine-industry-embraces-workflow-automation)
+- Follow Up Boss, kvCORE-class suites, and Zapier pricing referenced from public tiers — verify before marketing.

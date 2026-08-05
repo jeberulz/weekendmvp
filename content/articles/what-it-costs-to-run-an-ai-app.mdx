@@ -1,0 +1,174 @@
+---
+slug: "what-it-costs-to-run-an-ai-app"
+title: "What It Actually Costs to Run an AI App (2026 Cost Math)"
+description: "Real unit-economics math for AI apps in 2026: cost per user, why output tokens dominate, and the caching, batching, and routing levers that cut bills up to 95%."
+category: "Tutorial"
+publishedAt: "2026-07-25"
+wordCount: 1678
+readMinutes: 8
+heroAlt: "A weathered paper receipt curled on a dark desk lit by a single lime beam, very shallow focus, ink deliberately illegible"
+---
+
+## Quick Answer
+
+For most AI features, the target is **under $0.50 per active user per month** — and that number is achievable on almost any workload once you route cheap tasks to small models. If you're spending $1–2 per user per month, you're paying frontier prices for work a small model handles fine.
+
+Three facts control your bill:
+
+1. **Output tokens cost 2–6x more than input tokens** at every major provider. Long answers, not long prompts, are what hurt.
+2. **Prompt caching cuts repeated input cost by up to 90%.** Batch processing cuts everything by 50%. Stacked, the repeated portion of your workload can drop to roughly 5% of list price.
+3. **Model choice swings cost 10x or more.** Published per-token rates across the market span a range on the order of 600x from the cheapest small models to the most expensive frontier reasoning models.
+
+Below is how to estimate your cost before you build, and the five levers that bring it down after you launch.
+
+## Who This Is For
+
+You have an AI feature working and no idea what it costs at 100 users.
+
+You're pricing a product and need a floor to price above — see [how to price your weekend MVP](/articles/how-to-price-your-weekend-mvp) for the other half of that equation.
+
+You got a bill that was 8x what you expected and want to know which line caused it.
+
+You're deciding whether an AI idea is even viable before you spend a weekend on it. If you're still at that stage, browse the [startup ideas library](/startup-ideas) and run the math below on two or three candidates before committing.
+
+## The Only Formula You Need
+
+Cost per user per month equals:
+
+```
+(actions per user per month)
+  × (input tokens per action × input price
+     + output tokens per action × output price)
+```
+
+That's it. The mistake founders make isn't the formula — it's guessing the inputs. So measure them.
+
+**A rough token conversion:** roughly 750 words is about 1,000 tokens. A 400-word AI answer is around 530 output tokens. A 3,000-word document pasted as context is around 4,000 input tokens.
+
+Now do a worked example for a document-summarizer app on a mid-tier model:
+
+- 40 summaries per user per month
+- 4,000 input tokens per summary (the document)
+- 600 output tokens per summary (the summary)
+- Mid-tier pricing around $3 per million input, $15 per million output
+
+Input: 40 × 4,000 = 160,000 tokens → $0.48
+Output: 40 × 600 = 24,000 tokens → $0.36
+**Total: about $0.84 per user per month.**
+
+Above target. Now watch what the levers do to it.
+
+## The 5 Levers
+
+### 1. Route by Task, Not by Habit
+
+Most founders pick one model — usually the best one — and send everything to it. That's the single most expensive decision in the stack.
+
+Classify your calls:
+
+| Task type | Needs frontier? | Route to |
+|-----------|-----------------|----------|
+| Classification, tagging, routing | No | Smallest model |
+| Extraction from structured text | No | Small model |
+| Summarization | Rarely | Mid-tier |
+| Multi-step reasoning, code generation | Often | Frontier |
+| Anything user-facing and brand-critical | Judgment call | Mid-tier or frontier |
+
+The cheapest small models sit near **$0.10 per million input tokens**. Frontier models run several dollars per million input and multiples of that on output. Moving your classification and extraction calls down a tier typically removes 60–80% of call volume from your expensive model without any user-visible change.
+
+Re-run the summarizer example on a small model at roughly $0.10/$0.40 per million: the same workload lands around **$0.026 per user per month**. Same product, 30x cheaper. Whether quality holds is an empirical question — test it on 20 real inputs, not on principle.
+
+### 2. Cache the Repeated Part of Your Prompt
+
+If every request starts with the same 2,000-token system prompt, examples, and schema, you are paying for those tokens every single call.
+
+Prompt caching bills the repeated prefix at a steep discount — up to **90% off cached input** at the major providers. To use it, keep the stable part of your prompt at the beginning and the variable part at the end. That ordering is the entire trick, and it's the most common thing people get wrong.
+
+For a workload with a long fixed system prompt and short user inputs, caching alone frequently halves the total bill.
+
+### 3. Batch Anything That Isn't Interactive
+
+Batch APIs give roughly **50% off** in exchange for asynchronous delivery, typically within 24 hours.
+
+Anything the user isn't waiting on qualifies: nightly digests, bulk enrichment, backfills, re-indexing, scheduled reports, evaluation runs. Founders often batch nothing because their first feature was interactive and they never revisited the rest.
+
+Stack batch with caching and the repeated portion of your workload runs at about **5% of list price**.
+
+### 4. Cap the Output
+
+Output is the expensive side. Two controls, both trivial:
+
+- **Set a max output length.** Models fill available space. If a useful answer is 200 words, cap it.
+- **Ask for structure.** "Return three bullet points" produces far fewer tokens than an open-ended prompt, and usually a better product.
+
+Verbose prompts asking for "detailed, comprehensive" answers are a direct request for a larger invoice.
+
+### 5. Don't Call the Model at All
+
+The cheapest token is the one you never generate.
+
+- **Cache full results.** Identical input for the same user? Return the stored answer. Deterministic tasks over unchanged documents should never re-run.
+- **Pre-compute.** If ten users ask about the same public document, summarize it once.
+- **Use code where code works.** Date parsing, arithmetic, sorting, deduplication, regex extraction — these do not need a language model, and using one for them is both slower and worse.
+
+A meaningful fraction of most AI apps' spend is model calls that shouldn't have existed.
+
+## Where the Bills Actually Explode
+
+Estimation errors cluster in four places:
+
+**Retries and loops.** An agent that retries on failure can call the model five times for one user action. Instrument call count per action, not just per user.
+
+**Growing context.** Conversation apps re-send the entire history every turn. Turn 20 costs many times what turn 1 did. Truncate or summarize history above a threshold.
+
+**Free tiers and unauthenticated endpoints.** Any endpoint that reaches a model without auth and a per-user cap is a stranger's free API key billed to you. This is the same failure mode covered in [vibe coding security](/articles/vibe-coding-security-for-founders), and it's the fastest way to a four-figure surprise.
+
+**Power users.** Averages lie. A small number of users generate a disproportionate share of calls. Model your cost on the 90th percentile user, then price so that user is still profitable — or cap them.
+
+## Setting the Floor for Your Price
+
+Once you know cost per user, pricing gets concrete. A workable rule for early micro-SaaS:
+
+- Compute your 90th-percentile cost per user per month.
+- Multiply by 5 to get a comfortable gross-margin floor.
+- Price above that, not at it.
+
+At $0.50 in AI cost for a heavy user, a $29/month plan leaves plenty of room for hosting, payment fees, and the fact that you'll add features. At $6 in AI cost, that same $29 plan is thin once a few power users arrive.
+
+If the math only works at a price your market won't pay, the answer usually isn't a cheaper model — it's a narrower use case that needs fewer calls. Which is a positioning problem, and [niching down](/articles/niching-down-weekend-mvp) solves it better than optimization does.
+
+## Instrument Before You Optimize
+
+Do not guess which lever to pull. Log, for every call: the model used, input tokens, output tokens, whether the cache hit, and which feature triggered it.
+
+An afternoon of logging will tell you what a week of speculation won't — usually that one unglamorous feature accounts for most of your spend, and it's rarely the one you were worried about.
+
+Then set a hard spend limit at the provider dashboard. Every major provider supports one. It's the difference between a bad day and a bad month.
+
+Once the numbers are boring and predictable, the constraint moves back where it belongs — finding the next thing worth building. The [startup ideas library](/startup-ideas) is a good place to run this math against a fresh candidate.
+
+## FAQ
+
+### How much does it cost to run an AI app per user?
+
+Aim for under $0.50 per active user per month for a typical feature. Simple classification or extraction workloads land well under $0.10 with small-model routing. Agentic products with multi-step reasoning and long context can exceed $5 without careful controls.
+
+### Is self-hosting an open-weight model cheaper?
+
+Rarely, at solo-founder scale. Against budget open-weight APIs in the roughly $0.14–$0.50 per million token range, self-hosting almost never wins on cost alone once GPU time and idle capacity are counted. It wins on data control and predictability, not price.
+
+### Do input or output tokens cost more?
+
+Output, consistently — typically 2–6x the input rate. Cap response length before you optimize anything else.
+
+### How do I stop one user from running up my bill?
+
+Require authentication on every model-backed endpoint, enforce a per-user daily cap, and set a hard account-level spend limit at the provider as a backstop.
+
+### Should I pass AI costs through to customers?
+
+For most weekend MVPs, no — flat pricing is simpler to sell. Add usage-based pricing or a fair-use cap only once you have evidence that power users break your margin.
+
+## TL;DR
+
+Cost per user equals actions × (input tokens × input price + output tokens × output price). Output dominates. Route cheap tasks to small models, cache the fixed prefix of your prompts, batch anything asynchronous, cap output length, and skip calls you don't need. Instrument per-call token usage before optimizing, model your 90th-percentile user rather than your average, and price at 5x your cost floor. Then go build the next one — start from a [validated startup idea](/startup-ideas) and run this math before you write any code.

@@ -1,0 +1,99 @@
+---
+slug: "website-accessibility-ada-scanner"
+title: "Website Accessibility ADA Scanner"
+---
+
+## The Problem
+
+Small-business websites are lawsuit magnets waiting to happen. One ADA Title III complaint and an owner faces five-figure legal fees plus the reputation hit of looking indifferent to disabled users. Most owners know they "should" be compliant. Almost none know what is actually broken on their Squarespace, WordPress, or Shopify site — and enterprise tools assume a full-time developer who speaks WCAG.
+
+ADA-related digital lawsuits have surged for years. The digital accessibility software market was about **USD 721M in 2023** and is projected toward **USD 1.3B by 2030** (~9% CAGR) ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/digital-accessibility-software-market-report)). Leaders like accessiBe and UserWay sell overlays criticized in developer communities; AudioEye and Level Access price for enterprises. Free tools like WAVE and axe help engineers but do not give owners a plain-English fix list. r/smallbusiness and r/webdev threads are full of "am I going to get sued?" anxiety without a $29/month answer.
+
+## The Solution
+
+AccessCheck is an AI-powered scanner that crawls a small-business site, flags accessibility issues, and returns a fix-it checklist in plain English — not WCAG jargon. Owners scan, see what is broken, and follow step-by-step fixes. Optional WordPress/Shopify guidance and agency white-label reports expand the wedge from fear to ongoing monitoring.
+
+**How it works:**
+
+1. **Paste URL** — Crawl homepage and key templates; run axe-core / WAVE-class rules plus AI explanations.
+2. **Plain-English report** — Each issue explains who it hurts and how to fix it on common CMSes.
+3. **Priority score** — Rank by legal risk and effort so owners knock out high-impact items first.
+4. **Re-scan** — After fixes, verify clearance; email alerts when new issues appear.
+5. **Share / white-label** — Agencies export branded PDFs for client retainers.
+
+Weekend MVP: URL → Playwright crawl → axe-core → Claude explanations → PDF report. Stripe $29/month. WordPress plugin later.
+
+## Market Research
+
+- Digital accessibility software **$721.1M (2023) → $1.3B (2030)** at ~8.8–9.2% CAGR ([Grand View Research](https://www.grandviewresearch.com/industry-analysis/digital-accessibility-software-market-report)).
+- Accessibility testing tools **~$579M (2024) → ~$994M (2032)** ([Verified Market Research](https://www.verifiedmarketresearch.com/product/accessibility-testing-tools-market/)).
+- SMEs are the fastest-growing segment while tools remain enterprise-heavy — classic underserved wedge.
+- Community: r/webdev (1.5M), WordPress Accessibility Facebook groups, and small-business networks discuss compliance ROI and lawsuit fear weekly.
+
+Willingness to pay is high when framed as lawsuit insurance under $50/month.
+
+## Competitive Landscape
+
+- **accessiBe** — AI overlay / "1-click compliance"; often **$49+/month**. Strong marketing; overlays criticized for incomplete remediation ([community / Reddit](https://www.reddit.com/r/webdev/)).
+- **UserWay** — Overlay + audits around **$49/month**; similar overlay debate.
+- **AudioEye** — Managed platform; custom / roughly **$2,000+/year** enterprise positioning.
+- **Siteimprove / Level Access** — Enterprise suites **$3,000+/year** with deep reporting and legal workflows.
+- **WAVE / axe / Lighthouse** — Free/developer tools; no SMB narrative or monitoring SaaS.
+
+**Your Opportunity**
+
+Own SME plain-English scanning at **$29–$99/month** without selling a controversial overlay as the whole product. Sell fixes humans can do; partner with freelancers for hard issues. Agency white-label at higher ACV.
+
+## Business Model
+
+- **Starter** — $29/month, one site, monthly scans, email alerts.
+- **Growth** — $99/month, multi-page deep crawl, CMS-specific guides, priority support.
+- **Audit** — $500 one-time comprehensive report.
+- **Agency** — $10K/year white-label + lead share.
+
+**Unit Economics (illustrative)**
+
+- Crawl + LLM explain cost well under $1/scan at early volume
+- Path: 2,000 customers × $50 ARPU = $100K MRR directional target from Ideabrowser modeling
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — marketing site, dashboard, billing.
+- **Playwright** — headless crawl on a worker (Railway/Fly).
+- **axe-core** — rule engine for WCAG violations.
+- **Claude API** — plain-English explanations and CMS-specific fix steps.
+- **Stripe** — subscriptions + one-time audits.
+- **Postgres** — sites, scans, issues, users.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Scanner MVP**
+
+```text
+Build AccessCheck: Next.js app. User pastes URL. API route queues a Playwright crawl of the homepage, runs axe-core, stores violations in Postgres, and returns a report page with id, impact, description, and suggested_fix fields.
+```
+
+**2. Plain English Layer**
+
+```text
+For each axe violation, call Claude with the rule id, HTML snippet, and CMS hint (wordpress|shopify|squarespace|unknown). Return a 2-sentence explanation and numbered fix steps a non-developer can follow.
+```
+
+**3. Billing + Rescan**
+
+```text
+Add Stripe Billing at $29/month. Gate rescans behind active subscription. Cron weekly scan for paid sites; email digest of new issues via Resend.
+```
+
+Do not sell legal advice. Sell clarity. Every report footer should state that AccessCheck is a technical scanner, not a law firm, and that full compliance may require human audit. That honesty builds trust with agencies who resell you and avoids the overlay industry's credibility problem. Pair the scanner with a vetted freelancer directory for complex ARIA issues — take a lead fee when owners click "hire a fixer." Content marketing writes itself: weekly "lawsuit roundup" posts and CMS-specific fix guides for WordPress image alt text, Shopify theme focus order, and Squarespace contrast.
+
+Distribution: Reddit helpful answers (not spam), WordPress Facebook groups, and partnerships with local web designers who want a recurring audit product without building crawlers. Freemium hook: free homepage-only scan with three issues unlocked; email gate for the full list. Conversion to $29 happens when the unlocked issues include something scary (missing form labels, keyboard traps) — fear plus a checklist closes.
+
+## Sources
+
+- [Digital Accessibility Software Market (Grand View)](https://www.grandviewresearch.com/industry-analysis/digital-accessibility-software-market-report)
+- [Accessibility Testing Tools Market](https://www.verifiedmarketresearch.com/product/accessibility-testing-tools-market/)
+- [Ideabrowser #5040 competitive analysis](https://www.ideabrowser.com)
+- [SBA / small business AI & digital guidance context](https://www.sba.gov/)

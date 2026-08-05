@@ -1,0 +1,181 @@
+---
+slug: "ai-lesson-planner-teachers"
+title: "AI Lesson Planner for Teachers"
+---
+
+## The Problem
+
+A seventh-grade science teacher finishes their last period at 3:10pm, spends an hour on hall duty and parent emails, and then sits down at 7pm to build next week's lessons. Five class periods, three differentiated reading levels each, a state standard code that has to appear on every plan document the department head reviews, and an exit ticket per lesson. That is Sunday gone. It is gone again the Sunday after that, and it is the single biggest reason experienced teachers quit a job they were good at.
+
+The workaround most teachers have already found is ChatGPT, and it half-works. It writes a plausible lesson in thirty seconds and then produces a standard code that does not exist, or aligns to Common Core when the district moved to state-specific standards two years ago. The teacher now has to verify every claim the model made, which costs more time than writing the plan cold. Ideabrowser's community analysis on this idea found the same split across r/Teachers (2M members), r/education (7.3M), and r/edtech (59.3K): educators are not skeptical of AI in the abstract, they are skeptical of AI output they have to fact-check before a principal sees it. Threads titled some version of "AI is here to stay" pull hundreds of comments arguing about which tools are trustworthy enough for an observation lesson.
+
+The cost is measured in careers. Lesson planning is one of the largest non-instructional time sinks in the profession, and it lands disproportionately on the teachers with the most preps — middle and high school core subjects, department heads covering two courses, and anyone teaching a section outside their certification. Meanwhile the budget exists: 45% of global AI-in-education revenue already comes from the K-12 segment, and districts are actively writing purchase orders for tools that survive a compliance review. The gap is not appetite. The gap is a planner that gets the standards right the first time and drops the output into the LMS the teacher already opens every morning.
+
+## The Solution
+
+A lesson planner that treats standards alignment as the product, not a checkbox. The teacher picks their state, grade, and course once during onboarding; that choice loads the actual standards corpus for their jurisdiction into a retrieval index. From then on, every generated lesson is grounded against real standard text pulled from that index — the model cannot invent a code, because the code is retrieved before the lesson is written, not after. Each plan comes back with an objective, a warm-up, the main activity, three differentiated versions for below/at/above grade level, an exit ticket, and the standard text quoted verbatim so a department head reviewing the doc can verify it in five seconds.
+
+The second half of the product is delivery. A plan that lives in a web app is a plan the teacher has to copy-paste. Push it straight to Google Classroom as an assignment with attached materials, export a printable PDF sized for the copier, and generate the slide deck as a Google Slides file in the teacher's own template. The teacher's workflow does not change; only the two hours of typing disappears.
+
+**How it works:**
+
+1. **Set your context once** — Pick state, grade band, and course; the app loads that jurisdiction's standards corpus and your district's plan template
+2. **Describe the week** — Type a topic in plain language ("photosynthesis, 5 days, we have a lab on Thursday"); the app retrieves matching standards and proposes a sequence
+3. **Generate grounded plans** — Each day comes back with objective, activities, differentiation tiers, and the verbatim standard text it was built against
+4. **Push to your tools** — One click sends assignments to Google Classroom or Canvas, exports a printable PDF, and builds the slide deck in your template
+
+The retention mechanic is the teacher's own library. Every edit made to a generated plan is stored as a style signal — this teacher always adds a bell-ringer, never assigns homework on Fridays, prefers lab-first sequencing. By the third week, generated plans arrive already shaped like the teacher's own, which is the point at which switching to a competitor stops being free.
+
+## Market Research
+
+The AI-in-education market is not an emerging bet — it is mid-expansion with money already moving through K-12 procurement:
+
+- **The global AI-in-education market reached roughly $5.47B in 2024 and is projected at $7.57B in 2025**, growing at a 34–38% CAGR through 2033 (The Business Research Company). That is one of the fastest compounding software segments tracked anywhere.
+- **Forecasts put the market between $75B and $112.3B by 2034** depending on methodology (IMARC, Momen market forecast). Even the conservative end implies a decade of expanding budget rather than a novelty cycle.
+- **K-12 represents 45% of global AI-in-education revenue**, with personalized learning at 42.7% of application spend and intelligent tutoring at 30% (Enrollify 2025 statistics). Lesson planning sits directly inside the largest revenue slice.
+- **Over 70% of AI education delivery is cloud-based SaaS**, meaning district IT teams already have a procurement path for a subscription web app — no on-prem install, no hardware line item.
+- **More than 85% of U.S. teachers already use Teachers Pay Teachers**, per the competitive research on this idea. The behavior of paying out-of-pocket for planning resources is decades old and completely normalized in this audience.
+- **Discussion of AI tools at education conferences rose roughly 65% year over year**, and Facebook groups such as "AI for Teachers" and "Teaching & Learning with AI" now host active daily threads on lesson-planning workflows — a distribution channel with no gatekeeper.
+
+The stage is *rapid growth, early mainstream adoption*, and the market is fragmented: many point solutions, few planners with deep standards rigor. That fragmentation is the opening, and it closes as incumbents ship equivalent grounding.
+
+## Competitive Landscape
+
+Four classes of competitor, none of which currently wins on standards grounding plus LMS delivery at the same time:
+
+- **MagicSchool AI** — The category's breakout, with dozens of teacher-facing generators and real district traction. Broad rather than deep: it does 60 things well, so no single one has verified standards retrieval behind it. Free tier for individual teachers; Plus plan around $99.96/year; district pricing on quote
+- **Khan Academy (Khanmigo for Teachers)** — Enormous brand trust, standards-aligned content library, credible AI investment. But it is optimized for Khan's own curriculum, so custom teacher-authored sequencing outside that content is a weak spot, and third-party LMS integration is shallow. Free for U.S. teachers; district/student plans priced per seat annually
+- **Teachers Pay Teachers (and TPT School Access)** — The default. 85%+ teacher penetration and a peer-review layer no AI startup can replicate. Historically static content, with AI generators bolted on recently and no real workflow automation. Pay-per-resource (roughly $3–$15 typical); School Access sold as district subscription
+- **Canva for Education** — 60M+ education users, beautiful output, AI lesson generators shipped. Design-first, so it produces gorgeous slides and thin standards rigor; it is not where a department head goes to verify alignment. Free for verified K-12 educators; Canva Pro around $15/month for non-qualifying users
+- **Diffit and Curipod** — Sharp, focused tools (leveled reading passages; interactive lesson slides). Each solves one slice well but leaves the teacher assembling a week from three separate products. Diffit free tier plus paid plans around $149/year; Curipod free tier with premium around $9/month
+- **ChatGPT and Gemini directly** — The real incumbent. Free or $20/month, infinitely flexible, and completely ungrounded. Produces confident, wrong standard codes, which is precisely the failure mode that costs teachers their Sunday back.
+
+**Your Opportunity**
+
+Every competitor above either generates ungrounded content quickly or hosts verified content slowly. Nobody does retrieval-grounded generation against a specific state's standards corpus and then delivers it into Google Classroom in one click. Sell the verification, not the generation: "every standard code on your plan is quoted from the actual state document, and your department head can check it in five seconds." Start with the two or three largest non-Common-Core state corpora — Texas TEKS, Florida B.E.S.T., Virginia SOL — where generic national tools are weakest and teacher frustration is highest.
+
+## Business Model
+
+Individual subscription that converts into department and district contracts, which is the standard EdTech ladder and the reason this category supports real ARR. Teachers buy personally at a price they will expense against their own classroom budget; department heads consolidate three to eight teachers onto one bill; districts sign annual agreements once enough seats exist inside the building to make procurement worth the paperwork.
+
+- **Free** ($0) — 5 generated lessons per month, one state corpus, PDF export only. The lead magnet, and the thing that spreads inside a department.
+- **Teacher** ($12/mo, or $99/year) — Unlimited lessons, all differentiation tiers, Google Classroom and Canvas push, slide-deck export, saved style profile
+- **Department** ($149/mo) — Up to 8 seats, shared unit templates, common assessment bank, department-level standards coverage report
+- **District** ($5K–$50K/year) — Unlimited seats, district-specific standards and template ingestion, SSO, coverage analytics for curriculum directors, FERPA documentation package
+
+**Unit Economics**
+
+- **~$0.09** — LLM cost per generated week
+- **~89%** — Gross margin on the Teacher tier
+- **$25–$45** — Target CAC via Facebook teacher groups
+- **~$190** — LTV at a 16-month average tenure
+
+The MRR path: 500 Teacher subscriptions is $6K/mo. Add 20 Department accounts and it is $9K/mo. A single mid-size district contract at $25K/year is the equivalent of another 175 individual teachers, which is why the free tier matters — it seeds the building that eventually signs the district deal. The distribution reality is that teachers recommend tools to each other far more readily than they respond to ads, so the growth loop runs through the shared unit template and the "which tool did you use for that?" question in the copy room.
+
+## Recommended Tech Stack
+
+The hard problem is not generation, it is retrieval quality. A lesson that cites the wrong standard is worse than no lesson, so the standards index and the citation check are where the engineering effort belongs.
+
+- **Next.js 15 (App Router) on Vercel** — Server Actions for generation with streaming so the teacher watches the plan appear; route handlers for the Google Classroom and Canvas OAuth callbacks.
+- **Supabase (Postgres + pgvector + Auth)** — Tables for `teachers`, `standards` (jurisdiction, grade, code, full text, embedding), `lessons`, `lesson_edits`, `departments`. pgvector holds the standards embeddings; RLS scopes everything to the teacher or department.
+- **Claude Sonnet 4.6 with structured output** — Retrieve the top matching standards first, pass their verbatim text into the prompt, and require a JSON schema where each lesson section must reference a retrieved standard ID. A post-generation check rejects any code not present in the retrieval set and regenerates — this is the trust layer.
+- **Google Classroom API + Canvas LTI 1.3** — Classroom is the fast win (OAuth, `courses.courseWork.create`, Drive attachment). Canvas via LTI takes longer but is what unlocks district deals.
+- **Google Slides API** — Generate the deck into the teacher's own template by copying a template presentation and replacing text placeholders, rather than building slides from scratch.
+- **Stripe Billing** — Teacher monthly/annual, Department seat-based, and manual invoicing for district contracts. Annual prepay matters here: teachers buy in August with a fresh classroom budget.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "LessonPilot" — an AI lesson planner for K-12 teachers with retrieval-grounded standards alignment.
+
+Supabase schema:
+- teachers(id, user_id, email, jurisdiction TEXT, grade_band TEXT, subjects JSONB, plan TEXT default 'free', style_profile JSONB, stripe_customer_id)
+- standards(id, jurisdiction TEXT, subject TEXT, grade TEXT, code TEXT, full_text TEXT, embedding VECTOR(1536))
+- lessons(id, teacher_id, title, topic TEXT, day_index INT, objective TEXT, warmup TEXT, main_activity TEXT, exit_ticket TEXT, differentiation JSONB, standard_ids UUID[], created_at)
+- lesson_edits(id, lesson_id, teacher_id, field TEXT, before TEXT, after TEXT, created_at)
+- departments(id, name, owner_teacher_id, seat_limit INT, stripe_subscription_id)
+
+Enable pgvector on the standards table with an ivfflat index on embedding. RLS: teachers read/write only their own lessons; department members read shared department templates.
+
+Routes: /plan (generator), /library (saved lessons), /settings (jurisdiction + template), /api/classroom/callback (Google OAuth).
+
+Stripe products: Teacher $12/mo and $99/yr, Department $149/mo (8 seats). Env vars: ANTHROPIC_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SUPABASE_SERVICE_ROLE_KEY.
+```
+
+**2. Retrieval-Grounded Lesson Generation**
+
+```text
+Build the core generator as a Server Action. This is the trust feature — it must be impossible to emit a standard code that was not retrieved.
+
+Step 1 — Retrieve:
+Embed the teacher's topic string plus grade and subject. Query the standards table with pgvector cosine similarity, filtered to WHERE jurisdiction = teacher.jurisdiction AND grade = teacher.grade. Take the top 8 matches. Build a candidate block: [{id, code, full_text}].
+
+Step 2 — Generate:
+Call the Anthropic Messages API with claude-sonnet-4-6 and a strict JSON schema:
+{days: [{day_index, objective, warmup, main_activity, exit_ticket, differentiation: {below, at, above}, standard_ids: string[]}]}
+System prompt: "You write standards-aligned lesson plans. You may ONLY reference standards from the CANDIDATE STANDARDS block provided. Use their id values in standard_ids. Never invent a standard code. If no candidate standard fits a day, return an empty standard_ids array and say so in the objective."
+Pass the candidate block and the teacher's style_profile in the user message. Stream the result to the UI.
+
+Step 3 — Verify:
+After generation, assert every id in every standard_ids array exists in the retrieved candidate set. If any id is unknown, discard that day and regenerate it once with the failure noted. If it fails twice, return the day flagged as "unaligned" rather than shipping a fabricated code.
+
+Render each lesson with the standard code AND its verbatim full_text in a collapsible block, so a department head can verify alignment without leaving the page.
+```
+
+**3. Google Classroom Push + Slide Export**
+
+```text
+Implement one-click delivery from a saved lesson to the teacher's existing tools.
+
+Google Classroom:
+- OAuth scopes: classroom.courses.readonly, classroom.coursework.students, drive.file
+- On connect, list the teacher's active courses and let them map each course to a subject in their profile.
+- "Push to Classroom" creates courseWork via POST /v1/courses/{courseId}/courseWork with title = lesson objective, description = main_activity + exit_ticket, workType = ASSIGNMENT, and state = DRAFT so the teacher reviews before publishing.
+- Attach the generated PDF as a Drive file via driveFile materials.
+
+Google Slides:
+- Store a template presentation ID per teacher (default to a clean built-in template).
+- Copy the template with Drive files.copy, then batchUpdate with replaceAllText requests mapping placeholders: TITLE, OBJECTIVE, WARMUP, ACTIVITY, EXIT_TICKET.
+- Return the new presentation URL and open it in a new tab.
+
+Capture every teacher edit made after generation into lesson_edits, and roll those into style_profile weekly (a short Claude summarization of recurring changes) so later generations arrive pre-shaped to that teacher's habits.
+```
+
+**4. Landing Page**
+
+```text
+Design a single-page marketing site for LessonPilot targeting middle and high school teachers.
+
+Hero headline: "Lesson plans that cite the actual standard."
+Sub: "Pick your state once. Every plan comes back grounded in your real standards document — quoted, not invented. Push it to Google Classroom in one click."
+
+Sections:
+1. The Sunday problem — a short, specific scene about planning five preps at 7pm, no stock imagery of smiling classrooms.
+2. Side-by-side comparison: a generic AI lesson with a fabricated standard code (marked with a red flag) vs a LessonPilot lesson with the verbatim state standard text expanded beneath it.
+3. How it works — the four steps, with the state picker as step one.
+4. Supported jurisdictions — logos/names for TEKS, B.E.S.T., SOL, Common Core, with a "request your state" form.
+5. Pricing — Free / Teacher $12 / Department $149, with an annual toggle showing $99/year and an August back-to-school callout.
+6. FAQ — student data privacy and FERPA, whether administrators can see drafts, what happens if a standard is missing, district procurement process.
+
+Voice: respectful of teacher expertise, never implies AI replaces judgment. Type: Geist. Palette: warm off-white background, deep ink text, one green accent. Primary CTA: "Generate your first week free."
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1507 and the public research it cites (August 2026 snapshot). Verify all competitor pricing on live product pages before quoting it — EdTech packaging shifts every school year.
+
+- [The Business Research Company — AI in Education Global Market Report ($5.47B 2024 → $7.57B 2025)](https://www.thebusinessresearchcompany.com/report/ai-in-education-global-market-report)
+- [Enrollify — AI in Education Statistics (K-12 = 45% of revenue; application mix)](https://www.enrollify.org/blog/ai-in-education-statistics)
+- [Momen — AI EdTech Market Forecast 2025–2034 (34–38% CAGR)](https://momen.app/blogs/ai-ed-tech-market-forecast-growth-opportunities-2025-2034/)
+- [IMARC Group — AI in Education Market (long-range sizing to 2034)](https://www.imarcgroup.com/ai-in-education-market)
+- [The Business Research Company — Generative AI in Teaching Market Report](https://www.thebusinessresearchcompany.com/report/generative-artificial-intelligence-ai-in-teaching-global-market-report)
+- [MagicSchool AI — pricing reference](https://www.magicschool.ai/pricing)
+- [Khan Academy — Khanmigo for Teachers](https://www.khanmigo.ai/teachers)
+- [Canva for Education — free educator access](https://www.canva.com/education/)
+- [Google Classroom API — courseWork reference](https://developers.google.com/classroom/reference/rest/v1/courses.courseWork)
+
+Page sourced via Ideabrowser MCP (idea_id 1507): get_idea_research, competitive_analysis, go_to_market, keyword_list.

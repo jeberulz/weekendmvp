@@ -3,24 +3,42 @@
  * Replaces inline @graph blocks duplicated across ~13 page files.
  *
  * Pages compose schemas via buildGraph() and render with <JsonLd schema={...} />.
+ *
+ * Person canonical URL is /john-iseghohi (not Cal.com). Cal stays in sameAs + UI CTAs.
  */
 
-const SITE =
-  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") ??
-  "https://www.weekendmvp.app";
+/** Canonical site origin. Empty/missing env falls back to www (Vercel primary). */
+export const SITE = (
+  process.env.NEXT_PUBLIC_BASE_URL || "https://www.weekendmvp.app"
+)
+  .trim()
+  .replace(/\/$/, "");
 
-const PERSON_ID = `${SITE}/#person`;
+/** First-party Person entity page — use for author @id / url everywhere. */
+export const PERSON_PATH = "/john-iseghohi";
+export const PERSON_ID = `${SITE}${PERSON_PATH}`;
+export const ORG_ID = `${SITE}/#organization`;
 const WEBSITE_ID = `${SITE}/#website`;
+
+const PERSON_SAME_AS = [
+  "https://twitter.com/weekendmvp",
+  "https://cal.com/switchtoux",
+] as const;
+
+const ORG_SAME_AS = ["https://twitter.com/weekendmvp"] as const;
 
 // ---------- Singletons ----------
 
-export function personSchema() {
+export function personSchema(opts?: { jobTitle?: string }) {
   return {
     "@type": "Person",
     "@id": PERSON_ID,
     name: "John Iseghohi",
-    jobTitle: "Product Builder & MVP Specialist",
-    url: "https://cal.com/switchtoux",
+    jobTitle: opts?.jobTitle ?? "Founder, Weekend MVP",
+    url: PERSON_ID,
+    image: `${SITE}/image/john-portrait.jpg`,
+    sameAs: [...PERSON_SAME_AS],
+    worksFor: { "@id": ORG_ID },
   } as const;
 }
 
@@ -30,15 +48,19 @@ export function websiteSchema() {
     "@id": WEBSITE_ID,
     url: `${SITE}/`,
     name: "Weekend MVP",
-    publisher: { "@id": PERSON_ID },
+    publisher: { "@id": ORG_ID },
   } as const;
 }
 
 export function organizationSchema() {
   return {
     "@type": "Organization",
+    "@id": ORG_ID,
     name: "Weekend MVP",
     url: SITE,
+    logo: `${SITE}/image/weekendmvp-logo.svg`,
+    founder: { "@id": PERSON_ID },
+    sameAs: [...ORG_SAME_AS],
   } as const;
 }
 
@@ -98,11 +120,11 @@ export function articleSchema(input: ArticleSchemaInput) {
     : {
         "@type": "Person",
         name: "John Iseghohi",
-        url: "https://cal.com/switchtoux",
+        url: PERSON_ID,
       };
 
   const publisher = input.publisherRef
-    ? { "@id": PERSON_ID }
+    ? { "@id": ORG_ID }
     : organizationSchema();
 
   const schema: Record<string, unknown> = {
@@ -265,7 +287,7 @@ export function eventSchema(input: {
       input.attendanceMode ?? "Online"
     }EventAttendanceMode`,
     eventStatus: "https://schema.org/EventScheduled",
-    organizer: { "@id": PERSON_ID },
+    organizer: { "@id": ORG_ID },
     url,
   };
   if (input.endDate) schema.endDate = input.endDate;

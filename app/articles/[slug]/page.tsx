@@ -4,12 +4,10 @@ import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { JsonLd } from "@/components/primitives/JsonLd";
-import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
-import { articleSchema } from "@/lib/seo";
+import { SITE, articleSchema } from "@/lib/seo";
 
 const CONTENT_DIR = "content/articles";
-const SITE = "https://www.weekendmvp.app";
 
 type ArticleFrontmatter = {
   slug: string;
@@ -84,7 +82,7 @@ export async function generateMetadata({
   return {
     title: { absolute: `${title} | Weekend MVP` },
     description,
-    authors: [{ name: "John Iseghohi" }],
+    authors: [{ name: "John Iseghohi", url: "/john-iseghohi" }],
     alternates: { canonical: `/articles/${slug}` },
     openGraph: {
       type: "article",
@@ -177,12 +175,12 @@ async function CachedArticle({ slug }: { slug: string }) {
             <span className="text-neutral-600 text-xs">•</span>
             <span className="text-neutral-600 text-xs">
               By{" "}
-              <NavExternalLink
-                href="https://cal.com/switchtoux"
+              <Link
+                href="/john-iseghohi"
                 className="hover:text-neutral-400 transition-colors"
               >
                 John Iseghohi
-              </NavExternalLink>
+              </Link>
             </span>
             {displayDate ? (
               <>

@@ -1,0 +1,120 @@
+---
+slug: "voice-desktop-workflow-macros"
+title: "Voice Desktop Workflow Macros"
+---
+
+## The Problem
+
+Every knowledge worker has a handful of desktop rituals they repeat ten times a week: export a CSV from one app, rename it, drop it in a shared folder, open Slack, paste a status update, attach the file. The sequence is muscle memory—until it isn't. You forget a step, click the wrong window, or get interrupted mid-flow and spend five minutes reconstructing what you were doing. Keyboard Maestro and AutoHotkey can automate this, but authoring a reliable macro still means learning a scripting dialect, debugging selectors, and praying the UI doesn't shift after an update.
+
+Voice feels like the natural trigger. You already say "start the export" out loud when you're juggling a call and a spreadsheet. Siri and Alexa handle timers and smart lights, but they don't watch your screen, replay your click path, or pause before deleting a folder. Zapier and Power Automate connect cloud apps beautifully, yet the moment your workflow lives inside a desktop client—a legacy CRM, a design tool, a local PDF editor—the no-code stack breaks down. You either hire an integrator or you keep doing it by hand.
+
+The pain is loudest in Mac power-user circles and r/automation, where threads with thousands of upvotes ask for "one tool that records what I do and lets me run it again by voice." Freelancers billing by the hour lose real money to repetitive admin. Ops teams at 20–200 person companies burn senior time documenting SOPs nobody follows. The gap isn't voice recognition—the technology crossed the usability threshold years ago. The gap is a trustworthy recorder that turns messy desktop behavior into a replayable, voice-triggered macro with guardrails when things go wrong.
+
+## The Solution
+
+Sayflow (working name) is a desktop app that watches you perform a workflow once—clicks, keystrokes, app switches, file operations—then compiles it into a visual macro you can fire with a spoken phrase. Think Loom for automation: record, review checkpoints, run on demand. Unlike brittle script recorders, each step renders as a node on a timeline with screenshots so you can see exactly what will happen before it executes. Destructive actions—emptying trash, bulk deletes, sending email—pause for an approval prompt. Every run logs to a local history with one-click undo where the OS allows rollback.
+
+The product sells confidence, not novelty. Voice is the trigger layer; the moat is the checkpoint editor, the dry-run preview, and the safety rails that make a non-engineer willing to automate their Monday-morning reporting ritual without fear of wiping a directory.
+
+**How it works:**
+
+1. **Record once** — Hit Record or say "start capture"; Sayflow logs UI events, active-window context, and file paths while you perform the workflow at normal speed
+2. **Review checkpoints** — The recorder builds a visual timeline; you rename steps, add "confirm before run" gates on risky actions, and trim accidental clicks
+3. **Trigger by voice** — Assign a phrase ("run weekly export"); local Whisper transcription matches the intent and executes the macro with live step highlights on screen
+
+## Market Research
+
+Voice and workflow automation are converging from opposite directions—speech interfaces getting good enough for daily use, and desktop automation demand rising as SaaS sprawl pushes work back into local apps. The timing favors a product that sits at the intersection:
+
+- **Global voice and speech recognition software reached roughly $15.52B in 2024** and is projected to climb toward **$38.15B by 2035**, implying about **8.5% CAGR** as enterprise adoption of dictation, IVR, and hands-free interfaces accelerates (Market Research Future).
+- **Voice-activated applications are on a steeper curve: ~$5.97B in 2024 toward ~$87.5B by 2034**, a **30.8% CAGR** driven by smart devices, in-car systems, and productivity experiments on desktop (Market.us).
+- **Workflow automation as a category already sits in the $13–15B range** with **20–25% annual growth** as teams replace manual handoffs between SaaS tools—desktop-native automation is the underserved half of that spend (industry analyst consensus, Grand View Research / Fortune Business Insights cross-check).
+- **Reddit r/automation (~1.5M members) and Mac-focused communities** surface recurring requests for record-and-replay tools that don't require coding; YouTube tutorials on Keyboard Maestro and AutoHotkey routinely exceed 500K views, proving demand for education-heavy onboarding you can productize.
+- **Remote and hybrid work normalized "second monitor" workflows** where switching apps 40+ times per day is common; McKinsey estimates knowledge workers toggle apps nearly 1,200 times daily—each toggle is a candidate macro step.
+
+The wedge isn't "voice assistant for consumers." It's **voice-triggered desktop SOPs for prosumer operators**: agency owners, RevOps admins, finance clerks, and indie SaaS founders who already pay for productivity software and will pay again to reclaim an hour per week.
+
+## Competitive Landscape
+
+Desktop automation is fragmented between free hacker tools, expensive enterprise RPA, and cloud-only iPaaS. Nobody owns the "record on desktop, trigger by voice, ship in an afternoon" position at indie pricing:
+
+- **Microsoft Power Automate Desktop** — Bundled into the Microsoft 365 ecosystem with cloud flow connectors and UI automation for Windows. Strong for IT-led rollouts, weaker for Mac-first freelancers. Free tier with M365; **Premium add-on ~$15/user/mo** for unattended desktop flows and advanced connectors
+- **Zapier** — Category king for SaaS-to-SaaS triggers. Excellent when every step has an API; useless when the workflow lives inside a desktop-only client. **Free (100 tasks/mo) → Starter $19.99/mo → Professional $49/mo → Team $69/mo → Enterprise custom**
+- **n8n** — Developer-friendly workflow engine with fair-code license and self-host option. Powerful for webhook orchestration; desktop UI automation requires extra nodes and technical setup. **Cloud Starter ~$20/mo → Pro ~$50/mo → Enterprise custom**; self-hosted free
+- **Keyboard Maestro** — Mac-native macro gold standard with decades of polish. One-time purchase, deep OS integration, steep learning curve, zero voice layer out of the box. **$36 one-time license**
+- **AutoHotkey** — Windows scripting staple, free and limitless, but you are the developer—no visual timeline, no approval gates, no support contract. **Free (open source)**
+- **Apple Shortcuts + Siri** — Bundled on macOS/iOS, improving yearly, but cannot reliably replay arbitrary third-party UI sequences or offer cross-platform desktop recording. **Bundled with Apple hardware**
+
+**Your Opportunity**
+
+Incumbents optimize for IT departments (Power Automate), API catalogs (Zapier), or power users willing to script (Keyboard Maestro / AutoHotkey). Sayflow wins on three axes they won't prioritize: (1) **voice as the primary trigger** so macros run while your hands are on the phone or a coffee mug, (2) **visual checkpoint editing** that makes macros legible to non-coders, and (3) **safety UX**—approval prompts, dry runs, undo logs—that converts automation-curious pros into daily users without a training workshop.
+
+## Business Model
+
+Freemium desktop SaaS with a content-led top of funnel. The free tier is a downloadable "Voice Macro Starter Guide" plus a recorder capped at three macros—enough to prove value on one weekly ritual. Paid tiers unlock unlimited macros, cloud backup of macro definitions, team sharing, and priority support. Enterprise add-ons cover SSO, audit logs, and managed rollout for 50+ seat ops teams.
+
+- **Free Guide** ($0) — PDF + installer, 3 macros, local-only storage, community Discord—the SEO and YouTube funnel
+- **Lite** ($29/mo) — Unlimited personal macros, voice triggers, checkpoint editor, run history + undo, email support
+- **Pro** ($49/mo) — Cloud sync across two devices, shared macro library, team comments on checkpoints, scheduled runs, priority transcription model updates
+- **Enterprise** (custom, from ~$499/mo) — SSO, centralized admin, audit export, onboarding call, SLA—sold to ops-led teams after 10+ seat Pro usage
+
+**Unit Economics**
+
+- **$0.002–0.008** — Local Whisper inference cost per voice trigger (GPU optional; cloud fallback under $0.01 at Pro scale)
+- **~85%** — Gross margin on Lite/Pro after Stripe fees and support load at 5,000 paid users
+- **$45** — Target blended CAC (YouTube organic + r/automation + template SEO)
+- **$340** — LTV at 14-month average retention on $39 blended ARPU
+
+Path to **$1M ARR**: roughly **2,150 Pro subscribers** at $49/mo, or a mix of **2,800 Lite + 600 Pro**. Desktop tools churn slower than generic SaaS when macros embed in weekly rituals—optimize for "first macro saved in 10 minutes" activation.
+
+## Recommended Tech Stack
+
+Ship a cross-platform desktop shell early; polish the recorder loop before chasing cloud features. The MVP is: capture UI events, replay them reliably on the same machine, match a spoken phrase locally.
+
+- **Tauri 2 (Rust + web frontend)** — Lighter than Electron, native OS permissions for accessibility APIs, single codebase for macOS and Windows. React or Svelte for the checkpoint editor UI.
+- **Whisper.cpp or faster-whisper (local ASR)** — On-device phrase detection keeps latency low and privacy story clean; optional cloud fallback (Deepgram) on Pro for noisy environments.
+- **Playwright + OS automation APIs** — Playwright for web steps inside the macro; OS-level accessibility trees (AXUI on Mac, UI Automation on Windows) for native app clicks. Store selectors with screenshot fallbacks.
+- **Next.js 15 + Vercel** — Marketing site, docs, macro template gallery, Stripe Checkout for subscriptions, Clerk for auth and device licensing.
+- **Stripe Billing** — Lite/Pro recurring plans + Enterprise invoicing; license key webhook activates desktop features.
+- **Clerk** — User accounts, device activation limits (2 on Pro), org roles for Enterprise seat management.
+- **SQLite (local) + Supabase (cloud sync, optional)** — Macro definitions, run logs, and checkpoint JSON locally first; Supabase sync when user upgrades to Pro.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Scaffold a Tauri 2 desktop app named Sayflow with a React + TypeScript frontend and a Rust backend. The app needs: (1) a system-tray icon with Record / Stop / Library actions, (2) accessibility permissions flow for macOS (AXUI) and Windows (UI Automation), (3) SQLite via rusqlite storing macros (id, name, voice_phrase, steps_json, created_at), and (4) a Next.js marketing site in /web with Clerk auth and Stripe Checkout webhooks that issue license keys. Provide folder structure, Cargo.toml dependencies, and the minimum Rust commands to capture mouse click coordinates and active window title during a recording session.
+```
+
+**2. Macro Recorder + Checkpoint Editor**
+
+```text
+Build the Sayflow recording pipeline. When the user clicks Record: listen to global mouse down/up, key down/up, and active window changes; append each as a typed step object { type: "click"|"key"|"wait"|"app_switch", payload: {...}, screenshot_path? }. On Stop, open the Checkpoint Editor—a vertical timeline where each step shows a thumbnail, editable label, and a toggle "require approval before run." Implement dry-run mode that highlights the target UI element without executing destructive flags. Serialize the timeline to JSON and save to SQLite. Include three seeded example macros: "Export weekly CSV," "Resize images in folder," and "Post Slack standup update."
+```
+
+**3. Voice Trigger + Replay Engine**
+
+```text
+Add voice triggering to Sayflow using whisper.cpp loaded locally. On app start, spin a background thread listening for a push-to-talk hotkey; transcribe audio and fuzzy-match against the user's macro voice_phrases (Levenshtein under distance 2). On match, execute the macro step-by-step with 200ms delay between actions for visibility. Before any step marked require_approval, pause and show a native dialog with step description and screenshot. Log each run to run_history with status success/failed/cancelled and support undo for file moves and keystrokes where reversible. Handle failure gracefully: stop execution, notify user, offer "resume from step N."
+```
+
+**4. Landing Page + GTM Assets**
+
+```text
+Create a Next.js landing page for Sayflow: hero "Record your desktop once. Run it forever by voice." Subhead targeting freelancers and ops admins tired of re-clicking the same export flow. Sections: problem (automation tools require coding or only work in the cloud), solution (3-step how it works mirroring the product), safety callout (approval gates, undo log), pricing table (Free guide / Lite $29 / Pro $49), FAQ (Mac vs Windows, privacy/local processing, difference vs Keyboard Maestro). Add a lead magnet CTA for the free Voice Macro Starter Guide PDF. Use Geist font, warm off-white background, dark accent, embedded 90-second demo video placeholder. Generate 5 YouTube title/description pairs for tutorials targeting "Keyboard Maestro alternative" and "automate repetitive desktop tasks."
+```
+
+## Sources
+
+Market sizing and growth figures triangulated from public analyst reports (2024–2025 snapshots). Verify before investor-facing materials.
+
+- [Market Research Future — Voice and Speech Recognition Software Market ($15.52B → $38.15B, ~8.5% CAGR)](https://www.marketresearchfuture.com/reports/voice-and-speech-recognition-software-market-33133)
+- [Market.us — Voice-Activated Apps Market ($5.97B → $87.5B by 2034, 30.8% CAGR)](https://market.us/report/voice-activated-apps-market/)
+- [Grand View Research — Voice Recognition Market (enterprise adoption, regional breakdown)](https://www.grandviewresearch.com/industry-analysis/voice-recognition-market)
+- [Fortune Business Insights — Speech and Voice Recognition Market (TAM methodology, segment growth)](https://www.fortunebusinessinsights.com/industry-reports/speech-and-voice-recognition-market-101382)
+
+Page concept sourced from Ideabrowser idea #8292 (voice desktop workflow macros / Sayflow positioning). Competitor pricing checked against public plan pages as of mid-2025.

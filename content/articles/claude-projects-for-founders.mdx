@@ -1,0 +1,190 @@
+---
+slug: "claude-projects-for-founders"
+title: "Claude Projects for Founders: Setups That Ship Real Work"
+description: "How to set up a Claude Project so you stop re-explaining your business every session — with seven concrete project setups solo founders actually use."
+category: "Tutorial"
+publishedAt: "2026-07-26"
+wordCount: 1745
+readMinutes: 9
+heroAlt: "A stack of index cards fanned on a dark desk, one card lit by a narrow lavender beam, very shallow focus"
+---
+
+## Quick Answer
+
+A Claude Project is a workspace that remembers. You set custom instructions once and upload a small knowledge base of files, and every chat you start inside that project inherits both — so you stop opening each session with three paragraphs re-explaining who you are and what you're building.
+
+For a solo founder, that's the whole value. The bottleneck in working with AI isn't the model. It's that you re-brief it forty times a week.
+
+The setup takes about fifteen minutes:
+
+1. **Create the project** from the Projects page in the Claude sidebar.
+2. **Write custom instructions** describing your business, your customer, and how you want Claude to respond.
+3. **Upload three to five files** — not thirty.
+4. **Start scoped chats** inside the project instead of in the general chat window.
+
+The rest of this article is what to actually put in those fields, plus seven project setups that earn their keep.
+
+## Projects vs Claude Code — They Are Not the Same Thing
+
+This trips people up constantly, so let's separate them.
+
+**Claude Projects** live in claude.ai. They're conversational workspaces with persistent instructions and a file-based knowledge base. You use them for thinking, writing, planning, analysis, and research.
+
+**Claude Code** is a terminal tool that reads and writes files in your actual codebase. You use it for building.
+
+They solve different problems, and most founders need both. Projects hold the context about your *business*. Claude Code holds the context about your *code*. If you've been trying to run your customer research through a coding tool or asking claude.ai to edit your repo, that's the mismatch.
+
+Worth saying early: a project is only as good as the business you point it at. If you're still deciding what to build, the [startup ideas library](/startup-ideas) is the better first stop — come back and set up the workspace once you've picked one.
+
+If building is what you're after, [what to build with Claude Code](/articles/7-things-to-build-with-claude-code-this-weekend) covers that side. This article is about the other one.
+
+## Step 1: Write Instructions That Constrain, Not Just Describe
+
+The custom instructions field holds roughly 8,000 characters — about 2,000 words. Most people use 200 and wonder why the output feels generic.
+
+Weak instructions describe. Strong instructions constrain.
+
+**Weak:**
+
+> You are a helpful marketing assistant for my startup.
+
+**Strong:**
+
+> I run a scheduling tool for independent physiotherapists in the UK. My customers are solo practitioners, not clinics. They are not technical and they are time-poor.
+>
+> When I ask for copy, write at a grade-8 reading level, never use the words "seamless", "empower", or "solution", and lead with the specific hour of admin the feature removes.
+>
+> When I ask for advice, give me one recommendation, not a list of options. If you think my premise is wrong, say so in the first sentence.
+>
+> Never invent statistics. If you don't have a number, say you don't have a number.
+
+The second one changes every response in the project. The first one changes almost nothing.
+
+The highest-leverage lines are the negative ones — what *not* to do. Banned words, banned formats, banned hedging. Claude follows those reliably, and they're the difference between output you can use and output you have to rewrite.
+
+## Step 2: Upload Few Files, Not Many
+
+A project can hold a lot of uploaded material — up to roughly 200K tokens of documents. That is not an instruction to fill it.
+
+The failure mode is uploading your entire Google Drive and getting worse answers, because now Claude is weighing your abandoned 2024 pitch deck equally against this quarter's positioning.
+
+Upload the small set that is actually true right now:
+
+- **One positioning document.** Who it's for, what it does, what it costs, why it's different.
+- **Raw customer conversations.** Transcripts or notes, unedited. This is the single most valuable file in most projects.
+- **Your best existing work.** Two or three pieces of copy you'd be happy to see imitated.
+- **Constraints.** Pricing, technical limits, things you've already tried that failed.
+
+That's it. Four files beats forty, and it stays maintainable — which matters, because a knowledge base nobody updates quietly becomes a knowledge base full of lies.
+
+If you don't have customer conversations to upload yet, that's the actual gap, and [the Mom Test approach to customer interviews](/articles/how-to-talk-to-customers-mom-test) is the faster fix than any project setup.
+
+## Seven Project Setups Worth Building
+
+### 1. The Customer Voice Project
+
+**Instructions:** Answer only from the uploaded transcripts. Quote directly. If the transcripts don't cover something, say so rather than generalising.
+
+**Knowledge:** Every customer call transcript, support email, and cancellation reason you have.
+
+**What you ask it:** "What words do customers use for this problem?" "What did the three people who churned have in common?" "Which objection comes up most?"
+
+This is the highest-value project on the list and almost nobody builds it. It turns scattered conversations into something you can query.
+
+### 2. The Positioning Project
+
+**Instructions:** You are a positioning critic. When I show you copy, identify the claim a competitor could make identically. Be blunt.
+
+**Knowledge:** Your positioning doc, three competitor homepages saved as text, your own landing page.
+
+**What you ask it:** "What here is undifferentiated?" "Rewrite this headline five ways, each committing to a narrower audience."
+
+### 3. The Weekly Writing Project
+
+**Instructions:** Your voice rules, banned words, structure preferences, typical length.
+
+**Knowledge:** Your five best previous posts.
+
+**What you ask it:** Drafts. Not final copy — drafts you edit. The uploaded samples are what make the drafts sound like you rather than like everyone.
+
+### 4. The Idea Triage Project
+
+**Instructions:** Score ideas against my constraints. I build alone, in weekends, with no ad budget. Reject anything requiring a sales team, a two-sided marketplace, or regulatory approval.
+
+**Knowledge:** Your skills, your time budget, your audience if you have one.
+
+**What you ask it:** Paste in an idea, get a verdict. It kills bad ideas fast, which is most of the value. Pair it with the [startup ideas library](/startup-ideas) when you want candidates to run through it.
+
+### 5. The Pricing Project
+
+**Instructions:** Argue for higher prices. Assume I am underpricing, because I am.
+
+**Knowledge:** Competitor pricing pages, your costs, what customers said about budget.
+
+**What you ask it:** "What would justify doubling this?" "Which of these features should be the paid tier?"
+
+### 6. The Launch Project
+
+**Instructions:** You are running the checklist. Ask me one question at a time and don't move on until I answer.
+
+**Knowledge:** Your launch plan, previous launch retros, target platform norms.
+
+**What you ask it:** Walk me through what's missing. The one-question-at-a-time constraint is what makes this work — it turns a vague plan into an interrogation.
+
+### 7. The Support Reply Project
+
+**Instructions:** Draft replies in my voice. Never promise a delivery date. Never apologise more than once per message.
+
+**Knowledge:** Your FAQ, your refund policy, ten previous replies you were happy with.
+
+**What you ask it:** Paste the incoming message, get a draft. Saves ten minutes each time, several times a day.
+
+## What Goes Wrong
+
+**You built one giant project.** Instructions that try to cover writing, pricing, support, and code contradict each other. One project per job. They're free to create.
+
+**You uploaded and forgot.** The knowledge base silently goes stale. Anything that changes — pricing, positioning, feature set — needs a re-upload when it changes, or the project confidently tells you last quarter's story.
+
+**Your instructions are all positive.** Add the constraints. "Don't hedge." "Don't give me options." "Don't use the word 'leverage'." These do more work than any amount of role-playing preamble.
+
+**You're still starting chats in the general window.** The project only applies to chats started inside it. This is the most common reason people conclude Projects "don't do anything".
+
+## Does This Actually Save Time?
+
+Honestly assess it after two weeks. The setups that pay off are the ones where you were already repeating yourself — support replies, weekly writing, customer research. The ones that don't are the ones you built because they seemed clever.
+
+Delete the ones you haven't opened in a fortnight. A projects sidebar with three live workspaces beats one with fifteen dead ones.
+
+And if the reason you have nothing to set up a project *about* is that you haven't picked what you're building yet, the fix isn't a better workspace. Start with an idea that fits a weekend — the [startup ideas library](/startup-ideas) is filtered for exactly that shape.
+
+## FAQ
+
+### What is a Claude Project?
+
+A workspace in claude.ai that bundles custom instructions and a set of uploaded files. Every chat started inside the project inherits both automatically, so you don't re-explain context each session.
+
+### How is a Claude Project different from Claude Code?
+
+Projects are conversational workspaces in claude.ai for thinking, writing, and analysis. Claude Code is a terminal tool that reads and writes files in your codebase. Projects hold context about your business; Claude Code holds context about your code.
+
+### How many files should I upload to a Claude Project?
+
+Three to five current, true documents beats dozens of stale ones. Prioritise raw customer conversation notes — they're the most useful and the most commonly missing.
+
+### Do I need a paid plan for Claude Projects?
+
+Projects are part of Claude's paid tiers rather than the free tier. Check current plan details on claude.ai, since tier contents change.
+
+### What should go in custom instructions?
+
+Your business, your specific customer, and — most importantly — constraints. Banned words, required formats, and "don't do X" lines change output far more than descriptive role-play.
+
+### Can I use one project for everything?
+
+You can, but the instructions start contradicting each other. One project per job works better, and creating projects costs nothing.
+
+## TL;DR
+
+A Claude Project is persistent context: custom instructions plus a small knowledge base, inherited by every chat inside it. Write instructions that constrain rather than describe — the negative rules do the heavy lifting. Upload four true files, not forty stale ones. Build one project per job: customer voice, positioning, writing, idea triage, pricing, launch, support. Delete anything you haven't opened in two weeks. And remember Projects and Claude Code solve different problems — one holds your business context, the other holds your code.
+
+Sources: [Claude Projects guide](https://www.inkeybit.com/blog/claude-projects-complete-guide), [Claude custom instructions guide](https://likeone.ai/blog/claude-projects-custom-instructions-knowledge-files-guide/)

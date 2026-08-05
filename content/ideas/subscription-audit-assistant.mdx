@@ -1,0 +1,197 @@
+---
+slug: "subscription-audit-assistant"
+title: "Subscription Audit and Cancellation Assistant"
+---
+
+## The Problem
+
+The average household is carrying somewhere between eight and fifteen recurring charges, and can name maybe six of them. The other nine are a free trial that converted in March, a streaming service kept alive for one show that ended two seasons ago, a $9.99 app store subscription renewing against an Apple ID nobody checks, a gym membership at a location that closed, and a SaaS tool a freelancer signed up for during one project in 2024. None of them are individually large enough to trigger a second look on a statement. Collectively they are a meaningful percentage of discretionary income leaving the account every month for nothing.
+
+Finding them is genuinely hard, and not because people are lazy. The charges are scattered across a checking account, two credit cards, PayPal, and the app store — and each of those is a separate login with a separate export format. The merchant descriptor on the statement often bears no resemblance to the product name, so `DRI*SUPPORT` and `APLPAY 8886254` mean nothing to the person reading them. And once you do identify a subscription, cancelling it is deliberately obstructed: retention flows, phone-only cancellation, "are you sure" gauntlets designed by people who are paid to make you quit trying.
+
+The timing is unusually favorable right now, because the category leader for a decade just left. Mint — free, trusted, with millions of users — was wound down by Intuit, and those users were pushed toward a product that is not a budgeting tool. That is a large, warm, actively-searching audience with no default answer. Search volume for "subscription tracker app" runs roughly 60–70K/month, r/personalfinance has 21.3M members, and the recurring thread is always the same: *what do I use now?*
+
+## The Solution
+
+A subscription auditor that separates the two jobs most competitors blur together: *finding* recurring charges, and *doing something about them*.
+
+The finding half connects accounts through an open-banking aggregator and runs recurrence detection over 12–24 months of transaction history — not just "same merchant, same amount," but periodicity tolerance for charges that drift by a day or two, amount tolerance for usage-based billing, and merchant-descriptor normalization that resolves `DRI*SUPPORT` into a real product name using a maintained descriptor map. The output is a single list of every recurring charge across every connected account, annotated with what it costs annually, when it last changed price, and when it renews next.
+
+The doing half is deliberately honest about what is automatable. For merchants with a genuine self-service cancellation URL, it deep-links straight to the cancel page with the account context pre-loaded. For merchants that require a phone call or a retention chat, it generates the script, the account details, and the specific statutory language that works, then tracks whether the charge actually stopped — which is the step every competitor skips and every user cares about. A cancellation is not done when you click the button; it is done when the charge does not appear next month.
+
+**How it works:**
+
+1. **Connect accounts** — Link bank, card, and PayPal accounts through an open-banking aggregator; pull 12–24 months of transaction history.
+2. **Detect recurrence** — Cluster transactions by normalized merchant descriptor, then score each cluster for periodicity and amount stability. Resolve cryptic descriptors to real product names.
+3. **Rank by waste signal** — Surface annual cost, price increases since signup, and time since the last usage signal, so the list opens with the ones most likely to be dead weight.
+4. **Cancel and verify** — Deep-link to self-service cancellation where it exists, generate a call script where it does not, then watch the account and confirm the charge actually stopped.
+
+The verification loop is what makes the product sticky past month one. Detection is a one-time wow; confirmed savings, with a running total, is a reason to still be subscribed in month nine.
+
+## Market Research
+
+The subscription economy is enormous and the management layer is both growing fast and structurally leaderless right now:
+
+- **The subscription and billing management software market was valued at $6.5B in 2024 and is projected to reach $16.96B by 2033, a 11.25% CAGR** (Straits Research). Consumer-side management is the fastest-moving slice.
+- **The broader subscription economy was projected at roughly $207.7B in the US for 2024 and over $1.5T globally by 2025, growing at 15–18%** (Market.us). Every point of growth adds more recurring charges to the average statement.
+- **The category is explicitly assessed as emerging-to-early-growth and highly fragmented**, with no clear consumer leader combining unified detection, cancellation, and privacy — an unusual gap in a market this visible.
+- **"Subscription tracker app" draws roughly 60–70K searches per month**, and r/personalfinance (21.3M members) plus personal-finance YouTube (200K+ views on management content) form a large, self-identifying acquisition pool.
+- **Mint's wind-down vacated a multi-million-user position** in free consumer finance tracking. Those users are actively looking for a replacement, and most competitors are pitching full budgeting suites rather than the narrower thing many of them actually want.
+- **Regulatory tailwinds are real**: click-to-cancel style mandates and open-banking access rules (PSD2 in Europe, similar movement in the US) are simultaneously making cancellation easier to automate and account data easier to reach.
+
+Stage: *early growth, fragmented, closing window*. Rocket Money has the brand lead. Big tech and the banks could bundle this. The realistic advantage is speed plus a sharper, narrower promise than a full budgeting app.
+
+## Competitive Landscape
+
+Six real alternatives, and none of them close the loop on verified cancellation:
+
+- **Rocket Money (formerly Truebill)** — The category leader, with 3M+ users and genuinely strong detection through bank API integration. Bill negotiation is handled partly by a human team, which limits throughput; the product has broadened into credit reports and budgeting, diluting the subscription focus; and the pay-what-you-want premium model confuses buyers. Free tier; premium roughly $3–$12/month
+- **Mint (Intuit)** — For a decade the default free answer, with deep bank integrations and enormous trust. Now wound down as a standalone consumer product, which is precisely why this window is open. It never did automated cancellation anyway — it alerted, and left the work to you. Was free, ad and affiliate supported
+- **Hiatus** — Mobile-first with fast onboarding and aggressive merchant integration. User reviews report inconsistent detection reliability, and the automation claims outrun what it actually does for merchants outside the supported list. Free tier; Pro from roughly $5/month
+- **Bobby and similar manual trackers** — Privacy-first, no account linking, cheap or one-off pricing, and beloved by a small dedicated audience. Entirely manual entry, which means it only tracks the subscriptions you already knew about — the exact opposite of the core job. Free or a one-off purchase under $5
+- **Monarch Money, Copilot, Emma, Cleo** — Good budgeting apps that include recurring-charge detection as one feature among many. None treat cancellation as the product, and all are priced as full budgeting suites. Roughly $8–$15/month
+- **Bank alerts and burner cards** — The DIY stack: a neobank's recurring-charge notification plus a privacy.com card you can kill unilaterally. Free and genuinely effective for the technically inclined, and completely invisible to everyone else. $0
+
+**Your Opportunity**
+
+Every competitor stops at "here is a list, good luck." Own the last mile: deep-link cancellation where self-service exists, a generated script and statutory language where it does not, and — the part nobody does — automatic verification that the charge actually stopped, with a running confirmed-savings total. Aim it at the Mint refugees who want one job done rather than a budgeting platform, and lead with a privacy posture the incumbents cannot match: read-only access, transaction data only, no selling of anonymized spending data, stated on the landing page.
+
+## Business Model
+
+Freemium, with detection free and action paid. This is forced by the market — Rocket Money and the banks have made basic tracking table stakes — but it is also the right funnel, because the free audit surfacing $580/year in forgotten charges is a far better conversion event than any pricing page.
+
+- **Free** ($0) — Connect up to 2 accounts, full recurring-charge detection, annual cost totals, and renewal reminders. No cancellation tooling.
+- **Plus** ($6/mo, or $49/year) — Unlimited accounts, deep-link cancellation flows, generated call scripts, price-increase alerts, and cancellation verification with a confirmed-savings tracker
+- **Household** ($12/mo) — Up to 5 people sharing a view, duplicate-subscription detection across household members (the two-Netflix-accounts problem), and shared cancellation decisions
+- **Employer / benefits** ($2 per employee per month) — White-label placement inside financial wellness benefits programs, which is the distribution channel none of the consumer incumbents have prioritized
+
+**Unit Economics**
+
+- **~$0.55** — Aggregator cost per connected user per month
+- **~$0.20** — LLM cost per user per month
+- **~85%** — Gross margin at the Plus tier
+- **$20–$40** — Target CAC via search and content
+
+The math: 3,000 Plus subscribers is $18K/mo, and the aggregator cost is the only meaningful variable expense. The employer channel is the asymmetric bet — a single 5,000-employee benefits contract at $2/head is $10K/mo with effectively zero CAC and near-zero churn, and financial wellness vendors are actively shopping for tools with a demonstrable dollar outcome. Retention hinges entirely on the verification loop: a user who can see "$1,140 confirmed saved" does not cancel.
+
+## Recommended Tech Stack
+
+The detection algorithm is the product. An aggregator gives you transactions; turning a noisy transaction stream into a clean, trustworthy subscription list is the actual engineering.
+
+- **Next.js 15 (App Router) on Vercel** — Dashboard, connection flow, and cancellation views. Background jobs for the nightly transaction sync and the verification sweep.
+- **Plaid (or Teller / TrueLayer in Europe)** — Read-only transaction access with 24 months of history. Request the narrowest scope that works: transactions only, never balances or identity you do not need — the permission screen is where privacy-conscious users bail.
+- **Supabase (Postgres + Auth)** — Tables for `connections`, `transactions`, `merchants`, `subscriptions`, `cancellations`, `verifications`. Encrypt aggregator tokens at rest; keep raw transaction rows in a separate schema with a hard retention window.
+- **A deterministic recurrence detector** — Normalize descriptors, cluster by merchant, then score each cluster on interval consistency (standard deviation of gaps in days), amount stability (coefficient of variation), and cluster length. Emit a confidence score, and never show a low-confidence cluster as a confirmed subscription.
+- **Claude Haiku 4.5 for descriptor resolution and script generation** — Two narrow jobs: mapping a cryptic descriptor to a likely product name (cached aggressively — the same descriptors recur across every user, so this cost approaches zero at scale), and drafting the cancellation call script. Never use the model for recurrence detection itself; that must be deterministic and auditable.
+- **A maintained merchant cancellation registry** — Your real moat. A table per merchant of: self-service cancel URL, whether phone is required, retention-offer patterns, and typical time-to-stop-billing. Seeded by hand, then improved by every user outcome you observe.
+- **Stripe Billing + Resend** — Plus and Household subscriptions, plus transactional email for renewal warnings, price-increase alerts, and the monthly confirmed-savings summary.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "Recur" — a subscription auditor that finds forgotten recurring charges and closes the loop on cancelling them.
+
+Supabase schema:
+- users(id, auth_id, email, plan TEXT default 'free', household_id UUID NULL, stripe_customer_id)
+- connections(id, user_id, provider TEXT, institution_name TEXT, access_token_encrypted TEXT, last_synced_at, status TEXT)
+- transactions(id, connection_id, external_id TEXT UNIQUE, posted_at DATE, amount_cents INT, raw_descriptor TEXT, normalized_descriptor TEXT, merchant_id UUID NULL)
+- merchants(id, normalized_descriptor TEXT UNIQUE, display_name TEXT, category TEXT, cancel_url TEXT, requires_phone BOOL, cancel_phone TEXT, notes TEXT, typical_days_to_stop INT)
+- subscriptions(id, user_id, merchant_id, cadence TEXT CHECK cadence IN ('weekly','monthly','quarterly','annual','irregular'), amount_cents INT, confidence NUMERIC, first_seen DATE, last_charged DATE, next_expected DATE, price_changes JSONB, status TEXT CHECK status IN ('active','cancelling','cancelled','unverified'))
+- cancellations(id, subscription_id, user_id, method TEXT CHECK method IN ('deeplink','phone','email','chat'), initiated_at, script TEXT, user_reported_at, verified_at, outcome TEXT)
+
+RLS: users read only their own rows; household members read shared subscription rows scoped by household_id. merchants is a globally-readable reference table.
+
+Routes: /connect, /subscriptions (ranked list), /subscriptions/[id], /cancel/[id], /savings (confirmed total), /household.
+
+Store aggregator access tokens encrypted with pgsodium, never in plaintext. Put raw transactions in a separate schema with a 24-month retention job.
+
+Stripe: Plus $6/mo and $49/yr, Household $12/mo. Env: PLAID_CLIENT_ID, PLAID_SECRET, ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY.
+```
+
+**2. Recurrence Detection Engine**
+
+```text
+Build the detection engine. This must be deterministic and explainable — a false positive that tells someone to cancel their mortgage autopay destroys trust permanently.
+
+Step 1 — Normalize descriptors:
+Strip trailing transaction IDs, store numbers, dates, and city/state suffixes. Uppercase, collapse whitespace, remove common payment-processor prefixes (SQ*, DRI*, PAYPAL *, APLPAY, TST*). Store as normalized_descriptor. Look it up in merchants; if absent, queue it for resolution (prompt 3).
+
+Step 2 — Cluster:
+Group a user's transactions by normalized_descriptor. Discard clusters with fewer than 3 transactions — two charges is not yet a pattern.
+
+Step 3 — Score each cluster:
+- interval_score: compute day gaps between consecutive charges. Classify cadence by median gap (28-31 monthly, 6-8 weekly, 88-95 quarterly, 360-370 annual). Score by how tightly gaps hold: stddev under 3 days is strong, over 7 is weak.
+- amount_score: coefficient of variation of amounts. Under 0.02 is a fixed subscription; 0.02-0.25 is usage-based but still recurring; above 0.25 is probably not a subscription.
+- length_score: more observed cycles means higher confidence, saturating at 6.
+confidence = weighted blend, normalized 0-1.
+
+Step 4 — Classify:
+confidence >= 0.8 -> active subscription, shown by default.
+0.5-0.8 -> shown under "possible subscriptions", requiring user confirmation.
+below 0.5 -> not surfaced at all.
+
+Step 5 — Enrich:
+Detect price changes by walking amounts chronologically and flagging any step above 3%. Compute annual_cost from cadence and current amount. Set next_expected from last_charged plus median gap.
+
+Ranking on the dashboard: annual_cost DESC, but boost anything with a price increase in the last 6 months and anything whose cadence is annual (those are the genuinely forgotten ones). Never rank by confidence — the user does not care how sure you are, they care how much it costs.
+
+Explicit exclusions: never classify as a cancellable subscription anything matching known patterns for rent, mortgage, insurance premiums, loan payments, or utilities. Flag those as "recurring, not cancellable here" in a separate section.
+```
+
+**3. Descriptor Resolution + Cancellation Playbooks**
+
+```text
+Build the two AI-assisted pieces. Both are narrow, cached, and never in the detection path.
+
+Descriptor resolution:
+When an unknown normalized_descriptor appears, call Claude Haiku with a strict JSON schema: {display_name: string, category: string, confidence: number, is_likely_subscription: boolean}. Prompt: "Given this payment descriptor from a bank statement, identify the consumer-facing product or company name. Return confidence below 0.6 if uncertain rather than guessing. Do not invent a company that you are not confident exists."
+Cache the result on the merchants table keyed by normalized_descriptor — this is global, so every user after the first resolves instantly and at zero cost. Surface a "is this right?" correction affordance and let user corrections overwrite low-confidence entries.
+
+Cancellation playbook:
+For each merchant, the registry stores cancel_url, requires_phone, cancel_phone, and typical_days_to_stop. Route accordingly:
+- Self-service: deep-link to cancel_url in a new tab, show a 4-step checklist of what the flow will ask, warn about the specific retention offer if one is documented, and prompt "did it go through?" on return.
+- Phone or chat required: generate a script with Claude. Prompt: "Write a cancellation script for a customer calling {merchant} to cancel a {cadence} subscription of {amount}. Six sentences maximum. Include: a clear opening statement of intent, the account identifier placeholder, one firm decline of a retention offer, and a request for a written cancellation confirmation with a reference number. Plain and polite. Do not threaten, do not fabricate any legal citation."
+Render the script with copyable fields and a note-taking box for the reference number.
+
+Verification loop (this is the retention feature):
+On cancellation initiation, set subscriptions.status = 'cancelling' and schedule a check at last_charged + median_gap + 3 days. On that date, look for a new charge from that merchant. None found -> verified_at set, status 'cancelled', add annual_cost to confirmed savings, email the user. Charge found -> alert the user immediately with the charge details and offer an escalation path (chargeback guidance, a written follow-up template). Never mark anything cancelled on the user's word alone — verify against the transaction stream.
+```
+
+**4. Landing Page**
+
+```text
+Design a single-page marketing site for Recur, targeting people who just lost Mint and anyone who suspects they're paying for things they forgot.
+
+Hero headline: "You're paying for nine things you can't name."
+Sub: "Connect your accounts, see every recurring charge in one list, and actually cancel the dead ones — we check next month to make sure the charge really stopped."
+
+Sections:
+1. The statement scroll — an animated bank statement where forgotten charges progressively highlight as you scroll. Show a running annual total climbing. This is the emotional hook and it should be the first thing that moves.
+2. Detection vs action — a two-column split: what every app does (a list) vs what this does (deep-link cancel, call script, verified stop). The verification column is the differentiator; make it visually heavier.
+3. The cryptic descriptor demo — three real-looking descriptors (DRI*SUPPORT, APLPAY 8886254, SQ *NORTHSIDE) resolving into recognizable product names on hover.
+4. Privacy, stated plainly and early — read-only access, transactions only, we never sell spending data, disconnect and delete in one click. Put this above pricing, not below it. This audience has been burned.
+5. Confirmed savings — screenshot of the running total with verified cancellation dates. Social proof through mechanism, not testimonials.
+6. Pricing — Free / Plus $6 / Household $12, with the annual $49 toggle. Anchor against "one forgotten subscription costs more than a year of this."
+7. FAQ — which banks are supported, what happens to data on disconnect, subscriptions billed through app stores, why some cancellations need a phone call.
+
+Voice: matter-of-fact, no shaming about spending habits. The user is not irresponsible; the system is designed to be forgettable. Type: Geist. Palette: off-white, deep ink, one green accent used only for confirmed savings. Primary CTA: "See what you're paying for."
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1823 and the public research it cites (August 2026 snapshot). Consumer fintech pricing changes constantly and Mint's status in particular has shifted — verify every competitor's current offering before quoting it. Anything touching bank data connection carries real regulatory obligations; get advice before shipping.
+
+- [Straits Research — Subscription and Billing Management Software Market ($6.5B 2024 → $16.96B 2033, 11.25% CAGR)](https://straitsresearch.com/report/subscription-and-billing-management-software-market)
+- [Market.us — Subscription Economy Market (US $207.7B 2024; $1.5T+ globally by 2025)](https://market.us/report/subscription-economy-market/)
+- [Cognitive Market Research — Online Subscription Management Software Market](https://www.cognitivemarketresearch.com/online-subscription-management-software-market-report)
+- [Grand View Research — Global Subscription Billing Management Market](https://www.grandviewresearch.com/press-release/global-subscription-billing-management-market)
+- [Spherical Insights — Subscription Billing Software Trends and Key Companies](https://www.sphericalinsights.com/blogs/top-10-trends-in-global-subscription-billing-software-market-key-companies-and-future-insights)
+- [Rocket Money — pricing reference](https://www.rocketmoney.com/)
+- [Plaid — Transactions API documentation](https://plaid.com/docs/api/products/transactions/)
+- [FTC — Negative Option Rule / click-to-cancel rulemaking](https://www.ftc.gov/legal-library/browse/rules/negative-option-rule)
+
+Page sourced via Ideabrowser MCP (idea_id 1823): get_idea_research, competitive_analysis, go_to_market.

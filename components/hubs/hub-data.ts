@@ -16,15 +16,6 @@ import { normalizeCategorySlug } from "@/components/ideas/idea-meta";
 
 export type IdeaDoc = Doc<"ideas">;
 
-export type RefTables = {
-  categories: Doc<"categories">[];
-  revenueGoals: Doc<"revenue_goals">[];
-  audiences: Doc<"audiences">[];
-  buildTimes: Doc<"build_times">[];
-  tools: Doc<"tools">[];
-  problems: Doc<"problems">[];
-};
-
 async function safe<T>(run: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await run();
@@ -33,9 +24,21 @@ async function safe<T>(run: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-/** All reference tables, or null when Convex is unreachable. */
-export async function fetchRefTables(): Promise<RefTables | null> {
-  return safe(() => fetchQuery(api.referenceTables.all, {}), null);
+/** One audience reference row, or null when absent/unreachable. */
+export async function fetchAudienceReference(
+  slug: string,
+): Promise<Doc<"audiences"> | null> {
+  return safe(
+    () => fetchQuery(api.referenceTables.audienceBySlug, { slug }),
+    null,
+  );
+}
+
+/** One tool reference row, or null when absent/unreachable. */
+export async function fetchToolReference(
+  slug: string,
+): Promise<Doc<"tools"> | null> {
+  return safe(() => fetchQuery(api.referenceTables.toolBySlug, { slug }), null);
 }
 
 /** byAudience — builder_confidence sort, 30 cap (matches legacy). */
@@ -48,6 +51,30 @@ export async function fetchIdeasByAudience(
 /** byTool — builder_confidence sort, 30 cap (matches legacy sync). */
 export async function fetchIdeasByTool(tool: string): Promise<IdeaDoc[]> {
   return safe(() => fetchQuery(api.ideas.byTool, { tool }), []);
+}
+
+/**
+ * Resolve an editorial slug list to ideas, preserving the given order.
+ *
+ * Deliberately indexed point lookups rather than filtering a hub's own
+ * result set: `byTool`/`byAudience` cap at 30 by builder_confidence, so a
+ * hand-picked slug silently vanishes from a curated rail once enough
+ * higher-scoring ideas ship. Curation must not depend on that cap.
+ * Missing slugs are dropped so a stale pick degrades instead of throwing.
+ */
+export async function fetchIdeasBySlugs(
+  slugs: readonly string[] | undefined,
+): Promise<IdeaDoc[]> {
+  if (!slugs || slugs.length === 0) return [];
+  const found = await Promise.all(
+    slugs.map((slug) => safe(() => fetchQuery(api.ideas.bySlug, { slug }), null)),
+  );
+  const seen = new Set<string>();
+  return found.filter((idea): idea is IdeaDoc => {
+    if (!idea || seen.has(idea.slug)) return false;
+    seen.add(idea.slug);
+    return true;
+  });
 }
 
 /**

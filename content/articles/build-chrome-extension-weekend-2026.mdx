@@ -1,0 +1,155 @@
+---
+slug: "build-chrome-extension-weekend-2026"
+title: "How to Build a Chrome Extension in a Weekend (2026)"
+description: "Ship a Manifest V3 Chrome extension in one weekend with AI tools — idea pick, build steps, Web Store publish, and how indies actually monetize in 2026."
+category: "Building"
+publishedAt: "2026-08-05"
+wordCount: 1013
+readMinutes: 5
+heroAlt: "A small metal paperclip resting on a dark desk beside a folded sticky note, lit by a single narrow lime beam from the side"
+---
+
+## Who This Is For
+
+You want a product you can ship without spinning up a full SaaS backend.
+
+You've heard Chrome extensions are "easy money" and want the honest weekend path.
+
+You're comfortable pasting prompts into Cursor or Claude Code, but you've never touched `manifest.json`.
+
+If that's you, keep reading.
+
+## Why Extensions Still Work in 2026
+
+The Chrome Web Store still has well over 100,000 published extensions. Roughly 60% are built by solo indie developers. The catch: the median extension has about **18 users**, and ~70% never clear 100 installs.
+
+So the opportunity isn't "publish anything." It's ship a **narrow, painful, browser-native** fix — preferably where an older Manifest V2 tool died and left angry 1-star reviews behind.
+
+Good news on cost: Google still charges a **one-time $5** developer registration fee. Not $99/year. One coffee for unlimited future listings under that account (up to the account limit).
+
+Need an idea first? Browse curated problems on [startup ideas](/startup-ideas) and ask: "Does this pain show up *inside the browser*?"
+
+## The One-Feature Rule
+
+Your weekend dies if you try to build a "platform."
+
+Pick **one action** the user can complete in under 10 seconds:
+
+- Save the current page title + URL to a list
+- Summarize the open tab
+- Highlight and export selected text
+- Check SEO meta tags on the current page
+- Block one distracting site during focus hours
+
+If you can't say the job in one sentence, cut scope.
+
+## Tools You Need
+
+- **Cursor or Claude Code** — generate Manifest V3 scaffolding and fix service-worker gotchas
+- **Chrome** — load unpacked for local testing
+- **GitHub** — optional, but useful once you iterate
+- **$5** — Chrome Web Store developer fee when you're ready to publish
+- **Stripe / Lemon Squeezy / ExtensionPay** — only if you add paid unlock later (Chrome Web Store's old in-store payments are gone)
+
+You do **not** need React on day one. Plain HTML/CSS/JS is enough for most MVPs.
+
+## Weekend Framework
+
+### Friday Night (45–60 min): Idea + Permissions Lock
+
+1. Search the Chrome Web Store for your idea.
+2. Read the **1-star reviews** on the top 3 competitors. That's your feature list.
+3. Write a sticky-note brief:
+
+> "When I'm on [site/context], I want to [action], so I can [outcome]."
+
+4. List the **minimum permissions**. Prefer `activeTab` + `storage`. Avoid `tabs` and broad host access (`*://*/*`) unless you truly need them — broad permissions slow review and scare installs.
+
+### Saturday (6–8 hours): Build the Engine
+
+Ask your AI coding tool for a Manifest V3 project with:
+
+- `manifest.json` (manifest_version: 3)
+- Popup UI (one button, one status line)
+- Service worker for background logic
+- Content script only if you must touch the page DOM
+- `chrome.storage.local` for persistence (never put state in a global variable — service workers die when idle)
+
+**MV3 traps AI still gets wrong:**
+
+1. Service workers are ephemeral — use `chrome.storage.session` or `chrome.storage.local`, not in-memory maps
+2. Async message listeners must `return true` to keep the channel open
+3. No remote code execution — keep scripts in the package
+4. Dynamic SPAs (GitHub, Gmail, Notion) need a `MutationObserver` or you'll inject the UI once and lose it on client-side navigation
+
+Test loop:
+
+1. Open `chrome://extensions`
+2. Enable Developer mode
+3. Load unpacked → select your folder
+4. Click the toolbar icon
+5. Break it on purpose (offline, weird page, missing API key)
+
+By Saturday night you should have a **working core action**, even if the UI is ugly.
+
+### Sunday Morning: Polish + Store Assets
+
+- Icons at 16, 48, and 128px
+- Short description under 132 characters
+- 2–3 screenshots at 1280×800 that show the outcome, not the settings page
+- Privacy policy URL (required if you send any data off-device — even to an LLM API)
+
+### Sunday Afternoon: Submit
+
+1. Zip the build so `manifest.json` is at the **root** of the zip (most common rejection)
+2. Pay the $5 if you haven't
+3. Upload → fill listing → submit
+4. Simple extensions with minimal permissions often clear in **1–3 business days**
+
+While you wait, post a demo GIF in one niche community. Don't spam five subs.
+
+## Monetization Reality Check
+
+Chrome Web Store payments are deprecated. Indies charge via external processors.
+
+Directional market mix for monetized extensions: freemium/subscription ~35%, ads ~25%, one-time ~15%. About **30%** of monetized extensions earn enough to cover costs; the long tail earns nothing.
+
+Practical weekend default:
+
+1. Ship free
+2. Watch weekly retention for 2–4 weeks
+3. Gate a **repeated** workflow behind $5–15/mo (or a cheap one-time unlock)
+
+If nobody returns after day 3, a paywall won't save you.
+
+## What to Build First (5 Ideas)
+
+1. **SEO meta checker** — title, description, H1s, OG tags in one click
+2. **Tab session saver** — save/restore named tab groups
+3. **Highlight → note** — selection + source URL to a sidebar
+4. **Price drop watcher** — one retailer, one alert channel
+5. **Focus site blocker** — one allowlist, one schedule
+
+Each is a weekend. Portfolio beats perfection.
+
+Stuck picking? Start from a validated problem on [startup ideas](/startup-ideas) and force the "browser surface" filter.
+
+## FAQ
+
+### Do I need to know JavaScript?
+
+You need to read errors and describe intent clearly. AI writes most of the boilerplate. You own testing and permission hygiene.
+
+### Is Manifest V2 still an option?
+
+No. New launches are Manifest V3. Treat MV2 as archaeology — and as a hunting ground for abandoned extensions with leftover demand.
+
+### Can I make money with under 1,000 users?
+
+Yes, if the job is high-frequency and B2B/professional. A few hundred retained users at $8/mo beats 50,000 tire-kickers.
+
+## TL;DR
+
+Lock one browser job. Build Manifest V3 with minimal permissions. Load unpacked Saturday, polish Sunday, pay $5, submit. Monetize only after retention shows up. Extensions are still one of the fastest weekend surfaces left — if you stay ruthless on scope.
+
+When you're ready for the next product after the extension wedge, grab a fuller SaaS-shaped idea from [startup ideas](/startup-ideas) and reuse the same ship-in-a-weekend muscle.

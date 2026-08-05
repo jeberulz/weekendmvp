@@ -1,0 +1,157 @@
+---
+slug: "add-auth-to-your-weekend-mvp"
+title: "How to Add Login to Your Weekend MVP (Without Building Auth)"
+description: "Add login to a weekend MVP in an afternoon: how to choose between Clerk, Supabase Auth, and Better Auth, what the free tiers really cover, and what to skip."
+category: "Tutorial"
+publishedAt: "2026-07-25"
+wordCount: 1695
+readMinutes: 8
+heroAlt: "A brass key resting on a dark surface beside a closed notebook, lit by a single emerald beam, very shallow focus"
+---
+
+## Quick Answer
+
+Do not build authentication yourself. Pick a provider, wire it in an afternoon, and spend the rest of the weekend on the thing people actually pay for.
+
+The short version of the decision:
+
+- **Already using Supabase?** Use Supabase Auth. It's included in what you're already paying for, sits in the same database as your data, and the free tier covers 50,000 monthly active users.
+- **Want polished login UI, user profiles, and organizations with almost no code?** Use Clerk. Free tier is generous; the cost curve gets steep at scale.
+- **Want zero recurring cost and full control, and you're comfortable in a codebase?** Use Better Auth or Auth.js. Open source, bring your own database, free — you pay in setup time instead of subscription.
+
+For a weekend MVP with under a thousand users, all three are free. Choose on your stack and your tolerance for configuration, not on price.
+
+If you haven't picked what you're building yet, that's the higher-leverage decision — start from a [validated startup idea](/startup-ideas) and come back when you need users to log in.
+
+## Who This Is For
+
+You have a working prototype and now need accounts, so each user sees their own data.
+
+You're about to let your coding agent "just add login" and want to know what it should be reaching for.
+
+You're comparing Clerk, Supabase Auth, Auth.js, and Better Auth and every comparison article reads like an ad.
+
+You have twenty users and are wondering whether you'll regret this choice at twenty thousand.
+
+## Why You Shouldn't Roll Your Own
+
+Authentication looks like a weekend feature. It isn't. The visible part — email, password, session — is maybe 20% of the work. The rest is the part that quietly breaks:
+
+- Secure password hashing and storage
+- Session invalidation, rotation, and expiry
+- Email verification and deliverability
+- Password reset flows that can't be abused to enumerate accounts
+- Rate limiting on login attempts
+- OAuth callbacks for Google, GitHub, and Apple
+- Two-factor authentication when your first business customer asks
+- Account linking when someone signs up twice by different routes
+
+Every one of these is a known failure mode with a known correct implementation. Writing them yourself is spending a weekend to arrive at what a free tier already gives you — and getting one of them subtly wrong is how user data leaks.
+
+This is also the area where AI-generated code is least trustworthy, because plausible-looking auth code and correct auth code are indistinguishable at a glance. Related reading: [the seven checks to run on vibe-coded software](/articles/vibe-coding-security-for-founders).
+
+## The Three Real Options
+
+### Supabase Auth — Best if You're on Postgres
+
+**Use it when:** your data already lives in Supabase, or you want auth and database from one vendor.
+
+The advantage isn't the login screen — it's that the authenticated user identity is available inside your database's row-level security policies. Authorization becomes a database rule rather than something you remember to check in every endpoint. That single property removes the most common serious flaw in weekend MVPs.
+
+**Pricing shape:** 50,000 monthly active users free, with the $25/month Pro plan covering everything else you're likely using. Beyond the free MAU allowance, overage runs a fraction of a cent per user.
+
+**Tradeoff:** you write more of the UI yourself, and you have to actually enable and write row-level security policies. It is not on by default, and a Supabase project with RLS disabled is a public database.
+
+### Clerk — Best if You Want It Done in an Hour
+
+**Use it when:** you want drop-in components for sign-in, sign-up, user profile, and organizations without designing any of it.
+
+Clerk is the fastest path from zero to a login that looks professional. Prebuilt components, hosted flows, multi-factor, and organization/team support are included rather than assembled.
+
+**Pricing shape:** a free tier covering tens of thousands of monthly active users and a Pro plan around $20/month. The thing to know going in: the cost curve rises sharply at scale — reported bills reach four figures per month at 100,000 MAUs.
+
+**Tradeoff:** speed now, pricing exposure later. For a weekend MVP that's usually the right trade, since most MVPs never reach the range where it bites. Just don't architect as though switching later is free.
+
+### Better Auth / Auth.js — Best if You Want No Recurring Cost
+
+**Use it when:** you're comfortable configuring things, you want auth data in your own database, and you don't want a per-user bill ever.
+
+Both are open source and framework-agnostic-ish, with adapters for the common databases. You own the tables, the sessions, and the migration path.
+
+**Pricing shape:** free. You pay in setup hours and in being your own support when an OAuth callback misbehaves at 1am.
+
+**Tradeoff:** the most control, the lowest ceiling on cost, and the most opportunities to configure something incorrectly. Best fit if you're technical or if your agent is working in a codebase you understand well.
+
+## Choosing in 60 Seconds
+
+| Your situation | Pick |
+|----------------|------|
+| Data already in Supabase | Supabase Auth |
+| Want login shipped today, minimal code | Clerk |
+| Need teams/organizations out of the box | Clerk |
+| Want zero recurring cost, own the tables | Better Auth or Auth.js |
+| Building on Convex | Convex's auth integration with your chosen provider |
+| Expect enterprise SSO buyers soon | Clerk or a dedicated enterprise-auth vendor |
+
+Any of these is a defensible choice. The failure mode is not picking the wrong one — it's spending Saturday comparing them. Auth is infrastructure; it doesn't differentiate your product. What you put behind it does — and if you're short on that, the [startup ideas library](/startup-ideas) has candidates already validated.
+
+## What to Skip on Day One
+
+Ship the smallest auth that works:
+
+**Do ship:** email sign-in (magic link or password), one social provider your users actually have, a session that persists, and sign-out.
+
+**Skip for now:** multi-factor, organizations and team invites, role hierarchies, custom-branded emails, account deletion flows, SSO, and impersonation. Every one of these is a real feature — and every one is a feature you should add when a user asks, not before.
+
+**Magic links vs passwords:** magic links remove password reset, storage, and strength rules from your surface area entirely. For a B2B tool, they're usually the faster and safer default. For a consumer app with frequent logins, the extra email round-trip gets annoying — use passwords or social there.
+
+## The Part Everyone Gets Wrong
+
+Adding a login gives you **authentication** — proof of who someone is. It does not give you **authorization** — proof they're allowed to touch a specific record.
+
+This is the flaw that turns into an incident. A logged-in user changes an ID in a URL and reads someone else's data. No hacking involved.
+
+Every backend function that reads or writes user data must filter by the current user's identity, not merely confirm that someone is signed in. In Supabase, enforce it with row-level security. In Convex, resolve identity inside every query and mutation and filter on it. In a custom API, check ownership in the handler.
+
+Then test it for real: create two accounts, sign in as the second, and try to fetch the first account's records by ID. If anything comes back, you don't have working auth yet — you have a login screen.
+
+## Wiring It Up This Afternoon
+
+A realistic sequence:
+
+1. **Create the provider account and add the keys** to your environment variables — never to a file that reaches the browser bundle or a commit. (30 min)
+2. **Add the sign-in and sign-up routes.** With Clerk this is components; with Supabase or Better Auth it's a small form plus a callback route. (45 min)
+3. **Protect your app routes** so unauthenticated visitors are redirected. (20 min)
+4. **Attach user identity to your data.** Every record your users create gets an owner field, set on the server from the session — never from the request body. (45 min)
+5. **Enforce ownership on reads and writes.** RLS policies or per-function checks. (45 min)
+6. **Test with two accounts.** The cross-account read test above. (15 min)
+
+That's an afternoon, and the last two steps are the ones that matter. If you're short on time, cut the social provider — not the ownership checks.
+
+Once accounts work, the next natural step is charging for them: [adding Stripe to your weekend MVP](/articles/add-stripe-to-weekend-mvp) picks up exactly here.
+
+## FAQ
+
+### What's the easiest auth to add to a Next.js app?
+
+Clerk for speed — drop-in components and a hosted flow. Supabase Auth if your data is already in Supabase. Both are realistic in an afternoon.
+
+### Is Supabase Auth free?
+
+The free tier covers 50,000 monthly active users. Beyond that, overage is a fraction of a cent per additional MAU, and the $25/month Pro plan covers the wider platform.
+
+### Will Clerk get expensive?
+
+Not at weekend-MVP scale — the free tier is generous and Pro is around $20/month. It becomes a real line item at large user counts, where reported costs reach four figures monthly at 100,000 MAUs. Fine for now, worth knowing.
+
+### Should I build authentication myself?
+
+No. Password hashing, session rotation, reset-flow abuse prevention, and OAuth callbacks are solved problems with severe consequences for small mistakes. Use a provider.
+
+### Do I need email verification on day one?
+
+If anything in your app is shared or invited, yes. For a single-player tool with a handful of users, magic links give you verification implicitly and you can skip a separate step.
+
+## TL;DR
+
+Never build auth from scratch. On Supabase, use Supabase Auth and let row-level security enforce ownership. Want it done in an hour, use Clerk. Want no recurring cost and full control, use Better Auth or Auth.js. Ship email sign-in plus one social provider and skip MFA, orgs, and roles until someone asks. Then do the part that actually matters: make every read and write filter by the signed-in user, and prove it with a two-account test. Need something worth putting behind a login? Start with a [validated startup idea](/startup-ideas).

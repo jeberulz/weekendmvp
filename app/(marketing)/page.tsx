@@ -21,8 +21,10 @@ import { HomeBento } from "@/components/marketing/sections/HomeBento";
 import { SignupCta } from "@/components/marketing/SignupCta";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import {
+  SITE,
   buildGraph,
   faqPageSchema,
+  organizationSchema,
   personSchema,
   softwareApplicationSchema,
   websiteSchema,
@@ -40,12 +42,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    url: "https://www.weekendmvp.app/",
+    url: `${SITE}/`,
     title: TITLE,
     description: OG_DESCRIPTION,
     images: [
       {
-        url: "https://www.weekendmvp.app/image/og-image.png",
+        url: `${SITE}/image/og-image.png`,
         alt: "Weekend MVP — ship your product in 48 hours",
         type: "image/png",
         width: 1200,
@@ -57,7 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: OG_DESCRIPTION,
-    images: ["https://www.weekendmvp.app/image/og-image.png"],
+    images: [`${SITE}/image/og-image.png`],
   },
   verification: {
     google: "google-site-verification=HCdXKcfa0MioAEpD-uVIkfFOjcb3CodPcmdc7yxAuRM",
@@ -70,6 +72,7 @@ export default function HomePage() {
       <JsonLd
         schema={buildGraph(
           personSchema(),
+          organizationSchema(),
           websiteSchema(),
           softwareApplicationSchema({
             name: "Weekend MVP Starter Kit",

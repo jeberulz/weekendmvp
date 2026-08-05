@@ -1,0 +1,143 @@
+---
+slug: "tattoo-dm-booking-agent"
+title: "Tattoo DM Booking Agent"
+---
+
+## The Problem
+
+Tattoo artists do not lose business because their work is bad. They lose it in the inbox. A busy artist in Brooklyn or Austin can burn two to three hours a day answering the same Instagram DMs: "How much for a half sleeve?" "Do you have anything in March?" "What's your deposit?" "Can you do my flash piece Saturday?" Ninety percent of bookings still start on Instagram. The artist who replies in four minutes books. The artist who replies after a full day of tattooing finds the client already booked elsewhere.
+
+The work is not hard. It is repetitive and interruptive. Mid-session replies break flow and invite typos on pricing. Ignoring DMs feels like leaving money on the table. Most shops have no dedicated front-desk person for IG. Artists paste the same deposit policy twenty times a day, share Calendly links that get lost in threads, and chase people who "liked" a design but never paid. Aftercare questions pile up at 11 p.m. Shop managers juggling three artists inherit three chaotic DM inboxes with no shared calendar truth.
+
+Booking software exists — Inkbook, Booksy, Vagaro — but it assumes the client already clicked a booking link. The real funnel is social DMs, not a polished scheduling page. Generic chatbot tools like ManyChat can auto-reply, but they do not know flash pricing, style fit, or deposit rules specific to tattoo work. Manual templates help until a custom sleeve quote needs judgment. Result: lost leads, nights spent admin-ing, and artists who love the craft and hate the business layer. With more than 21,000 tattoo shops in the US and a market still growing near 10% CAGR, the volume of inquiry DMs only goes up.
+
+## The Solution
+
+Tattoo DM Booking Agent (working name: InkReply) is an AI booking agent that lives on Instagram DMs — and optionally Facebook Messenger and email — and turns inquiry spam into paid appointments. It answers common questions in the artist's voice, qualifies serious leads, collects Stripe deposits, and writes confirmed slots to the calendar. Artists approve edge-case replies with one tap instead of typing from scratch between clients.
+
+Not a full studio OS on day one. Wedge: urban solo artists and small shops drowning in booking DMs who already charge deposits and use a calendar. Price: **$49–$99/month** per artist; shop licenses **$200–$500/month** for multi-artist studios.
+
+**How it works:**
+
+1. **Connect Instagram + calendar + Stripe** — OAuth Meta Messaging (or a managed inbox bridge for MVP), Google Calendar or Calendly, and Stripe Connect. Artist pastes pricing snippets, deposit policy, style notes, and "never book" rules.
+2. **Auto-handle the top ten FAQs** — Pricing ranges, availability windows, deposit amounts, portfolio links, aftercare basics, flash vs custom. Replies match saved tone samples from past DMs.
+3. **Qualify and intake** — Serious buyers get a short structured form: placement, size, reference images, preferred dates. Tire-kickers get polite portfolio redirects.
+4. **Collect deposit and book** — Stripe Payment Link or Checkout in-thread; on paid, create calendar event and send confirmation with address and prep instructions.
+5. **Human-in-the-loop for edge cases** — Custom sleeve quotes, celebrity clients, or policy exceptions land in an approve queue. Artist taps send, edit, or escalate.
+
+Retention compounds when reply templates learn from approvals and no-show rates drop because deposits are required before hold.
+
+## Market Research
+
+Tattoo demand and studio software spend are both expanding. Digital-native clients expect instant replies; artists who cannot staff a desk need automation that respects creative work.
+
+- The **tattoo studio software** market is valued around **USD 123.5–250 million in 2024** and projected to reach roughly **USD 250–600 million by 2033**, with CAGRs commonly cited in the **8.5–10.5%** range ([Verified Market Reports](https://www.verifiedmarketreports.com/product/tattoo-studio-software-market/), [HTF Market Insights](https://htfmarketinsights.com/report/4400472-tattoo-studio-software-market)).
+- The broader **tattoo market** grows near **9.7% CAGR**, from about **USD 2.14 billion in 2024** toward **USD 4.5 billion by 2032** ([SkyQuest](https://www.skyquestt.com/report/tattoo-market)).
+- Industry stats put US shop density in the tens of thousands with Instagram as the primary discovery and booking channel for independents ([BookedIn tattoo industry statistics](https://bookedin.com/blog/tattoo-industry-statistics/)).
+- Community proof: **r/TattooArtists** (~43.9k members) and large tattoo Facebook groups repeatedly complain about booking friction and DM overload; YouTube tutorials on Instagram DM automation regularly clear **100k+ views**.
+
+SAM: solo and small-shop artists already collecting deposits who will pay $49–99/mo to reclaim evenings. Expansion: beauty freelancers (lash, brow, piercers) with the same IG-first booking pattern.
+
+## Competitive Landscape
+
+Studio management tools win on calendars and POS. Chatbots win on generic IG flows. Nobody owns tattoo-specific DM → deposit → book with voice matching.
+
+- **Inkbook** — Tattoo-focused booking, CRM, waivers, design sharing. Strong vertical fit. Weak on AI DM automation. Pricing roughly **$29–99/month**. UVP: all-in-one studio ops, not inbox agent.
+- **Booksy** — Mobile-first booking for beauty and tattoo. Reminders and client profiles. Generic across services; shallow Instagram DM intelligence. From about **$29.99/month**.
+- **Vagaro** — Appointments, POS, marketing for salons and studios. Scales for multi-chair shops. Minimal AI chat for IG inquiries. Roughly **$25–109/month**.
+- **ManyChat** — No-code Instagram/Facebook bots. Cheap and popular. No tattoo pricing logic, deposit workflows, or artist voice training. **Free–$15/month**.
+
+**Your Opportunity**
+
+Sit in front of Inkbook/Booksy: own the social inbox where demand starts, then hand off confirmed, paid appointments into whatever calendar they already use. Position as *Tattoo while it books.* Land solo artists via Reddit and IG creator shoutouts; upsell shop seats when the front desk wants one queue for every artist.
+
+## Business Model
+
+Subscription SaaS with a 14-day trial that proves three booked deposits. Artist plan is PLG; shop plan is the ACV jump.
+
+- **Artist** ($49/month) — One IG inbox, FAQ automation, calendar sync, Stripe deposits, approve queue.
+- **Artist Pro** ($99/month) — Multi-channel (IG + FB + email), custom intake forms, aftercare drip, basic analytics (response time, conversion, deposit revenue).
+- **Shop** ($200–500/month) — Multi-artist inboxes, shared calendar rules, manager dashboard, white-label confirmation texts.
+- **Add-ons** — Extra seats, SMS confirmations, portfolio auto-replies tied to tagged flash sheets.
+
+**Unit Economics (illustrative)**
+
+- **$0.05–0.20** — LLM cost per automated reply (Haiku for FAQ routing, Sonnet for voice-matched drafts)
+- **~85%** — Gross margin after Meta API and Stripe fees on software (payments are pass-through)
+- **$40–120** — Target CAC via tattoo creator affiliates and community posts
+- Path: 200 Artist @ $49 = ~$10K MRR; 20 Shop @ $300 = +$6K MRR
+
+## Recommended Tech Stack
+
+Weekend MVP can fake Meta complexity with a shared inbox + webhook listener, then harden Graph API access once five pilot artists convert.
+
+- **Next.js App Router + Vercel** — Landing, onboarding wizard, approve queue web UI, billing portal.
+- **Postgres (Neon/Supabase) or Convex** — artists, policies, conversations, messages, bookings, deposits, approvals.
+- **Meta Instagram Messaging API** — Receive DMs, send replies; start with Instagram-only scope.
+- **Stripe Checkout / Payment Links** — Deposits with webhook → mark lead paid → create booking.
+- **Google Calendar API or Calendly** — Availability reads and event creates.
+- **Claude (Anthropic)** — Classify intent, draft voice-matched replies, extract intake fields from thread.
+- **Resend** — Confirmation and aftercare emails as backup channel.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Inbox Agent Shell + Policy Store**
+
+```text
+Build a Next.js 14 App Router SaaS called Tattoo DM Booking Agent (InkReply).
+
+Features for weekend MVP:
+- Artist signup with Stripe Billing ($49 Artist, $99 Pro)
+- Onboarding form: deposit amount, pricing ranges (flash vs custom), availability notes, tone samples (paste 5 past DM replies), shop address, aftercare blurb
+- Mock inbox UI: list of conversations with status (faq_auto, needs_approval, booked, paid)
+- Approval screen: show AI draft, Edit, Approve & Send, Escalate
+
+Postgres schema:
+- artists(id, email, plan, tone_samples jsonb, pricing_policy jsonb, deposit_cents, stripe_customer_id)
+- conversations(id, artist_id, platform, external_thread_id, status, client_handle)
+- messages(id, conversation_id, role ENUM[client,assistant,artist], body, created_at)
+- bookings(id, conversation_id, starts_at, deposit_payment_id, status)
+
+Use TypeScript. Landing headline: "Tattoo more. DM less."
+```
+
+**2. Intent Classifier + Voice Drafts**
+
+```text
+Implement DM intent classification and reply drafting for InkReply.
+
+On each new client message:
+1. Claude Haiku JSON classify intent: pricing | availability | deposit | portfolio | aftercare | custom_quote | spam
+2. If intent in (pricing, availability, deposit, portfolio, aftercare): draft reply using artist.pricing_policy and tone_samples. Auto-send if confidence high and plan allows.
+3. If custom_quote: draft suggested reply + create needs_approval item.
+4. Never invent exact sleeve prices; use ranges from policy and ask for size/placement.
+
+System prompt rules:
+- Match artist sign-off and emoji habits from tone_samples
+- Always mention deposit before holding a date
+- Include booking link only after intent is availability or deposit
+```
+
+**3. Stripe Deposit + Calendar Book**
+
+```text
+Wire Stripe and Google Calendar for InkReply.
+
+Flow:
+- When client confirms a date window, create Stripe Payment Link for artist.deposit_cents
+- DM the link; on checkout.session.completed webhook, mark conversation paid
+- Create Google Calendar event with client handle, placement notes, and reminder 24h before
+- Send confirmation message with address + prep instructions from policy
+
+Admin metrics page: DMs handled, auto-reply rate, deposits collected this week, median first-response time.
+```
+
+## Sources
+
+- [Tattoo Studio Software Market — Verified Market Reports](https://www.verifiedmarketreports.com/product/tattoo-studio-software-market/)
+- [Tattoo Studio Software Market — HTF Market Insights](https://htfmarketinsights.com/report/4400472-tattoo-studio-software-market)
+- [Tattoo Market — SkyQuest](https://www.skyquestt.com/report/tattoo-market)
+- [Tattoo Industry Statistics — BookedIn](https://bookedin.com/blog/tattoo-industry-statistics/)
+- Inkbook, Booksy, Vagaro, and ManyChat pricing referenced from public tiers — verify before marketing.

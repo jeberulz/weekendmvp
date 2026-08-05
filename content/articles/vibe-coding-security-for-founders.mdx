@@ -1,0 +1,159 @@
+---
+slug: "vibe-coding-security-for-founders"
+title: "Vibe Coding Security: The 7 Things AI Ships That Will Burn You"
+description: "AI-generated code introduces vulnerabilities in a large share of tasks. Here are the seven failure modes to check before your vibe-coded MVP touches real users."
+category: "Tutorial"
+publishedAt: "2026-07-25"
+wordCount: 1652
+readMinutes: 8
+heroAlt: "A single house key on a dark surface lit by one lime beam, edge of the key sharply focused, deep shadow behind"
+---
+
+## Quick Answer
+
+Vibe coding is fine. Shipping vibe-coded software to real users without a security pass is not. The research is consistent and unflattering: Veracode's testing of over 100 large language models found **45% of AI-generated code samples introduced an OWASP Top 10 vulnerability**, and a December 2025 study of open-source repositories found AI-authored pull requests produced **2.74x more security issues** than human-authored ones.
+
+You don't fix this by writing code by hand. You fix it with a checklist you run before launch — seven specific failure modes, each checkable in minutes. That's what this article is.
+
+If you're still choosing what to build before you worry about how to secure it, start with a [validated startup idea](/startup-ideas) and come back here before you take your first real signup.
+
+## Who This Is For
+
+You shipped something with Claude Code, Cursor, Lovable, or Bolt and it works.
+
+You're about to add a login, a payment, or a file upload — and you're aware you can't fully audit what the model wrote.
+
+You're non-technical or semi-technical and the phrase "SQL injection" makes you nod without understanding.
+
+You do not want your first press mention to be a breach.
+
+## Why AI Code Fails Differently
+
+Human developers write insecure code out of ignorance or haste. Models write insecure code out of **confidence**. They produce clean, well-formatted, plausibly-named code that reads as if it were reviewed. There's no hesitation marker, no TODO, no comment saying "not sure this is safe."
+
+That confidence removes the strongest signal an untrained reviewer relies on: code that *looks* sketchy. Vibe-coded vulnerabilities look exactly like vibe-coded correct code.
+
+The trend is visible in the CVE data. Georgia Tech's Vibe Security Radar project tracked CVEs attributable to AI coding tools rising from 6 in January 2026 to 15 in February and 35 in March — an order of magnitude in a quarter.
+
+None of that means stop. It means verify. Below are the seven checks that catch most of it.
+
+## The 7 Checks
+
+### 1. Hallucinated Dependencies
+
+The Cloud Security Alliance analyzed 2.23 million AI-generated code samples across 16 models and found **19.7% contained at least one package name that doesn't exist**.
+
+That's a supply-chain problem, not a typo problem. When a model consistently invents the same plausible package name, an attacker can register that name and wait for installs.
+
+**The check:** open your `package.json` (or `requirements.txt`). For every dependency you don't personally recognize, confirm it exists on the real registry, check the download count, and check the last publish date. A package with 40 weekly downloads that appeared last month is a red flag, not a hidden gem.
+
+Ask your agent directly: "list every third-party package you added and the official repository URL for each." Then verify the URLs resolve.
+
+### 2. Leaked Secrets
+
+AI-assisted commits show a **3.2% secret-leak rate versus a 1.5% baseline** across public GitHub commits — roughly double.
+
+This happens because models inline example keys to make code run, and because they don't know which of your files is public.
+
+**The check:**
+
+- No API key, database URL, or webhook secret appears anywhere outside your environment variables.
+- Your `.env` is in `.gitignore` — verify by running `git log --all -- .env` and confirming it returns nothing.
+- Any key that ever touched a commit is **rotated**, not deleted. Git history is forever.
+- Run a scanner: `gitleaks detect` or GitHub's own secret scanning, both free.
+
+Server secrets must never appear in client-side code. In Next.js, anything prefixed `NEXT_PUBLIC_` is compiled into the browser bundle — a Stripe secret key placed there is public the moment you deploy.
+
+### 3. Missing Authorization Checks
+
+This is the one that actually costs founders money, and models get it wrong constantly.
+
+Authentication asks *who are you*. Authorization asks *are you allowed to touch this specific record*. AI-generated CRUD endpoints routinely implement the first and skip the second.
+
+The result: a logged-in user changes an ID in a URL or request body and reads another customer's data. It's the most common serious flaw in vibe-coded apps, and it requires no hacking skill to exploit.
+
+**The check:** for every endpoint or backend function that reads or writes user data, confirm the code compares the record's owner against the current session's user. In Convex, that means every query and mutation resolves identity and filters by it — not just checks that someone is signed in.
+
+Test it manually: create two accounts, log in as the second, and try to fetch the first account's records by ID. If anything comes back, stop and fix it before launch.
+
+### 4. Everything Trusted From the Client
+
+Models generate client-side validation eagerly because it produces nice UX. They frequently forget that client-side validation is a suggestion, not a control.
+
+Anyone can send a request directly to your backend with any values they like.
+
+**The check:** prices, quantities, plan tiers, roles, and permission flags must be determined **on the server**. If your checkout endpoint accepts an `amount` from the browser, someone will eventually send `1`.
+
+Same for admin flags. If a request body can contain `role: "admin"` and your code writes it to the database, you don't have an admin system.
+
+### 5. No Rate Limits on Anything Expensive
+
+Vibe-coded apps almost never ship rate limiting, because nothing in local testing suggests you need it.
+
+The exposure is bigger when your app calls an AI model. An unauthenticated endpoint that proxies to an LLM is a stranger's free API key, billed to you. Founders have woken up to four-figure bills from a single scripted loop.
+
+**The check:** every endpoint that costs money per call — model inference, email sending, SMS, image generation, file processing — must require authentication and enforce a per-user cap. Add a hard daily ceiling on total spend at the provider level too, as a backstop.
+
+### 6. Prompt Injection Through User Content
+
+If your app feeds user-supplied text into a model, that text can contain instructions. If the model's output then triggers actions — sending email, writing to a database, calling a tool — a user can make your app work for them instead of you.
+
+**The check:** treat model output as untrusted input, exactly like form data. Never pass it directly into a database query, a shell command, or a permission decision. Keep the list of actions your agent can take short and explicitly enumerated, and require a real authorization check inside each one — not a check the model is asked to respect.
+
+### 7. Default-Open Data Access
+
+Backend-as-a-service platforms ship with permissive defaults so that tutorials work. Models generate the tutorial version.
+
+**The check:** open your database dashboard and confirm access rules exist and are restrictive. In Supabase, that means row-level security is enabled on every table with real policies. In Firebase, that means your rules aren't the wide-open development template. In Convex, it means public functions validate arguments and identity rather than accepting whatever arrives.
+
+Then verify from outside: try reading a table with an anonymous client and confirm you get nothing.
+
+## Running the Pass
+
+Do this in one sitting before launch, in this order — cheapest checks first:
+
+1. Secret scan and key rotation (10 min)
+2. Dependency verification (10 min)
+3. Database access rules (15 min)
+4. Authorization test with two accounts (20 min)
+5. Server-side validation review of money and roles (20 min)
+6. Rate limits on paid endpoints (20 min)
+7. Prompt-injection review, if you use models (15 min)
+
+Then have your coding agent audit its own work with a hostile prompt: "review this codebase for missing authorization checks, secrets in source, unvalidated client input, and unrate-limited expensive endpoints. List findings with file and line, and do not fix anything yet."
+
+Reviewing is a task models are considerably better at than avoiding the problem in the first place. Give it a chance to catch what it wrote.
+
+Once you've cleared the pass, the rest of the launch is ordinary work — [pricing](/articles/how-to-price-your-weekend-mvp), [payments](/articles/add-stripe-to-weekend-mvp), and finding people to use it. Pick your next build from the [startup ideas library](/startup-ideas) and run the same checklist again.
+
+## What If You Find Something
+
+**Leaked key:** rotate it at the provider immediately, then worry about history. Rotation is the fix; deletion isn't.
+
+**Missing authorization:** patch before any other work. This is the one that becomes a public incident.
+
+**Suspicious dependency:** remove it, ask for an implementation using a package you verified, and re-run your tests.
+
+**Already launched with a flaw:** fix, rotate, and check provider logs for unusual access. If real user data was reachable, tell affected users plainly. Founders survive disclosed incidents; they rarely survive concealed ones.
+
+## FAQ
+
+### Is vibe coding safe for a real product?
+
+Yes, with review. The risk isn't the generation — it's shipping generated code unaudited. A one-hour checklist closes most of the gap.
+
+### Can I just ask the AI to write secure code?
+
+Helps, doesn't solve. Models comply with security instructions inconsistently across a long session. Verification after the fact is what actually catches issues.
+
+### Do I need a penetration test before launch?
+
+Not for a weekend MVP with few users. Run the seven checks. Consider a paid review once you store sensitive data or process meaningful payment volume.
+
+### Which check matters most if I only do one?
+
+Authorization. Test whether one logged-in user can read another's records. It's the most common serious flaw and the most damaging when found by someone else.
+
+## TL;DR
+
+AI-generated code introduces OWASP-class vulnerabilities in roughly 45% of security-sensitive tasks, hallucinates packages about a fifth of the time, and leaks secrets at double the human rate. Run seven checks before launch: dependencies, secrets, authorization, server-side validation, rate limits, prompt injection, and database access rules. Then have your agent audit its own output. Ship fast — just don't ship open. Ready for the next build? Start from a [validated idea](/startup-ideas).

@@ -17,10 +17,12 @@ import {
   normalizeCategorySlug,
 } from "@/components/ideas/idea-meta";
 import {
+  SITE,
   breadcrumbSchema,
   buildGraph,
   collectionPageSchema,
   faqPageSchema,
+  organizationSchema,
   personSchema,
   websiteSchema,
 } from "@/lib/seo";
@@ -31,7 +33,6 @@ import {
   type IdeaCardData,
 } from "./IdeasExplorer";
 
-const SITE = "https://www.weekendmvp.app";
 const CONTENT_DIR = "content/ideas";
 const TITLE = "Startup Ideas | Weekend MVP";
 const DESCRIPTION =
@@ -142,8 +143,8 @@ async function buildFilters(ideas: IdeaCardData[]): Promise<CategoryFilter[]> {
   let order: string[] = [];
   const names: Record<string, string> = {};
   try {
-    const refs = await fetchQuery(api.referenceTables.all, {});
-    for (const cat of refs.categories) {
+    const categories = await fetchQuery(api.referenceTables.allCategories, {});
+    for (const cat of categories) {
       order.push(cat.slug);
       const name = cat.name ?? cat.displayName;
       if (name) names[cat.slug] = name;
@@ -203,6 +204,7 @@ function cardFromManifest(idea: ManifestIdea): IdeaCardData {
     categoryLabel: category ? categoryName(category) : null,
     researchLevel: idea.researchLevel ?? "quick",
     buildTime: idea.buildTime ?? null,
+    publishedAt: Date.parse(idea.publishedAt ?? "") || 0,
   };
 }
 
@@ -226,6 +228,7 @@ async function loadFromMdx(): Promise<StartupIdeasData> {
         categoryLabel: null,
         researchLevel: null,
         buildTime: null,
+        publishedAt: 0,
       };
     }),
   );
@@ -270,6 +273,7 @@ async function loadStartupIdeas(): Promise<StartupIdeasData> {
       categoryLabel: categoryName(category),
       researchLevel: idea.researchLevel ?? "quick",
       buildTime: idea.buildTime,
+      publishedAt: idea.publishedAt,
     };
   });
 
@@ -325,6 +329,7 @@ const FAQ = [
 function buildSchema(data: StartupIdeasData) {
   return buildGraph(
     personSchema(),
+    organizationSchema(),
     websiteSchema(),
     {
       ...collectionPageSchema({

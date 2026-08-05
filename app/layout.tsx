@@ -6,12 +6,11 @@ import { ConsentProvider } from "@/components/consent/ConsentProvider";
 import { ConsentBanner } from "@/components/consent/ConsentBanner";
 import { AnalyticsScripts } from "@/components/consent/AnalyticsScripts";
 import { Toaster } from "@/components/ui/sonner";
+import { SITE } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.weekendmvp.app",
-  ),
+  metadataBase: new URL(SITE),
   icons: { icon: "/image/favicon.png" },
   title: {
     default: "Weekend MVP — Validate & Build Your Startup Idea in a Weekend",

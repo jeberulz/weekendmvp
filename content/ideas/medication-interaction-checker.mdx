@@ -1,0 +1,187 @@
+---
+slug: "medication-interaction-checker"
+title: "Multi-Doctor Medication Interaction Checker"
+---
+
+## The Problem
+
+An adult daughter opens her mother's kitchen cabinet and counts eleven bottles. Four came from the cardiologist, three from the primary care doctor, two from a rheumatologist her mother started seeing in March, and two are supplements bought at the pharmacy counter because a friend recommended them. Each prescriber knows about their own two or three. None of them has ever seen the full eleven at once. The pharmacy caught one conflict at fill time, but only because those two happened to be filled at the same location — the mail-order prescriptions never touched that system at all.
+
+This is the structural failure at the center of polypharmacy: interaction risk lives in the overlaps between providers, and no provider is responsible for the overlaps. A senior taking seven or more daily medications is not an edge case, it is the norm for that age band, and every new prescription, refill, or pharmacy-aisle supplement widens the surface area. The existing tools all assume a single moment of inquiry. Drugs.com will check a pair for free. Medscape will do the same for clinicians. Both require you to remember to ask, know what to ask about, and re-ask every single time the list changes — which, for a family managing an aging parent, is roughly monthly.
+
+The demand signal is not subtle. "Drug interaction checker" and its variants pull over 300,000 monthly searches, and r/pharmacy (161K members) plus r/AgingParents (69K) are full of caregivers describing the same workaround: a hand-typed spreadsheet carried to appointments, rebuilt from scratch after every change. They are doing the work of a persistent monitoring system by hand, badly, because nobody has built them one. Meanwhile global medicine consumption is trending toward roughly 4 trillion doses by 2030, which means the overlap problem is compounding, not resolving.
+
+## The Solution
+
+A persistent medication profile that re-checks itself. The user adds every prescription, supplement, and over-the-counter item once — by scanning the bottle label with a phone camera or typing the name — and the app builds a living list. The critical difference from every free checker is the word *persistent*: when a twelfth item is added in August, it is screened against all eleven existing entries, plus timing conflicts and food warnings, without anyone remembering to run a check.
+
+The output is deliberately not medical advice. It surfaces what published sources say about a combination, ranks by documented severity, and produces a printable one-page summary the user hands to their pharmacist or brings to the next appointment. The product's job is to make sure the right question gets asked by the right professional, not to answer it.
+
+**How it works:**
+
+1. **Build the cabinet** — Scan each bottle label with the phone camera; OCR pulls the drug name and dose, or type it manually. Supplements and OTC items count the same as prescriptions.
+2. **Screen everything against everything** — Every entry is checked against every other entry using published interaction data, not just the newest pair. Results are ranked by documented severity.
+3. **Watch continuously** — Adding, changing, or stopping a medication re-runs the full screen. Refill timing and food-timing conflicts surface as scheduling notes.
+4. **Bring it to a professional** — Generate a one-page summary with the full list, flagged combinations, and suggested questions, formatted to hand to a pharmacist or doctor.
+
+The design decision that determines whether this product lives or dies is alert restraint. Fifty warnings on a seven-drug profile trains the user to dismiss all of them, including the one that mattered. The right build shows two or three ranked items with plain-language explanations and files the rest under a "lower-severity" expander. Getting that threshold right is the actual product work — the database lookup is the easy half.
+
+## Market Research
+
+Medication management is a large, fast-compounding software market where nearly all the money currently flows to institutions rather than the families doing the coordinating:
+
+- **The medication management software market is valued at $8.17B in 2025, projected to $9.11B in 2026 and $23.29B by 2034 at a 12.45% CAGR** (Fortune Business Insights). That is institutional-heavy today, which is precisely where the consumer gap sits.
+- **The medication side-effect tracker app segment specifically sits at $1.65B in 2026, growing at 14% CAGR to $2.79B by 2030** (Research and Markets). This is the consumer-facing slice, and it is growing faster than the parent market.
+- **North America holds roughly 43% of medication-management share**, with healthcare providers as the dominant end user — meaning the tooling exists, it just points at clinicians rather than at the family managing eleven bottles.
+- **"Drug interaction checker" and close variants draw over 300,000 monthly searches**, with "medscape drug interaction checker" alone around 9,900. This is a category where the demand arrives pre-formed through search; you do not have to create awareness.
+- **Global medicine use is trending toward approximately 4 trillion doses by 2030** (IQVIA Institute, Global Medicine Use Trends). More doses across more prescribers is a mechanical increase in overlap risk.
+- **Community concentration is high and reachable**: r/pharmacy (161K), r/AgingParents (69K), and eldercare Facebook groups such as Senior Care Networking (13.4K+) host recurring threads on exactly this coordination failure.
+
+Stage: *growth, with an immature consumer segment*. The institutional side (Epic, Cerner/Oracle, Optum, Veeva) is consolidated and well-funded. The direct-to-consumer side is served by free one-off lookups and adherence reminder apps, with nothing in between.
+
+## Competitive Landscape
+
+Three classes of competitor, and none of them does persistent whole-cabinet monitoring:
+
+- **Drugs.com Interaction Checker** — The consumer default, and the reason most people never pay for anything in this category. Huge database, genuinely good, completely free. But it is a one-off lookup with manual entry every time; nothing persists, nothing re-checks when the list changes, and there is no printable list to bring to an appointment. Free
+- **Medscape Interaction Checker** — Clinician-grade accuracy and trust, backed by WebMD. Built for a professional who already knows the drug names and is checking a specific hypothesis. No consumer onboarding, no reminders, no multi-provider consolidation. Free with a registered account
+- **Medisafe** — The best-known consumer medication app, with millions of users and solid adherence reminders. Interaction alerts are a secondary feature layered on top of a reminder product, limited to user-entered data, and the depth is adherence-first rather than safety-first. Free tier; Premium around $4.99/month
+- **MyChart and patient portals** — Show the medication list your health system knows about, which is exactly the subset that is not the problem. No supplements, no OTC, no visibility into prescriptions filled outside that system. Free with the provider relationship
+- **Pharmacy dispensing systems** — Do flag interactions at fill time, and do it well — but only across prescriptions filled at that chain. Mail-order, a second pharmacy, and everything bought off the shelf are invisible. Free, and invisible to the patient
+- **The spreadsheet** — The real incumbent. A hand-typed list in Notes or Excel, carried to appointments, rebuilt after every change. Free, universal, and the exact manual labor this product automates. $0 plus an hour of a caregiver's evening
+
+**Your Opportunity**
+
+Every free tool answers "are these two drugs a problem?" Nobody answers "is my mother's entire cabinet a problem, and did that change when the rheumatologist added something in March?" Sell persistence and the printable summary, not the database — the database is commodity, the continuous watch across a list that changes monthly is not. Position it toward the caregiver, not the patient: the adult child is the one who searches at 11pm, has the credit card, and will pay $9/month to stop rebuilding the spreadsheet.
+
+## Business Model
+
+Freemium, where the free tier is a genuinely useful interaction checker that captures the enormous existing search traffic, and the paid tier sells persistence plus family sharing. This is the right shape because the free tools have already trained the market to expect a free lookup — you cannot charge for that, but you can charge for never having to run it manually again.
+
+- **Free** ($0) — Unlimited one-off interaction checks, up to 5 saved medications, single user. The SEO capture layer and habit builder.
+- **Family** ($9/mo, or $79/year) — Unlimited saved medications, continuous re-screening on every change, bottle-scan entry, printable appointment summary, refill and timing reminders
+- **Care Circle** ($19/mo) — Up to 5 managed profiles for caregivers handling multiple people, shared access for siblings, change history, and per-profile appointment summaries
+- **Pharmacy / agency licensing** ($2,500–$25,000/year) — White-label or embedded access for home care agencies, independent pharmacies, and senior living operators who want it in their intake workflow
+
+**Unit Economics**
+
+- **~$0.04** — API and OCR cost per profile re-screen
+- **~91%** — Gross margin on the Family tier
+- **$18–$35** — Target CAC via search
+- **~$150** — LTV at a 17-month average tenure
+
+The MRR math: 1,000 Family subscriptions is $9K/mo. Add 200 Care Circle accounts and it is $12.8K/mo. The reason this works as a bootstrapped business rather than a venture one is that the acquisition channel is organic search against a 300K-per-month keyword cluster, not paid acquisition against well-funded health apps. The compounding asset is the anonymized combination data — which cabinets actually co-occur in the real world — which is information no clinical database currently holds.
+
+## Recommended Tech Stack
+
+The engineering risk is not the lookup, it is normalization: turning "Lipitor 20mg," "atorvastatin," and a blurry bottle photo into the same canonical drug identifier so the screen is actually complete.
+
+- **Next.js 15 (App Router) on Vercel** — Server Actions for the screening pass, route handlers for OCR upload. Mobile-first responsive rather than native, so a caregiver can open it from a link a sibling texted them.
+- **RxNorm (NIH/NLM) as the canonical identifier layer** — Free API that maps brand names, generics, and dose forms to a single RxCUI. Every entered medication normalizes to an RxCUI before anything else happens; this is the foundation the whole product sits on.
+- **openFDA APIs (FAERS + drug labeling)** — Free, public, and the honest source for documented adverse-event and labeling data. Be explicit in the UI about what FAERS is and is not — it is a spontaneous reporting system, not a causal one, and misrepresenting that is both a trust and a liability problem.
+- **Supabase (Postgres + Auth)** — Tables for `profiles`, `medications` (rxcui, label_text, dose, source, added_at), `screens`, `flags`, `care_circle_members`. RLS scoped to the profile owner and explicitly granted circle members.
+- **Google Cloud Vision or Tesseract for label OCR** — Photograph the bottle, extract the drug name string, then resolve it through RxNorm with a confirmation step. Always show the user what was read and let them correct it — silent OCR errors in a medication list are unacceptable.
+- **Claude Haiku 4.5 for plain-language explanation only** — Never for the interaction determination itself. The model rewrites a retrieved, sourced interaction record into sixth-grade-reading-level English and drafts the pharmacist question. Every explanation links back to the source record it was derived from.
+- **Stripe Billing + Resend** — Family and Care Circle subscriptions, annual prepay, and transactional email for change notifications to circle members.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "CabinetSafe" — a persistent medication interaction monitor for seniors and family caregivers.
+
+Supabase schema:
+- users(id, auth_id, email, plan TEXT default 'free', stripe_customer_id)
+- profiles(id, owner_user_id, display_name, birth_year INT, notes TEXT)
+- medications(id, profile_id, rxcui TEXT, display_name TEXT, raw_label TEXT, dose TEXT, form TEXT, kind TEXT CHECK kind IN ('prescription','otc','supplement'), prescriber TEXT, added_at, stopped_at)
+- screens(id, profile_id, run_at, medication_ids UUID[], flag_count INT)
+- flags(id, screen_id, rxcui_a TEXT, rxcui_b TEXT, severity TEXT CHECK severity IN ('major','moderate','minor'), source TEXT, source_url TEXT, raw_record JSONB, plain_explanation TEXT)
+- care_circle_members(id, profile_id, user_id, role TEXT CHECK role IN ('owner','viewer'), invited_at, accepted_at)
+
+RLS: a user reads a profile only if they are the owner or an accepted care_circle_member. Flags inherit profile scoping through screens.
+
+Routes: /cabinet/:profileId (the list), /check (free one-off checker, no auth), /summary/:screenId (printable), /circle (invite management).
+
+Stripe: Family $9/mo and $79/yr, Care Circle $19/mo. Env: SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY, GOOGLE_VISION_KEY, STRIPE_SECRET_KEY.
+
+Accessibility is a hard requirement, not polish: minimum 18px base font, WCAG AA contrast, 44px minimum tap targets, and full keyboard navigation. The primary user may be 75 years old.
+```
+
+**2. Normalization + Full-Cabinet Screening Engine**
+
+```text
+Build the screening pipeline. Correctness here matters more than speed — a missed interaction is the failure mode that ends the product.
+
+Step 1 — Normalize:
+For each medication string, call the RxNorm API: GET https://rxnav.nlm.nih.gov/REST/rxcui.json?name={name}&search=2 for approximate matching. If confidence is below threshold or multiple candidates return, do NOT guess — surface a disambiguation UI listing candidates with dose form and strength and make the user pick. Store the chosen rxcui plus the raw string.
+
+Step 2 — Screen all pairs:
+Generate every unordered pair from the profile's active medications (stopped_at IS NULL). For each pair, look up documented interaction records from your ingested interaction dataset keyed on RxCUI. Record severity, the source name, and a source URL for every hit. Persist one screens row and N flags rows.
+
+Step 3 — Rank and suppress:
+Sort flags major > moderate > minor. Display at most the top 3 above the fold; collapse the rest behind "N lower-severity notes". Never render an unranked wall of alerts — alert fatigue is the primary reason clinical decision support gets ignored, and it will do the same here.
+
+Step 4 — Explain:
+For displayed flags only, call Claude Haiku with the retrieved record as context: "Rewrite this documented drug interaction record at a sixth-grade reading level in 2 sentences. State only what the record says. Do not add clinical advice, do not recommend stopping or changing any medication, and do not speculate about this person's situation. End with one specific question they should ask their pharmacist." Render the model output next to a visible link to the source record.
+
+Trigger a full re-screen whenever a medication is added, stopped, or dose-changed. Never let the displayed state be stale relative to the list.
+```
+
+**3. Bottle Scan + Printable Appointment Summary**
+
+```text
+Build the two features that make this stick: camera entry and the paper handoff.
+
+Bottle scan:
+- Mobile camera capture, upload to Google Cloud Vision DOCUMENT_TEXT_DETECTION.
+- Extract candidate drug name and strength using a line-scoring heuristic (largest text block, then any line matching a strength pattern like "20 mg" or "500MG").
+- ALWAYS show a confirmation screen: "We read this as Atorvastatin 20 mg — is that right?" with Edit and Confirm. Never write to the medication list without explicit confirmation. Silent OCR errors in a medication list are the worst possible bug.
+- Fall back to a plain text field with RxNorm autocomplete if the photo fails.
+
+Printable summary (/summary/:screenId):
+- Page 1 only, print stylesheet, no navigation chrome, 12pt minimum body type.
+- Header: profile name, date generated, total medication count.
+- Table: every active medication with name, dose, prescriber, and kind (prescription / OTC / supplement).
+- Flagged combinations section: each with severity, the two drugs, the plain-language line, and the source name.
+- Footer: three generated questions to ask, plus fixed text — "This summary lists published interaction records for discussion with a pharmacist or physician. It is not medical advice and does not replace professional judgment."
+- Add a "Text this to someone" action that sends the summary link to another care circle member.
+```
+
+**4. Landing Page**
+
+```text
+Design a single-page marketing site for CabinetSafe, targeting adult children managing an aging parent's medications.
+
+Hero headline: "Every doctor sees their own prescriptions. Nobody sees all eleven."
+Sub: "Add every prescription, supplement, and over-the-counter bottle once. We re-check the whole cabinet every time something changes — and give you one page to hand your pharmacist."
+
+Sections:
+1. The cabinet scene — a specific, quiet opening about counting bottles on a kitchen counter. No stock photos of smiling seniors.
+2. Why free checkers aren't enough — a simple diagram: pairwise lookup (what exists) vs full-cabinet continuous screen (what this is).
+3. How it works — the four steps, with bottle-scan as the visual anchor.
+4. The one-page summary — show an actual rendered example, since this is the thing people will describe to a friend.
+5. Pricing — Free / Family $9 / Care Circle $19, with the annual $79 toggle.
+6. Trust section — where the data comes from (RxNorm, openFDA), what the product does not do (diagnose, advise, replace a pharmacist), and how data is stored.
+7. FAQ — supplements, multiple pharmacies, sharing with siblings, printing, data deletion.
+
+Voice: calm, precise, never alarmist. This audience is already anxious; fear-based copy will read as untrustworthy. Type: Geist, generously sized. Palette: warm off-white, deep ink, single muted teal accent. Primary CTA: "Check a combination free" — the free checker, no signup, as the front door.
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #6765 and the public research it cites (August 2026 snapshot). This page describes a consumer information tool, not a clinical decision system — verify regulatory posture before building anything that makes a treatment recommendation.
+
+- [Fortune Business Insights — Medication Management Software Market ($8.17B 2025 → $23.29B 2034, 12.45% CAGR)](https://www.fortunebusinessinsights.com/medication-management-software-market-115703)
+- [Research and Markets — Medication Side Effect Tracker App Market ($1.65B 2026 → $2.79B 2030, 14% CAGR)](https://www.researchandmarkets.com/reports/6190943/medication-side-effect-tracker-app-market-report)
+- [IQVIA Institute — Global Medicine Use Trends 2026 (dose volume trajectory)](https://www.iqvia.com/insights/the-iqvia-institute/reports-and-publications/reports/global-medicine-use-trends-2026)
+- [The Business Research Company — Pharmaceutical Safety Assessment Market Report](https://www.thebusinessresearchcompany.com/report/pharmaceutical-safety-assessment-global-market-report)
+- [Mordor Intelligence — Pharmacovigilance and Drug Safety Software Market](https://www.mordorintelligence.com/industry-reports/pharmacovigilance-and-drug-safety-software-market)
+- [RxNav / RxNorm API — free drug name normalization (NIH National Library of Medicine)](https://rxnav.nlm.nih.gov/RxNormAPIs.html)
+- [openFDA — public drug label and adverse event APIs](https://open.fda.gov/apis/drug/)
+- [Drugs.com Interaction Checker — free consumer benchmark](https://www.drugs.com/drug_interactions.html)
+- [Medisafe — pricing reference for the consumer medication app category](https://www.medisafe.com/)
+
+Page sourced via Ideabrowser MCP (idea_id 6765): get_idea_research, competitive_analysis, go_to_market, keyword_list.

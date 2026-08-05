@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   outputFileTracingIncludes: {
     "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
+    // sitemap.xml enumerates MDX at request time, so the content dirs must be
+    // traced into its function bundle or it emits hub pages only.
+    "/sitemap.xml": [
+      "./content/ideas/**/*.mdx",
+      "./content/articles/**/*.mdx",
+      "./content/newsletter-pages/**/*.mdx",
+    ],
   },
   turbopack: {
     root: __dirname,
@@ -29,16 +36,9 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
-      // .html → extensionless (legacy idea/article/newsletter URLs)
-      {
-        source: "/:path*.html",
-        destination: "/:path*",
-        permanent: true,
-      },
-      // /image/og/* paths remain at /image/og/* (files now live under
-      // public/image/og/) — no redirect needed; preserved verbatim.
-      // The plan called for /og/* parity, but moving everything under
-      // public/image/og/ keeps every cached social card URL valid.
+      // Path cleaning (.html / trailing slash) + apex→www live in
+      // middleware.ts so dirty URLs resolve in a single 308 (WP13).
+      // /image/og/* stays under public/image/og/ — no redirect needed.
 
       // Legacy /api/ideas-today rewrite target — redirect to the new public URL
       {

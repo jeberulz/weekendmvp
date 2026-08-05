@@ -1,0 +1,186 @@
+---
+slug: "inbox-zero-agent"
+title: "Inbox Zero Agent"
+---
+
+## The Problem
+
+Knowledge workers spend more than two hours every day inside email — reading, triaging, drafting, deferring, and re-reading threads they meant to answer yesterday. The inbox is an infinite to-do list owned by everyone else. A founder opens Gmail at 7 a.m.: 47 unread. Fourteen are newsletters, nine are FYI cc's, six are genuine asks with buried deadlines, three are angry customer threads needing careful replies today. The rest is scheduling ping-pong and "quick question" messages that each cost fifteen minutes of context-switching.
+
+The mental load is decision fatigue. Every message asks: Is this urgent? Can I ignore it? Reply now or batch for Friday? Most people develop brittle hacks — color labels, filters that miss edge cases, starred items that become a second inbox, draft replies that sit open for days because the right tone takes energy they do not have at 4 p.m.
+
+Existing tools help at the margins. Filters sort. Snooze hides until Monday. Smart folders surface "important" senders via opaque heuristics. None actually *do the work*: prioritize with context, draft in your voice, schedule the send, and surface only what needs human judgment. Result: inbox anxiety, slow replies on messages that matter, and a guilt loop around inbox zero that never closes. A consultant billing $150/hour who loses ninety minutes to triage burns $225 before lunch. Email management software is a multi-billion-dollar category because this problem scaled with async work and AI-generated outreach.
+
+## The Solution
+
+Inbox Zero Agent (working name: InboxZen) is an AI inbox agent on top of Gmail and Outlook — a chief of staff for your mail. It scores priority from sender history, deadline language, and thread context; drafts replies in your voice; schedules sends; and surfaces a daily attention queue of five to twelve threads that actually need you.
+
+Not another email client. Users keep Gmail or Outlook. A Chrome extension adds a side panel; the agent uses official APIs so UI changes do not break it. Wedge: founders, consultants, account managers, and recruiters who pay $15/month to reclaim an hour without learning Superhuman-style shortcuts.
+
+**How it works:**
+
+1. **Connect Gmail or Outlook** — OAuth through the extension; the agent indexes recent sent mail to learn your tone, sign-off patterns, and typical response length.
+2. **Morning attention queue** — Each day opens with a ranked list: reply-now, reply-today, delegate, archive. Newsletters and automated noise never appear unless you ask.
+3. **One-click draft replies** — Tap any thread; Claude generates a reply in your voice with context from the thread and your sent-mail style guide. Edit, approve, or discard.
+4. **Schedule sends** — Batch non-urgent replies for 9 a.m. Tuesday when you are fresh; the agent queues them through the provider's send API.
+5. **Weekly inbox report** — See where time went: top senders, average response lag, threads you snoozed three times (a signal to unsubscribe or template).
+
+Retention compounds: approved drafts train voice; "not urgent" dismissals sharpen scoring. After two weeks the agent knows your biggest client always ranks high and vendor cold outreach can auto-archive.
+
+## Market Research
+
+Email management software is a large, steady-growth market driven by remote work, async collaboration, and the relentless volume of business communication. Analysts consistently size the category in the multi-billion-dollar range with high single-digit to low double-digit CAGR through the early 2030s.
+
+- The global email management software market was valued at roughly **USD 6.5 billion in 2023** and is projected to reach **USD 13.5 billion by 2032**, growing at approximately **8.5% CAGR** ([DataIntelo](https://dataintelo.com/report/email-management-software-market)).
+- Market share consolidation and AI feature adoption are accelerating vendor investment in 2025, with enterprise and SMB segments both expanding ([OpenPR](https://www.openpr.com/news/3862159/shaping-the-email-management-software-market-share-in-2025)).
+- Adjacent email tooling — marketing platforms, tracking, and automation — validates sustained spend on anything that makes email less painful; the broader email software ecosystem continues to grow as businesses treat inbox workflow as operational infrastructure ([IMARC Group](https://www.imarcgroup.com/email-marketing-software-market), [Market Research Future](https://www.marketresearchfuture.com/reports/email-tracking-software-market-34042)).
+- **2+ hours per day** in email is the commonly cited knowledge-worker average; even a 30% reduction is 36 minutes daily — over three hours per week — which easily justifies a $15/month subscription on time value alone.
+- Willingness to pay is proven at multiple price points: Superhuman sustains a $30/month cult following; SaneBox charges $7 and up for filtering alone. A $15 agent that drafts and schedules — not just sorts — sits in a credible gap between free bundled features and premium clients.
+
+SAM: tens of millions of Gmail and Outlook users who pay for productivity tools but refuse to switch clients. Distribution via productivity communities and high-intent "inbox zero" search terms.
+
+## Competitive Landscape
+
+The category splits into premium clients, filter-and-snooze utilities, AI writing add-ons, and free platform bundles. None combine priority intelligence, voice-matched drafting, and scheduled sending in a single lightweight agent that works inside the inbox users already have.
+
+- **Superhuman** — The premium email client benchmark. Blazing UI, split inbox, AI snippets, team read statuses. Requires leaving Gmail's native UI and learning new shortcuts. **$30/month** individual; team pricing higher. Strong brand, high switching cost, but overkill for users who want assistance without migrating clients.
+- **SaneBox** — AI-powered filtering, snooze, attachment sorting, and follow-up reminders. Works with existing clients via IMAP. Excellent at hiding noise but does not draft replies or learn voice. **~$7/month** (Snack plan) to **$36/month** (Dinner) depending on features and mailboxes.
+- **Fyxer AI** — Meeting notes and email drafting assistant oriented toward executives. Integrates with Gmail and Outlook; focuses on meeting follow-ups and inbox cleanup. Pricing typically **$10–15/user/month** range for AI features. Closer competitor on drafting, but less emphasis on daily priority queue and scheduled batch sending.
+- **Mailbutler / Mixmax** — Gmail and Outlook add-ons for templates, tracking, scheduling, and smart assistant features. Mailbutler Smart Assistant from roughly **$5/month**; Mixmax tiers from **$13–33/user/month**. Broad feature sets; AI is one module among many, not a unified agent experience.
+- **Gmail Smart Features (bundled)** — Summarize thread, smart reply chips, priority inbox heuristics. **Free** with Google Workspace. Good enough for casual users; no voice learning, no cross-thread priority scoring, no scheduled batch workflow, and Outlook users get nothing.
+
+**Your Opportunity**
+
+Own the "AI chief of staff" slot at **$15/month individual** and **$40/user/month teams** — half of Superhuman, more capable than SaneBox, more focused than Mailbutler's Swiss-army approach. Position as: *Keep Gmail. Lose the triage.* Land with founders and client-facing pros who feel inbox shame daily; expand to team plans where shared SLA dashboards ("who owes a reply") and admin voice guidelines unlock higher ACV. The gap is an agent that reduces decisions, not another surface to learn.
+
+## Business Model
+
+Per-user SaaS with a generous trial that demonstrates the first morning queue and three draft replies. Individual tier is the PLG engine; team tier adds shared analytics, SLA tracking, and admin controls for agencies and sales pods.
+
+- **Free Trial** (14 days) — Full attention queue and drafting on one mailbox; capped at 50 AI drafts to prevent abuse.
+- **Individual** ($15/month) — Unlimited drafts, priority scoring, send scheduling, weekly reports, one Gmail or Outlook account.
+- **Team** ($40/user/month) — Everything in Individual plus shared team dashboard, response-time SLAs, shared templates, admin voice guide, priority rules per role (sales vs. support).
+- **Annual discount** — 2 months free on yearly billing to improve cash flow and reduce churn.
+
+**Unit Economics (illustrative)**
+
+- **$0.08–0.25** — LLM cost per draft (Claude Haiku for triage, Sonnet for final reply), amortized over daily batch scoring
+- **~80%** — Gross margin at Individual tier with sensible caching of sender profiles and thread summaries
+- **$25–60** — Target CAC via productivity content and Chrome Web Store discovery
+- **110%+** — Net revenue retention as solo users invite teammates for SLA visibility
+
+MRR path: 500 Individual = $7.5K/mo; add 50 ten-seat teams = $27.5K/mo total. Voice and priority history reduce churn — retraining elsewhere hurts.
+
+## Recommended Tech Stack
+
+The build is a Chrome extension for UI and provider API access, a Next.js backend for auth and AI orchestration, and Postgres for user data and learned preferences. Gmail API and Microsoft Graph cover mail read, draft create, and scheduled send. Avoid scraping DOM — API-first keeps the product stable across UI changes.
+
+- **Chrome Extension (Manifest V3)** — Side panel for attention queue, thread preview, draft editor, and approve/schedule actions. Background service worker syncs new mail on interval and push notifications where supported.
+- **Next.js App Router + Vercel** — Landing page, OAuth callback routes, billing portal, weekly report emails, and API routes for extension communication. Server Actions for draft generation jobs.
+- **Gmail API + Microsoft Graph** — Read threads, list messages, create drafts, send or schedule send (Gmail: users.messages.send with scheduled time via draft + Apps Script alternative or provider-specific scheduling; Outlook: deferred send via Graph). Store refresh tokens encrypted.
+- **Claude (Anthropic API)** — Haiku for priority classification and thread summarization; Sonnet for voice-matched draft generation. System prompt includes user style guide extracted from last 200 sent messages.
+- **Postgres (Supabase or Neon)** — Tables: users, mail_accounts, threads, priority_scores, drafts, send_queue, style_profiles, feedback_events. pgvector optional for semantic sender clustering.
+- **Stripe Billing** — Individual and per-seat Team subscriptions; usage metering optional if draft volume exceeds fair-use thresholds.
+
+Weekend MVP: Gmail only, queue + draft + manual approve. Week two: Outlook and scheduled send.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Chrome Extension + Gmail OAuth Shell**
+
+```text
+Build a Chrome extension (Manifest V3) plus Next.js 14 App Router backend for an AI inbox agent called Inbox Zero Agent.
+
+Extension:
+- Side panel UI showing "Attention Queue" (ranked thread list with priority badge, subject, sender, one-line summary)
+- Background service worker that polls backend every 5 minutes for queue updates
+- Content script minimal — no DOM scraping; all data via backend API
+- OAuth flow: extension opens popup to /api/auth/gmail on the Next.js app; store session token in chrome.storage.local
+
+Backend routes:
+- GET /api/auth/gmail — start Google OAuth with scopes: gmail.readonly, gmail.compose, gmail.send
+- GET /api/auth/gmail/callback — exchange code, encrypt refresh token, store in mail_accounts table
+- GET /api/queue — return today's attention queue for authenticated user
+- POST /api/draft — given thread_id, generate and return draft reply
+
+Postgres schema:
+- users(id, email, plan, stripe_customer_id, created_at)
+- mail_accounts(id, user_id, provider ENUM[gmail,outlook], refresh_token_encrypted, last_sync_at)
+- threads(id, mail_account_id, provider_thread_id, subject, sender, last_message_at, priority_score, summary, status ENUM[pending,drafted,scheduled,done,archived])
+- drafts(id, thread_id, body, status ENUM[generated,approved,sent,scheduled], scheduled_for, created_at)
+- style_profiles(id, user_id, tone_notes, avg_length, sign_off, example_snippets JSONB)
+
+Landing page headline: "Your inbox, minus the triage." Subhead: AI priority queue and voice-matched drafts for Gmail.
+Use TypeScript throughout. Environment variables for Google client ID/secret and Anthropic API key.
+```
+
+**2. Priority Scoring + Attention Queue**
+
+```text
+Implement the daily attention queue pipeline for Inbox Zero Agent.
+
+Sync job (runs every 15 min per connected account):
+1. Gmail API: list threads with label INBOX, max 100, ordered by internalDate desc.
+2. Skip threads already scored in the last 6 hours unless new messages arrived.
+3. For each new/changed thread, fetch snippet + last 3 messages (plain text, strip quoted replies).
+
+Priority classifier (Claude Haiku, JSON mode):
+Input: thread subject, sender, snippet, user role (optional), historical sender_stats (avg response time, past priority labels).
+Output schema:
+{
+  priority: "reply_now" | "reply_today" | "delegate" | "archive",
+  score: 0-100,
+  reason: "one sentence",
+  detected_deadline: "ISO date or null",
+  summary: "one sentence thread summary"
+}
+
+Scoring rules in system prompt:
+- reply_now: explicit urgency, angry customer, deadline within 24h, VIP sender marked high in style profile
+- reply_today: direct question, meeting request, client thread without urgency markers
+- delegate: FYI with action item for someone else, internal routing
+- archive: newsletter, automated notification, cold outreach, no-reply needed
+
+Store results in threads table. Attention queue API returns top 15 threads where priority in (reply_now, reply_today) sorted by score desc.
+
+Feedback loop: when user marks "not urgent" or archives from queue, log feedback_events and downgrade sender priors.
+```
+
+**3. Voice-Matched Draft Replies + Scheduled Send**
+
+```text
+Build draft generation and scheduled sending for Inbox Zero Agent.
+
+Style profile bootstrap (on first connect):
+- Fetch last 200 sent messages via Gmail API.
+- Claude analysis: extract tone (formal/casual), typical length, common sign-offs, greeting patterns, 5 example reply pairs (incoming → sent).
+- Store in style_profiles.
+
+Draft generation (POST /api/draft):
+Input: thread_id, optional user_notes ("softer tone", "push meeting to next week").
+Fetch full thread. Build prompt:
+
+System: "You write email replies matching this user's voice exactly."
+Include style_profiles fields and 3 example snippets.
+User: thread transcript + user_notes.
+Output: plain-text reply body only, no subject line, no markdown.
+
+Return draft for side-panel editor. User can edit inline.
+
+On approve:
+- Gmail API users.drafts.create with threadId binding.
+- If send_immediately: users.messages.send with draft id.
+- If scheduled_for timestamp: store in send_queue table; cron job (Vercel Cron every 5 min) checks due items, sends via API, marks thread done.
+
+Track: drafts generated, approval rate, edits before send (measure voice accuracy). Gate unlimited drafts behind Individual plan; trial capped at 50.
+```
+
+## Sources
+
+- [Email Management Software Market Report — DataIntelo](https://dataintelo.com/report/email-management-software-market)
+- [Shaping the Email Management Software Market Share in 2025 — OpenPR](https://www.openpr.com/news/3862159/shaping-the-email-management-software-market-share-in-2025)
+- [Email Marketing Software Market — IMARC Group](https://www.imarcgroup.com/email-marketing-software-market)
+- [Email Tracking Software Market — Market Research Future](https://www.marketresearchfuture.com/reports/email-tracking-software-market-34042)
+- Superhuman, SaneBox, Fyxer AI, Mailbutler, and Mixmax pricing referenced from public pricing pages — verify before marketing.

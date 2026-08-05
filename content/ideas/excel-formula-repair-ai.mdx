@@ -1,0 +1,195 @@
+---
+slug: "excel-formula-repair-ai"
+title: "AI Excel Formula Repair Tool"
+---
+
+## The Problem
+
+It is 4:40pm on the last day of the quarter and a controller's consolidation workbook is showing `#REF!` in the summary tab. Somebody deleted a row in a source sheet three weeks ago. The error propagated silently through four nested lookups, and nobody noticed until the number that feeds the board deck came back negative. There are 900 formulas in this file and eleven of them are wrong. Excel's built-in error checker will helpfully point at the cell that is red. It will not tell you which of the eleven upstream formulas caused it, and it will absolutely not rewrite them.
+
+The people living this are not casual users. They are financial analysts, independent accountants, and small-business finance teams who have inherited a workbook from someone who left the company, built by someone else before them, with no documentation and a naming convention that changed twice. r/excel has 832K+ members and a steady stream of posts that are functionally the same request: *here is my formula, here is what it does, here is what I need it to do, please fix it.* People are pasting screenshots of their broken spreadsheets to strangers on the internet because there is no tool that reads the whole workbook and tells them what is structurally wrong with it.
+
+The alternatives split badly. ChatGPT will fix a formula you paste into it, but it cannot see the other 899, has no idea what is in the referenced cells, and cannot tell you whether the fix breaks something downstream. Microsoft's Copilot is closer to the data but is priced and positioned for enterprise seats, and its help is general-purpose rather than diagnostic. Meanwhile the finance profession keeps absorbing the cost as unpaid evening hours, because "the spreadsheet is broken" has never been a line item anyone can expense.
+
+## The Solution
+
+An audit-first tool rather than a chat-first one. Upload the workbook — or connect it via a Microsoft Graph or Google Sheets permission — and the product does a full static analysis before it says a single word: it builds the dependency graph of every formula, walks it, and returns a ranked list of structural defects. Broken references. Circular logic. Ranges that stop one row short of the data. Hardcoded numbers sitting inside otherwise-formulaic columns. Inconsistent formulas within a column, which is the single highest-signal indicator of a copy-paste error in financial models.
+
+Only then does it offer fixes, and each fix is shown as a diff against the original with a plain-English explanation of what changed and what downstream cells it affects. Nothing is applied without an explicit accept, and every accepted change is logged to an audit trail that can be exported — because the buyer here is an accountant, and an accountant cannot use a tool that silently modifies numbers they will later have to defend.
+
+**How it works:**
+
+1. **Ingest and map** — Parse the workbook, build a full cell-level dependency graph across sheets, and identify every formula, reference, and named range.
+2. **Audit structurally** — Walk the graph for broken references, circular logic, off-by-one ranges, hardcoded constants inside formula columns, and column-level formula inconsistency. Rank by blast radius, not by cell order.
+3. **Propose fixes with diffs** — For each defect, generate a corrected formula shown side by side with the original, plus a plain-English note on what it changes and which cells depend on it.
+4. **Accept, apply, and log** — The user accepts individually or in bulk; changes write back to the workbook and append to an exportable audit trail.
+
+The wedge that makes this defensible against a bundled Copilot feature is the diagnostic direction. Copilot is optimized for "help me write a formula." This is optimized for "tell me what is wrong with this file I did not build." Those are different products with different buyers, and the second one has a deadline attached.
+
+## Market Research
+
+The category sits inside a very large, very fast-growing AI software market, but the specific numbers that matter are about spreadsheet ubiquity and the absence of a specialized leader:
+
+- **The global AI market is valued at roughly $757.6B in 2025, growing at a 19.2% CAGR toward a projected $3.68T by 2034** (Precedence Research). The AI spreadsheet tools segment is a fast-growing niche inside that, driven by corporate automation budgets.
+- **Excel holds an estimated 80%+ of the spreadsheet market**, and Microsoft 365 counts roughly 345 million paid seats — meaning the install base for a workbook-repair tool is effectively the entire white-collar finance world.
+- **Copilot Pro is priced at $30/month per user**, which sets a clear ceiling and a clear opening: an affordable, specialized alternative at a fraction of that price has an obvious pitch to anyone not already on an enterprise Microsoft plan.
+- **r/excel has 832K+ members**, with tutorial content on YouTube regularly clearing 250K views. This is a category where the audience is large, self-identifying, and already searching for exactly this help.
+- **The AI spreadsheet tools market is explicitly assessed as fragmented and in early-to-middle expansion**, with no entrenched leader in the specialized niche (Virtue Market Research) — an unusual condition in a market this large.
+- **The identified price gap is around $29/month**: existing options are either free and shallow (add-ons, ChatGPT) or expensive and general (Copilot, enterprise automation stacks), with nothing purpose-built in between.
+
+Stage: *high growth, fragmented, narrowing window*. Microsoft and Google will keep adding AI features natively. The realistic assessment from the research is an 18-month window before core capability commoditizes — which argues for shipping a sharp diagnostic wedge rather than a broad assistant.
+
+## Competitive Landscape
+
+Six alternatives, and the gap is that none of them audit a workbook they did not help write:
+
+- **Microsoft Excel Copilot** — Native, trusted, and directly inside the product. Genuinely good at generating formulas and explaining data conversationally. But it is assistive rather than diagnostic, it will not hand you a ranked list of everything structurally wrong with an inherited file, and the price puts it out of reach for solo accountants. Bundled in higher-tier enterprise plans; Copilot Pro $30/month per user
+- **SheetAI / GPT for Sheets** — Popular Google Sheets add-ons with roughly 100K+ installs each. Fast to deploy and cheap, with solid formula generation. Google Sheets only, accuracy varies, and there is no whole-workbook analysis or audit trail. Free tier plus $10–$30/month premium
+- **Rows.com** — A genuinely well-built AI-native spreadsheet with custom AI formulas and strong data connections. The catch is structural: it asks you to leave Excel, which is exactly what a finance team with a decade of inherited workbooks cannot do. Freemium, then roughly $59+/month for business teams
+- **ChatGPT or Claude directly** — The real incumbent, and it is free or $20/month. Excellent at a single pasted formula. Blind to the other 899, blind to cell contents, no dependency awareness, no write-back, no audit log. $0–$20/month
+- **Alteryx / Talend / Power Query** — Serious data-cleaning and ETL power for teams that have someone technical. Expensive, steep learning curve, and aimed at pipeline construction rather than fixing the workbook you already have. Enterprise pricing, typically four to five figures annually
+- **VBA macros and manual review** — Still the standard answer in most finance departments. A senior analyst spends an afternoon tracing precedents by hand, or someone maintains a macro nobody else understands. $0, paid entirely in hours.
+
+**Your Opportunity**
+
+Everything above either writes new formulas or rebuilds your data pipeline. Nobody diagnoses an existing workbook and hands you a ranked, explained, accept-or-reject list of defects. Position it as the second opinion on a file you inherited, sell it at $29/month to the independent accountant and small finance team that Copilot's pricing excludes, and make the audit trail the enterprise upgrade path — because "prove what changed and who approved it" is a requirement, not a feature, in anything that touches financial reporting.
+
+## Business Model
+
+Per-seat SaaS with a free tier that does the diagnosis but withholds the fixes — which is the right shape here because the audit result is itself the sales pitch. Showing someone eleven structural errors in the workbook they have been using for two years converts far better than any landing page copy.
+
+- **Free** ($0) — Audit up to 3 workbooks per month, full defect list with locations and severity, no automated fixes and no write-back. The diagnosis is the demo.
+- **Pro** ($29/mo) — Unlimited audits, one-click fixes with diffs, write-back to Excel and Google Sheets, formula explanations, and export of the audit report
+- **Team** ($79/mo, 5 seats) — Everything in Pro plus shared workbook history, a team-level defect dashboard, and the exportable change-approval log
+- **Firm** ($299/mo, 25 seats) — For accounting practices: client workspace separation, SOC 2 documentation package, SSO, and an API for batch auditing at engagement intake
+
+**Unit Economics**
+
+- **~$0.35** — LLM cost per audited workbook
+- **~92%** — Gross margin at the Pro tier
+- **$40–$70** — Target CAC via r/excel and search
+- **~$320** — LTV at an 11-month average tenure
+
+The math to a real business: 500 Pro seats is $14.5K/mo. Swap 100 of those for 40 Team accounts and it is roughly $17K/mo. Accounting firms are the leverage — one Firm account at $299 equals ten Pro seats and churns far less, because once client-engagement intake runs through your audit step, removing it means changing a documented procedure. The acquisition channel is unusually cheap for B2B: r/excel, YouTube tutorial content, and search traffic for specific error strings like "excel ref error after deleting rows."
+
+## Recommended Tech Stack
+
+The AI is the smaller half of this. The dependency graph is the product — an LLM that has not been told what a cell actually references will confidently produce a fix that breaks three other tabs.
+
+- **Next.js 15 (App Router) on Vercel** — Upload UI, audit results view, and the diff-accept interface. Long audits run as background jobs rather than blocking a request.
+- **SheetJS or ExcelJS for parsing, plus a custom dependency graph** — Parse `.xlsx` into cells, formulas, and named ranges, then build a directed graph of cell dependencies. This is deterministic code, not AI, and it is where correctness comes from.
+- **A formula parser (`fast-formula-parser` or `formula-parser`)** — Tokenize each formula into an AST so range boundaries, absolute versus relative references, and function arguments can be reasoned about structurally instead of by regex. Regex on formulas is the classic trap in this category.
+- **Microsoft Graph API + Google Sheets API** — For connected mode: read the live workbook, write accepted fixes back in place. Graph is the harder integration and the one that unlocks the Team and Firm tiers.
+- **Claude Sonnet 4.6 with the graph as context** — Never send a bare formula. Send the formula, its AST, the values and types of every referenced cell, and the list of dependent cells, then ask for a corrected formula plus a one-sentence explanation, in structured JSON. Validate the returned formula parses before it is ever shown to a user.
+- **Supabase (Postgres) + Vercel Blob** — Workbook metadata, audit runs, defects, and the change log in Postgres; uploaded files in Blob with a hard 24-hour retention default. Finance customers will ask about retention in the first sales conversation — have the answer be "we delete it."
+- **Stripe Billing** — Pro, Team, and Firm seats with annual prepay. Seat-based rather than usage-based, because unpredictable bills are a hard no for accounting practices.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "SheetDoctor" — an AI workbook auditor that finds and fixes structural defects in Excel and Google Sheets files.
+
+Supabase schema:
+- users(id, auth_id, email, plan TEXT default 'free', firm_id UUID NULL, stripe_customer_id)
+- firms(id, name, seat_limit INT, sso_domain TEXT)
+- workbooks(id, user_id, filename, source TEXT CHECK source IN ('upload','msgraph','gsheets'), external_id TEXT, sheet_count INT, formula_count INT, uploaded_at, delete_after TIMESTAMPTZ)
+- audits(id, workbook_id, started_at, finished_at, defect_count INT, status TEXT CHECK status IN ('running','complete','failed'))
+- defects(id, audit_id, sheet TEXT, cell TEXT, kind TEXT CHECK kind IN ('broken_ref','circular','range_off_by_one','hardcoded_constant','inconsistent_column','volatile_chain'), severity INT, original_formula TEXT, proposed_formula TEXT, explanation TEXT, blast_radius INT, status TEXT CHECK status IN ('open','accepted','rejected'))
+- change_log(id, defect_id, user_id, action TEXT, before TEXT, after TEXT, applied_at)
+
+RLS: users read their own workbooks; firm members read workbooks scoped to their firm_id.
+
+Routes: /upload, /audit/[id] (ranked defect list), /audit/[id]/defect/[defectId] (diff view), /connect (Microsoft Graph and Google OAuth), /firm (seat management).
+
+Set workbooks.delete_after to uploaded_at + 24 hours by default and run a cron that hard-deletes blobs past that timestamp. Surface the retention policy in the UI, not just the privacy page.
+
+Stripe: Pro $29/mo, Team $79/mo (5 seats), Firm $299/mo (25 seats). Env: ANTHROPIC_API_KEY, MS_GRAPH_CLIENT_ID, GOOGLE_CLIENT_ID, SUPABASE_SERVICE_ROLE_KEY.
+```
+
+**2. Dependency Graph + Structural Audit Engine**
+
+```text
+Build the audit engine. This is deterministic analysis — no LLM involved in detection. The model only writes explanations and candidate fixes later.
+
+Parse:
+Use SheetJS to read the workbook into sheets, cells, formulas, and defined names. For each formula cell, parse to an AST with fast-formula-parser. Extract every reference: sheet name, range bounds, absolute vs relative, and any defined-name resolution.
+
+Build the graph:
+Directed graph, node per cell, edge from precedent to dependent. Compute for every formula cell its full transitive dependent set — this is blast_radius, and it is what drives ranking. A broken formula that 200 cells depend on outranks one that nothing reads.
+
+Detect, in this order:
+1. broken_ref — formula contains #REF! or resolves to a deleted sheet or name.
+2. circular — cycle detected in the dependency graph. Report the full cycle path, not just one cell.
+3. range_off_by_one — a range terminates within 1-2 rows of the last populated row in that column, or excludes a row that every sibling formula includes. Highest-value check: this is the silent one that produces wrong-but-plausible numbers.
+4. inconsistent_column — within a contiguous column of formulas, normalize each AST by replacing row indices with relative offsets and cluster. Any cell whose normalized shape is a minority in its column is flagged.
+5. hardcoded_constant — a numeric literal (excluding 0, 1, 100, and obvious rates under 1) embedded inside a formula in a column that is otherwise reference-driven.
+6. volatile_chain — NOW, TODAY, RAND, OFFSET, or INDIRECT with a large dependent set, which makes the workbook non-deterministic and slow.
+
+Rank by severity DESC then blast_radius DESC. Cap the surfaced list at 25 with a "show all" expander — a 400-item defect list reads as noise and gets abandoned.
+```
+
+**3. Fix Generation with Guarded Write-Back**
+
+```text
+Generate proposed fixes. Correctness gate first, LLM second, human accept third — never reorder these.
+
+For each defect, assemble context:
+- The original formula string and its parsed AST.
+- Every referenced cell's current value and inferred type.
+- The last populated row/column of each referenced range.
+- Up to 5 sibling formulas from the same column, for shape reference.
+- The count and sample of dependent cells.
+
+Call Claude Sonnet with a strict JSON schema:
+{proposed_formula: string, explanation: string, confidence: number, affects_summary: string}
+System prompt: "You repair spreadsheet formulas. You are given a defective formula, its parsed structure, the values of every cell it references, and sibling formulas from the same column. Return a corrected formula that matches the sibling shape and covers the full data range. Preserve the original intent — do not add functionality. The explanation must be one sentence, plain English, no spreadsheet jargon. If you cannot determine the intent with confidence, return confidence below 0.5 and leave proposed_formula empty rather than guessing."
+
+Validate before display:
+1. The proposed formula must parse cleanly with the same parser. If it does not, discard it and mark the defect as manual-review.
+2. Every reference in the proposal must resolve to an existing sheet and a valid range.
+3. Recompute the proposed formula against current cell values in a sandbox evaluator. If it errors, discard.
+4. Never auto-accept anything, regardless of confidence.
+
+Diff view: original and proposed side by side with changed tokens highlighted, the plain-English explanation, and an explicit "this affects N downstream cells" line listing the first five by address.
+
+Write-back: apply only accepted defects, in dependency order (precedents before dependents), inside a single transaction per sheet. Append every applied change to change_log with before, after, user, and timestamp. Offer a one-click revert that replays the log backwards.
+```
+
+**4. Landing Page**
+
+```text
+Design a single-page marketing site for SheetDoctor, targeting financial analysts, independent accountants, and small finance teams.
+
+Hero headline: "You inherited this workbook. We'll tell you what's wrong with it."
+Sub: "Upload any Excel file and get a ranked list of broken references, off-by-one ranges, and formulas that don't match their column — with fixes you approve one at a time."
+
+Sections:
+1. The 4:40pm scene — the quarter-end #REF! discovered right before the board deck. Specific and unglamorous.
+2. Live audit demo — an embedded interactive sample workbook that runs a real audit and reveals 11 defects ranked by blast radius. This is the whole pitch; put it above the fold on desktop.
+3. The six checks — one line each for broken references, circular logic, off-by-one ranges, inconsistent columns, hardcoded constants, and volatile chains. Lead with off-by-one, since it's the one that produces wrong numbers that look right.
+4. Why not just ask ChatGPT — an honest comparison table: single formula vs whole workbook, no cell values vs full dependency graph, no write-back vs audited write-back.
+5. Audit trail — screenshot of the exportable change log, aimed squarely at anyone who has been through a review.
+6. Pricing — Free / Pro $29 / Team $79 / Firm $299, anchored against a "Copilot Pro is $30/user/month" callout.
+7. Data handling — files deleted after 24 hours by default, stated plainly on the page, not buried in a policy link.
+
+Voice: precise and unhyped. This audience distrusts marketing language about accuracy. Type: Geist with IBM Plex Mono for all formula rendering. Palette: off-white, near-black, one amber accent used only for defect severity. Primary CTA: "Audit a workbook free."
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #1245 and the public research it cites (August 2026 snapshot). Verify all competitor pricing on live pages — AI tooling in this category reprices frequently, and Microsoft's Copilot packaging in particular has changed multiple times.
+
+- [Precedence Research — Artificial Intelligence Market ($757.6B 2025, 19.2% CAGR, $3.68T by 2034)](https://www.precedenceresearch.com/artificial-intelligence-market)
+- [Virtue Market Research — AI Spreadsheet Tools Market (fragmentation and maturity assessment)](https://virtuemarketresearch.com/report/ai-spreadsheet-tools-market)
+- [Cognitive Market Research — AI and Automation Software Market](https://www.cognitivemarketresearch.com/a-i-and-automation-software-market-report)
+- [Sendbird — AI Statistics and Trends (adoption benchmarks)](https://sendbird.com/blog/ai-statistics-trends)
+- [Microsoft — Copilot Pro pricing reference ($30/user/month)](https://www.microsoft.com/en-us/microsoft-365/copilot)
+- [Rows — pricing reference](https://rows.com/pricing)
+- [Microsoft Graph — Excel workbook API reference](https://learn.microsoft.com/en-us/graph/api/resources/excel)
+- [SheetJS — xlsx parsing library](https://docs.sheetjs.com/)
+
+Page sourced via Ideabrowser MCP (idea_id 1245): get_idea_research, competitive_analysis, go_to_market.

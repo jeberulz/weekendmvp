@@ -1,0 +1,164 @@
+---
+slug: "lovable-examples-what-to-build"
+title: "Lovable Examples: 9 Apps Worth Building This Weekend"
+description: "Real examples of what people build with Lovable, plus the scoping rules that separate an app you ship on Sunday from one you abandon on Tuesday."
+category: "Ideas"
+publishedAt: "2026-07-26"
+wordCount: 1508
+readMinutes: 8
+heroAlt: "A single sticky note curling at one corner on a dark desk, lit by a narrow lime beam, very shallow focus"
+---
+
+## Quick Answer
+
+Lovable generates production-ready TypeScript and React applications from plain-English prompts — frontend, database, auth, and deployment, without drag-and-drop.
+
+Which means the interesting question stopped being "can I build it" and became "what's worth building". The examples below are all shaped the same way: **one input, one output, one specific person**. That shape is what makes something finishable in a weekend rather than abandoned in week three.
+
+The nine below are ordered roughly by build time.
+
+## What People Actually Build With It
+
+Before the list, the honest landscape. The things people ship with Lovable cluster into a few recognisable types: SaaS dashboards with built-in authentication, client booking platforms that handle payments, and marketplace MVPs connecting buyers and sellers.
+
+There's also a strong internal-tools pattern — commission calculators matching real comp plans with tiered rates and multi-rep tracking, sales qualification workflows, contract renewal trackers with health scores and forecastable pipelines. Teams inside real companies use it to validate features faster; Delivery Hero's product team reported 66% faster feature validation, and AppDirect's marketing team reported six figures in software cost savings by replacing tools with things they built.
+
+The pattern worth noticing: **the successful ones replace a spreadsheet or a manual process for a specific role.** Not "a social network for X".
+
+If you'd rather browse candidates than invent one, the [startup ideas library](/startup-ideas) is already filtered to that pattern.
+
+## The Nine
+
+### 1. A Quote Calculator for One Trade
+
+Given job parameters, return a priced quote and a PDF. For roofers, or piano teachers, or wedding photographers — one trade, whose pricing logic you actually understand.
+
+Every trade has a spreadsheet doing this badly. Build time: an afternoon.
+
+### 2. A Client Intake Form That Produces a Brief
+
+Given a filled form, return a formatted project brief the client approves before work starts.
+
+Freelancers lose days to scope ambiguity. This removes the ambiguity and doubles as a qualification filter.
+
+### 3. A Booking Page With Deposits
+
+Given an available slot, take a booking and a deposit. Calendly plus payments, but for a niche whose no-show rate is expensive — mobile therapists, tutors, dog groomers.
+
+The deposit is the whole product. Free booking tools don't take money, and money is what stops no-shows.
+
+### 4. A Renewal Tracker
+
+Given contract dates, return what expires when and who to chase. Contract and subscription renewals are the classic "we track this in a spreadsheet and miss things" problem.
+
+### 5. A Commission Calculator
+
+Given sales figures and a comp plan, return what each rep is owed. Tiered rates, quotas, multiple reps.
+
+Boring, valuable, and genuinely painful in spreadsheets. Sales ops teams pay for this.
+
+### 6. A Single-Purpose Directory
+
+Given a category filter, return a curated list. Not a marketplace — a directory. No two-sided liquidity problem, no payments, no matching.
+
+Directories monetise through listings and sponsorship, and one person can seed the first hundred entries by hand in a weekend.
+
+### 7. An Internal Dashboard for One Team
+
+Given data from one source, return the three numbers that team looks at daily. Most dashboards fail by showing forty numbers nobody reads.
+
+Build for one team, ask them which three, show those.
+
+### 8. A Two-Sided Marketplace MVP — Faked
+
+Given a request, notify you. You match manually. The "marketplace" is you and a database until volume justifies automation.
+
+This is the only responsible way to test a marketplace solo, and it's how several real ones started.
+
+### 9. A Client Portal
+
+Given a login, show that client their files, invoices, and status. Agencies and consultants email this back and forth endlessly.
+
+Auth plus file storage plus a status field. Lovable handles all three natively, which is exactly why it's a good fit.
+
+Want more in this shape? The [startup ideas library](/startup-ideas) is filtered for one-person-one-weekend builds, with the demand research already done.
+
+## The Scoping Rules That Decide Whether You Finish
+
+The tool isn't the variable. Scope is. Four rules.
+
+**One input, one output.** Write it as a sentence: "Given X, my app returns Y, for Z." If you need "and" more than once, you're building two apps.
+
+**No accounts unless the product breaks without them.** Auth is the most commonly over-built feature in weekend projects. A quote calculator doesn't need login. A client portal does. Be honest about which one you're building.
+
+**No settings page.** Every configurable option is a decision you're outsourcing to a user who doesn't care. Pick sensible defaults and hard-code them. You can add settings when someone complains, which they mostly won't.
+
+**Charge before you polish.** A Stripe Checkout link and three paying customers teaches you more than another weekend of visual refinement. [Adding Stripe](/articles/add-stripe-to-weekend-mvp) takes about twenty minutes.
+
+## How to Prompt It So the First Build Is Usable
+
+Describe outcomes, not implementations. You are not the architect; you're the person who knows what the customer needs.
+
+**Weak prompt:** "Build a booking app with React and a Postgres database and Stripe integration."
+
+**Strong prompt:** "A page where a customer picks an available 60-minute slot from a calendar, enters their name and email, and pays a 20% deposit before the booking confirms. If they don't pay, the slot stays free. The owner sees a list of upcoming bookings sorted by date."
+
+The second describes behaviour, including the edge case. That edge case — what happens when payment fails — is the sort of thing you'll otherwise discover on Sunday night.
+
+Then build one screen at a time. Ask for the booking form. Get it working. Then ask for payment. Then the owner list. Requesting the whole app in one prompt reliably produces something large and subtly broken.
+
+Also say what *not* to build. "No user accounts. No admin panel. No email notifications yet." Left unsaid, these get built, and now you're debugging features you didn't want.
+
+## Before You Show Real People
+
+AI-generated code ships with predictable gaps. Run this pass:
+
+- **Keys in the frontend.** Anything secret must live server-side.
+- **Row-level access.** Can user A load user B's record by changing an ID in the URL? Check it directly.
+- **Server-side price validation.** Never trust an amount that came from the browser.
+- **Rate limits** on anything that costs you money per call.
+
+[Vibe coding security for founders](/articles/vibe-coding-security-for-founders) goes through this properly. It's twenty minutes and it's the difference between a demo and a product.
+
+## When Lovable Is the Wrong Choice
+
+It's a good default, not a universal one.
+
+- **You need a native mobile app.** Different toolchain.
+- **The hard part is a data pipeline, not an interface.** You want code and a scheduler, not an app builder.
+- **You already write code fluently.** [Claude Code or Cursor](/articles/cursor-vs-claude-code-vs-lovable-2026) will probably be faster for you.
+- **It's a content site.** Use a site generator. An app builder is the wrong tool for pages.
+
+Assuming none of those apply, the only remaining decision is which of the nine to start. Pick the one whose customer you could name right now — or pull one from the [startup ideas library](/startup-ideas), where that research is already done.
+
+## FAQ
+
+### What can you build with Lovable?
+
+Full-stack web apps: SaaS dashboards with authentication, booking platforms with payments, marketplace MVPs, client portals, calculators, directories, and internal tools. It generates TypeScript and React with a database, auth, and deployment included.
+
+### What are good Lovable project ideas for beginners?
+
+Start with a single-purpose calculator or intake form — one input, one output, no user accounts. A quote calculator for a specific trade is the most reliable first build.
+
+### Can Lovable build a full application with a database and login?
+
+Yes. It produces frontend UI, backend database, authentication, and deployment from plain-English prompts, without templates or drag-and-drop.
+
+### How long does it take to build something in Lovable?
+
+A properly scoped first version — one input, one output, no accounts — is an afternoon to a weekend. If it's taking longer than two weekends, the scope is wrong rather than the tool.
+
+### Is Lovable good for non-technical founders?
+
+Yes, provided you scope tightly. The constraint isn't technical skill, it's resisting the urge to add features. Describe outcomes rather than implementations and build one screen at a time.
+
+### Is AI-generated code safe to put in front of customers?
+
+Not without review. Check for exposed keys, cross-account data access, server-side price validation, and rate limits before real users touch it.
+
+## TL;DR
+
+Lovable builds full-stack React apps from prompts, so the constraint moved from capability to scope. The things that work are boring and specific: quote calculators, intake forms, booking pages with deposits, renewal trackers, commission calculators, directories, single-team dashboards, manually-matched marketplaces, and client portals. Write your idea as "given X, return Y, for Z". Skip accounts and settings. Prompt for behaviour, one screen at a time, and say what not to build. Run a security pass, then charge someone.
+
+Sources: [Lovable AI app builder review](https://www.nocode.mba/articles/lovable-ai-app-builder), [best AI app builders 2026](https://lovable.dev/guides/best-ai-app-builders), [Lovable for designers](https://muz.li/blog/lovable-for-designers-the-complete-guide-to-building-apps-with-ai-2026/)

@@ -1,0 +1,105 @@
+---
+slug: "ai-builder-hiring-marketplace"
+title: "AI Builder Hiring Marketplace for Local Services"
+---
+
+## The Problem
+
+Small-business owners watch competitors automate scheduling, follow-ups, and support. Hiring someone to build the same thing means Upwork profiles with unverifiable claims, Fiverr gigs that ship broken scripts, and self-proclaimed experts who take the money and vanish. An owner who wants automated appointment reminders posts a job, gets forty proposals, and picks on gut. The budget is there. Trust is the blocker.
+
+r/smallbusiness (1.7M+) and Facebook groups like "AI strategy for entrepreneurs" show the same loop: owners want AI outcomes in plain English, not RFPs written for developers. Searches for "AI consultant for small business" have grown roughly 84% YoY. Boutique AI consulting firms exist, but discovery is cold LinkedIn outreach and $5K discovery calls. Generic marketplaces do not vet AI skills. Vertical SaaS embeds shallow AI that still needs someone to wire the messy local workflows.
+
+The gap is a vetted marketplace where local service businesses (3–25 employees) hire screened AI implementers with escrow, standardized scopes, and milestone releases — without learning to write a technical brief.
+
+## The Solution
+
+Surepair (working name) is a marketplace connecting small local businesses to vetted AI builders. Implementers pass portfolio review, references, and a sample test before listing. Scoping templates turn "I need fewer no-shows" into a defined deliverable with milestones. Money sits in Stripe Connect escrow until each milestone ships.
+
+Wedge: three productized jobs — scheduling automation, lead follow-up, and customer-support bots — for service businesses that already pay for tools but cannot wire them together.
+
+**How it works:**
+
+1. **Business intake** — Guided questionnaire maps outcomes (fewer no-shows, faster lead response) to a template scope with timeline and price band.
+2. **Matched builders** — Platform suggests 2–3 vetted implementers with relevant tool experience (Calendly, HubSpot, OpenAI, Zapier/Make).
+3. **Escrow kickoff** — Client funds first milestone; builder starts only after funds clear.
+4. **Milestone delivery** — Shared dashboard; approve or request revision; release next tranche.
+5. **Reputation loop** — Completion rate and satisfaction scores unlock better matching for both sides.
+
+Weekend MVP: Airtable for matching, Stripe Connect for escrow, three scoping templates, ten hand-vetted builders, five pilot businesses.
+
+## Market Research
+
+AI consulting and implementation for SMEs is growing fast inside a broader AI services boom:
+
+- High-intent search for AI consulting terms shows advertisers paying ~$12–$28 CPC on keywords like "AI consulting companies" and "AI implementation" — proof of monetizable demand ([Ideabrowser competitive analysis for idea 8558](https://www.ideabrowser.com)).
+- U.S. SBA guidance frames AI adoption as a productivity lever for small businesses while warning about expertise and risk gaps — exactly the trust problem a vetted marketplace solves ([SBA AI for Small Business](https://www.sba.gov/business-guide/manage-your-business/ai-small-business)).
+- Community demand: r/smallbusiness and r/consulting threads routinely ask how to hire reliable AI help; Facebook groups debate strategy vs tools.
+- Macro AI software + services grow at 25–35%+ CAGR; SME slice is smaller but accelerating as tools get cheaper.
+
+SAM: millions of U.S. local service businesses. Path: 200 projects/year at $4K average × 10% take rate = $80K GMV fees, plus $99/month priority matching subscriptions.
+
+## Competitive Landscape
+
+- **Upwork** — Dominant freelance marketplace with escrow and dispute resolution. Client fees historically around ~10% range. No AI-specific vetting; overwhelming choice for non-technical owners.
+- **Fiverr** — Productized gigs including chatbots and automation; seller fees often ~20%+. Cheap entry, weak for multi-week installs and ongoing support.
+- **Toptal** — Heavily vetted experts at premium rates for startups and mid-market. Overkill for under-$20K local service projects.
+- **Boutique AI consultancies** — High trust, high CAC via search/referrals; not a multi-vendor marketplace with escrow.
+
+**Your Opportunity**
+
+Own AI-specific vetting + plain-English scopes + escrow for the $2K–$25K local-service band. Position against Upwork as "safe AI installs," not "more freelancers." 10% take rate + $99/month priority matching.
+
+## Business Model
+
+- **Take rate** — 10% per completed project (primary).
+- **Business subscription** — $99/month for priority matching and richer dashboards.
+- **Premium support** — $1,000/year ongoing tuning retainers.
+- **Implementer badge** — optional yearly verification fee.
+
+**Unit Economics (illustrative)**
+
+- Payment processing ~3% of GMV
+- Path: 40 projects/month × $5K × 10% = $20K/month platform fees at early density
+
+## Recommended Tech Stack
+
+- **Next.js + Vercel** — public marketplace, dashboards.
+- **Stripe Connect** — escrow-like milestone holds and payouts.
+- **Postgres / Supabase** — users, projects, milestones, ratings.
+- **Resend** — matching and milestone emails.
+- **Airtable (MVP)** — manual vetting queue before full admin UI.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Marketplace Shell**
+
+```text
+Build Surepair: Next.js 14 marketplace. Roles: business_owner, implementer, admin.
+
+Tables: users, implementer_profiles (verified bool, tools[]), projects (template_slug, status), milestones (amount_cents, status), ratings.
+
+Pages: /post-project (template picker), /projects/[id], /implementers/[id], /admin/vetting.
+```
+
+**2. Escrow Milestones**
+
+```text
+Integrate Stripe Connect. On project accept, create PaymentIntent for milestone 1. On owner approve, transfer to implementer and unlock next milestone checkout. Handle disputes with a frozen status.
+```
+
+**3. Scoping Templates**
+
+```text
+Create three templates: scheduling_automation, lead_followup, support_bot. Each has questionnaire fields, default milestones, and acceptance criteria written for non-technical owners.
+```
+
+Cold start is the hard part. Seed supply by recruiting implementers from AI consulting Facebook groups and offering waived fees for the first three completed jobs. Seed demand through local Facebook business groups and bookkeeper referral partners who already advise owners on tool spend. Publish three public case studies ("salon cut no-shows 28% with SMS automation") before scaling ads. Guarantees matter: offer a free rematch if a milestone fails acceptance criteria twice — that guarantee is the marketing line Upwork cannot honestly match at category scale.
+
+## Sources
+
+- [SBA: AI for Small Business](https://www.sba.gov/business-guide/manage-your-business/ai-small-business)
+- [U.S. Chamber: AI Tools for Small Business Marketing](https://www.uschamber.com/co/grow/marketing/ai-tools-for-small-business-marketing)
+- [Ideabrowser research #8558 competitive analysis](https://www.ideabrowser.com)
+- [Reddit: AI agents marketplace discussions](https://www.reddit.com/r/AI_Agents/)

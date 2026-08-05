@@ -49,6 +49,8 @@ them).
   `og:image`/`twitter:image`; OG images at `/image/og/{idea|article}/{slug}.png`).
 - JSON-LD comes from the builders in `lib/seo.ts`. Index pages generate their
   `ItemList` dynamically from Convex/MDX — never hand-edit one.
+- Person schema canonical URL is `/john-iseghohi` (not Cal.com). Cal stays in
+  `sameAs` and UI booking CTAs only.
 - Idea pages parse the MDX `**How it works:**` numbered list into `HowTo`
   schema — keep that section format intact.
 - Keep primary content server-rendered; no client-only gates hiding it from

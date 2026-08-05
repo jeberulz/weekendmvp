@@ -1,6 +1,448 @@
 {
   "ideas": [
     {
+      "slug": "tattoo-dm-booking-agent",
+      "title": "Tattoo DM Booking Agent",
+      "category": "automation",
+      "description": "AI agent that turns tattoo artist Instagram DMs into paid appointments — voice-matched replies, Stripe deposits, and calendar booking.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4968",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "tattoo studio desk with phone showing Instagram DMs and a calendar book under warm amber lamp, no people, no text",
+        "accent": "amber",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1599,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "real-estate-workflow-automation",
+      "title": "Real Estate Workflow Automation",
+      "category": "automation",
+      "description": "Workflow automation layer that connects Zillow, CRM, docs, and email into templated real-estate flows for agents drowning in tool sprawl.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:7077",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "real estate agent desk with house keys and connected app icons flowing into one notebook, teal desk lamp, no people, no text",
+        "accent": "teal",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1475,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "ai-workflow-library-solopreneurs",
+      "title": "AI Workflow Library for Solopreneurs",
+      "category": "automation",
+      "description": "Curated library of pre-built AI automation templates for solopreneurs — install outcomes into Zapier, Make, or n8n without Zapier hell.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1427",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "minimal desk with a library of glowing workflow cards stacked neatly beside a laptop, soft lime light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1177,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "on-device-privacy-ai",
+      "title": "On-Device Privacy AI",
+      "category": "ai-tools",
+      "description": "Privacy-first AI that runs document Q&A on your machine or private cloud so sensitive files never upload to third-party models.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1125",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "locked laptop on a dark desk with a local glow around a document folder icon, no cloud, no people, no text",
+        "accent": "steel",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1304,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "ai-writing-coach-freelancers",
+      "title": "AI Writing Coach for Freelancers",
+      "category": "ai-tools",
+      "description": "Membership that teaches freelance writers practical AI workflows — prompt labs, live workshops, and voice-preserving client deliverables.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1215",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 10,
+        "builder_confidence": 7
+      },
+      "og": {
+        "subject": "writer desk with notebook, fountain pen, and a soft screen glow showing a prompt checklist, aubergine lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 1173,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-27T15:13:23.173Z",
+        "publishNotes": "WP09 automation+ai-tools fill via publish-idea Mode A"
+      }
+    },
+    {
+      "slug": "ai-dance-form-coach",
+      "title": "AI Dance Form Coach",
+      "category": "health",
+      "description": "Phone-camera AI that corrects dance form in real time for home dancers, Zumba fans, and TikTok choreography learners at a fraction of studio lesson cost.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "expo"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2302",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "A smartphone on a dark studio floor reflecting a dancer silhouette as pose-tracking dots, lavender backlight, no faces, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 5,
+        "wordCount": 2257,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "ai-protein-tracker",
+      "title": "AI Protein Tracker",
+      "category": "health",
+      "description": "Photo-first AI that makes protein goals stick—log meals in seconds, adapt plans to real eating habits, and skip the MyFitnessPal homework grind.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "expo"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1829",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "A plate of high-protein food beside a phone showing a soft protein progress ring, mint accent light on a dark counter, no people, shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 3,
+        "wordCount": 2213,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "aws-cert-ai-study-buddy",
+      "title": "AWS Cert AI Study Buddy",
+      "category": "education",
+      "description": "Adaptive AI tutor that finds your AWS certification weak spots and drills only what will fail you—not another 40-hour generic video dump.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2709",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "A dark desk with AWS console glow on a laptop and a sparse quiz card stack, emerald accent light, no people, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2507,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "ai-course-tutor-companion",
+      "title": "AI Course Tutor Companion",
+      "category": "education",
+      "description": "Turn any online course into a 24/7 AI tutor trained on your content so creators lift completion rates without answering every 2am student question.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4170",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "og": {
+        "subject": "A course lesson video paused on a laptop with a soft chat bubble of a tutor reply, lime accent light, dark desk, no people, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2041,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
+      "slug": "shopify-ai-support-context",
+      "title": "Shopify AI Support Context Layer",
+      "category": "ecommerce",
+      "description": "Shopify context layer that feeds order, return, and ticket history into Gorgias, Tidio, or custom AI agents so repeat customers never re-explain themselves.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:7459",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "A Shopify admin-style screen on a dark desk showing a customer timeline cards stack, aubergine accent light, no people, shallow focus",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-07-26",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 2461,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-26T12:45:21.114Z"
+      }
+    },
+    {
       "slug": "freelance-scope-creep-detector",
       "title": "ScopeGuard: Detect Freelance Scope Creep and Upsell It",
       "publishedAt": "2026-07-22",
@@ -421,7 +863,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "description": "Scan hundreds of municipal databases for zoning changes and permit filings before your competitors. Real-time alerts for property investors at $49/month\u2014no enterprise contract required.",
+      "description": "Scan hundreds of municipal databases for zoning changes and permit filings before your competitors. Real-time alerts for property investors at $49/month—no enterprise contract required.",
       "og": {
         "subject": "A dark desk with a glowing laptop showing a property map with highlighted zones, no people, shallow focus, mint accent light",
         "accent": "mint",
@@ -473,7 +915,7 @@
         "developers",
         "side-hustlers"
       ],
-      "description": "One dashboard for MRR, burn rate, runway, and pricing experiments\u2014built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag.",
+      "description": "One dashboard for MRR, burn rate, runway, and pricing experiments—built for bootstrapped SaaS founders who need CFO-level clarity without the CFO price tag.",
       "og": {
         "subject": "A dark wooden desk with a glowing laptop screen showing financial charts in green, no people, shallow focus, emerald accent light from the side",
         "accent": "emerald",
@@ -525,7 +967,7 @@
         "developers",
         "side-hustlers"
       ],
-      "description": "AI travel companion that generates complete, personalized itineraries from a single sentence\u2014flights, hotels, restaurants, activities\u2014in minutes, not hours.",
+      "description": "AI travel companion that generates complete, personalized itineraries from a single sentence—flights, hotels, restaurants, activities—in minutes, not hours.",
       "og": {
         "subject": "A slim laptop open on a worn leather travel journal, passport tucked at the corner, warm cafe light from above, shallow depth of field, dark marble surface",
         "accent": "lavender",
@@ -592,7 +1034,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.880Z",
-        "backfillNotes": "THIN \u2192 PASS. Anchor: Ideabrowser #2161 TimeSync (opp 9) + #2663 Calendar Shield adjacent. Competitors: Calendly $10-$20/user 20M users $3B valuation, Cal.com $12/user hosted + open-source, SavvyCal $12-$20/user premium UX, Motion/Reclaim $10-$34/user AI calendar defrag. Wedge: AI slot resolver respects working hours across timezones + team round-robin + embeddable widget + flat team pricing. Pricing Free/$19 Solo Pro/$49 Team up to 10 members. Tech: Next.js + Supabase + Google Calendar v3 + Microsoft Graph + Claude Haiku ranking + Zoom/Meet API + Cloudflare CDN widget + Stripe. Market: online scheduling $5.5B \u2192 $13B 15.6% CAGR, Calendly $3B Series B, remote work 28% fully remote + 30% hybrid."
+        "backfillNotes": "THIN → PASS. Anchor: Ideabrowser #2161 TimeSync (opp 9) + #2663 Calendar Shield adjacent. Competitors: Calendly $10-$20/user 20M users $3B valuation, Cal.com $12/user hosted + open-source, SavvyCal $12-$20/user premium UX, Motion/Reclaim $10-$34/user AI calendar defrag. Wedge: AI slot resolver respects working hours across timezones + team round-robin + embeddable widget + flat team pricing. Pricing Free/$19 Solo Pro/$49 Team up to 10 members. Tech: Next.js + Supabase + Google Calendar v3 + Microsoft Graph + Claude Haiku ranking + Zoom/Meet API + Cloudflare CDN widget + Stripe. Market: online scheduling $5.5B → $13B 15.6% CAGR, Calendly $3B Series B, remote work 28% fully remote + 30% hybrid."
       }
     },
     {
@@ -634,7 +1076,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.880Z",
-        "backfillNotes": "THIN \u2192 PASS. No MCP match. Competitors: Streaks $4.99 one-time iOS-only, Habitica gamified 4M+ users $47.99/yr, Way of Life/HabitBull legacy dated UX, Notion templates DIY. Wedge: clean Linear-inspired PWA + Apple HealthKit via iOS Shortcut bridge + Google Fit OAuth + accountability partner (Dominican University 65% goal achievement research). Pricing Free/$29 year/$79 family-lifetime. Tech: Next.js PWA offline-first via Dexie + Supabase + iOS Shortcuts + Google Fit REST + Web Push + Stripe. Market: mHealth $58B \u2192 $142B 15.7% CAGR, Atomic Habits 20M+ copies, Apple HealthKit 900M active."
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Streaks $4.99 one-time iOS-only, Habitica gamified 4M+ users $47.99/yr, Way of Life/HabitBull legacy dated UX, Notion templates DIY. Wedge: clean Linear-inspired PWA + Apple HealthKit via iOS Shortcut bridge + Google Fit OAuth + accountability partner (Dominican University 65% goal achievement research). Pricing Free/$29 year/$79 family-lifetime. Tech: Next.js PWA offline-first via Dexie + Supabase + iOS Shortcuts + Google Fit REST + Web Push + Stripe. Market: mHealth $58B → $142B 15.7% CAGR, Atomic Habits 20M+ copies, Apple HealthKit 900M active."
       }
     },
     {
@@ -676,7 +1118,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.880Z",
-        "backfillNotes": "THIN \u2192 PASS. No MCP match. Competitors: Todoist/Things/TickTick native email-in (free, no parsing), Superhuman $30/mo, Zapier $20+/mo, ClickUp+ChatGPT manual. Wedge: Claude Haiku AI extraction with due-date inference + priority + owner detection, routes to user-chosen destination. Pricing Free/$5 Basic/$12 Pro. Tech: Resend Inbound + Next.js + Claude Haiku 4.5 + Supabase + Todoist/Notion/Linear/Things OAuth adapters + Upstash Ratelimit + Stripe. Market: Task management $4.2B 2024 \u2192 $9.8B 2030 15.2% CAGR, 121 emails/day/user, 2.5 hrs/day email triage."
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Todoist/Things/TickTick native email-in (free, no parsing), Superhuman $30/mo, Zapier $20+/mo, ClickUp+ChatGPT manual. Wedge: Claude Haiku AI extraction with due-date inference + priority + owner detection, routes to user-chosen destination. Pricing Free/$5 Basic/$12 Pro. Tech: Resend Inbound + Next.js + Claude Haiku 4.5 + Supabase + Todoist/Notion/Linear/Things OAuth adapters + Upstash Ratelimit + Stripe. Market: Task management $4.2B 2024 → $9.8B 2030 15.2% CAGR, 121 emails/day/user, 2.5 hrs/day email triage."
       }
     },
     {
@@ -712,7 +1154,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.880Z",
-        "backfillNotes": "THIN \u2192 PASS. No MCP match. Competitors: Geekbot $2.50-$4/user/mo acquired 2023, Standuply $4-$6/user, Range/Friday/Status Hero $7.50-$8/user, Slack Workflow Builder free. Wedge: AI digest + blocker detection + flat $29/mo up to 20 users. Tech: Slack Bolt SDK + Next.js minimal admin + Supabase + Claude Haiku 4.5 + Vercel Cron + Upstash QStash + Stripe. Market: Slack 38M DAU, $15K-$40K/yr/team opportunity cost of standups, remote work mature."
+        "backfillNotes": "THIN → PASS. No MCP match. Competitors: Geekbot $2.50-$4/user/mo acquired 2023, Standuply $4-$6/user, Range/Friday/Status Hero $7.50-$8/user, Slack Workflow Builder free. Wedge: AI digest + blocker detection + flat $29/mo up to 20 users. Tech: Slack Bolt SDK + Next.js minimal admin + Supabase + Claude Haiku 4.5 + Vercel Cron + Upstash QStash + Stripe. Market: Slack 38M DAU, $15K-$40K/yr/team opportunity cost of standups, remote work mature."
       },
       "og": {
         "subject": "A laptop screen on a dark desk showing a single chat bubble lit in mint light, mug just out of focus beside it, very early morning",
@@ -754,7 +1196,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-04-23T10:49:03.871Z",
-        "backfillNotes": "THIN \u2192 PASS. Anchor: Ideabrowser #4076 FocusFlow (opp 9). Competitors: Forest $3.99 one-time, Flow $9.99/mo, Sessions $4-8/mo, Focus Keeper free. Pricing Free/$29 year/$79 lifetime. Tech: Next.js PWA + Chrome/Firefox Manifest V3 extension + Supabase + Google Calendar API + Web Audio API + Stripe. Market: brain training $130B by 2035, UC Irvine 23 min recovery research, Forest 10M+ downloads."
+        "backfillNotes": "THIN → PASS. Anchor: Ideabrowser #4076 FocusFlow (opp 9). Competitors: Forest $3.99 one-time, Flow $9.99/mo, Sessions $4-8/mo, Focus Keeper free. Pricing Free/$29 year/$79 lifetime. Tech: Next.js PWA + Chrome/Firefox Manifest V3 extension + Supabase + Google Calendar API + Web Audio API + Stripe. Market: brain training $130B by 2035, UC Irvine 23 min recovery research, Forest 10M+ downloads."
       },
       "og": {
         "subject": "An hourglass on a dark wooden surface with single lavender side-lighting, a closed laptop just out of focus behind it, late-night deep-work atmosphere",
@@ -798,7 +1240,7 @@
         "wordCount": 2400,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T11:10:38.877Z",
-        "backfillNotes": "THIN \u2192 PASS full rewrite. No MCP match. Wedge: Notion-only incremental diff backup at indie price. Competitors: Rewind.io bundle ($12-$99), NotionBackups.com manual-export indie ($5-$50), Notion native export (manual only), DIY scripts. Pricing: Free/$9 Solo/$29 Team, ~96% margin via R2 content-addressable dedup. Tech: Next.js + Supabase RLS + Cloudflare R2 storage + Upstash QStash workers respecting Notion 3req/sec + Merkle-tree block hashing + stable-JSON diff viewer + Stripe Billing. Market: SaaS backup $4.7B 2024 \u2192 $18.5B 2030 (25%+ CAGR), 30M+ Notion users, Rewind $65M funding at $150M valuation. Differentiator: block-level dedup across workspaces + page-level point-in-time restore + GDPR Art 32 compliance wedge for B2B upsell."
+        "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: Notion-only incremental diff backup at indie price. Competitors: Rewind.io bundle ($12-$99), NotionBackups.com manual-export indie ($5-$50), Notion native export (manual only), DIY scripts. Pricing: Free/$9 Solo/$29 Team, ~96% margin via R2 content-addressable dedup. Tech: Next.js + Supabase RLS + Cloudflare R2 storage + Upstash QStash workers respecting Notion 3req/sec + Merkle-tree block hashing + stable-JSON diff viewer + Stripe Billing. Market: SaaS backup $4.7B 2024 → $18.5B 2030 (25%+ CAGR), 30M+ Notion users, Rewind $65M funding at $150M valuation. Differentiator: block-level dedup across workspaces + page-level point-in-time restore + GDPR Art 32 compliance wedge for B2B upsell."
       },
       "og": {
         "subject": "A small external hard drive on a near-black surface, single emerald LED glow on its edge, very shallow focus, low-key side lighting",
@@ -841,7 +1283,7 @@
         "wordCount": 2300,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T11:06:48.129Z",
-        "backfillNotes": "THIN \u2192 PASS full rewrite. No MCP match. Wedge: screenshot-to-flow AI + flat pricing. Competitors Appcues/Pendo/Userpilot enterprise, ProductFruits/HelpHero indie-dated, Intro.js/Shepherd DIY. Pricing: Free/$29 Solo/$79 Team, ~92% margin, ~$0.03 GPT-4V per generation. Tech: Next.js admin + vanilla JS Shadow-DOM widget + Supabase RLS + GPT-4o vision for flow generation + Cloudflare CDN + Stripe Billing usage events. Market: $1.2B DAP 2024 \u2192 $7B 2030 (~35% CAGR), Appcues M+ Series B, Pendo $2.6B valuation, 15-25 point day-7 retention lift from best-in-class onboarding. Verify pricing before marketing."
+        "backfillNotes": "THIN → PASS full rewrite. No MCP match. Wedge: screenshot-to-flow AI + flat pricing. Competitors Appcues/Pendo/Userpilot enterprise, ProductFruits/HelpHero indie-dated, Intro.js/Shepherd DIY. Pricing: Free/$29 Solo/$79 Team, ~92% margin, ~$0.03 GPT-4V per generation. Tech: Next.js admin + vanilla JS Shadow-DOM widget + Supabase RLS + GPT-4o vision for flow generation + Cloudflare CDN + Stripe Billing usage events. Market: $1.2B DAP 2024 → $7B 2030 (~35% CAGR), Appcues M+ Series B, Pendo $2.6B valuation, 15-25 point day-7 retention lift from best-in-class onboarding. Verify pricing before marketing."
       },
       "og": {
         "subject": "A phone face-up on a dark desk with a single bright lime tooltip arrow glowing on the screen, low-key lighting, very shallow focus",
@@ -887,7 +1329,7 @@
         "wordCount": 2180,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T10:57:05.909Z",
-        "backfillNotes": "THIN (12.3KB, 378 words, 4/7 sections) \u2192 PASS full rewrite. No direct Ideabrowser match for feature-voting-board wedge (two queries returned 0). Backfilled via web research + category knowledge. Competitive Landscape (Canny $360-$900+/mo + 2024 Permanent Capital acquisition, ProductBoard $450M+ raised $1.7B valuation, Nolt+Frill 2019-vintage indie tier, DIY Trello/GitHub/Notion free). Business Model (Free 1 board 100 submissions / $19 Pro unlimited + custom domain + AI dedup / $49 Team unlimited boards + 5 seats + API, ~94% gross margin, ~$0.02/submission LLM cost via Haiku). Tech Stack (Next.js 14 middleware multi-tenant + Supabase RLS with FTS candidate retrieval + Claude Haiku 4.5 dedup + Upstash rate limiting + Resend with Team custom domain + Stripe Billing + Vercel Custom Domains API + embeddable iframe widget with postMessage auth bridge). Market stats cite Grand View CFM market ($12B+ 2024, 16-20% CAGR), Canny 1K+ teams ~$10M ARR, ProductBoard $1.7B valuation, Intercom 25-35% churn reduction from public roadmap, keyword search volumes + CPCs from Google/Ahrefs. Differentiator: AI dedup is unclaimed in Nolt/Frill indie tier. Verify Canny/Nolt pricing pages before marketing claims."
+        "backfillNotes": "THIN (12.3KB, 378 words, 4/7 sections) → PASS full rewrite. No direct Ideabrowser match for feature-voting-board wedge (two queries returned 0). Backfilled via web research + category knowledge. Competitive Landscape (Canny $360-$900+/mo + 2024 Permanent Capital acquisition, ProductBoard $450M+ raised $1.7B valuation, Nolt+Frill 2019-vintage indie tier, DIY Trello/GitHub/Notion free). Business Model (Free 1 board 100 submissions / $19 Pro unlimited + custom domain + AI dedup / $49 Team unlimited boards + 5 seats + API, ~94% gross margin, ~$0.02/submission LLM cost via Haiku). Tech Stack (Next.js 14 middleware multi-tenant + Supabase RLS with FTS candidate retrieval + Claude Haiku 4.5 dedup + Upstash rate limiting + Resend with Team custom domain + Stripe Billing + Vercel Custom Domains API + embeddable iframe widget with postMessage auth bridge). Market stats cite Grand View CFM market ($12B+ 2024, 16-20% CAGR), Canny 1K+ teams ~$10M ARR, ProductBoard $1.7B valuation, Intercom 25-35% churn reduction from public roadmap, keyword search volumes + CPCs from Google/Ahrefs. Differentiator: AI dedup is unclaimed in Nolt/Frill indie tier. Verify Canny/Nolt pricing pages before marketing claims."
       }
     },
     {
@@ -927,7 +1369,7 @@
         "wordCount": 2400,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:53:19.812Z",
-        "backfillNotes": "STUB (1.75KB, 0 words, 0/7 sections) \u2192 PASS full 7-section build. No direct Ideabrowser match for credential-verified trainer marketplace wedge. Competitive Landscape (Thumbtack/Angi/Bark general marketplaces no verification, Mindbody/ClassPass studio-ops vs group-class consumer, Trainerize/TrueCoach/MyPTHub supply-side SaaS, FYT/Bold in-home competitors with no verification+escrow). Business Model (Client 5% service fee + Trainer Basic free with 15%/8% take + Trainer Pro $19/mo priority + $49 one-time verification badge, ~10% blended take, Mindbody precedent $1.9B). Tech Stack (Next.js 14 + Supabase PostGIS geo queries + Algolia faceted search + Stripe Connect Express manual_capture = escrow primitive + Persona ID verification + manual NASM/ACE cert cross-check + Daily.co virtual + Twilio SMS reminders). Market stats cite Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), BLS fitness trainers (340K workforce), IHRSA ($35B US, $97B global), Mindbody Vista Equity 2019 $1.9B, Stripe manual capture docs. NOTE: replaced originally-planned expert-mentorship-marketplace to avoid duplicate content with virtual-knowledge-hub (both would have been executive mentorship). Verify Mindbody acquisition figures from press before marketing use."
+        "backfillNotes": "STUB (1.75KB, 0 words, 0/7 sections) → PASS full 7-section build. No direct Ideabrowser match for credential-verified trainer marketplace wedge. Competitive Landscape (Thumbtack/Angi/Bark general marketplaces no verification, Mindbody/ClassPass studio-ops vs group-class consumer, Trainerize/TrueCoach/MyPTHub supply-side SaaS, FYT/Bold in-home competitors with no verification+escrow). Business Model (Client 5% service fee + Trainer Basic free with 15%/8% take + Trainer Pro $19/mo priority + $49 one-time verification badge, ~10% blended take, Mindbody precedent $1.9B). Tech Stack (Next.js 14 + Supabase PostGIS geo queries + Algolia faceted search + Stripe Connect Express manual_capture = escrow primitive + Persona ID verification + manual NASM/ACE cert cross-check + Daily.co virtual + Twilio SMS reminders). Market stats cite Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), BLS fitness trainers (340K workforce), IHRSA ($35B US, $97B global), Mindbody Vista Equity 2019 $1.9B, Stripe manual capture docs. NOTE: replaced originally-planned expert-mentorship-marketplace to avoid duplicate content with virtual-knowledge-hub (both would have been executive mentorship). Verify Mindbody acquisition figures from press before marketing use."
       }
     },
     {
@@ -953,7 +1395,7 @@
       ],
       "researchLevel": "deep",
       "source": "ideabrowser:5658-adjacent",
-      "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49\u2013$149/mo. Weekend MVP guide + prompts.",
+      "description": "Marketplace where seasoned business leaders mentor emerging professionals. Curated VP+ mentors, hybrid 1:1 + cohort, $49–$149/mo. Weekend MVP guide + prompts.",
       "provenance": {
         "researchCalls": [
           "ideabrowser:browse_ideas:mentorship platform",
@@ -963,7 +1405,7 @@
         "wordCount": 2300,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:44:56.043Z",
-        "backfillNotes": "STUB (1.9KB, 0 words, 0/7 sections) \u2192 PASS full 7-section build. Competitive Landscape (MentorCruise/GrowthMentor/Intro consumer 1:1, ADPList free-unsustainable, Reforge/Maven/On Deck cohort courses, MentorcliQ/Chronus/Together enterprise HCM). Business Model (Free / $49 Aspiring / $149 Serious + 80% mentor payout via Stripe Connect, ~72% gross margin on sub). Tech Stack (Next.js 14 + Supabase with pgvector + two-stage matching (OpenAI text-embedding-3-large + Claude Sonnet re-rank) + Stripe Connect Standard + Cal.com embed + Daily.co video + Resend + PostHog). Market stats cite Business Research Insights mentoring market ($0.81-1.7B 2026 \u2192 $4.92-5.12B 2035), Future Market Insights coaching platform market, Mentorloop (98% F500 adoption, 72% retention lift), SkyQuest (52% platforms claim AI matching), Ideabrowser #5658 opp 9 pain 9 timing 9. Verify competitor pricing on live pages before marketing push."
+        "backfillNotes": "STUB (1.9KB, 0 words, 0/7 sections) → PASS full 7-section build. Competitive Landscape (MentorCruise/GrowthMentor/Intro consumer 1:1, ADPList free-unsustainable, Reforge/Maven/On Deck cohort courses, MentorcliQ/Chronus/Together enterprise HCM). Business Model (Free / $49 Aspiring / $149 Serious + 80% mentor payout via Stripe Connect, ~72% gross margin on sub). Tech Stack (Next.js 14 + Supabase with pgvector + two-stage matching (OpenAI text-embedding-3-large + Claude Sonnet re-rank) + Stripe Connect Standard + Cal.com embed + Daily.co video + Resend + PostHog). Market stats cite Business Research Insights mentoring market ($0.81-1.7B 2026 → $4.92-5.12B 2035), Future Market Insights coaching platform market, Mentorloop (98% F500 adoption, 72% retention lift), SkyQuest (52% platforms claim AI matching), Ideabrowser #5658 opp 9 pain 9 timing 9. Verify competitor pricing on live pages before marketing push."
       }
     },
     {
@@ -1002,7 +1444,7 @@
         "wordCount": 2218,
         "auditPassed": true,
         "auditRunAt": "2026-04-22T07:36:32.209Z",
-        "backfillNotes": "STUB (1.7KB, 0 words, 0/7 sections) \u2192 PASS (38.9KB, 2218 words). Full 7-section write from scratch. Competitive Landscape (Trainerize/TrueCoach/My PT Hub workout-first, That Clean Life/Nutrium dietitian-upmarket, MyFitnessPal/Cronometer/Macrofactor consumer-only, Notion/Docs/Excel free workarounds). Business Model (Free / $29 Pro / $79 Studio + ~$0.08/plan LLM cost at ~88% gross margin). Recommended Tech Stack (Next.js 14 multi-tenant + Supabase RLS + Claude Sonnet 4.6 primary w/ GPT-4o fallback + USDA FoodData Central validation loop + react-pdf + Resend + Stripe Billing). Market stats cite Future Market Insights coaching platform market, BLS fitness trainers (340K workforce, 14% growth), Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), USDA FDC API, Ideabrowser #1591 TrainerShield tangential + #3506 FamilyFeast meal-planning adjacent. No direct MCP match for B2B-trainer-nutrition angle; positioning is fresh wedge between Trainerize (thin nutrition) and That Clean Life (dietitian-priced). Verify trainer SaaS pricing pages before marketing push."
+        "backfillNotes": "STUB (1.7KB, 0 words, 0/7 sections) → PASS (38.9KB, 2218 words). Full 7-section write from scratch. Competitive Landscape (Trainerize/TrueCoach/My PT Hub workout-first, That Clean Life/Nutrium dietitian-upmarket, MyFitnessPal/Cronometer/Macrofactor consumer-only, Notion/Docs/Excel free workarounds). Business Model (Free / $29 Pro / $79 Studio + ~$0.08/plan LLM cost at ~88% gross margin). Recommended Tech Stack (Next.js 14 multi-tenant + Supabase RLS + Claude Sonnet 4.6 primary w/ GPT-4o fallback + USDA FoodData Central validation loop + react-pdf + Resend + Stripe Billing). Market stats cite Future Market Insights coaching platform market, BLS fitness trainers (340K workforce, 14% growth), Grand View Research online fitness ($7.5B->$24B, 21.3% CAGR), USDA FDC API, Ideabrowser #1591 TrainerShield tangential + #3506 FamilyFeast meal-planning adjacent. No direct MCP match for B2B-trainer-nutrition angle; positioning is fresh wedge between Trainerize (thin nutrition) and That Clean Life (dietitian-priced). Verify trainer SaaS pricing pages before marketing push."
       }
     },
     {
@@ -1024,7 +1466,8 @@
       ],
       "audiences": [
         "developers",
-        "solo-founders"
+        "solo-founders",
+        "freelancers"
       ],
       "description": "White-label client portal for freelancers and small agencies. Instant setup, custom domains, Stripe payments. Priced under HoneyBook. Weekend MVP guide + prompts.",
       "_needsBackfill": true,
@@ -1070,7 +1513,8 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "non-technical"
+        "non-technical",
+        "freelancers"
       ],
       "description": "Ship a receipt-scanning expense tool for freelancers and micro-SMBs. AI categorizes, PDF reports in one tap, priced under Expensify. Weekend MVP guide + prompts.",
       "_needsBackfill": true,
@@ -1328,7 +1772,7 @@
         "weekend-builders"
       ],
       "source": "web-research:draft-brakes-maintenance-app",
-      "description": "Niche vehicle app: log brake service, pad wear, and inspections with mileage- and time-based reminders\u2014without fighting generic maintenance giants. Weekend MVP guide + prompts.",
+      "description": "Niche vehicle app: log brake service, pad wear, and inspections with mileage- and time-based reminders—without fighting generic maintenance giants. Weekend MVP guide + prompts.",
       "researchLevel": "deep"
     },
     {
@@ -1352,10 +1796,11 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "small-business-owners"
       ],
       "source": "web-research:mode-b",
-      "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library\u2014priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.",
+      "description": "Ship credible RFP and security questionnaire drafts fast. AI that reuses your win library—priced for SMB teams, not $20K/year enterprise suites. Weekend build guide + prompts.",
       "researchLevel": "deep"
     },
     {
@@ -1707,7 +2152,8 @@
         "developers",
         "solo-founders",
         "side-hustlers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "description": "Build a tool that turns one piece of content into 10+. Blog to Twitter threads, YouTube to LinkedIn posts, podcast to newsletter. Full build guide.",
       "source": "mode-b:backfill",
@@ -1831,9 +2277,10 @@
       "audiences": [
         "solo-founders",
         "non-technical",
-        "side-hustlers"
+        "side-hustlers",
+        "small-business-owners"
       ],
-      "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons\u2014for solo founders and small businesses who can't justify $500/hour attorney bills.",
+      "description": "An AI contract decoder that turns dense legal documents into plain-English summaries with flagged risks, unusual clauses, and industry comparisons—for solo founders and small businesses who can't justify $500/hour attorney bills.",
       "og": {
         "subject": "A stack of paper documents lit by a single overhead lamp on a near-black desk, lime accent glow from a phone screen beside them, shallow focus",
         "accent": "lime",
@@ -1887,7 +2334,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "description": "A Shopify-style storefront and analytics suite for AI agent creators\u2014publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
+      "description": "A Shopify-style storefront and analytics suite for AI agent creators—publish custom agents, set pricing, handle metered billing, and track conversions. Built for the developers and agencies stuck between GitHub stars and a real business.",
       "og": {
         "subject": "A single glowing laptop screen on a dark counter, lavender backlight, a cluster of small product cards floating in shallow depth above the keyboard, late night",
         "accent": "lavender",
@@ -1938,9 +2385,10 @@
       "audiences": [
         "side-hustlers",
         "solo-founders",
-        "non-technical"
+        "non-technical",
+        "freelancers"
       ],
-      "description": "A two-command SMS time tracker for gig workers, drivers, and weekend consultants who'll never open another app\u2014text \"start\" and \"stop\", get an invoice-ready weekly summary.",
+      "description": "A two-command SMS time tracker for gig workers, drivers, and weekend consultants who'll never open another app—text \"start\" and \"stop\", get an invoice-ready weekly summary.",
       "og": {
         "subject": "A single glowing phone screen on a dark wooden bar, the screen showing a small text bubble with the word 'start', a coffee mug just out of focus, emerald accent backlight, late evening, shallow focus",
         "accent": "emerald",
@@ -2003,7 +2451,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2032,7 +2480,9 @@
       "audiences": [
         "developers",
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers",
+        "small-business-owners"
       ],
       "description": "Invoice Reminder Bot helps freelancers and small businesses get paid faster with automated, escalating payment reminders. Connect Stripe or QuickBooks and let the bot handle awkward follow-ups.",
       "researchLevel": "deep",
@@ -2044,7 +2494,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2075,7 +2525,7 @@
         "solo-founders",
         "weekend-builders"
       ],
-      "description": "AI habit, nutrition, and posture coaching in one mobile-friendly app. Daily check-ins, wearable sync, and human coach upsell\u2014positioned below Noom and therapy-grade platforms.",
+      "description": "AI habit, nutrition, and posture coaching in one mobile-friendly app. Daily check-ins, wearable sync, and human coach upsell—positioned below Noom and therapy-grade platforms.",
       "researchLevel": "deep",
       "source": "stub-backfill+web-research",
       "provenance": {
@@ -2085,7 +2535,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2124,7 +2574,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2153,7 +2603,7 @@
         "developers",
         "solo-founders"
       ],
-      "description": "RAG assistant over Notion, Confluence, Slack, and Google Drive. Cited answers for internal teams\u2014priced below Glean for mid-market companies.",
+      "description": "RAG assistant over Notion, Confluence, Slack, and Google Drive. Cited answers for internal teams—priced below Glean for mid-market companies.",
       "researchLevel": "deep",
       "source": "stub-backfill+web-research",
       "provenance": {
@@ -2163,7 +2613,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2192,7 +2642,7 @@
         "non-technical",
         "solo-founders"
       ],
-      "description": "Two-sided marketplace matching vetted experts to learners. Stripe payouts, semantic matching, and async advice\u2014positioned between free ADPList and premium MentorCruise.",
+      "description": "Two-sided marketplace matching vetted experts to learners. Stripe payouts, semantic matching, and async advice—positioned between free ADPList and premium MentorCruise.",
       "researchLevel": "deep",
       "source": "stub-backfill+web-research",
       "provenance": {
@@ -2202,7 +2652,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2242,7 +2692,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2281,7 +2731,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2321,7 +2771,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2361,7 +2811,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2399,7 +2849,7 @@
         "citations": 6,
         "auditPassed": true,
         "auditRunAt": "2026-05-22T09:27:48.174Z",
-        "backfillNotes": "STUB \u2192 PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
+        "backfillNotes": "STUB → PASS. Full 7-section publish from blank stub backfill batch 2026-05-22."
       },
       "og": {
         "subject": "",
@@ -2480,9 +2930,10 @@
       "audiences": [
         "solo-founders",
         "side-hustlers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
-      "description": "AI TikTok trend predictor for creators: catch sounds and challenges 24\u201348h before they peak. Cited market data, competitor pricing, and a weekend MVP build plan.",
+      "description": "AI TikTok trend predictor for creators: catch sounds and challenges 24–48h before they peak. Cited market data, competitor pricing, and a weekend MVP build plan.",
       "researchLevel": "deep",
       "source": "ideabrowser:1173",
       "og": {
@@ -2587,7 +3038,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "description": "Connect with elite AI-native developers who ship production-ready MVPs at startup speed. No agency slowness, no freelancer roulette \u2014 just vetted vibe coders with real delivery track records.",
+      "description": "Connect with elite AI-native developers who ship production-ready MVPs at startup speed. No agency slowness, no freelancer roulette — just vetted vibe coders with real delivery track records.",
       "source": "ideabrowser:1249",
       "og": {
         "subject": "A glowing laptop screen with Cursor IDE open, dark room, lime green code reflections on a minimal desk surface, shallow focus, no people or faces",
@@ -2634,7 +3085,7 @@
         "solo-founders",
         "side-hustlers"
       ],
-      "description": "Turn a product brief into shelf-ready, print-correct CPG packaging in a day. AI generates carton, pouch, and label concepts on real dielines with compliant nutrition panels \u2014 not generic logos.",
+      "description": "Turn a product brief into shelf-ready, print-correct CPG packaging in a day. AI generates carton, pouch, and label concepts on real dielines with compliant nutrition panels — not generic logos.",
       "source": "ideabrowser:33",
       "og": {
         "subject": "A single unlabeled product carton standing on a dark studio table, one aubergine rim-light tracing its edges, faint dieline guide-marks glowing along the fold, very shallow focus, no legible text",
@@ -2680,7 +3131,7 @@
         "solo-founders",
         "weekend-builders"
       ],
-      "description": "One neutral dashboard that aggregates what every AI coding agent (Claude Code, Cursor, Copilot, Codex) shipped overnight \u2014 PRs, merges, issues \u2014 into a single morning digest with risk flags.",
+      "description": "One neutral dashboard that aggregates what every AI coding agent (Claude Code, Cursor, Copilot, Codex) shipped overnight — PRs, merges, issues — into a single morning digest with risk flags.",
       "source": "ideabrowser:8127",
       "og": {
         "subject": "A single dark monitor on a desk before dawn, one mint-green status row glowing across an otherwise dim dashboard, faint reflections on the desk surface, very shallow focus, no legible text",
@@ -2725,7 +3176,8 @@
       "audiences": [
         "solo-founders",
         "developers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:1387",
       "og": {
@@ -2798,7 +3250,7 @@
       "title": "HistoryPal",
       "publishedAt": "2026-06-15",
       "category": "education",
-      "description": "Build HistoryPal, an AI tool where students text historical figures in class \u2014 grounded in real sources with teacher controls. Full build guide with AI prompts.",
+      "description": "Build HistoryPal, an AI tool where students text historical figures in class — grounded in real sources with teacher controls. Full build guide with AI prompts.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "EducationalApplication",
@@ -2843,7 +3295,7 @@
       "title": "AI Meeting Copilot",
       "publishedAt": "2026-06-15",
       "category": "b2b",
-      "description": "Build an AI meeting copilot that gives sales reps and teams live, in-call prompts \u2014 objection responses, follow-ups, summaries. Full build guide with AI prompts.",
+      "description": "Build an AI meeting copilot that gives sales reps and teams live, in-call prompts — objection responses, follow-ups, summaries. Full build guide with AI prompts.",
       "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -2899,7 +3351,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:1621",
       "og": {
@@ -2944,7 +3397,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:8364",
       "og": {
@@ -2986,7 +3440,9 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers",
+        "small-business-owners"
       ],
       "source": "ideabrowser:8365",
       "og": {
@@ -3028,7 +3484,8 @@
       ],
       "audiences": [
         "solo-founders",
-        "side-hustlers"
+        "side-hustlers",
+        "freelancers"
       ],
       "source": "ideabrowser:8366",
       "og": {
@@ -3060,7 +3517,7 @@
       "title": "Markdown Publish Everywhere for Creators",
       "publishedAt": "2026-06-26",
       "category": "creator-tools",
-      "description": "Fmttr turns one markdown file into blog, newsletter, LinkedIn, and X thread outputs\u2014with Ghost and Buffer publish\u2014in under ten minutes. Weekend MVP guide.",
+      "description": "Fmttr turns one markdown file into blog, newsletter, LinkedIn, and X thread outputs—with Ghost and Buffer publish—in under ten minutes. Weekend MVP guide.",
       "buildTime": "8",
       "revenueGoal": "5k-month",
       "applicationCategory": "ProductivityApplication",
@@ -3073,7 +3530,8 @@
         "solo-founders",
         "developers",
         "weekend-builders",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:8024",
       "og": {
@@ -3110,7 +3568,7 @@
       "title": "SentimentLP: AI Landing Pages Informed by Market Signal",
       "publishedAt": "2026-07-04",
       "category": "saas",
-      "description": "AI landing pages built from Reddit and forum sentiment\u2014not templates. Scrape market language, generate conversion copy, and publish a validation page in one weekend.",
+      "description": "AI landing pages built from Reddit and forum sentiment—not templates. Scrape market language, generate conversion copy, and publish a validation page in one weekend.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -3160,7 +3618,7 @@
       "title": "Gamified Money-Habit App",
       "publishedAt": "2026-07-04",
       "category": "fintech",
-      "description": "A gamified money-habit app that turns real bank transactions into 3-minute daily challenges so Gen Z builds spending discipline\u2014not just finance literacy.",
+      "description": "A gamified money-habit app that turns real bank transactions into 3-minute daily challenges so Gen Z builds spending discipline—not just finance literacy.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "FinanceApplication",
@@ -3244,7 +3702,7 @@
       "title": "AI Cart Rescue: Emotional Recovery Emails",
       "publishedAt": "2026-07-04",
       "category": "ecommerce",
-      "description": "Shopify app that writes abandoned-cart recovery emails from session behavior \u2014 sizing doubts, shipping friction, price hesitation \u2014 not generic discount blasts. Recover lost revenue on autopilot.",
+      "description": "Shopify app that writes abandoned-cart recovery emails from session behavior — sizing doubts, shipping friction, price hesitation — not generic discount blasts. Recover lost revenue on autopilot.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "ShoppingApplication",
@@ -3293,7 +3751,7 @@
       "title": "GutCheck: AI Ad Creative Testing",
       "publishedAt": "2026-07-04",
       "category": "saas",
-      "description": "AI incremental ad testing across Meta and Google\u2014find winning creatives faster, measure true lift, and stop killing ads on gut instinct.",
+      "description": "AI incremental ad testing across Meta and Google—find winning creatives faster, measure true lift, and stop killing ads on gut instinct.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -3496,7 +3954,8 @@
       ],
       "audiences": [
         "side-hustlers",
-        "solo-founders"
+        "solo-founders",
+        "creators"
       ],
       "source": "ideabrowser:1732",
       "og": {
@@ -3549,7 +4008,8 @@
       "audiences": [
         "solo-founders",
         "developers",
-        "marketers"
+        "marketers",
+        "creators"
       ],
       "source": "ideabrowser:1586",
       "og": {
@@ -3596,7 +4056,8 @@
       "audiences": [
         "solo-founders",
         "side-hustlers",
-        "startup-founders"
+        "startup-founders",
+        "freelancers"
       ],
       "source": "ideabrowser:1473",
       "og": {
@@ -4042,7 +4503,7 @@
       "title": "Niche Finder for KDP Publishers",
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
-      "description": "Automatically scan Amazon KDP categories for profitable, low-competition book niches \u2014 with opportunity scores, keywords, and revenue estimates.",
+      "description": "Automatically scan Amazon KDP categories for profitable, low-competition book niches — with opportunity scores, keywords, and revenue estimates.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -4177,7 +4638,7 @@
       "title": "AI Storybook Generator for Kids",
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
-      "description": "AI storybook generator that makes kids the illustrated hero of their own story \u2014 personalized plot, consistent likeness, priced under every incumbent.",
+      "description": "AI storybook generator that makes kids the illustrated hero of their own story — personalized plot, consistent likeness, priced under every incumbent.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "MultimediaApplication",
@@ -4222,7 +4683,7 @@
       "title": "AI-Verified Freelancer Marketplace",
       "publishedAt": "2026-07-13",
       "category": "saas",
-      "description": "A directory that only lists freelancers who pass a hands-on AI skills challenge \u2014 verified badges, graded work samples, no self-reported skill tags.",
+      "description": "A directory that only lists freelancers who pass a hands-on AI skills challenge — verified badges, graded work samples, no self-reported skill tags.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -4267,7 +4728,7 @@
       "title": "AI App Security Trust Badge",
       "publishedAt": "2026-07-13",
       "category": "developer-tools",
-      "description": "Fast, fixed-price security audits from vetted ethical hackers for indie and AI-built apps \u2014 an embeddable trust badge from $199, no $10K SOC 2 required.",
+      "description": "Fast, fixed-price security audits from vetted ethical hackers for indie and AI-built apps — an embeddable trust badge from $199, no $10K SOC 2 required.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "DeveloperApplication",
@@ -4492,7 +4953,7 @@
       "title": "Daily AI Check-In Calls for Independent Seniors",
       "publishedAt": "2026-07-13",
       "category": "health",
-      "description": "Daily AI voice calls check in on seniors living alone and flag concerning patterns to family \u2014 proactive peace of mind, not another emergency pendant.",
+      "description": "Daily AI voice calls check in on seniors living alone and flag concerning patterns to family — proactive peace of mind, not another emergency pendant.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "HealthApplication",
@@ -4537,7 +4998,7 @@
       "title": "n8n Freelancer Academy",
       "publishedAt": "2026-07-13",
       "category": "education",
-      "description": "Training, certification, and a job board that turn self-taught n8n builders into well-paid automation freelancers \u2014 with pricing templates and a commercial workflow vault.",
+      "description": "Training, certification, and a job board that turn self-taught n8n builders into well-paid automation freelancers — with pricing templates and a commercial workflow vault.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "EducationApplication",
@@ -4807,7 +5268,7 @@
       "title": "24-Hour AI Website Redesigns",
       "publishedAt": "2026-07-17",
       "category": "saas",
-      "description": "A productized service that redesigns outdated small-business websites with AI in 24 hours for a flat $199 \u2014 mobile-first, brand-preserving, with a recurring care plan.",
+      "description": "A productized service that redesigns outdated small-business websites with AI in 24 hours for a flat $199 — mobile-first, brand-preserving, with a recurring care plan.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -4852,7 +5313,7 @@
       "title": "AI API Documentation Generator",
       "publishedAt": "2026-07-17",
       "category": "developer-tools",
-      "description": "Turn any repo, OpenAPI spec, or legacy Excel/Word file into a clean, always-current API reference \u2014 with a CI check that reopens a PR the moment docs drift from code.",
+      "description": "Turn any repo, OpenAPI spec, or legacy Excel/Word file into a clean, always-current API reference — with a CI check that reopens a PR the moment docs drift from code.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "DeveloperApplication",
@@ -4987,7 +5448,7 @@
       "title": "AdSpark: One-Click AI Ad Creative Generator",
       "publishedAt": "2026-07-17",
       "category": "saas",
-      "description": "Turn a product link or short brief plus a brand-tone quiz into correctly-sized ad visuals, copy, and A/B variations in under a minute \u2014 built for small marketing teams.",
+      "description": "Turn a product link or short brief plus a brand-tone quiz into correctly-sized ad visuals, copy, and A/B variations in under a minute — built for small marketing teams.",
       "buildTime": "8-10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
@@ -5026,6 +5487,885 @@
         "builder_confidence": 7
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "voice-desktop-workflow-macros",
+      "title": "Voice Desktop Workflow Macros",
+      "publishedAt": "2026-07-25",
+      "category": "automation",
+      "description": "Record desktop chores once and replay them by voice with checkpoints, approvals, and undo—no scripting required for freelancers and small teams.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:8292",
+      "og": {
+        "subject": "dark desk, a glowing microphone next to a laptop trackpad with a lavender accent light, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2087,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-agency-automation-control-panel",
+      "title": "AI Agency Automation Control Panel",
+      "publishedAt": "2026-07-25",
+      "category": "automation",
+      "description": "One ops dashboard for AI automation agencies: deploy Make/n8n/Zapier workflows, catch errors early, bill usage, and prove ROI across every client.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8736",
+      "og": {
+        "subject": "dark multi-monitor ops desk with emerald status LEDs and a single empty client dashboard glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2123,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "helpdesk-workflow-migration-cloner",
+      "title": "Helpdesk Workflow Migration Cloner",
+      "publishedAt": "2026-07-25",
+      "category": "automation",
+      "description": "Clone macros, triggers, SLAs, and routing when switching help desks—so day-one support keeps working after Zendesk, Freshdesk, or Intercom migrations.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8492",
+      "og": {
+        "subject": "dark server rack reflection on a mint-lit switch cable coiled on a desk, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2458,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "whatsapp-tour-guide-comms",
+      "title": "WhatsApp Tour Guide Guest Comms",
+      "publishedAt": "2026-07-25",
+      "category": "automation",
+      "description": "Automate WhatsApp guest messaging for tour guides—confirmations, meeting pins, weather packing lists, FAQs, and review asks that still sound personal.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:3820",
+      "og": {
+        "subject": "dark travel desk with a phone showing a blank chat bubble and a lime map pin beside a worn tour badge, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2599,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "inbox-zero-agent",
+      "title": "Inbox Zero Agent",
+      "publishedAt": "2026-07-25",
+      "category": "automation",
+      "description": "An AI inbox agent that prioritizes mail, drafts replies in your voice, schedules sends, and surfaces only the threads that need you—Gmail and Outlook.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "marketers"
+      ],
+      "source": "ideabrowser:2486",
+      "og": {
+        "subject": "dark office desk, empty inbox tray with a single aubergine envelope under a focused desk lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 4,
+        "wordCount": 2231,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T05:22:37Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "small-town-storefront-marketplace",
+      "title": "Small-Town Storefront Marketplace",
+      "publishedAt": "2026-07-25",
+      "category": "marketplace",
+      "description": "A marketplace that connects aspiring local businesses with verified vacant storefronts in small towns — rent, zoning, foot traffic, and grants in one listing.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "ideabrowser:8712",
+      "og": {
+        "subject": "empty small-town main street storefront with a single lime window glow at dusk, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 1130,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "fan-funded-creator-products",
+      "title": "Fan-Funded Creator Products",
+      "publishedAt": "2026-07-25",
+      "category": "marketplace",
+      "description": "Creators open idea boards where fans lock deposits to vote with money — fund production only when real demand clears the threshold.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:8566",
+      "og": {
+        "subject": "creator desk with a mint progress bar filling toward a product prototype, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 1049,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "creator-manufacturer-partnership-marketplace",
+      "title": "Creator–Manufacturer Partnership Marketplace",
+      "publishedAt": "2026-07-25",
+      "category": "marketplace",
+      "description": "A deal marketplace matching creators with verified manufacturers for royalty and equity partnerships — contracts, milestones, and payouts on-platform.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:8523",
+      "og": {
+        "subject": "handshake silhouette reflected in a lavender-lit product sample box, no faces, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 966,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-builder-hiring-marketplace",
+      "title": "AI Builder Hiring Marketplace for Local Services",
+      "publishedAt": "2026-07-25",
+      "category": "marketplace",
+      "description": "Vetted AI implementers for small local businesses — plain-English scopes, escrow milestones, and reputation that Upwork cannot match.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers"
+      ],
+      "source": "ideabrowser:8558",
+      "og": {
+        "subject": "small shop counter tablet showing an emerald checklist of automation milestones, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 967,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "wedding-event-staffing-marketplace",
+      "title": "Wedding Event-Day Staffing Marketplace",
+      "publishedAt": "2026-07-25",
+      "category": "marketplace",
+      "description": "Vendor-to-vendor marketplace for second shooters and day-of help — escrow, calendar sync, and reliability scores for peak wedding weekends.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "designers"
+      ],
+      "source": "ideabrowser:7923",
+      "og": {
+        "subject": "wedding camera and schedule clipboard under aubergine side light, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 915,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "website-accessibility-ada-scanner",
+      "title": "Website Accessibility ADA Scanner",
+      "publishedAt": "2026-07-25",
+      "category": "b2b",
+      "description": "Plain-English ADA/WCAG scanner for small-business sites — crawl, prioritize fixes, and re-scan without enterprise overlay pricing.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "designers"
+      ],
+      "source": "ideabrowser:5040",
+      "og": {
+        "subject": "laptop showing a lime accessibility checklist beside a keyboard, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 918,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-chief-of-staff-consultants",
+      "title": "AI Chief of Staff for Solo Consultants",
+      "publishedAt": "2026-07-25",
+      "category": "b2b",
+      "description": "AI assistant that schedules, chases proposal follow-ups, and clears admin so solo consultants reclaim billable hours.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:5309",
+      "og": {
+        "subject": "clean desk calendar and mint-lit inbox tray with a single cleared folder, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 863,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "shopify-trust-scanner",
+      "title": "Shopify Trust Scanner",
+      "publishedAt": "2026-07-25",
+      "category": "b2b",
+      "description": "Scan Shopify stores for missing trust signals — badges, reviews, policies, shipping transparency — ranked by conversion impact.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:5360",
+      "og": {
+        "subject": "Shopify storefront mockup with lavender trust badges highlighted, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 818,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "markdown-client-proposals",
+      "title": "Client-Ready Proposals from Markdown",
+      "publishedAt": "2026-07-25",
+      "category": "b2b",
+      "description": "Turn markdown proposals into branded client-ready PDFs in seconds — keep writing in Obsidian or VS Code.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "designers"
+      ],
+      "source": "ideabrowser:8023",
+      "og": {
+        "subject": "markdown editor beside an emerald branded PDF proposal page, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 813,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "one-star-attack-detection",
+      "title": "One-Star Attack Detection for Local Businesses",
+      "publishedAt": "2026-07-25",
+      "category": "b2b",
+      "description": "SMS alerts when Google or Yelp ratings take a coordinated one-star hit — evidence and response templates in minutes.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:8946",
+      "og": {
+        "subject": "phone showing an aubergine alert over a star rating dip graph, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis"
+        ],
+        "citations": 4,
+        "wordCount": 823,
+        "auditPassed": true,
+        "auditRunAt": "2026-07-25T06:32:01Z",
+        "publishNotes": "WP06 marketplace+b2b category fill batch via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-lesson-planner-teachers",
+      "title": "AI Lesson Planner for Teachers",
+      "publishedAt": "2026-08-05",
+      "category": "education",
+      "description": "Generate standards-aligned lesson plans grounded in your state's actual standards text, then push them straight to Google Classroom in one click.",
+      "buildTime": "10-12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:1507",
+      "og": {
+        "subject": "A stack of paper lesson plans on a dark desk beside a closed laptop, mint edge light, late evening, shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 2835,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "medication-interaction-checker",
+      "title": "Multi-Doctor Medication Interaction Checker",
+      "publishedAt": "2026-08-05",
+      "category": "health",
+      "description": "Track every prescription, supplement, and OTC in one profile that re-screens the whole list for documented interactions each time something changes.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:6765",
+      "og": {
+        "subject": "Amber pill bottles clustered on a dark kitchen counter, lavender backlight, single overhead pool of light, shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 3013,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "underused-venue-marketplace",
+      "title": "Underused Venue Marketplace",
+      "publishedAt": "2026-08-05",
+      "category": "marketplace",
+      "description": "Concierge-onboarded marketplace that turns churches, gyms, and clubs into bookable event venues, with house rules and per-event insurance built in.",
+      "buildTime": "10-12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:1185",
+      "og": {
+        "subject": "Empty folding chairs stacked along the wall of a dark hall, emerald light spilling through an open doorway, wide quiet interior",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3045,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "excel-formula-repair-ai",
+      "title": "AI Excel Formula Repair Tool",
+      "publishedAt": "2026-08-05",
+      "category": "b2b",
+      "description": "Audit any inherited Excel workbook for broken references, off-by-one ranges, and mismatched formulas, with fixes you approve one diff at a time.",
+      "buildTime": "10-12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "freelancers"
+      ],
+      "source": "ideabrowser:1245",
+      "og": {
+        "subject": "A dark monitor showing a dense spreadsheet grid, lime cursor glow on one cell, low desk lamp, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3181,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "subscription-audit-assistant",
+      "title": "Subscription Audit and Cancellation Assistant",
+      "publishedAt": "2026-08-05",
+      "category": "fintech",
+      "description": "Find every recurring charge across your accounts, cancel the dead ones, and verify the following month that the charge actually stopped.",
+      "buildTime": "10-12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1823",
+      "og": {
+        "subject": "A fan of credit cards on a dark table beside a folded paper statement, aubergine rim light, overhead angle, shallow focus",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3205,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
@@ -5061,7 +6401,7 @@
         },
         {
           "question": "How long does it take to build a SaaS MVP?",
-          "answer": "With modern tools and AI assistance, a focused MVP can be built in a weekend (8-16 hours). The key is scoping aggressively\u2014launch with one core feature that delivers clear value, then iterate based on user feedback."
+          "answer": "With modern tools and AI assistance, a focused MVP can be built in a weekend (8-16 hours). The key is scoping aggressively—launch with one core feature that delivers clear value, then iterate based on user feedback."
         }
       ]
     },
@@ -5139,7 +6479,7 @@
       "faqs": [
         {
           "question": "How do you solve the chicken-and-egg problem?",
-          "answer": "Start with supply\u2014recruit providers first with a compelling value proposition. Use manual effort ('do things that don't scale') to match early supply with demand. Many successful marketplaces started by focusing on a single geography or niche."
+          "answer": "Start with supply—recruit providers first with a compelling value proposition. Use manual effort ('do things that don't scale') to match early supply with demand. Many successful marketplaces started by focusing on a single geography or niche."
         },
         {
           "question": "What's the typical take rate for marketplaces?",
@@ -5151,7 +6491,7 @@
       "slug": "ai-tools",
       "name": "AI Tools",
       "displayName": "AI Tool Ideas",
-      "description": "Leverage AI APIs to build powerful tools. The AI wrapper opportunity is real\u2014add UI, workflow, and domain expertise on top of foundation models.",
+      "description": "Leverage AI APIs to build powerful tools. The AI wrapper opportunity is real—add UI, workflow, and domain expertise on top of foundation models.",
       "icon": "lucide:sparkles",
       "color": "violet",
       "keywords": {
@@ -5171,7 +6511,7 @@
         },
         {
           "question": "Which AI API should I use?",
-          "answer": "OpenAI (GPT-4) and Anthropic (Claude) are leaders for text. For specific tasks, consider specialized models. Start with one provider, and add fallbacks later. Cost matters\u2014Claude and GPT-4 are similar in capability but pricing varies by use case."
+          "answer": "OpenAI (GPT-4) and Anthropic (Claude) are leaders for text. For specific tasks, consider specialized models. Start with one provider, and add fallbacks later. Cost matters—Claude and GPT-4 are similar in capability but pricing varies by use case."
         }
       ]
     },
@@ -5252,7 +6592,7 @@
         },
         {
           "question": "Can solo founders build B2B products?",
-          "answer": "Yes. Many successful B2B products started as solo projects. Focus on SMB (small-medium business) initially\u2014they have simpler buying processes than enterprises. Expand upmarket as you grow."
+          "answer": "Yes. Many successful B2B products started as solo projects. Focus on SMB (small-medium business) initially—they have simpler buying processes than enterprises. Expand upmarket as you grow."
         }
       ]
     },
@@ -5279,7 +6619,7 @@
         },
         {
           "question": "What's the best pricing model for dev tools?",
-          "answer": "Freemium with generous free tiers works well\u2014developers try before buying. Usage-based pricing aligns with value delivered. Per-seat pricing works for team tools. Avoid gating basic functionality too aggressively."
+          "answer": "Freemium with generous free tiers works well—developers try before buying. Usage-based pricing aligns with value delivered. Per-seat pricing works for team tools. Avoid gating basic functionality too aggressively."
         }
       ]
     },
@@ -5302,7 +6642,7 @@
       "faqs": [
         {
           "question": "What e-commerce niches are underserved?",
-          "answer": "Look for niches with: passionate buyers (hobbies, collectibles), high AOV (luxury, B2B supplies), or underserved demographics. Also consider tools for sellers\u2014there are always pain points in the e-commerce stack."
+          "answer": "Look for niches with: passionate buyers (hobbies, collectibles), high AOV (luxury, B2B supplies), or underserved demographics. Also consider tools for sellers—there are always pain points in the e-commerce stack."
         }
       ]
     },
@@ -5849,7 +7189,7 @@
         },
         {
           "title": "Weekend MVP",
-          "url": "https://weekendmvp.app",
+          "url": "https://www.weekendmvp.app",
           "description": "Ideas and resources for weekend builders"
         }
       ]
@@ -5940,6 +7280,141 @@
           "title": "r/marketing",
           "url": "https://www.reddit.com/r/marketing/",
           "description": "Community for marketing professionals"
+        }
+      ]
+    },
+    {
+      "slug": "freelancers",
+      "name": "Freelancers",
+      "displayName": "Startup Ideas for Freelancers",
+      "description": "Ideas that productize freelance workflows—client portals, invoicing, proposals, bookkeeping, and scope control you can ship in a weekend.",
+      "icon": "lucide:briefcase",
+      "filters": {
+        "categories": [
+          "saas",
+          "fintech",
+          "productivity",
+          "b2b"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for freelancers",
+        "secondary": [
+          "freelance tool ideas",
+          "side project ideas for freelancers",
+          "SaaS ideas for freelancers"
+        ],
+        "volume": "720/mo"
+      },
+      "traits": [
+        "Live the client-delivery grind daily",
+        "Need cash-flow and admin automation",
+        "Can sell to peers in freelancer communities"
+      ],
+      "resources": [
+        {
+          "title": "r/freelance",
+          "url": "https://www.reddit.com/r/freelance/",
+          "description": "Peer community for freelancers sharing tools and workflows"
+        },
+        {
+          "title": "Indie Hackers",
+          "url": "https://indiehackers.com",
+          "description": "Bootstrapped builders shipping products for service businesses"
+        }
+      ]
+    },
+    {
+      "slug": "creators",
+      "name": "Creators",
+      "displayName": "Startup Ideas for Creators",
+      "description": "Ideas for YouTubers, newsletter writers, and indie creators—repurposing, scripting, publishing, and monetization tools scoped to a weekend build.",
+      "icon": "lucide:video",
+      "filters": {
+        "categories": [
+          "creator-tools",
+          "ai-tools",
+          "saas"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for creators",
+        "secondary": [
+          "creator tool ideas",
+          "YouTube tool startup ideas",
+          "creator economy SaaS ideas"
+        ],
+        "volume": "880/mo"
+      },
+      "traits": [
+        "Already produce content weekly",
+        "Feel the multi-platform publishing grind",
+        "Have built-in audiences for launch"
+      ],
+      "resources": [
+        {
+          "title": "Creator Economy Report",
+          "url": "https://www.signal.nfx.com/creator-economy",
+          "description": "Market maps and trends for creator infrastructure"
+        },
+        {
+          "title": "r/NewTubers",
+          "url": "https://www.reddit.com/r/NewTubers/",
+          "description": "Growing YouTube creators sharing tools and tactics"
+        }
+      ]
+    },
+    {
+      "slug": "small-business-owners",
+      "name": "Small Business Owners",
+      "displayName": "Startup Ideas for Small Business Owners",
+      "description": "Ideas for SMB operators—contracts, invoicing, websites, and ops tools that replace expensive agencies with weekend-shippable software.",
+      "icon": "lucide:store",
+      "filters": {
+        "categories": [
+          "saas",
+          "fintech",
+          "b2b",
+          "automation"
+        ],
+        "revenueGoal": [
+          "1k-month",
+          "5k-month",
+          "10k-month"
+        ]
+      },
+      "keywords": {
+        "primary": "startup ideas for small business owners",
+        "secondary": [
+          "SMB SaaS ideas",
+          "small business software ideas",
+          "tools for local businesses"
+        ],
+        "volume": "1.2K/mo"
+      },
+      "traits": [
+        "Pay for tools that save time or recover cash",
+        "Hate agency retainers and bloated suites",
+        "Need simple UX over enterprise complexity"
+      ],
+      "resources": [
+        {
+          "title": "SCORE Mentoring",
+          "url": "https://www.score.org",
+          "description": "Free mentoring and resources for small business owners"
+        },
+        {
+          "title": "r/smallbusiness",
+          "url": "https://www.reddit.com/r/smallbusiness/",
+          "description": "Operators discussing tools, cash flow, and growth"
         }
       ]
     }

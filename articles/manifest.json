@@ -51,8 +51,8 @@
     {
       "slug": "7-things-to-build-with-claude-code-this-weekend",
       "title": "7 Things You Can Build This Weekend with Claude Code",
-      "description": "Seven shippable project ideas you can build with Claude Code in a single weekend, even if you've never coded. Each comes with a starter prompt you can paste straight in.",
-      "wordCount": 1217,
+      "description": "Seven real Claude Code projects you can build in a single weekend, even if you've never coded — what people actually ship, plus a starter prompt for each.",
+      "wordCount": 1166,
       "readMinutes": 6,
       "og": {
         "subject": "A small notecard on a dark desk showing a numbered list with one item checked off in lime, single overhead lamp catching the checked line, deep shadow elsewhere",
@@ -369,6 +369,246 @@
       "og": {
         "subject": "A desk calendar with three month tabs, the middle tab dog-eared and slightly worn, single lavender light source from the side, dark surface, very shallow focus, late-night atmosphere, no people, no faces, no legible text",
         "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "product-hunt-launch-solo-founder-2026",
+      "title": "How to Launch on Product Hunt as a Solo Founder in 2026",
+      "description": "A Product Hunt launch playbook for solo founders in 2026: timing, gallery assets, a 50-person crew, and converting Top 5 finishes into real trial users.",
+      "wordCount": 1230,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A clipboard with a short checklist resting on a near-black desk, one lime checkmark catching a single side lamp, very shallow focus, deep shadow beyond, no readable text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "find-customers-on-reddit-saas",
+      "title": "How to Find Paying Customers on Reddit (Without Getting Banned)",
+      "description": "How to find paying SaaS customers on Reddit without getting banned: problem keywords, fresh threads, human replies, plus a weekly acquisition cadence.",
+      "wordCount": 1186,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A neat stack of blank index cards on a dark wooden desk, the top card edged in mint side-light, very shallow focus, late-night atmosphere, no text visible",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cursor-vs-claude-code-vs-lovable-2026",
+      "title": "Cursor vs Claude Code vs Lovable: Which Should You Use in 2026?",
+      "description": "Cursor vs Claude Code vs Lovable in 2026: which AI builder fits demos, daily shipping, or agentic weekends—and when solo founders should switch tools.",
+      "wordCount": 1211,
+      "readMinutes": 6,
+      "og": {
+        "subject": "Three pencils of uneven lengths lying parallel on a near-black desk, only the middle one lit by a narrow lavender beam, very shallow focus, no people or text",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "add-stripe-to-weekend-mvp",
+      "title": "How to Add Stripe Payments to Your Weekend MVP",
+      "description": "How to add Stripe Checkout to a weekend MVP: one price, hosted checkout, signed webhooks that unlock access, and no custom card forms until you ship it.",
+      "wordCount": 1114,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A single weathered paper receipt curled on a dark desk, lit by one lime side beam, ink shapes deliberately illegible, very shallow focus, deep shadow",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "micro-saas-seo-aeo-content-2026",
+      "title": "The Micro-SaaS Content Engine: SEO + AEO That Works in 2026",
+      "description": "A micro-SaaS SEO and AEO content engine for 2026: answer-first pages, sourced stats, FAQ sections, and a weekly publishing system solo founders can run.",
+      "wordCount": 1347,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open notebook on a near-black surface with a single mint-glowing handwritten line visible, very shallow focus, late-night atmosphere, no readable words",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-to-find-a-startup-idea-2026",
+      "title": "How to Find a Startup Idea in 2026 (6 Places That Actually Work)",
+      "description": "Six repeatable places to find a startup idea in 2026 — review mining, Upwork demand signals, subreddit phrase hunting — plus how to score one before you build.",
+      "wordCount": 1620,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A loose stack of blank index cards on a near-black desk, one card lifted at an angle and caught by a single lavender side beam, very shallow focus, deep shadow, no text",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "vibe-coding-security-for-founders",
+      "title": "Vibe Coding Security: The 7 Things AI Ships That Will Burn You",
+      "description": "AI-generated code introduces vulnerabilities in a large share of tasks. Here are the seven failure modes to check before your vibe-coded MVP touches real users.",
+      "wordCount": 1652,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A single worn house key lying on a near-black surface, its cut edge sharply lit by one narrow lime beam, rest of the frame falling into deep shadow, very shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "what-it-costs-to-run-an-ai-app",
+      "title": "What It Actually Costs to Run an AI App (2026 Cost Math)",
+      "description": "Real unit-economics math for AI apps in 2026: cost per user, why output tokens dominate, and the caching, batching, and routing levers that cut bills up to 95%.",
+      "wordCount": 1678,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A long weathered paper receipt curling off the edge of a dark desk, lit by one emerald beam from the side, printed marks deliberately illegible, very shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-to-talk-to-customers-mom-test",
+      "title": "How to Talk to Customers Without Lying to Yourself",
+      "description": "The Mom Test for weekend builders: how to run 10 customer interviews that produce real evidence, which questions to ban, and how to tell a signal from politeness.",
+      "wordCount": 1614,
+      "readMinutes": 8,
+      "og": {
+        "subject": "An open paper planner on a dark surface with one date ringed in pencil, a single mint beam raking across the page from the left, very shallow focus, no readable words",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "add-auth-to-your-weekend-mvp",
+      "title": "How to Add Login to Your Weekend MVP (Without Building Auth)",
+      "description": "Add login to a weekend MVP in an afternoon: how to choose between Clerk, Supabase Auth, and Better Auth, what the free tiers really cover, and what to skip.",
+      "wordCount": 1695,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A small brass key resting on the cover of a closed notebook on a near-black desk, lit by one narrow lavender beam, very shallow focus, deep shadow behind",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "mvp-for-non-technical-founders",
+      "title": "How to Build an MVP as a Non-Technical Founder (2026)",
+      "description": "A step-by-step MVP guide for non-technical founders: what to cut, which tools to use, and why you don't need a technical co-founder to ship your first version.",
+      "wordCount": 1905,
+      "readMinutes": 10,
+      "og": {
+        "subject": "A single sharpened pencil resting mid-page on an open notebook on a near-black desk, one narrow mint beam raking across the paper, very shallow focus, no readable writing",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "claude-projects-for-founders",
+      "title": "Claude Projects for Founders: Setups That Ship Real Work",
+      "description": "How to set up a Claude Project so you stop re-explaining your business every session — with seven concrete project setups solo founders actually use.",
+      "wordCount": 1745,
+      "readMinutes": 9,
+      "og": {
+        "subject": "A small stack of index cards fanned across a near-black desk, the top card lit by one narrow lavender beam from the left, very shallow focus, no readable writing",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "programs-solo-founders-idea-to-mvp",
+      "title": "What Programs Help Solo Founders Go From Idea to MVP?",
+      "description": "The honest answer for solo founders: which accelerators, equity-free programs, and self-directed paths actually get you from idea to a shipped MVP in 2026.",
+      "wordCount": 1452,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A single clipboard holding one short handwritten checklist on a near-black desk, one narrow emerald beam raking from the left, very shallow focus, no readable text",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "lovable-examples-what-to-build",
+      "title": "Lovable Examples: 9 Apps Worth Building This Weekend",
+      "description": "Real examples of what people build with Lovable, plus the scoping rules that separate an app you ship on Sunday from one you abandon on Tuesday.",
+      "wordCount": 1508,
+      "readMinutes": 8,
+      "og": {
+        "subject": "One square sticky note curling at a corner on a near-black desk, lit by a single narrow lime beam from above, very shallow focus, no readable writing",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "replit-project-ideas-weekend",
+      "title": "Replit Project Ideas: 8 Apps to Ship Without Burning Credits",
+      "description": "Eight Replit project ideas scoped to finish in a weekend, plus how Agent credit billing actually works so your build doesn't cost more than it should.",
+      "wordCount": 1488,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open paperback resting face-down on a near-black desk beside one folded paper receipt, a narrow mint beam across the spine, very shallow focus, no readable text",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-chrome-extension-weekend-2026",
+      "title": "How to Build a Chrome Extension in a Weekend (2026)",
+      "description": "Ship a Manifest V3 Chrome extension in one weekend with AI tools — idea pick, build steps, Web Store publish, and how indies actually monetize in 2026.",
+      "wordCount": 1013,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A small metal paperclip resting on a near-black desk beside a folded sticky note, lit by a single narrow lime beam from the side, very shallow focus, no text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-much-does-it-cost-to-build-an-mvp-2026",
+      "title": "How Much Does It Cost to Build an MVP in 2026?",
+      "description": "Honest 2026 MVP cost ranges: AI-assisted solo builds, no-code, freelancers, and agencies — plus the monthly infra bill most founders forget to model.",
+      "wordCount": 850,
+      "readMinutes": 4,
+      "og": {
+        "subject": "A stack of weathered paper receipts on a near-black desk, the top receipt lit by a single narrow mint beam from the left, very shallow focus, no readable amounts",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "do-you-need-a-technical-co-founder-2026",
+      "title": "Do You Need a Technical Co-Founder in 2026?",
+      "description": "The honest 2026 answer: when AI coding tools replace a technical co-founder, when they don't, and the equity math most founders skip.",
+      "wordCount": 914,
+      "readMinutes": 5,
+      "og": {
+        "subject": "Two blank index cards side by side on a near-black desk, one lit by a narrow lavender beam, the other fading into deep shadow, very shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "deploy-nextjs-mvp-to-vercel",
+      "title": "Deploy Your Next.js MVP to Vercel in One Afternoon",
+      "description": "A founder-friendly checklist to put a Next.js weekend MVP live on Vercel — GitHub connect, env vars, custom domain, and the mistakes that cause blank production pages.",
+      "wordCount": 781,
+      "readMinutes": 4,
+      "og": {
+        "subject": "An open daily planner on a near-black desk with one date circled in emerald ink, single overhead lamp lighting just that page, deep shadows beyond",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cold-email-first-saas-customers",
+      "title": "Cold Email for Your First SaaS Customers (Zero Audience)",
+      "description": "A founder-led cold email playbook for first SaaS customers in 2026 — realistic reply rates, list size, follow-ups, and templates that don't sound like spam.",
+      "wordCount": 893,
+      "readMinutes": 4,
+      "og": {
+        "subject": "A single sealed cream envelope on a near-black desk, lit by a narrow lime beam from the side, very shallow focus, no address text visible",
+        "accent": "lime",
         "status": "ready"
       }
     }
