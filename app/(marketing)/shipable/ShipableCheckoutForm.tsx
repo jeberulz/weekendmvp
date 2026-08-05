@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { SHIPABLE_WAITLIST_AUTOMATION_ID } from "@/lib/beehiiv-client";
-// Side-effect import: lib/track.ts carries the global window.gtag/window.fbq
-// type declarations used below.
-import "@/lib/track";
+import { trackValidationEvent } from "@/lib/track";
 
 /**
  * The $9 seat form, ported from the shipable.html inline seat-form script.
@@ -70,6 +68,13 @@ export function ShipableCheckoutForm() {
     if (typeof window.fbq === "function") {
       window.fbq("track", "InitiateCheckout", { currency: "USD", value: 9 });
     }
+    trackValidationEvent("checkout_started", {
+      source_surface: "shipable_checkout_form",
+      cta_id: "shipable-seat",
+      item_id: "shipable-workshop",
+      currency: "USD",
+      value: 9,
+    });
 
     // Best-effort waitlist subscribe; do not block checkout if it fails.
     // automation_ids enrolls the subscriber in the Ship.able Workshop
@@ -126,7 +131,9 @@ export function ShipableCheckoutForm() {
           disabled={loading}
           className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white text-[#1a1a1a] rounded-full text-sm font-semibold hover:bg-neutral-200 transition-all focus:outline-none focus:ring-2 focus:ring-white/40 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <span>{loading ? "Sending you to checkout…" : "Save my seat · $9"}</span>
+          <span>
+            {loading ? "Sending you to checkout…" : "Save my seat · $9"}
+          </span>
           <ArrowRight size={14} aria-hidden="true" />
         </button>
       </form>

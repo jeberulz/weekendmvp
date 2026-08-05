@@ -6,7 +6,7 @@ import {
   subscribeViaApi,
   type AllowedAutomationId,
 } from "@/lib/beehiiv-client";
-import { trackEvent } from "@/lib/track";
+import { trackEvent, trackValidationEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
 const BEEHIIV_PUB_ID = "pub_5fbc631f-7950-4bac-80fe-80ba70dae2da";
@@ -78,9 +78,7 @@ export function BeehiivSubscribeForm({
   const emailId = useId();
   const nameId = useId();
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">(
-    "idle",
-  );
+  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -93,8 +91,16 @@ export function BeehiivSubscribeForm({
     const emailDomain = email.split("@")[1] || "unknown";
 
     const finish = (method: string) => {
-      trackEvent("signup_form_submitted", { method, email_domain: emailDomain });
+      trackEvent("signup_form_submitted", {
+        method,
+        email_domain: emailDomain,
+      });
       trackEvent("signup_form_success", { method });
+      trackValidationEvent("newsletter_subscribed", {
+        method,
+        source_surface: "beehiiv_form",
+        cta_id: "newsletter-subscribe",
+      });
       try {
         localStorage.setItem("weekendmvp_subscribed", "true");
       } catch {

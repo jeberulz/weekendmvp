@@ -56,6 +56,39 @@ export function trackEvent(
   }
 }
 
+export type ValidationEventName =
+  | "checkout_started"
+  | "idea_prompt_copied"
+  | "newsletter_subscribed"
+  | "purchase_completed"
+  | "starter_kit_clicked";
+
+/**
+ * Validation-funnel events share a stable page context so the weekly report
+ * can group behavior without requiring GA4 custom dimensions.
+ */
+export function trackValidationEvent(
+  name: ValidationEventName,
+  props: Record<string, unknown> = {},
+): void {
+  if (typeof window === "undefined") return;
+
+  const sourcePath = window.location.pathname;
+  const segments = sourcePath.split("/").filter(Boolean);
+  const inferredContext: Record<string, string> = { source_path: sourcePath };
+
+  if (segments[0] === "ideas" && segments[1]) {
+    inferredContext.idea_slug = segments[1];
+  } else if (
+    segments[1] &&
+    ["build-with", "ideas-for", "solve"].includes(segments[0] ?? "")
+  ) {
+    inferredContext.hub_slug = segments[1];
+  }
+
+  trackEvent(name, { ...inferredContext, ...props });
+}
+
 /**
  * Convenience helper for section-visibility analytics
  * (legacy `section_viewed` IntersectionObserver events).

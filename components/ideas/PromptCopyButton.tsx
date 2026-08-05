@@ -12,13 +12,16 @@ import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 import { IconButton } from "@/components/primitives/IconButton";
+import { trackValidationEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
 
 export function PromptCopyButton({
   targetRef,
+  ideaSlug,
   className,
 }: {
   targetRef: React.RefObject<HTMLElement | null>;
+  ideaSlug: string;
   className?: string;
 }) {
   const [copied, setCopied] = React.useState(false);
@@ -28,6 +31,16 @@ export function PromptCopyButton({
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
+      const promptIndex =
+        Array.from(document.querySelectorAll("[data-idea-prompt]")).indexOf(
+          targetRef.current?.closest("[data-idea-prompt]") as Element,
+        ) + 1;
+      trackValidationEvent("idea_prompt_copied", {
+        idea_slug: ideaSlug,
+        prompt_index: promptIndex,
+        source_surface: "idea_prompt",
+        cta_id: "copy-prompt",
+      });
       setCopied(true);
       toast("Copied!");
       setTimeout(() => setCopied(false), 2000);
@@ -55,13 +68,16 @@ export function PromptCopyButton({
  * Used as the `pre` element in the idea MDX component map — children are
  * the server-rendered (rehype-pretty-code) code contents.
  */
-export function CopyablePre(props: React.ComponentProps<"pre">) {
+export function CopyablePre({
+  ideaSlug,
+  ...props
+}: React.ComponentProps<"pre"> & { ideaSlug: string }) {
   const preRef = React.useRef<HTMLPreElement>(null);
   const { className: _ignored, children, ...rest } = props;
 
   return (
-    <div className="relative group mb-6">
-      <PromptCopyButton targetRef={preRef} />
+    <div className="relative group mb-6" data-idea-prompt>
+      <PromptCopyButton targetRef={preRef} ideaSlug={ideaSlug} />
       <pre
         ref={preRef}
         {...rest}

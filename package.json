@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:convex",
+    "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:validation && npm run test:convex",
     "test:convex": "vitest run convex",
     "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs",
     "convex:dev": "convex dev",
@@ -16,13 +16,15 @@
     "og:generate:dry": "node scripts/generate-og-cards.mjs --dry-run",
     "test:og": "node --test tests/og/*.test.mjs",
     "test:links": "node --test tests/links/*.test.mjs",
+    "test:validation": "node --test tests/validation/*.test.mjs",
     "extract:ideas": "node scripts/extract-idea-bodies.mjs",
     "extract:articles": "node scripts/extract-articles-to-mdx.mjs",
     "extract:newsletter": "node scripts/extract-newsletter-to-mdx.mjs",
     "publish:newsletter": "node scripts/publish-newsletter.mjs",
     "seed:convex": "node scripts/seed-convex.mjs",
     "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run",
-    "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs"
+    "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs",
+    "validation:digest": "node scripts/generate-validation-digest.mjs"
   },
   "keywords": [],
   "author": "",
@@ -43,6 +45,7 @@
   },
   "dependencies": {
     "@convex-dev/workflow": "^0.4.4",
+    "@google-analytics/data": "^7.0.0",
     "@hookform/resolvers": "^5.4.0",
     "@resvg/resvg-js": "^2.6.2",
     "cheerio": "^1.2.0",

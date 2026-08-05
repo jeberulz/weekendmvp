@@ -150,6 +150,11 @@ Use this mapping (the MCP gives you most fields directly — don't re-research).
 | **`## AI Prompts to Build This`** | Generate 3+ prompts (see Step 4) seeded with MCP-sourced features |
 | **`## Sources`** | `competitive_analysis.data.citations` array + `research_market_insight` citations — markdown links |
 
+Before writing, define the validation contract used by the weekly analytics digest:
+- `validation.audience` — the single primary audience this idea is intended to attract (use a manifest audience slug)
+- `validation.hypothesis` — one falsifiable sentence describing why that audience will take the primary action
+- `validation.primaryAction` — normally `idea_prompt_copied`; use `newsletter_subscribed` or `starter_kit_clicked` only when the page's actual conversion hypothesis depends on that action
+
 ### A.4 — Generate slug
 
 From the cleaned title:
@@ -467,6 +472,11 @@ Add an entry to `ideas/manifest.json` `ideas[]` that captures full provenance so
   "tools": ["cursor", "claude", "bolt"],
   "audiences": ["developers", "solo-founders"],
   "source": "ideabrowser:{idea_id}",
+  "validation": {
+    "audience": "{primary audience slug}",
+    "hypothesis": "{falsifiable audience → action hypothesis}",
+    "primaryAction": "idea_prompt_copied"
+  },
   "og": {
     "subject": "{og_subject from Step 3}",
     "accent": "{og_accent from Step 3}",
@@ -496,6 +506,7 @@ Field rules:
 - `description` — the meta description you wrote in Step 3. This feeds Convex and the grid card excerpt, and is the route's preferred meta description. Always set it.
 - `source` — Mode A: `"ideabrowser:{idea_id}"`. Mode B (`--from-draft`): `"draft:{folder-name}"` and **drop the `scores` block** (scores are Mode A only).
 - `applicationCategory` — Schema.org category for the SoftwareApplication node (e.g. `BusinessApplication` for SaaS, `DeveloperApplication` for Developer, `ProductivityApplication` for Productivity, `HealthApplication`, `FinanceApplication`, `EducationalApplication`, `MultimediaApplication`, `ShoppingApplication`).
+- `validation` — required for every new publish. Use one primary audience slug, a specific falsifiable hypothesis, and one of `idea_prompt_copied`, `newsletter_subscribed`, or `starter_kit_clicked`. Existing historical entries may omit it; never invent a mass backfill.
 - `og.subject` / `og.accent` — copy the values you authored in Step 3. `og.status` is `"pending"` here; Step 9 flips it to `"ready"` (success) or `"failed"` (both providers errored — non-blocking, page still ships).
 - `provenance.researchCalls` — list the calls actually made. Mode B replaces MCP names with `"websearch:market"`, `"websearch:competitors"`, `"websearch:tech"`.
 - `provenance.citations` / `provenance.wordCount` — count from your written MDX (citation links in `## Sources`; body words). `wordCount` should be ≥ ~800.
@@ -648,6 +659,7 @@ Before marking complete:
 ### Publishing Checklist
 - [ ] Wrote `content/ideas/{slug}.mdx` — frontmatter exactly `slug` + `title`, slug matches `^[a-z0-9-]+$`
 - [ ] Added `ideas/manifest.json` entry with full provenance (researchCalls, citations, wordCount, auditPassed, auditRunAt), `description`, `scores` (Mode A only), `source`, `applicationCategory`
+- [ ] Added `validation` with one audience slug, a falsifiable hypothesis, and the primary action
 - [ ] Manifest entry includes `og.subject` + `og.accent` + `og.status: "pending"`
 - [ ] Passed the Step 7 manual section gate (8 `##` sections, How-it-works list, ≥ ~800 words, no placeholders)
 - [ ] Ran `npm run seed:convex` (dev) **AND** `npm run seed:convex -- --prod` (production — required for live grid/hub visibility) and confirmed both succeeded; if either failed, surfaced the fix and did NOT claim grid visibility

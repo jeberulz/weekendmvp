@@ -27,7 +27,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { trackEvent } from "@/lib/track";
+import { trackEvent, trackValidationEvent } from "@/lib/track";
 import {
   isValidEmail,
   resolveAccess,
@@ -50,9 +50,8 @@ function GateEmailForm({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const email = (
-      form.elements.namedItem("email") as HTMLInputElement | null
-    )?.value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement | null)
+      ?.value;
     const firstName =
       (form.elements.namedItem("first_name") as HTMLInputElement | null)
         ?.value ?? "";
@@ -65,6 +64,10 @@ function GateEmailForm({
       trackEvent("signup_form_success", {
         form_id: "ideas_gate",
         page: "startup-ideas",
+      });
+      trackValidationEvent("newsletter_subscribed", {
+        source_surface: "startup_ideas_gate",
+        cta_id: id,
       });
       onUnlocked();
     } catch (err) {
@@ -102,7 +105,11 @@ function GateEmailForm({
           >
             {submitting ? (
               <>
-                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                <Loader2
+                  size={16}
+                  className="animate-spin"
+                  aria-hidden="true"
+                />
                 <span>Unlocking...</span>
               </>
             ) : (
@@ -218,7 +225,10 @@ export function StartupIdeasGate({
 
               {/* Hero Email Form */}
               <div className="max-w-md mx-auto">
-                <GateEmailForm id="hero-email-form" onUnlocked={handleUnlocked} />
+                <GateEmailForm
+                  id="hero-email-form"
+                  onUnlocked={handleUnlocked}
+                />
               </div>
             </div>
           </div>

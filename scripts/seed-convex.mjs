@@ -27,27 +27,27 @@
  * `npx convex deploy`) before the seed functions can be run.
  */
 
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import * as cheerio from 'cheerio';
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import * as cheerio from "cheerio";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const contentIdeasDir = path.join(root, 'content', 'ideas');
-const quarantineDir = path.join(contentIdeasDir, '_quarantine');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const contentIdeasDir = path.join(root, "content", "ideas");
+const quarantineDir = path.join(contentIdeasDir, "_quarantine");
 
 const argv = process.argv.slice(2);
-const dryRun = argv.includes('--dry-run');
-const prod = argv.includes('--prod');
-const includeDrafts = argv.includes('--include-drafts');
-const onlyIdx = argv.indexOf('--only');
+const dryRun = argv.includes("--dry-run");
+const prod = argv.includes("--prod");
+const includeDrafts = argv.includes("--include-drafts");
+const onlyIdx = argv.indexOf("--only");
 const only = onlyIdx !== -1 ? argv[onlyIdx + 1] : null;
 
 const MAX_BATCH = 25; // keep in sync with convex/seed.ts
 const MAX_JSON_BYTES = 200_000; // stay far below argv + Convex arg limits
 
-const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
+const readJson = (p) => JSON.parse(fs.readFileSync(path.join(root, p), "utf8"));
 
 /** Drop undefined/null values so Convex validators see clean objects. */
 function compact(obj) {
@@ -61,13 +61,14 @@ const pick = (obj, keys) =>
 
 const humanize = (slug) =>
   slug
-    .split('-')
+    .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+    .join(" ");
 
 function parsePublishedAt(value, label) {
   const ms = Date.parse(value);
-  if (Number.isNaN(ms)) throw new Error(`unparseable publishedAt "${value}" on ${label}`);
+  if (Number.isNaN(ms))
+    throw new Error(`unparseable publishedAt "${value}" on ${label}`);
   return ms;
 }
 
@@ -75,7 +76,7 @@ function parsePublishedAt(value, label) {
 function quarantineBody(slug) {
   const p = path.join(quarantineDir, `${slug}.md`);
   if (!fs.existsSync(p)) return undefined;
-  const raw = fs.readFileSync(p, 'utf8');
+  const raw = fs.readFileSync(p, "utf8");
   const m = raw.match(/^---\n[\s\S]*?\n---\n*/);
   return (m ? raw.slice(m[0].length) : raw).trim();
 }
@@ -85,9 +86,22 @@ function quarantineBody(slug) {
 // ---------------------------------------------------------------------------
 
 const IDEA_KEYS = [
-  'slug', 'title', 'description', 'summary', 'category', 'buildTime',
-  'revenueGoal', 'applicationCategory', 'tools', 'audiences', 'source',
-  'scores', 'og', 'provenance', 'researchLevel',
+  "slug",
+  "title",
+  "description",
+  "summary",
+  "category",
+  "buildTime",
+  "revenueGoal",
+  "applicationCategory",
+  "tools",
+  "audiences",
+  "source",
+  "scores",
+  "og",
+  "provenance",
+  "researchLevel",
+  "validation",
 ];
 
 /**
@@ -96,44 +110,44 @@ const IDEA_KEYS = [
  * fragmented /startup-ideas filter chips — normalize at seed time.
  */
 const CATEGORY_ALIASES = {
-  saas: 'saas',
-  SaaS: 'saas',
-  productivity: 'productivity',
-  Productivity: 'productivity',
-  health: 'health',
-  Health: 'health',
-  'Health & Wellness': 'health',
-  marketplace: 'marketplace',
-  Marketplace: 'marketplace',
-  'ai-tools': 'ai-tools',
-  'AI Tools': 'ai-tools',
-  automation: 'automation',
-  Automation: 'automation',
-  education: 'education',
-  Education: 'education',
-  b2b: 'b2b',
-  B2B: 'b2b',
-  'developer-tools': 'developer-tools',
-  Developer: 'developer-tools',
-  'Developer Tools': 'developer-tools',
-  ecommerce: 'ecommerce',
-  'E-commerce': 'ecommerce',
-  'E-Commerce': 'ecommerce',
-  Ecommerce: 'ecommerce',
-  'creator-tools': 'creator-tools',
-  Creator: 'creator-tools',
-  'Creator Tools': 'creator-tools',
-  fintech: 'fintech',
-  Fintech: 'fintech',
+  saas: "saas",
+  SaaS: "saas",
+  productivity: "productivity",
+  Productivity: "productivity",
+  health: "health",
+  Health: "health",
+  "Health & Wellness": "health",
+  marketplace: "marketplace",
+  Marketplace: "marketplace",
+  "ai-tools": "ai-tools",
+  "AI Tools": "ai-tools",
+  automation: "automation",
+  Automation: "automation",
+  education: "education",
+  Education: "education",
+  b2b: "b2b",
+  B2B: "b2b",
+  "developer-tools": "developer-tools",
+  Developer: "developer-tools",
+  "Developer Tools": "developer-tools",
+  ecommerce: "ecommerce",
+  "E-commerce": "ecommerce",
+  "E-Commerce": "ecommerce",
+  Ecommerce: "ecommerce",
+  "creator-tools": "creator-tools",
+  Creator: "creator-tools",
+  "Creator Tools": "creator-tools",
+  fintech: "fintech",
+  Fintech: "fintech",
 };
 
 function normalizeCategory(raw) {
-  if (!raw || typeof raw !== 'string') return raw;
+  if (!raw || typeof raw !== "string") return raw;
   const trimmed = raw.trim();
   if (CATEGORY_ALIASES[trimmed]) return CATEGORY_ALIASES[trimmed];
   const lower = trimmed.toLowerCase();
   if (CATEGORY_ALIASES[lower]) return CATEGORY_ALIASES[lower];
-  return lower.replace(/\s+/g, '-');
+  return lower.replace(/\s+/g, "-");
 }
 
 function buildIdea(raw, { draft }) {
@@ -143,38 +157,40 @@ function buildIdea(raw, { draft }) {
     const normalized = normalizeCategory(idea.category);
     if (normalized !== idea.category) {
       console.warn(
-        `  note: ${raw.slug}${draft ? ' [draft]' : ''} category "${idea.category}" → "${normalized}"`,
+        `  note: ${raw.slug}${draft ? " [draft]" : ""} category "${idea.category}" → "${normalized}"`,
       );
       idea.category = normalized;
     }
   }
-  if (idea.og) idea.og = pick(idea.og, ['subject', 'accent', 'status']);
+  if (idea.og) idea.og = pick(idea.og, ["subject", "accent", "status"]);
   const hasMdx = fs.existsSync(path.join(contentIdeasDir, `${raw.slug}.mdx`));
   if (hasMdx) {
-    idea.bodyMode = 'mdx';
+    idea.bodyMode = "mdx";
   } else {
-    idea.bodyMode = 'convex';
+    idea.bodyMode = "convex";
     const body = quarantineBody(raw.slug);
     if (body) idea.body = body;
   }
   const dropped = Object.keys(raw).filter(
-    (k) => !IDEA_KEYS.includes(k) && k !== 'publishedAt',
+    (k) => !IDEA_KEYS.includes(k) && k !== "publishedAt",
   );
   if (dropped.length) {
-    console.warn(`  note: ${raw.slug}${draft ? ' [draft]' : ''} dropping non-schema keys: ${dropped.join(', ')}`);
+    console.warn(
+      `  note: ${raw.slug}${draft ? " [draft]" : ""} dropping non-schema keys: ${dropped.join(", ")}`,
+    );
   }
   return idea;
 }
 
 function buildIdeas() {
-  const manifest = readJson('ideas/manifest.json');
+  const manifest = readJson("ideas/manifest.json");
   const items = manifest.ideas.map((i) => buildIdea(i, { draft: false }));
   if (includeDrafts) {
-    const draftPath = path.join(root, 'ideas/manifest.draft.json');
+    const draftPath = path.join(root, "ideas/manifest.draft.json");
     if (fs.existsSync(draftPath)) {
-      const drafts = JSON.parse(fs.readFileSync(draftPath, 'utf8')).ideas.filter(
-        (d) => !manifest.ideas.some((i) => i.slug === d.slug),
-      );
+      const drafts = JSON.parse(
+        fs.readFileSync(draftPath, "utf8"),
+      ).ideas.filter((d) => !manifest.ideas.some((i) => i.slug === d.slug));
       items.push(...drafts.map((d) => buildIdea(d, { draft: true })));
     }
   }
@@ -182,43 +198,103 @@ function buildIdeas() {
 }
 
 function buildArticles() {
-  const manifest = readJson('articles/manifest.json');
+  const manifest = readJson("articles/manifest.json");
   return manifest.articles.map((a) => {
-    const doc = pick(a, ['slug', 'title', 'description', 'wordCount', 'readMinutes', 'og']);
-    if (a.publishedAt) doc.publishedAt = parsePublishedAt(a.publishedAt, a.slug);
+    const doc = pick(a, [
+      "slug",
+      "title",
+      "description",
+      "wordCount",
+      "readMinutes",
+      "og",
+    ]);
+    if (a.publishedAt)
+      doc.publishedAt = parsePublishedAt(a.publishedAt, a.slug);
     return doc;
   });
 }
 
 function buildNewsletters() {
-  const manifest = readJson('newsletter/manifest.json');
+  const manifest = readJson("newsletter/manifest.json");
   return manifest.newsletters.map((n) => ({
-    ...pick(n, ['slug', 'title', 'edition', 'description', 'og']),
+    ...pick(n, ["slug", "title", "edition", "description", "og"]),
     publishedAt: parsePublishedAt(n.publishedAt, n.slug),
   }));
 }
 
-const SOLVE_PROBLEMS = ['customer-support', 'invoicing', 'knowledge-transfer', 'meeting-notes', 'scheduling'];
+const SOLVE_PROBLEMS = [
+  "customer-support",
+  "invoicing",
+  "knowledge-transfer",
+  "meeting-notes",
+  "scheduling",
+];
 
 function buildReferenceTables() {
-  const manifest = readJson('ideas/manifest.json');
+  const manifest = readJson("ideas/manifest.json");
 
   const categories = manifest.categories.map((c) =>
-    pick(c, ['slug', 'name', 'displayName', 'description', 'icon', 'color', 'keywords', 'faqs']),
+    pick(c, [
+      "slug",
+      "name",
+      "displayName",
+      "description",
+      "icon",
+      "color",
+      "keywords",
+      "faqs",
+    ]),
   );
   const revenueGoals = manifest.revenueGoals.map((r) =>
-    pick(r, ['slug', 'name', 'displayName', 'description', 'amount', 'methodology', 'unitEconomics', 'keywords']),
+    pick(r, [
+      "slug",
+      "name",
+      "displayName",
+      "description",
+      "amount",
+      "methodology",
+      "unitEconomics",
+      "keywords",
+    ]),
   );
   const audiences = manifest.audiences.map((a) =>
-    pick(a, ['slug', 'name', 'displayName', 'description', 'icon', 'filters', 'keywords', 'traits', 'resources']),
+    pick(a, [
+      "slug",
+      "name",
+      "displayName",
+      "description",
+      "icon",
+      "filters",
+      "keywords",
+      "traits",
+      "resources",
+    ]),
   );
   const buildTimes = manifest.buildTimes.map((b) =>
-    pick(b, ['slug', 'name', 'displayName', 'description', 'hours', 'keywords']),
+    pick(b, [
+      "slug",
+      "name",
+      "displayName",
+      "description",
+      "hours",
+      "keywords",
+    ]),
   );
 
   // manifest.tools is the rich source; ideas[].tools may reference extra slugs.
   const tools = manifest.tools.map((t) =>
-    pick(t, ['slug', 'name', 'tagline', 'description', 'logo', 'url', 'strengths', 'bestFor', 'gettingStarted', 'keywords']),
+    pick(t, [
+      "slug",
+      "name",
+      "tagline",
+      "description",
+      "logo",
+      "url",
+      "strengths",
+      "bestFor",
+      "gettingStarted",
+      "keywords",
+    ]),
   );
   const known = new Set(tools.map((t) => t.slug));
   for (const idea of manifest.ideas) {
@@ -231,14 +307,20 @@ function buildReferenceTables() {
   }
 
   const problems = SOLVE_PROBLEMS.map((slug) => {
-    const page = path.join(root, 'solve', slug, 'index.html');
+    const page = path.join(root, "solve", slug, "index.html");
     if (!fs.existsSync(page)) {
-      console.warn(`  note: solve/${slug}/index.html missing — humanized fallback`);
+      console.warn(
+        `  note: solve/${slug}/index.html missing — humanized fallback`,
+      );
       return { slug, displayName: humanize(slug) };
     }
-    const $ = cheerio.load(fs.readFileSync(page, 'utf8'));
-    const title = ($('title').text() || '').replace(/\s*\|\s*Weekend MVP\s*$/i, '').trim();
-    const description = ($('meta[name="description"]').attr('content') || '').trim();
+    const $ = cheerio.load(fs.readFileSync(page, "utf8"));
+    const title = ($("title").text() || "")
+      .replace(/\s*\|\s*Weekend MVP\s*$/i, "")
+      .trim();
+    const description = (
+      $('meta[name="description"]').attr("content") || ""
+    ).trim();
     return compact({
       slug,
       displayName: title || humanize(slug),
@@ -256,18 +338,24 @@ function buildReferenceTables() {
 function convexRun(fn, args) {
   const json = JSON.stringify(args);
   if (dryRun) {
-    console.log(`  [dry-run] npx convex run ${fn}${prod ? ' --prod' : ''}  (${Buffer.byteLength(json)} bytes)`);
+    console.log(
+      `  [dry-run] npx convex run ${fn}${prod ? " --prod" : ""}  (${Buffer.byteLength(json)} bytes)`,
+    );
     return null;
   }
-  const cmd = ['convex', 'run', fn, json, ...(prod ? ['--prod'] : [])];
-  const res = spawnSync('npx', cmd, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const cmd = ["convex", "run", fn, json, ...(prod ? ["--prod"] : [])];
+  const res = spawnSync("npx", cmd, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
+  });
   if (res.status !== 0) {
-    console.error(res.stdout || '');
-    console.error(res.stderr || '');
+    console.error(res.stdout || "");
+    console.error(res.stderr || "");
     throw new Error(`npx convex run ${fn} failed (exit ${res.status})`);
   }
-  const out = (res.stdout || '').trim();
-  console.log(`  ${fn} → ${out.replace(/\s+/g, ' ').slice(0, 200)}`);
+  const out = (res.stdout || "").trim();
+  console.log(`  ${fn} → ${out.replace(/\s+/g, " ").slice(0, 200)}`);
   return out;
 }
 
@@ -278,7 +366,10 @@ function chunk(items) {
   let size = 2;
   for (const item of items) {
     const itemSize = Buffer.byteLength(JSON.stringify(item)) + 1;
-    if (current.length && (current.length >= MAX_BATCH || size + itemSize > MAX_JSON_BYTES)) {
+    if (
+      current.length &&
+      (current.length >= MAX_BATCH || size + itemSize > MAX_JSON_BYTES)
+    ) {
       batches.push(current);
       current = [];
       size = 2;
@@ -299,40 +390,51 @@ function seedBatched(label, fn, items) {
 function main() {
   const want = (k) => !only || only === k;
 
-  if (want('refs')) {
+  if (want("refs")) {
     const refs = buildReferenceTables();
-    const counts = Object.entries(refs).map(([k, list]) => `${k}=${list.length}`).join(' ');
+    const counts = Object.entries(refs)
+      .map(([k, list]) => `${k}=${list.length}`)
+      .join(" ");
     console.log(`reference tables: ${counts}`);
     // Each table is tiny (≤ a couple dozen rows) — one call per table keeps
     // payloads small and failures isolated.
     for (const [key, list] of Object.entries(refs)) {
-      for (const batch of chunk(list)) convexRun('seed:seedReferenceTables', { [key]: batch });
+      for (const batch of chunk(list))
+        convexRun("seed:seedReferenceTables", { [key]: batch });
     }
   }
 
-  if (want('ideas')) {
+  if (want("ideas")) {
     const ideas = buildIdeas();
-    const mdx = ideas.filter((i) => i.bodyMode === 'mdx').length;
-    const convexBody = ideas.filter((i) => i.bodyMode === 'convex' && i.body).length;
-    const noBody = ideas.filter((i) => i.bodyMode === 'convex' && !i.body).length;
-    console.log(`ideas: ${ideas.length} total — bodyMode mdx=${mdx}, convex(with body)=${convexBody}, convex(no body yet)=${noBody}`);
+    const mdx = ideas.filter((i) => i.bodyMode === "mdx").length;
+    const convexBody = ideas.filter(
+      (i) => i.bodyMode === "convex" && i.body,
+    ).length;
+    const noBody = ideas.filter(
+      (i) => i.bodyMode === "convex" && !i.body,
+    ).length;
+    console.log(
+      `ideas: ${ideas.length} total — bodyMode mdx=${mdx}, convex(with body)=${convexBody}, convex(no body yet)=${noBody}`,
+    );
     if (noBody) {
-      for (const i of ideas.filter((x) => x.bodyMode === 'convex' && !x.body)) {
+      for (const i of ideas.filter((x) => x.bodyMode === "convex" && !x.body)) {
         console.log(`  no body source: ${i.slug}`);
       }
     }
-    seedBatched('ideas', 'seed:seedIdeas', ideas);
+    seedBatched("ideas", "seed:seedIdeas", ideas);
   }
 
-  if (want('articles')) {
-    seedBatched('articles', 'seed:seedArticles', buildArticles());
+  if (want("articles")) {
+    seedBatched("articles", "seed:seedArticles", buildArticles());
   }
 
-  if (want('newsletters')) {
-    seedBatched('newsletters', 'seed:seedNewsletters', buildNewsletters());
+  if (want("newsletters")) {
+    seedBatched("newsletters", "seed:seedNewsletters", buildNewsletters());
   }
 
-  console.log(dryRun ? 'dry run complete — nothing written.' : 'seed complete.');
+  console.log(
+    dryRun ? "dry run complete — nothing written." : "seed complete.",
+  );
 }
 
 main();
