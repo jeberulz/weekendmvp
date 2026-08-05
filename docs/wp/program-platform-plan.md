@@ -1,10 +1,16 @@
 # Weekend MVP → Build Platform: Program Plan
 
-**Status:** Plan frozen for review — not yet a committed program manifest
+**Status:** Audited source plan — operational scope, renumbering, gates, and sequencing live in `docs/wp/program-manifest.md`
 **Lane:** Program/Migration (multi-WP, schema + auth + payments + AI agents)
 **Author:** Claude (Fable 5) orchestration session, 2026-08-05
 **Owner:** John
 **Target:** Working v1 slice live by **Sunday 2026-08-16** (end of next weekend) — people can sign up, buy credits, click "Build this idea," and get a deployed landing page URL.
+
+> Wave 0 note (2026-08-05): the proposed WP15-WP26 identifiers below collide
+> with existing repository work packages. They are historical proposal IDs only.
+> The committed program manifest begins the platform at WP19 and is the source of
+> truth. Where this plan conflicts with the manifest, UX brief, or append-only
+> rulings, those operational documents win.
 
 ---
 
@@ -634,17 +640,25 @@ team seats, affiliate/referral.
 | Scope blowup before the weekend | Anti-scope list (§3.2) is binding; Tier 2 is post-launch, period |
 | Solo-operator support load | Task statuses + documents make the product self-explaining; support = email only at launch |
 
-## 9. Rulings — ALL RESOLVED 2026-08-05 (recorded in `docs/wp/RULINGS.md`)
+## 9. Historical proposal rulings — superseded by the manifest and append-only ruling log
+
+This section records what the proposal believed at authoring time. It is not an
+operational gate. `docs/wp/RULINGS.md` and `docs/wp/program-manifest.md` contain
+the current decisions, unresolved owner questions, and permission to enter a
+wave.
 
 1. **Naming/domain:** keep `weekendmvp.app`, no new brand (§3.3).
 2. **Pricing:** §5 approved as proposed.
-3. **Free hook:** approved as part of the §5 pricing sign-off — first
-   repository-idea Validation Report free with signup.
+3. **Free hook (superseded):** this proposal originally named a free
+   repository-idea Validation Report. The current ruling makes the repository
+   landing-page preview free and reserves the first free Validation Report for
+   a signed-in customer's own idea.
 4. **Auth provider:** Convex Auth confirmed.
 5. **Ideabrowser:** no upgrade — and **no renewal**. Build the full Idea Engine
    (§4.5 + §4.5.1): research, idea generation, and all content compilers move
-   in-house before the subscription expires (Wave 4, WP24–26). **Wave 1 is clear
-   to kick off.**
+   in-house before the subscription expires. The remapped manifest owns the
+   current package numbers and gates; implementation is not authorized directly
+   by this historical section.
 
 ## 10. KPIs (first 30 days)
 

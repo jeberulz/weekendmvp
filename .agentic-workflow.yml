@@ -1,16 +1,20 @@
 version: 1
-project_name: Replace Me
+project_name: Weekend MVP
 
 truth_docs:
   - AGENTS.md
-  - PRD.md
+  - AGENTS.workflow.md
+  - docs/wp/RULINGS.md
+  - docs/wp/program-platform-plan.md
+  - docs/wp/program-manifest.md
+  - docs/wp/platform-ux-brief.md
+  - docs/PROJECT_STRATEGY.md
   - README.md
-  - design.md
 
 work_package:
   registry: docs/PROJECT_STRATEGY.md
   directory: docs/wp
-  branch_prefix: feat/
+  branch_prefix: codex/
   story_template: docs/wp/templates/wp-stories-template.md
   progress_template: docs/wp/templates/wp-progress-template.md
 
@@ -122,6 +126,10 @@ model_routing:
     - risk_increased
 
 required_checks:
+  wave0_docs:
+    - git diff --check
+    - yaml_parse_agentic_workflow
+    - independent_manifest_review
   standard:
     - npm run typecheck
     - npm run lint
@@ -135,5 +143,25 @@ required_checks:
     - npm test
     - npm run build
 
-critical_flows: []
-permanent_guardrails: []
+critical_flows:
+  - public_idea_page_remains_crawlable_and_canonical
+  - anonymous_user_cannot_read_or_mutate_private_project_data
+  - magic_link_and_google_signup_login_logout
+  - repository_idea_to_anonymous_preview_to_signup
+  - stripe_checkout_webhook_credits_exactly_once
+  - confirmed_brief_to_preview_to_paid_publish
+  - tenant_host_resolves_only_its_published_site
+  - failed_credit_task_refunds_exactly_once
+  - public_content_publishing_runs_without_ideabrowser
+
+permanent_guardrails:
+  - public_idea_pages_are_the_only_canonical_idea_research_pages
+  - private_platform_and_preview_routes_are_noindex
+  - every_private_convex_function_derives_identity_server_side
+  - credits_and_money_change_only_from_server_verified_events
+  - legacy_shipable_billing_and_platform_credit_billing_are_namespaced
+  - middleware_or_proxy_and_convex_schema_have_one_writer_per_merge_window
+  - tenant_publish_requires_policy_gate_and_owner_scoped_site_config
+  - no_secret_values_in_git_logs_docs_or_client_bundles
+  - production_mutation_requires_backup_dry_run_and_owner_approval
+  - ideabrowser_dependency_removed_only_after_quality_gates_pass
