@@ -1,0 +1,109 @@
+---
+slug: "microschool-admin-platform"
+title: "Microschool Admin Platform"
+---
+
+## The Problem
+
+Microschool founders choose small, personal learning environments because they want to teach differently. The operational reality is less romantic: one director is also the registrar, attendance clerk, parent-communications manager, invoice chaser, and compliance coordinator. Student records live in one spreadsheet, tuition payments in another, and the latest parent update is buried in a group chat. The school may only have 15 students, but the admin surface still has to be trustworthy every day.
+
+The market signals are unusually specific. Ideabrowser's research puts the global school-management-software market in the roughly $15 billion range in 2024, with forecasts above $40 billion by the early 2030s. Microschools are a small slice, but they have the same recurring workflows and far fewer affordable tools designed for them. The research also identifies Reddit's r/edtech, with more than half a million members, Facebook education groups, and high-view YouTube tutorials as active channels where administrators share spreadsheet frustrations and integration questions.
+
+That mismatch creates a painful compromise. Enterprise student-information systems are too expensive and too complex for a school with one administrator. A generic project-management tool can store tasks but cannot produce attendance reports, enrollment packets, or a parent-ready progress summary. A spreadsheet is cheap, but it turns every new student, absence, and payment into another opportunity for a silent error. The founder ends up spending evenings on administration instead of improving the learning experience.
+
+## The Solution
+
+Microschool Admin Platform is a lightweight operations hub for small schools and learning pods. It combines enrollment, attendance, family communication, tuition tracking, calendar management, and compliance checklists in one workspace. The product should feel more like a calm control panel than a district information system: clear next actions, small batches of work, and language that assumes the operator is a teacher first.
+
+The first version should focus on the recurring loop that causes the most friction: create a student record, collect required documents, record attendance, send a weekly family update, and export a clean report. It can use AI to turn teacher notes into a readable progress summary, but the system should never invent an observation or hide the source notes. Trust comes from showing the original note beside the draft and requiring a human send.
+
+**How it works:**
+
+1. **Set up the school** — Choose the school's state, term dates, tuition schedule, and basic attendance rules.
+2. **Enroll a family** — Send a secure intake link, collect student details and documents, and flag missing requirements.
+3. **Run the week** — Mark attendance from a mobile roster, capture short notes, and let the system draft family updates from approved observations.
+4. **Close the loop** — Generate tuition reminders, compliance checklists, and exportable reports for the school director or network operator.
+
+The product's wedge is not “all of education software.” It is a dependable weekly rhythm for a school that cannot afford a full-time administrator. A network view can come later, once multiple microschools need shared templates, staff permissions, and cross-site reporting.
+
+## Market Research
+
+The timing comes from two forces moving together: school administration is becoming more software-mediated, while small alternative education providers are growing without inheriting the budgets of large districts.
+
+- The school-management-software market is estimated at about $15 billion in 2024 and is projected to exceed $40 billion in the early 2030s, according to the market research cited by Ideabrowser. That creates a proven category without requiring a founder to educate buyers about the value of digital records.
+- K-12 learning-management software is forecast to grow at roughly 20% annually in the cited research. Microschools do not need a full LMS on day one, but the growth shows that schools are actively moving teaching and administration into digital workflows.
+- Ideabrowser's trend snapshot returned roughly 6 million monthly searches across related enrollment, registration, and school-portal terms, with average growth above 20%. The broad terms are not proof that microschool administrators will buy, but they show strong existing intent around the workflow surface.
+- Community research identifies microschool operators, education technology communities, Facebook groups, and founder networks as reachable channels. The important signal is not audience size alone; it is that operators already trade templates and advice for the exact jobs this product would consolidate.
+- The cited microschool sources describe a movement built around smaller, more flexible learning environments. Those schools are distributed and operationally lean, which is a good fit for self-serve SaaS if onboarding is simple and the product supports local requirements instead of pretending every school is a district.
+
+This is an emerging category inside a large software market. The initial buyer is likely to be a founder-operator who can approve a $99–$299 monthly tool without a procurement committee. The later buyer is a microschool network that wants consistent reporting across sites.
+
+## Competitive Landscape
+
+The category has clear incumbents, but the price and workflow gap is visible:
+
+- **Generic school-management platforms** — Established systems offer attendance, grades, billing, and parent portals, but they are usually designed for larger institutions. The research places many small-school alternatives around $500–$1,500 per year, while more capable systems commonly charge about $1–$2 per student per month plus add-ons.
+- **Classroom and LMS platforms** — These are strong for curriculum delivery and assignments but weaker at enrollment packets, tuition follow-up, and state-specific operational checklists. A school may still need a spreadsheet and a payment tool beside them.
+- **Spreadsheet and document stacks** — Google Sheets, Forms, Drive, and email are effectively free and highly flexible. Their weakness is not price; it is the lack of a shared source of truth, reminders, permissions, and family-facing outputs.
+- **Microschool-in-a-box programs and consultants** — These help with setup, curriculum, or community but often leave recurring administration to the founder. They can become valuable partners rather than direct competitors.
+
+**Your Opportunity**
+
+Build for the smallest viable school first. A $99–$199 monthly plan with enrollment, attendance, family updates, and tuition reminders is easier to buy than a broad $20-per-student system. Make the first-run experience a migration assistant: upload an existing roster, map the columns, and show the director a usable school dashboard within ten minutes. The defensibility comes from templates for recurring microschool workflows, state-aware checklists, and the trust built when a founder's entire week is visible in one place.
+
+## Business Model
+
+Use a school-level subscription rather than a per-seat model. Microschool operators think in terms of the school budget, and a stable monthly price makes the purchase decision easier.
+
+- **Free trial** — 30 days with one roster, attendance, and two family updates.
+- **Core** ($99/month) — Up to 30 students, enrollment intake, attendance, tuition reminders, document storage, and weekly family summaries.
+- **Plus** ($199/month) — Up to 75 students, custom forms, advanced reports, integrations, staff permissions, and AI-assisted updates with review controls.
+- **Network** ($499/month and up) — Multiple school sites, shared templates, cross-site reporting, role-based access, and onboarding support.
+
+The main variable costs are file storage, email delivery, and occasional AI generation. A weekly family update can be generated for a few cents or less when prompts are short and notes are structured. If a Core school pays $99 and costs $12 in infrastructure and support allocation, the gross-margin target is above 80%. Ten Core schools create nearly $1,000 MRR; 50 mixed schools can support a focused bootstrap business before the network tier becomes material.
+
+## Recommended Tech Stack
+
+- **Next.js and Vercel** — App Router for the director dashboard, server actions for forms, and simple scheduled jobs for reminders.
+- **Convex or Supabase** — Use Convex for reactive rosters and attendance; use Supabase if the first release needs familiar relational exports and storage policies.
+- **Clerk or Auth.js** — Parent magic links and staff accounts should be separate scopes, with school-level authorization enforced server-side.
+- **Resend and Stripe** — Email delivery for invitations and reminders; Stripe Billing for the school subscription and annual plans.
+- **OpenAI or Anthropic** — Draft family updates from teacher-approved notes using structured output. Store the source notes and generated draft separately.
+- **S3-compatible storage** — Keep enrollment documents private, signed, and access-logged. Do not expose raw files through public URLs.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js TypeScript SaaS for microschool administration. Use Convex or Supabase for schools, staff, students, guardians, enrollment_documents, attendance_events, tuition_invoices, family_updates, and compliance_tasks. Enforce school_id on every record. Add staff roles for director, teacher, and read-only assistant; parent magic links must only expose that family's records. Include Stripe subscription fields, private file storage, audit timestamps, and seeded demo data for one 20-student microschool.
+```
+
+**2. Attendance and Family Update Workflow**
+
+```text
+Build a mobile-first attendance flow for a microschool roster. A teacher can mark present, absent, late, or excused and add a short private note. At the end of the week, generate a draft family update only from notes explicitly marked shareable. Return structured JSON with summary, wins, next_steps, and source_note_ids. Never invent student progress. Show the draft beside source notes and require a teacher click before sending through Resend.
+```
+
+**3. Roster Migration and Compliance Checklist**
+
+```text
+Build an import wizard that accepts CSV columns such as student_name, guardian_email, grade, enrollment_date, tuition_plan, and attendance_status. Preview the mapping, detect duplicate students, validate required fields, and import only after confirmation. After import, create a school-specific checklist for missing guardian consent, emergency contact, medical note, and required state documents. Provide exportable CSV and PDF reports.
+```
+
+## Sources
+
+- [Market.us — K-12 Learning Management Systems Market](https://market.us/report/k-12-learning-management-systems-market/)
+- [Verified Market Research — School Management Software Market](https://www.verifiedmarketresearch.com/product/school-management-software-market/)
+- [Business Research Insights — School Management Software Market](https://www.businessresearchinsights.com/market-reports/school-management-software-market-119770)
+- [Prenda — How Microschools Are Changing the System](https://www.prenda.com/post/education-reimagined-how-microschools-are-changing-the-system)
+- [Market.us — Microlearning Platforms Market](https://market.us/report/microlearning-platforms-market/)
+- [Getting Smart — Microschool-in-a-Box Programs](https://www.gettingsmart.com/2023/11/14/microschool-in-a-box-programs-enabling-the-microschool-movement/)
+- [Microschooling Center](https://microschoolingcenter.org)
+- [Workee — Micro Schools in the US](https://workee.net/blog/micro-schools-in-the-us)
+- [Microschool Revolution — Establishing Your Microschool](https://microschoolrevolution.com/founder-article/establishing-your-microschool/)
+- [Brookings — The Coming Rise of Microschooling](https://www.brookings.edu/articles/the-coming-rise-of-microschooling-where-old-economics-meets-the-new-schooling-market/)
+
+Research source: Ideabrowser MCP idea #2073, including competitive analysis, go-to-market, keyword, community, and trend research. Verify local requirements before implementing compliance workflows.
