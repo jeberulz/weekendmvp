@@ -30,8 +30,8 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP | Title | Wave | Branch | Status | Definition of done |
 |---|---|---|---|---|---|
 | WP19 | Program freeze and recovery inventory | 0 | `codex/platform-wave0-manifest` | Complete — Wave 0 passed | Audits, rulings, UX brief, manifest, registry, session ledger, gate report, and restore plan pass independent review and are committed. |
-| WP20 | Dependency, security, CI, test baseline, and read-only migration preflight | 1 | `codex/wp20-security-baseline` | Ready after WP19 commit | Production dependency audit has no unwaived high finding; CI/lint/security/a11y gates run; auth/environment inventory is complete. |
-| WP21 | Convex Auth compatibility migration | 2 | `codex/wp21-convex-auth` | Pending WP20 | Existing user IDs survive; magic-link/Google auth and private-route denial pass in isolated and configured environments. |
+| WP20 | Dependency, security, CI, test baseline, and read-only migration preflight | 1 | `codex/wp20-security-baseline` | Complete — Wave 1 passed | Both audits are clean; CI/lint/security/a11y gates run; routing regressions are covered; auth/environment inventory is complete. |
+| WP21 | Convex Auth compatibility migration | 2 | `codex/wp21-convex-auth` | Ready for isolated dev; production blocked | Existing user IDs survive; magic-link/Google auth and private-route denial pass in isolated and configured environments. Production waits for provider ruling, secrets, backup, dry run, and owner approval. |
 | WP22 | Platform schema, state, and authorization | 2 | `codex/wp22-platform-contracts` | Pending WP21 | Additive indexed contracts and two-user ownership/state-machine tests are frozen for parallel consumers. |
 | WP23 | Signed-in shell, dashboard, Explore, and intent | 2 | `codex/wp23-platform-explore` | Pending WP22 | Approved responsive/a11y shell and full Explore views persist owner-scoped state over canonical idea records. |
 | WP24 | Credits and Stripe | 2 | `codex/wp24-credits-stripe` | Pending WP22 | Purpose-separated test Checkout and exact-once account/ledger/refund invariants pass adversarial tests. |

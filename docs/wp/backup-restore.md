@@ -62,3 +62,13 @@ Convex backups do not replace code, environment, domain, Stripe, or in-flight wo
 ## Required Append Format For A Production Action
 
 Before execution, append a dated section containing the exact target environment, restore tag, snapshot identifier/time, env/domain/Stripe inventory references, dry-run command and counts, owner approval, execution command, actual counts, reconciliation output, critical-flow results, and rollback decision.
+
+## 2026-08-05 - WP20 Read-Only Auth Preflight
+
+- **Action:** Read-only production Convex aggregate inventory and environment-key-name inventory; no export, mutation, deploy, key read, or key change.
+- **Evidence:** `docs/wp/evidence/wp20-auth-environment-inventory.md`.
+- **Production counts:** `users=0`, `saved_ideas=0`, `stripe_events=0`, `subscriptions=0`, `ideas=160`; all inspected tables were below the 10,000-row read ceiling.
+- **Integrity summary:** No duplicate user email/token, Stripe event ID, saved-idea pair, or dangling saved-idea reference can exist in the four empty platform/legacy tables at this point in time.
+- **Environment summary:** Convex production has no application environment variables. Vercel Preview/Production and local/operator key names were inventoried without values. Current Convex Auth manual setup requires `SITE_URL`, a paired `JWT_PRIVATE_KEY`/`JWKS`, and the official `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` names for the approved Google path; none are provisioned. The magic-link provider/key remains an explicit WP21 owner decision.
+- **Restore state:** No backup or restore tag was created because WP20 performed no mutation. A fresh inventory, full Convex backup, restore marker, exact migration dry run, and owner approval remain mandatory before any production auth/schema action.
+- **Authorization:** This section authorizes nothing beyond the completed read-only inspection.

@@ -1,0 +1,109 @@
+import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
+import { config, middleware } from "../../middleware";
+
+function request(url: string, host?: string) {
+  return new NextRequest(url, {
+    headers: host ? { host } : undefined,
+  });
+}
+
+describe("canonical host middleware", () => {
+  it("redirects a dirty apex URL to the clean www URL in one hop", () => {
+    const response = middleware(
+      request(
+        "https://weekendmvp.app/articles/example.html/?source=test",
+        "weekendmvp.app",
+      ),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/articles/example?source=test",
+    );
+  });
+
+  it("canonicalizes the apex host even when the path is already clean", () => {
+    const response = middleware(
+      request("https://weekendmvp.app/startup-ideas", "WeekendMVP.app:443"),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/startup-ideas",
+    );
+  });
+
+  it("cleans a dirty www path without adding a second redirect", () => {
+    const response = middleware(
+      request(
+        "https://www.weekendmvp.app/ideas/example.HTML?ref=legacy",
+        "www.weekendmvp.app",
+      ),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/ideas/example?ref=legacy",
+    );
+  });
+
+  it.each([
+    ["https://preview-123.vercel.app/ideas/example/", "preview-123.vercel.app"],
+    ["http://localhost:3000/ideas/example.html", "localhost:3000"],
+    ["https://project.weekendmvp.app/ideas/example/", "project.weekendmvp.app"],
+  ])("cleans %s in place without forcing www", (url, host) => {
+    const response = middleware(request(url, host));
+    const source = new URL(url);
+    const location = new URL(response.headers.get("location")!);
+
+    expect(response.status).toBe(308);
+    expect(location.host).toBe(source.host);
+    expect(location.pathname).toBe("/ideas/example");
+  });
+
+  it("passes a clean preview URL through without redirecting", () => {
+    const response = middleware(
+      request(
+        "https://preview-123.vercel.app/ideas/example?draft=1",
+        "preview-123.vercel.app",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+});
+
+describe("middleware matcher contract", () => {
+  it.each(["/robots.txt", "/sitemap.xml", "/about", "/ideas/example"])(
+    "runs for %s",
+    (pathname) => {
+      expect(
+        unstable_doesMiddlewareMatch({
+          config,
+          url: `https://www.weekendmvp.app${pathname}`,
+        }),
+      ).toBe(true);
+    },
+  );
+
+  it.each([
+    "/_next/static/chunks/app.js",
+    "/_next/image?url=%2Flogo.png&w=640&q=75",
+    "/favicon.ico",
+    "/assets/logo.svg",
+    "/styles/site.css",
+    "/scripts/app.js",
+    "/fonts/site.woff2",
+    "/source.map",
+  ])("does not run for static/internal request %s", (pathname) => {
+    expect(
+      unstable_doesMiddlewareMatch({
+        config,
+        url: `https://www.weekendmvp.app${pathname}`,
+      }),
+    ).toBe(false);
+  });
+});

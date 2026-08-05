@@ -7,7 +7,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
 
 ## Stories
 
-- [ ] `WP20-S1` - Freeze the security and compatibility baseline
+- [x] `WP20-S1` - Freeze the security and compatibility baseline
   - Scope: `package.json`, `package-lock.json`, official upstream release/advisory evidence, `docs/wp/wp20-progress.md`.
   - Acceptance criteria:
     - Direct and transitive high-severity findings are mapped to their owning packages.
@@ -17,7 +17,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
     - `npm audit --omit=dev`
     - `npm ls next convex sharp undici ws js-yaml postcss`
 
-- [ ] `WP20-S2` - Remediate production dependency vulnerabilities
+- [x] `WP20-S2` - Remediate production dependency vulnerabilities
   - Scope: `package.json`, `package-lock.json`, compatibility fixes strictly required by the upgrades.
   - Acceptance criteria:
     - `npm audit --omit=dev --audit-level=high` exits successfully or every remaining high finding has an explicit owner waiver in `docs/wp/RULINGS.md`.
@@ -29,7 +29,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
     - `npm run build`
     - `npm audit --omit=dev --audit-level=high`
 
-- [ ] `WP20-S3` - Repair CI, lint, and automated accessibility tooling
+- [x] `WP20-S3` - Repair CI, lint, and automated accessibility tooling
   - Scope: `package.json`, `package-lock.json`, `.github/workflows/ci.yml`, new lint configuration, and narrowly scoped quality scripts/tests.
   - Acceptance criteria:
     - Every command referenced by CI exists.
@@ -43,7 +43,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
     - `npm run build`
     - `npm audit --omit=dev --audit-level=high`
 
-- [ ] `WP20-S4` - Add canonical-host and routing security regression coverage
+- [x] `WP20-S4` - Add canonical-host and routing security regression coverage
   - Scope: `tests/redirects/**`, `tests/security/**`, and test-only helpers required to exercise the existing boundary. Do not redesign host routing or implement auth.
   - Acceptance criteria:
     - Tests preserve one-hop apex-to-www and dirty-path behavior across supported request shapes.
@@ -53,7 +53,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
     - `npm run test:redirects`
     - `npm test`
 
-- [ ] `WP20-S5` - Produce the redacted WP21 migration preflight
+- [x] `WP20-S5` - Produce the redacted WP21 migration preflight
   - Scope: `.env.example`, `docs/wp/evidence/wp20-auth-environment-inventory.md`, read-only Convex/Vercel/local configuration inspection, `docs/wp/backup-restore.md`.
   - Acceptance criteria:
     - Environment key names are classified by Convex dev/prod and Vercel preview/prod; no values are recorded.
@@ -65,7 +65,7 @@ Definition of done: Production dependency audit has no unwaived high-severity fi
     - Secret-value and private-key pattern scan over the staged diff
     - Evidence review against `docs/wp/backup-restore.md`
 
-- [ ] `WP20-S6` - Run the Wave 1 gate and close the package
+- [x] `WP20-S6` - Run the Wave 1 gate and close the package
   - Scope: `docs/wp/wp20-progress.md`, `docs/wp/session-ledger.md`, `docs/wp/wave-gate-report.md`, `docs/PROJECT_STRATEGY.md`.
   - Acceptance criteria:
     - All standard checks and the production dependency audit pass.

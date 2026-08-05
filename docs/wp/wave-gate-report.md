@@ -26,3 +26,31 @@ A later wave cannot start until the prior gate is green or the owner records an 
 - **Scoped fix assignments:** WP20 owns dependency, CI, lint, and security harness. Later packages own feature-specific gates; see manifest.
 - **Evidence links/paths:** `docs/wp/program-manifest.md`, `docs/wp/platform-ux-brief.md`, `docs/wp/backup-restore.md`, `.agentic-workflow.yml`
 - **Owner exception:** None. No vulnerability or missing-check waiver is inferred; Wave 0 passes because its gate is documentation-only.
+
+## Wave 1 - 2026-08-05
+
+- **Wave:** Reversible security, CI, environment, dependency baseline, and read-only migration preflight
+- **Work package:** WP20
+- **Gate runner:** `/root/audit_publishing_ai` follow-up; independent security reviewer `/root/audit_convex_billing`
+- **Branch/worktree:** `codex/wp20-security-baseline`, primary checkout
+- **Commit:** WP20 reviewed closeout commit containing this report; resolve from git history
+- **Environment:** Local Node plus locked npm dependency graph; authenticated read-only Convex/Vercel CLI inventory; no production mutation
+- **Database/data isolation:** Production aggregate/key-name reads only. No raw rows, values, schema, functions, environment variables, deployments, domains, or Stripe objects changed.
+- **Checks run:**
+  - `npm run typecheck` — pass
+  - `npm run lint` — pass, 0 errors and 35 pre-existing warnings
+  - `npm run test:security` — pass, 4/4
+  - `npm test` — pass, 136/136
+  - `npm run build` — pass, 299 pages
+  - `npm audit` — pass, 0 vulnerabilities
+  - `npm audit --omit=dev --audit-level=high` — pass, 0 vulnerabilities
+  - `git diff --cached --check` — pass
+  - staged secret/PII scan — pass
+- **Critical flows run:** Existing one-hop canonical redirects through the actual middleware plus exported matcher inclusion/exclusion; deterministic blocking JSX accessibility probe; deterministic static environment-key documentation coverage.
+- **Result:** Pass after two scoped review remediations.
+- **Review history:** Initial security review found four issues in auth-key exactness, accessibility severity, environment completeness, and matcher activation. After those fixes, security review passed. Gate review then required deterministic environment coverage; the final re-run passed with no remaining failure.
+- **Non-blocking warnings:** Deprecated `middleware.ts` convention; five Turbopack filesystem-tracing warnings; two Node module-type reparsing warnings; 35 allowlisted/pre-existing lint warnings. These are recorded debt and not hidden failures.
+- **Evidence links/paths:** `docs/wp/wp20-stories.md`, `docs/wp/wp20-progress.md`, `docs/wp/evidence/wp20-auth-environment-inventory.md`, `docs/wp/backup-restore.md`, `.env.example`, `eslint.config.mjs`, `tests/security/`, `tests/redirects/middleware.test.ts`
+- **Next-wave authorization:** WP21 isolated local/dev auth work may start. Production auth activation may not.
+- **Production blockers:** Magic-link provider/key owner ruling, interactive key provisioning, fresh production inventory, Convex backup, Git restore marker, exact dry run, and owner approval.
+- **Owner exception:** None.

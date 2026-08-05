@@ -6,26 +6,36 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  check-links:
+  quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22.x'
+          cache: npm
 
-      - run: npm ci
+      - name: Install locked dependencies
+        run: npm ci
 
-      - run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
-      - name: Check internal links (strict)
-        run: STRICT=1 npm run check:links
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Check stylesheets (strict)
-        run: STRICT=1 npm run check:stylesheets
+      - name: Lint and accessibility rules
+        run: npm run lint
 
-      - name: Check all nav sync (strict)
-        run: npm run check:all-nav
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
