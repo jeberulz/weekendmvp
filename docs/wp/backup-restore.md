@@ -81,3 +81,11 @@ Before execution, append a dated section containing the exact target environment
 - **Restore state:** No production backup/tag was required for this isolated local action. The existing production backup, restore-marker, fresh inventory, exact dry-run, and owner-approval requirements remain unchanged.
 - **Evidence:** `docs/wp/evidence/wp21-auth-gate.md` and `docs/wp/wp21-progress.md`.
 - **Authorization:** This record does not authorize provider account creation, production deployment, key provisioning/rotation, data migration, or WP22 start.
+
+## 2026-08-05 - WP21 Isolated Resend Checkpoint
+
+- **Action:** Added the owner-selected Resend adapter, confirmation UI, server-side canonicalization seam, sensitive-route privacy headers, and deterministic auth lifecycle tests. A local-only `npx convex dev --once` regenerated types and pushed code without executing delivery.
+- **External effects:** None. Resend HTTP calls were mocked in tests; no real email, provider account/domain/key creation, cloud development deployment, or production action occurred.
+- **Secret state:** `AUTH_RESEND_KEY` and `AUTH_RESEND_FROM` remain absent locally. `AUTH_LOG_LEVEL=ERROR` is the required deployed setting because the pinned Convex Auth dependency can expose issuance arguments only when explicitly placed in DEBUG mode.
+- **Restore state:** No production backup/tag was required because production was untouched. Fresh inventory, full Convex backup, restore marker, exact dry run, credential provisioning, and owner approval remain mandatory before production activation.
+- **Authorization:** This checkpoint authorizes no live send, provider credential entry, production deployment, migration, or WP22 start.

@@ -8,7 +8,11 @@ import {
   pathNeedsCleaning,
   PROD_WWW_HOST,
 } from "./lib/canonical-path";
-import { authRouteDecision, isAuthManagedPath } from "./lib/auth-return";
+import {
+  authRouteDecision,
+  isAuthManagedPath,
+  isSensitiveAuthPath,
+} from "./lib/auth-return";
 
 /**
  * One-hop host + path canonicalization.
@@ -54,6 +58,17 @@ export function canonicalRedirect(request: NextRequest) {
   return null;
 }
 
+export function applySensitiveAuthResponseHeaders(
+  pathname: string,
+  response: Response,
+) {
+  if (isSensitiveAuthPath(pathname)) {
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("Cache-Control", "no-store");
+  }
+  return response;
+}
+
 const platformAuthMiddleware = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
     const pathname = request.nextUrl.pathname;
@@ -85,8 +100,17 @@ export async function middleware(
 ) {
   // Canonicalization stays the first hop, including for auth endpoints.
   const canonical = canonicalRedirect(request);
-  if (canonical !== null) return canonical;
-  return platformAuthMiddleware(request, event);
+  if (canonical !== null) {
+    return applySensitiveAuthResponseHeaders(
+      request.nextUrl.pathname,
+      canonical,
+    );
+  }
+  const response = await platformAuthMiddleware(request, event);
+  return applySensitiveAuthResponseHeaders(
+    request.nextUrl.pathname,
+    response ?? NextResponse.next(),
+  );
 }
 
 export const config = {

@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import type { NextFetchEvent } from "next/server";
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
-import { canonicalRedirect, config, middleware } from "../../middleware";
+import {
+  applySensitiveAuthResponseHeaders,
+  canonicalRedirect,
+  config,
+  middleware,
+} from "../../middleware";
 
 function request(url: string, host?: string) {
   return new NextRequest(url, {
@@ -122,5 +127,40 @@ describe("middleware matcher contract", () => {
         url: `https://www.weekendmvp.app${pathname}`,
       }),
     ).toBe(false);
+  });
+});
+
+describe("sensitive auth response headers", () => {
+  it.each([
+    "https://preview-123.vercel.app/email-signin/?token=secret-reference",
+    "https://www.weekendmvp.app/auth/callback/?code=secret-reference",
+  ])("applies the policy in middleware composition for %s", async (url) => {
+    const response = await runMiddleware(request(url, new URL(url).host));
+
+    expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it.each(["/email-signin", "/auth/callback"])(
+    "prevents referrer leakage and caching on %s",
+    (pathname) => {
+      const response = applySensitiveAuthResponseHeaders(
+        pathname,
+        new Response(null),
+      );
+
+      expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
+      expect(response.headers.get("Cache-Control")).toBe("no-store");
+    },
+  );
+
+  it("does not override public-route cache policy", () => {
+    const response = applySensitiveAuthResponseHeaders(
+      "/startup-ideas",
+      new Response(null, { headers: { "Cache-Control": "public, max-age=60" } }),
+    );
+
+    expect(response.headers.get("Referrer-Policy")).toBeNull();
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=60");
   });
 });

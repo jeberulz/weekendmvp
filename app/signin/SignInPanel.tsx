@@ -1,24 +1,44 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { authCallbackTarget, safePlatformReturn } from "@/lib/auth-return";
 
 export function SignInPanel({ returnTo }: { returnTo: string }) {
   const { signIn } = useAuthActions();
-  const [pending, setPending] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [googlePending, setGooglePending] = useState(false);
+  const [googleFailed, setGoogleFailed] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailState, setEmailState] = useState<
+    "idle" | "pending" | "sent" | "failed"
+  >("idle");
 
   async function signInWithGoogle() {
-    setPending(true);
-    setFailed(false);
+    setGooglePending(true);
+    setGoogleFailed(false);
     try {
       await signIn("google", {
         redirectTo: authCallbackTarget(safePlatformReturn(returnTo)),
       });
     } catch {
-      setFailed(true);
-      setPending(false);
+      setGoogleFailed(true);
+      setGooglePending(false);
+    }
+  }
+
+  async function requestEmailLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setEmailState("pending");
+    const normalizedEmail = email.normalize("NFKC").trim().toLowerCase();
+    try {
+      await signIn("email", {
+        email: normalizedEmail,
+        redirectTo: safePlatformReturn(returnTo),
+      });
+      setEmail(normalizedEmail);
+      setEmailState("sent");
+    } catch {
+      setEmailState("failed");
     }
   }
 
@@ -38,22 +58,68 @@ export function SignInPanel({ returnTo }: { returnTo: string }) {
       <button
         type="button"
         onClick={signInWithGoogle}
-        disabled={pending}
+        disabled={googlePending || emailState === "pending"}
         className="mt-8 flex min-h-11 w-full items-center justify-center rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
       >
-        {pending ? "Opening Google…" : "Continue with Google"}
+        {googlePending ? "Opening Google…" : "Continue with Google"}
       </button>
 
-      {failed ? (
+      {googleFailed ? (
         <p role="alert" className="mt-4 text-sm text-red-300">
           We could not start sign-in. Please try again.
         </p>
       ) : null}
 
-      <p className="mt-6 text-xs leading-5 text-zinc-500">
-        Email magic links will appear here after the email delivery provider is
-        approved and configured.
-      </p>
+      <div className="my-6 flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-white/10" />
+        <span className="text-xs uppercase tracking-[0.18em] text-zinc-600">
+          or
+        </span>
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+
+      <form onSubmit={requestEmailLink}>
+        <label htmlFor="signin-email" className="text-sm font-medium">
+          Email address
+        </label>
+        <input
+          id="signin-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            if (emailState !== "pending") setEmailState("idle");
+          }}
+          disabled={emailState === "pending" || googlePending}
+          aria-describedby="email-signin-status"
+          className="mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-black px-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-300 disabled:cursor-wait disabled:opacity-60"
+          placeholder="you@example.com"
+        />
+        <button
+          type="submit"
+          disabled={emailState === "pending" || googlePending}
+          className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-zinc-100 transition hover:border-white/30 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
+        >
+          {emailState === "pending" ? "Sending…" : "Email me a sign-in link"}
+        </button>
+      </form>
+
+      <div id="email-signin-status" aria-live="polite">
+        {emailState === "sent" ? (
+          <p className="mt-4 text-sm leading-6 text-emerald-300">
+            Check your inbox. The link expires in one hour and will ask you to
+            confirm the account before signing in.
+          </p>
+        ) : null}
+        {emailState === "failed" ? (
+          <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
+            We could not send a sign-in link. Please try again.
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

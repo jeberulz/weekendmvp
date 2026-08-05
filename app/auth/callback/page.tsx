@@ -3,6 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Completing sign in",
+  referrer: "no-referrer",
   robots: { index: false, follow: false },
 };
 

@@ -105,3 +105,59 @@ Append-only progress log. Do not rely on chat history for project state.
 - Delivery errors must stay generic, secret values and raw provider responses must not be logged, email identifiers must be normalized before use, and the token must remain single-use with a bounded expiry.
 - Scope remains isolated local/development. No Resend account/domain/API-key creation, external email send, production environment change, or production deployment is authorized by this ruling alone.
 - Next: assign the high-risk auth worker to implement provider code, UI, and deterministic issue/confirmation/expiry/replay contract tests. Real delivery and Google E2E wait for credentials entered through the approved secret channel, never chat or Git.
+
+## 2026-08-05 - Resend custom Email implementation
+
+- Source contract:
+  - The official Convex Auth Magic Links guide recommends a custom `Email` provider, a link containing `token` plus `email` but never `code`, and an explicit interstitial action to reduce session-fixation/phishing risk.
+  - The installed `Email` provider's documented default is one hour. Installed package source hashes issued tokens, deletes the verification row during redemption, rejects expired rows, and treats a reused/deleted code as invalid.
+  - Resend's official API uses `POST https://api.resend.com/emails` with Bearer authentication and supports both HTML and text bodies. Its domain guidance requires a verified sender domain for general delivery.
+- Provider and delivery:
+  - Added the custom `Email` provider with id `email`; the stock instant-click Resend provider is not used. The provider uses an explicit one-hour expiry and a normalized matching-email authorization check.
+  - Delivery requires non-empty `AUTH_RESEND_KEY`, `AUTH_RESEND_FROM`, and `SITE_URL`; rejects the shared `resend.dev` demo sender; normalizes recipient email with NFKC/trim/lowercase; and sends escaped HTML plus plain text through an injectable fetch seam.
+  - The email link is same-origin `/email-signin?token=...&email=...&returnTo=...`; it contains no `code` parameter. Return targets remain bounded to `/dashboard` and `/dashboard/**`. `SITE_URL` must use HTTPS except intentional loopback HTTP for local development.
+  - Delivery failures are one generic message. Provider response bodies, secrets, tokens, and recipient identifiers are not logged.
+- UI:
+  - `/signin` now includes a labelled, accessible email form with pending, generic sent, and generic failure states while preserving Google sign-in.
+  - `/email-signin` keeps the explicit account confirmation, normalizes the displayed/submitted identifier, exchanges `token` as Convex Auth's `code` only after the click, and uses the bounded `returnTo` after success.
+- Deterministic lifecycle evidence:
+  - Tests exercise the real installed `api.auth.signIn` issue action with a mocked Resend fetch, then the existing internal `auth.store` mutation with `generateTokens:false`; no public test endpoint or JWT fixture was added.
+  - Coverage proves provider id/configuration, one-hour issue expiry, NFKC normalization, matching-email enforcement, same-origin link construction, bounded return targets, no email `code` parameter, payload/headers, HTML escaping, required configuration, generic errors, shared-sender rejection, successful verification, replay denial, and expired-token deletion/denial.
+- Isolated deployment and activation state:
+  - `npx convex dev --once` succeeded against the existing local deployment only and regenerated `convex/_generated/api.d.ts` with the plain `resendMagicLink` module entry. It did not execute delivery or send email.
+  - `AUTH_RESEND_KEY` and `AUTH_RESEND_FROM` are absent from the local environment file; no placeholder or secret was added. Owner handoff: configure both on the approved isolated Convex deployment through the secret channel, using a verified non-`resend.dev` sender, before a real delivery test.
+  - No Resend account/domain/key creation, external email send, production environment mutation, production deploy, commit, or push occurred. Google E2E and real Resend E2E remain activation blockers.
+- Verification:
+  - `npm run typecheck`: pass.
+  - `npm run lint`: pass with zero errors and the unchanged 35-warning baseline.
+  - `npm run test:auth`: 19/19 pass.
+  - `npm run test:convex`: 30/30 pass across 3 files.
+  - `npm run test:redirects`: 27/27 pass.
+  - `npm test`: pass across OG 91, links 6, redirects 27, auth 19, security 4, sitemap 4, and Convex 30 checks.
+  - `npm run build`: pass with 303 pages; the five inherited Turbopack filesystem-trace warnings and Next.js middleware deprecation warning remain.
+  - `git diff --check`: pass.
+  - Final secret scan scope: 0 staged files, 7 tracked worktree diffs, and 2 untracked files; 9 unique WP21 files scanned with zero private-key, JWT, OAuth, Resend, Stripe, Google, or Ideabrowser secret-pattern hits.
+
+## 2026-08-05 - Resend security review and remediation
+
+- Initial independent review blocked the gate with two high and two medium findings: the token-bearing confirmation URL could reach consented analytics/referrers; raw case/Unicode variants reached Convex Auth's account mutation before normalization and could reserve a canonical email before proof; this pre-send collision also revealed Google-owned addresses; and the shared OAuth redirect did not apply the Resend path's strict `SITE_URL` rules.
+- Server-bound identity fix:
+  - The exported `api.auth.signIn` is now a narrow compatibility wrapper around the exactly pinned `@convex-dev/auth@0.0.94` action contract. It validates and NFKC/trim/lowercase-normalizes email issuance and redemption before the package can create or query an auth account.
+  - Email issuance creates or reuses an identity-neutral placeholder without storing or querying `users.email`. Only successful token redemption claims the normalized address and runs the no-auto-link collision policy.
+  - Stored-state integration tests prove variant requests produce one canonical `authAccounts.providerAccountId`, delivery failure/retry creates no duplicate identity, Google-owned email initiation still returns the same started response, and the original placeholder gains `email` plus `emailVerificationTime` only after proof.
+- Token-route privacy fix:
+  - `/email-signin` and `/auth/callback` suppress Google/Meta analytics even for previously consented users.
+  - Both routes declare no-referrer metadata, and middleware emits `Referrer-Policy: no-referrer` plus `Cache-Control: no-store`, including canonical redirect hops.
+- Origin/logging fix:
+  - One `validatedSiteOrigin` contract now protects OAuth redirects and Resend links: HTTPS is required except explicit loopback HTTP, credentials are rejected, and only the configured origin is used.
+  - The pinned dependency logs raw issuance arguments only if an operator explicitly sets `AUTH_LOG_LEVEL=DEBUG`. `.env.example` prescribes `AUTH_LOG_LEVEL=ERROR`; this must be checked in every deployed environment before activation. The local deployment has no explicit value and therefore uses the dependency's safe INFO default.
+- Independent remediation re-review: pass with no remaining critical, high, or medium finding. The reviewer confirmed genuine public-action/database-state coverage and no public test-only function.
+- Final executable gate:
+  - `npm run typecheck`: pass.
+  - `npm run lint`: pass with zero errors and the unchanged 35-warning baseline.
+  - `npm test`: pass across OG 91, links 6, redirects 32, auth 26, security 4, sitemap 4, and Convex 41 checks.
+  - `npm run build`: pass with 303 pages; the five inherited Turbopack filesystem-trace warnings and Next.js middleware deprecation warning remain.
+  - `npm audit --audit-level=high` and `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
+  - `git diff --check`: pass.
+  - Staged secret scan: 24 implementation/documentation files checked for private-key, JWT, Resend, Stripe, Google OAuth, and Ideabrowser credential patterns; zero hits.
+- Status: Resend code and deterministic security gates pass. WP21 remains blocked on one credential-backed Resend inbox flow and the Google redirect/callback/session/logout flow. Production remains separately blocked on its inventory, backup, restore tag, dry run, secrets, and owner approval.

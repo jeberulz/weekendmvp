@@ -3,6 +3,7 @@ import {
   authRouteDecision,
   authCallbackTarget,
   DEFAULT_AUTH_RETURN,
+  isSensitiveAuthPath,
   safePlatformReturn,
 } from "../../lib/auth-return";
 
@@ -35,6 +36,24 @@ describe("auth redirect allowlist", () => {
       "/auth/callback?returnTo=%2Fdashboard",
     );
   });
+});
+
+describe("sensitive auth route analytics policy", () => {
+  test.each([
+    "/email-signin",
+    "/email-signin/confirm",
+    "/auth/callback",
+    "/auth/callback/error",
+  ])("suppresses analytics on %s", (pathname) => {
+    expect(isSensitiveAuthPath(pathname)).toBe(true);
+  });
+
+  test.each(["/signin", "/dashboard", "/auth/callbackish"])(
+    "does not classify %s as a token-bearing auth route",
+    (pathname) => {
+      expect(isSensitiveAuthPath(pathname)).toBe(false);
+    },
+  );
 });
 
 describe("auth middleware route matrix", () => {

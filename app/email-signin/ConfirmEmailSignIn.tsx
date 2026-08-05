@@ -3,6 +3,7 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { safePlatformReturn } from "@/lib/auth-return";
 
 export function ConfirmEmailSignIn() {
   const params = useSearchParams();
@@ -10,8 +11,10 @@ export function ConfirmEmailSignIn() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
-  const email = params.get("email")?.trim() ?? "";
+  const email =
+    params.get("email")?.normalize("NFKC").trim().toLowerCase() ?? "";
   const token = params.get("token") ?? "";
+  const returnTo = safePlatformReturn(params.get("returnTo"));
   const ready = email !== "" && token !== "";
 
   async function confirm() {
@@ -19,10 +22,8 @@ export function ConfirmEmailSignIn() {
     setPending(true);
     setFailed(false);
     try {
-      // `email` is Convex Auth's generic Email provider contract. The delivery
-      // vendor remains deliberately unwired until the owner selects it.
       await signIn("email", { code: token, email });
-      router.replace("/dashboard");
+      router.replace(returnTo);
       router.refresh();
     } catch {
       setFailed(true);

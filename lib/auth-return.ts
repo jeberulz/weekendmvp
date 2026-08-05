@@ -36,6 +36,16 @@ export function isAuthManagedPath(pathname: string) {
   );
 }
 
+/** Sensitive auth URLs must never load consented analytics scripts. */
+export function isSensitiveAuthPath(pathname: string) {
+  return (
+    pathname === "/email-signin" ||
+    pathname.startsWith("/email-signin/") ||
+    pathname === "/auth/callback" ||
+    pathname.startsWith("/auth/callback/")
+  );
+}
+
 export function authRouteDecision(
   url: URL,
   authenticated: boolean,

@@ -4,6 +4,7 @@ import { ConfirmEmailSignIn } from "./ConfirmEmailSignIn";
 
 export const metadata: Metadata = {
   title: "Confirm email sign in",
+  referrer: "no-referrer",
   robots: { index: false, follow: false },
 };
 

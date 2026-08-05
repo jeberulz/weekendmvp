@@ -12,28 +12,30 @@ Environment: Isolated anonymous/local Convex backend plus local Next.js
 - Custom user creation denies implicit same-email linking in Google-first and email-first order.
 - Private identity derives user and session IDs server-side and denies missing, deleted, cross-user, and anonymous sessions.
 - Google configuration names, callback seam, bounded redirects, host-only cookies, canonical ordering, protected dashboard matcher, and provider-neutral magic confirmation UI have executable unit/static coverage.
+- The owner-selected Resend delivery path uses a custom Convex `Email` provider with an explicit confirmation interstitial, one-hour single-use tokens, a verified-sender configuration requirement, server-bound canonical email identities, and generic no-log delivery errors.
+- Token-bearing email/OAuth callback routes suppress analytics and emit `Referrer-Policy: no-referrer` plus `Cache-Control: no-store`.
 - Canonical public content remains prerendered; the production build emits 303 pages.
 
 ## Checks
 
 - `npm run typecheck`: pass.
 - `npm run lint`: pass, 0 errors and 35 inherited warnings.
-- `npm run test:auth`: 19/19 pass.
-- `npm run test:convex`: 19/19 pass.
-- `npm run test:redirects`: 27/27 pass.
-- `npm test`: pass across OG 91, links 6, redirects 27, auth 19, security 4, sitemap 4, and Convex 19 checks.
+- `npm run test:auth`: 26/26 pass.
+- `npm run test:convex`: 41/41 pass.
+- `npm run test:redirects`: 32/32 pass (7 Node plus 25 middleware checks).
+- `npm test`: pass across OG 91, links 6, redirects 32, auth 26, security 4, sitemap 4, and Convex 41 checks.
 - `npm run build`: pass, 303 pages.
 - `npm audit --audit-level=high`: zero vulnerabilities.
 - `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
 - `git diff --check`: pass.
-- Secret/private-key scan: 31 implementation/progress paths, zero hits.
-- Independent review and remediation re-review: pass with no remaining critical, high, or medium finding.
+- Secret/private-key scan: final staged implementation/documentation set, zero secret-pattern hits.
+- Independent Resend review initially blocked on token/PII leakage, pre-verification identity reservation, provider enumeration, and shared-origin validation. All were remediated; re-review passed with no remaining critical, high, or medium finding.
 
-## Blocking Provider Evidence
+## Blocking Live Provider Evidence
 
-- Magic-link delivery is not wired because the owner has not selected the vendor/sender. Magic issue, confirmation, expiry, and replay E2E therefore remain unexercised.
+- Resend is wired and its real installed-package issue, verification, expiry, replay, normalization, collision, and delivery contracts pass deterministically with mocked HTTPS delivery. No real inbox delivery has been exercised because `AUTH_RESEND_KEY` and a verified `AUTH_RESEND_FROM` are not configured in the isolated deployment.
 - Google provider code is configured, but no OAuth client credentials are present. Real redirect, callback, session, and logout E2E remain unexercised.
-- These are WP21 completion blockers. Unit/static evidence is not represented as provider E2E evidence.
+- These are WP21 completion blockers. Deterministic provider evidence is not represented as credential-backed provider E2E evidence.
 
 ## Production Guardrail
 

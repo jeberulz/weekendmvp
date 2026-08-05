@@ -72,7 +72,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - `npm run test:convex`
     - `npm run typecheck`
 
-- [ ] `WP21-S6` - Run the WP21 security gate and close or explicitly block activation
+- [x] `WP21-S6` - Run the WP21 security gate and close or explicitly block activation
   - Scope: `docs/wp/wp21-progress.md`, `docs/wp/session-ledger.md`, `docs/wp/wave-gate-report.md`, `docs/PROJECT_STRATEGY.md`, and WP21 evidence/restore append.
   - Acceptance criteria:
     - All configured checks, the production dependency audit, auth-flow tests, canonical regression, and staged secret scan pass.

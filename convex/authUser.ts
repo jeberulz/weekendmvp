@@ -42,6 +42,23 @@ export async function createOrUpdateAuthUser(
   ctx: MutationCtx,
   args: CreateOrUpdateAuthUserArgs,
 ): Promise<Id<"users">> {
+  // Email issuance proves only inbox reachability is being requested. It must
+  // not reserve the email on a user or reveal whether another provider owns it.
+  // The package reuses this placeholder through its canonical authAccount.
+  if (args.type === "email") {
+    if (args.existingUserId === null) {
+      return await ctx.db.insert("users", {});
+    }
+    const existingPlaceholder = await ctx.db.get(
+      "users",
+      args.existingUserId,
+    );
+    if (existingPlaceholder === null) {
+      throw new Error("Unable to complete sign-in.");
+    }
+    return args.existingUserId;
+  }
+
   const email =
     typeof args.profile.email === "string"
       ? normalizeAuthEmail(args.profile.email)

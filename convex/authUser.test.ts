@@ -10,7 +10,11 @@ import {
   createOrUpdateAuthUser,
   normalizeAuthEmail,
 } from "./authUser";
-import { safeAuthRedirect } from "./auth";
+import {
+  absoluteAuthRedirect,
+  normalizeEmailSignInArgs,
+  safeAuthRedirect,
+} from "./auth";
 import schema from "./schema";
 
 const modules = import.meta.glob("./**/*.ts");
@@ -60,30 +64,75 @@ describe("Convex Auth user compatibility", () => {
     );
   });
 
-  test("denies implicit linking in both provider orders", async () => {
-    for (const [first, second] of [
-      [googleProvider, emailProvider],
-      [emailProvider, googleProvider],
-    ] as const) {
-      const t = convexTest(schema, modules);
-      await t.run(async (ctx) => {
-        await createOrUpdateAuthUser(ctx, {
-          existingUserId: null,
-          type: first.type === "email" ? "email" : "oauth",
-          provider: first,
-          profile: { email: "same@example.test", emailVerified: true },
-        });
-
-        await expect(
-          createOrUpdateAuthUser(ctx, {
-            existingUserId: null,
-            type: second.type === "email" ? "email" : "oauth",
-            provider: second,
-            profile: { email: "same@example.test", emailVerified: true },
-          }),
-        ).rejects.toThrow(AUTH_ACCOUNT_COLLISION_MESSAGE);
+  test("email issuance creates an identity-neutral placeholder", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const userId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null,
+        type: "email",
+        provider: emailProvider,
+        profile: { email: "unverified@example.test" },
       });
-    }
+
+      expect(await ctx.db.get("users", userId)).toMatchObject({ _id: userId });
+      expect((await ctx.db.get("users", userId))?.email).toBeUndefined();
+    });
+  });
+
+  test("denies implicit linking only when verified email ownership is claimed", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const googleUserId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null,
+        type: "oauth",
+        provider: googleProvider,
+        profile: { email: "same@example.test", emailVerified: true },
+      });
+      const placeholderId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null,
+        type: "email",
+        provider: emailProvider,
+        profile: { email: "same@example.test" },
+      });
+
+      expect(placeholderId).not.toBe(googleUserId);
+      expect((await ctx.db.get("users", placeholderId))?.email).toBeUndefined();
+      await expect(
+        createOrUpdateAuthUser(ctx, {
+          existingUserId: placeholderId,
+          type: "verification",
+          provider: emailProvider,
+          profile: { email: "same@example.test", emailVerified: true },
+        }),
+      ).rejects.toThrow(AUTH_ACCOUNT_COLLISION_MESSAGE);
+    });
+  });
+
+  test("denies a later OAuth account after verified email ownership", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const placeholderId = await createOrUpdateAuthUser(ctx, {
+        existingUserId: null,
+        type: "email",
+        provider: emailProvider,
+        profile: { email: "owner@example.test" },
+      });
+      await createOrUpdateAuthUser(ctx, {
+        existingUserId: placeholderId,
+        type: "verification",
+        provider: emailProvider,
+        profile: { email: "owner@example.test", emailVerified: true },
+      });
+
+      await expect(
+        createOrUpdateAuthUser(ctx, {
+          existingUserId: null,
+          type: "oauth",
+          provider: googleProvider,
+          profile: { email: "owner@example.test", emailVerified: true },
+        }),
+      ).rejects.toThrow(AUTH_ACCOUNT_COLLISION_MESSAGE);
+    });
   });
 
   test("updates only the already-linked user and preserves legacy fields", async () => {
@@ -240,5 +289,60 @@ describe("server redirect contract", () => {
     ["/signin", "/dashboard"],
   ])("allowlists %s", (target, expected) => {
     expect(safeAuthRedirect(target)).toBe(expected);
+  });
+
+  test("adapts the bounded target to the configured same-origin site", () => {
+    expect(
+      absoluteAuthRedirect(
+        "/dashboard/project?tab=build",
+        "https://app.example.test",
+      ),
+    ).toBe("https://app.example.test/dashboard/project?tab=build");
+  });
+
+  test.each([
+    "http://app.example.test",
+    "https://user:password@app.example.test",
+    "ftp://app.example.test",
+  ])("rejects an unsafe SITE_URL: %s", (siteUrl) => {
+    expect(() => absoluteAuthRedirect("/dashboard", siteUrl)).toThrow(
+      "Unable to complete sign-in.",
+    );
+  });
+
+  test("permits explicit loopback HTTP for local development", () => {
+    expect(
+      absoluteAuthRedirect("/dashboard", "http://127.0.0.1:3000"),
+    ).toBe("http://127.0.0.1:3000/dashboard");
+  });
+});
+
+describe("pinned Convex Auth signIn compatibility seam", () => {
+  test("normalizes email issuance before the generated action", () => {
+    expect(
+      normalizeEmailSignInArgs({
+        provider: "email",
+        params: { email: "  ＵＳＥＲ@ＥＸＡＭＰＬＥ.ＴＥＳＴ  " },
+      }),
+    ).toMatchObject({
+      provider: "email",
+      params: { email: "user@example.test" },
+    });
+  });
+
+  test("normalizes provider-less email redemption without changing refreshes", () => {
+    expect(
+      normalizeEmailSignInArgs({
+        params: {
+          code: "opaque-code",
+          email: " USER@Example.TEST ",
+        },
+      }),
+    ).toMatchObject({
+      params: { code: "opaque-code", email: "user@example.test" },
+    });
+    expect(
+      normalizeEmailSignInArgs({ refreshToken: "opaque-refresh-token" }),
+    ).toEqual({ refreshToken: "opaque-refresh-token" });
   });
 });

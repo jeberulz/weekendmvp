@@ -17,8 +17,10 @@ import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
 import type * as referenceTables from "../referenceTables.js";
+import type * as resendMagicLink from "../resendMagicLink.js";
 import type * as revalidate from "../revalidate.js";
 import type * as seed from "../seed.js";
+import type * as siteUrl from "../siteUrl.js";
 import type * as subscriptions from "../subscriptions.js";
 
 import type {
@@ -37,8 +39,10 @@ declare const fullApi: ApiFromModules<{
   newsletter: typeof newsletter;
   payments: typeof payments;
   referenceTables: typeof referenceTables;
+  resendMagicLink: typeof resendMagicLink;
   revalidate: typeof revalidate;
   seed: typeof seed;
+  siteUrl: typeof siteUrl;
   subscriptions: typeof subscriptions;
 }>;
 
