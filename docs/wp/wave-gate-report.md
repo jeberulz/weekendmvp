@@ -69,3 +69,18 @@ A later wave cannot start until the prior gate is green or the owner records an 
 - **Go-live blockers:** Configure Google OAuth credentials securely and pass real redirect/callback/session/logout. Production also remains blocked on fresh inventory, full backup, restore tag, exact dry run, production secrets, independent review, and owner approval.
 - **Evidence:** `docs/wp/evidence/wp21-auth-gate.md`, `docs/wp/wp21-progress.md`, `docs/wp/wp21-stories.md`, `docs/wp/backup-restore.md`.
 - **Next-wave authorization:** WP22 may start. This authorization applies to isolated development only and does not authorize production auth activation.
+
+## Wave 2 / WP22 Contract Subgate - 2026-08-05
+
+- **Work package:** WP22 platform schema, state machines, and authorization
+- **Gate runner:** Independent reviewer `/root/audit_convex_billing`; worker `/root/wp22_contract_worker`; orchestrator closeout
+- **Branch/worktree:** `codex/wp22-platform-contracts`, primary checkout
+- **Environment:** Existing isolated local Convex backend plus local Next.js build; no cloud development or production deployment
+- **Database/data isolation:** Sixteen new empty platform tables were applied to the isolated `local:` backend. No production/cloud schema, row, environment, deployment, domain, Stripe object, or secret changed; no backfill, deletion, or schema narrowing ran.
+- **Passed checks:** typecheck; lint with 0 errors/35 inherited warnings; full configured tests including 77 Convex tests; 303-page build; production dependency audit with 0 vulnerabilities; diff check; value-suppressing secret scan; no registered platform endpoints; no new `.collect()` path.
+- **Passed contracts:** additive compatibility for users/auth/public content/saved ideas; exact 16-table/index inventory; centralized validators and fail-closed state transitions; UTF-8 256 KiB generated-document guard; server-derived owner identity; anonymous and two-user/two-project denial; every nested parent chain; projectless and project-linked ledger/audit ownership; bounded index seams; append-only ledger/audit declaration; integer money/credits; no admin bypass or user upload.
+- **Review history:** Initial gate failed on two HIGH findings: direct owner/project checks did not validate nested task/document/site/account/purchase relationships, and projectless ledger/audit rows lacked an owner-only authorization path. Scoped remediation added typed parent-chain checks and adversarial fixtures. Final re-review passed with no findings and no unresolved critical/high/medium issue.
+- **Result:** **Pass.** WP22-S1 through WP22-S6 are complete and the shared schema/authz/generated contract is frozen.
+- **Non-blocking warnings:** The unchanged middleware deprecation, five Turbopack filesystem-tracing warnings, two Node module-type warnings, and 35 inherited lint warnings remain outside WP22.
+- **Evidence:** `docs/wp/wp22-stories.md`, `docs/wp/wp22-progress.md`, `convex/schema.ts`, `convex/platform/`, generated Convex API types.
+- **Next-wave authorization:** WP23, WP24, and WP25 may start in parallel with serialized ownership of shared files. This does not authorize cloud/production deployment, live Stripe objects/charges, tenant publishing, or customer-data collection.

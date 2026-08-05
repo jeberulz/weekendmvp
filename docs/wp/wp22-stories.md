@@ -16,7 +16,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
 
 ## Stories
 
-- [ ] `WP22-S1` - Freeze reusable platform validators and migration-safe contracts
+- [x] `WP22-S1` - Freeze reusable platform validators and migration-safe contracts
   - Scope: `convex/platform/validators.ts`, `convex/platform/transitions.ts`, and type-only imports needed by those files.
   - Acceptance criteria:
     - Export one source of truth for every enum/discriminated state used by the WP22 tables, including project source/status, brief/submission status, intent flags, task/step type and status, document kind/format, site/version status, purchase status, ledger reason, and workflow-run status.
@@ -28,7 +28,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
     - `npm run test:convex`
     - `git diff --check`
 
-- [ ] `WP22-S2` - Add the indexed platform schema
+- [x] `WP22-S2` - Add the indexed platform schema
   - Scope: `convex/schema.ts`, `convex/platform/validators.ts`, and generated Convex types.
   - Acceptance criteria:
     - Add exactly the frozen tables above with explicit ownership/project relationships, timestamps, soft-delete/archive fields where applicable, and no embedded unbounded collection.
@@ -41,7 +41,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
     - `npm run test:convex`
     - `npx convex dev --once` only after confirming the target is the isolated `local:` deployment
 
-- [ ] `WP22-S3` - Establish owner-only authorization helpers
+- [x] `WP22-S3` - Establish owner-only authorization helpers
   - Scope: `convex/platform/authz.ts` and focused authorization tests under `convex/platform/`.
   - Acceptance criteria:
     - Reuse the WP21 Convex Auth identity/session contract and derive the application user ID server-side.
@@ -54,7 +54,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
     - `npm run test:convex`
     - `npm run typecheck`
 
-- [ ] `WP22-S4` - Enforce fail-closed lifecycle state machines
+- [x] `WP22-S4` - Enforce fail-closed lifecycle state machines
   - Scope: `convex/platform/transitions.ts` and focused transition tests under `convex/platform/`.
   - Acceptance criteria:
     - Central transition helpers cover project, brief/submission, task/step, site/version, purchase, and workflow-run lifecycles.
@@ -66,7 +66,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
     - `npm run test:convex`
     - `npm run typecheck`
 
-- [ ] `WP22-S5` - Prove isolation, bounded access paths, and contract completeness
+- [x] `WP22-S5` - Prove isolation, bounded access paths, and contract completeness
   - Scope: tests under `convex/platform/`, `convex/schema.ts`, and generated types only where test-driven corrections are required.
   - Acceptance criteria:
     - A two-users/two-projects fixture proves each user can access only their project and every tested child kind; swapping project, child, task, document, site, purchase, or run IDs is denied.
@@ -79,7 +79,7 @@ Definition of done: Additive Convex tables and shared validators define the plat
     - `npm run typecheck`
     - `npm run lint`
 
-- [ ] `WP22-S6` - Run the WP22 data/security gate and freeze consumers
+- [x] `WP22-S6` - Run the WP22 data/security gate and freeze consumers
   - Scope: `docs/wp/wp22-progress.md`, WP22-specific append sections in `docs/wp/session-ledger.md`, `docs/wp/wave-gate-report.md`, `docs/PROJECT_STRATEGY.md`, and generated Convex types.
   - Acceptance criteria:
     - The isolated `local:` schema push/type generation passes without targeting a cloud development or production deployment.
