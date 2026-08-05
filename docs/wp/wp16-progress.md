@@ -41,7 +41,7 @@ delivery activates after the four documented GitHub Actions secrets are set.
 
 ## Verification
 
-- `npm run test:validation` — pass (3 tests)
+- `npm run test:validation` — pass (4 tests)
 - `npm run test:convex` — pass (6 tests)
 - `npm test` — pass
 - `npm run typecheck` — pass
