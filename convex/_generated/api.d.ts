@@ -17,6 +17,7 @@ import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
 import type * as platform_authz from "../platform/authz.js";
+import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_transitions from "../platform/transitions.js";
 import type * as platform_validators from "../platform/validators.js";
 import type * as referenceTables from "../referenceTables.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   newsletter: typeof newsletter;
   payments: typeof payments;
   "platform/authz": typeof platform_authz;
+  "platform/ideas": typeof platform_ideas;
   "platform/transitions": typeof platform_transitions;
   "platform/validators": typeof platform_validators;
   referenceTables: typeof referenceTables;

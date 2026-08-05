@@ -2,6 +2,7 @@
 
 import { ConvexAuthNextjsProvider } from "@convex-dev/auth/nextjs";
 import { ConvexReactClient } from "convex/react";
+import { isValidPlatformConvexUrl } from "@/lib/platform-convex-url";
 
 const browserClientCache = globalThis as typeof globalThis & {
   __weekendMvpAuthConvexClient?: ConvexReactClient;
@@ -14,7 +15,7 @@ function getBrowserClient() {
   }
 
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-  if (!url) return null;
+  if (!isValidPlatformConvexUrl(url)) return null;
 
   const client = new ConvexReactClient(url);
   browserClientCache.__weekendMvpAuthConvexClient = client;

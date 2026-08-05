@@ -32,4 +32,15 @@ describe("auth platform request-time boundary", () => {
     );
     expect(clientProviderSource).not.toContain("client.close(");
   });
+
+  test("does not construct the browser client from a malformed endpoint", () => {
+    const validation = clientProviderSource.indexOf(
+      "if (!isValidPlatformConvexUrl(url)) return null",
+    );
+    const construction = clientProviderSource.indexOf(
+      "new ConvexReactClient(url)",
+    );
+    expect(validation).toBeGreaterThan(-1);
+    expect(construction).toBeGreaterThan(validation);
+  });
 });

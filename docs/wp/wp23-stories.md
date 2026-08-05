@@ -16,7 +16,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
 
 ## Stories
 
-- [ ] `WP23-S1` - Build the authenticated responsive workspace shell
+- [x] `WP23-S1` - Build the authenticated responsive workspace shell
   - Scope: `app/dashboard/layout.tsx`, `components/platform/shell/**`, shell-focused tests.
   - Acceptance criteria:
     - Preserve request-time auth protection and render one semantic `nav` and one `main` with skip link, visible focus, current-page state, keyboard operation, and private-page noindex metadata.
@@ -25,7 +25,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
     - Use existing Geist/type and dark token system, shadcn primitives, and Lucide icons. No gradients, glassmorphism, decorative card grids, oversized headings, or custom icon drawings.
   - Verification: focused component/route tests, `npm run typecheck`, `npm run lint`, `git diff --check`.
 
-- [ ] `WP23-S2` - Replace the placeholder dashboard with truthful owner state
+- [x] `WP23-S2` - Replace the placeholder dashboard with truthful owner state
   - Scope: `app/dashboard/page.tsx`, `convex/platform/ideas.ts` or a narrowly named dashboard query in the same WP23 module, dashboard components/tests.
   - Acceptance criteria:
     - Show a clear next action, active/recent owner projects, recent Saved/Interested ideas, and available account/project state only when backed by server data.
@@ -34,7 +34,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
     - The bounded-action composer maps suggestions to supported links/actions only and makes no free-agent promise.
   - Verification: anonymous/two-user tests, empty/populated UI tests, `npm run test:convex`, `npm run typecheck`.
 
-- [ ] `WP23-S3` - Implement bounded canonical Explore discovery
+- [x] `WP23-S3` - Implement bounded canonical Explore discovery
   - Scope: `convex/platform/ideas.ts`, `components/platform/explore/**`, `app/dashboard/explore/**`, focused tests.
   - Acceptance criteria:
     - `All`, `For you`, `Saved`, `Interested`, and `Building` views reuse `ideas` rows and return pagination metadata plus minimal card projections and current-user state.
@@ -43,7 +43,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
     - Each card opens `/ideas/{slug}` for research and offers `Preview this idea` via `/build/{slug}`; no private duplicate article route is added.
   - Verification: pagination/filter/ranking tests, empty/loading/error UI states, `npm run test:convex`, `npm run typecheck`.
 
-- [ ] `WP23-S4` - Persist owner-scoped Saved and Interested intent
+- [x] `WP23-S4` - Persist owner-scoped Saved and Interested intent
   - Scope: `convex/platform/ideas.ts`, Explore intent controls/tests.
   - Acceptance criteria:
     - Mutations upsert by server-derived owner plus canonical idea, preserve the other independent flag, validate the idea exists, and never accept a caller user ID.
@@ -52,7 +52,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
     - Legacy `saved_ideas` remains untouched; no migration/backfill or dual-write is introduced.
   - Verification: anonymous/two-user/independent-flag/repeated-toggle/project-derived tests and `npm run test:convex`.
 
-- [ ] `WP23-S5` - Complete Explore interaction, responsive, and accessibility states
+- [x] `WP23-S5` - Complete Explore interaction, responsive, and accessibility states
   - Scope: WP23-owned app/components/tests only.
   - Acceptance criteria:
     - Filters and tabs are URL-addressable where practical, keyboard operable, announced correctly, and usable at 320 px without horizontal page overflow.

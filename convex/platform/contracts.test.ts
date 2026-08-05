@@ -44,6 +44,7 @@ const REQUIRED_INDEXES = {
     "by_ownerId_and_status_and_updatedAt",
     "by_ownerId_and_idempotencyKey",
     "by_ownerId_and_sourceIdeaId",
+    "by_ownerId_and_sourceIdeaId_and_archivedAt",
   ],
   briefs: [
     "by_projectId_and_status_and_updatedAt",
@@ -197,16 +198,19 @@ describe("WP22 bounded ownership and intent seams", () => {
           query.eq("ownerId", ownerId).eq("ideaId", ideaId),
         )
         .unique();
-      const activeIdeaProjects = await ctx.db
+      const activeIdeaProject = await ctx.db
         .query("projects")
-        .withIndex("by_ownerId_and_sourceIdeaId", (query) =>
-          query.eq("ownerId", ownerId).eq("sourceIdeaId", ideaId),
+        .withIndex("by_ownerId_and_sourceIdeaId_and_archivedAt", (query) =>
+          query
+            .eq("ownerId", ownerId)
+            .eq("sourceIdeaId", ideaId)
+            .eq("archivedAt", undefined),
         )
-        .take(2);
+        .first();
 
       expect(exactProject?._id).toBe(projectId);
       expect(exactIntent).toMatchObject({ saved: true, interested: false });
-      expect(activeIdeaProjects.some((project) => project.archivedAt === undefined)).toBe(true);
+      expect(activeIdeaProject?._id).toBe(projectId);
 
       await ctx.db.patch("idea_intents", intentId, {
         interested: true,

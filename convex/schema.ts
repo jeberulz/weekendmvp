@@ -241,7 +241,12 @@ export default defineSchema({
       "updatedAt",
     ])
     .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
-    .index("by_ownerId_and_sourceIdeaId", ["ownerId", "sourceIdeaId"]),
+    .index("by_ownerId_and_sourceIdeaId", ["ownerId", "sourceIdeaId"])
+    .index("by_ownerId_and_sourceIdeaId_and_archivedAt", [
+      "ownerId",
+      "sourceIdeaId",
+      "archivedAt",
+    ]),
 
   briefs: defineTable({
     ownerId: v.id("users"),
