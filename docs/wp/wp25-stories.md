@@ -16,7 +16,7 @@ Definition of done: An authenticated user can start from a canonical repository 
 
 ## Stories
 
-- [ ] `WP25-S1` - Create owner-scoped repository and own-idea projects idempotently
+- [x] `WP25-S1` - Create owner-scoped repository and own-idea projects idempotently
   - Scope: `convex/platform/projects.ts`, `convex/platform/intake.ts` or equivalently narrow WP25 modules, focused tests.
   - Acceptance criteria:
     - Repository creation resolves the canonical idea server-side from slug/ID, stores its frozen `sourceIdeaId`, source type, title, and immutable versioned snapshot payload; unknown ideas fail safely.
@@ -25,7 +25,7 @@ Definition of done: An authenticated user can start from a canonical repository 
     - Owner ID, source snapshot, initial statuses, revision, and timestamps are server-derived. Anonymous/cross-owner reads or writes fail under WP22 helpers.
   - Verification: anonymous/two-user/unknown-source/forged-source/idempotency/concurrency tests and `npm run test:convex`.
 
-- [ ] `WP25-S2` - Implement resumable, immutable versioned briefs
+- [x] `WP25-S2` - Implement resumable, immutable versioned briefs
   - Scope: WP25 Convex project/intake modules and focused tests.
   - Acceptance criteria:
     - Queries return the active owned project, current draft, latest confirmed revision, and bounded project history without exposing another user's payload/document.
@@ -34,7 +34,7 @@ Definition of done: An authenticated user can start from a canonical repository 
     - Repeated save/confirm calls are idempotent; skipped revisions, double confirmation, archived projects, stale revision writes, forged document/project relationships, and cross-owner IDs fail closed.
   - Verification: lifecycle table tests, stale/concurrent edit tests, two-user graph swaps, 256 KiB document guard tests, `npm run test:convex`.
 
-- [ ] `WP25-S3` - Build the own-idea intake and confirmation journey
+- [x] `WP25-S3` - Build the own-idea intake and confirmation journey
   - Scope: `app/dashboard/new/**`, `components/platform/intake/**`, focused UI/route tests.
   - Acceptance criteria:
     - A concise staged form captures only the information required by the frozen brief contract, autosaves/resumes a server draft, and presents a clear review step before confirmation.
@@ -43,7 +43,7 @@ Definition of done: An authenticated user can start from a canonical repository 
     - Loading, save, retry, stale revision, empty, confirmation, keyboard, focus, mobile, and reduced-motion states meet WCAG 2.1 AA and the approved dark editorial design system.
   - Verification: component/route tests plus desktop/mobile keyboard and automated a11y journey.
 
-- [ ] `WP25-S4` - Add bounded project cards and resume actions
+- [x] `WP25-S4` - Add bounded project cards and resume actions
   - Scope: `components/platform/projects/**`, narrowly owned project routes/components outside WP23's dashboard root, project query tests.
   - Acceptance criteria:
     - Owner project list is indexed, paginated/bounded, excludes archived records, and returns only the fields needed for title, source, status, last update, and next supported action.
@@ -52,7 +52,7 @@ Definition of done: An authenticated user can start from a canonical repository 
     - Direct project access verifies ownership server-side and uses generic not-found behavior for missing/cross-owner IDs.
   - Verification: pagination/two-user/archived-project tests and focused responsive UI tests.
 
-- [ ] `WP25-S5` - Bridge every public idea to the future preview flow without SEO regression
+- [x] `WP25-S5` - Bridge every public idea to the future preview flow without SEO regression
   - Scope: the narrow rendered-idea CTA seam in `app/ideas/[slug]/page.tsx` and/or a new `components/ideas/PreviewIdeaCta.tsx`, plus public route/SEO/a11y tests.
   - Acceptance criteria:
     - Every actual idea article (MDX or Convex-backed) presents one clear `Preview this idea` link to `/build/{slug}`; collection hub fallbacks do not masquerade as buildable idea records.
