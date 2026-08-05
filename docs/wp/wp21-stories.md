@@ -97,6 +97,7 @@ The WP21 worker may edit:
 - minimal `/signin`, magic-link confirmation, callback/error, logout, and `/dashboard` placeholder routes/components
 - `middleware.ts` only to compose Convex Auth with the frozen canonical behavior
 - auth and redirect tests under `convex/` and `tests/`
+- `vitest.config.ts` only for the minimum module-resolution/test-runtime accommodation needed to exercise the installed Convex Auth adapter
 - `.env.example` for key names/comments only
 - `docs/wp/wp21-progress.md` and WP21-specific evidence/backup append sections
 
