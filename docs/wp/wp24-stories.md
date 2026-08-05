@@ -16,7 +16,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
 
 ## Stories
 
-- [ ] `WP24-S1` - Freeze the test-mode pack catalog and create secure Checkout Sessions
+- [x] `WP24-S1` - Freeze the test-mode pack catalog and create secure Checkout Sessions
   - Scope: platform billing server modules, `app/api/platform/billing/checkout/route.ts`, focused tests and env-name documentation.
   - Acceptance criteria:
     - Server catalog exposes only the three frozen pack IDs/amounts/credits and resolves configured test Price IDs server-side; unknown/forged pack, amount, currency, credit, Price ID, owner, or project input is rejected.
@@ -25,7 +25,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
     - Test-mode enforcement rejects live keys/Price IDs by prefix or configured mode before any Stripe call.
   - Verification: forged-input/two-user/idempotency/config-mode tests, `npm run typecheck`, `npm run test:convex`.
 
-- [ ] `WP24-S2` - Implement the atomic credit account and append-only ledger
+- [x] `WP24-S2` - Implement the atomic credit account and append-only ledger
   - Scope: `convex/platform/billing/**`, focused Convex tests.
   - Acceptance criteria:
     - Server helpers create one account per owner, return bounded owner history, and apply integer credit deltas atomically while writing exactly one immutable ledger row per idempotency key/provider event.
@@ -34,7 +34,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
     - No generic client mutation can set balance, delta, reason, purchase status, amount, credits, or provider identifiers.
   - Verification: concurrent spend, duplicate idempotency, cross-owner, insufficient-credit, projectless/account history, negative-balance suspension, and append-only tests.
 
-- [ ] `WP24-S3` - Process purpose-separated Stripe webhooks exactly once
+- [x] `WP24-S3` - Process purpose-separated Stripe webhooks exactly once
   - Scope: `app/api/platform/billing/webhook/route.ts`, platform billing event functions/tests.
   - Acceptance criteria:
     - Verify the raw request body with the platform-specific webhook secret before parsing or mutating; missing/invalid signatures fail with no state change.
@@ -44,7 +44,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
     - Acknowledgement/retry behavior distinguishes invalid requests from transient internal failure and does not silently acknowledge a required mutation that failed.
   - Verification: invalid signature, foreign purpose, replay, delayed/unordered completion, duplicate refund, dispute, amount mismatch, and transient failure tests.
 
-- [ ] `WP24-S4` - Build the server-confirmed billing workspace
+- [x] `WP24-S4` - Build the server-confirmed billing workspace
   - Scope: `app/dashboard/billing/**`, `components/platform/billing/**`, billing UI tests.
   - Acceptance criteria:
     - Show server-derived balance, pack choices, bounded ledger/purchase history, and clear pending/paid/refunded/disputed states; never claim credits from a redirect query string or optimistic browser state.
@@ -53,7 +53,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
     - Keyboard/focus/loading/error/empty states meet WCAG 2.1 AA and match the approved dark editorial dashboard system without gradients or payment dark patterns.
   - Verification: component/route tests plus desktop/mobile keyboard and automated a11y journey.
 
-- [ ] `WP24-S5` - Prove adversarial money invariants and legacy isolation
+- [x] `WP24-S5` - Prove adversarial money invariants and legacy isolation
   - Scope: WP24-owned tests and documentation only.
   - Acceptance criteria:
     - Test matrix covers two users/projects, concurrent checkout and spend, forged prices/metadata, repeated route calls, webhook replays, unordered events, partial/full refund, dispute, refund after spend, and negative-balance recovery.
@@ -62,7 +62,7 @@ Definition of done: In Stripe test mode, an authenticated project owner can choo
     - No raw card data is accepted or stored, and logs/errors contain no Stripe secret, webhook signature, session cookie, email, or raw event body.
   - Verification: focused adversarial suite, `npm run test:convex`, route tests, secret/log scan.
 
-- [ ] `WP24-S6` - Run the WP24 payment/security gate
+- [x] `WP24-S6` - Run the WP24 payment/security gate
   - Scope: `docs/wp/wp24-progress.md` plus WP24-owned fixes only.
   - Acceptance criteria:
     - Standard checks and all focused route/Convex/adversarial/browser tests pass; Stripe SDK use follows hosted Checkout and signature-verification guidance.

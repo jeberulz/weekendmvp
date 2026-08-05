@@ -22,6 +22,13 @@ import {
 import type { DataModel } from "./dataModel.js";
 
 /**
+ * Typesafe environment variables declared in `convex.config.ts`.
+ */
+type Env = {
+  readonly PLATFORM_BILLING_BRIDGE_SECRET: string;
+};
+
+/**
  * Define a query in this Convex app's public API.
  *
  * This function will be allowed to read your Convex database and will be accessible from the client.
@@ -73,6 +80,11 @@ export declare const internalMutation: MutationBuilder<DataModel, "internal">;
  * @returns The wrapped action. Include this as an `export` to name it and make it accessible.
  */
 export declare const action: ActionBuilder<DataModel, "public">;
+
+/**
+ * Typesafe environment variables declared in `convex.config.ts`.
+ */
+export declare const env: Env;
 
 /**
  * Define an action that is only accessible from other Convex functions (but not from the client).
