@@ -6139,6 +6139,233 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-lesson-planner-teachers",
+      "title": "AI Lesson Planner for Teachers",
+      "publishedAt": "2026-08-05",
+      "category": "education",
+      "description": "Generate standards-aligned lesson plans grounded in your state's actual standards text, then push them straight to Google Classroom in one click.",
+      "buildTime": "10-12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:1507",
+      "og": {
+        "subject": "A stack of paper lesson plans on a dark desk beside a closed laptop, mint edge light, late evening, shallow focus",
+        "accent": "mint",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 2835,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "medication-interaction-checker",
+      "title": "Multi-Doctor Medication Interaction Checker",
+      "publishedAt": "2026-08-05",
+      "category": "health",
+      "description": "Track every prescription, supplement, and OTC in one profile that re-screens the whole list for documented interactions each time something changes.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:6765",
+      "og": {
+        "subject": "Amber pill bottles clustered on a dark kitchen counter, lavender backlight, single overhead pool of light, shallow focus",
+        "accent": "lavender",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 3013,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "underused-venue-marketplace",
+      "title": "Underused Venue Marketplace",
+      "publishedAt": "2026-08-05",
+      "category": "marketplace",
+      "description": "Concierge-onboarded marketplace that turns churches, gyms, and clubs into bookable event venues, with house rules and per-event insurance built in.",
+      "buildTime": "10-12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:1185",
+      "og": {
+        "subject": "Empty folding chairs stacked along the wall of a dark hall, emerald light spilling through an open doorway, wide quiet interior",
+        "accent": "emerald",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3045,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "excel-formula-repair-ai",
+      "title": "AI Excel Formula Repair Tool",
+      "publishedAt": "2026-08-05",
+      "category": "b2b",
+      "description": "Audit any inherited Excel workbook for broken references, off-by-one ranges, and mismatched formulas, with fixes you approve one diff at a time.",
+      "buildTime": "10-12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "freelancers"
+      ],
+      "source": "ideabrowser:1245",
+      "og": {
+        "subject": "A dark monitor showing a dense spreadsheet grid, lime cursor glow on one cell, low desk lamp, shallow focus",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3181,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "subscription-audit-assistant",
+      "title": "Subscription Audit and Cancellation Assistant",
+      "publishedAt": "2026-08-05",
+      "category": "fintech",
+      "description": "Find every recurring charge across your accounts, cancel the dead ones, and verify the following month that the charge actually stopped.",
+      "buildTime": "10-12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:1823",
+      "og": {
+        "subject": "A fan of credit cards on a dark table beside a folded paper statement, aubergine rim light, overhead angle, shallow focus",
+        "accent": "aubergine",
+        "status": "pending"
+      },
+      "provenance": {
+        "researchCalls": [
+          "browse_ideas",
+          "competitive_analysis",
+          "go_to_market"
+        ],
+        "citations": 8,
+        "wordCount": 3205,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z",
+        "publishNotes": "Category-fill batch (education/health/marketplace/b2b/fintech) via publish-idea Mode A"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
