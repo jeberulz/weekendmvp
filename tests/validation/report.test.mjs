@@ -10,9 +10,17 @@ import {
 
 test("completeDateRanges uses complete UTC days without overlap", () => {
   assert.deepEqual(completeDateRanges(new Date("2026-08-05T10:00:00.000Z")), {
-    current: { startDate: "2026-07-29", endDate: "2026-08-04" },
-    baseline: { startDate: "2026-07-01", endDate: "2026-07-28" },
+    dataLagDays: 2,
+    current: { startDate: "2026-07-28", endDate: "2026-08-03" },
+    baseline: { startDate: "2026-06-30", endDate: "2026-07-27" },
   });
+});
+
+test("completeDateRanges rejects an invalid data-latency window", () => {
+  assert.throws(
+    () => completeDateRanges(new Date("2026-08-05T10:00:00.000Z"), 0),
+    /positive integer/,
+  );
 });
 
 test("buildValidationReport flags normalized volume and conversion changes", () => {

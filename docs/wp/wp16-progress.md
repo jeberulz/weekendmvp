@@ -23,7 +23,8 @@ delivery activates after the four documented GitHub Actions secrets are set.
 ## S3 — Weekly GA4 report
 
 - Added a pure report module and tested CLI using GA4 property `517826359`.
-- Current seven complete UTC days are compared with the prior 28 complete days.
+- Seven complete UTC days ending after a two-day GA4 processing lag are
+  compared with the prior 28 complete days.
 - Baseline volume is normalized to seven days; page signals use the documented
   25/100 view eligibility and 25%/2pp movement thresholds.
 - Markdown and escaped, mobile-friendly HTML renderers are covered by tests.

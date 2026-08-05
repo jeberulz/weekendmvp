@@ -28,7 +28,7 @@ Definition of done: Weekend MVP emits a consistent idea-to-revenue event funnel,
 - [x] `WP16-S3` - Weekly GA4 report
   - Scope: pure report module, CLI, package script, and tests.
   - Acceptance criteria:
-    - Compare the last seven complete UTC days with the preceding 28 complete days.
+    - Compare seven complete UTC days, ending after a two-day GA4 processing lag, with the preceding 28 complete days.
     - Normalize baseline volume to a seven-day equivalent.
     - Require at least 25 current views and 100 baseline views before page-level signals.
     - Flag at least 25% relative volume movement or two percentage points of conversion movement.

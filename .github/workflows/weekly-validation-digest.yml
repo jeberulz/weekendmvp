@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 10
     env:
       GA4_PROPERTY_ID: "517826359"
+      GA4_DATA_LAG_DAYS: "2"
       GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       VALIDATION_REPORT_EMAIL_FROM: ${{ secrets.VALIDATION_REPORT_EMAIL_FROM }}

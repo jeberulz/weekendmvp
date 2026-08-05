@@ -1,8 +1,9 @@
 # Weekly validation digest
 
-The scheduled workflow runs every Monday at 08:00 UTC. It compares the last
-seven complete UTC days with the preceding 28 days, writes a Markdown artifact,
-and sends the same report through Resend.
+The scheduled workflow runs every Monday at 08:00 UTC. It compares seven days
+ending two days before the run with the preceding 28 days. The two-day lag
+avoids reporting on GA4 data that may still be processing. It writes a Markdown
+artifact and sends the same report through Resend.
 
 ## GitHub Actions secrets
 
@@ -19,6 +20,9 @@ The service account must have at least Viewer access to GA4 property
 `517826359`. The workflow does not need GA4 custom dimensions: it groups events
 by the built-in `pagePath` dimension and uses manifest metadata to resolve idea
 slugs and primary actions.
+
+`GA4_DATA_LAG_DAYS` defaults to `2` and is set explicitly in the workflow. Local
+runs may override it with an integer from 1 through 7.
 
 Do not commit credentials or the recipient address. The workflow fails when an
 email secret is missing so an artifact-only run cannot be mistaken for a
@@ -63,3 +67,6 @@ and 100 views in the 28-day baseline. The report flags:
 Historical ideas default to `idea_prompt_copied`. New ideas declare their
 audience, falsifiable hypothesis, and primary action in
 `ideas/manifest.json.validation`.
+
+The report only contains consented client-side GA4 traffic. Beehiiv and
+Stripe/Convex remain authoritative for subscription and purchase totals.

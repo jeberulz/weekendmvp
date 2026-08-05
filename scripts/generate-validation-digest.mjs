@@ -20,6 +20,7 @@ const shouldEmail = args.includes("--email");
 const shouldPrint = args.includes("--stdout");
 const outputArgIndex = args.indexOf("--output");
 const propertyId = process.env.GA4_PROPERTY_ID ?? "517826359";
+const dataLagDays = Number(process.env.GA4_DATA_LAG_DAYS ?? "2");
 
 function requiredEnv(name) {
   const value = process.env[name]?.trim();
@@ -123,8 +124,11 @@ async function main() {
   if (!/^\d+$/.test(propertyId)) {
     throw new Error("GA4_PROPERTY_ID must be numeric");
   }
+  if (!Number.isInteger(dataLagDays) || dataLagDays < 1 || dataLagDays > 7) {
+    throw new Error("GA4_DATA_LAG_DAYS must be an integer from 1 through 7");
+  }
 
-  const ranges = completeDateRanges();
+  const ranges = completeDateRanges(new Date(), dataLagDays);
   const client = analyticsClient();
   const [ideas, currentRows, baselineRows] = await Promise.all([
     readIdeas(),
