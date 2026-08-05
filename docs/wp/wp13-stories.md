@@ -27,7 +27,7 @@ Definition of done: Dirty legacy URLs (apex host, trailing slash, `.html`) resol
   - Verification:
     - Config review + typecheck.
 
-- [ ] `WP13-S3` - Clear Vercel apex domain redirect after middleware is live
+- [x] `WP13-S3` - Clear Vercel apex domain redirect after middleware is live
   - Scope: Vercel project domain `weekendmvp.app` (`redirect` → `null`)
   - Acceptance criteria:
     - Middleware is deployed to production first.
