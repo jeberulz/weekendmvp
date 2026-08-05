@@ -31,11 +31,11 @@ Environment: Isolated anonymous/local Convex backend plus local Next.js
 - Secret/private-key scan: final staged implementation/documentation set, zero secret-pattern hits.
 - Independent Resend review initially blocked on token/PII leakage, pre-verification identity reservation, provider enumeration, and shared-origin validation. All were remediated; re-review passed with no remaining critical, high, or medium finding.
 
-## Blocking Live Provider Evidence
+## Live Provider Evidence and Deferred Go-Live Gate
 
-- Resend is wired and its real installed-package issue, verification, expiry, replay, normalization, collision, and delivery contracts pass deterministically with mocked HTTPS delivery. No real inbox delivery has been exercised because `AUTH_RESEND_KEY` and a verified `AUTH_RESEND_FROM` are not configured in the isolated deployment.
-- Google provider code is configured, but no OAuth client credentials are present. Real redirect, callback, session, and logout E2E remain unexercised.
-- These are WP21 completion blockers. Deterministic provider evidence is not represented as credential-backed provider E2E evidence.
+- The owner completed the credential-backed Resend inbox issue, explicit confirmation, cookie session, safe dashboard return, and dashboard client-lifecycle flow against the isolated local deployment.
+- Google provider code is configured and its security/lifecycle contracts pass deterministically, but no OAuth client credentials are present. Real redirect, callback, session, and logout E2E remain unexercised.
+- By owner ruling, Google credential-backed E2E is deferred to go-live and does not block WP22. It remains an activation requirement and is not represented as passed evidence.
 
 ## Production Guardrail
 

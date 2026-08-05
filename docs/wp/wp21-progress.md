@@ -190,3 +190,10 @@ Append-only progress log. Do not rely on chat history for project state.
   - In-app browser navigation after the patch produced no new console errors on the auth route. The owner then repeated the credential-backed magic-link flow and confirmed that the authenticated dashboard opened without the closed-client error, completing the client-lifecycle acceptance check.
   - `git diff --check` and the worktree secret-pattern scan: pass.
 - Status: the credential-backed Resend inbox, server-session, safe return, and dashboard client-lifecycle gates pass locally. WP21 remains open for the separate Google redirect/callback/session/logout gate and production activation controls.
+
+## 2026-08-05 - Development closeout and Google go-live deferral
+
+- Owner ruling: credential-backed Google OAuth does not block WP22 or development completion. Google client credentials and the real redirect/callback/session/logout cycle are deferred to go-live activation.
+- Development evidence: the live Resend inbox flow, explicit confirmation, cookie session, safe dashboard return, and dashboard client lifecycle pass locally. Deterministic tests cover Google configuration/callback contracts, logout routing, expiry/replay, same-email collision denial, anonymous denial, and canonical routing.
+- Evidence boundary: Google has not been exercised with real credentials and must not be described as passed E2E. The go-live record must run that cycle before production activation.
+- Status: WP21 development scope is complete and WP22 is authorized to start. Production remains blocked on fresh inventory, full backup, restore tag, exact dry run, production secrets, credential-backed Google E2E, independent review, and explicit owner approval.

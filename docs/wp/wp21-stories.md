@@ -3,7 +3,7 @@
 Branch: `codex/wp21-convex-auth`
 Lane: Work Package within Build Platform Program Wave 2
 Registry: `docs/PROJECT_STRATEGY.md`
-Definition of done: The existing `users` IDs remain valid under a compatibility-first Convex Auth schema; Google and the owner-selected magic-link provider are integrated in an isolated development deployment; sign-in, confirmation, callback, logout, expiry, anonymous denial, and same-email non-linking behavior pass; the canonical public-site redirect contract remains green; and production remains unchanged until its separate backup/dry-run/approval record exists.
+Definition of done: The existing `users` IDs remain valid under a compatibility-first Convex Auth schema; credential-backed Resend sign-in, confirmation, session, safe return, and dashboard behavior pass in isolated development; Google configuration and auth lifecycle security contracts pass deterministically; anonymous denial, expiry/replay, same-email non-linking, logout routing, and canonical public-site behavior remain green; and credential-backed Google E2E plus production activation stay deferred to the separately gated go-live record.
 
 ## Stories
 
@@ -32,7 +32,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - `npm run typecheck`
     - `npm run test:convex`
 
-- [ ] `WP21-S3` - Configure Google and phishing-resistant magic-link authentication
+- [x] `WP21-S3` - Configure Google and phishing-resistant magic-link authentication
   - Scope: `convex/auth.ts`, `convex/auth.config.ts`, `convex/http.ts`, provider-specific auth UI/actions, and auth-flow tests.
   - Acceptance criteria:
     - Google uses the official `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` contract and callback path.
@@ -43,7 +43,8 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - Auth errors are generic, secrets stay server-side, and callback/redirect targets are allowlisted to same-origin platform paths.
   - Verification:
     - Provider contract/unit tests for Google, magic-link issue/confirm/expiry/replay, callback validation, and same-email collision
-    - Isolated end-to-end sign-in for each configured provider when owner credentials are available
+    - Credential-backed Resend issue/confirmation/session/dashboard flow in isolated development
+    - Deterministic Google redirect/callback/session/logout contracts; credential-backed Google E2E is deferred to go-live by the 2026-08-05 owner ruling
     - Staged secret/private-key pattern scan
 
 - [x] `WP21-S4` - Integrate authenticated Next.js state without taking tenant routing
