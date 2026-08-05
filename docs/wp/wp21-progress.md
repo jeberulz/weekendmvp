@@ -96,3 +96,12 @@ Append-only progress log. Do not rely on chat history for project state.
   - `npm audit --audit-level=high` and `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
   - `git diff --check`: pass.
   - Final secret scan scope: 0 staged files, 9 tracked worktree diffs, and 22 untracked files; 31 unique implementation/progress files scanned with zero private-key, JWT, OAuth-secret, Stripe-secret, Google-key, or Ideabrowser-key pattern hits.
+
+## 2026-08-05 - Owner selected Resend
+
+- Owner ruling: Resend will deliver WP21 magic-link email.
+- The security contract remains the custom Convex `Email` provider, not the instant-click stock Resend flow: delivery must construct `/email-signin?token=...&email=...`, require the existing explicit confirmation action, and preserve a bounded `/dashboard/**` return target.
+- Required environment key names are `AUTH_RESEND_KEY` and `AUTH_RESEND_FROM`. The sender must be explicitly configured and verified; production must not fall back to a shared/demo sender.
+- Delivery errors must stay generic, secret values and raw provider responses must not be logged, email identifiers must be normalized before use, and the token must remain single-use with a bounded expiry.
+- Scope remains isolated local/development. No Resend account/domain/API-key creation, external email send, production environment change, or production deployment is authorized by this ruling alone.
+- Next: assign the high-risk auth worker to implement provider code, UI, and deterministic issue/confirmation/expiry/replay contract tests. Real delivery and Google E2E wait for credentials entered through the approved secret channel, never chat or Git.
