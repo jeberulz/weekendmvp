@@ -5,6 +5,10 @@ const LEGACY_ORIGIN =
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Own trailing-slash 308s in middleware so apex+slash collapses to www
+  // clean in one hop (WP13). Without this, Next emits a same-host relative
+  // slash redirect before our apex→www logic can run.
+  skipTrailingSlashRedirect: true,
   outputFileTracingIncludes: {
     "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
     // sitemap.xml enumerates MDX at request time, so the content dirs must be

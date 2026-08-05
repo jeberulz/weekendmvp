@@ -20,7 +20,11 @@ import {
  * this middleware; www dirty URLs still get a single hop here.
  */
 export function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+  // Prefer the raw request URL — NextURL can normalize away a trailing slash
+  // even when skipTrailingSlashRedirect is set (see next.js#66738).
+  const raw = new URL(request.url);
+  const pathname = raw.pathname;
+  const search = raw.search;
   const host = request.headers.get("host")?.split(":")[0] ?? "";
 
   const cleaned = cleanPath(pathname);
@@ -39,10 +43,10 @@ export function middleware(request: NextRequest) {
   }
 
   // Preview / localhost / other hosts: clean path in place when needed.
+  // Build a plain URL so NextURL cannot re-introduce slash normalization.
   if (dirtyPath) {
-    const url = request.nextUrl.clone();
-    url.pathname = cleaned;
-    return NextResponse.redirect(url, 308);
+    const dest = new URL(`${raw.protocol}//${raw.host}${cleaned}${search}`);
+    return NextResponse.redirect(dest, 308);
   }
 
   return NextResponse.next();
