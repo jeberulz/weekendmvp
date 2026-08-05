@@ -93,7 +93,9 @@ scored opportunity. Positioning:
   `get_idea_research({idea_id})` + sections `competitive_analysis`, `go_to_market`,
   `keyword_list`, `community_analysis`, plus `research_market_insight` and
   `research_trend`. Quota constraint: **3 deep research reports/month** on the
-  current plan — plan capacity accordingly (see §7 Risks).
+  current plan. **Superseded 2026-08-05:** this integration is being replaced
+  wholesale by our own Idea Engine (§4.5, §4.5.1) and the subscription ends
+  2026-09-05 — kept here as the record of what the engine must replicate.
 
 ---
 
@@ -110,16 +112,18 @@ scored opportunity. Positioning:
 4. **Intake:** short wizard — chosen idea (pre-filled from our repository) or their
    own idea (free text + a few qualifying questions: audience, revenue model
    preference, name preference). Output: a **Build Brief** the user confirms.
-5. **Pay:** buy a credit pack or subscribe (see §5). First action is always visible
-   before payment (transparent preview of what the credits will produce).
+5. **Preview, then pay (§6.3):** the landing-page preview is generated and shown
+   **before** any payment — the moment of desire is the moment we ask. Payment
+   (credit pack, priced in dollars on marketing pages) unlocks publishing.
 6. **Research phase:**
    - *Repository idea:* we already hold the research → agents compile it into a
      customer-facing **Validation Report** (near-zero marginal cost, instant
-     delivery). This is the "minimum viable product of the product."
-   - *Own idea:* agents run the full 360° — market stats, competitors + pricing,
-     community signals, positioning, suggested value ladder — via Ideabrowser MCP
-     (when a matching record exists) or the web-research fallback discipline already
-     defined in `/publish-idea` Mode B. Delivered as the same Validation Report.
+     delivery). Note the research is already public on the idea page, so the
+     report is a *bundled extra*, not the hook (§6.4).
+   - *Own idea:* the **Idea Engine** (§4.5) runs the full 360° — market stats,
+     competitors + pricing, community signals, positioning, suggested value
+     ladder — entirely in-house. Delivered as the same Validation Report, and
+     free for the first idea per account (§6.4).
 7. **Build phase (the deliverable ladder):**
    - **Tier 1 — Landing page:** branded, conversion-ready landing page for the idea
      (hero, offer, social proof placeholders, waitlist/email capture wired to the
@@ -394,9 +398,10 @@ validates the credit mental model at $1–2/credit; our deliverables are chunkie
 
 | Offer | Price (launch) | What it buys |
 |---|---|---|
-| **Validation Report** — repository idea | **Free with signup** (first one) | The hook. Near-zero marginal cost — we already have the research. Converts readers into accounts |
-| Validation Report — own idea | ~15 credits | Full 360° research pass |
-| **Landing page build** (Tier 1) | ~25 credits | Deployed page + email capture + OG card + report bundled |
+| **Landing page preview** — repository idea | **Free, no signup to see; signup to keep** | **The hook (corrected 2026-08-05 — see §6.4).** They already read the research on the idea page; the preview is the thing they can't get by reading. Publishing it is the paid step |
+| **Validation Report** — own idea | **First one free with signup** | The hook on the bring-your-own-idea path, where the research *is* new information. Costs us an engine run — gate behind signup and rate-limit |
+| Validation Report — additional own ideas | ~15 credits | Full 360° research pass via the Idea Engine (§4.5) |
+| **Landing page build** (Tier 1) | ~25 credits (**shown as $29**, see §6.3) | Deployed page + email capture + OG card + report bundled |
 | Revision task | 1–3 credits | Scoped changes |
 | MVP scaffold (Tier 2) | ~75–100 credits | Post-launch fast follow |
 | **Credit packs** | $29 / 25cr · $79 / 75cr · $199 / 220cr | One-time Stripe Checkout; credits don't expire |
@@ -409,19 +414,128 @@ platform customers is an obvious bridge).
 
 **Unit-economics guardrail:** each landing-page build ≈ one bounded agent pipeline
 (target < $3 inference + $0 infra at v1 architecture) against $25-in-credits
-revenue. Own-idea research is the expensive path (Ideabrowser quota or long web
-research) — price it accordingly and cache aggressively.
+revenue. Own-idea research is the expensive path (a full Idea Engine run) — it is
+the one free offer that costs us real money, so gate it behind signup, one per
+account, with abuse rate-limits.
 
 ---
 
-## 6. Delivery plan (waves → work packages)
+## 6. Conversion strategy
+
+### 6.1 The idea pages are the storefront, not the homepage
+
+Traffic that converts does not arrive at `/`. It arrives at `/ideas/{slug}` from
+search, having just read our research on one specific validated idea — the
+highest-intent state anyone reaches on this site. **Today that page's conversion
+action is a Cal.com "Book a Consult" link:** high friction, unscalable, and it
+asks for 30 minutes before the visitor gets anything.
+
+Replacing it with **"Build this idea for me"** turns every published idea page
+into a product page for a specific thing the reader already wants, and turns the
+whole SEO library into distributed storefronts. This is the single highest-value
+change in the program, and it is not copyable — it requires owning the library
+(which §4.5.1 makes permanent).
+
+**Consequence for sequencing:** the idea-page CTA moves out of WP23 (launch
+marketing) into **WP18** (intake), because it is the primary distribution
+mechanism, not a marketing detail. WP23 keeps the homepage rewrite + pricing page.
+
+### 6.2 What the homepage becomes
+
+Today the homepage sells the Starter Kit: *"the exact checklist, templates, and
+prompts to build a 3-screen MVP in 48 hours."* That is a **DIY** promise; the
+platform is a **done-for-you** promise. The two pull in opposite psychological
+directions, and giving them equal weight muddies both. **Ruling needed / assumed:
+platform becomes the primary promise; the Starter Kit demotes to a secondary path
+for people who explicitly want to build it themselves** (it also remains a
+lower rung of the ship·able → DARE ladder).
+
+Page structure, in order:
+
+1. **Hero — name the wedge, not the mechanism.** Shape:
+   *"1,400 validated ideas. Pick one. We'll build it this weekend."*
+   Sub-line does the differentiation: *most AI builders will happily build an
+   idea nobody wants — we start from research.*
+2. **Live idea picker** — real cards from the library; clicking one starts the
+   flow. The product demo and the value proposition are the same artifact.
+3. **How it works, three steps** — pick an idea → we research and build → your
+   URL is live.
+4. **A real example build** — one we produce ourselves before launch (we have no
+   customer volume on day one; see §6.5).
+5. **Pricing in dollars** (§6.3).
+6. **Risk reversal** (§6.4) + FAQ.
+
+SEO note: the homepage ranks mostly for brand queries; the long-tail lives on
+`/ideas/*` and `/articles/*`, which this change does not touch. `/build` remains
+the dedicated conversion page for ads and direct traffic.
+
+### 6.3 Three mechanics that outrank copy
+
+- **Show the thing before charging for it.** Generate the landing-page *preview*
+  and ask for payment at the moment they see it — never before. This is exactly
+  where Polsia loses (pay, then hope). Preview-then-publish inverts the risk and
+  collapses demo and product into one artifact. Architecturally free for us: the
+  v1 multi-tenant renderer (§4.2) already produces pages from config, so a
+  preview is a publish without the publish flag.
+- **Dollars on marketing pages; credits only inside the dashboard.** Credits are
+  a metering and retention device, not a selling device. "A live landing page:
+  $29" converts; "25 credits" makes people do arithmetic and leave. Polsia's
+  credit UI is genuinely confusing and it costs them conversions.
+- **Put the guarantee on the page.** We are entering a category whose leader has
+  80% one-star reviews for one reason. Auto-refund on failed builds is already in
+  the architecture (§4.4) — say it out loud: *"If the build fails, your credits
+  come back automatically."* A structural claim the competitor cannot match.
+
+### 6.4 Free-hook correction (supersedes the §5 assumption approved 2026-08-05)
+
+The original hook was "first repository-idea Validation Report free." That is the
+wrong gift: **on a published idea page the research is already free and on screen.**
+The report adds little perceived value there, while costing us an engine run.
+
+Corrected:
+- **Repository idea → the free thing is the landing-page preview.** New
+  information, instant, and it creates the desire to publish.
+- **Own idea → the free thing is the Validation Report.** Genuinely new
+  information the visitor cannot get anywhere else, and the natural entry point
+  for the bring-your-own-idea path.
+
+Same generosity, aimed where it actually creates desire. Reflected in the §5 table.
+
+### 6.5 Launch-day proof problem
+
+Polsia's `/live` feed (15,596 companies, streaming tasks) is their conversion
+engine. We launch with zero builds and cannot fake it. Substitutes, in order of
+honesty:
+
+1. **Our own builds.** Produce 3–5 real landing pages from library ideas before
+   launch, published as case studies with live URLs. This doubles as the WP20
+   quality gate — the same artifacts prove the product and test the pipeline.
+2. **Research depth as proof.** The library itself is the credibility asset:
+   citations, competitor pricing, scores. Nobody else in the category shows their
+   work like this.
+3. **An honest counter,** started small and real (reports produced, pages built),
+   growing into a `/live`-style module (WP23) only once the numbers earn it.
+
+### 6.6 Funnel + instrumentation
+
+`/ideas/{slug}` (SEO) → **"Build this idea for me"** → preview generated (no
+payment) → signup to keep → checkout → build published → dashboard (revisions,
+retention) → Builder plan.
+
+Each arrow gets a GA4 event so the drop-off is measurable from day one; the
+preview→signup and signup→checkout steps are the two that decide whether this
+business works, and both are instrumented in WP23. Ties to the §10 KPIs.
+
+---
+
+## 7. Delivery plan (waves → work packages)
 
 Program lane rules apply: audit → freeze `docs/wp/program-manifest.md` from this
 plan → gate every wave. Branch-first; stories/progress files per WP. Model routing
 per `.agentic-workflow.yml` (auth/payments/agents = high tier).
 
 ### Wave 0 — Program setup (half day)
-- **WP15 (this doc):** ruling on naming/domain (§8), freeze manifest, confirm
+- **WP15 (this doc):** rulings (§9), freeze manifest, confirm
   pricing numbers, create Stripe products in test mode.
 
 ### Wave 1 — Reversible foundations (aim: weekdays)
@@ -431,10 +545,13 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
 - **WP17 — Credits + billing:** Stripe Checkout packs, webhook → `credit_ledger`,
   balance UI, purchase history, customer portal. *Gate: test-mode purchase credits
   land exactly once (idempotent webhooks).*
-- **WP18 — Intake + projects:** "Build this idea for me" CTA on idea pages
-  (repository path pre-fills the brief), own-idea wizard, `projects`/`briefs`
-  tables, dashboard project cards. *Gate: both intake paths produce a confirmed
-  brief.*
+- **WP18 — Intake + projects + idea-page CTA:** **"Build this idea for me" CTA
+  rolled out across all published idea pages, replacing the Cal.com "Book a
+  Consult" action** (§6.1 — this is the program's primary distribution
+  mechanism, moved here from WP23); repository path pre-fills the brief;
+  own-idea wizard; `projects`/`briefs` tables; dashboard project cards. *Gate:
+  both intake paths produce a confirmed brief; CTA live on every idea page with
+  a11y-check green and no SEO/JSON-LD regression.*
 
 ### Wave 2 — The product (weekend build)
 - **WP19 — Research Engine + validation reports:** workflow task
@@ -445,10 +562,13 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
   repo-idea report free-flow end-to-end; one own-idea report produced entirely by
   our engine with ≥2 cited stats, 3+ competitors with pricing, and all scores
   populated; marginal cost per report measured and logged (< $5).*
-- **WP20 — Landing-page builder:** `site_configs` schema + multi-tenant renderer on
-  `*.weekendmvp.app`, landing-page agent pipeline with quality gate, publish/version
-  flow, email-capture block. *Gate: from a confirmed brief, a real subdomain URL in
-  < 10 min with zero manual steps.*
+- **WP20 — Landing-page builder + preview:** `site_configs` schema + multi-tenant
+  renderer on `*.weekendmvp.app`, landing-page agent pipeline with quality gate,
+  **unpaid preview → paid publish flow (§6.3 — a preview is a publish without the
+  publish flag)**, versioning, email-capture block. *Gate: from a confirmed brief,
+  a real subdomain URL in < 10 min with zero manual steps; preview renders without
+  payment and cannot be indexed or shared as a published page. Produces the 3–5
+  case-study builds §6.5 needs for launch proof.*
 - **WP21 — Task queue + revisions:** task list UI, revision agent, credit
   spend/refund logic, task status live-updates. *Gate: a revision visibly changes
   the live page and debits correctly; a forced failure auto-refunds.*
@@ -456,10 +576,11 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
 ### Wave 3 — Launch hardening (weekend + spillover)
 - **WP22 — Trust & safety:** content policy check in publish pipeline, rate
   limits, abuse kill-switch per project, terms/AUP pages for the platform.
-- **WP23 — Launch surface:** `/build` marketing page, pricing page, homepage +
-  idea-page CTA rollout, changelog/`/live`-style social-proof module (counts of
-  reports + builds — start honest and small), analytics events for the whole
-  funnel.
+- **WP23 — Launch surface:** homepage rewrite per §6.2 (platform-led hero, live
+  idea picker, case-study builds, Starter Kit demoted to secondary), `/build`
+  marketing page, pricing page **in dollars** (§6.3), case-study pages for the
+  §6.5 example builds, honest-counter social-proof module, and GA4 events on every
+  funnel arrow in §6.6. *(Idea-page CTA rollout moved to WP18.)*
 - **Gate (program):** full checks (`typecheck`, `lint`, `test`, `build`), Stripe
   live-mode smoke with a real card, one stranger-test of the full journey.
 
@@ -497,12 +618,15 @@ team seats, affiliate/referral.
 
 ---
 
-## 7. Risks
+## 8. Risks
 
 | Risk | Mitigation |
 |---|---|
 | ~~Ideabrowser quota~~ — **resolved by §4.5 ruling**: own Research Engine, no quota dependency | Residual risk moves to engine quality: citation gates, schema-validated sections, refund-on-failure, and the WP19 cost/quality gate |
-| Ideabrowser subscription lapses before Wave 4 lands → content pipeline stalls | Confirm renewal date and set it as the Wave-4 deadline in the manifest; publish the queued backlog early (quota-free); Mode B (draft + web research) remains a working fallback for ideas, and `/publish-article` never hard-depended on the MCP |
+| Ideabrowser subscription lapses (**2026-09-05**) before Wave 4 lands → content pipeline stalls | Hard deadline in the manifest; backlog burn already delegated to a parallel branch; Mode B (draft + web research) remains a working fallback for ideas, and `/publish-article` never hard-depended on the MCP |
+| **DIY vs done-for-you message split** (§6.2): homepage sells a self-build kit, platform sells done-for-you — running both at equal weight converts neither | Platform becomes the primary promise; Starter Kit demotes to a secondary path and stays a rung on the ship·able → DARE ladder. Decide before WP23 copy is written |
+| **Free preview abused** as a free landing-page generator (§6.3) | Preview is `noindex`, watermarked, non-shareable, expires; one free preview per idea per anonymous session, then signup; publish is the paid gate |
+| **No launch-day social proof** vs Polsia's 15k-company live feed (§6.5) | 3–5 self-produced case-study builds (doubles as the WP20 gate); research depth as the credibility asset; honest counters only |
 | Engine-generated ideas read as AI slop and dilute the library's credibility | M2 publish threshold + John's review queue gate every idea; side-by-side quality gate per compiler before MCP retirement; daily cadence can drop below 1/day rather than publish a weak idea |
 | Agent output quality = brand damage (Polsia's 1-star lesson) | Fixed pipelines not free loops; quality-gate model step; template-rendered pages (high floor); auto-refund on failure; human-visible artifacts for every step |
 | Payments/webhook correctness | Idempotent ledger, test-mode gate in Wave 1, Stripe CLI replay in tests |
@@ -510,7 +634,7 @@ team seats, affiliate/referral.
 | Scope blowup before the weekend | Anti-scope list (§3.2) is binding; Tier 2 is post-launch, period |
 | Solo-operator support load | Task statuses + documents make the product self-explaining; support = email only at launch |
 
-## 8. Rulings — ALL RESOLVED 2026-08-05 (recorded in `docs/wp/RULINGS.md`)
+## 9. Rulings — ALL RESOLVED 2026-08-05 (recorded in `docs/wp/RULINGS.md`)
 
 1. **Naming/domain:** keep `weekendmvp.app`, no new brand (§3.3).
 2. **Pricing:** §5 approved as proposed.
@@ -522,13 +646,17 @@ team seats, affiliate/referral.
    in-house before the subscription expires (Wave 4, WP24–26). **Wave 1 is clear
    to kick off.**
 
-## 9. KPIs (first 30 days)
+## 10. KPIs (first 30 days)
 
-- Signups from idea-page CTA (activation of the content moat).
-- Free report → paid conversion (the funnel's core validation).
+Measured against the §6.6 funnel; every arrow is a GA4 event.
+
+- **Idea-page CTA click-through** — activation of the content moat, and the
+  proof that §6.1 is right.
+- **Preview → signup** and **signup → checkout** — the two steps that decide
+  whether this business works.
 - Builds delivered < 10 min, task failure rate, refund rate (quality proxy — this
   is the metric Polsia loses on).
-- Credit revenue; blended inference cost per build.
+- Credit revenue; blended inference cost per build; cost per Idea Engine report.
 
 ---
 
