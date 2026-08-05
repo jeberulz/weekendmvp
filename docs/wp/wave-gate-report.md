@@ -84,3 +84,17 @@ A later wave cannot start until the prior gate is green or the owner records an 
 - **Non-blocking warnings:** The unchanged middleware deprecation, five Turbopack filesystem-tracing warnings, two Node module-type warnings, and 35 inherited lint warnings remain outside WP22.
 - **Evidence:** `docs/wp/wp22-stories.md`, `docs/wp/wp22-progress.md`, `convex/schema.ts`, `convex/platform/`, generated Convex API types.
 - **Next-wave authorization:** WP23, WP24, and WP25 may start in parallel with serialized ownership of shared files. This does not authorize cloud/production deployment, live Stripe objects/charges, tenant publishing, or customer-data collection.
+
+## Wave 2 / WP23-WP25 Integration Checkpoint - 2026-08-05
+
+- **Work packages:** WP23 signed-in shell/dashboard/Explore; WP24 credits/Stripe; WP25 intake/briefs/projects/public CTA
+- **Gate runners:** Independent reviewers `/root/wp23_gate_reviewer`, `/root/wp24_gate_reviewer`, and `/root/wp25_gate_reviewer`; orchestrator integration
+- **Branch/worktrees:** `codex/wave2-platform-integration` plus the three isolated WP worktrees
+- **Environment:** Local Next.js app and repository `local:` Convex deployment only. Serialized `convex codegen` refreshed the local function bundle and combined generated declarations; it changed no rows and contacted no cloud/production deployment.
+- **Integrated checks:** typecheck pass; lint pass with 0 errors/35 inherited warnings; full `npm test` pass including 91 OG, 6 links, 107 redirect, 134 auth, 10 security, 4 sitemap, and 364 Convex tests; production build pass with 310 generated pages; production dependency audit 0 vulnerabilities; diff and secret scans pass.
+- **WP23 result:** Code gate pass after Medium remediations. The additive `projects.by_ownerId_and_sourceIdeaId_and_archivedAt` contract amendment is exact, bounded, minimal, additive, and independently reviewed. S6 remains pending a safe authenticated desktop/mobile visual, keyboard, focus, responsive, and automated-a11y journey.
+- **WP24 result:** Test-mode payment/security gate pass after two High and two Medium remediations. Full refunds and dispute-created reversals are exact-once; partial refunds and dispute resolution fail before mutation and remain hard live blockers pending owner-approved policy/contract. Credential-backed Checkout/browser/webhook E2E remains an activation gate.
+- **WP25 result:** Code gate pass after two rounds of concurrent autosave remediation. Owner isolation, authoritative concurrent creation, stale-conflict behavior, immutable revisions, repository snapshots, bounded resume, CTA/SEO, and code-level accessibility pass. S6 remains pending a safe authenticated desktop/mobile autosave/resume/two-tab/focus/confirmation/a11y journey.
+- **Production/external state:** No production/cloud deployment, production row, environment value, domain, Stripe object, charge/refund, webhook, email, lead, publish, or customer-data mutation. No live activation is authorized.
+- **Result:** Integration code gate passes. Wave 2 is not fully closed because WP23/WP25 authenticated browser evidence and WP24 activation evidence/policies remain open.
+- **Next-wave authorization:** None yet. WP26 remains blocked on the completed WP25 package gate or an explicit owner exception; WP27 and production activation remain blocked by their manifest dependencies.

@@ -82,11 +82,6 @@ export declare const internalMutation: MutationBuilder<DataModel, "internal">;
 export declare const action: ActionBuilder<DataModel, "public">;
 
 /**
- * Typesafe environment variables declared in `convex.config.ts`.
- */
-export declare const env: Env;
-
-/**
  * Define an action that is only accessible from other Convex functions (but not from the client).
  *
  * @param func - The function. It receives an {@link ActionCtx} as its first argument.
@@ -106,6 +101,11 @@ export declare const internalAction: ActionBuilder<DataModel, "internal">;
  * @returns The wrapped function. Import this function from `convex/http.js` and route it to hook it up.
  */
 export declare const httpAction: HttpActionBuilder;
+
+/**
+ * Typesafe environment variables declared in `convex.config.ts`.
+ */
+export declare const env: Env;
 
 /**
  * A set of services for use within Convex query functions.
