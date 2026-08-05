@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation complete on `cursor/wp16-bolt-windsurf-enrichment`.
+Complete on `cursor/wp16-bolt-windsurf-enrichment`.
 
 ## S1 — CTR title/meta
 
@@ -17,4 +17,6 @@ Implementation complete on `cursor/wp16-bolt-windsurf-enrichment`.
 
 ## Verification
 
-- Pending typecheck/build
+- `npm run typecheck` — pass
+- `npm run build` — pass
+- Local smoke: bolt/windsurf titles + meta match new copy
