@@ -1,0 +1,158 @@
+---
+slug: "micro-influencer-deliverable-tracker"
+title: "Micro-Influencer Deliverable and Payment Tracker"
+---
+
+## The Problem
+
+A brand marketing manager greenlights a 40-creator micro-influencer campaign for a product launch. Contracts get sent as PDF attachments in Gmail. Deliverables — one Reel, two Stories, one static post — get tracked in a shared Google Sheet that three people edit simultaneously. Content approvals happen in a Slack channel that scrolls past anyone who steps away for a day. Payments go out via PayPal, one at a time, whenever someone remembers to check who actually posted. By week three, nobody can answer a simple question with confidence: which of the 40 creators have delivered everything they promised, and which of them have already been paid.
+
+This is not a hypothetical. Brands now run micro-influencer programs at real scale — the average brand works with about 30 micro-influencers per campaign, a 36% year-over-year increase, and nearly a fifth of brands manage 10 to 50 creators on a single campaign while another 15% run 50 to 100. Researchers who study this shift are blunt about what breaks first: managing relationships at scale is the most common operational challenge, and once a team coordinates 20 or 30 creators simultaneously, manual tracking through spreadsheets breaks down into missed contracts, delayed payments, and scattered performance data.
+
+The payment side cuts both ways. A survey of 500 influencers found 87% have experienced late or mishandled payments, and 55% say they would not work with a brand again after being paid late. On the brand side, the same disorganization that delays a payment also creates duplicate payments, because nobody has a single source of truth showing a creator was already paid for that deliverable through a different channel. A team running a 50-creator campaign on spreadsheets and DMs isn't just risking creator goodwill — it's risking real budget leakage and a compliance headache when finance asks for a clean record of what was promised, delivered, and paid.
+
+The tools brands already own don't solve this. Project-management software has no concept of a creator contract or a payment trigger; accounting software has no concept of a content deliverable. The gap between "what 50 creators owe us" and "what we owe 50 creators" is exactly where a purpose-built tracker earns its keep.
+
+## The Solution
+
+A lightweight, brand-side campaign command center built specifically around the three things a micro-influencer campaign actually needs to track: the contract terms per creator, the approval status of each individual deliverable, and the payment trigger tied to that approval. Instead of a generic project board, every creator gets a row with their agreed deliverables (one Reel, two Stories, whatever the contract specifies), and every deliverable moves through a fixed pipeline — not started, submitted, needs revision, approved, paid. When a deliverable hits "approved," the tool automatically queues the payment tied to it, so payment timing is a direct consequence of delivery instead of a separate manual step someone has to remember.
+
+**How it works:**
+
+1. **Add the campaign and creators** — Import a creator roster (CSV or manual entry), attach a contract template per creator with agreed deliverables, rate, and due dates; e-signature request goes out automatically.
+2. **Track deliverables against the contract** — Each creator gets a personal upload link (no login required) to submit proof of posting — a screenshot, video file, or live URL — against each line item in their contract.
+3. **Approve or request revisions** — The brand reviews submitted content against the contract terms in one queue; approve, leave inline feedback, or request a revision, with an automatic reminder sent to the creator if a deadline is approaching.
+4. **Trigger payment on approval** — Approving the final deliverable on a creator's contract flags them for payout; a batched payment run (or a Stripe Connect payout) processes on a schedule the brand controls, with every payment stamped to the deliverable that earned it.
+
+The dashboard view is the whole point: a single screen showing all 50 creators, color-coded by status, so a two-person marketing team can answer "who's late, who's owed money, and who do we chase today" in under a minute instead of cross-referencing three tools.
+
+## Market Research
+
+The category this product sits inside is large and growing quickly, and the specific pain it solves — campaign-management chaos at the micro-influencer tier — is well documented and under-served by the platforms built for it.
+
+- **The overall influencer marketing industry is valued at roughly $40.51 billion in 2026, up from $31.07 billion in 2025** — expanding fast enough that even a thin operational slice is a meaningful opportunity ([Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/influencer-marketing-market)).
+- **The influencer marketing platform/software segment was valued at roughly $26.15 billion in 2025, projected to reach $197.69 billion by 2035** at a 22.42% CAGR — brands are shifting budget from ad-hoc management toward dedicated software ([SNS Insider, via Yahoo Finance](https://finance.yahoo.com/markets/stocks/articles/influencer-marketing-platform-market-size-103000913.html)).
+- **Brands now run an average of 30 micro-influencers per campaign, a 36% year-over-year increase**, with 19% managing 10-50 creators and 15.2% managing 50-100 — exactly the headcount range where spreadsheets stop working ([Statusphere, State of Micro-Influencer Marketing 2025](https://brands.joinstatus.com/micro-influencer-report-2025)).
+- **87% of creators surveyed have experienced late or mishandled payments, and 55% would decline to work with that brand again** — payment reliability directly drives whether a brand can re-book its best creators next quarter ([Lumanu, Insights from 500 Influencers](https://www.lumanu.com/blog/insights-from-500-influencers-on-their-payment-experience)).
+- **Managing relationships at scale is the most common operational challenge in influencer marketing**, with spreadsheet tracking breaking down once a team crosses into the 20-30 creator range ([Popular Pays](https://popularpays.com/blog/solving-your-biggest-influencer-marketing-challenges-what-marketers-really-want)).
+
+Taken together, the market is large and growing, but the operational layer for the 10-100 creator range most brands actually run in is still dominated by spreadsheets, Slack, and PayPal rather than anything built for the contract-to-payment lifecycle.
+
+## Competitive Landscape
+
+The influencer marketing software category is real and well-funded, but almost every established platform is priced for enterprise teams running six-figure annual programs — not a small team running one 50-creator launch campaign on a limited budget.
+
+- **GRIN** — The most complete end-to-end platform (relationships, seeding, content, payments), but priced for scale: published tiers run Lite at $399/mo for 15 creators up to Complete at $1,799/mo for 400, and the Core enterprise plan is commonly quoted around $25,000/year ([GRIN pricing, via StackScored](https://www.stackscored.com/pricing/influencer-marketing/grin/)).
+- **Aspire (formerly AspireIQ)** — Strong creator-community and content-library features, but pricing starts around $2,000-2,300/month on a 12-month contract, landing near $30,000/year minimum before onboarding fees ([Aspire pricing review](https://www.influencer-hero.com/blogs/aspire-pricing-and-review-features-costs-and-benefits)).
+- **Upfluence** — Solid ecommerce integrations and AI-driven outreach, priced roughly $478-$2,000/month on annual contracts — mid-market pricing that assumes a dedicated influencer-marketing hire ([Influencer analytics comparison](https://influencerfee.com/blog/influencer-analytics-tools-comparison/)).
+- **CreatorIQ** — The enterprise standard for full campaign lifecycle management, custom-priced from roughly $35,000/year up to $200,000+/year for enterprise deployments — built for Fortune 500 brand teams ([CreatorIQ alternatives, Dash Social](https://www.dashsocial.com/blog/creatoriq-alternatives)).
+- **Modash** — A creator discovery and analytics database (350M+ profiles) starting around $99-299/month, but it's a search and vetting tool, not a contract or payment tracker — brands still export to a spreadsheet once they move into execution ([Modash alternatives comparison](https://dupple.com/learn/best-influencer-marketing-platforms)).
+
+**Your Opportunity:** every incumbent above is priced for a dedicated influencer-marketing budget line and a person whose full-time job is running the platform. None will move down to a $29-79/month plan built for a two-person team running one campaign at a time — it would cannibalize their enterprise contracts. The wedge: skip discovery and outreach entirely (brands already know who they're working with) and build the best contract-to-payment layer for the 10-100 creator range, at a price a small team can expense without a procurement process.
+
+## Business Model
+
+Subscription SaaS priced per creator-month, with a free tier that lets a small team run one real campaign before hitting a wall. The core workload is CRUD, file storage, e-signature, and scheduled payouts — not heavy AI inference — so gross margin stays high even at low price points; the main variable costs are Stripe Connect fees and file storage for submitted content proof.
+
+- **Free** ($0) — 1 active campaign, up to 10 creators, manual payment tracking (no automated payout), contract templates, deliverable checklist
+- **Growth** ($39/mo) — Up to 100 creators across unlimited campaigns, e-signature contracts, automated payment triggers via Stripe Connect, deliverable reminders, CSV export for finance
+- **Agency** ($99/mo) — Multiple brand workspaces, white-labeled creator upload links, team seats with approval permissions, payment batching and reconciliation reports, priority support
+
+**Unit Economics**
+
+- **~$0.60/creator/mo** — Blended cost (Stripe Connect fees + file storage + email/SMS reminders)
+- **~85%** — Gross margin at the Growth tier
+- **$40-70** — Target CAC (content marketing + influencer-agency partnerships)
+- **~$470** — 12-month LTV at $39/mo with modest churn improvement after the first paid campaign
+
+At $39/mo, reaching $10K MRR requires roughly 260 paying teams — realistic for a product that sells itself inside marketing and creator-economy communities where the pain (missed deliverables, late payments) is a recurring, visible complaint rather than a hypothetical one.
+
+## Recommended Tech Stack
+
+This is a workflow and payments app, not an AI product — AI is a helper for content review, not the core mechanic. Optimize for reliable state transitions, auditable payment history, and a frictionless no-login upload flow for creators who will never make an account.
+
+- **Next.js 14 (App Router) + Vercel** — Brand-facing dashboard plus public, token-based creator upload pages that require no login, since creators won't create accounts for a one-off campaign.
+- **Postgres via Supabase** — Core tables: `campaigns`, `creators`, `contracts`, `deliverables` (status enum), `submissions`, `payments`. Row-level security scoped per brand workspace.
+- **Stripe Connect (Express accounts)** — Each creator onboards a lightweight Express account to receive payouts; payments trigger programmatically the moment a deliverable's status flips to "approved," with a full transfer log for reconciliation.
+- **PandaDoc or Documenso API** — Contract generation and e-signature per creator, pre-filled from a campaign template; signed status syncs back to the contract record automatically.
+- **Claude or GPT-4o-mini (vision)** — Reviews submitted screenshots/video against the contract's stated requirements and flags likely mismatches for the human approver — a second set of eyes, never an auto-approve.
+- **Resend + Twilio** — Email for contract requests and payment receipts; SMS reminders as deadlines approach, since creators check texts faster than a project-management app.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) app called "DeliverTrack" for brands running micro-influencer campaigns. Provision Supabase Postgres with these tables:
+
+- workspaces (id, name, owner_user_id, plan TEXT default 'free')
+- campaigns (id, workspace_id, name, start_date, end_date, status)
+- creators (id, campaign_id, name, email, phone, instagram_handle, tiktok_handle, stripe_connect_account_id)
+- contracts (id, creator_id, deliverables JSONB, rate_cents INT, usage_rights TEXT, due_date, signed_at, pandadoc_document_id)
+- deliverables (id, contract_id, description, status TEXT CHECK status IN ('not_started','submitted','needs_revision','approved','paid'), due_date)
+- submissions (id, deliverable_id, file_url, post_url, submitted_at, reviewer_note)
+- payments (id, deliverable_id, amount_cents, stripe_transfer_id, paid_at)
+
+Enable row-level security scoped by workspace_id via a workspace_members join table. Set up Stripe Connect (Express) onboarding for creators and Stripe Billing for the workspace subscription (Free/Growth $39/Agency $99).
+```
+
+**2. Deliverable Pipeline + No-Login Creator Upload**
+
+```text
+Build the deliverable tracking pipeline and a public, token-based upload page that requires no creator login.
+
+Requirements:
+- Each deliverable gets a unique, unguessable upload token generated on contract creation.
+- The upload page shows the creator their deliverable list and due dates, with an upload widget (drag-and-drop file or paste a live post URL) per item.
+- On submit, update deliverable status to 'submitted', store the file/URL in a submissions row, and notify the brand via email.
+- Build a brand-side review queue listing all 'submitted' deliverables across creators, with Approve / Request Revision buttons.
+- Approve: set status to 'approved', create a payments row in 'pending' state, trigger the payment webhook.
+- Request Revision: set status back to 'needs_revision', require a reviewer note, and re-email the creator their upload link with the note attached.
+- Send an automated reminder (email + SMS via Twilio) 48 hours before any deliverable's due_date if it's still 'not_started'.
+```
+
+**3. AI Content Review Assistant**
+
+```text
+Add an AI pre-check that runs when a creator submits a deliverable, before it reaches the human review queue.
+
+Given: the contract's deliverable description (e.g. "1 Instagram Reel, must tag @brand and use #BrandLaunch, minimum 15 seconds") and the submitted content (image/video file or a fetched post URL with caption text).
+
+Call a vision-capable model (Claude or GPT-4o-mini) with a strict JSON schema:
+{ likely_compliant: boolean, missing_requirements: string[], confidence: number, notes: string }
+
+Check for required hashtags/mentions in the caption, approximate video length if inferable, and whether the content matches the described format. Never auto-approve or auto-reject — surface the result as a badge ("AI flagged: missing #BrandLaunch tag") in the review queue. Log every check to an ai_reviews table for auditing.
+```
+
+**4. Payment Batching and Stripe Connect Payout**
+
+```text
+Implement the payment trigger and batch payout flow.
+
+When a deliverable's status flips to 'approved': create a payments row in 'pending' status linked to that deliverable and the creator's stripe_connect_account_id, then add it to the workspace's next scheduled payout batch (default weekly, configurable).
+
+Build a scheduled job (Vercel Cron, weekly) that:
+1. Groups all 'pending' payments by workspace.
+2. For each, calls stripe.transfers.create to the creator's Connect account for the deliverable's rate_cents, tagged with metadata for deliverable_id and campaign_id.
+3. On success, updates the payment row to 'paid' with the stripe_transfer_id and paid_at timestamp, and marks the deliverable 'paid'.
+4. On failure (e.g. creator hasn't finished Connect onboarding), leaves the payment 'pending' and notifies the workspace owner with the creator and reason.
+
+Expose a CSV export endpoint so a brand's finance team can reconcile every payment against the deliverable that earned it.
+```
+
+## Sources
+
+- [Mordor Intelligence — Influencer Marketing Market Size ($31.07B 2025 to $40.51B 2026)](https://www.mordorintelligence.com/industry-reports/influencer-marketing-market)
+- [SNS Insider, via Yahoo Finance — Influencer Marketing Platform Market ($26.15B 2025 to $197.69B by 2035, 22.42% CAGR)](https://finance.yahoo.com/markets/stocks/articles/influencer-marketing-platform-market-size-103000913.html)
+- [Statusphere — State of Micro-Influencer Marketing 2025 (avg. 30 micro-influencers per campaign, 36% YoY increase)](https://brands.joinstatus.com/micro-influencer-report-2025)
+- [Lumanu — Insights from 500 Influencers on Their Payment Experience (87% late/mishandled payments, 55% would not re-work with a late-paying brand)](https://www.lumanu.com/blog/insights-from-500-influencers-on-their-payment-experience)
+- [Popular Pays — Solving Your Biggest Influencer Marketing Challenges (relationship management at scale as top operational challenge)](https://popularpays.com/blog/solving-your-biggest-influencer-marketing-challenges-what-marketers-really-want)
+- [GRIN pricing, via StackScored (Lite $399/mo to Complete $1,799/mo; Core enterprise ~$25K/year)](https://www.stackscored.com/pricing/influencer-marketing/grin/)
+- [Aspire (AspireIQ) pricing review (~$2,000-2,300/mo, ~$30K/year minimum)](https://www.influencer-hero.com/blogs/aspire-pricing-and-review-features-costs-and-benefits)
+- [Upfluence vs. Modash vs. CreatorIQ pricing comparison ($478-$2,000/mo Upfluence)](https://influencerfee.com/blog/influencer-analytics-tools-comparison/)
+- [CreatorIQ alternatives, Dash Social ($35K-$200K+/year enterprise pricing)](https://www.dashsocial.com/blog/creatoriq-alternatives)
+- [Modash alternatives and pricing comparison (~$99-299/mo entry pricing)](https://dupple.com/learn/best-influencer-marketing-platforms)
+
+Verify competitor pricing on live product pages before citing in investor materials — influencer-software packaging shifts frequently as platforms move upmarket.

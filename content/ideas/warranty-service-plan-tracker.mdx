@@ -1,0 +1,138 @@
+---
+slug: "warranty-service-plan-tracker"
+title: "Warranty and Service Plan Tracker for Retailers"
+---
+
+## The Problem
+
+A customer calls a family-owned appliance store on a Tuesday afternoon. Their dishwasher is leaking, they bought it 14 months ago, and they're pretty sure they paid for "the extra protection thing" at checkout. The employee who answers has no fast way to confirm it. They dig through a shared spreadsheet, then a filing cabinet of paper receipts, then call the manager, who is at lunch. Twenty minutes later the customer is still on hold, the store still doesn't know if the plan is active, and the customer is now annoyed at a business that took their money for coverage it can't locate.
+
+This is the daily reality for small and mid-size electronics, appliance, and specialty retailers that sell extended warranties and service plans alongside hardware. The plans are genuinely profitable — service contracts routinely carry gross margins of 40 to 70%, several times the 4 to 8% margin on the appliance or TV they're attached to, and warranty/protection-plan revenue is widely cited as contributing more than half of net profit at a retailer like Best Buy. But at the independent-retailer scale, the operational side runs on the same tools it did in 2005: a row in Excel, a sticky note stapled to a receipt, a "call us if it breaks" verbal promise. Nobody owns the data, watches for expiration dates, or texts the customer 30 days before a plan lapses to sell the renewal.
+
+That last part is where real money evaporates. Industries with structured, automated renewal reminders see contract renewal rates of 75 to 89%, versus meaningfully lower rates for sellers relying on memory and manual tracking. A retailer selling even 40 plans a month at a $60 average plan margin is looking at roughly $2,400/month in renewal-eligible revenue — most of which quietly expires unrenewed because nobody flagged the date. Multiply that across a multi-location chain and it's a five- or six-figure annual leak, not a rounding error. The tool that fixes both halves of this problem — instant coverage lookup during a support call, and automated renewal nudges before a plan lapses — doesn't need to be sophisticated. It needs to exist, and today, for most independent retailers, it doesn't.
+
+## The Solution
+
+A lightweight, retailer-facing web app that logs every warranty and service plan sold — tied to the customer, the product, the sale, and the expiration date — and does the two jobs a spreadsheet can't: instant lookup and automated renewal outreach. At the point of sale (manual entry, CSV import from the POS, or a simple API hook), staff record the plan type, provider, term, and price. From that point forward, any employee can pull up active coverage in under five seconds by searching a phone number, email, or receipt number — no more hold music while someone digs through folders. On the outbound side, the system runs a scheduled sweep every day, finds plans expiring in 60/30/14/3 days, and fires an SMS and email sequence with a renewal link, so the store captures that revenue automatically instead of relying on a manager remembering to check a calendar.
+
+The product deliberately does not try to be a warranty underwriter or claims processor — retailers already have that relationship with Asurion, Allstate/SquareTrade, or a manufacturer's own extended-coverage program. This is the operational layer sitting on top: the system of record for "who has what, until when," plus the communication engine that keeps renewal revenue from leaking. That scoping is what makes it buildable in a weekend and sellable without a six-week procurement process.
+
+**How it works:**
+
+1. **Log the sale** — Staff enters (or imports via CSV/POS webhook) the customer's contact info, product, warranty provider, plan term, and price at checkout; the system generates a unique coverage record and receipt number
+2. **Instant lookup** — Any staff member searches by phone, email, or receipt number during a support call and sees active/expired status, provider, term dates, and original purchase details in one screen
+3. **Automated renewal reminders** — A daily cron job scans for plans expiring in 60/30/14/3 days and sends templated SMS + email reminders with a one-tap renewal or upsell link, tracked through to conversion in a dashboard
+
+## Market Research
+
+Extended warranties and service contracts are a large and growing category that independent retailers already participate in — the opportunity here is capturing the operational layer underneath, not the underwriting itself.
+
+- The consumer electronics extended warranty market alone is valued at **$31.7 billion in 2026**, a category dominated by exactly the appliance and electronics retailers this tool targets (MarkWide Research).
+- Warranty management software specifically is forecast at roughly **$7.38 billion in 2026, growing to $22.28 billion by 2034** at a 14.81% CAGR — the digitization of warranty operations is accelerating industry-wide, but most of that spend targets manufacturers and OEMs, not independent retail (Fortune Business Insights).
+- Retail warranty attach rates commonly run **20 to 45% in stores with a structured sales presentation**, averaging around 28.2% with peaks to 58% — meaning a mid-size electronics retailer moving 500 units/month can be issuing well over 100 active service plans monthly that need to be tracked (All Shield).
+- Service contracts carry gross margins of **40 to 70%**, multiples of the 4 to 8% margin on the hardware they cover — which is exactly why a missed renewal is disproportionately expensive to the retailer's bottom line (CPS Central).
+- Renewal-process maturity moves the needle hard: sellers using structured, automated renewal workflows report renewal rates climbing from roughly **75% to 89%**, while unmanaged, manual-tracking sellers trail well behind that (ServiceXRG).
+- Industry guidance suggests spreadsheet tracking becomes unreliable past roughly **50 active service agreements** — comfortably below the volume a single mid-size appliance or electronics store generates in under two months at typical attach rates (US Tech Automations).
+
+## Competitive Landscape
+
+The warranty-tech landscape is crowded, but almost every player is solving a different problem: they want to be the underwriter or the checkout-embedded warranty seller for ecommerce brands, not the operations tool for an independent retailer's existing paper trail.
+
+- **Clyde (Cover Genius)** — Checkout-embedded warranty platform for Shopify/ecommerce merchants; free to install, monetized via a per-warranty fee and revenue share on plans sold through its own underwriting partners. Built for brands that want Clyde to *be* their warranty program, not to track plans sold by a third-party provider. Free install / per-plan fee (custom)
+- **Extend** — Similar model: free for merchants, revenue-share on protection plans sold at checkout, reports around a 15% attach-rate benchmark and roughly a 2% average revenue lift for partners. Strong ecommerce integration, but it wants to originate and underwrite the warranty, not manage coverage already sold in-store. Free for merchants / revenue-share (custom)
+- **Mulberry** — Variable commission per warranty sold (roughly 10% of product cost is typical) plus a consumer-facing "Mulberry Unlimited" subscription at $9.99/month. Positioned for ecommerce checkout upsell, with AI-driven plan recommendations — again, an issuance platform, not a coverage tracker for existing plans. Variable commission / $9.99/mo consumer tier
+- **Servify** — Enterprise product-lifecycle-management platform used by large OEMs (Samsung, others) to run B2B device protection programs at scale. Deep claims and logistics infrastructure, but built for brand-level enterprise deals with custom pricing — overbuilt for a 3-location appliance retailer. Custom/enterprise pricing only
+- **AllShield** — White-label warranty program administration for OEMs, retailers, and proptech platforms across HVAC, appliances, and electronics. Powerful claims-administration backbone, but sold as a managed program with no self-serve tier — a multi-month sales cycle for a business that just needs to know if a customer's dishwasher is still covered. Custom/enterprise pricing only
+
+**Your Opportunity** Every named competitor above is trying to be the warranty issuer — they want a revenue share on new plans sold through their checkout or their underwriting partner. None of them will build a self-serve, $49/month tool for a store that already resells Asurion or SquareTrade plans through its POS and just needs a fast lookup screen and an automated renewal text. That's the wedge: skip the underwriting business entirely, sell the boring but valuable ops layer — "log it, find it in five seconds, remind the customer before it lapses" — directly to the 340,000+ independent electronics, appliance, and specialty retailers in the U.S. who are currently doing this in Excel.
+
+## Business Model
+
+Flat monthly SaaS per store location, priced well below the cost of the renewal revenue it recovers. A single captured renewal at a typical $50 to $80 plan margin covers more than a month of subscription cost, which makes the ROI pitch trivial to make to a store owner in the first sales call.
+
+- **Starter** ($29/mo) — Up to 250 active coverage records, phone/email/receipt lookup, SMS + email renewal reminders, CSV import
+- **Growth** ($79/mo) — Unlimited coverage records, POS webhook integration, multi-staff logins with an activity log, branded renewal SMS/email templates, renewal-conversion dashboard
+- **Multi-Location** ($199/mo) — Up to 5 locations on one account, cross-location lookup, manager reporting rollup, priority support
+
+**Unit Economics**
+
+- **~$0.02–0.05** — SMS + email cost per reminder sent (Twilio + Resend combined)
+- **~85%** — Gross margin at the Growth tier
+- **$40–$75** — Target CAC (direct outreach + trade-association partnerships)
+- **~$950** — Estimated 12-month LTV per Growth-tier location, assuming under 3% monthly churn
+
+MRR path: 100 Growth-tier stores gets to roughly $7.9K/mo; 400 Growth + 40 Multi-Location gets to about $39.6K/mo (~$475K ARR). The distribution angle is narrow and reachable — independent appliance and electronics dealers cluster around trade groups (NARDA, regional buying co-ops) and POS vendor marketplaces, both cheaper acquisition channels than paid search against Best Buy-scale competitors.
+
+## Recommended Tech Stack
+
+The core engineering problem is not exotic — it's a searchable coverage record store plus a reliable scheduled-notification engine. The bar to clear is that lookups feel instant on a live support call and reminder sends never silently fail.
+
+- **Next.js 14 (App Router) + Vercel** — Staff-facing lookup/dashboard app and the CSV/webhook ingestion routes in one deployable repo; Vercel Edge functions keep the lookup search fast enough to use mid-call.
+- **Supabase (Postgres + Auth)** — Tables: `stores`, `staff_users`, `customers` (phone, email — indexed for fast search), `coverage_records` (product, provider, plan_term, start_date, expires_at, receipt_number, status), `reminder_log`. Postgres full-text/trigram indexes make phone/email/receipt lookup near-instant even at tens of thousands of records.
+- **Twilio (Programmable Messaging)** — Outbound SMS renewal reminders and receipt-number confirmations; A2P 10DLC registration required for U.S. sending, budget 1 to 3 days for approval before launch.
+- **Resend** — Transactional and templated renewal-reminder email, with store-branded sender domains so reminders don't look like spam to the end customer.
+- **Vercel Cron + Inngest** — Vercel Cron for the nightly expiration sweep (60/30/14/3-day windows); Inngest as the durable execution layer once reminder volume grows past what a single cron invocation can safely process with retries.
+- **Stripe Billing** — Per-location subscription tiers (Starter/Growth/Multi-Location) with a self-serve customer portal for plan and location-count changes.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "CoverageDesk" for retailers to track warranty and service-plan coverage. Provision Supabase with these tables:
+- stores (id, name, plan TEXT default 'starter', location_count INT default 1, stripe_customer_id)
+- staff_users (id, store_id, email, role TEXT CHECK role IN ('owner','manager','staff'))
+- customers (id, store_id, name, phone, email)
+- coverage_records (id, store_id, customer_id, product_name, provider TEXT, plan_term_months INT, purchase_price_cents INT, plan_price_cents INT, starts_at DATE, expires_at DATE, receipt_number TEXT UNIQUE, status TEXT default 'active')
+- reminder_log (id, coverage_record_id, channel TEXT CHECK channel IN ('sms','email'), sent_at, template TEXT, converted BOOLEAN default false)
+
+Enable row-level security scoped to store_id on every table. Add trigram indexes on customers.phone, customers.email, and coverage_records.receipt_number for fast partial-match search. Wire Stripe with three subscription products (Starter $29, Growth $79, Multi-Location $199). Add env vars for TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, and RESEND_API_KEY.
+```
+
+**2. Instant Coverage Lookup**
+
+```text
+Build a /lookup page and matching API route for staff to find a customer's coverage during a live support call.
+
+Requirements:
+- Single search input accepts a phone number, email, or receipt number in any format (strip formatting before querying)
+- Query coverage_records joined to customers, matching on normalized phone, email ILIKE, or receipt_number, scoped to the logged-in staff member's store_id
+- Return results in under 300ms for stores with up to 50,000 coverage records — use the trigram indexes, avoid full table scans
+- Result card shows: product name, provider, plan term, purchase date, expiration date, status badge (Active / Expiring Soon if under 30 days / Expired), and the original receipt number
+- If no match, show a clear "no active coverage found" state with a button to log a new sale for this customer
+- Log every search to an audit table (staff_user_id, query, matched_record_id, searched_at) for accountability
+```
+
+**3. Renewal Reminder Engine**
+
+```text
+Build the automated renewal reminder system as a Vercel Cron job that runs once daily.
+
+Logic:
+1. Query coverage_records where status = 'active' and expires_at falls in exactly 60, 30, 14, or 3 days from today
+2. For each match, check reminder_log to avoid sending the same window twice to the same record
+3. Send an SMS via Twilio using a template keyed to the window (e.g., the 30-day template offers a renewal link; the 3-day template adds urgency language) and a parallel branded email via Resend
+4. Personalize with store name, product name, and a renewal link containing a signed token tied to the coverage_record id
+5. Log every send to reminder_log with channel, template, and sent_at
+6. Build a /renewals dashboard for the store owner showing upcoming expirations grouped by window, reminders sent, and conversion rate (renewed vs. lapsed) per window, so they can see which reminder cadence is actually working
+7. Handle Twilio and Resend failures with retry-with-backoff; never let a failed send silently drop a customer from the reminder sequence
+```
+
+## Sources
+
+- [MarkWide Research — Consumer Electronics Extended Warranty Market ($31.7B in 2026)](https://markwideresearch.com/consumer-electronics-extended-warranty-market)
+- [Fortune Business Insights — Warranty Management System Market ($7.38B in 2026 to $22.28B by 2034, 14.81% CAGR)](https://www.fortunebusinessinsights.com/warranty-management-system-market-111522)
+- [All Shield — Key Metrics for Warranty Program Success: Attach Rate, Claim Ratio, LTV](https://allshield.co/key-metrics-for-warranty-program-success-attachment-rate-claim-ratio-ltv/)
+- [Consumer Priority Service — Do Extended Warranties Increase Retailer Profit Margins?](https://www.cpscentral.com/do-extended-warranties-increase-retailer-profit-margins/)
+- [ServiceXRG — Moving Beyond Industry Average Renewal Performance](https://www.servicexrg.com/blog/beyond-average-renewal/)
+- [US Tech Automations — Home Service Warranty Tracking: 5-Tool Comparison for 2026](https://ustechautomations.com/resources/blog/home-service-warranty-tracking-automation-roi-analysis-2026)
+- [Extend — Merchant pricing and protection plan program](https://www.extend.com/merchants)
+- [G2 — Extend Pricing 2026](https://www.g2.com/products/extend-protection-reviews/pricing)
+- [Clyde | Warranty Platform — Shopify App Store listing](https://apps.shopify.com/clyde-warranty-platform)
+- [Mulberry — How to Calculate the Cost of an Extended Warranty](https://www.getmulberry.com/articles/calculate-extended-warranty-cost)
+- [Servify — Product Lifecycle Management Platform](https://servify.com/about/)
+- [AllShield — Retail Warranty Programs That Drive Revenue](https://allshield.co/retailers-transforming-warranty-programs-into-revenue-streams/)
+
+Page researched via WebSearch (Mode B fallback: original concept, market data, and competitor pricing verified live, August 2026). Verify current pricing on live competitor pages before citing in investor or sales materials — warranty-tech packaging shifts frequently.
