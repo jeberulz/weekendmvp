@@ -39,6 +39,22 @@ async function seedIdeas(t: TestConvex<typeof schema>, ideas: IdeaInsert[]) {
   });
 }
 
+describe("ideas.bySlug", () => {
+  test("preserves an idea validation contract", async () => {
+    const t = convexTest(schema, modules);
+    const validation = {
+      audience: "solo-founders",
+      hypothesis: "Solo founders copy a prompt after reading the evidence.",
+      primaryAction: "idea_prompt_copied" as const,
+    };
+    await seedIdeas(t, [idea("validated", 100, { validation })]);
+
+    const result = await t.query(api.ideas.bySlug, { slug: "validated" });
+
+    expect(result?.validation).toEqual(validation);
+  });
+});
+
 describe("ideas.relatedFor", () => {
   test("preserves category-first eligibility, ordering, deduplication, and exclusion", async () => {
     const t = convexTest(schema, modules);
