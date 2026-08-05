@@ -26,7 +26,7 @@ MCP (`~/.mcp.json`) still uses `GSC_SITE_URL=sc-domain:weekendmvp.app` for analy
    If you already verified Domain `weekendmvp.app`, this usually **auto-verifies**.
 3. Open the new property → **Settings** → **Users and permissions** → **Add user**:
    - Email: `g4-mcp@weekendmvp.iam.gserviceaccount.com`
-   - Permission: **Owner** (Full is not enough for some sitemap writes; use Owner).
+   - Permission: **Full** or **Owner** (Full is enough for list/submit sitemap).
 4. Tell the agent (or run locally):
    ```bash
    node scripts/gsc-submit-sitemap.mjs
@@ -35,7 +35,8 @@ MCP (`~/.mcp.json`) still uses `GSC_SITE_URL=sc-domain:weekendmvp.app` for analy
 ## Already done (agent)
 
 - Sites API `PUT` added `https://www.weekendmvp.app/` for the service account (2026-08-05).
-- Status before owner grant: `permissionLevel: siteUnverifiedUser` — sitemap calls 403 until you complete steps 2–3.
+- Owner verified + SA granted Full; sitemap resubmitted successfully (`lastSubmitted` 2026-08-05).
+- MCP `GSC_SITE_URL` set to `https://www.weekendmvp.app/`.
 
 ## Verify
 
