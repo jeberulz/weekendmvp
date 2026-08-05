@@ -357,13 +357,14 @@ const TOOL_PAGES: Record<string, ToolPage> = {
   bolt: {
     slug: "bolt",
     name: "Bolt.new",
-    h1: "What to Build with Bolt.new",
-    titlePattern: "What to Build with Bolt.new: {count} Project Ideas",
+    h1: "Bolt.new Project Ideas & Examples",
+    titlePattern:
+      "Bolt.new Project Ideas: {count} Examples to Build & Deploy in the Browser",
     legacyCount: 28,
     metaDescription:
-      "Find the best projects to build with Bolt.new. Ideas with ready-to-use prompts. Build and deploy full-stack web applications directly in your browser.",
+      "Bolt.new project ideas and examples you can build this weekend. Prompt a full-stack app in the browser, iterate in chat, and deploy with one click.",
     description:
-      "Build and deploy full-stack web applications directly in your browser. Great for rapid prototyping and simple applications.",
+      "Bolt.new turns a plain-English prompt into a full-stack web app in your browser — UI, logic, and deploy included. Ideal for weekend MVPs: landing pages, form tools, and simple SaaS you can share the same day.",
     url: "https://bolt.new",
     icon: Zap,
     color: "yellow",
@@ -379,11 +380,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Quick deployments",
     ],
     gettingStarted: [
-      "Go to bolt.new in your browser",
-      "Describe your application idea",
-      "Watch Bolt generate the code",
-      "Iterate by describing changes",
-      "Deploy directly from Bolt",
+      "Go to bolt.new and describe the MVP in one paragraph (who it's for + the one job it does)",
+      "Watch Bolt scaffold the UI and logic — keep the first pass narrow",
+      "Iterate in chat: tighten copy, add validation, wire a simple data store",
+      "Click Deploy and share the live URL with 5–10 real users this weekend",
     ],
     prompts: [
       {
@@ -402,6 +402,23 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           'Build a tool where users fill out a form with [INPUTS], click submit, and get [OUTPUT]. Add input validation, a loading state while processing, and a nice way to display the results. Include a "copy results" button.',
       },
     ],
+    featured: {
+      slugs: [
+        "waitlist-manager",
+        "ai-sentiment-landing-page-design",
+        "three-minute-money-habit-app",
+        "tattoo-dm-booking-agent",
+        "saas-financial-toolkit",
+        "rental-property-maintenance-dashboard",
+        "chattracker",
+        "static-ad-to-video-generator",
+        "ai-meeting-notes-cleaner",
+        "ai-agency-automation-control-panel",
+      ],
+      heading: "Start here: Bolt.new projects worth shipping this weekend",
+      intro:
+        "These fit Bolt's sweet spot — browser-native full-stack apps, landing pages, and form tools you can prompt, refine, and deploy without opening a local IDE.",
+    },
   },
   lovable: {
     slug: "lovable",
@@ -653,13 +670,14 @@ const TOOL_PAGES: Record<string, ToolPage> = {
   windsurf: {
     slug: "windsurf",
     name: "Windsurf",
-    h1: "What to Build with Windsurf",
-    titlePattern: "What to Build with Windsurf: {count} Project Ideas",
+    h1: "Windsurf Project Ideas & Examples",
+    titlePattern:
+      "Windsurf Project Ideas: {count} Examples for Agentic Coding",
     legacyCount: 30,
     metaDescription:
-      "Find the best projects to build with Windsurf. Ideas with ready-to-use prompts, from MVPs to full products. Codeium's AI-powered IDE for agentic coding.",
+      "Windsurf project ideas and examples for Cascade-powered builds. Agentic IDE prompts for APIs, refactors, and full-stack MVPs you can ship this weekend.",
     description:
-      "The first agentic IDE. Windsurf combines AI assistance with deep codebase understanding for faster development.",
+      "Windsurf is Codeium's agentic IDE: Cascade understands your repo, edits across files, and pairs with you like a junior engineer who already read the codebase. Best for developers who want real projects — APIs, refactors, and multi-file MVPs — not chat-only drafts.",
     url: "https://codeium.com/windsurf",
     icon: Wind,
     color: "cyan",
@@ -675,11 +693,10 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Refactoring",
     ],
     gettingStarted: [
-      "Download Windsurf from Codeium",
-      "Open your project",
-      "Use Cascade for AI assistance",
-      "Let Windsurf understand your codebase",
-      "Code with AI pair programming",
+      "Download Windsurf and open an empty folder (or an existing repo)",
+      "Open Cascade and paste a starter prompt — or describe the MVP in one paragraph",
+      "Let Cascade scaffold and edit across files; review diffs as you go",
+      "Run the app locally, fix the happy path, then commit and deploy",
     ],
     prompts: [
       {
@@ -698,6 +715,23 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           "Review this codebase for security vulnerabilities, performance issues, and code quality problems. Provide specific recommendations with code examples for each issue found.",
       },
     ],
+    featured: {
+      slugs: [
+        "ai-agent-error-translator",
+        "ai-code-coach-tutor",
+        "ai-coding-classroom-assistant",
+        "ai-code-reviewer",
+        "api-documentation-generator",
+        "client-portal",
+        "conversational-analytics-digest",
+        "ai-feedback-triage-widget",
+        "contract-analyzer",
+        "saas-financial-toolkit",
+      ],
+      heading: "Start here: Windsurf projects worth shipping this weekend",
+      intro:
+        "These lean on Cascade — multi-file edits, APIs, and developer tools where an agentic IDE beats a blank chat window.",
+    },
   },
 };
 

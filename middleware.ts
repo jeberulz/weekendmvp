@@ -53,8 +53,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Skip Next internals and common static asset extensions.
+  // Skip Next internals and common static asset extensions — except the two
+  // SEO discovery files, which must still apex→www in one hop (WP17).
   matcher: [
+    "/robots.txt",
+    "/sitemap.xml",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff2?|css|js|map)$).*)",
   ],
 };

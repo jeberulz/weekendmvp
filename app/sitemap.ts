@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
 
 import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
+import {
+  listMdxFrontmatter,
+  loadIdeaPublishedAtMap,
+} from "@/lib/sitemap-data";
 import { SITE } from "@/lib/seo";
 
 const BUILD_WITH_SLUGS = [
@@ -22,54 +23,6 @@ const BUILD_WITH_SLUGS = [
 
 type Entry = MetadataRoute.Sitemap[number];
 
-async function listMdxFrontmatter(
-  dir: string,
-): Promise<{ slug: string; publishedAt?: number }[]> {
-  // Must be rooted at process.cwd() — a bare relative path resolves against
-  // the serverless function's cwd in production, silently yielding zero
-  // entries and dropping every MDX page from the sitemap.
-  const root = path.join(process.cwd(), dir);
-  try {
-    const files = await fs.readdir(root);
-    const mdx = files.filter(
-      (f) => f.endsWith(".mdx") && !f.startsWith("_"),
-    );
-    const rows = await Promise.all(
-      mdx.map(async (filename) => {
-        const slug = filename.replace(/\.mdx$/, "");
-        try {
-          const raw = await fs.readFile(path.join(root, filename), "utf8");
-          const { data } = matter(raw);
-          const value = data?.publishedAt;
-          const publishedAt =
-            typeof value === "number"
-              ? value
-              : typeof value === "string"
-                ? Date.parse(value)
-                : undefined;
-          return {
-            slug,
-            publishedAt: Number.isFinite(publishedAt)
-              ? (publishedAt as number)
-              : undefined,
-          };
-        } catch {
-          return { slug };
-        }
-      }),
-    );
-    return rows;
-  } catch (error) {
-    // Don't fail the whole sitemap over one unreadable dir, but do surface it —
-    // swallowing this silently is what let the cwd bug above go unnoticed.
-    console.error("sitemap: could not list MDX dir", {
-      dir: root,
-      error: String(error),
-    });
-    return [];
-  }
-}
-
 function entry(
   pathname: string,
   opts: {
@@ -78,24 +31,29 @@ function entry(
     priority?: number;
   } = {},
 ): Entry {
+  // Only emit lastmod when we have a real content date. Request-time "now"
+  // for every hub/idea trains Google to ignore the field (WP17).
+  const lastModified =
+    opts.lastModified instanceof Date
+      ? opts.lastModified
+      : typeof opts.lastModified === "number"
+        ? new Date(opts.lastModified)
+        : undefined;
+
   return {
     url: `${SITE}${pathname}`,
-    lastModified:
-      opts.lastModified instanceof Date
-        ? opts.lastModified
-        : typeof opts.lastModified === "number"
-          ? new Date(opts.lastModified)
-          : new Date(),
+    ...(lastModified ? { lastModified } : {}),
     changeFrequency: opts.changeFrequency ?? "weekly",
     priority: opts.priority,
   };
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [ideas, articles, newsletters] = await Promise.all([
+  const [ideas, articles, newsletters, ideaDates] = await Promise.all([
     listMdxFrontmatter("content/ideas"),
     listMdxFrontmatter("content/articles"),
     listMdxFrontmatter("content/newsletter-pages"),
+    loadIdeaPublishedAtMap(),
   ]);
 
   const rootPages: Entry[] = [
@@ -116,7 +74,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const ideaPages: Entry[] = ideas.map((i) =>
     entry(`/ideas/${i.slug}`, {
-      lastModified: i.publishedAt,
+      // Idea MDX is body-only (slug/title); publish dates live in the manifest.
+      lastModified: ideaDates.get(i.slug) ?? i.publishedAt,
       changeFrequency: "monthly",
       priority: 0.8,
     }),

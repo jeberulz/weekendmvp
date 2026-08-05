@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
       "./content/ideas/**/*.mdx",
       "./content/articles/**/*.mdx",
       "./content/newsletter-pages/**/*.mdx",
+      // Idea publish dates for lastmod (MDX idea files omit publishedAt).
+      "./ideas/manifest.json",
     ],
   },
   turbopack: {
