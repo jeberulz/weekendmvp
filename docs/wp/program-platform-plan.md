@@ -145,13 +145,12 @@ scored opportunity. Positioning:
 - No custom domains at launch (subdomain only; custom domain is a fast follow).
 - No team seats.
 
-### 3.3 Naming note
+### 3.3 Naming — RULED (2026-08-05)
 
-The voice memo mentions "beginmvp" a few times — treat launch platform naming
-(`weekendmvp.app` platform section vs a separate brand) as an **open ruling** (§8).
-Default assumption in this plan: same domain, platform lives at
-`weekendmvp.app/build` (marketing) + `app.weekendmvp.app` or `/dashboard`
-(product).
+**Keep `weekendmvp.app`; no new brand.** Platform marketing lives at
+`weekendmvp.app/build`, the product at `/dashboard` (or `app.weekendmvp.app` if
+route separation demands it later), customer sites at
+`{project}.weekendmvp.app`. Recorded in `docs/wp/RULINGS.md`.
 
 ---
 
@@ -336,8 +335,8 @@ team seats, affiliate/referral.
 
 ## 8. Open rulings needed from John (before Wave 1)
 
-1. **Naming/domain:** platform under `weekendmvp.app` (assumed) vs new "beginmvp"
-   brand? Affects subdomain scheme (`{project}.weekendmvp.app`) and marketing pages.
+1. ~~**Naming/domain**~~ — **RULED 2026-08-05:** keep `weekendmvp.app`, no new
+   brand (see §3.3 and `docs/wp/RULINGS.md`).
 2. **Pricing sign-off:** §5 numbers are proposals anchored on Polsia/agency/ShipFast.
 3. **Free hook:** confirm "first repository-idea Validation Report free" as the
    activation gift.
