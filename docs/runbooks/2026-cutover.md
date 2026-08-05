@@ -103,7 +103,7 @@ When Section 2 is fully ✅:
 
 1. In Vercel → `next-migration` project → Domains:
    - Add domain `www.weekendmvp.app` as primary (canonical host — see `docs/wp/RULINGS.md` WP10)
-   - Add `weekendmvp.app` with **308** redirect to www
+   - Add `weekendmvp.app` as an alias **without** a Domains API redirect — `middleware.ts` owns apex→www + `.html`/trailing-slash cleaning in one 308 (WP13). A host-only domain redirect preserves dirty paths and forces a second hop.
 2. Remove `weekendmvp.app` from the legacy Vercel project. It now serves only `legacy.weekendmvp.app`.
 3. In the new project, **edit `next.config.ts`** to remove the `fallback` rewrite array (every URL is now owned). Commit + redeploy.
 4. Update Stripe webhook endpoint: remove the legacy `https://weekendmvp.app/api/stripe-webhook` endpoint, keep only `https://weekendmvp.app/api/stripe-webhook` (now hitting the new app via DNS).
