@@ -551,6 +551,66 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "build-chrome-extension-weekend-2026",
+      "title": "How to Build a Chrome Extension in a Weekend (2026)",
+      "description": "Ship a Manifest V3 Chrome extension in one weekend with AI tools — idea pick, build steps, Web Store publish, and how indies actually monetize in 2026.",
+      "wordCount": 1013,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A small metal paperclip resting on a near-black desk beside a folded sticky note, lit by a single narrow lime beam from the side, very shallow focus, no text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-much-does-it-cost-to-build-an-mvp-2026",
+      "title": "How Much Does It Cost to Build an MVP in 2026?",
+      "description": "Honest 2026 MVP cost ranges: AI-assisted solo builds, no-code, freelancers, and agencies — plus the monthly infra bill most founders forget to model.",
+      "wordCount": 850,
+      "readMinutes": 4,
+      "og": {
+        "subject": "A stack of weathered paper receipts on a near-black desk, the top receipt lit by a single narrow mint beam from the left, very shallow focus, no readable amounts",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "do-you-need-a-technical-co-founder-2026",
+      "title": "Do You Need a Technical Co-Founder in 2026?",
+      "description": "The honest 2026 answer: when AI coding tools replace a technical co-founder, when they don't, and the equity math most founders skip.",
+      "wordCount": 914,
+      "readMinutes": 5,
+      "og": {
+        "subject": "Two blank index cards side by side on a near-black desk, one lit by a narrow lavender beam, the other fading into deep shadow, very shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "deploy-nextjs-mvp-to-vercel",
+      "title": "Deploy Your Next.js MVP to Vercel in One Afternoon",
+      "description": "A founder-friendly checklist to put a Next.js weekend MVP live on Vercel — GitHub connect, env vars, custom domain, and the mistakes that cause blank production pages.",
+      "wordCount": 781,
+      "readMinutes": 4,
+      "og": {
+        "subject": "An open daily planner on a near-black desk with one date circled in emerald ink, single overhead lamp lighting just that page, deep shadows beyond",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cold-email-first-saas-customers",
+      "title": "Cold Email for Your First SaaS Customers (Zero Audience)",
+      "description": "A founder-led cold email playbook for first SaaS customers in 2026 — realistic reply rates, list size, follow-ups, and templates that don't sound like spam.",
+      "wordCount": 893,
+      "readMinutes": 4,
+      "og": {
+        "subject": "A single sealed cream envelope on a near-black desk, lit by a narrow lime beam from the side, very shallow focus, no address text visible",
+        "accent": "lime",
+        "status": "ready"
+      }
     }
   ]
 }

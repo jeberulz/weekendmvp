@@ -1,0 +1,141 @@
+---
+slug: "deploy-nextjs-mvp-to-vercel"
+title: "Deploy Your Next.js MVP to Vercel in One Afternoon"
+description: "A founder-friendly checklist to put a Next.js weekend MVP live on Vercel — GitHub connect, env vars, custom domain, and the mistakes that cause blank production pages."
+category: "Building"
+publishedAt: "2026-08-05"
+wordCount: 781
+readMinutes: 4
+heroAlt: "An open daily planner on a near-black desk with one date circled, lit by a single narrow emerald beam from above"
+---
+
+## Who This Is For
+
+Your app works on `localhost:3000`.
+
+Friends ask for a link. You send a screenshot. That's not a launch.
+
+This is the afternoon playbook to get a Next.js MVP onto a real URL with Vercel — without turning into a DevOps side quest.
+
+Already have the idea and the repo? Good. Still choosing what to ship? Grab something scoped from [startup ideas](/startup-ideas) first — deploying an empty shell teaches nothing.
+
+## Why Vercel for Weekend MVPs
+
+- Git push → production build
+- Preview URLs on every PR/branch
+- Free Hobby tier is enough for most early traffic
+- First-party Next.js support (App Router, Server Components, Route Handlers)
+
+You're optimizing for **time-to-URL**, not multi-cloud purity.
+
+## Afternoon Checklist (90–150 minutes)
+
+### 1. Make the repo boring and pushable
+
+In the project root you want:
+
+- `package.json` with `"build": "next build"` and `"start": "next start"`
+- App running locally via `npm run dev`
+- `.gitignore` includes `.env*`, `node_modules`, `.next`
+- Secrets live in `.env.local` — never committed
+
+Push to GitHub (private is fine).
+
+### 2. Import the project in Vercel
+
+1. Sign in at vercel.com with GitHub
+2. **Add New… → Project**
+3. Import the repo
+4. Framework preset should detect **Next.js**
+5. Root directory = repo root (unless you use a monorepo)
+6. Don't invent custom build commands yet
+
+Click Deploy once — even if env vars are missing. A failed first deploy is useful signal.
+
+### 3. Add environment variables before you celebrate
+
+In Project → Settings → Environment Variables, add every key your app reads on the server.
+
+Critical 2026 footgun for Next.js:
+
+- `NEXT_PUBLIC_*` values are **inlined at build time**
+- Changing a public env var in the dashboard does **nothing** until you **redeploy**
+- Empty `NEXT_PUBLIC_GA_ID` (or similar) ships as literally empty/undefined in the client bundle
+
+Add vars for Production (and Preview if you use preview DBs). Then **Redeploy**.
+
+### 4. Confirm the production URL
+
+Open `https://your-project.vercel.app`.
+
+Smoke test:
+
+- Homepage loads
+- One core user action works
+- Auth redirect (if any) returns to the production domain, not localhost
+- Stripe / OAuth callback URLs use the production host
+
+If auth or payments still point at `localhost`, fix the provider dashboard, not your React code.
+
+### 5. Custom domain (optional same day)
+
+1. Domains → Add `yourproduct.com`
+2. Set the DNS records Vercel shows (usually an A/CNAME at your registrar)
+3. Wait for SSL to flip green
+4. Update Stripe/Clerk/Supabase allowed origins to the new domain
+
+DNS can take minutes or a few hours. Don't rebuild the app while waiting — go talk to a user.
+
+## The Mistakes That Cause "It Works Locally"
+
+**Build fails on Vercel but not on your laptop**
+
+- Type errors only caught in `next build`
+- Missing env vars referenced at build time
+- Node version mismatch — set the version in Project Settings if needed
+
+**Blank page / 500 after deploy**
+
+- Server code calling APIs without production keys
+- Absolute `http://localhost` URLs baked into redirects
+- Database allowlists blocking Vercel IPs (less common with serverless Postgres; still check provider docs)
+
+**Preview works, Production doesn't**
+
+- Env vars added only to Preview
+- Different Convex/Supabase project URLs per environment — easy to mix up
+
+**"I updated the env var and nothing changed"**
+
+- You forgot to redeploy after changing `NEXT_PUBLIC_*`
+
+## Minimum Production Hygiene (Still Same Afternoon)
+
+You don't need Kubernetes. You do need:
+
+1. **Error visibility** — Sentry free tier or Vercel logs while you're tiny
+2. **One analytics path** — GA4 or Plausible; don't install five
+3. **Backup of secrets** — password manager, not a Notes.app screenshot
+4. **A kill switch mindset** — know how to roll back a deploy in the Vercel UI (one click)
+
+Auth next? See [how to add login without building auth](/articles/add-auth-to-your-weekend-mvp). Payments next? See [add Stripe to your weekend MVP](/articles/add-stripe-to-weekend-mvp).
+
+## FAQ
+
+### Do I need the Vercel Pro plan?
+
+Not to launch. Hobby is fine for early validation. Upgrade when you need team features, commercial constraints, or you outgrow limits.
+
+### Can I deploy without GitHub?
+
+Vercel supports other git hosts and CLI deploys. GitHub is still the least-friction path for solo founders.
+
+### What if I'm not using Next.js?
+
+Vercel can host other frameworks, but this guide assumes Next.js App Router. Remix/SvelteKit/etc. follow the same git → env → domain pattern with different build presets.
+
+## TL;DR
+
+Push to GitHub → import to Vercel → set env vars → redeploy → smoke test auth/payments against the real domain. That's an afternoon, not a sprint.
+
+Once the URL is live, your bottleneck stops being "hosting" and starts being customers — or a sharper idea from [startup ideas](/startup-ideas).
