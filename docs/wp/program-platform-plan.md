@@ -364,6 +364,8 @@ existing a11y/SEO checks. "Exact or better," not "close enough."
 **Off-boarding sequence (before subscription expiry):**
 1. Publish the remaining queued Ideabrowser backlog (idea-publish-backlog) via
    the existing skill while the entitlement is active — quota-free reads.
+   *Owner-delegated: runs on a separate branch/agent in parallel, before
+   2026-09-05.*
 2. Land M1–M4 and pass the quality gates (Wave 4 below).
 3. Flip `/publish-idea` default to Mode A2; retire Mode A (MCP); keep Mode B
    (draft) unchanged.
@@ -481,9 +483,12 @@ The platform launch (Waves 1–3) does not depend on this wave; WP19's engine co
   closeout ruling. *Gate: grep shows no live `mcp__ideabrowser` dependency; one
   full daily-content cycle (idea + newsletter) runs end-to-end engine-only.*
 
-**Deadline anchor:** WP24–26 complete before the Ideabrowser subscription's
-renewal date (John to confirm the exact date — set it in the manifest when
-frozen).
+**Deadline anchor:** the Ideabrowser subscription ends **2026-09-05**. WP24–26
+must be complete, quality-gated, and off-boarded by then — that leaves ~3 weeks
+after platform launch (2026-08-16), which is comfortable but not idle time.
+Backlog burn-through (off-boarding step 1) is delegated to a separate agent on
+its own branch and runs in parallel with Waves 1–3; it is not part of this
+program's branches.
 
 ### Post-launch backlog (explicitly deferred)
 Tier 2 MVP scaffolds (sandbox builds + per-project Vercel deploys + code export),
