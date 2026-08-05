@@ -7,6 +7,7 @@ import {
   ArrowDown,
   Blocks,
   Brain,
+  Code2,
   Database,
   ExternalLink,
   GitBranch,
@@ -115,17 +116,28 @@ type ToolPage = {
   featured?: ToolFeatured;
   /** Optional tool-specific newsletter hook (falls back to generic copy). */
   emailCapture?: ToolEmailCapture;
+  /**
+   * Soft cross-link to a sibling hub (e.g. Claude → Claude Code). Rendered
+   * under the hero so searchers with a more specific intent can branch.
+   */
+  relatedHub?: { href: string; label: string; body: string; cta: string };
+  /**
+   * Convex `ideas.tools` value used for the ideas grid. Defaults to `slug`.
+   * Claude Code reuses the `claude` tag until a dedicated retag ships.
+   */
+  ideasTool?: string;
 };
 
 const TOOL_PAGES: Record<string, ToolPage> = {
   cursor: {
     slug: "cursor",
     name: "Cursor",
-    h1: "What to Build with Cursor",
-    titlePattern: "What to Build with Cursor: {count} Project Ideas",
+    h1: "Cursor Project Ideas & Examples",
+    titlePattern:
+      "Cursor Project Ideas: {count} Examples of What to Build with Cursor",
     legacyCount: 30,
     metaDescription:
-      "Find the best projects to build with Cursor. Ideas with ready-to-use prompts, from MVPs to full products. AI-powered code editor for full-stack development.",
+      "Cursor project ideas and examples with ready-to-use prompts — MVPs and full-stack apps to build with Cursor's AI code editor this weekend.",
     description:
       "Build full-stack applications with AI pair programming. Cursor understands your codebase and helps you write, refactor, and debug code faster.",
     url: "https://cursor.sh",
@@ -166,6 +178,23 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           "Create a Supabase schema for a [YOUR APP TYPE] with tables for users, [main entity], and [related entity]. Include proper foreign keys, indexes, and RLS policies. Generate the SQL migrations.",
       },
     ],
+    featured: {
+      slugs: [
+        "tattoo-dm-booking-agent",
+        "freelance-scope-creep-detector",
+        "ai-coding-agent-dashboard",
+        "college-retention-early-help-router",
+        "contractor-osha-safety-grade",
+        "shopify-ai-support-context",
+        "ai-workflow-library-solopreneurs",
+        "real-estate-workflow-automation",
+        "on-device-privacy-ai",
+        "ai-writing-coach-freelancers",
+      ],
+      heading: "Start here: Cursor projects worth shipping this weekend",
+      intro:
+        "These ideas lean on Cursor's strength — multi-file refactors, API work, and full-stack scaffolding — so you spend the weekend building product, not fighting the editor.",
+    },
   },
   claude: {
     slug: "claude",
@@ -245,6 +274,85 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       body: "The Weekend MVP newsletter: a validated idea with the stack, the build plan, and prompts you can paste straight into Claude. No download, no course — just the next thing worth building.",
       buttonLabel: "Send me ideas",
     },
+    relatedHub: {
+      href: "/build-with/claude-code",
+      label: "Looking for Claude Code projects?",
+      body: "If you want agentic coding in the terminal — CLIs, APIs, and full apps with real diffs — start on the Claude Code hub instead.",
+      cta: "Browse Claude Code projects",
+    },
+  },
+  "claude-code": {
+    slug: "claude-code",
+    name: "Claude Code",
+    h1: "Claude Code Projects & Things to Build",
+    titlePattern:
+      "Claude Code Projects: {count} Things to Build in the Terminal",
+    legacyCount: 30,
+    metaDescription:
+      "Claude Code projects and things to build in your terminal. Agentic coding for CLIs, APIs, and full apps — copy a starter prompt and ship this weekend.",
+    description:
+      "Claude Code is Anthropic's agentic coding tool in the terminal. Point it at a repo (or an empty folder), describe the product, and it plans, edits files, runs commands, and iterates until the MVP works. Best when you want real code — not a chat draft — and you're comfortable reviewing diffs.",
+    url: "https://claude.ai/code",
+    icon: Code2,
+    color: "orange",
+    gradient: "bg-gradient-to-br from-orange-600/20 to-amber-500/20",
+    operatingSystem: "macOS, Linux, Windows (WSL)",
+    schemaDescription:
+      "Anthropic's agentic coding tool for building projects in the terminal",
+    strengths: [
+      "Terminal-native agentic coding",
+      "Multi-file refactors with diffs",
+      "CLI tools and scripts",
+      "APIs with real tests",
+      "Greenfield MVPs in empty folders",
+    ],
+    gettingStarted: [
+      "Install Claude Code and open a terminal in an empty folder (or an existing repo)",
+      "Paste a starter prompt below — or describe your MVP in one paragraph",
+      "Let Claude Code scaffold, run, and fix until the happy path works",
+      "Review the diff, commit, and deploy (Vercel, Railway, Fly, or your host of choice)",
+    ],
+    prompts: [
+      {
+        label: "TypeScript CLI",
+        prompt:
+          "Scaffold a TypeScript CLI that [does X]. Include --help, tests, and a one-line install via npm. Prefer a simple file layout over heavy frameworks.",
+      },
+      {
+        label: "Next.js MVP",
+        prompt:
+          "Build a Next.js MVP for [idea]: auth, one core workflow, and a README with run/deploy steps. Keep files simple and ship a working happy path first.",
+      },
+      {
+        label: "Working API",
+        prompt:
+          "Turn this folder into a working API: REST endpoints for [resource], SQLite or Postgres, seed data, and a smoke-test script. Include basic error handling.",
+      },
+    ],
+    featured: {
+      slugs: [
+        "ai-coding-agent-dashboard",
+        "ai-code-coach-tutor",
+        "ai-agent-error-translator",
+        "voice-desktop-workflow-macros",
+        "website-accessibility-ada-scanner",
+        "ai-api-cost-optimizer-indie-builders",
+        "markdown-publish-everywhere",
+        "ai-coding-classroom-assistant",
+        "freelance-scope-creep-detector",
+        "inbox-zero-agent",
+      ],
+      heading: "Start here: Claude Code projects worth shipping this weekend",
+      intro:
+        "These lean on what Claude Code is for — agents that edit files, run commands, and leave you a reviewable diff. Chat-first Claude ideas live on the main Claude hub.",
+    },
+    relatedHub: {
+      href: "/build-with/claude",
+      label: "Prefer chat-first Claude ideas?",
+      body: "Planning, debugging, and long-form drafting in claude.ai still live on the main Claude hub.",
+      cta: "Browse Build with Claude",
+    },
+    ideasTool: "claude",
   },
   bolt: {
     slug: "bolt",
@@ -298,11 +406,11 @@ const TOOL_PAGES: Record<string, ToolPage> = {
   lovable: {
     slug: "lovable",
     name: "Lovable",
-    h1: "What to Build with Lovable",
-    titlePattern: "What to Build with Lovable: {count} Project Ideas",
+    h1: "Best Lovable Projects & App Ideas",
+    titlePattern: "Best Lovable Projects & App Ideas ({count}) to Build This Weekend",
     legacyCount: 30,
     metaDescription:
-      "Find the best projects to build with Lovable. Ideas with ready-to-use prompts, from MVPs to full products. AI software engineer for non-technical founders.",
+      "Best Lovable projects and app ideas you can ship this weekend. AI builds the full stack from your description — pick a starter prompt and go live.",
     description:
       "Build full applications with natural language. Lovable handles the entire stack and deploys your app automatically.",
     url: "https://lovable.dev",
@@ -343,17 +451,34 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           "Build a personal finance tracker where users can add expenses, categorize them, and see spending breakdowns with charts. Include recurring expense tracking and budget goals.",
       },
     ],
+    featured: {
+      slugs: [
+        "client-portal",
+        "saas-financial-toolkit",
+        "waitlist-manager",
+        "user-onboarding-builder",
+        "subscription-analytics-dashboard",
+        "single-event-app-builder",
+        "ai-travel-planner",
+        "agent-storefront-platform",
+        "sms-time-tracker",
+        "feature-voting-board",
+      ],
+      heading: "Start here: the best Lovable projects to build this weekend",
+      intro:
+        "These ideas play to Lovable's strength — full-stack apps with auth, dashboards, and deployable UIs from a plain-English brief.",
+    },
   },
   "no-code": {
     slug: "no-code",
     name: "No-Code Tools",
-    h1: "No-Code App Ideas",
-    titlePattern: "No-Code App Ideas: Build Without Coding",
+    h1: "No-Code MVP Ideas for Non-Technical Founders",
+    titlePattern: "No-Code MVP Ideas — Best Tools to Validate Without Coding",
     legacyCount: 8,
     metaDescription:
-      "Build apps without coding using Bubble, Webflow, Softr, and Glide. Project ideas with visual builders perfect for non-technical founders and rapid MVPs.",
+      "No-code MVP ideas for non-technical founders. Use Bubble, Softr, or Glide to validate before you hire a developer. Pick an idea and ship this weekend.",
     description:
-      "A collection of no-code tools including Bubble, Webflow, Softr, and Glide that let you build apps without writing code.",
+      "Looking for the best no-code tools for an MVP? Start here. Bubble for complex web apps, Softr for Airtable-powered sites, Glide for mobile apps from spreadsheets. If you can use a spreadsheet, you can ship a validating MVP without writing code — or hiring an engineer yet.",
     url: "https://bubble.io",
     icon: Blocks,
     color: "pink",
@@ -369,22 +494,55 @@ const TOOL_PAGES: Record<string, ToolPage> = {
       "Integrations",
     ],
     gettingStarted: [
-      "Choose a no-code platform (Bubble, Webflow, Softr)",
-      "Start with a template if available",
-      "Use drag-and-drop builders",
-      "Connect data sources",
-      "Launch and iterate",
+      "Define the one job your MVP must prove (signup, booking, marketplace match, etc.)",
+      "Pick a tool: Bubble (complex logic), Softr (Airtable sites), or Glide (mobile from sheets)",
+      "Start from a template closest to your idea and connect your data source",
+      "Ship a shareable link, put it in front of 10 real users, then decide what to build next",
     ],
-    prompts: [],
+    prompts: [
+      {
+        label: "Bubble MVP",
+        prompt:
+          "In Bubble: build an MVP where [users] can [core action]. Include signup, a simple dashboard, and one paid or gated step.",
+      },
+      {
+        label: "Softr + Airtable Directory",
+        prompt:
+          "In Softr + Airtable: create a directory of [items] with search, filters, and a submit form so operators can add listings without code.",
+      },
+      {
+        label: "Glide Mobile App",
+        prompt:
+          "In Glide: turn a Google Sheet of [data] into a mobile app with login, list/detail screens, and a way for users to update their row.",
+      },
+    ],
+    featured: {
+      slugs: [
+        "client-portal",
+        "saas-financial-toolkit",
+        "nasm-trainer-marketplace",
+        "mobile-brake-repair-marketplace",
+        "expert-mentorship-marketplace",
+        "meeting-scheduler",
+        "user-onboarding-builder",
+        "sms-time-tracker",
+        "social-media-scheduler",
+        "single-event-app-builder",
+      ],
+      heading: "Start here: no-code MVPs you can validate this weekend",
+      intro:
+        "Built for non-technical founders — marketplaces, portals, and schedulers you can stand up in Bubble, Softr, or Glide before writing a line of code.",
+    },
   },
   replit: {
     slug: "replit",
     name: "Replit",
-    h1: "What to Build with Replit",
-    titlePattern: "What to Build with Replit: {count} Project Ideas",
+    h1: "Replit Project Examples & App Ideas",
+    titlePattern:
+      "Replit Project Examples & App Ideas ({count}) You Can Deploy Instantly",
     legacyCount: 30,
     metaDescription:
-      "Find the best projects to build with Replit. Ideas with ready-to-use prompts, from MVPs to full products. Cloud-based IDE for collaborative development.",
+      "Replit project examples and app ideas you can build this weekend. Code in the browser, get help from Agent, deploy with one click.",
     description:
       "Code, create, and learn together with a powerful, simple, and collaborative IDE, compiler, and interpreter.",
     url: "https://replit.com",
@@ -425,6 +583,23 @@ const TOOL_PAGES: Record<string, ToolPage> = {
           "Create a Python Discord bot that responds to commands, can send scheduled messages, and stores user preferences. Use discord.py and include a keep-alive server for 24/7 hosting.",
       },
     ],
+    featured: {
+      slugs: [
+        "ai-agent-error-translator",
+        "ai-code-coach-tutor",
+        "ai-coding-classroom-assistant",
+        "daily-standup-bot",
+        "invoice-reminder-bot",
+        "api-documentation-generator",
+        "ai-code-reviewer",
+        "client-portal",
+        "ai-api-cost-optimizer-indie-builders",
+        "saas-financial-toolkit",
+      ],
+      heading: "Start here: Replit project examples worth deploying this weekend",
+      intro:
+        "Browser IDE + Agent + one-click Deploy — these ideas are small enough to finish and public enough to share the moment they run.",
+    },
   },
   v0: {
     slug: "v0",
@@ -538,6 +713,7 @@ const TOOL_TILES: Array<{
 }> = [
   { slug: "cursor", label: "Cursor", sub: "AI Code Editor", icon: MousePointer2, iconClass: "text-violet-400" },
   { slug: "claude", label: "Claude", sub: "AI Assistant", icon: Sparkles, iconClass: "text-orange-400" },
+  { slug: "claude-code", label: "Claude Code", sub: "Terminal Agent", icon: Code2, iconClass: "text-orange-500" },
   { slug: "bolt", label: "Bolt.new", sub: "Full-Stack Builder", icon: Zap, iconClass: "text-yellow-400" },
   { slug: "no-code", label: "No-Code", sub: "Visual Builders", icon: Blocks, iconClass: "text-pink-400" },
 ];
@@ -563,18 +739,22 @@ async function getToolData(slug: string): Promise<ToolData> {
   cacheLife("hours");
 
   const page = TOOL_PAGES[slug];
+  const ideasTool = page.ideasTool ?? slug;
   const [ideas, featured, toolRow] = await Promise.all([
-    fetchIdeasByTool(slug),
+    fetchIdeasByTool(ideasTool),
     fetchIdeasBySlugs(page.featured?.slugs),
+    // Reference rows are keyed by public slug; Claude Code has no row yet.
     fetchToolReference(slug),
   ]);
   return {
     ideas,
     featured,
-    description: toolRow?.description ?? page.description,
+    // Editorial hub copy lives in TOOL_PAGES (titles, MVP positioning).
+    // Convex tool rows still supply url/strengths when present.
+    description: page.description,
     url: toolRow?.url ?? page.url,
     strengths: toolRow?.strengths ?? page.strengths,
-    gettingStarted: toolRow?.gettingStarted ?? page.gettingStarted,
+    gettingStarted: page.gettingStarted,
   };
 }
 
@@ -743,6 +923,21 @@ async function CachedToolHub({ slug }: { slug: string }) {
           </>
         }
       />
+
+      {page.relatedHub ? (
+        <p className="mb-12 -mt-4 max-w-3xl text-sm text-neutral-400">
+          <span className="font-medium text-neutral-300">
+            {page.relatedHub.label}
+          </span>{" "}
+          {page.relatedHub.body}{" "}
+          <Link
+            href={page.relatedHub.href}
+            className="rounded text-white underline decoration-white/30 underline-offset-4 hover:decoration-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          >
+            {page.relatedHub.cta}
+          </Link>
+        </p>
+      ) : null}
 
       {/* Tool Strengths */}
       {data.strengths.length > 0 ? (

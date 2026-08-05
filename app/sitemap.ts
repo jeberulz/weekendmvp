@@ -11,6 +11,7 @@ import { SITE } from "@/lib/seo";
 const BUILD_WITH_SLUGS = [
   "bolt",
   "claude",
+  "claude-code",
   "cursor",
   "lovable",
   "no-code",

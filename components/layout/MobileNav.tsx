@@ -58,6 +58,7 @@ const SECTIONS: MobileSection[] = [
         links: [
           { label: "Cursor", href: "/build-with/cursor" },
           { label: "Claude", href: "/build-with/claude" },
+          { label: "Claude Code", href: "/build-with/claude-code" },
           { label: "Windsurf", href: "/build-with/windsurf" },
         ],
       },

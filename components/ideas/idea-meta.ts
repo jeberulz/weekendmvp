@@ -100,6 +100,7 @@ export const REVENUE_NAMES: Record<string, string> = {
 
 export const TOOL_NAMES: Record<string, string> = {
   claude: "Claude",
+  "claude-code": "Claude Code",
   cursor: "Cursor",
   windsurf: "Windsurf",
   replit: "Replit",
