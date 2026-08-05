@@ -1,7 +1,5 @@
 import { AuthPlatformProvider } from "../AuthPlatformProvider";
 
-export const instant = false;
-
 export default function SignInLayout({
   children,
 }: {

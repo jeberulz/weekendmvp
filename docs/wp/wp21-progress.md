@@ -161,3 +161,32 @@ Append-only progress log. Do not rely on chat history for project state.
   - `git diff --check`: pass.
   - Staged secret scan: 24 implementation/documentation files checked for private-key, JWT, Resend, Stripe, Google OAuth, and Ideabrowser credential patterns; zero hits.
 - Status: Resend code and deterministic security gates pass. WP21 remains blocked on one credential-backed Resend inbox flow and the Google redirect/callback/session/logout flow. Production remains separately blocked on its inventory, backup, restore tag, dry run, secrets, and owner approval.
+
+## 2026-08-05 - Next 16 request-time auth provider boundary
+
+- Cause: with Cache Components enabled, `ConvexAuthNextjsServerProvider` reads request/session state and calls `Date.now()` inside third-party server code. Route-level `instant = false` controls on child routes did not establish a request boundary before the parent provider, so `/signin` still evaluated that provider during prerender and emitted the current-time error once local Convex connectivity was restored.
+- Fix: `app/AuthPlatformProvider.tsx` now places the third-party server provider below an async component that first calls `await connection()`, with a shared Suspense fallback above it. This is the official Next request-time pattern for clock access inside third-party code and centralizes the boundary for `/signin`, `/auth`, `/email-signin`, and `/dashboard` without making public routes dynamic. Redundant layout/email route declarations were removed; `/signin` retains `instant = false` because its page awaits `searchParams`.
+- Regression contract: a static source-contract test asserts that the connection boundary appears before `ConvexAuthNextjsServerProvider`, that Suspense supplies a fallback, and that `/signin` retains its distinct `instant = false` control. The production build backs this contract with successful partial prerenders for all four affected route groups.
+- Verification:
+  - `npm run typecheck`: pass.
+  - `npm run test:auth`: 28/28 pass.
+  - `npm run test:redirects`: 32/32 pass (7 canonical Node tests plus 25 middleware tests).
+  - `npm run build`: pass with all 303 pages generated. `/signin`, `/auth/callback`, `/email-signin`, and `/dashboard` are partial-prerender routes; the current-time error is absent.
+  - The five inherited Turbopack filesystem-trace warnings and middleware deprecation warning remain unchanged and are outside this hotfix.
+  - No external email, production mutation, deployment, stage, commit, or push occurred.
+## 2026-08-05 - Resend live flow and Convex client lifecycle
+
+- Live local evidence: the owner completed the Resend magic-link flow and reached `/dashboard`, confirming the verified `auth.weekendmvp.app` sender, restricted replacement API key, Convex environment, explicit confirmation page, cookie session, and safe dashboard return path. The exposed superseded Resend key was treated as compromised; the owner supplied a replacement after the revocation instruction. The replacement was written from the clipboard with command output suppressed, validated by shape only, and the clipboard was cleared.
+- Runtime finding: React development effect replay closed the state-held `ConvexReactClient` and then reused that same terminal client instance, producing `ConvexReactClient has already been closed` after the dashboard opened.
+- Fix: `AuthConvexClientProvider` now follows the installed Convex Auth provider contract: one browser-only client is cached on browser `globalThis`, remains stable across Strict Mode replay, route remounts, and Fast Refresh, and is not closed from a React effect. Server prerender still returns no client and therefore does not construct Convex's random-valued browser client during Cache Components evaluation.
+- Regression contract: the focused static source test requires the HMR-stable browser client cache, one client construction site, and no provider-owned `client.close()` call. Live dashboard navigation remains the browser-level acceptance check.
+- Independent review: pass with no critical, high, or medium findings. Its one low development-only module-reload caveat was remediated by moving the singleton from module state to the browser-global cache.
+- Verification:
+  - `npm run typecheck`: pass.
+  - `npm run test:auth`: 29/29 pass.
+  - `npm run test:redirects`: 32/32 pass.
+  - `npm run lint`: pass with zero errors and the unchanged 35-warning baseline.
+  - `npm run build`: pass with all 303 pages generated and only the inherited middleware/filesystem-trace warnings.
+  - In-app browser navigation after the patch produced no new console errors on the auth route. The owner then repeated the credential-backed magic-link flow and confirmed that the authenticated dashboard opened without the closed-client error, completing the client-lifecycle acceptance check.
+  - `git diff --check` and the worktree secret-pattern scan: pass.
+- Status: the credential-backed Resend inbox, server-session, safe return, and dashboard client-lifecycle gates pass locally. WP21 remains open for the separate Google redirect/callback/session/logout gate and production activation controls.
