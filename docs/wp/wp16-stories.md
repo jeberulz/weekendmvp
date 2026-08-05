@@ -7,7 +7,7 @@ Definition of done: Weekend MVP emits a consistent idea-to-revenue event funnel,
 
 ## Stories
 
-- [ ] `WP16-S1` - Funnel event contract
+- [x] `WP16-S1` - Funnel event contract
   - Scope: shared analytics helper and existing idea, hub, newsletter, checkout, and purchase client islands.
   - Acceptance criteria:
     - Prompt copies emit `idea_prompt_copied`.
@@ -17,7 +17,7 @@ Definition of done: Weekend MVP emits a consistent idea-to-revenue event funnel,
     - Events include stable context such as `idea_slug`, `source_surface`, `source_path`, and `cta_id` where applicable.
     - Existing GA4 ecommerce events and consent gating remain intact.
 
-- [ ] `WP16-S2` - Validation metadata contract
+- [x] `WP16-S2` - Validation metadata contract
   - Scope: idea manifest/Convex schema/seed path and `/publish-idea`.
   - Acceptance criteria:
     - Ideas may carry `validation.audience`, `validation.hypothesis`, and `validation.primaryAction`.
@@ -25,7 +25,7 @@ Definition of done: Weekend MVP emits a consistent idea-to-revenue event funnel,
     - New Mode A and Mode B publishes must author the object before publishing.
     - Existing ideas remain valid without a speculative metadata backfill.
 
-- [ ] `WP16-S3` - Weekly GA4 report
+- [x] `WP16-S3` - Weekly GA4 report
   - Scope: pure report module, CLI, package script, and tests.
   - Acceptance criteria:
     - Compare the last seven complete UTC days with the preceding 28 complete days.
@@ -34,7 +34,7 @@ Definition of done: Weekend MVP emits a consistent idea-to-revenue event funnel,
     - Flag at least 25% relative volume movement or two percentage points of conversion movement.
     - Write deterministic Markdown and HTML-ready output.
 
-- [ ] `WP16-S4` - Scheduled email delivery
+- [x] `WP16-S4` - Scheduled email delivery
   - Scope: Resend transport, GitHub Actions schedule/manual dispatch, and operator runbook.
   - Acceptance criteria:
     - Weekly workflow generates and uploads the report artifact.
