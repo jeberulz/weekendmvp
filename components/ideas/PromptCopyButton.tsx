@@ -21,7 +21,7 @@ export function PromptCopyButton({
   className,
 }: {
   targetRef: React.RefObject<HTMLElement | null>;
-  ideaSlug: string;
+  ideaSlug?: string;
   className?: string;
 }) {
   const [copied, setCopied] = React.useState(false);
@@ -31,16 +31,18 @@ export function PromptCopyButton({
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      const promptIndex =
-        Array.from(document.querySelectorAll("[data-idea-prompt]")).indexOf(
-          targetRef.current?.closest("[data-idea-prompt]") as Element,
-        ) + 1;
-      trackValidationEvent("idea_prompt_copied", {
-        idea_slug: ideaSlug,
-        prompt_index: promptIndex,
-        source_surface: "idea_prompt",
-        cta_id: "copy-prompt",
-      });
+      if (ideaSlug) {
+        const promptIndex =
+          Array.from(document.querySelectorAll("[data-idea-prompt]")).indexOf(
+            targetRef.current?.closest("[data-idea-prompt]") as Element,
+          ) + 1;
+        trackValidationEvent("idea_prompt_copied", {
+          idea_slug: ideaSlug,
+          prompt_index: promptIndex,
+          source_surface: "idea_prompt",
+          cta_id: "copy-prompt",
+        });
+      }
       setCopied(true);
       toast("Copied!");
       setTimeout(() => setCopied(false), 2000);
