@@ -1,0 +1,117 @@
+---
+slug: "vacation-rental-turnover-coordinator"
+title: "Vacation Rental Turnover Coordinator"
+---
+
+## The Problem
+
+A host with four Airbnb listings gets a same-day booking notification: checkout at 11am, next check-in at 4pm. Five hours to clean, restock, and fix whatever the last guest broke. The host texts their cleaner, who is already booked on another property that morning. They scroll a group chat, call a backup cleaner, and hope. If the cleaner runs late, or the checkout guest lingers, or the dishwasher needs a part, the next guest arrives to a listing that isn't ready — and the review that follows mentions "not clean" or "check-in was a mess," the two phrases that do more damage to a listing's search ranking than almost anything else a host controls.
+
+This is not an edge case for hosts running real portfolios. Multi-property hosting has become the dominant shape of the market rather than the exception: almost three in four active Airbnb listings are now managed by hosts who operate more than one property, and more than 30% of active U.S. listings belong to hosts running 21 or more units. Once a host crosses roughly three properties, the coordination problem stops being "remember to text the cleaner" and becomes a real-time logistics job — matching a rotating cast of cleaners and maintenance people against a calendar that changes every time a guest books, cancels, or extends a stay.
+
+The tools hosts currently glue together were never built for this. Airbnb, VRBO, and Booking.com each expose an iCal feed, but iCal sync is famously loose: feeds refresh on a delay of up to 12 hours, and the .ics file only tells you a reservation exists between two dates — no guest name, no way to flag that this particular turnover is tight. So hosts stitch calendars into a spreadsheet or group chat, manually calculate the gap between checkout and check-in for every property, and hope someone notices when the gap collapses to same-day. Nobody catches the dangerous ones systematically; they get caught the way most operational failures get caught, by a bad review after the fact.
+
+The cost of getting this wrong is measurable, not just annoying. Airbnb's own host data shows listings with a cleanliness rating of 4.8 or higher get roughly 20% more bookings than listings that fall below that bar, and cleanliness is scored as its own separate category — a bad turnover doesn't just cost one review, it drags the metric that determines whether the listing shows up in search at all. Professionally managed listings already out-earn self-managed ones by 16.9% in daily revenue and 15.5% in occupancy, and a meaningful share of that gap is operational discipline: knowing which turnovers are at risk before the guest finds out, not after.
+
+## The Solution
+
+A turnover coordination layer that sits on top of the calendars hosts already have. Connect Airbnb, VRBO, and Booking.com iCal feeds (or the Airbnb/VRBO channel APIs for hosts on a PMS), and the system builds a live turnover board: every checkout paired with its next check-in, the gap between them in hours, and the cleaner or maintenance person assigned to close it. Tasks are auto-created and auto-assigned the moment a reservation lands, cleaners get a mobile-friendly link (no app install) with a photo-based checklist scoped to that property, and the host gets a single dashboard instead of four calendars and a group chat.
+
+The feature that actually prevents bad reviews is the tight-turnover flag: any gap under a configurable threshold (default 6 hours) gets flagged automatically, with an alert routed to the host and an SMS nudge to the assigned cleaner confirming they can make it. Because the system knows every property's turnover history, it can also flag turnovers where the assigned cleaner has back-to-back jobs across different properties — the exact failure mode from the problem above — before the day arrives, not during it.
+
+**How it works:**
+
+1. **Connect calendars** — Host links Airbnb, VRBO, and Booking.com iCal feeds (or PMS API) in under five minutes; the system polls feeds and normalizes every reservation into one unified turnover timeline
+2. **Auto-schedule and flag** — Each checkout/check-in pair becomes a task, auto-assigned to the property's default cleaner and maintenance contact; any gap under the host's threshold (or a cleaner double-booked across properties) triggers an immediate flag and alert
+3. **Complete with proof** — Cleaner opens a mobile checklist scoped to that property (make beds, restock toiletries, check for damage), photographs each required step, and marks the turnover complete; the host sees a timestamped, photo-backed confirmation before the next guest checks in
+
+Everything downstream is configurable per property, because a studio and a six-bedroom lake house need different turnover routines and different margins for error.
+
+## Market Research
+
+Short-term rental operations software is a growing category riding two converging trends: Airbnb's supply base has consolidated into professional, multi-property operators, and those operators are actively shopping for tools that reduce the admin load of running more than a handful of units.
+
+- **9+ million active Airbnb listings worldwide** as of 2026, hosted by more than 5.5 million people across 220+ countries — a large, growing base of turnover events every day.
+- **Almost 3 in 4 active Airbnb listings are managed by hosts with more than one property**, and over 30% of active U.S. listings belong to hosts running 21+ properties — multi-property hosting is the market's center of gravity, not a niche.
+- **Professionally managed listings earn 16.9% more in daily revenue and 15.5% higher occupancy** than self-managed ones, and in top markets captured 20–40% more revenue in 2024 — operational polish is directly monetizable.
+- **Listings with a cleanliness rating of 4.8+ get roughly 20% more bookings** than lower-rated listings, per Airbnb's own host survey data — cleanliness is one of the few levers a host fully controls that measurably moves bookings.
+- **The vacation rental software market is estimated at $1.8B in 2026, projected to reach $4.76B by 2035** (11.4% CAGR) — estimates vary by source and scope, but every one points the same direction: rapid, sustained growth as more hosts professionalize.
+- **iCal feeds sync on a delay of up to 12 hours** and carry no structured turnover-risk data — the infrastructure hosts already use was never designed to answer "is this turnover safe," which is exactly the gap this product fills.
+
+## Competitive Landscape
+
+The category already has real players, which is a good sign — it means the pain is proven and hosts already pay for tools that address pieces of it. None of them make the tight-turnover risk flag the product's hero feature; most treat it as a side effect of scheduling rather than the thing that actually prevents bad reviews.
+
+- **Turno (formerly TurnoverBnB)** — The category incumbent for cleaner scheduling and marketplace matching. Auto-schedules cleaners from synced calendars, supports checklist photos and cleaner payments. Free for a single property; $10/month per feature or $96/year per property for paid tiers, plus a 5% fee charged to both host and cleaner on every clean processed through the platform.
+- **Breezeway** — Broader operations platform (cleaning, inspections, maintenance) built for larger portfolios and property management companies; coordinates over 265,000 properties across 3,500+ clients. First property free; $19.99/property/month for portfolios of four units or fewer, custom pricing above that — priced for teams, not solo hosts with three to ten units.
+- **Properly** — Visual, photo-based checklists with a marketplace for cleaners and inspectors. Pricing starts around $12.99/property/month and scales down toward $5/property as portfolio grows; real-time inspection add-on runs $5/turnover. Strong on checklist UX, thinner on proactive scheduling-risk detection.
+- **ResortCleaning** — Housekeeping-focused scheduler integrating with Airbnb, Booking.com, Guesty, and QuickBooks. Entry plan starts near $5/property/month. Built more for cleaning-company operators managing crews across client portfolios than for an individual host managing their own turnovers.
+- **Hostfully** — Full property management platform (bookings, messaging, direct booking site) with turnover scheduling as one module among many. Custom pricing, sales-assisted — overkill for a host whose actual pain is "don't let a turnover slip," not full channel-manager replacement.
+
+**Your Opportunity** — Every incumbent above treats turnover scheduling as a feature bolted onto a bigger platform (cleaner marketplace, full PMS, inspection suite) or a commodity utility with per-clean fees layered on top. None leads with the tight-timeline risk flag as the core value proposition, and none targets the specific host running three to ten properties who doesn't need a marketplace or a channel manager — they need one dashboard that tells them, today, which of tomorrow's turnovers is going to break. Win by shipping that flag as the headline feature, pricing flat per-property with no percentage fee on every clean, and going deep on the "same-day timeline" alert rather than wide on features a solo host will never touch.
+
+## Business Model
+
+Flat per-property SaaS pricing, deliberately undercutting Turno's 5% per-clean fee model — a host running twenty turnovers a month at $150/clean pays Turno roughly $150 in fees alone. Free tier caps at one property to seed word-of-mouth among hosts who will grow into paid tiers as their portfolio expands.
+
+- **Starter** ($0) — 1 property, calendar sync, basic checklist, no tight-turnover alerts
+- **Growth** ($15/property/month) — Unlimited turnovers, auto-scheduling, tight-timeline flags with SMS alerts, photo-proof checklists, cleaner mobile links
+- **Portfolio** ($12/property/month at 10+ properties) — Everything in Growth plus multi-cleaner load balancing, maintenance task routing, CSV/export reporting, and priority support
+
+**Unit Economics**
+
+- **~$0.15–$0.40** — Cost per turnover (SMS alerts, photo storage, iCal polling)
+- **~82%** — Gross margin at Growth tier pricing
+- **$40–$70** — Target CAC (host communities, Airbnb host Facebook groups, SEO)
+- **$540+** — Annual LTV per host at 3 properties (12-month retention, Growth tier)
+
+MRR path: 100 hosts averaging 4 properties at $15/property is $6,000/mo; 500 hosts at the same mix crosses $30,000/mo. Churn risk concentrates in the first 60 days, before a host has felt the product catch a real tight turnover — so the highest-leverage growth motion is making sure every trial account sees at least one correctly-flagged turnover before the trial ends.
+
+## Recommended Tech Stack
+
+The hard engineering problem isn't the UI — it's reliable calendar ingestion (iCal feeds are messy and inconsistently formatted across platforms) and a scheduling engine that recalculates risk every time a booking changes, cancels, or extends.
+
+- **Next.js 14 (App Router) + Vercel** — Host dashboard, cleaner-facing mobile web views (no native app needed), and Vercel Cron for the polling jobs that keep calendars fresh.
+- **Postgres via Supabase** — Tables for properties, reservations, turnovers, cleaners, and checklist_completions; Supabase Storage holds checklist photos with signed URLs so cleaners never need an account.
+- **node-ical (or ical.js) + a polling worker** — Fetches each property's Airbnb/VRBO/Booking.com iCal URL every 15–30 minutes (tighter than the platforms' own 12-hour sync lag), diffs against stored reservations, and re-triggers the risk calculation whenever a booking changes.
+- **Twilio Programmable Messaging** — SMS alerts for flagged tight turnovers and checklist reminders; A2P 10DLC registration required for U.S. sending, budget 1–3 days for approval.
+- **Claude or GPT-4o-mini** — Lightweight classification on checklist notes and free-text maintenance comments, surfacing recurring issues (e.g., "dishwasher" mentioned three times in a month) as a maintenance-pattern alert.
+- **Stripe Billing** — Per-property metered subscriptions with automatic tier changes as property count crosses plan thresholds; Customer Portal for self-serve upgrades.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "TurnoverBoard." Set up Supabase Postgres with these tables: hosts (id, email, phone, timezone), properties (id, host_id, name, ical_url_airbnb, ical_url_vrbo, ical_url_booking, default_cleaner_id, tight_turnover_hours INT default 6), cleaners (id, host_id, name, phone, active BOOLEAN), reservations (id, property_id, source TEXT, external_id TEXT, checkin TIMESTAMPTZ, checkout TIMESTAMPTZ, guest_name TEXT), turnovers (id, property_id, prev_reservation_id, next_reservation_id, gap_hours FLOAT, is_flagged BOOLEAN, assigned_cleaner_id, status TEXT default 'pending'), checklist_items (id, property_id, label, requires_photo BOOLEAN, sort_order INT), checklist_completions (id, turnover_id, checklist_item_id, photo_url, completed_at). Enable row-level security scoped to host_id. Install the Twilio Node SDK, node-ical, and the Vercel AI SDK.
+```
+
+**2. Calendar Sync + Turnover Risk Engine**
+
+```text
+Build a Vercel Cron job that runs every 15 minutes and, for each active property, fetches its Airbnb, VRBO, and Booking.com iCal URLs using node-ical. Parse each feed into events with UID, start date, and end date. Upsert into the reservations table, matching on (property_id, source, external_id) so re-syncs update rather than duplicate. After syncing a property's reservations, recompute its turnovers: for every checkout, find the next reservation's checkin at the same property, compute gap_hours between them, and upsert a turnover row. If gap_hours is less than the property's tight_turnover_hours, set is_flagged = true and enqueue an SMS via Twilio to the host and the assigned cleaner: "Tight turnover at {property_name}: only {gap_hours} hours between checkout and next check-in on {date}. Confirm you can make it." Also flag (separately) any cleaner who has two is_flagged turnovers at different properties overlapping in time, since they cannot physically complete both.
+```
+
+**3. Cleaner Checklist + Photo Proof Flow**
+
+```text
+Build a no-login mobile web page at /turnover/[turnoverId] that a cleaner opens from an SMS link (use a signed, expiring token in the URL instead of auth). Show the property name, checkout/checkin times, and the property's checklist_items in order. For each item where requires_photo is true, show a camera-capture input; upload the photo to Supabase Storage and write a checklist_completions row with the photo_url and completed_at timestamp. Show a progress bar (e.g., "6 of 9 complete"). When all required items are done, mark the turnover status as 'complete', notify the host via SMS with a summary link, and show the cleaner a confirmation screen. Handle the case where a cleaner opens the link after the checkin time has already passed by showing a red "guest may already be arriving" banner at the top of the page.
+```
+
+## Sources
+
+- [Fox59 — A megahost might run your Airbnb: Why it matters (multi-listing prevalence, 21+ property hosts)](https://fox59.com/news/national-world/a-megahost-might-run-your-airbnb-why-it-matters/)
+- [Awning — 70+ Airbnb Statistics & Facts for 2026 (professional host revenue and occupancy advantage)](https://awning.com/post/airbnb-statistics)
+- [DemandSage — Airbnb Statistics 2026 (9+ million active listings, 5.5M+ hosts)](https://www.demandsage.com/airbnb-statistics/)
+- [GetSetClean — The Impact of Cleanliness on Airbnb Ratings (4.8+ rating, 20% more bookings)](https://www.getsetclean.co.uk/blog/impact-cleanliness-airbnb-ratings)
+- [MarkWide Research — Vacation Rental Software Market Size, Share & Forecast 2026-2036 ($1.8B to $4.76B, 11.4% CAGR)](https://markwideresearch.com/vacation-rental-software-market)
+- [PriceLabs / Rental Scale-Up — How To Sync Your Airbnb Calendar With Vrbo And Booking.com With iCal (12-hour sync delay, limited data)](https://www.rentalscaleup.com/how-to-sync-your-airbnb-calendar-with-vrbo-and-booking-com-with-ical/)
+- [Turno — Pricing (free for 1 property, $10/mo per feature, $96/year per property, 5% per-clean fee)](https://turno.com/pricing/)
+- [Hotel Tech Report — Breezeway Reviews & Pricing ($19.99/property/month for 4 or fewer units, 265,000+ properties coordinated)](https://hoteltechreport.com/vacation-rental-software/vr-cleaning-operations/breezeway)
+- [Capterra — Properly Software Pricing ($12.99/property/month scaling to $5, $5/turnover inspection add-on)](https://www.capterra.com/p/164315/Properly/)
+- [Software Finder — ResortCleaning Pricing & Features (Industry User plan from $5/property/month)](https://softwarefinder.com/facility-management-software/resortcleaning)
+- [GetApp — Hostfully Property Management Platform Pricing & Features](https://www.getapp.com/real-estate-property-software/a/property-management-platform/)
+
+Page researched via WebSearch (Mode B fallback), August 2026. Verify competitor pricing directly on vendor sites before citing in investor materials — packaging shifts frequently.

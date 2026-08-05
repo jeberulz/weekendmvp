@@ -1,0 +1,134 @@
+---
+slug: "ai-job-post-applicant-screener"
+title: "AI Job Post Writer and Applicant Screener for Small Business Hiring"
+---
+
+## The Problem
+
+A restaurant owner needs a shift lead by Friday. She opens a blank "Post a Job" form on Indeed, types three sentences, and hits publish. By Monday she has 180 applications. She has no HR team, no recruiter, and no time — she runs the kitchen at 6 a.m. and closes the register at 11 p.m. So she does what almost every small-business owner does: skims the first 20 resumes, ignores the other 160, and picks someone who "seemed fine" in a five-minute call. The best-fit candidate might have been application 143. Nobody will ever know.
+
+This is the median hiring experience for a small business in 2026, not an edge case. Small employers now receive roughly 312 applications per job posting, above the overall market average, largely because SMB roles tend to be broadly scoped and pull from a wider, less-qualified pool. The applicant-to-interview conversion rate has collapsed to about 3%, down from 8.4% two years earlier — a symptom of AI-assisted mass-applying flooding every posting with resumes that were never a real match. The owner isn't drowning because she posted badly; the entire inbound channel got flooded while nothing on the employer side got any faster.
+
+The cost compounds. Small and medium-sized companies now take an average of 83.5 days to fill a role, versus 51.7 days at larger enterprises — postings sit open and revenue bleeds. When the wrong hire slips through anyway, CareerBuilder data puts the average loss at roughly $17,000 for an entry-to-mid-level bad hire, and the Department of Labor estimates the true cost at 30%+ of first-year wages once retraining and lost productivity are counted. The tools built to prevent this remain out of reach: only about 20% of small and mid-sized businesses use an applicant tracking system, versus 70% of large companies, because the category was priced for HR departments, not a single owner screening resumes between shifts. The job-description problem and the applicant-flood problem are really one problem: nobody translates a two-line brief into a post that attracts the right 10 people instead of the wrong 300, then does the reading nobody has time for.
+
+## The Solution
+
+A web app built for the owner who has no HR team and no ATS budget, not the recruiter who already has both. The employer answers a handful of plain-English questions about the role — title, must-haves, nice-to-haves, pay range, schedule — and the tool drafts a complete, SEO-structured job description in under a minute, ready to publish to Indeed's free tier, Google for Jobs, and other low-cost boards in one click. As applications arrive, every resume is automatically parsed, checked against the role's stated must-haves, and ranked — but instead of a black-box score, each candidate gets a short, plain-English write-up of what matches, what's missing, and why. The owner opens a dashboard once a day, reads five sentences per candidate instead of five resumes, and knows exactly who to call first.
+
+**How it works:**
+
+1. **Brief the role** — The employer fills a short structured form (title, must-haves, nice-to-haves, pay band, schedule) or pastes rough notes; the AI turns it into a polished, bias-checked job post with a must-have checklist attached behind the scenes.
+2. **Publish everywhere free** — One click pushes the post to Indeed's free listing, Google for Jobs, and a hosted careers-page URL the owner can share on Facebook or a storefront QR code — no paid sponsorship required to start.
+3. **Auto-screen every applicant** — Resumes submitted through the post or forwarded by email are parsed, matched against the must-have checklist, and ranked into Strong Fit / Possible Fit / Not a Fit, each with a plain-English explanation the owner can read on a phone between orders.
+
+The plain-English summary is the whole product. Anyone can build a scoring pipeline; the differentiator is refusing to hide the reasoning behind a number. A summary reads like: "Meets both must-haves (2+ years line-cook experience, weekend availability). No food-handler certification listed — worth confirming in the call. Resume shows steady 18-month tenure, a positive signal for this role's turnover-sensitive schedule." That is something a non-HR owner can act on immediately, and it is defensible if a candidate ever asks why they weren't moved forward — a growing legal consideration as more states require explainability in AI-assisted hiring.
+
+## Market Research
+
+The recruiting software market is sized at roughly $2.5-3.4 billion in 2025, with Fortune Business Insights projecting growth to $3.74B in 2026 at a CAGR near 8.95% through 2034 — steady, durable growth. Underneath that number sits a sharper gap: only about 20% of small and mid-sized businesses use an ATS, versus 70% of large companies, even though SMEs are now the fastest-growing ATS segment as cloud pricing drops the entry bar. That 50-point gap is the addressable wedge — millions of small employers who hire regularly but have never used software built for the job.
+
+- **Small businesses receive ~312 applications per job posting**, above the overall 2025 average of 257.6, per HiringThing's 2026 job-application benchmark report — a volume no single owner can triage by hand.
+- **The applicant-to-interview conversion rate fell to ~3% in 2024**, down from 8.4% in 2023 and 15.25% in 2016 (The Interview Guys 2026 analysis) — mass, low-effort applications are swamping every posting; employer-side screening is the actual bottleneck.
+- **SMB time-to-fill averages 83.5 days**, versus 51.7 days at enterprise companies (The Resource Company's 2026 Time-to-Hire report) — a gap almost entirely explained by the absence of triage tooling.
+- **Only ~20% of SMEs use an ATS, versus 70% of large companies** (RecruitCRM / Geekflare 2026 ATS statistics), while SMEs are the fastest-growing segment at roughly 32.9% share growth as cloud ATS pricing falls.
+- **A bad hire costs small businesses an average of $17,000** at entry-to-mid level, and the Department of Labor pegs the true cost at 30%+ of first-year salary (CareerBuilder / DOL, via Inop's 2026 cost-of-bad-hire report) — the ROI case writes itself for any owner who has made one expensive mis-hire.
+
+Timing favors a lean, AI-native entrant: incumbents here were built pre-LLM around workflow and pipeline management, not around doing the reading for the user — exactly the capability that's now cheap to build and expensive to ignore.
+
+## Competitive Landscape
+
+The existing category splits into two failure modes for a small, HR-less employer: full-featured ATS platforms priced for companies that already have a hiring process to manage, and job boards that take money for exposure but do nothing to help write the post or read what comes back.
+
+- **BambooHR** — The default "grow-into-HR-software" pick. Core $10/employee/mo, Pro $17, Elite $25, with a $250/mo minimum under 25 employees — applicant tracking is a bolt-on module, not the center of gravity. Built for a company with payroll and HR admin problems already, not an owner filling one shift-lead role.
+- **JazzHR** — Purpose-built ATS, priced like it: Hero $75/mo (annual, capped at 3 jobs, $9/extra), Plus $269/mo, Pro $420/mo. Texting and eSignatures cost extra even on the entry tier — a budget most 5-20-person businesses don't have.
+- **Breezy HR** — A free "Bootstrap" tier (1 active position, 30-day retention) that's really a trial, then a steep jump to Startup $157/mo, Growth $273/mo, Business $439/mo, with SMS and AI-credit add-ons on top.
+- **Homerun** — European-leaning ATS for small teams: roughly €99/mo (~$107) Light, €179/mo (~$193) Basic, €289/mo (~$312) Plus, tiered by job slots and seats. Strong candidate-experience polish, weak AI screening depth.
+- **Indeed Hiring Platform** — The channel every small employer already uses, bundling ATS-lite features into subscriptions from ~$299/mo, plus Sponsored Jobs at $0.10-$5.00 per click with a $25/job minimum. It solves distribution, not triage.
+
+**Your Opportunity** None of these five solve the two things a no-HR small business needs together: an AI that writes the post from a two-sentence brief, and a screener that explains its ranking in plain English instead of hiding behind a proprietary score. Position at $29-$79/month flat — below every incumbent's floor, priced like a tool rather than an HR platform — and win by being the only product where the owner never has to log in to make sense of the output; the daily digest does that for them.
+
+## Business Model
+
+Flat monthly SaaS, no per-employee or per-seat pricing, because the buyer is an owner-operator hiring for one or two roles at a time, not an HR department managing headcount. The free tier exists purely to get a completed job post and a first ranked applicant list in front of a skeptical owner within five minutes — the "aha" is seeing five plain-English summaries instead of fifty raw resumes.
+
+- **Free** ($0) — 1 active job post, AI-written description, auto-publish to Indeed's free tier + Google for Jobs, up to 25 screened applicants with plain-English summaries
+- **Starter** ($29/mo) — 3 active job posts, unlimited screened applicants, must-have checklist customization, candidate email replies, CSV export
+- **Growth** ($79/mo) — Unlimited active job posts, team inbox, branded careers page, SMS candidate notifications, priority resume-parsing queue
+
+A backend Agency/Franchise tier ($199/mo, multi-location roll-up with shared job templates) extends the ladder for multi-unit restaurant, retail, and healthcare-staffing operators — the highest-LTV segment, since they hire constantly and feel the $17,000-per-bad-hire pain the most.
+
+**Unit Economics**
+
+- **~$0.10-$0.30** — AI cost per job-description generation
+- **~$0.05-$0.15** — AI cost per resume screened (parse + rank + summary)
+- **~78-85%** — Blended gross margin at the $29-$79 price points
+- **$40-$70** — Target CAC (content/SEO + small-business Facebook groups)
+- **~$310** — Estimated 12-month LTV at Starter-tier retention
+
+MRR path: 400 Starter + 60 Growth subs clears roughly $16,400/mo; 1,200 Starter + 200 Growth clears roughly $50,800/mo. Since SMB hiring is bursty (most owners hire 1-4 times a year), annual prepay ($290/yr Starter, $790/yr Growth) is worth pushing hard to smooth churn between hiring cycles.
+
+## Recommended Tech Stack
+
+The two hard problems are reliable resume parsing across messy PDF/DOCX formats, and an LLM screening pipeline that produces consistent, defensible plain-English explanations rather than a black-box number — get those right and the rest is standard SaaS scaffolding.
+
+- **Next.js 14 (App Router) + Vercel** — Employer dashboard, job-post builder, and hosted public careers pages (one per company slug, e.g. `yourapp.com/jobs/acme-diner`); Vercel Cron handles the daily digest email.
+- **Supabase (Postgres + Auth + Storage)** — Tables for `jobs`, `must_haves`, `applicants`, `resumes`, and `screening_results`. Row-level security scoped per employer account isolates applicant data per tenant.
+- **Affinda resume-parsing API** — Purpose-built resume-to-structured-JSON extraction (work history, education, certifications, skills) at roughly $40-$200 per 1,000 resumes; more reliable than rolling your own PDF pipeline, and it hands the LLM clean structured input.
+- **Claude (Sonnet) with structured JSON output** — One prompt turns a brief into a job description plus a machine-readable must-have checklist; a second takes the parsed resume + that checklist and returns a fit tier and plain-English explanation, never a raw score.
+- **JobPosting schema (schema.org) + Indeed XML feed** — Auto-generate valid `JobPosting` structured data for Google for Jobs indexing, and push to Indeed's free organic feed via their XML job-feed spec.
+- **Resend + Stripe Billing** — Resend sends the daily applicant digest and candidate auto-replies; Stripe Billing runs subscriptions with a self-serve Customer Portal.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Scaffold**
+
+```text
+Create a Next.js 14 App Router + TypeScript + Tailwind project called "HireBrief" for small-business hiring. Provision Supabase with these tables:
+
+- employers(id, user_id, company_name, slug UNIQUE, plan, stripe_customer_id)
+- jobs(id, employer_id, title, description_md, must_haves JSONB, nice_to_haves JSONB, pay_min, pay_max, schedule, status)
+- applicants(id, job_id, name, email, phone, resume_url, source, applied_at)
+- screening_results(id, applicant_id, fit_tier, summary_text, matched_must_haves JSONB, missing_must_haves JSONB)
+
+Enable row-level security scoped by employer_id everywhere. Add env vars for AFFINDA_API_KEY, ANTHROPIC_API_KEY, RESEND_API_KEY, STRIPE_SECRET_KEY. Install the Vercel AI SDK and set up Stripe Billing with three products: Free, Starter ($29/mo), Growth ($79/mo).
+```
+
+**2. Job Post Generator + Must-Have Checklist**
+
+```text
+Build a Server Action generateJobPost(brief) that calls Claude with structured JSON output, where brief holds title, mustHaves, niceToHaves, payMin, payMax, schedule, and location.
+
+System prompt: "You write clear, bias-checked small-business job descriptions. Return strict JSON: title, description_md, and must_have_checklist (an array of items with id, label, and weight of required or preferred). Rules: never use gendered or age-coded language, keep description under 350 words, put pay range and schedule near the top since SMB applicants bounce without it, and translate every must-have from the brief into one checklist item with a short, screenable label such as '2+ years line-cook experience' rather than 'experienced'."
+
+Save the returned description_md and must_have_checklist to the jobs table. Render a live preview pane next to the input form so the employer sees the generated post update as they edit their brief.
+```
+
+**3. Resume Screening Pipeline**
+
+```text
+Build the applicant screening pipeline, triggered when a new row is inserted into applicants.
+
+Step 1 — Parse: POST the resume file to the Affinda API and retrieve structured JSON (work history, education, certifications, skills, total years experience).
+
+Step 2 — Screen: Send the parsed resume plus the job's must_have_checklist to Claude with this system prompt: "You screen job applicants for a small business owner with no HR background. Given a parsed resume and a list of must-have requirements, return strict JSON with fit_tier (strong, possible, or not_fit), matched, missing, and summary. The summary must be 3-4 plain-English sentences a non-HR person can read in 10 seconds — cite specific resume facts, never output a numeric score, and flag anything worth confirming in a call rather than silently rejecting borderline candidates."
+
+Step 3 — Store the result in screening_results and update the applicant's row. Batch new applicants from the last 24 hours into a single Resend digest sent once daily, sorted strong-fit first, each with a one-line summary and a link to the full write-up.
+```
+
+## Sources
+
+- [HiringThing — 2026 Job Application Statistics](https://blog.hiringthing.com/job-application-statistics)
+- [The Interview Guys — The Average Job Opening Now Gets 242+ Applications](https://blog.theinterviewguys.com/the-average-job-opening-now-gets-242-applications/)
+- [The Resource Company — Average Time to Hire 2026 Report](https://www.theresource.com/2025/10/13/average-time-to-hire/)
+- [Inop — The True Cost of a Bad Hire in 2026](https://inop.ai/the-true-cost-of-a-bad-hire-in-2026/)
+- [RecruitCRM — ATS Statistics 2026](https://recruitcrm.io/blogs/applicant-tracking-system-statistics/)
+- [Geekflare — Key Applicant Tracking System Stats for 2026](https://geekflare.com/guide/ats-stats/)
+- [Fortune Business Insights — Recruitment Software Market Report](https://www.fortunebusinessinsights.com/industry-reports/recruitment-software-market-100081)
+- [BambooHR pricing reference](https://peoplemanagingpeople.com/tools/bamboohr-pricing/)
+- [JazzHR pricing reference](https://www.pin.com/blog/jazzhr-pricing/)
+- [Breezy HR pricing reference](https://www.pin.com/blog/breezy-hr-pricing/)
+- [Homerun pricing reference](https://avahr.com/homerun-pricing/)
+- [Indeed Hiring Platform pricing reference](https://www.pin.com/blog/indeed-pricing/)
+- [EdenAI — 12 Best Resume Parser APIs in 2026](https://www.edenai.co/post/best-resume-parser-apis)
