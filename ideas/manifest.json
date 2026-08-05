@@ -6746,6 +6746,246 @@
         "auditRunAt": "2026-08-05T00:00:00Z"
       },
       "researchLevel": "standard"
+    },
+    {
+      "slug": "microschool-admin-platform",
+      "title": "Microschool Admin Platform",
+      "publishedAt": "2026-08-05",
+      "category": "education",
+      "description": "A calm operations hub for microschools: enrollment, attendance, family updates, tuition reminders, documents, and compliance checklists in one place.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "educators",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2073",
+      "og": {
+        "subject": "A dark classroom desk with a small attendance ledger, a brass key, and a soft lavender pool of light, no people, no faces, no visible text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 1681,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "non-toxic-appliance-verification-platform",
+      "title": "Non-Toxic Appliance Verification Platform",
+      "publishedAt": "2026-08-05",
+      "category": "health",
+      "description": "A transparent evidence database and certification workflow that helps families compare appliance materials and helps brands prove non-toxic claims.",
+      "buildTime": "8-10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "health-conscious-families",
+        "manufacturers",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:2153",
+      "og": {
+        "subject": "A dark kitchen counter with a stainless appliance sample, a folded lab report, and a mint edge light, no people, no faces, no visible text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 1600,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "vintage-ride-revival-3d-printed-parts",
+      "title": "Vintage Ride Revival: 3D-Printed Parts for Classic Cars",
+      "publishedAt": "2026-08-05",
+      "category": "marketplace",
+      "description": "A verified marketplace and blueprint library for rare classic-car parts, pairing fitment evidence with print-on-demand fulfillment for restorers.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "car-enthusiasts",
+        "restoration-shops",
+        "makers"
+      ],
+      "source": "ideabrowser:1797",
+      "og": {
+        "subject": "A dark garage workbench with a vintage chrome trim piece beside a small 3D-printed part, a focused emerald light, no people, no faces, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 1520,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "payment-reconciliation-market-vendors",
+      "title": "Payment Reconciliation for Market Vendors",
+      "publishedAt": "2026-08-05",
+      "category": "fintech",
+      "description": "Reconcile Square, Venmo, Zelle, cash, and bank exports in a five-minute market-day close, with clear exceptions and accountant-ready reports.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "market-vendors",
+        "craft-sellers",
+        "food-trucks"
+      ],
+      "source": "ideabrowser:3530",
+      "og": {
+        "subject": "A dark market-stall counter with a card reader, receipt roll, and a lime-lit coin tray, no people, no faces, no visible text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 1542,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-collectible-verification-platform",
+      "title": "AI Collectible Verification Platform",
+      "publishedAt": "2026-08-05",
+      "category": "ecommerce",
+      "description": "Guided AI and human verification for resale goods: collect better evidence, flag counterfeit risks, and produce portable trust reports.",
+      "buildTime": "8-10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "resellers",
+        "collectible-traders",
+        "marketplaces"
+      ],
+      "source": "ideabrowser:1955",
+      "og": {
+        "subject": "A dark collector's desk with a sneaker box, jeweler's loupe, and a soft aubergine rim light, no people, no faces, no visible text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 1512,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-05T00:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
