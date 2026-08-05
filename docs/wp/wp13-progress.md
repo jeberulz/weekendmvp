@@ -2,7 +2,7 @@
 
 ## Status
 
-S1+S2 done on `fix/wp13-redirect-one-hop`. S3 waits for production deploy.
+**Done.** Live verified 2026-08-05.
 
 ## S1 — Shared path cleaner + Edge middleware
 
@@ -10,21 +10,33 @@ S1+S2 done on `fix/wp13-redirect-one-hop`. S3 waits for production deploy.
 - `middleware.ts` — single 308 for apex and dirty www paths
 - `tests/redirects/canonical-path.test.mjs` — 7 passing
 - `npm run test:redirects` wired into `npm test`
-- `npm run typecheck` ✅
+- Follow-up: raw `request.url` pathname + `skipTrailingSlashRedirect`
 
 ## S2 — Remove redundant next.config `.html` redirect
 
 - Removed `/:path*.html` from `next.config.ts`; `/api/ideas-today` kept
 - Cutover runbook + `RULINGS.md` updated for middleware ownership
+- `skipTrailingSlashRedirect: true` so Next does not emit a same-host slash hop
 
 ## S3 — Clear Vercel apex domain redirect
 
-- Blocked on production deploy of middleware
-- Current live state: `weekendmvp.app` → `www.weekendmvp.app` 308 via Domains API (path-preserving)
-- After middleware is live: `PATCH .../domains/weekendmvp.app` with `{ "redirect": null }`
+- Middleware deployed via [#32](https://github.com/jeberulz/weekendmvp/pull/32)
+- Trailing-slash ownership via [#35](https://github.com/jeberulz/weekendmvp/pull/35)
+- Domains API: `weekendmvp.app` `redirect` → `null` (confirmed)
 
-## Verification
+## Live verification (2026-08-05)
+
+| URL | Hops | Final |
+|---|---|---|
+| `https://weekendmvp.app/articles/7-micro-saas-ideas-solo-2026.html` | 1 | www clean 200 |
+| `https://weekendmvp.app/build-with/claude/` | 1 | www clean 200 |
+| `https://weekendmvp.app/build-with/claude` | 1 | www 200 |
+| `https://weekendmvp.app/articles/...html/` | 1 | www clean 200 |
+| `https://www.weekendmvp.app/...html` | 1 | www clean 200 |
+| `https://www.weekendmvp.app/` | 0 | 200 |
+
+## Verification commands
 
 - `npm run test:redirects` ✅
 - `npm run typecheck` ✅
-- Live one-hop curls — pending S3
+- `npm run build` ✅ (`ƒ Proxy (Middleware)`)
