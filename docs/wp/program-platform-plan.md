@@ -230,7 +230,95 @@ scaffolds (Tier 2) are where sandboxes + deploy pipelines come in, one tier late
   explicit output contract; failures auto-refund credits (directly answers
   Polsia's top complaint); all agent outputs stored as documents for transparency.
 
-### 4.5 Security/compliance notes
+### 4.5 Research Engine — our own pipeline (RULED 2026-08-05, replaces Ideabrowser upgrade)
+
+**Decision:** we do not upgrade Ideabrowser for own-idea research. We build a
+**Research Engine** that produces reports matching Ideabrowser's output contract
+via our own independent research. Rationale (recorded in RULINGS.md):
+
+| Option | Cost | Capacity |
+|---|---|---|
+| Ideabrowser Pro | $1,499/yr | 3 reports/mo (~$42/report, hard cap 36/yr) |
+| Ideabrowser Empire | $2,999/yr | 9 reports/mo (hard cap 108/yr) |
+| **Own Research Engine** | ~$1.50–$4 marginal/report (inference + data APIs) + one WP to build | **Unlimited**, scales with customers, owned asset |
+
+A platform whose paid core is "validate my idea" cannot run on 3–9 reports/month.
+Break-even vs Pro arrives within the first month of any real volume.
+
+**What we keep from Ideabrowser:** the current plan stays for its idea *library* —
+`browse_ideas` / `get_idea_research` reads on database ideas are quota-free (the
+3/mo quota applies only to Research Agent runs: `start_idea_research` /
+`research_market_insight`). Library reads remain an enrichment source for
+repository ideas and for `/publish-idea`. **Boundary:** the engine replicates the
+research *methodology and schema*, with our own sources and citations — we never
+republish Ideabrowser content to customers.
+
+**Output contract (captured live from the MCP, idea 1458, 2026-08-05).** Tier-1
+record:
+
+- `summary` + `detailed_idea` (detailed_summary, key_challenges, related_angles,
+  standout_quotes, strategic_moats, target_audience, industry_observations,
+  pain_points_addressed, monetization_opportunities)
+- `scores.opportunity` (0–10 + score_reason, key_strengths, key_risks, sub-scores:
+  market_timing, market_potential, competitive_advantage, execution_feasibility,
+  opportunity_type, opportunity_window)
+- `scores.pain` (0–10, pain_type, pain_trends, sub-scores: frequency, intensity,
+  current_solutions, willingness_to_pay, key_pain_points, market_evidence)
+- `scores.builder_confidence` (time_to_mvp, minimum_team{size, roles},
+  market_clarity, technical_feasibility, early_validation, resource_requirements,
+  key_advantages, critical_challenges)
+- `scores.execution_difficulty` (mvp_timeline, technical/non-technical challenges,
+  execution_risks)
+- `revenue_potential` ($–$$$$, business_models, example_comps, funding_type)
+- `hormozi_analysis` (dream_outcome, likelihood, time_delay, effort_sacrifice →
+  value_score + improvement_notes)
+- `value_ladder.offers[]` (stage Bait→…, name, price, goal, value_provided)
+- `categorization` (type, market B2B/B2C, target, trend + reason, main_competitor)
+- `tags` (market/timing/scale/team/competition/monetization/risk/business-model +
+  highlight_justification: 10x_better, product_ready, perfect_timing)
+- `research_summaries` (market_gap, execution_plan, why_now, community_signals,
+  reddit, youtube, facebook, keyword, proof_signals[], other_communities, plus
+  `analysis`: market_summary, core_proposition, growth_potential,
+  customer_insights, community_insights, competitive_landscape)
+- Deep sections (21): competitive_analysis, traction_analysis,
+  market_stage_analysis, why_now_analysis, community_analysis,
+  broader_community_analysis, acp_analysis, matrix_analysis, execution_plan,
+  go_to_market, product_opportunities, product_offerings, proof_signals,
+  market_gaps, founder_fit, keyword_research, keyword_list, reddit_analysis,
+  youtube_analysis, facebook_analysis, why_now — each `{content: html/markdown,
+  citations: [url]}`.
+
+**v1 engine scope** (what the customer-facing Validation Report actually needs —
+not all 21 sections): Tier-1 scores + summaries, competitive_analysis,
+go_to_market, community_analysis, keyword_list, market insight (stats + CAGR,
+cited), why_now. This matches the 7-call stack `/publish-idea` already consumes,
+so the same engine later powers idea-page publishing too (dogfooding loop).
+
+**Pipeline design (deterministic workflow, one step per section):**
+1. **Brief normalization** — customer idea → structured brief (title, model,
+   audience, seed keywords). Mirrors Ideabrowser `submit_idea`.
+2. **Market stats** — web research (search + fetch; optionally Perplexity API —
+   it's what Ideabrowser itself uses for market insights) → ≥2 cited market
+   statistics + CAGR. Hard fail if citations are missing (the existing
+   thin-research STOP rule becomes a pipeline gate).
+3. **Competitors** — ≥3 direct competitors with current pricing, gaps table,
+   citations.
+4. **Community signals** — Reddit/HN/YouTube search for pain evidence; quotes +
+   links (structure mirrors `research_summaries.reddit/youtube/…`).
+5. **Keywords/demand** — keyword list with volume/competition/CPC via a keyword
+   data API (DataForSEO or similar, ~$0.05–$0.30/report); growth signal.
+6. **Synthesis + scoring** — high-tier model computes the score rubric
+   (opportunity/pain/builder-confidence/execution + sub-scores with reasons),
+   Hormozi value equation, value ladder, tags — same shapes as above.
+7. **Report render** — customer Validation Report (dashboard + PDF-ish doc) from
+   the structured record; raw record stored in `documents`/`research_cache`.
+
+Every section runs with an output schema (zod), citation requirements, a credit
+budget, and a retry-once-then-refund policy. Estimated build: one focused WP
+(2–4 agent-days) because the section contract, research discipline, and report
+format already exist in `/publish-idea` Mode B — this WP productizes them.
+
+### 4.6 Security/compliance notes
 
 - Ideabrowser + Anthropic + Stripe keys server-side only (Convex env / Vercel env;
   never `NEXT_PUBLIC_*`).
@@ -293,10 +381,14 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
   brief.*
 
 ### Wave 2 — The product (weekend build)
-- **WP19 — Research pipeline:** workflow task `validation_report`; repository-idea
-  compiler (from existing research/MDX + manifest), own-idea 360° (MCP + fallback),
-  report renderer in dashboard + email notification. *Gate: one repo-idea report
-  free-flow end-to-end; one own-idea report with ≥2 cited stats + 3 competitors.*
+- **WP19 — Research Engine + validation reports:** workflow task
+  `validation_report`; repository-idea compiler (from existing research/MDX +
+  manifest — no engine run needed); **own Research Engine per §4.5** for own-idea
+  360° (brief → stats → competitors → community → keywords → synthesis/scoring →
+  report); report renderer in dashboard + email notification. *Gate: one
+  repo-idea report free-flow end-to-end; one own-idea report produced entirely by
+  our engine with ≥2 cited stats, 3+ competitors with pricing, and all scores
+  populated; marginal cost per report measured and logged (< $5).*
 - **WP20 — Landing-page builder:** `site_configs` schema + multi-tenant renderer on
   `*.weekendmvp.app`, landing-page agent pipeline with quality gate, publish/version
   flow, email-capture block. *Gate: from a confirmed brief, a real subdomain URL in
@@ -326,23 +418,22 @@ team seats, affiliate/referral.
 
 | Risk | Mitigation |
 |---|---|
-| **Ideabrowser quota (3 deep reports/mo)** starves own-idea research | Repository ideas need no quota; cache every payload; own-idea path uses web-research discipline when no MCP record; consider Ideabrowser plan upgrade before launch |
+| ~~Ideabrowser quota~~ — **resolved by §4.5 ruling**: own Research Engine, no quota dependency | Residual risk moves to engine quality: citation gates, schema-validated sections, refund-on-failure, and the WP19 cost/quality gate |
 | Agent output quality = brand damage (Polsia's 1-star lesson) | Fixed pipelines not free loops; quality-gate model step; template-rendered pages (high floor); auto-refund on failure; human-visible artifacts for every step |
 | Payments/webhook correctness | Idempotent ledger, test-mode gate in Wave 1, Stripe CLI replay in tests |
 | SEO regression on the money pages | Platform is additive routes only; Wave 1 gate includes sitemap/canonical diff |
 | Scope blowup before the weekend | Anti-scope list (§3.2) is binding; Tier 2 is post-launch, period |
 | Solo-operator support load | Task statuses + documents make the product self-explaining; support = email only at launch |
 
-## 8. Open rulings needed from John (before Wave 1)
+## 8. Rulings — ALL RESOLVED 2026-08-05 (recorded in `docs/wp/RULINGS.md`)
 
-1. ~~**Naming/domain**~~ — **RULED 2026-08-05:** keep `weekendmvp.app`, no new
-   brand (see §3.3 and `docs/wp/RULINGS.md`).
-2. **Pricing sign-off:** §5 numbers are proposals anchored on Polsia/agency/ShipFast.
-3. **Free hook:** confirm "first repository-idea Validation Report free" as the
-   activation gift.
-4. **Auth provider:** Convex Auth assumed (stack default). Veto window before WP16.
-5. **Ideabrowser plan:** upgrade for research quota, or launch own-idea research on
-   web-fallback only?
+1. **Naming/domain:** keep `weekendmvp.app`, no new brand (§3.3).
+2. **Pricing:** §5 approved as proposed.
+3. **Free hook:** approved as part of the §5 pricing sign-off — first
+   repository-idea Validation Report free with signup.
+4. **Auth provider:** Convex Auth confirmed.
+5. **Ideabrowser:** no upgrade — build our own Research Engine (§4.5); keep the
+   current plan for quota-free library reads. **Wave 1 is clear to kick off.**
 
 ## 9. KPIs (first 30 days)
 
