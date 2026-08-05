@@ -318,6 +318,60 @@ budget, and a retry-once-then-refund policy. Estimated build: one focused WP
 (2–4 agent-days) because the section contract, research discipline, and report
 format already exist in `/publish-idea` Mode B — this WP productizes them.
 
+#### 4.5.1 Expanded scope — full Ideabrowser independence (RULED 2026-08-05)
+
+John's Ideabrowser annual subscription will **not be renewed**. The engine
+therefore grows from "own-idea validation for customers" into the **Idea
+Engine**: one core, two consumers — the platform (validation reports) and our
+own content operation (daily ideas, articles, programmatic hubs, newsletter
+signals). Everything the content pipeline currently pulls from the Ideabrowser
+MCP must be produced in-house at equal or better quality before the
+subscription lapses.
+
+**Engine modules** (M3 is the §4.5 pipeline above):
+
+- **M1 — Signal ingestion:** scheduled harvesting of demand signals — keyword
+  volume/growth (DataForSEO-class API), community pain mining (Reddit/HN/
+  YouTube search), trend detection (rising queries, launch chatter). Replaces
+  `browse_platform_trends` / `research_trend`. Stored in `engine_signals`.
+- **M2 — Idea generation + scoring:** signals → candidate startup ideas
+  (generated, deduped against our library and published pages) → scored with
+  the §4.5 rubric (opportunity/pain/builder-confidence/execution + revenue
+  potential, categorization, tags). Only ideas above a publish threshold enter
+  the library. Replaces `browse_ideas` + the database itself. Stored in
+  `engine_ideas` — **this becomes our owned, compounding idea database.**
+- **M3 — Deep research:** §4.5 pipeline, runs per idea (customer-submitted or
+  M2-generated). Same output contract either way.
+- **M4 — Content compilers**, one per consumer, all reading the same engine
+  record:
+  - *Validation Report* (platform customers — WP19).
+  - *Idea MDX* — `/publish-idea` "Mode A2": engine record → 7-section contract
+    (`ideas/SECTIONS.md`) → MDX + manifest + seed + OG, replacing the MCP
+    7-call stack. The section gate and thin-research STOP rule stay identical.
+  - *Article brief* — `/publish-article`: M1 keyword data replaces its ad-hoc
+    keyword research; M3 citations feed the article's sources.
+  - *Hub tagging* — `/publish-programmatic`: M2 categorization/tags drive
+    audience/problem/tool hub membership.
+  - *Newsletter signals* — `/newsletter` AM slot: M1/M2 output replaces "fresh
+    Ideabrowser MCP signals" in the hybrid sourcing.
+
+**Quality bar (binding):** before the Ideabrowser MCP path is removed, each
+compiler must pass a side-by-side gate — an engine-produced page vs the last
+MCP-produced page of the same type, judged on: citation count/quality, ≥3
+competitors with pricing, ≥2 cited market stats, section completeness, and the
+existing a11y/SEO checks. "Exact or better," not "close enough."
+
+**Off-boarding sequence (before subscription expiry):**
+1. Publish the remaining queued Ideabrowser backlog (idea-publish-backlog) via
+   the existing skill while the entitlement is active — quota-free reads.
+2. Land M1–M4 and pass the quality gates (Wave 4 below).
+3. Flip `/publish-idea` default to Mode A2; retire Mode A (MCP); keep Mode B
+   (draft) unchanged.
+4. Remove the MCP key/config, update skills + CLAUDE.md + RULINGS, let the
+   subscription lapse.
+Existing published pages are unaffected — they are already original,
+transformed content and remain ours.
+
 ### 4.6 Security/compliance notes
 
 - Ideabrowser + Anthropic + Stripe keys server-side only (Convex env / Vercel env;
@@ -407,6 +461,30 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
 - **Gate (program):** full checks (`typecheck`, `lint`, `test`, `build`), Stripe
   live-mode smoke with a real card, one stranger-test of the full journey.
 
+### Wave 4 — Content independence (post-launch, must finish before Ideabrowser expiry)
+
+The platform launch (Waves 1–3) does not depend on this wave; WP19's engine core
+(M3 + report compiler) ships in Wave 2 and Wave 4 extends it.
+
+- **WP24 — Signal ingestion + idea generation (M1+M2):** `engine_signals` /
+  `engine_ideas` tables, scheduled harvest jobs, idea generator + scoring rubric,
+  dedupe against manifest + published slugs, review queue UI (John approves ideas
+  before they enter the publishable library). *Gate: 10 generated ideas scored
+  and stored; ≥1 clears the publish threshold and passes John's review.*
+- **WP25 — Content compilers (M4):** `/publish-idea` Mode A2 (engine → 7-section
+  MDX), `/publish-article` keyword module swap, `/publish-programmatic` tagging
+  from engine categorization, `/newsletter` signal source swap. *Gate: the §4.5.1
+  side-by-side quality gate per compiler, plus full publish flow (seed:convex
+  --prod, og:generate) green on one engine-produced idea and one article.*
+- **WP26 — Ideabrowser off-boarding:** publish remaining MCP backlog, flip
+  defaults, remove MCP config/key, update skills + docs + CLAUDE.md, record
+  closeout ruling. *Gate: grep shows no live `mcp__ideabrowser` dependency; one
+  full daily-content cycle (idea + newsletter) runs end-to-end engine-only.*
+
+**Deadline anchor:** WP24–26 complete before the Ideabrowser subscription's
+renewal date (John to confirm the exact date — set it in the manifest when
+frozen).
+
 ### Post-launch backlog (explicitly deferred)
 Tier 2 MVP scaffolds (sandbox builds + per-project Vercel deploys + code export),
 custom domains, Builder subscription, Night Shift autonomy, launch packs,
@@ -419,6 +497,8 @@ team seats, affiliate/referral.
 | Risk | Mitigation |
 |---|---|
 | ~~Ideabrowser quota~~ — **resolved by §4.5 ruling**: own Research Engine, no quota dependency | Residual risk moves to engine quality: citation gates, schema-validated sections, refund-on-failure, and the WP19 cost/quality gate |
+| Ideabrowser subscription lapses before Wave 4 lands → content pipeline stalls | Confirm renewal date and set it as the Wave-4 deadline in the manifest; publish the queued backlog early (quota-free); Mode B (draft + web research) remains a working fallback for ideas, and `/publish-article` never hard-depended on the MCP |
+| Engine-generated ideas read as AI slop and dilute the library's credibility | M2 publish threshold + John's review queue gate every idea; side-by-side quality gate per compiler before MCP retirement; daily cadence can drop below 1/day rather than publish a weak idea |
 | Agent output quality = brand damage (Polsia's 1-star lesson) | Fixed pipelines not free loops; quality-gate model step; template-rendered pages (high floor); auto-refund on failure; human-visible artifacts for every step |
 | Payments/webhook correctness | Idempotent ledger, test-mode gate in Wave 1, Stripe CLI replay in tests |
 | SEO regression on the money pages | Platform is additive routes only; Wave 1 gate includes sitemap/canonical diff |
@@ -432,8 +512,10 @@ team seats, affiliate/referral.
 3. **Free hook:** approved as part of the §5 pricing sign-off — first
    repository-idea Validation Report free with signup.
 4. **Auth provider:** Convex Auth confirmed.
-5. **Ideabrowser:** no upgrade — build our own Research Engine (§4.5); keep the
-   current plan for quota-free library reads. **Wave 1 is clear to kick off.**
+5. **Ideabrowser:** no upgrade — and **no renewal**. Build the full Idea Engine
+   (§4.5 + §4.5.1): research, idea generation, and all content compilers move
+   in-house before the subscription expires (Wave 4, WP24–26). **Wave 1 is clear
+   to kick off.**
 
 ## 9. KPIs (first 30 days)
 
