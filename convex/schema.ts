@@ -1,10 +1,12 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
-// Initial schema (U1) — expanded with queries/indexes in U2.
-// `users` and `saved_ideas` are reserved for the future auth layer (Clerk +
-// ConvexProviderWithClerk); nothing reads or writes them in this migration.
+// Initial schema (U1) — expanded with queries/indexes in U2 and Convex Auth in
+// WP21. The custom users table below intentionally keeps the legacy fields
+// optional so existing document IDs and saved_ideas references remain valid.
 export default defineSchema({
+  ...authTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),
@@ -174,16 +176,24 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_stripeEventId", ["stripeEventId"]),
 
-  // ===== Reserved for future auth layer — intentionally unused today =====
+  // Convex Auth's users table, customized in place for legacy compatibility.
   users: defineTable({
-    tokenIdentifier: v.string(),
-    email: v.string(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    tokenIdentifier: v.optional(v.string()),
     displayName: v.optional(v.string()),
     stripeCustomerId: v.optional(v.string()),
-    createdAt: v.number(),
+    createdAt: v.optional(v.number()),
   })
-    .index("by_token", ["tokenIdentifier"])
-    .index("by_email", ["email"]),
+    // `email` and `phone` are required exact names for Convex Auth internals.
+    .index("email", ["email"])
+    .index("phone", ["phone"])
+    .index("by_token", ["tokenIdentifier"]),
 
   saved_ideas: defineTable({
     userId: v.id("users"),

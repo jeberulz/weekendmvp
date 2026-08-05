@@ -1,5 +1,6 @@
+import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 import {
   cleanPath,
   isProdApexHost,
@@ -7,6 +8,7 @@ import {
   pathNeedsCleaning,
   PROD_WWW_HOST,
 } from "./lib/canonical-path";
+import { authRouteDecision, isAuthManagedPath } from "./lib/auth-return";
 
 /**
  * One-hop host + path canonicalization.
@@ -19,7 +21,7 @@ import {
  * (see WP13-S3). While that domain redirect is still on, apex never reaches
  * this middleware; www dirty URLs still get a single hop here.
  */
-export function middleware(request: NextRequest) {
+export function canonicalRedirect(request: NextRequest) {
   // Prefer the raw request URL — NextURL can normalize away a trailing slash
   // even when skipTrailingSlashRedirect is set (see next.js#66738).
   const raw = new URL(request.url);
@@ -49,13 +51,49 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(dest, 308);
   }
 
-  return NextResponse.next();
+  return null;
+}
+
+const platformAuthMiddleware = convexAuthNextjsMiddleware(
+  async (request, { convexAuth }) => {
+    const pathname = request.nextUrl.pathname;
+    if (!isAuthManagedPath(pathname)) {
+      return NextResponse.next();
+    }
+
+    const authenticated = await convexAuth.isAuthenticated();
+    const decision = authRouteDecision(request.nextUrl, authenticated);
+    if (decision.kind === "redirect") {
+      return NextResponse.redirect(new URL(decision.target, request.url));
+    }
+
+    return NextResponse.next();
+  },
+  {
+    // OAuth codes are consumed only on the dedicated callback seam. Public
+    // pages may use `code` query parameters for unrelated integrations.
+    shouldHandleCode: (request) =>
+      request.nextUrl.pathname === "/auth/callback",
+    // Session cookies stay host-only; Convex Auth does not set a Domain value.
+    cookieConfig: { maxAge: null },
+  },
+);
+
+export async function middleware(
+  request: NextRequest,
+  event: NextFetchEvent,
+) {
+  // Canonicalization stays the first hop, including for auth endpoints.
+  const canonical = canonicalRedirect(request);
+  if (canonical !== null) return canonical;
+  return platformAuthMiddleware(request, event);
 }
 
 export const config = {
-  // Skip Next internals and common static asset extensions — except the two
-  // SEO discovery files, which must still apex→www in one hop (WP17).
+  // Every private dashboard path must reach auth, even when its final segment
+  // resembles a static asset. Ordinary public/internal assets remain skipped.
   matcher: [
+    "/dashboard/:path*",
     "/robots.txt",
     "/sitemap.xml",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff2?|css|js|map)$).*)",

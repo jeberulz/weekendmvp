@@ -9,6 +9,10 @@
  */
 
 import type * as articles from "../articles.js";
+import type * as auth from "../auth.js";
+import type * as authUser from "../authUser.js";
+import type * as currentUser from "../currentUser.js";
+import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
@@ -25,6 +29,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   articles: typeof articles;
+  auth: typeof auth;
+  authUser: typeof authUser;
+  currentUser: typeof currentUser;
+  http: typeof http;
   ideas: typeof ideas;
   newsletter: typeof newsletter;
   payments: typeof payments;

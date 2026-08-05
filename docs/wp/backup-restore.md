@@ -72,3 +72,12 @@ Before execution, append a dated section containing the exact target environment
 - **Environment summary:** Convex production has no application environment variables. Vercel Preview/Production and local/operator key names were inventoried without values. Current Convex Auth manual setup requires `SITE_URL`, a paired `JWT_PRIVATE_KEY`/`JWKS`, and the official `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` names for the approved Google path; none are provisioned. The magic-link provider/key remains an explicit WP21 owner decision.
 - **Restore state:** No backup or restore tag was created because WP20 performed no mutation. A fresh inventory, full Convex backup, restore marker, exact migration dry run, and owner approval remain mandatory before any production auth/schema action.
 - **Authorization:** This section authorizes nothing beyond the completed read-only inspection.
+
+## 2026-08-05 - WP21 Isolated Auth Foundation
+
+- **Action:** Convex Auth initializer, additive compatibility schema/code generation, and local application verification against the anonymous/local Convex backend only.
+- **Local mutations:** The initializer created local-only `SITE_URL`, `JWT_PRIVATE_KEY`, and `JWKS`; `npx convex dev --once` pushed auth functions/tables and the customized compatibility schema to that isolated backend. Values are not recorded.
+- **Production mutations:** None. No `--prod`, cloud development deploy, production environment, row, index, schema, key, domain, or cookie action occurred.
+- **Restore state:** No production backup/tag was required for this isolated local action. The existing production backup, restore-marker, fresh inventory, exact dry-run, and owner-approval requirements remain unchanged.
+- **Evidence:** `docs/wp/evidence/wp21-auth-gate.md` and `docs/wp/wp21-progress.md`.
+- **Authorization:** This record does not authorize provider account creation, production deployment, key provisioning/rotation, data migration, or WP22 start.

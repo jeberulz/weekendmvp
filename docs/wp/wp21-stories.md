@@ -7,7 +7,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
 
 ## Stories
 
-- [ ] `WP21-S1` - Prove the current Convex Auth and Next.js 16 integration path
+- [x] `WP21-S1` - Prove the current Convex Auth and Next.js 16 integration path
   - Scope: `package.json`, `package-lock.json`, official upstream evidence, initializer-generated auth foundation, and `docs/wp/wp21-progress.md`.
   - Acceptance criteria:
     - Use `@convex-dev/auth@0.0.94` plus exact `@auth/core@0.41.3`. Convex's setup page still names `0.41.1`, but GitHub's reviewed July 2026 advisories mark all versions through `0.41.2` vulnerable and `0.41.3` patched; `0.41.3` satisfies Convex Auth's `^0.41.1` peer range. Do not substitute Better Auth or a fallback provider without an owner ruling.
@@ -19,7 +19,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - `npx convex dev --once` against the isolated target when available
     - `git diff --check`
 
-- [ ] `WP21-S2` - Migrate the auth schema without replacing user identities
+- [x] `WP21-S2` - Migrate the auth schema without replacing user identities
   - Scope: `convex/schema.ts`, auth-owned schema definitions, generated Convex types, and compatibility tests.
   - Acceptance criteria:
     - Convex Auth's required tables and indexes are present.
@@ -46,10 +46,10 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - Isolated end-to-end sign-in for each configured provider when owner credentials are available
     - Staged secret/private-key pattern scan
 
-- [ ] `WP21-S4` - Integrate authenticated Next.js state without taking tenant routing
+- [x] `WP21-S4` - Integrate authenticated Next.js state without taking tenant routing
   - Scope: `app/ConvexClientProvider.tsx`, `app/layout.tsx`, minimal auth routes/components, `middleware.ts`, and redirect tests.
   - Acceptance criteria:
-    - The root provider sends Convex Auth tokens and supports server-side auth state without constructing a client during static prerender.
+    - The route-scoped platform auth provider sends Convex Auth tokens and supports server-side auth state without constructing a client during static prerender or making canonical public content dynamic.
     - `/dashboard` is the only new protected placeholder seam for WP23; anonymous requests are redirected to `/signin` with a validated same-origin return target.
     - Signed-in users visiting `/signin` return to `/dashboard`; logout clears auth state and returns safely.
     - Existing apex/www, dirty-path, preview, public idea, sitemap, robots, and static-asset behavior remains unchanged.
@@ -60,7 +60,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
     - Auth middleware route matrix
     - `npm run build`
 
-- [ ] `WP21-S5` - Establish the server-derived identity and denial contract
+- [x] `WP21-S5` - Establish the server-derived identity and denial contract
   - Scope: a narrow current-user/auth guard module under `convex/`, its tests, and no platform-domain schema from WP22.
   - Acceptance criteria:
     - Private functions derive identity server-side; no caller-supplied user ID is accepted for authorization.

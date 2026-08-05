@@ -54,3 +54,18 @@ A later wave cannot start until the prior gate is green or the owner records an 
 - **Next-wave authorization:** WP21 isolated local/dev auth work may start. Production auth activation may not.
 - **Production blockers:** Magic-link provider/key owner ruling, interactive key provisioning, fresh production inventory, Convex backup, Git restore marker, exact dry run, and owner approval.
 - **Owner exception:** None.
+
+## Wave 2 / WP21 Compatibility Checkpoint - 2026-08-05
+
+- **Work package:** WP21 Convex Auth compatibility migration
+- **Gate runner:** Independent reviewer `/root/audit_convex_billing`; orchestrator and `/root/wp21_auth_worker` remediation
+- **Branch/worktree:** `codex/wp21-convex-auth`, primary checkout
+- **Environment:** Isolated anonymous/local Convex backend and local Next.js app; no cloud development or production deployment
+- **Database/data isolation:** The initializer set local-only auth keys and the additive auth schema was pushed only to the isolated local backend. No production row, schema, index, environment, deployment, cookie, domain, or key changed.
+- **Passed foundation checks:** typecheck; lint with 0 errors/35 inherited warnings; auth 19/19; Convex 19/19; redirects 27/27; full configured suite; 303-page build; full and production npm audits with 0 vulnerabilities; diff check; 31-file secret scan with 0 hits.
+- **Passed critical contracts:** Existing `users._id` and `saved_ideas.userId` compatibility; same-email non-linking in both provider orders; server-derived user/session ownership and deleted-session denial; bounded callback/return targets; canonical-before-auth routing; host-only auth cookies; asset-like `/dashboard/**` paths cannot bypass middleware; canonical public idea pages remain prerendered.
+- **Independent review:** Initial PASS on critical/high with four medium findings. Protected matcher precedence, live-session validation, evidence precision, and test-config boundary authorization were remediated. Re-review reports no remaining critical/high/medium finding.
+- **Result:** **Blocked, no exception.** The compatibility foundation passes, but WP21 and Wave 2 do not pass their full gate because provider E2E is incomplete.
+- **Completion blockers:** Owner selects a magic-link delivery vendor/sender; provider is wired; magic issue/confirmation/expiry/replay passes; Google OAuth credentials are configured securely; real Google redirect/callback/logout passes. Production remains separately blocked on fresh inventory, full backup, restore tag, dry run, secrets, and owner approval.
+- **Evidence:** `docs/wp/evidence/wp21-auth-gate.md`, `docs/wp/wp21-progress.md`, `docs/wp/wp21-stories.md`, `docs/wp/backup-restore.md`.
+- **Next-wave authorization:** WP22 may not start until WP21 provider E2E passes or the owner records an explicit sequencing exception.

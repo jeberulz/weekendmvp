@@ -11,9 +11,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:security && npm run test:sitemap && npm run test:convex",
+    "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:auth && npm run test:security && npm run test:sitemap && npm run test:convex",
     "test:convex": "vitest run convex",
     "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts",
+    "test:auth": "vitest run tests/auth",
     "test:security": "node --test tests/security/*.test.mjs",
     "test:sitemap": "node --experimental-strip-types --test tests/sitemap/*.test.mjs",
     "convex:dev": "convex dev",
@@ -51,6 +52,8 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@auth/core": "0.41.3",
+    "@convex-dev/auth": "0.0.94",
     "@convex-dev/workflow": "^0.4.4",
     "@hookform/resolvers": "^5.4.0",
     "@resvg/resvg-js": "^2.6.2",
