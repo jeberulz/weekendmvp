@@ -18,7 +18,7 @@ Append-only progress log. Do not rely on chat history for project state.
 
 ## 2026-08-05 - Official compatibility and security research
 
-- Current official setup pins `@auth/core@0.41.1` alongside `@convex-dev/auth`; the earlier local skill reference to `0.37.0` is stale and will not be followed.
+- Convex Auth's current setup page pins `@auth/core@0.41.1` alongside `@convex-dev/auth`, while the earlier local skill reference pins the still older `0.37.0`.
 - Official setup requires the initializer `npx @convex-dev/auth`, auth tables, `convex/auth.config.ts`, `convex/auth.ts`, `convex/http.ts`, a Convex Auth React/server provider, and composed Next.js middleware.
 - Google development callback is the isolated Convex HTTP Actions URL plus `/api/auth/callback/google`; key names are `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
 - Convex Auth's documented magic-link example uses Resend with `AUTH_RESEND_KEY`, but vendor selection remains an owner decision.
@@ -26,3 +26,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Next.js server auth uses cookies. WP21 permits queries on authenticated GET paths only; mutations/actions remain POST/PUT and same-origin to avoid CSRF side effects.
 - Auth cookies must remain host-only and must not leak to future tenant subdomains. Tenant routing stays with WP28.
 - Next: Commit the frozen WP21 contract, then assign the high-risk auth worker. Provider-neutral foundation and Google code may proceed while the magic-link vendor decision is pending.
+
+## 2026-08-05 - Security override of the upstream documentation pin
+
+- Installing `@convex-dev/auth@0.0.94` with the setup page's exact `@auth/core@0.41.1` made `npm audit` fail with one direct critical dependency finding.
+- GitHub's reviewed July 2026 advisories identify three affected Auth.js behaviors below/through `0.41.2`: magic-link email normalization can misroute a sign-in link and enable account takeover (`GHSA-7rqj-j65f-68wh`, critical); malformed bearer tokens can throw and cause per-request denial of service (`GHSA-xmf8-cvqr-rfgj`, high); and OAuth state/nonce/PKCE cookies are not provider-bound (`GHSA-x445-f3h2-j279`, moderate).
+- All three advisories identify `@auth/core@0.41.3` as patched. `@convex-dev/auth@0.0.94` declares `@auth/core ^0.41.1`, so exact `0.41.3` remains inside the package's supported peer range.
+- Orchestrator ruling: security evidence overrides the stale setup-page pin. WP21 must use exact `@auth/core@0.41.3`, re-run both audits, and treat any runtime/type incompatibility as a fresh stop condition.
+- No initializer, auth code, environment mutation, or production action occurred before this ruling.

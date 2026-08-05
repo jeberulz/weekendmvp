@@ -10,7 +10,7 @@ Definition of done: The existing `users` IDs remain valid under a compatibility-
 - [ ] `WP21-S1` - Prove the current Convex Auth and Next.js 16 integration path
   - Scope: `package.json`, `package-lock.json`, official upstream evidence, initializer-generated auth foundation, and `docs/wp/wp21-progress.md`.
   - Acceptance criteria:
-    - Use the current official compatibility pair `@convex-dev/auth` plus `@auth/core@0.41.1`; do not substitute Better Auth or a fallback provider without an owner ruling.
+    - Use `@convex-dev/auth@0.0.94` plus exact `@auth/core@0.41.3`. Convex's setup page still names `0.41.1`, but GitHub's reviewed July 2026 advisories mark all versions through `0.41.2` vulnerable and `0.41.3` patched; `0.41.3` satisfies Convex Auth's `^0.41.1` peer range. Do not substitute Better Auth or a fallback provider without an owner ruling.
     - Run `npx @convex-dev/auth` against an isolated local/development deployment when credentials permit, or record the exact blocked interactive step and use the documented manual equivalent without targeting production.
     - Record package/runtime compatibility, generated files, environment key names, and any beta limitation without exposing values.
     - No `--prod`, production deploy, production environment change, key rotation, or production data mutation occurs.
