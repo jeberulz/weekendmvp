@@ -31,3 +31,5 @@ Complete on `cursor/wp15-build-with-growth`. Local smoke passed; www verificatio
   - `/build-with/claude-code` → 200, title “Claude Code Projects…”
   - Lovable / no-code / replit / cursor titles match new CTR copy
   - Claude soft-link present; sitemap lists `/build-with/claude-code`
+- Production www (pre-merge baseline): Lovable still old title; `/build-with/claude-code` 404
+- Vercel preview SSO-gated here — final www check is post-merge
