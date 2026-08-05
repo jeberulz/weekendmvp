@@ -6953,7 +6953,7 @@
       "slug": "no-code",
       "name": "No-Code Tools",
       "tagline": "Build without coding",
-      "description": "A collection of no-code tools including Bubble, Webflow, Softr, and Glide that let you build apps without writing code.",
+      "description": "Looking for the best no-code tools for an MVP? Start here. Bubble for complex web apps, Softr for Airtable-powered sites, Glide for mobile apps from spreadsheets. If you can use a spreadsheet, you can ship a validating MVP without writing code — or hiring an engineer yet.",
       "logo": "/image/tools/no-code.svg",
       "url": "https://bubble.io",
       "strengths": [
@@ -6979,11 +6979,10 @@
         "volume": "1.8K/mo"
       },
       "gettingStarted": [
-        "Choose a no-code platform (Bubble, Webflow, Softr)",
-        "Start with a template if available",
-        "Use drag-and-drop builders",
-        "Connect data sources",
-        "Launch and iterate"
+        "Define the one job your MVP must prove (signup, booking, marketplace match, etc.)",
+        "Pick a tool: Bubble (complex logic), Softr (Airtable sites), or Glide (mobile from sheets)",
+        "Start from a template closest to your idea and connect your data source",
+        "Ship a shareable link, put it in front of 10 real users, then decide what to build next"
       ]
     }
   ],

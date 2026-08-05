@@ -53,6 +53,7 @@ const BROWSE_IDEAS_LINKS: FooterLink[] = [
 const BUILD_WITH_LINKS: FooterLink[] = [
   { label: "Cursor", href: "/build-with/cursor" },
   { label: "Claude", href: "/build-with/claude" },
+  { label: "Claude Code", href: "/build-with/claude-code" },
   { label: "Bolt.new", href: "/build-with/bolt" },
   { label: "No-Code", href: "/build-with/no-code" },
 ];

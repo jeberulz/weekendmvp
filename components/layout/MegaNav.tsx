@@ -69,6 +69,7 @@ const DROPDOWNS: DropdownDef[] = [
           { label: "Cursor", href: "/build-with/cursor" },
           { label: "Windsurf", href: "/build-with/windsurf" },
           { label: "Claude", href: "/build-with/claude" },
+          { label: "Claude Code", href: "/build-with/claude-code" },
         ],
       },
       {
