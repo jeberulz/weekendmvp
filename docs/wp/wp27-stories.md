@@ -49,7 +49,7 @@ generate and render.
 
 ## Stories
 
-- [ ] `WP27-S1` - Preview capability contract and additive table
+- [x] `WP27-S1` - Preview capability contract and additive table
   - Scope: `convex/schema.ts` (one additive table, serialized one-writer
     seam), `convex/platform/preview/{capabilities,renderSpec}.ts`, contract
     and authorization tests. No route or UI in this story.
@@ -103,6 +103,14 @@ generate and render.
     - Customisation input is length-bounded and normalized before storage,
       reusing the WP25 brief-field discipline rather than inventing a second
       validation style.
+    - Persists the spec **only** through `serializeSiteRenderSpec`. The
+      schema stores `renderSpec` as a bare `v.string()` and cannot compel
+      this; a direct `JSON.stringify` would bypass both the contract
+      round-trip and the byte ceiling.
+    - Supplies `now` from a server `Date.now()` in the mutation. It must
+      never be accepted as a client argument: `S1` fails closed on a
+      non-finite clock, but a client-controlled *finite* timestamp would
+      still let a caller choose their own expiry window.
     - Emits `preview_started` and `preview_generated`, consent-gated, with no
       PII in the payload per the UX brief's analytics contract.
     - The route is `noindex` and absent from the sitemap.
@@ -122,6 +130,12 @@ generate and render.
       manifest's binding tenant-content guardrail, not a style preference.
     - Any URL-valued field is protocol-allowlisted (`https:`/`http:` only);
       `javascript:`, `data:`, and `vbscript:` are rejected before render.
+    - Templates read **only named fields** from the render spec. They must
+      never iterate its keys or spread it onto an element. `S1`'s parser
+      validates the named contract but returns the parsed object as-is, so
+      unknown keys survive — matching WP26-S1's convention. That is harmless
+      to a reader of named fields and load-bearing to anything that spreads,
+      which is exactly how an injected `evil` key would reach the DOM.
     - Every template carries the preview watermark; it is part of the
       template contract, not an overlay a caller can omit.
     - Each template independently meets WCAG 2.1 AA: one semantic `main`,
@@ -141,6 +155,12 @@ generate and render.
     - Renders only on a valid, unexpired capability. Expired or unknown
       returns a generic, non-enumerating page — never a partial render and
       never a message distinguishing "expired" from "never existed".
+    - `S1` guarantees constant response *shape* (all three cases return
+      null), not constant time. `S4` therefore owns the observable half of
+      that contract: identical status code, body, and cache headers across
+      malformed, unknown, and expired. A differing 404-vs-410, or a
+      `Cache-Control` that varies by case, would reintroduce the oracle that
+      `S1`'s null-for-everything exists to close.
     - Sends `noindex, nofollow, noarchive, nocache` and private/`no-store`
       caching. A preview must never be cached by a shared cache or CDN.
     - Excluded from `app/sitemap.ts`.

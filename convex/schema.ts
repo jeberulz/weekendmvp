@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
+import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
   briefStatusValidator,
@@ -519,4 +520,34 @@ export default defineSchema({
     ])
     .index("by_taskId_and_createdAt", ["taskId", "createdAt"])
     .index("by_status_and_createdAt", ["status", "createdAt"]),
+
+  /**
+   * WP27-S1, additive only (owner ruling 2026-08-06). Every other platform
+   * table requires `ownerId`, so an anonymous pre-signup preview had nowhere
+   * to live. This table holds that artifact until signup claims it into a
+   * real owned project; it is deliberately NOT registered in the WP22
+   * owner/project authorization helpers, because its authorization *is* the
+   * capability token rather than an owner. No frozen table, validator, or
+   * index was modified to add it.
+   */
+  preview_capabilities: defineTable({
+    // SHA-256 of the token. The plaintext exists only in the generating
+    // response and the visitor's URL, so a database read can never
+    // reconstruct a working preview link.
+    tokenHash: v.string(),
+    sourceIdeaId: v.id("ideas"),
+    templateId: previewTemplateValidator,
+    // Serialized SiteRenderSpec. Stored inline rather than in `documents`
+    // because that table requires both an owner and a project, neither of
+    // which exists before signup.
+    renderSpec: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    claimedByUserId: v.optional(v.id("users")),
+    claimedProjectId: v.optional(v.id("projects")),
+    claimedAt: v.optional(v.number()),
+  })
+    .index("by_tokenHash", ["tokenHash"])
+    .index("by_claimedByUserId_and_createdAt", ["claimedByUserId", "createdAt"])
+    .index("by_expiresAt", ["expiresAt"]),
 });
