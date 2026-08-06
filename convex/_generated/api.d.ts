@@ -24,6 +24,7 @@ import type * as platform_billing_ledger from "../platform/billing/ledger.js";
 import type * as platform_billing_provider from "../platform/billing/provider.js";
 import type * as platform_billing_queries from "../platform/billing/queries.js";
 import type * as platform_briefPayload from "../platform/briefPayload.js";
+import type * as platform_engine_contracts from "../platform/engine/contracts.js";
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_projects from "../platform/projects.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "platform/billing/provider": typeof platform_billing_provider;
   "platform/billing/queries": typeof platform_billing_queries;
   "platform/briefPayload": typeof platform_briefPayload;
+  "platform/engine/contracts": typeof platform_engine_contracts;
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/projects": typeof platform_projects;

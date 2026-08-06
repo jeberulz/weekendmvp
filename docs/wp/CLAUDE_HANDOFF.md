@@ -4,9 +4,10 @@ Last updated: 2026-08-06 (Europe/London)
 
 ## Resume Point
 
-- Work from the main checkout on branch `codex/wave2-platform-integration`.
-- Wave 2 (WP21-WP25) is now fully gated and passed as of this update; see `docs/wp/wave-gate-report.md` ("Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
-- The main working tree is clean; the only diffs since the prior checkpoint are docs (`wp23-progress.md`, `wp25-progress.md`, `wave-gate-report.md`, `session-ledger.md`, this file) — no product code changed.
+- Work from `codex/wp26-research-workflow` (branched from `codex/wave2-platform-integration` after Wave 2 passed; pushed to origin).
+- Wave 2 (WP21-WP25) is fully gated and passed; see `docs/wp/wave-gate-report.md` ("Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
+- `WP26-S1` (contract subgate) is done and independently reviewed — pass; see `docs/wp/wave-gate-report.md` ("WP26-S1 Contract Subgate - 2026-08-06"). New code: `convex/platform/engine/contracts.ts` and its adjacent test file. No `convex/schema.ts` change.
+- `codex/wp38-admin-plan` (a parallel session's WP38 planning, docs-only) was cherry-picked onto this branch; see "Super-Admin Program Amendment" below.
 - Treat `docs/wp/program-manifest.md` as the frozen program source of truth. Read `CLAUDE.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, and `docs/wp/RULINGS.md` before acting.
 - Do not resume from the WP23, WP24, or WP25 worktrees. Their reviewed changes are already integrated into `codex/wave2-platform-integration`; the worktrees remain only as clean historical branches.
 - Two local-dev-only test projects ("Wave 2 QA Gate Test Idea", confirmed; one unconfirmed race-test draft) exist in the local Convex deployment as a byproduct of the WP23/WP25 browser gate. They are harmless local dev data (no archive/delete UI exists yet in v1); safe to ignore or manually clear via a fresh `convex dev` local reset if desired.
@@ -24,19 +25,16 @@ Last updated: 2026-08-06 (Europe/London)
 
 ## Immediate Next Action — Work Package Lane (WP26)
 
-Wave 2 has passed. WP26 (`Durable task workflow and M3 Validation Reports`) is open on branch `codex/wp26-research-workflow`. The owner ruling on the provider contract is **already recorded** (2026-08-06, see `docs/wp/RULINGS.md` — four WP26 rows: model provider, search source, cost cap, retention), and `docs/wp/wp26-stories.md` plus `docs/wp/wp26-progress.md` are already frozen on that branch. Do not re-ask the owner for these four rulings and do not recreate those files — read them first.
+Wave 2 has passed. WP26 (`Durable task workflow and M3 Validation Reports`) is open on branch `codex/wp26-research-workflow`. The owner ruling on the provider contract is **already recorded** (2026-08-06, see `docs/wp/RULINGS.md` — four WP26 rows: model provider, search source, cost cap, retention), and `docs/wp/wp26-stories.md` plus `docs/wp/wp26-progress.md` are frozen and actively updated on that branch. Do not re-ask the owner for these four rulings and do not recreate those files — read them first.
 
-Two ruling gaps remain open from the same review pass and must be closed before `WP26-S2` (provider adapters) can be implemented — ask the owner if not yet answered:
+**`WP26-S1` (the versioned Validation Report and site-input contract subgate) is done and independently reviewed — pass, recorded in `docs/wp/wave-gate-report.md` ("WP26-S1 Contract Subgate - 2026-08-06").** It required zero `convex/schema.ts` changes (WP22 already froze the needed `tasks`/`documents`/`document_citations`/`workflow_runs` tables and their enum values); the contracts live in `convex/platform/engine/contracts.ts` with tests in the adjacent `.test.ts` file. **This unblocks WP27 to start in parallel with WP26's remaining work**, once WP27's own preconditions are otherwise met — do not wait for `WP26-S2` through `S6`.
+
+Two ruling gaps remain open and block only `WP26-S2` (provider adapters), not `S1` (done) or WP27:
 
 1. The exact OpenAI model ID for synthesis/scoring (the ruling says "OpenAI GPT," which is a family, not a pinned model — cost/quality/the $4 cap all depend on the exact model).
 2. A named keyword-volume/CPC data provider (e.g. DataForSEO or similar) for the pipeline's keywords/demand step — Perplexity covers market stats and community signals only, not keyword/CPC data.
 
-Once those two are ruled (or if this session already resolved them — check `docs/wp/RULINGS.md` for entries dated after 2026-08-06's initial four), proceed:
-
-1. Dispatch `WP26-S1` (the versioned Validation Report and site-input contract subgate) to a high-tier worker. This is the only story touching `convex/schema.ts`.
-2. Independently gate `WP26-S1` alone and record the result in `docs/wp/wave-gate-report.md`. WP27 may begin in parallel only after this named subgate passes — not merely because WP26 opened.
-3. Then proceed through `WP26-S2` through `WP26-S6` per `docs/wp/wp26-stories.md`: provider adapters (fixture-mode only until this WP's own test-mode gate passes), durable resume/retry/cancel/timeout/onComplete with provider-side idempotency (not just a local key) on every paid call, pre-call cost reservation against the $4.00 cap (not a post-hoc check), explicit retry-once-then-refund test coverage, the report compiler/renderer, and fixed-corpus quality evaluation.
-4. A credential-backed quality gate (real OpenAI/Perplexity calls against a small fixed corpus, in an isolated sandbox) is required before any provider is activated beyond fixtures — this is a separate, later, owner-approved activation step, not part of the WP26 package gate itself.
+Once those two are ruled, proceed through `WP26-S2` through `WP26-S6` per `docs/wp/wp26-stories.md`: provider adapters (fixture-mode only until this WP's own test-mode gate passes), durable resume/retry/cancel/timeout/onComplete with provider-side idempotency (not just a local key) on every paid call, pre-call cost reservation against the $4.00 cap (not a post-hoc check), explicit retry-once-then-refund test coverage, the report compiler/renderer, and fixed-corpus quality evaluation. A credential-backed quality gate (real OpenAI/Perplexity calls against a small fixed corpus, in an isolated sandbox) is required before any provider is activated beyond fixtures — a separate, later, owner-approved activation step, not part of the WP26 package gate itself.
 
 WP26 is high-risk AI/backend/workflow work and requires a high-tier worker plus independent high-risk review. `convex/schema.ts`, `convex/convex.config.ts`, generated Convex files, middleware/proxy, lockfiles, webhooks, and ledger mutations remain serialized one-writer seams.
 

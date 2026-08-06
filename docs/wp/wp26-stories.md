@@ -37,7 +37,7 @@ before WP27 may start, even if S2-S6 are still in progress.
 
 ## Stories
 
-- [ ] `WP26-S1` - Versioned Validation Report and site-input contracts (contract subgate)
+- [x] `WP26-S1` - Versioned Validation Report and site-input contracts (contract subgate)
   - Scope: `convex/schema.ts` (additive only, serialized one-writer seam),
     `convex/platform/engine/{contracts,validators}.ts`, contract-only tests.
     No provider adapters, no workflow execution, no UI in this story.
