@@ -4,7 +4,8 @@ Last updated: 2026-08-06 (Europe/London)
 
 ## Resume Point
 
-- Work from `codex/wp26-research-workflow` (branched from `codex/wave2-platform-integration` after Wave 2 passed; pushed to origin).
+- Work from `codex/wp27-site-preview` (branched from `codex/wp26-research-workflow`, which itself carries the passed Wave 2 gates and WP26-S1). WP26's own remaining work (`S2`-`S6`) stays on `codex/wp26-research-workflow`; the two can proceed in parallel.
+- **WP27 is the active package.** Stories frozen at `docs/wp/wp27-stories.md`; all three of its owner rulings are recorded (additive `preview_capabilities` table, 7-day capability, three templates). Next step is dispatching `WP27-S1`. See "WP27 — Active" below.
 - Wave 2 (WP21-WP25) is fully gated and passed; see `docs/wp/wave-gate-report.md` ("Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
 - `WP26-S1` (contract subgate) is done and independently reviewed — pass; see `docs/wp/wave-gate-report.md` ("WP26-S1 Contract Subgate - 2026-08-06"). New code: `convex/platform/engine/contracts.ts` and its adjacent test file. No `convex/schema.ts` change.
 - `codex/wp38-admin-plan` (a parallel session's WP38 planning, docs-only) was cherry-picked onto this branch; see "Super-Admin Program Amendment" below.
@@ -23,7 +24,19 @@ Last updated: 2026-08-06 (Europe/London)
 | WP25 Intake/Projects | **Passed, including S6** | Authenticated autosave/resume/two-tab-race/review/confirm/a11y evidence gathered live 2026-08-06; see `docs/wp/wp25-progress.md`. |
 | Wave 2 | **Passed** | WP23-S6 and WP25-S6 closed 2026-08-06. WP24 live-activation evidence remains a separately gated future item and does not block WP26. |
 
-## Immediate Next Action — Work Package Lane (WP26)
+## WP27 — Active
+
+Stories are frozen at `docs/wp/wp27-stories.md`; context and rationale are in `docs/wp/wp27-progress.md`. Read both before acting. Dispatch `WP27-S1` (preview capability contract and the one additive `preview_capabilities` table) to a high-tier worker — it is the only story touching `convex/schema.ts`.
+
+Three things a fresh session will otherwise rediscover the hard way:
+
+1. **The anonymous-preview conflict is already resolved.** Every frozen WP22 table requires `ownerId`, so an anonymous artifact had nowhere to live. The owner ruled one additive `preview_capabilities` table. Do not relax `ownerId` on `site_configs`/`site_versions` — that would reopen a passed security gate.
+2. **Template choice does not go in `SiteInputPayload`.** WP26-S1 froze that contract at v1 and it is content-only. WP27 wraps it: `SiteRenderSpec = { contractVersion, templateId, siteInput }`, stored as the site version's document body. No frozen-table column needed.
+3. **`/build/{slug}` currently 404s and four merged components link to it** (`PreviewIdeaCta` on every public idea page, plus `ExploreCard`, `DashboardHome`, `ProjectCard`). Production is unaffected only because the platform program is unmerged from `main`. `WP27-S2` must land before that merge.
+
+The three-template ruling went against the recommendation of one. Its cost is real and concentrated in `S3`: run the XSS and accessibility matrices **per template**, not once across the set.
+
+## Earlier Context — Work Package Lane (WP26)
 
 Wave 2 has passed. WP26 (`Durable task workflow and M3 Validation Reports`) is open on branch `codex/wp26-research-workflow`. The owner ruling on the provider contract is **already recorded** (2026-08-06, see `docs/wp/RULINGS.md` — four WP26 rows: model provider, search source, cost cap, retention), and `docs/wp/wp26-stories.md` plus `docs/wp/wp26-progress.md` are frozen and actively updated on that branch. Do not re-ask the owner for these four rulings and do not recreate those files — read them first.
 
