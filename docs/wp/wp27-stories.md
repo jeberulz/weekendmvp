@@ -120,7 +120,7 @@ generate and render.
       customisation input fails closed.
     - Confirms all four existing inbound links resolve rather than 404.
 
-- [ ] `WP27-S3` - Structured renderer with three templates
+- [x] `WP27-S3` - Structured renderer with three templates
   - Scope: `components/preview/templates/**`, shared renderer primitives,
     per-template snapshot/security/a11y tests.
   - Acceptance criteria:
@@ -181,6 +181,13 @@ generate and render.
       Give the preview surface its own origin configuration, or fail closed
       when it is missing, rather than leaving a preview route depending on a
       billing-named variable.
+    - Carried from `S3`: run the **live automated accessibility scan per
+      template** against this route at desktop and mobile widths. `S3`
+      asserted the structural properties it could prove without a route (one
+      `main`, `h1` first, heading order, inert CTA, `aria-hidden` watermark),
+      but colour-contrast needs the compiled stylesheet, which only exists
+      once a real page renders a template. Do not treat `S3`'s structural
+      pass as satisfying the contrast half.
     - Verifies the preview page is not server-cached across two requests
       with different tokens.
 

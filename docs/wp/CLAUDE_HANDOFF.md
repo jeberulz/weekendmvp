@@ -29,9 +29,10 @@ Last updated: 2026-08-06 (Europe/London)
 Stories are frozen at `docs/wp/wp27-stories.md`; context and rationale are in `docs/wp/wp27-progress.md`. Read both before acting.
 
 - **`WP27-S1` done** (committed): capability contract + additive `preview_capabilities` table.
-- **`WP27-S2` done at story level, uncommitted**: `/build/{slug}`, HMAC preview bridge, rate-limited generation, customisation form. Resume closed the `generate.test.ts` false-pass trap. Next worker should **commit S2 first**, then dispatch `WP27-S3`.
-- **`WP27-S3` next**: three templates, named-field-only render, per-template XSS + a11y matrices. Do not spread/iterate `SiteRenderSpec`.
-- Then `S4` (`/preview/{token}`), `S5` (claim), `S6` (package gate).
+- **`WP27-S2` done** (committed `965bac4`): `/build/{slug}` now returns 200 — the dead-CTA merge blocker is cleared. HMAC preview bridge, rate-limited generation, customisation form.
+- **`WP27-S3` done**: three templates (Editorial/Product/Minimal), named-field-only render, closed dispatch table, structural watermark, 48-case per-template security matrix that was mutation-tested to prove it can fail.
+- **`WP27-S4` next**: `/preview/{token}`. It inherits three explicit obligations recorded in the story — (a) identical status/body/cache headers across malformed, unknown, and expired tokens, since `S1` guarantees constant *shape* but `S4` owns the observable half; (b) the **live per-template axe contrast scan**, which `S3` could not run because contrast needs a compiled stylesheet and no route rendered a template until now; (c) give the preview API its own origin config instead of borrowing `PLATFORM_BILLING_APP_ORIGIN`.
+- Then `S5` (claim on signup), `S6` (package gate).
 
 Three things a fresh session will otherwise rediscover the hard way:
 
