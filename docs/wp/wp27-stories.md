@@ -192,7 +192,7 @@ generate and render.
       with different tokens.
 
 - [x] `WP27-S5` - Claim an anonymous preview into an owned project
-  - **OPEN AC DEVIATION (flagged by the S6 independent review):** the criterion below says a capability claimed by A "cannot be claimed **or read** by user B". *Claim* exclusivity is implemented and tested. *Read* exclusivity is **not** implemented: `S1` ruled that a claimed capability still resolves so its holder can reload, and `/preview/{token}` is anonymous with no identity to check. Anyone still holding the URL keeps rendering the content for the remaining lifetime. This is an implementer's reinterpretation of a written AC and **no owner ruling exists for it** — the checkbox marks the implementation, not satisfaction of this clause.
+  - **AC reinterpretation (owner ruling 2026-08-06):** the original clause said a capability claimed by A "cannot be claimed **or read** by user B." Owner accepted **claim-only exclusivity**: B cannot claim; URL possession remains the read authorization until expiry (see `RULINGS.md`). No code change.
   - Scope: claim mutation, signup integration, ownership tests.
   - Acceptance criteria:
     - On signup, a held capability converts into a real owned `project`,
@@ -201,8 +201,10 @@ generate and render.
     - Claiming is **exactly once** and idempotent: a repeated or concurrent
       claim of the same capability yields one project graph, matching the
       WP25 concurrent-create discipline rather than a new pattern.
-    - A capability already claimed by user A cannot be claimed or read by
-      user B. An expired capability cannot be claimed at all.
+    - A capability already claimed by user A cannot be claimed by user B
+      (constant-shape denial). Public read of `/preview/{token}` remains
+      bearer-token until expiry — ruled 2026-08-06. An expired capability
+      cannot be claimed at all.
     - The created records satisfy every WP22 authorization invariant —
       identity derived server-side, no caller-supplied owner ID.
     - Emits `signup_completed` and `project_created` only after server
@@ -212,7 +214,7 @@ generate and render.
       `Promise.all` yields one graph; cross-owner claim denied; expired
       claim denied; created graph passes owner-isolation checks.
 
-- [ ] `WP27-S6` - Run the WP27 renderer/preview/security gate
+- [x] `WP27-S6` - Run the WP27 renderer/preview/security gate
   - Scope: `docs/wp/wp27-progress.md` plus WP27-owned fixes only.
   - Acceptance criteria:
     - Standard checks pass: `npm run typecheck`, `npm run lint`, `npm test`,

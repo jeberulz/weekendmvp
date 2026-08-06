@@ -188,3 +188,28 @@ XSS/injection across all three templates (no raw-markup sink, no spec spread, no
 ### Gate verdict
 
 **Not closed.** Every standard check, the anonymous journey, the abuse matrix, the live XSS pass, the per-template accessibility matrix, the keyboard pass, and the independent review are complete, and every finding is either fixed or explicitly recorded. Two items remain open and neither is mine to close: the **`S5` read-exclusivity AC deviation** needs an owner ruling, and the **authenticated signup journey** (preview -> `/signin` -> magic link -> dashboard claim) is still unverified — the browser handoff did not complete, and the server state confirms it: the capability is still `claimed: false` with zero preview-claimed projects. The claim mutation itself has 14 Convex tests; the end-to-end funnel does not yet have live evidence.
+
+## 2026-08-06 - S5 read-exclusivity ruling (option A)
+
+- Owner ruled **claim-only exclusivity** (see `RULINGS.md`): after user A claims, user B still cannot claim; `/preview/{token}` remains bearer-token readable until the 7-day expiry. Rejected fail-closed public reads after claim and session-binding.
+- `docs/wp/wp27-stories.md` S5 AC updated to match; OPEN AC DEVIATION closed. No code change.
+- Remaining S6 blocker: authenticated signup journey (preview → `/signin` → magic link → dashboard claim) still unverified live.
+
+### Authenticated journey — in progress (paused at magic link)
+
+- Local Convex backend running; `PLATFORM_PREVIEW_BRIDGE_SECRET` present on the local deployment.
+- Production build on `:3100` verified headers (`X-Robots-Tag` includes `nocache`). Auth journey moved to `:3000` because Convex `SITE_URL` is `http://localhost:3000` — magic-link callback + `sessionStorage` stash must share that origin.
+- Live so far: generate → `/preview/{token}` renders → **Keep this site** → `/signin?claimPreview=…` with `wp27:claimPreview` stashed in `sessionStorage`.
+- Capability still `claimed: false`; zero `wp27:preview` projects. Waiting on owner to complete magic-link sign-in so claim can fire on `/dashboard`.
+
+### Authenticated journey — PASS (2026-08-06)
+
+- Owner completed magic-link on `:3000`. Dashboard shows signed-in workspace.
+- `npx convex run platform/preview/read:view` → **`claimed: true`**.
+- `npx convex data projects` → exactly **1** row with idempotency key `wp27:preview:…`, title matching the customised headline, `source: repository_idea`, `status: draft`.
+- Dashboard reload: still exactly one claimed preview project listed under Recent projects (“Verify any collectible in under a minute”) — no duplicate.
+- Note: journey must share origin with Convex `SITE_URL` (`http://localhost:3000`); production-build header checks remain on `:3100`.
+
+### Gate verdict
+
+**Pass.** S5 read-exclusivity ruled claim-only; authenticated signup journey verified live; prior standard checks, anonymous journey, abuse/XSS/a11y matrices, and independent review stand. `docs/wp/wave-gate-report.md` updated; `WP27-S6` marked `[x]`. Follow-ups outside gate closeout: retention cron before public free-preview; bridge nonce/expiry; ConsentBanner contrast (site-wide).

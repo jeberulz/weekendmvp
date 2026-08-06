@@ -53,8 +53,8 @@ bff2a1f S5  claim on signup
 | S2 `/build/{slug}` generation | done |
 | S3 three templates | done |
 | S4 `/preview/{token}` | done |
-| S5 claim on signup | done, **with one unmet acceptance clause — see §4** |
-| S6 package gate | **NOT CLOSED — 2 blockers, see §4** |
+| S5 claim on signup | done (claim-only read exclusivity ruled 2026-08-06) |
+| S6 package gate | **Pass** — closed 2026-08-06 |
 
 ---
 
@@ -102,44 +102,32 @@ Key files:
 
 ---
 
-## 4. THE TWO THINGS BLOCKING S6
+## 4. Gate blockers — RESOLVED
 
-Neither is a coding task. **Do not close S6 by deciding these yourself.**
+Both items that blocked S6 are closed. Details kept below for history.
 
-### 4.1 Owner ruling needed: S5 read-exclusivity
+### 4.1 S5 read-exclusivity — RESOLVED (owner ruling 2026-08-06)
 
-`docs/wp/wp27-stories.md` S5 says a capability claimed by A "cannot be claimed
+`docs/wp/wp27-stories.md` S5 said a capability claimed by A "cannot be claimed
 **or read** by user B."
 
 - *Claim* exclusivity: implemented and tested.
-- *Read* exclusivity: **not implemented.** S1 ruled that a claimed capability
-  still resolves so its holder can reload it, and `/preview/{token}` is
-  anonymous with no identity to check. Anyone still holding the URL keeps
-  rendering A's content until expiry.
+- *Read* exclusivity: **accepted as claim-only.** Owner ruled URL possession
+  remains the read authorization until the 7-day expiry. See `RULINGS.md`.
+  No code change. Stories AC updated.
 
-The stories file carries an explicit `OPEN AC DEVIATION` note. **No owner
-ruling exists.** Get one, add it to `docs/wp/RULINGS.md`, then either
-implement or formally accept.
+### 4.2 Authenticated signup journey — RESOLVED (2026-08-06)
 
-### 4.2 Unverified: the authenticated signup journey
+Live evidence against local Convex + `:3000` (matches `SITE_URL`):
 
-Never exercised end-to-end in a browser. Last measured server state:
-capability `claimed: false`, zero preview-claimed projects.
+- generate → `/preview/{token}` → Keep this site → magic link → `/dashboard`
+- `platform/preview/read:view` → `claimed: true`
+- exactly **1** `wp27:preview:` project; dashboard reload still exactly 1
 
-To verify:
+### Gate status
 
-```bash
-npm run convex:dev            # terminal 1 — MUST be running
-npm run build && npx next start -p 3100
-# generate a token (see §7), open /preview/{token}
-# click "Keep this site" → magic link → /dashboard
-npx convex run platform/preview/read:view '{"token":"<token>"}'   # claimed: true
-npx convex data projects | grep wp27:preview                     # exactly 1
-# reload /dashboard → still exactly 1 (idempotency)
-```
+**WP27-S6 closed — Pass.** See `docs/wp/wave-gate-report.md` (WP27 Package Gate - 2026-08-06).
 
-The claim mutation has 14 Convex tests. What is missing is live proof of the
-funnel, not of the mutation.
 
 ---
 
@@ -297,13 +285,11 @@ git diff --check
 
 ## 10. What to do next
 
-In order:
+WP27 package gate is **Pass**. In order:
 
-1. **Get the §4.1 owner ruling.** Record it in `RULINGS.md`.
-2. **Run the §4.2 authenticated journey.** Record evidence in
-   `wp27-progress.md`.
-3. **Close S6** — update `docs/wp/wave-gate-report.md` with the verdict, and
-   only then mark the story `[x]`.
+1. ~~Get the §4.1 owner ruling.~~ Done — claim-only exclusivity.
+2. ~~Run the §4.2 authenticated journey.~~ Done — claimed + exactly one project.
+3. ~~Close S6.~~ Done — `wave-gate-report.md` + stories `[x]`.
 4. **Before merging WP27 to `main`:** `/build/{slug}` must exist, because four
    already-merged components link to it (`PreviewIdeaCta` on every public idea
    page, `ExploreCard`, `DashboardHome`, `ProjectCard`). It does now. Merging
@@ -317,6 +303,10 @@ In order:
 
 Also pending: **WP38** (`codex/wp38-admin-plan`, docs-only, cherry-picked here)
 must be merged before production activation. It follows WP30 and gates WP31.
+
+Before exposing the free preview publicly: add the `preview_capabilities`
+retention job (MEDIUM follow-up recorded at S6 — first cron in this deployment).
+
 
 ---
 
