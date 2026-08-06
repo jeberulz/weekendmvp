@@ -1,5 +1,10 @@
 # Claude Handoff — Build Platform Program
 
+> **SUPERSEDED 2026-08-06 — read `docs/wp/AGENT_HANDOFF.md` instead.**
+> That file is agent-agnostic, reflects `798e203` (WP27-S6), and lists the
+> two items blocking the WP27 gate. Everything below is kept for history
+> and is accurate only up to WP27-S5.
+
 Last updated: 2026-08-06 (Europe/London)
 
 ## Resume Point
