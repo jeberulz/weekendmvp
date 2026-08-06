@@ -12,28 +12,32 @@ before WP27 may start, even if S2-S6 are still in progress.
 
 ## Ruled Inputs (do not re-litigate; see `docs/wp/RULINGS.md` 2026-08-06)
 
-- Synthesis/scoring model: OpenAI GPT (reuses the existing `OPENAI_API_KEY`).
-  **Gap:** this names a provider/family, not a pinned model ID. `S2` may not
-  hardcode a default model choice; the exact model must be ruled and added
-  here (or to a follow-up `RULINGS.md` row) before `S2` implementation
-  starts, since it directly drives fixture behavior, token pricing, and
-  whether the $4.00 cap is achievable.
-- Search/community-signal source: Perplexity API, citation-only (cite and
-  store source URLs; never store or republish full third-party page content
-  beyond what a citation snippet needs).
+All provider gaps are now closed. `S2` is unblocked.
+
+- Synthesis/scoring model: **`gpt-5.6-sol`** via the existing `OPENAI_API_KEY`
+  ($5.00/1M input, $30.00/1M output as of 2026-08-06). `S2` must pin the
+  **dated snapshot**, not the floating alias, so model drift cannot silently
+  change report quality or cost. `gpt-5.6-terra` ($2/$12) is the documented
+  downgrade only if the `S6` eval shows no quality delta.
+- Search/community-signal source: **Perplexity Sonar Pro**, citation-only
+  (cite and store source URLs; never store or republish full third-party page
+  content beyond what a citation snippet needs). $3/1M input, $15/1M output,
+  plus a $6-14 per 1K request fee depending on search context size.
+- Keyword volume/competition/CPC: **DataForSEO** ($0.01/task + $0.0001/item).
+  An LLM may never synthesize, estimate, or infer these values — a missing or
+  failing keyword provider must fail the step closed, never fall back to a
+  model guess.
 - Per-report hard cost cap: $4.00. Enforced via pre-call reservation (see
   `S4`), not a post-hoc check, with a retry-once-then-refund policy on
-  breach.
+  breach. **Reference budget:** a full run prices at roughly $0.52 (~$0.26
+  synthesis + ~$0.20 Perplexity across three calls + ~$0.02 DataForSEO +
+  brief normalization), or roughly $1.04 if every step takes its one allowed
+  retry. `S4`'s worst-case per-call reservations should be calibrated against
+  these figures; a run trending far above them signals a prompt or
+  context-size regression, not merely an expensive report.
 - Retention: cached research (citations, raw provider responses, generated
   report records) is kept indefinitely as an owned asset. No expiry job is
   in scope for WP26.
-- **Open gap, not yet ruled:** the pipeline's keywords/demand step
-  (program-platform-plan.md §4.5, pipeline step 5) needs volume/competition/
-  CPC data. Perplexity is ruled for market stats and community signals only
-  — it is not a keyword-data source. `S2` may not silently substitute
-  Perplexity or a synthesized/estimated keyword list for this; a named
-  keyword-data provider (e.g. DataForSEO or equivalent) must be ruled and
-  recorded in `docs/wp/RULINGS.md` before `S2` implementation starts.
 
 ## Stories
 
@@ -68,10 +72,9 @@ before WP27 may start, even if S2-S6 are still in progress.
       before any S2+ work is treated as unblocking WP27.
 
 - [ ] `WP26-S2` - Engine provider adapters behind a stable interface
-  - Blocked on two ruling gaps (see "Ruled Inputs" above): the exact OpenAI
-    model ID, and a named keyword-data provider. Do not start implementation
-    until both are recorded in `docs/wp/RULINGS.md`.
-  - Scope: `convex/platform/engine/providers/{openai,perplexity,keyword-data}.ts`,
+  - Unblocked as of 2026-08-06: all three providers are ruled (see "Ruled
+    Inputs" above and `docs/wp/RULINGS.md`).
+  - Scope: `convex/platform/engine/providers/{openai,perplexity,keywordData}.ts`,
     a provider-agnostic interface each adapter implements, isolated fixture
     tests. Real network calls stay disabled outside fixtures per the
     manifest default until this story's own test-mode gate passes.
@@ -79,16 +82,32 @@ before WP27 may start, even if S2-S6 are still in progress.
     - One typed interface per provider role (synthesis model, search/
       community source, keyword/demand data) so a future provider swap
       doesn't touch pipeline code, only the adapter.
+    - The OpenAI adapter pins a dated model snapshot resolved at
+      implementation time, not a floating alias, and the pinned ID is
+      recorded in `docs/wp/wp26-progress.md`.
     - Adapters read API keys from server-side env only (never
       `NEXT_PUBLIC_*`); missing/malformed keys fail closed with an explicit
-      configuration error, not a silent no-op.
+      configuration error, not a silent no-op. New keys
+      (`PERPLEXITY_API_KEY`, DataForSEO credentials) are added to
+      `.env.example` in the same change, per the WP20 environment-coverage
+      gate; `OPENAI_API_KEY` already exists.
+    - The keyword adapter never falls back to a model-generated estimate.
+      A provider failure fails the step closed so `S3`'s retry and `S4`'s
+      refund paths handle it, rather than silently degrading the report.
     - Fixture-mode adapters (recorded request/response pairs) let every
       later story's tests run deterministically with zero live spend.
+      Recorded fixtures must be scrubbed of any credential or account
+      identifier before being committed.
     - Per-call cost is estimated/recorded even in fixture mode, so S4's cost
-      accounting has real numbers to sum.
+      accounting has real numbers to sum. Cost estimation uses the published
+      per-token and per-request rates in "Ruled Inputs", including
+      Perplexity's per-1K-request search fee, which is separate from its
+      token cost and is easy to omit.
   - Verification:
     - Fixture-only Vitest suite; no live API key required to pass.
     - Config-error tests for missing/malformed keys.
+    - A test proving a failing keyword provider fails closed rather than
+      returning synthesized keyword metrics.
 
 - [ ] `WP26-S3` - Durable task/workflow execution (resume/retry/cancel/timeout/onComplete)
   - Scope: workflow mount/manager, `convex/platform/engine/tasks.ts`,
@@ -241,7 +260,14 @@ credential-backed go-live gate:
   turn out incomplete.
   Also verify the true per-report spend (real token/API pricing) stays
   under the $4.00 cap on this real corpus, not just the fixture-estimated
-  cost.
+  cost. Compare it against the ~$0.52 reference budget in "Ruled Inputs":
+  a real run landing several times higher means the estimate model in `S4`
+  is wrong and its reservations need recalibrating before activation, even
+  if the run technically stayed under the cap.
+- Optionally benchmark `gpt-5.6-terra` against the ruled `gpt-5.6-sol` on the
+  same corpus. If quality is indistinguishable, the ~$0.16/report saving is
+  worth taking — but record it as a new `RULINGS.md` row, never an in-place
+  edit of the model pin.
 - Record the result and the owner's explicit approval to activate in
   `docs/wp/RULINGS.md` and `docs/wp/wave-gate-report.md` before flipping any
   "fixtures only" flag in production configuration.
@@ -265,10 +291,13 @@ credential-backed go-live gate:
 ## Notes
 
 - Promote unknown product decisions to `docs/wp/RULINGS.md`.
-- Two ruling gaps are open as of 2026-08-06 and block `S2` implementation
-  (not `S1`): the exact OpenAI model ID, and a named keyword-volume/CPC data
-  provider. See "Ruled Inputs" above. `S1` (the contract subgate) does not
-  depend on either and may proceed once dispatched.
+- No ruling gaps remain open. `S1` is complete and independently gated;
+  `S2` through `S6` are unblocked and may proceed in order.
+- `S5` implementation note carried from `S1`'s review:
+  `document_citations.position` is `v.int64()` (bigint) in the frozen WP22
+  schema, while `CitationRef` in `convex/platform/engine/contracts.ts` is a
+  plain `number`. `S5` is the first story to write and compare these, so it
+  owns the explicit bigint/number conversion at that boundary.
 - The workflow execution runtime (how resume/retry/cancel/timeout/onComplete
   in S3 is actually implemented) is an implementation-time engineering
   choice, not an owner ruling. Vercel Workflow DevKit is a strong candidate

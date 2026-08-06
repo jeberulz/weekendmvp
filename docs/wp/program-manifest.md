@@ -132,6 +132,7 @@ WP31 + WP37 -> Wave 6 closeout
 | 2026-08-05 | Idea Engine | Renew or replace Ideabrowser | Do not renew; replace M1-M4 and quality-gate every compiler before removal | Owner |
 | 2026-08-05 | Numbering | Resolve collisions | Platform begins WP19 and manifest owns remapping | Orchestrator |
 | 2026-08-06 | WP26 | Model/search providers, cost cap, retention | OpenAI GPT for synthesis; Perplexity API for market/community research (citation-only, no republishing); $4.00/report hard cost cap with retry-once-then-refund; cached research retained indefinitely as an owned asset | Owner |
+| 2026-08-06 | WP26 | Exact model pin and keyword-data provider | `gpt-5.6-sol` for synthesis/scoring (pin the dated snapshot at implementation); DataForSEO for keyword volume/CPC/competition. Full run prices at ~$0.52, ~$1.04 with retries — well inside the $4.00 cap. No LLM may synthesize keyword metrics. | Owner |
 | 2026-08-06 | WP38 | Super-admin and editorial control | One server-verified super-admin controls the operator plane, Idea Engine/editorial queues, canonical content compilation, activation, and rollback. Customers keep owner-scoped product workflows only; no generic bypass or impersonation. | Owner |
 
 ## Dispatch Rules
