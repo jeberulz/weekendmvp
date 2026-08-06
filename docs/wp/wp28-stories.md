@@ -112,7 +112,7 @@ blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
 
 ## Stories
 
-- [ ] `WP28-S1` - Host contract and classifier (no behaviour change)
+- [x] `WP28-S1` - Host contract and classifier (no behaviour change)
   - Scope: new `lib/tenant-host.ts` + tests. **No edit to `middleware.ts` in
     this story** — this story must be provably inert.
   - Acceptance criteria:

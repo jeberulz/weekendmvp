@@ -72,3 +72,100 @@ defaults so work is not blocked.
 (new). `docs/wp/AGENT_HANDOFF.md` updated separately at `86bb2eb`.
 
 **Next:** `WP28-S1` on owner instruction. Not started.
+
+---
+
+## 2026-08-06 - WP28-S1 host classifier delivered
+
+**What shipped:** `lib/tenant-host.ts` (pure, no I/O, no `next/server`) exporting
+`classifyHost`, `normalizeHost`, `isValidTenantSlug`, `isTenantHost`,
+`tenantHostForSlug`, `RESERVED_SUBDOMAINS` (40 names), and the slug length
+bounds. `classifyHost` returns a discriminated union over `apex`, `www`,
+`tenant`, `reserved`, `platform-preview`, `local`, and `unknown`.
+
+Tests: `tests/redirects/tenant-host.test.mjs`, 21 tests. Placed in
+`tests/redirects/` deliberately — that script already runs
+`--experimental-strip-types` and globs the directory, so the suite is picked
+up by `npm test` with no `package.json` change and cannot become orphaned
+(the trap that once hid 48 tests from CI).
+
+**The story is inert, and that is asserted rather than asserted-in-prose.**
+`middleware.ts` is untouched. A test strips comments from `middleware.ts` and
+asserts it references neither `tenant-host` nor `classifyHost`, so wiring it
+up without updating the story turns the suite red.
+
+### Design decisions worth carrying into S2
+
+- Fail-closed throughout: anything unparseable is `unknown`, never `tenant`.
+- A trailing dot is **rejected**, not trimmed. `weekendmvp.app.` is a valid
+  FQDN spelling, but accepting it would give every host two forms while
+  `site_configs.hostname` stores exactly one and `by_hostname` matches
+  exactly.
+- `www` is a member of `RESERVED_SUBDOMAINS` but classifies as `www`, checked
+  before the reserved branch, so existing WP13 canonicalization is unaffected.
+- Reserved names cover both infrastructure (`api`, `admin`, `staging`) and
+  names a visitor would trust as ours (`billing`, `security`, `support`),
+  which would otherwise be available for phishing.
+- IPv6 literals are handled before the port split, since the `:` heuristic
+  would otherwise mangle `[::1]:3000`.
+
+### One configuration change, and why
+
+`tsconfig.json` gained `"allowImportingTsExtensions": true` (one line; legal
+because `noEmit` is already true). `lib/tenant-host.ts` imports
+`./canonical-path.ts` **with** the extension because it is the first `lib`
+module loaded directly by Node's ESM resolver, which does not add extensions.
+The alternative was duplicating `PROD_APEX_HOST`/`PROD_WWW_HOST`, which would
+have created a silent drift risk between the canonical host and the tenant
+suffix. The flag is permissive only — it forbids nothing that worked before.
+
+Verified rather than assumed: a full `npm run build` succeeds, so Next
+resolves the extension form. This matters because S2 imports this module from
+Edge middleware.
+
+### Mutation testing (trap 10)
+
+Five single-guard mutations, each confirmed applied by `cmp` against a backup
+before running:
+
+| Mutation | Result |
+|---|---|
+| Drop the slug shape regex | **red** (2 failures) |
+| Drop the RFC 5891 `--` positions 3-4 rule | **red** (1) |
+| Remove the `www` branch so it falls to `reserved` | **red** (2) |
+| Drop the `xn--` normalization rejection | **red** (1) |
+| Drop the credentials/path character guard | **red** (1) |
+
+Two further mutations — allowing multi-label subdomains, and accepting a
+trailing dot — did **not** turn the suite red. Traced directly rather than
+assumed: with the multi-label guard removed `a.b.weekendmvp.app` still
+classifies `unknown` because the slug regex rejects `a.b`, and with the
+trailing-dot guard removed `weekendmvp.app.` still normalizes to `null`
+because the empty-label check catches it. Both are redundant guards, not
+coverage gaps. Recorded because a future refactor that removes the *second*
+guard in either pair would be caught by no test.
+
+### Checks
+
+- `npm run typecheck` — exit 0
+- `npm run lint` — exit 0, 0 errors, 35 pre-existing warnings (unchanged)
+- `npx eslint` on both new files — exit 0, 0 findings
+- `npm test` — exit 0. Node groups 91/6/**28**/46/4 (redirects 7 → 28, +21)
+  and vitest groups 125/172/57/567 unchanged. Counts confirmed in the **full**
+  run, not standalone.
+- `npm run build` — exit 0, **313** pages
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities
+- `git diff --check` — clean
+
+**Correction to the recorded baseline:** WP27 recorded 312 pages, and this
+build reports 313. This is **not** attributable to S1, which adds no route.
+Verified by moving both new files aside, reverting `tsconfig.json`, and
+building a clean tree at HEAD — that build also reports **313**. The 312
+figure carried in `wp27-progress.md`, `wave-gate-report.md`, and
+`AGENT_HANDOFF.md` is stale for this checkout. Use 313 as the WP28 baseline.
+
+**Docs updated:** this file. `docs/wp/wp28-stories.md` S1 checked.
+
+**Not done / out of scope:** `middleware.ts` untouched; no host behaviour
+changes anywhere. The reserved list remains provisional pending open owner
+ruling #1.
