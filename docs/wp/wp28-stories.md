@@ -170,6 +170,16 @@ blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
     isolation assertions: break the guard on purpose and confirm red.
 
 - [ ] `WP28-S3` - Tenant route rendering a published version
+  - **OPEN AC DEVIATION (2026-08-06):** every criterion below is met except
+    "every other case resolves to the S2 404 path". Unpublished, retired, and
+    unknown *sites* on a well-formed tenant host answer **200** with the
+    not-found body, because `notFound()` cannot set a status under PPR. The
+    four refusal reasons remain indistinguishable from one another, so there
+    is no enumeration oracle, but it is a soft 404 on a public customer page.
+    Fixing it requires resolving publish state in middleware — an Edge→Convex
+    fetch per request with fail-closed availability consequences — so it is
+    escalated to `WP28-S4` rather than decided here. See
+    `docs/wp/wp28-progress.md`. **`WP28-S6` must not close while this is open.**
   - Scope: new tenant route segment, host→site resolver in
     `convex/platform/sites/*`, `next.config.ts` headers for tenant hosts.
   - Acceptance criteria:

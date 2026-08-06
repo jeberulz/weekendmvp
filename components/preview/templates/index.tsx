@@ -28,7 +28,18 @@ import { PreviewNotice, PreviewWatermark } from "./PreviewWatermark";
  *    assert it structurally so a future field cannot quietly introduce one.
  */
 
-type TemplateProps = { siteInput: SiteInputPayload };
+/**
+ * `showPreviewChrome` is required, never defaulted. WP28-S3 reuses these
+ * templates to render *published customer sites*, where the preview notice and
+ * watermark must not appear. A default would decide that silently at every
+ * future call site; the two directions fail differently but both fail badly —
+ * a customer's live page stamped "PREVIEW", or a preview that no longer says
+ * it is one.
+ */
+type TemplateProps = {
+  siteInput: SiteInputPayload;
+  showPreviewChrome: boolean;
+};
 
 function Benefits({ items }: { items: readonly string[] }) {
   return (
@@ -80,12 +91,12 @@ function CallToAction({ label }: { label: string }) {
   );
 }
 
-function EditorialTemplate({ siteInput }: TemplateProps) {
+function EditorialTemplate({ siteInput, showPreviewChrome }: TemplateProps) {
   const { headline, subheadline, problemStatement, keyBenefits, socialProof, callToAction } =
     siteInput;
   return (
     <>
-      <PreviewNotice />
+      {showPreviewChrome && <PreviewNotice />}
       <main className="mx-auto w-full max-w-2xl px-5 py-16">
         <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-100">
           {headline}
@@ -109,17 +120,17 @@ function EditorialTemplate({ siteInput }: TemplateProps) {
           <CallToAction label={callToAction.label} />
         </div>
       </main>
-      <PreviewWatermark />
+      {showPreviewChrome && <PreviewWatermark />}
     </>
   );
 }
 
-function ProductTemplate({ siteInput }: TemplateProps) {
+function ProductTemplate({ siteInput, showPreviewChrome }: TemplateProps) {
   const { headline, subheadline, problemStatement, keyBenefits, socialProof, callToAction } =
     siteInput;
   return (
     <>
-      <PreviewNotice />
+      {showPreviewChrome && <PreviewNotice />}
       <main className="mx-auto w-full max-w-4xl px-5 py-16">
         <div className="text-center">
           <h1 className="text-5xl font-semibold leading-tight tracking-tight text-zinc-100">
@@ -152,16 +163,16 @@ function ProductTemplate({ siteInput }: TemplateProps) {
           <SocialProof items={socialProof} />
         </div>
       </main>
-      <PreviewWatermark />
+      {showPreviewChrome && <PreviewWatermark />}
     </>
   );
 }
 
-function MinimalTemplate({ siteInput }: TemplateProps) {
+function MinimalTemplate({ siteInput, showPreviewChrome }: TemplateProps) {
   const { headline, subheadline, keyBenefits, callToAction } = siteInput;
   return (
     <>
-      <PreviewNotice />
+      {showPreviewChrome && <PreviewNotice />}
       <main className="mx-auto flex min-h-[80vh] w-full max-w-xl flex-col justify-center px-5 py-16">
         <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-100">
           {headline}
@@ -176,7 +187,7 @@ function MinimalTemplate({ siteInput }: TemplateProps) {
           <CallToAction label={callToAction.label} />
         </div>
       </main>
-      <PreviewWatermark />
+      {showPreviewChrome && <PreviewWatermark />}
     </>
   );
 }
@@ -193,7 +204,13 @@ const TEMPLATES: Record<PreviewTemplate, (props: TemplateProps) => React.ReactEl
   minimal: MinimalTemplate,
 };
 
-export function PreviewTemplateRenderer({ spec }: { spec: SiteRenderSpec }) {
+export function PreviewTemplateRenderer({
+  spec,
+  showPreviewChrome,
+}: {
+  spec: SiteRenderSpec;
+  showPreviewChrome: boolean;
+}) {
   // `Object.hasOwn`, not a bare index read: `TEMPLATES["constructor"]` and
   // `TEMPLATES["toString"]` resolve to inherited functions that are truthy,
   // so the `!Template` guard below would wave them through. Unreachable via
@@ -205,7 +222,12 @@ export function PreviewTemplateRenderer({ spec }: { spec: SiteRenderSpec }) {
   // is unreachable through the normal path. Rendering nothing is still the
   // right failure — never a partial or unvalidated page.
   if (!Template) return null;
-  return <Template siteInput={spec.siteInput} />;
+  return (
+    <Template
+      siteInput={spec.siteInput}
+      showPreviewChrome={showPreviewChrome}
+    />
+  );
 }
 
 export { EditorialTemplate, MinimalTemplate, ProductTemplate, TEMPLATES };

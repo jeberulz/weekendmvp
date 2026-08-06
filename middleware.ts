@@ -163,10 +163,30 @@ export async function middleware(
     return hostRejectedResponse();
   }
   if (host.kind === "tenant") {
-    // WP28-S2 serves nothing on a tenant host: the tenant route arrives in
-    // S3. Every path answers identically, so no platform surface can be
-    // probed for existence by comparing statuses, and auth middleware never
-    // runs — a tenant host never touches a session cookie.
+    // A published site is a single landing page, so exactly one path is
+    // served and everything else answers identically. Keeping the tenant
+    // surface to one path means no platform route can be probed for
+    // existence, `/robots.txt` and `/sitemap.xml` cannot be inherited, and
+    // the auth middleware never runs — a tenant host never touches a session
+    // cookie.
+    if (request.nextUrl.pathname !== "/") {
+      return hostRejectedResponse();
+    }
+    // Internal rewrite, not a redirect: the visitor's URL stays on the
+    // customer's host. `/site/{slug}` is unreachable by address — it is 404ed
+    // on every platform host below.
+    const target = new URL(`/site/${host.slug}`, request.url);
+    return NextResponse.rewrite(target);
+  }
+
+  // `/site/*` is the tenant rewrite target and must never be addressable from
+  // a platform host, or `www.weekendmvp.app/site/acme` would serve a
+  // customer's page under our own domain — duplicating their content at a
+  // URL they do not control and breaking their canonical.
+  if (
+    request.nextUrl.pathname === "/site" ||
+    request.nextUrl.pathname.startsWith("/site/")
+  ) {
     return hostRejectedResponse();
   }
 

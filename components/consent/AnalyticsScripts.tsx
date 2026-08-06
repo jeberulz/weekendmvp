@@ -8,6 +8,7 @@ import {
   CLAIM_PARAM,
   REDACTED_PREVIEW_PATH,
 } from "@/lib/analytics-redaction";
+import { isTenantHost } from "@/lib/tenant-host";
 import { useConsent } from "./ConsentProvider";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -28,6 +29,16 @@ export function AnalyticsScripts() {
   const pathname = usePathname();
 
   if (consent !== true || isSensitiveAuthPath(pathname)) {
+    return null;
+  }
+
+  // WP28-S3. Never load platform analytics on a published customer site.
+  // Consent is origin-scoped, so a tenant host would almost certainly fail the
+  // gate above anyway — but "almost certainly" is not a property worth
+  // resting on when the consequence is attributing a customer's visitors to
+  // our property. `consent === true` is only reachable after mount, so
+  // `window` exists; the guard is explicit regardless.
+  if (typeof window !== "undefined" && isTenantHost(window.location.host)) {
     return null;
   }
 

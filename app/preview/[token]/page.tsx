@@ -119,7 +119,7 @@ export default async function PreviewPage({
     <div className="min-h-screen bg-black pb-96 sm:pb-56">
       {/* Template only: no site nav, no footer, nothing that would let a
           visitor navigate out of the preview into the marketing site. */}
-      <PreviewTemplateRenderer spec={spec} />
+      <PreviewTemplateRenderer spec={spec} showPreviewChrome />
       <PreviewClaimBar token={token} />
       <PreviewViewed template={spec.templateId} />
     </div>

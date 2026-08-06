@@ -125,6 +125,45 @@ describe("WP28-S2 host isolation", () => {
     ["multi-label", "a.b.weekendmvp.app"],
   ];
 
+  it("rewrites the tenant root to the internal site route", async () => {
+    const response = await runMiddleware(
+      request("https://acme.weekendmvp.app/", "acme.weekendmvp.app"),
+    );
+
+    // A rewrite, not a redirect: the visitor's URL stays on the customer host.
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-middleware-rewrite")).toContain("/site/acme");
+  });
+
+  it.each([
+    ["/about", "a marketing path"],
+    ["/dashboard", "a platform path"],
+    ["/robots.txt", "the platform crawler directives"],
+  ])("404s %s on a tenant host (%s)", async (pathname) => {
+    // A published site is a single landing page. Serving only `/` means no
+    // platform route can be probed and nothing is inherited.
+    const response = await runMiddleware(
+      request(`https://acme.weekendmvp.app${pathname}`, "acme.weekendmvp.app"),
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+
+  it.each(["/site", "/site/acme", "/site/acme/anything"])(
+    "404s the internal rewrite target %s on platform hosts",
+    async (pathname) => {
+      // Otherwise www.weekendmvp.app/site/acme serves a customer's page under
+      // our own domain, at a URL they do not control.
+      for (const host of ["www.weekendmvp.app", "p-1.vercel.app"]) {
+        const response = await runMiddleware(
+          request(`https://${host}${pathname}`, host),
+        );
+        expect(response.status, `${host}${pathname}`).toBe(404);
+      }
+    },
+  );
+
   it.each(NON_PLATFORM_HOSTS)(
     "answers 404 for every platform surface on a %s host (%s)",
     async (_kind, host) => {

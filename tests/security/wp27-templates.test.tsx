@@ -69,6 +69,7 @@ function render(templateId: PreviewTemplate, siteInput: SiteInputPayload): strin
         templateId,
         siteInput,
       }}
+      showPreviewChrome
     />,
   );
 }
@@ -164,6 +165,7 @@ describe("template dispatch", () => {
           templateId: "does-not-exist" as PreviewTemplate,
           siteInput: benignInput(),
         }}
+        showPreviewChrome
       />,
     );
     expect(html).toBe("");

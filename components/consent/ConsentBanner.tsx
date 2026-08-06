@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 
+import { isTenantHost } from "@/lib/tenant-host";
 import { useConsent } from "./ConsentProvider";
 import { ConsentCustomizeModal } from "./ConsentCustomizeModal";
 
@@ -21,7 +22,12 @@ export function ConsentBanner() {
     setMounted(true);
   }, []);
 
-  if (!mounted || consent !== null) {
+  // WP28-S3. The root layout wraps every route, including a published
+  // customer site on its own host, so this banner would otherwise appear on a
+  // page that is not ours — our cookie notice, our privacy link, under their
+  // domain. Checked after mount, alongside the existing consent gate, so it
+  // costs no server dynamism and cannot cause a hydration mismatch.
+  if (!mounted || consent !== null || isTenantHost(window.location.host)) {
     return null;
   }
 
