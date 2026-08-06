@@ -31,8 +31,10 @@ Stories are frozen at `docs/wp/wp27-stories.md`; context and rationale are in `d
 - **`WP27-S1` done** (committed): capability contract + additive `preview_capabilities` table.
 - **`WP27-S2` done** (committed `965bac4`): `/build/{slug}` now returns 200 — the dead-CTA merge blocker is cleared. HMAC preview bridge, rate-limited generation, customisation form.
 - **`WP27-S3` done**: three templates (Editorial/Product/Minimal), named-field-only render, closed dispatch table, structural watermark, 48-case per-template security matrix that was mutation-tested to prove it can fail.
-- **`WP27-S4` next**: `/preview/{token}`. It inherits three explicit obligations recorded in the story — (a) identical status/body/cache headers across malformed, unknown, and expired tokens, since `S1` guarantees constant *shape* but `S4` owns the observable half; (b) the **live per-template axe contrast scan**, which `S3` could not run because contrast needs a compiled stylesheet and no route rendered a template until now; (c) give the preview API its own origin config instead of borrowing `PLATFORM_BILLING_APP_ORIGIN`.
-- Then `S5` (claim on signup), `S6` (package gate).
+- **`WP27-S4` done**: `/preview/{token}`, the `read.ts` action+internalQuery clock split, `/preview/:token` response headers in `next.config.ts`, and the preview API's own origin gate (`PLATFORM_PREVIEW_APP_ORIGIN`, falling back to the request `Host` rather than skipping). The deferred live per-template axe scan ran: 3 templates x 2 widths, two contrast findings, both carried to `S6` (see `docs/wp/wp27-progress.md`) - the `S3` decorative watermark (1.09, WCAG 1.4.3 pure-decoration exception, open judgement call) and a **pre-existing site-wide** `ConsentBanner` link (4.17, also present on `/starter-kit`, out of WP27 scope).
+- **Known deviation to raise at `S6`:** `/preview/{token}` answers **200** for every case, valid and invalid alike, because Cache Components flushes a PPR shell before `notFound()` runs. `connection()` does not suppress it. No status oracle exists (all four cases match), and `X-Robots-Tag` carries non-indexability, but it is a soft-404 the owner may want changed.
+- **`WP27-S5` next**: claim on signup, exactly-once and idempotent. It owns consuming the `claimPreview` query parameter `/preview/{token}` now links to; `/signin` currently ignores it.
+- Then `S6` (package gate), which must also close the two accessibility findings and the 200-status deviation above.
 
 Three things a fresh session will otherwise rediscover the hard way:
 

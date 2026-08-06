@@ -78,6 +78,44 @@ export function clientRateLimitKey(headers: Headers): string {
   return "ip:unknown";
 }
 
+/**
+ * Same-origin gate for the preview API.
+ *
+ * WP27-S4 carried this over from S2, where the check read
+ * `PLATFORM_BILLING_APP_ORIGIN` — a billing-named variable governing a
+ * preview route — and skipped entirely when it was unset, so the default
+ * deployment ran with no gate at all and nothing said so.
+ *
+ * This version never silently skips. When an `Origin` header is present it
+ * is always compared against something: the explicitly configured
+ * `PLATFORM_PREVIEW_APP_ORIGIN` when set, otherwise the request's own `Host`.
+ * Host is the right fallback because a browser sets it from the URL being
+ * fetched, so a page on another site cannot make it match ours; page script
+ * cannot forge either header. An absent `Origin` (curl, server-to-server)
+ * still passes, which is deliberate — this is defence in depth against the
+ * drive-by browser case, and the bridge signature remains the real
+ * authority. An unparseable `Origin`, or one with no `Host` to compare
+ * against, fails closed.
+ */
+export function isAllowedPreviewOrigin(
+  headers: Headers,
+  environment: PreviewEnvironment,
+): boolean {
+  const origin = headers.get("origin");
+  if (!origin) return true;
+
+  const configured = environment.PLATFORM_PREVIEW_APP_ORIGIN;
+  if (configured) return origin === configured;
+
+  const host = headers.get("host");
+  if (!host) return false;
+  try {
+    return new URL(origin).host.toLowerCase() === host.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
 export type PreviewGenerateRequest = {
   slug: string;
   templateId: string;

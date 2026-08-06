@@ -40,6 +40,36 @@ const nextConfig: NextConfig = {
     };
   },
 
+  /**
+   * WP27-S4. A generated preview is a private, expiring artifact.
+   *
+   * Matched on the path rather than set inside the page so the *same*
+   * headers apply to the 404 a malformed, unknown, or expired token
+   * produces. Setting them only on a successful render would make
+   * `Cache-Control` itself the enumeration oracle that the route's single
+   * `notFound()` path exists to close.
+   *
+   * `no-store` is the point: a shared cache or CDN holding a preview would
+   * serve one visitor's private artifact to another. `no-referrer` keeps the
+   * capability token, which lives in the path, out of the `Referer` of any
+   * cross-origin request the page might ever make.
+   */
+  async headers() {
+    return [
+      {
+        source: "/preview/:token",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store, max-age=0" },
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow, noarchive, nosnippet, noimageindex",
+          },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       // Path cleaning (.html / trailing slash) + apex→www live in

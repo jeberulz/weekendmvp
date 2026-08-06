@@ -149,7 +149,7 @@ generate and render.
       accessibility scan against each of the three.
     - Snapshot tests proving no unsanitized field reaches the DOM.
 
-- [ ] `WP27-S4` - `/preview/{token}` isolated preview route
+- [x] `WP27-S4` - `/preview/{token}` isolated preview route
   - Scope: `app/preview/[token]/**`, security headers, metadata.
   - Acceptance criteria:
     - Renders only on a valid, unexpired capability. Expired or unknown

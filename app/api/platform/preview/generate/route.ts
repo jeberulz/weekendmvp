@@ -3,6 +3,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import {
   clientRateLimitKey,
+  isAllowedPreviewOrigin,
   parsePreviewGenerateRequest,
   readPreviewBridgeSecret,
   signPreviewPayload,
@@ -31,16 +32,11 @@ export async function POST(request: Request) {
     return jsonError(415, "UNSUPPORTED_MEDIA_TYPE");
   }
 
-  // Same-origin gate, defence in depth only — NOT the primary control.
-  // `Origin` is browser-set and unforgeable by page script, so this rejects a
-  // cross-site caller when configured. Two deliberate soft edges: a missing
-  // Origin (curl, server-to-server) passes through, and an unset
-  // `PLATFORM_BILLING_APP_ORIGIN` skips the check entirely. Both are
-  // acceptable because the bridge signature is the real authority and it
-  // fails closed; this only raises the cost of the drive-by case.
-  const origin = request.headers.get("origin");
-  const expectedOrigin = process.env.PLATFORM_BILLING_APP_ORIGIN;
-  if (origin && expectedOrigin && origin !== expectedOrigin) {
+  // Same-origin gate, defence in depth only — NOT the primary control; the
+  // bridge signature is. The check itself no longer borrows billing's
+  // origin variable and no longer disappears when nothing is configured:
+  // see `isAllowedPreviewOrigin`.
+  if (!isAllowedPreviewOrigin(request.headers, process.env)) {
     return jsonError(403, "CROSS_ORIGIN_FORBIDDEN");
   }
 

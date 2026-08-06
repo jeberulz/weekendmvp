@@ -30,6 +30,7 @@ import type * as platform_intake from "../platform/intake.js";
 import type * as platform_preview_capabilities from "../platform/preview/capabilities.js";
 import type * as platform_preview_customisation from "../platform/preview/customisation.js";
 import type * as platform_preview_generate from "../platform/preview/generate.js";
+import type * as platform_preview_read from "../platform/preview/read.js";
 import type * as platform_preview_renderSpec from "../platform/preview/renderSpec.js";
 import type * as platform_projects from "../platform/projects.js";
 import type * as platform_transitions from "../platform/transitions.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   "platform/preview/capabilities": typeof platform_preview_capabilities;
   "platform/preview/customisation": typeof platform_preview_customisation;
   "platform/preview/generate": typeof platform_preview_generate;
+  "platform/preview/read": typeof platform_preview_read;
   "platform/preview/renderSpec": typeof platform_preview_renderSpec;
   "platform/projects": typeof platform_projects;
   "platform/transitions": typeof platform_transitions;
