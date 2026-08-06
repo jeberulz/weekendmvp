@@ -5,7 +5,7 @@ Last updated: 2026-08-06 (Europe/London)
 ## Resume Point
 
 - Work from `codex/wp27-site-preview` (branched from `codex/wp26-research-workflow`, which itself carries the passed Wave 2 gates and WP26-S1). WP26's own remaining work (`S2`-`S6`) stays on `codex/wp26-research-workflow`; the two can proceed in parallel.
-- **WP27 is the active package.** Stories frozen at `docs/wp/wp27-stories.md`; all three of its owner rulings are recorded (additive `preview_capabilities` table, 7-day capability, three templates). Next step is dispatching `WP27-S1`. See "WP27 — Active" below.
+- **WP27 is the active package.** `WP27-S1` and `WP27-S2` are complete at the story level (S2 code is on disk uncommitted — commit when asked). Next is `WP27-S3` (three templates + per-template XSS/a11y). See "WP27 — Active" below.
 - Wave 2 (WP21-WP25) is fully gated and passed; see `docs/wp/wave-gate-report.md` ("Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
 - `WP26-S1` (contract subgate) is done and independently reviewed — pass; see `docs/wp/wave-gate-report.md` ("WP26-S1 Contract Subgate - 2026-08-06"). New code: `convex/platform/engine/contracts.ts` and its adjacent test file. No `convex/schema.ts` change.
 - `codex/wp38-admin-plan` (a parallel session's WP38 planning, docs-only) was cherry-picked onto this branch; see "Super-Admin Program Amendment" below.
@@ -26,7 +26,12 @@ Last updated: 2026-08-06 (Europe/London)
 
 ## WP27 — Active
 
-Stories are frozen at `docs/wp/wp27-stories.md`; context and rationale are in `docs/wp/wp27-progress.md`. Read both before acting. Dispatch `WP27-S1` (preview capability contract and the one additive `preview_capabilities` table) to a high-tier worker — it is the only story touching `convex/schema.ts`.
+Stories are frozen at `docs/wp/wp27-stories.md`; context and rationale are in `docs/wp/wp27-progress.md`. Read both before acting.
+
+- **`WP27-S1` done** (committed): capability contract + additive `preview_capabilities` table.
+- **`WP27-S2` done at story level, uncommitted**: `/build/{slug}`, HMAC preview bridge, rate-limited generation, customisation form. Resume closed the `generate.test.ts` false-pass trap. Next worker should **commit S2 first**, then dispatch `WP27-S3`.
+- **`WP27-S3` next**: three templates, named-field-only render, per-template XSS + a11y matrices. Do not spread/iterate `SiteRenderSpec`.
+- Then `S4` (`/preview/{token}`), `S5` (claim), `S6` (package gate).
 
 Three things a fresh session will otherwise rediscover the hard way:
 

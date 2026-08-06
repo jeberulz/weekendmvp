@@ -79,7 +79,7 @@ generate and render.
     - Adversarial: a token differing by one character resolves to the same
       generic not-found as a well-formed unknown token.
 
-- [ ] `WP27-S2` - `/build/{slug}` anonymous customisation and preview generation
+- [x] `WP27-S2` - `/build/{slug}` anonymous customisation and preview generation
   - Scope: `app/build/[slug]/**`, a bounded preview-generation Convex
     mutation, analytics events. No renderer internals (S3) and no
     `/preview/{token}` route (S4).
@@ -176,6 +176,11 @@ generate and render.
     - Security tests: header matrix, expired/unknown token behavior,
       sitemap exclusion, absence of any lead-write path, no tenant-host
       resolution.
+    - Carried from `S2`: the preview API's same-origin check currently reads
+      `PLATFORM_BILLING_APP_ORIGIN` and silently skips when that is unset.
+      Give the preview surface its own origin configuration, or fail closed
+      when it is missing, rather than leaving a preview route depending on a
+      billing-named variable.
     - Verifies the preview page is not server-cached across two requests
       with different tokens.
 

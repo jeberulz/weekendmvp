@@ -26,6 +26,7 @@ import type { DataModel } from "./dataModel.js";
  */
 type Env = {
   readonly PLATFORM_BILLING_BRIDGE_SECRET: string;
+  readonly PLATFORM_PREVIEW_BRIDGE_SECRET: string | undefined;
 };
 
 /**

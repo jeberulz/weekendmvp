@@ -28,6 +28,8 @@ import type * as platform_engine_contracts from "../platform/engine/contracts.js
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_preview_capabilities from "../platform/preview/capabilities.js";
+import type * as platform_preview_customisation from "../platform/preview/customisation.js";
+import type * as platform_preview_generate from "../platform/preview/generate.js";
 import type * as platform_preview_renderSpec from "../platform/preview/renderSpec.js";
 import type * as platform_projects from "../platform/projects.js";
 import type * as platform_transitions from "../platform/transitions.js";
@@ -66,6 +68,8 @@ declare const fullApi: ApiFromModules<{
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/preview/capabilities": typeof platform_preview_capabilities;
+  "platform/preview/customisation": typeof platform_preview_customisation;
+  "platform/preview/generate": typeof platform_preview_generate;
   "platform/preview/renderSpec": typeof platform_preview_renderSpec;
   "platform/projects": typeof platform_projects;
   "platform/transitions": typeof platform_transitions;
@@ -104,4 +108,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

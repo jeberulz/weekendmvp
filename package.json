@@ -54,6 +54,7 @@
   "dependencies": {
     "@auth/core": "0.41.3",
     "@convex-dev/auth": "0.0.94",
+    "@convex-dev/rate-limiter": "^0.3.2",
     "@convex-dev/workflow": "^0.4.4",
     "@hookform/resolvers": "^5.4.0",
     "@resvg/resvg-js": "^2.6.2",
