@@ -57,6 +57,27 @@ WP26 is high-risk AI/backend/workflow work and requires a high-tier worker plus 
 - Money and credits change only from server-verified, idempotent events.
 - Google OAuth is not complete merely because provider code exists.
 
+## Super-Admin Program Amendment
+
+The owner approved WP38 (`Super Admin and Operator Control Plane Foundation`).
+Before production activation, merge the committed `codex/wp38-admin-plan`
+amendment and treat `docs/wp/wp38-stories.md` as frozen scope.
+
+- WP38 follows WP30 and gates WP31.
+- WP32-WP36 additionally depend on WP38's authorization/audit/release seam.
+- The Idea Engine console, editorial review queues, canonical content compilers,
+  production activation, rollback, and engine configuration are `super_admin`-
+  only. Customers receive only bounded owner-scoped research/site workflows.
+- The initial owner account is bootstrapped from deployment-only configuration
+  and bound to a verified auth user ID. Never commit or trust an email in client
+  code.
+- Preserve the WP22 privacy boundary: no generic cross-owner bypass,
+  impersonation, arbitrary private-artifact browsing, direct ledger edits, or
+  hard deletion.
+- No engine/compiler candidate may publish automatically. The mandatory release
+  sequence is branch -> preview -> explicit admin approval -> deploy/asset health
+  check -> activate -> immutable audit/rollback record.
+
 ## Useful Checks
 
 ```bash

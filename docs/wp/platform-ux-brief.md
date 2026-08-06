@@ -32,6 +32,43 @@ For a repository idea, the free artifact is the landing-page preview. For a cust
 - `/dashboard/projects/{projectId}/research`: the persisted Validation Report.
 - `/dashboard/billing`: balance, packs, purchases, refunds, and customer portal.
 
+### Super-admin layer
+
+The operator control plane is a separate private surface, not an elevated mode
+inside the customer dashboard:
+
+- `/admin`: verified operational totals, task/provider health, policy queues,
+  reconciliation warnings, and explicit next actions.
+- `/admin/users`: bounded account metadata, status, projects, purchases, and
+  credit-ledger history; no default private brief/report body access.
+- `/admin/projects`: project/site/task lifecycle, policy state, controlled
+  suspend/unpublish/retry actions, and audit history.
+- `/admin/billing`: server-verified purchases, grants, full refunds, disputes,
+  and reconciliation failures; no direct balance editing.
+- `/admin/engine`: M1/M2 signals, candidates, scores, provenance, cost, engine
+  configuration, and approval/rejection. Customers never access this route.
+- `/admin/content/{ideas|articles|programmatic|newsletter}`: compiler drafts,
+  quality evidence, preview/deployment state, explicit approval, activation,
+  rollback, and publication history.
+- `/admin/audit`: immutable privileged-action history with actor, reason,
+  target, timestamp, idempotency key, and outcome.
+
+Every route and Convex operation re-verifies `super_admin` server-side. Hidden
+navigation is not authorization. The initial owner account is bootstrapped from
+deployment-only configuration and bound to its verified auth user ID; the
+bootstrap email is not stored in Git or checked in client code. Admin routes are
+`noindex`, private/no-store, and excluded from sitemaps.
+
+The editorial release journey is:
+
+`Candidate -> Approve research -> Draft -> Quality gate -> Admin review -> Branch/preview -> Publish approval -> Deploy/health check -> Activate -> Audit/rollback`
+
+No engine candidate or compiler draft publishes automatically. Customers can
+request bounded research/site work for owned projects but cannot see engine
+signals, editorial candidates, prompts/providers, canonical drafts, or release
+controls. Super-admin does not grant impersonation, generic cross-owner reads,
+direct ledger edits, or hard deletion.
+
 Private platform routes, checkout returns, and previews are `noindex` and excluded from the sitemap. Published customer sites have tenant-aware self-canonicals. They must never reuse the fixed `www.weekendmvp.app` metadata helper.
 
 ## Desktop Shell
@@ -115,4 +152,4 @@ Required funnel events:
 
 ## Explicitly Deferred
 
-Tier 2 application scaffolds, code export, custom domains, subscriptions, autonomous night shifts, outbound email, ads, social publishing, teams, affiliate/referral systems, and a public live-activity feed are not part of the v1 dashboard.
+Tier 2 application scaffolds, code export, custom domains, subscriptions, autonomous night shifts, outbound email, ads, social publishing, teams, affiliate/referral systems, a public live-activity feed, staff roles, customer impersonation, and unrestricted support access are not part of v1. WP38 provides one `super_admin`; subscription administration arrives only with the later Builder subscription product.

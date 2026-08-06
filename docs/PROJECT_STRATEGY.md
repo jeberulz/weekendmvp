@@ -41,12 +41,13 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP28 | Tenant publish code, host routing, versions, leads, and runbook | 3 | `codex/wp28-tenant-publish` | Pending WP27 | Staging hosts resolve atomically and securely; unknown/reserved hosts fail closed; synthetic lead privacy and rollback pass; no live wildcard mutation occurs. |
 | WP29 | Project cockpit, revisions, and task refunds | 3 | `codex/wp29-project-cockpit` | Pending WP24/WP26/WP28 | Project artifacts/status are owner-scoped and revisions debit/change/refund exactly once. |
 | WP30 | Trust, safety, abuse controls, and observability | 3 | `codex/wp30-trust-safety` | Pending WP26-WP29 | Policy, red-team, rate-limit, kill-switch, audit, and stuck-work reconciliation gates pass. |
-| WP31 | Production activation, launch surface, and analytics | 4 | `codex/wp31-platform-launch` | Pending WP20-WP30 | Owner-approved live payment, wildcard, rollback, stranger journey, launch pages, and truthful funnel events are verified. |
-| WP32 | Signal ingestion and idea generation/scoring | 5 | `codex/wp32-idea-engine` | Pending WP26 contract | Provenanced signals produce deduplicated, scored, human-reviewed candidate ideas through an idempotent pipeline. |
-| WP33 | Owned idea-page compiler | 5 | `codex/wp33-idea-compiler` | Pending WP32 | Engine-to-idea output meets the fixed-corpus seven-section, citation, SEO, and activation-order gate. |
-| WP34 | Owned article compiler | 5 | `codex/wp34-article-compiler` | Pending WP32 | Engine-backed article research meets provenance, citation, AEO/SEO, and branch-first gates. |
-| WP35 | Owned programmatic compiler | 5 | `codex/wp35-programmatic-compiler` | Pending WP32 | Engine taxonomy/keyword evidence meets provenance, internal-link, and build gates. |
-| WP36 | Owned newsletter compiler | 5 | `codex/wp36-newsletter-compiler` | Pending WP32 | Newsletter selects current engine signals, uses current routes/content, and passes render/send dry run. |
+| WP38 | Super Admin and Operator Control Plane foundation | 3 | `codex/wp38-admin-plan` | Planned — stories frozen | One server-verified super-admin can operate aggregate platform controls through explicit, audited commands; no customer impersonation, generic cross-owner bypass, subscription UI, or direct ledger editing exists. |
+| WP31 | Production activation, launch surface, and analytics | 4 | `codex/wp31-platform-launch` | Pending WP20-WP30 + WP38 | Owner-approved live payment, wildcard, rollback, stranger journey, audited admin commands, launch pages, and truthful funnel events are verified. |
+| WP32 | Signal ingestion and idea generation/scoring | 5 | `codex/wp32-idea-engine` | Pending WP26 contract + WP38 | Provenanced signals produce deduplicated, scored candidates in a super-admin-only review queue; no automatic publication exists. |
+| WP33 | Owned idea-page compiler | 5 | `codex/wp33-idea-compiler` | Pending WP32 + WP38 | Engine-to-idea output meets fixed-corpus quality and a super-admin-only staged preview, approval, deploy-health-check, activation, audit, and rollback gate. |
+| WP34 | Owned article compiler | 5 | `codex/wp34-article-compiler` | Pending WP32 + WP38 | Engine-backed article research meets provenance/SEO gates and a super-admin-only branch-first approval and activation gate. |
+| WP35 | Owned programmatic compiler | 5 | `codex/wp35-programmatic-compiler` | Pending WP32 + WP38 | Engine taxonomy/keyword evidence meets provenance/build gates and requires audited super-admin approval before activation. |
+| WP36 | Owned newsletter compiler | 5 | `codex/wp36-newsletter-compiler` | Pending WP32 + WP38 | Newsletter selects current engine signals and requires audited super-admin approval before any external send. |
 | WP37 | Ideabrowser backlog and retirement | 5 | `codex/wp37-ideabrowser-offboarding` | Pending WP32-WP36 | Backlog is zero, all replacement gates pass, engine-only daily cycle works, defaults flip, and live credentials/config are retired by 2026-09-05. |
 
 ## Program Sequencing Rules
@@ -54,5 +55,6 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 - WP20 is the implementation entry gate. No auth or dashboard merge starts while the production dependency audit remains red.
 - WP23, WP24, and WP25 may proceed in parallel only after WP22 freezes schema/authz contracts and the orchestrator serializes shared-file changes.
 - WP27 may begin only after WP26's named report/site-input contract subgate. WP28 owns host-routing code and the activation runbook; WP31 alone owns live wildcard/domain/payment activation.
-- WP33-WP36 may proceed in parallel after WP32 freezes the engine record and eval API. WP37 alone owns MCP configs and the final default/credential switch.
+- WP38 follows WP30 and gates WP31 production activation. It freezes the reusable super-admin/authz/audit seam that WP32-WP36 must consume without introducing a generic customer-data bypass.
+- WP33-WP36 may proceed in parallel after WP32 freezes the engine record/eval API and WP38's admin seam is available. WP37 alone owns MCP configs and the final default/credential switch.
 - The detailed risk, file boundaries, owner rulings, and gates in `docs/wp/program-manifest.md` are binding.

@@ -384,6 +384,36 @@ existing a11y/SEO checks. "Exact or better," not "close enough."
 Existing published pages are unaffected — they are already original,
 transformed content and remain ours.
 
+### 4.5.2 Super-admin editorial control (RULED 2026-08-06)
+
+The Idea Engine is an internal service, not a customer-facing content tool.
+Customers may trigger a bounded M3 Validation Report for an idea they own, but
+only a server-verified `super_admin` may browse signals/candidates, operate the
+editorial review queue, configure the engine, run canonical content compilers,
+approve publication, activate production content, or roll it back.
+
+The current `/publish-idea`, `/publish-article`, `/publish-programmatic`, and
+`/newsletter` skills remain owner-operated repository tools during the
+transition. WP33-WP36 convert them into engine-backed compilers that produce a
+branch and preview first. They may never publish automatically or push directly
+to `main`. The production sequence is: approved engine record -> compiler draft
+-> automated quality gate -> super-admin editorial review -> branch/preview ->
+explicit publish approval -> deploy -> 200/asset health check -> Convex index
+activation -> immutable audit record. A failure stops before activation and
+supports retry or rollback without duplicate records.
+
+WP38 establishes the reusable admin identity, authorization, shell, controlled
+command, and audit foundation before production launch. WP32 adds the
+super-admin-only M1/M2 review queue; WP33-WP36 add their compiler-specific admin
+surfaces. The initial owner identity is supplied through deployment-only
+configuration and bound server-side to the verified Convex Auth user ID; an
+email address is never committed or trusted by client code.
+
+`super_admin` does not mean unrestricted customer impersonation. There is no
+generic cross-owner read, arbitrary private-artifact browsing, direct ledger
+edit, or hard delete. Any later support-access capability requires a separate
+owner ruling, narrow purpose, reason, expiry, and audit trail.
+
 ### 4.6 Security/compliance notes
 
 - Ideabrowser + Anthropic + Stripe keys server-side only (Convex env / Vercel env;
@@ -582,6 +612,12 @@ per `.agentic-workflow.yml` (auth/payments/agents = high tier).
 ### Wave 3 — Launch hardening (weekend + spillover)
 - **WP22 — Trust & safety:** content policy check in publish pipeline, rate
   limits, abuse kill-switch per project, terms/AUP pages for the platform.
+- **Current-manifest amendment — WP38 Super Admin and Operator Control Plane:**
+  server-verified admin bootstrap, `/admin` shell, aggregate operational views,
+  explicit audited commands, dangerous-action confirmation/re-authentication,
+  and the reusable authorization seam for the later Idea Engine/editorial
+  surfaces. It gates production activation and preserves owner-only customer
+  data—no impersonation or generic bypass.
 - **WP23 — Launch surface:** homepage rewrite per §6.2 (platform-led hero, live
   idea picker, case-study builds, Starter Kit demoted to secondary), `/build`
   marketing page, pricing page **in dollars** (§6.3), case-study pages for the
@@ -597,14 +633,18 @@ The platform launch (Waves 1–3) does not depend on this wave; WP19's engine co
 
 - **WP24 — Signal ingestion + idea generation (M1+M2):** `engine_signals` /
   `engine_ideas` tables, scheduled harvest jobs, idea generator + scoring rubric,
-  dedupe against manifest + published slugs, review queue UI (John approves ideas
-  before they enter the publishable library). *Gate: 10 generated ideas scored
-  and stored; ≥1 clears the publish threshold and passes John's review.*
+  dedupe against manifest + published slugs, super-admin-only review queue UI
+  (John approves ideas before they enter the publishable library). No automatic
+  publication. *Gate: anonymous/customer denial passes; 10 generated ideas are
+  scored and stored; ≥1 clears the publish threshold and passes John's audited
+  review.*
 - **WP25 — Content compilers (M4):** `/publish-idea` Mode A2 (engine → 7-section
   MDX), `/publish-article` keyword module swap, `/publish-programmatic` tagging
-  from engine categorization, `/newsletter` signal source swap. *Gate: the §4.5.1
-  side-by-side quality gate per compiler, plus full publish flow (seed:convex
-  --prod, og:generate) green on one engine-produced idea and one article.*
+  from engine categorization, `/newsletter` signal source swap. All compiler
+  controls and production side effects are super-admin-only. *Gate: the §4.5.1
+  side-by-side quality gate per compiler, plus audited branch/preview/approval,
+  deploy-health-check-then-activate ordering, and rollback green on one
+  engine-produced idea and one article.*
 - **WP26 — Ideabrowser off-boarding:** publish remaining MCP backlog, flip
   defaults, remove MCP config/key, update skills + docs + CLAUDE.md, record
   closeout ruling. *Gate: grep shows no live `mcp__ideabrowser` dependency; one
