@@ -1,5 +1,10 @@
 # Weekend MVP — Claude Code guidelines
 
+> **Active Build Platform handoff:** Before continuing the current platform
+> program, read `docs/wp/CLAUDE_HANDOFF.md`. It records the integrated branch,
+> open Wave 2 browser gates, local auth runtime state, and the gated path to
+> WP26.
+
 Next.js (App Router) + MDX + Convex site for startup idea validation and the
 Weekend MVP Starter Kit. Pages are React Server Components; long-form content
 (ideas, articles, newsletters) is MDX in `content/`; metadata lives in Convex
