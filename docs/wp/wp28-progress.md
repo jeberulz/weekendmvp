@@ -169,3 +169,127 @@ figure carried in `wp27-progress.md`, `wave-gate-report.md`, and
 **Not done / out of scope:** `middleware.ts` untouched; no host behaviour
 changes anywhere. The reserved list remains provisional pending open owner
 ruling #1.
+
+---
+
+## 2026-08-06 - WP28-S2 middleware host routing and isolation
+
+**What shipped:** `middleware.ts` now classifies the host before anything
+else. New exports: `hostRoutingDecision` (pure: `platform` | `tenant` |
+`reject`) and an internal `hostRejectedResponse`.
+
+- `apex`, `www`, `platform-preview`, `local` → `platform`, existing behaviour
+  entirely unchanged.
+- `reserved`, `unknown` → `reject`.
+- `tenant` → also answers the rejection response **in S2**, because the tenant
+  route does not exist until S3. Every path answers identically, so no
+  platform surface can be probed by comparing statuses, and the auth
+  middleware never runs — a tenant host never touches a session cookie.
+
+**Ordering is the security property.** Host classification runs *before*
+`canonicalRedirect`. Previously canonicalization was the first hop, which
+would hand a tenant or unknown host a 308 into the platform before anything
+checked whether that host was ours to serve. A static test asserts this
+ordering inside the `middleware` function body.
+
+**The 404 is issued from middleware, never `notFound()`**, because under
+`cacheComponents` PPR flushes a 200 shell before `notFound()` runs. A test
+asserts `notFound(` appears nowhere in `middleware.ts`.
+
+### An existing test pinned the behaviour this story removes
+
+`tests/redirects/middleware.test.ts` carried
+`["https://project.weekendmvp.app/ideas/example/", "project.weekendmvp.app"]`
+in the "cleans in place without forcing www" matrix. `project.weekendmvp.app`
+classifies as a **tenant**, so that case asserted a tenant subdomain being
+served the marketing application with a 308 — exactly the fallback WP28
+exists to remove. It was written when no tenant host could exist.
+
+The case was removed and replaced by the isolation suite, with a comment left
+at the site explaining what used to be there and why it went. Flagged here
+because deleting a failing test is normally the wrong move; in this instance
+the test encoded the defect.
+
+The S1 inertness test (`middleware.ts` must not reference the classifier) also
+fired, as designed. It was replaced with the two structural assertions above
+rather than deleted.
+
+### Live evidence — production build, `next build` + `next start -p 3100`
+
+Never measured against `next dev`. Full 7 host × 7 path matrix run; summary:
+
+| Host | Class | `/startup-ideas` | `/dashboard` | `/robots.txt` | `/api/platform/…` | `/nothing-here` |
+|---|---|---|---|---|---|---|
+| `www.weekendmvp.app` | www | 200 | 307 → `/signin?returnTo=…` | 200 | 405 | 404 |
+| `weekendmvp.app` | apex | 308 → www | 308 → www | 308 → www | 308 → www | 308 → www |
+| `acme.weekendmvp.app` | tenant | 404 | 404 | 404 | 404 | 404 |
+| `admin.weekendmvp.app` | reserved | 404 | 404 | 404 | 404 | 404 |
+| `evil.com` | unknown | 404 | 404 | 404 | 404 | 404 |
+| `a.b.weekendmvp.app` | multi-label | 404 | 404 | 404 | 404 | 404 |
+| `weekendmvp.app.evil.com` | lookalike | 404 | 404 | 404 | 404 | 404 |
+
+Rejection response verified directly: `HTTP/1.1 404`, `cache-control: no-store`,
+`x-robots-tag: noindex, nofollow`, `content-type: text/plain`, body exactly
+`Not Found` (9 bytes) — no branding, no HTML, no `weekendmvp.app` string. Zero
+`set-cookie` headers on tenant, reserved, and unknown hosts. No `location`
+header on any rejection.
+
+### Finding: static assets bypass the middleware matcher
+
+`/_next/static/chunks/*.js` returns **200 on every host**, including
+`evil.com`, because the matcher excludes `_next/static` (and has since long
+before WP28). Measured, not assumed.
+
+Not fixed here, and the S2 acceptance criteria are still met — the criteria
+name "marketing content" and "application shell", and a build chunk is
+neither. The chunks are already served publicly from `www` to anyone who asks,
+so pointing another hostname at the deployment yields nothing that was not
+already public, and no HTML means the application does not function there.
+
+The alternative — widening the matcher to cover `_next/static` — would run
+middleware on every asset request for **all** hosts including `www`, which is
+a real latency and invocation cost paid on every page load to close a gap
+with no confidentiality value. Recorded for the S6 independent reviewer to
+overturn if they disagree; it is their call, not mine to close silently.
+
+### Mutation testing (trap 10)
+
+Six mutations, each confirmed applied by `cmp` against a backup before running,
+and the file confirmed byte-identical to backup afterwards:
+
+| Mutation | Result |
+|---|---|
+| Unknown/reserved hosts fall through to the platform | **red** (9 failures) |
+| Tenant hosts fall through to the platform | **red** (4) |
+| Rejection returns 200 instead of 404 | **red** (8) |
+| Rejection redirects to www instead of answering | **red** (8) |
+| Rejection body leaks branded HTML | **red** (1) |
+| Reserved subdomains classified as platform | **red** (3) |
+
+### Checks
+
+- `npm run typecheck` — exit 0
+- `npm run lint` — exit 0, 0 errors, 35 pre-existing warnings (unchanged)
+- `npm test` — exit 0. Node groups 91/6/**29**/46/4, vitest groups
+  **140**/172/57/567 (redirects vitest 125 → 140). Counts confirmed in the
+  full run.
+- `npm run build` — exit 0, 313 pages
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities
+- `git diff --check` — clean
+- `git diff --stat convex/schema.ts` — empty; schema untouched, as planned
+
+### Known limitation in unit coverage
+
+`convexAuthNextjsMiddleware` calls `headers()` before our handler, which has
+no request scope under vitest, so a **clean** path on a platform host cannot
+be driven through the full middleware in a unit test. Every pre-existing
+platform test happens to use a dirty path that `canonicalRedirect` answers
+first, which is why this was never hit before. Platform hosts are therefore
+asserted at the pure `hostRoutingDecision` level in unit tests, and that they
+still serve is proven by the live matrix above. Stated rather than papered
+over.
+
+**Docs updated:** this file, `docs/wp/wp28-stories.md` (S2 checked).
+
+**Not done / out of scope:** tenant hosts serve nothing yet — the tenant route
+is S3. Reserved list still provisional pending owner ruling #1.

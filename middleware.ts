@@ -13,6 +13,7 @@ import {
   isAuthManagedPath,
   isSensitiveAuthPath,
 } from "./lib/auth-return";
+import { classifyHost } from "./lib/tenant-host";
 
 /**
  * One-hop host + path canonicalization.
@@ -58,6 +59,62 @@ export function canonicalRedirect(request: NextRequest) {
   return null;
 }
 
+/**
+ * WP28-S2. What a given `Host:` header is allowed to reach.
+ *
+ * Before this, the host space was apex, www, and *everything else*, where
+ * everything else fell through to the full application. That was safe only
+ * while no other host resolved. Once `*.weekendmvp.app` resolves, the old
+ * fallback would serve the marketing site and `/dashboard` at every tenant
+ * and unknown subdomain.
+ */
+export type HostRoutingDecision =
+  | { kind: "platform" }
+  | { kind: "tenant"; slug: string }
+  | { kind: "reject" };
+
+export function hostRoutingDecision(
+  rawHost: string | null,
+): HostRoutingDecision {
+  const classification = classifyHost(rawHost);
+
+  switch (classification.kind) {
+    case "apex":
+    case "www":
+    case "platform-preview":
+    case "local":
+      return { kind: "platform" };
+    case "tenant":
+      return { kind: "tenant", slug: classification.slug };
+    case "reserved":
+    case "unknown":
+      return { kind: "reject" };
+  }
+}
+
+/**
+ * A genuine 404, issued from middleware rather than by `notFound()`.
+ *
+ * This is not a style choice. Under `cacheComponents`, PPR flushes a 200
+ * shell before `notFound()` executes, so a route-level 404 is soft — proven
+ * on WP27 for `/preview/{token}` and `/build/{slug}`. Middleware runs before
+ * the route and can set a real status, which is the only way to satisfy
+ * "unknown tenant is 404".
+ *
+ * The body is deliberately bare: an unrecognized host gets no branding, no
+ * application shell, and nothing that confirms what else runs here.
+ */
+function hostRejectedResponse(): NextResponse {
+  return new NextResponse("Not Found", {
+    status: 404,
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
+}
+
 export function applySensitiveAuthResponseHeaders(
   pathname: string,
   response: Response,
@@ -98,7 +155,23 @@ export async function middleware(
   request: NextRequest,
   event: NextFetchEvent,
 ) {
-  // Canonicalization stays the first hop, including for auth endpoints.
+  // Host classification precedes every other hop. Canonicalization used to be
+  // first, which would hand a tenant or unknown host a 308 into the platform
+  // before anything checked whether that host was ours to serve.
+  const host = hostRoutingDecision(request.headers.get("host"));
+  if (host.kind === "reject") {
+    return hostRejectedResponse();
+  }
+  if (host.kind === "tenant") {
+    // WP28-S2 serves nothing on a tenant host: the tenant route arrives in
+    // S3. Every path answers identically, so no platform surface can be
+    // probed for existence by comparing statuses, and auth middleware never
+    // runs — a tenant host never touches a session cookie.
+    return hostRejectedResponse();
+  }
+
+  // Canonicalization stays the first hop for platform hosts, including for
+  // auth endpoints.
   const canonical = canonicalRedirect(request);
   if (canonical !== null) {
     return applySensitiveAuthResponseHeaders(

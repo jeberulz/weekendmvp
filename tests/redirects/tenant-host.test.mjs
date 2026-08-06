@@ -200,19 +200,44 @@ describe("isTenantHost and tenantHostForSlug", () => {
   });
 });
 
-describe("WP28-S1 is inert", () => {
-  it("is not wired into middleware yet", async () => {
-    // S1's whole value is that it can land without touching the routing seam.
-    // Comments are stripped first: this repo documents its own guardrails, so
-    // matching prose would let deleting a comment change the result.
-    const source = (
-      await readFile(new URL("../../middleware.ts", import.meta.url), "utf8")
-    )
+describe("WP28-S2 wiring", () => {
+  /**
+   * S1 asserted the opposite of this: that the classifier was *not* wired into
+   * middleware, so the story could land without touching the routing seam.
+   * S2 is the story that wires it, so that assertion was deliberately
+   * replaced rather than deleted — its tripwire fired exactly as intended.
+   *
+   * Comments are stripped first: this repo documents its own guardrails, so
+   * matching prose would let deleting a comment change the result.
+   */
+  const readMiddleware = async () =>
+    (await readFile(new URL("../../middleware.ts", import.meta.url), "utf8"))
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .split("\n")
       .filter((line) => !/^\s*(\/\/|\*)/.test(line))
       .join("\n");
-    assert.doesNotMatch(source, /tenant-host/);
-    assert.doesNotMatch(source, /classifyHost/);
+
+  it("classifies the host before canonicalizing the path", async () => {
+    const source = await readMiddleware();
+    const body = source.slice(source.indexOf("export async function middleware"));
+    const decidedAt = body.indexOf("hostRoutingDecision(");
+    const canonicalAt = body.indexOf("canonicalRedirect(request)");
+
+    assert.ok(decidedAt !== -1, "middleware does not classify the host");
+    assert.ok(canonicalAt !== -1, "middleware no longer canonicalizes");
+    // Ordering is the security property: canonicalizing first would hand a
+    // tenant or unknown host a 308 into the platform before anything checked
+    // whether that host was ours to serve.
+    assert.ok(
+      decidedAt < canonicalAt,
+      "canonicalization runs before host classification",
+    );
+  });
+
+  it("rejects a host with a real status, never notFound()", async () => {
+    const source = await readMiddleware();
+    // notFound() would produce a 200 PPR shell under cacheComponents.
+    assert.doesNotMatch(source, /notFound\(/);
+    assert.match(source, /status:\s*404/);
   });
 });

@@ -142,7 +142,7 @@ blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
     empty host, and a host header carrying a path or `@`. Confirm the new
     suite's count moves in the **full** `npm test`, not just standalone.
 
-- [ ] `WP28-S2` - Middleware host routing and isolation
+- [x] `WP28-S2` - Middleware host routing and isolation
   - Scope: `middleware.ts` (serialized one-writer seam — coordinate before
     editing), `lib/canonical-path.ts` if the apex/www predicates need to
     compose with the classifier.
