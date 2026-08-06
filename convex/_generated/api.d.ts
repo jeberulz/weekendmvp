@@ -28,6 +28,7 @@ import type * as platform_engine_contracts from "../platform/engine/contracts.js
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_preview_capabilities from "../platform/preview/capabilities.js";
+import type * as platform_preview_claim from "../platform/preview/claim.js";
 import type * as platform_preview_customisation from "../platform/preview/customisation.js";
 import type * as platform_preview_generate from "../platform/preview/generate.js";
 import type * as platform_preview_read from "../platform/preview/read.js";
@@ -69,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/preview/capabilities": typeof platform_preview_capabilities;
+  "platform/preview/claim": typeof platform_preview_claim;
   "platform/preview/customisation": typeof platform_preview_customisation;
   "platform/preview/generate": typeof platform_preview_generate;
   "platform/preview/read": typeof platform_preview_read;

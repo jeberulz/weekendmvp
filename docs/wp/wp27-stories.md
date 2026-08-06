@@ -191,7 +191,7 @@ generate and render.
     - Verifies the preview page is not server-cached across two requests
       with different tokens.
 
-- [ ] `WP27-S5` - Claim an anonymous preview into an owned project
+- [x] `WP27-S5` - Claim an anonymous preview into an owned project
   - Scope: claim mutation, signup integration, ownership tests.
   - Acceptance criteria:
     - On signup, a held capability converts into a real owned `project`,
