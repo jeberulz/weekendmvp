@@ -49,7 +49,15 @@ function normalizeIp(value: string | null): string | null {
   if (IPV4.test(first)) {
     return first.split(".").every((part) => Number(part) <= 255) ? first : null;
   }
-  return IPV6.test(first) ? first.toLowerCase() : null;
+  if (!IPV6.test(first)) return null;
+  // Truncate IPv6 to its /64 prefix. A single routed /64 — the standard
+  // allocation on any VPS — holds 2^64 addresses, so keying on the full
+  // address gives one attacker effectively unlimited distinct buckets and
+  // turns the per-IP limit into no limit at all. /64 is the smallest unit a
+  // provider hands out, so this cannot be subdivided to escape it, and it
+  // never merges two genuinely separate customers.
+  const groups = first.toLowerCase().split(":");
+  return groups.length > 4 ? `${groups.slice(0, 4).join(":")}::/64` : first.toLowerCase();
 }
 
 /**

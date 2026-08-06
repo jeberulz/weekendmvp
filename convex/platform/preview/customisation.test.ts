@@ -1,5 +1,6 @@
 import { ConvexError } from "convex/values";
 import { describe, expect, test } from "vitest";
+import type { Doc } from "../../_generated/dataModel";
 import { parseSiteInputPayload } from "../engine/contracts";
 import {
   MAX_KEY_BENEFITS,
@@ -148,5 +149,54 @@ describe("prefill from a canonical idea", () => {
   test("the prefill round-trips into a valid site input", () => {
     const siteInput = toSiteInput(prefillFromIdea(idea));
     expect(() => parseSiteInputPayload(JSON.stringify(siteInput))).not.toThrow();
+  });
+});
+
+describe("WP27-S6: prefill survives ideas outside the customisation bounds", () => {
+  function ideaWith(overrides: Partial<Doc<"ideas">>): Doc<"ideas"> {
+    return {
+      _id: "ideas:test" as Doc<"ideas">["_id"],
+      _creationTime: 0,
+      slug: "boundary-idea",
+      title: "AI QA Test Case Generator",
+      description:
+        "QA engineers spend 40% of their time writing repetitive regression tests by hand.",
+      publishedAt: Date.UTC(2026, 0, 1),
+      category: "developer-tools",
+      buildTime: "8",
+      revenueGoal: "$5k MRR",
+      applicationCategory: "DeveloperApplication",
+      tools: ["claude-code"],
+      audiences: ["developers"],
+      bodyMode: "mdx",
+      ...overrides,
+    } as Doc<"ideas">;
+  }
+
+  // The `ideas` table puts no length bounds on these fields, so an editor
+  // publishing a short title must not be able to 500 `/build/{slug}` — the
+  // primary call to action on that idea's public page.
+  test.each([
+    ["a title far below the minimum", { title: "AI Chef" }],
+    ["a single-character title", { title: "X" }],
+    ["a title far above the maximum", { title: "Ship ".repeat(60) }],
+    ["a description below the minimum", { description: "Too short." }],
+    ["a description far above the maximum", { description: "Fakes cost money. ".repeat(80) }],
+  ])("%s still prefills", (_label, overrides) => {
+    const prefill = prefillFromIdea(ideaWith(overrides));
+    // Round-trips through the real validator: proves the clamped output is
+    // genuinely acceptable, not merely non-throwing.
+    expect(() => normalizePreviewCustomisation(prefill)).not.toThrow();
+    expect(prefill.headline.length).toBeGreaterThanOrEqual(8);
+    expect(prefill.headline.length).toBeLessThanOrEqual(120);
+    expect(prefill.problemStatement.length).toBeGreaterThanOrEqual(20);
+    expect(prefill.problemStatement.length).toBeLessThanOrEqual(600);
+  });
+
+  test("an in-bounds idea is passed through unchanged", () => {
+    const idea = ideaWith({});
+    const prefill = prefillFromIdea(idea);
+    expect(prefill.headline).toBe(idea.title);
+    expect(prefill.problemStatement).toBe(idea.description);
   });
 });

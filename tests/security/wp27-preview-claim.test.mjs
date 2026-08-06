@@ -33,11 +33,23 @@ test("the capability is stashed per-session, never persistently", async () => {
 test("the stash is cleared only after the server confirms", async () => {
   const source = await readCode("components/preview/PreviewClaimHandoff.tsx");
   const claimAt = source.indexOf("await claim({ token })");
-  const clearAt = source.indexOf("removeItem");
   assert.ok(claimAt !== -1, "no claim call found");
-  // Clearing first would drop the capability on a transient network failure,
-  // and the visitor cannot re-derive it from anything but the original link.
-  assert.ok(clearAt > claimAt, "the stash is cleared before the claim resolves");
+
+  // Textual position alone is not execution order — the earlier version of
+  // this test compared two `indexOf` results, which would have stayed green
+  // if the clear moved into a `finally` block written below the `try`. Assert
+  // the structural facts that actually make the ordering hold: every clear
+  // sits inside a settled branch, and none sits in a `finally`.
+  assert.doesNotMatch(source, /\bfinally\s*\{/);
+  for (const [, before] of source.matchAll(/([\s\S]{0,400}?)sessionStorage\.removeItem/g)) {
+    assert.ok(
+      /await claim\(\{ token \}\)/.test(before) || /\}\s*catch\b[\s\S]*$/.test(before),
+      "a stash clear is reachable before the claim settles",
+    );
+  }
+  // And the success-path clear must follow the awaited call, not precede it.
+  const successClear = source.indexOf("sessionStorage.removeItem", claimAt);
+  assert.ok(successClear > claimAt, "the success path clears before awaiting");
 });
 
 test("the token never reaches an analytics payload", async () => {

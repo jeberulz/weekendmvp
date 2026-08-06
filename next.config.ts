@@ -62,7 +62,8 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "private, no-store, max-age=0" },
           {
             key: "X-Robots-Tag",
-            value: "noindex, nofollow, noarchive, nosnippet, noimageindex",
+            value:
+              "noindex, nofollow, noarchive, nocache, nosnippet, noimageindex",
           },
           { key: "Referrer-Policy", value: "no-referrer" },
         ],

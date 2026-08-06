@@ -96,6 +96,14 @@ test("the generic page never says which failure happened", async () => {
 });
 
 test("the preview render is never cached by the framework", async () => {
+  // Widened at S6: greping the page alone would miss a `"use cache"`
+  // introduced in the read path it delegates to, which caches the same data.
+  for (const path of [
+    "convex/platform/preview/read.ts",
+    "convex/platform/preview/capabilities.ts",
+  ]) {
+    assert.doesNotMatch(await readCode(path), /"use cache"|cacheTag|cacheLife/);
+  }
   const page = await readCode("app/preview/[token]/page.tsx");
   // A cached preview is a preview served to the wrong person, and expiry
   // would stop being evaluated per read.
@@ -202,4 +210,46 @@ test("preview analytics carry no token and no visitor identity", async () => {
   const source = await readCode("components/preview/PreviewViewed.tsx");
   assert.match(source, /trackEvent\("preview_viewed", \{ template \}\)/);
   assert.doesNotMatch(source, /token|email|userId|capability/i);
+});
+
+/**
+ * WP27-S6, from the independent review. The capability lives in the URL path,
+ * and GA4's automatic `page_view` sends `page_location = location.href`. That
+ * exported live preview tokens to Google and Meta for any visitor who had
+ * accepted the consent banner — the token sits in the analytics payload body,
+ * so `Referrer-Policy: no-referrer` does nothing about it.
+ */
+test("no vendor ever receives a URL carrying a capability", async () => {
+  const source = await readCode("components/consent/AnalyticsScripts.tsx");
+
+  // GA: an explicit, redacted location — never the default, which is href.
+  assert.match(source, /page_location:\s*location\.origin \+ path/);
+  assert.match(source, /page_path:\s*path/);
+  // The literals come from `lib/analytics-redaction.ts` via interpolation,
+  // so assert the interpolation is present rather than the resolved string.
+  assert.match(source, /q\.delete\('\$\{CLAIM_PARAM\}'\)/);
+  assert.match(source, /\$\{REDACTED_PREVIEW_PATH\}/);
+  assert.match(source, /\[0-9a-f\]\{64\}/);
+
+  // Meta: the Pixel offers no way to override `dl`, so the automatic
+  // PageView must not fire at all on a URL that carries a secret.
+  const pixel = source.slice(source.indexOf("fbq('init'"));
+  assert.match(pixel, /if \([^)]*preview[\s\S]*?fbq\('track', 'PageView'\)/);
+});
+
+test("the redaction covers both channels the token travels in", async () => {
+  const { redactCapabilityPath, urlCarriesCapability } = await import(
+    "../../lib/analytics-redaction.ts"
+  );
+  const token = "a".repeat(64);
+
+  assert.equal(redactCapabilityPath(`/preview/${token}`), "/preview/[token]");
+  assert.equal(redactCapabilityPath("/ideas/some-idea"), "/ideas/some-idea");
+  // A short or non-hex segment is not a capability and must not be mangled.
+  assert.equal(redactCapabilityPath("/preview/abc"), "/preview/abc");
+
+  assert.equal(urlCarriesCapability(`/preview/${token}`, ""), true);
+  assert.equal(urlCarriesCapability("/signin", `?claimPreview=${token}`), true);
+  assert.equal(urlCarriesCapability("/signin", "?returnTo=%2Fdashboard"), false);
+  assert.equal(urlCarriesCapability("/starter-kit", ""), false);
 });

@@ -4,6 +4,10 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 
 import { isSensitiveAuthPath } from "@/lib/auth-return";
+import {
+  CLAIM_PARAM,
+  REDACTED_PREVIEW_PATH,
+} from "@/lib/analytics-redaction";
 import { useConsent } from "./ConsentProvider";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -45,7 +49,19 @@ export function AnalyticsScripts() {
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${GA_ID}', { anonymize_ip: true });
+              (function () {
+                var p = location.pathname.replace(
+                  /\\/preview\\/[0-9a-f]{64}(?=$|[/?#])/, '${REDACTED_PREVIEW_PATH}');
+                var q = new URLSearchParams(location.search);
+                q.delete('${CLAIM_PARAM}');
+                var s = q.toString();
+                var path = p + (s ? '?' + s : '');
+                gtag('config', '${GA_ID}', {
+                  anonymize_ip: true,
+                  page_path: path,
+                  page_location: location.origin + path
+                });
+              })();
             `}
           </Script>
         </>
@@ -63,7 +79,16 @@ export function AnalyticsScripts() {
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '${META_PIXEL_ID}');
-            fbq('track', 'PageView');
+            // Meta's PageView sends the document location as \`dl\` and the
+            // Pixel offers no way to override it, so the only way to keep a
+            // capability token out of it is not to fire it on those URLs.
+            // Losing one automatic PageView on a private preview costs
+            // nothing; exporting a live capability to a vendor is not
+            // recoverable.
+            if (!/\\/preview\\/[0-9a-f]{64}(?=$|[/?#])/.test(location.pathname)
+                && !new URLSearchParams(location.search).has('${CLAIM_PARAM}')) {
+              fbq('track', 'PageView');
+            }
           `}
         </Script>
       )}

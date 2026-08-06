@@ -114,6 +114,35 @@ export function normalizePreviewCustomisation(
  * of public research plus the visitor's own words, never a leak of anything
  * the idea page does not already publish.
  */
+/**
+ * Fits a canonical idea field to a customisation bound.
+ *
+ * WP27-S6. `prefillFromIdea` seeds a *form*; it must always produce something
+ * the visitor can edit, never an exception. The two contracts are independent:
+ * `ideas` puts no length bounds on `title` or `description`, so any idea
+ * outside WP27's window would otherwise throw straight out of the `/build`
+ * render and 500 the primary call to action on that idea's page — silently,
+ * until somebody clicked it.
+ *
+ * Not theoretical headroom: the shortest title across the 160 entries in
+ * `ideas/manifest.json` is exactly 8 characters, which is the minimum. The
+ * next idea published one character shorter would have broken the route.
+ */
+function fitToBound(value: string, [min, max]: readonly [number, number], pad: string): string {
+  const trimmed = value.trim().replace(/\r\n/g, "\n");
+  if (trimmed.length > max) {
+    // Cut on a word boundary where one is close, so a truncated headline
+    // still reads as a sentence rather than a severed word.
+    const cut = trimmed.slice(0, max);
+    const space = cut.lastIndexOf(" ");
+    return (space > max - 20 ? cut.slice(0, space) : cut).trim();
+  }
+  if (trimmed.length < min) {
+    return `${trimmed}${pad}`.slice(0, max).trim();
+  }
+  return trimmed;
+}
+
 export function prefillFromIdea(idea: Doc<"ideas">): PreviewCustomisation {
   const audience =
     idea.audiences.length > 0 ? idea.audiences.join(", ") : "early adopters";
@@ -122,11 +151,15 @@ export function prefillFromIdea(idea: Doc<"ideas">): PreviewCustomisation {
     `Ship a first version in about ${idea.buildTime} hours`,
   ];
   return normalizePreviewCustomisation({
-    headline: idea.title,
+    headline: fitToBound(idea.title, LIMITS.headline, " — a weekend MVP"),
     subheadline: idea.summary?.trim()
       ? idea.summary
       : `A focused first version for ${audience}.`,
-    problemStatement: idea.description,
+    problemStatement: fitToBound(
+      idea.description,
+      LIMITS.problemStatement,
+      " This is the recurring problem the first version solves.",
+    ),
     keyBenefits: benefits,
     callToAction: "Get early access",
   });

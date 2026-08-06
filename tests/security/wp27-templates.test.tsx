@@ -185,3 +185,56 @@ describe("template dispatch", () => {
     }
   });
 });
+
+/**
+ * WP27-S6. Pins the properties that make the watermark's contrast failure a
+ * WCAG exemption rather than a defect.
+ *
+ * The live axe pass at the S6 gate reports one WP27-owned violation on every
+ * template at every width: the decorative watermark, contrast 1.09. The owner
+ * ruled it accepted under WCAG 2.1 SC 1.4.3, which exempts "text ... that is
+ * pure decoration" — normatively, content "serving only an aesthetic purpose,
+ * providing no information, and having no functionality".
+ *
+ * That ruling is only sound while all three of those remain true, and none of
+ * them is enforced by the ruling itself. These tests are what stop the
+ * exemption from silently outliving its own justification: if the watermark
+ * ever gains information, focusability, or exposure to assistive technology,
+ * it stops being decoration and the accepted contrast failure becomes a real
+ * one. Deliberately not a scanner exclusion — the violation still gets
+ * reported every run; this only records why it is allowed to stand.
+ */
+describe.each(PREVIEW_TEMPLATE_VALUES)(
+  "%s watermark stays exempt decoration",
+  (templateId) => {
+    test("the decorative mark is hidden from assistive technology", () => {
+      const html = render(templateId, benignInput());
+      const watermark = html.match(/<div[^>]*aria-hidden="true"[^>]*>/);
+      expect(watermark).not.toBeNull();
+      expect(watermark![0]).toContain("pointer-events-none");
+    });
+
+    test("it carries no information the readable notice does not", () => {
+      const html = render(templateId, benignInput());
+      // The accessible announcement is `PreviewNotice`, which passes contrast.
+      // If this ever fails, the watermark has become the only source of
+      // something a user needs, and the decoration exemption no longer holds.
+      expect(html).toContain("This is a private preview");
+      expect(html).toContain("expires in 7 days");
+    });
+
+    test("it is not focusable and carries no functionality", () => {
+      const html = render(templateId, benignInput());
+      // Anchored on the watermark's own class, not on the first
+      // `aria-hidden` in the document — that one is a decorative bullet
+      // `<span>` inside the benefit list, and slicing from it swept in the
+      // call-to-action button and failed for the wrong reason.
+      const start = html.indexOf("pointer-events-none fixed inset-0");
+      expect(start).toBeGreaterThan(-1);
+      const mark = html.slice(start);
+      for (const functional of ["<a ", "<button", "tabindex", "href=", "onclick"]) {
+        expect(mark).not.toContain(functional);
+      }
+    });
+  },
+);

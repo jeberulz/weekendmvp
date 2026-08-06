@@ -192,6 +192,7 @@ generate and render.
       with different tokens.
 
 - [x] `WP27-S5` - Claim an anonymous preview into an owned project
+  - **OPEN AC DEVIATION (flagged by the S6 independent review):** the criterion below says a capability claimed by A "cannot be claimed **or read** by user B". *Claim* exclusivity is implemented and tested. *Read* exclusivity is **not** implemented: `S1` ruled that a claimed capability still resolves so its holder can reload, and `/preview/{token}` is anonymous with no identity to check. Anyone still holding the URL keeps rendering the content for the remaining lifetime. This is an implementer's reinterpretation of a written AC and **no owner ruling exists for it** — the checkbox marks the implementation, not satisfaction of this clause.
   - Scope: claim mutation, signup integration, ownership tests.
   - Acceptance criteria:
     - On signup, a held capability converts into a real owned `project`,

@@ -194,7 +194,13 @@ const TEMPLATES: Record<PreviewTemplate, (props: TemplateProps) => React.ReactEl
 };
 
 export function PreviewTemplateRenderer({ spec }: { spec: SiteRenderSpec }) {
-  const Template = TEMPLATES[spec.templateId];
+  // `Object.hasOwn`, not a bare index read: `TEMPLATES["constructor"]` and
+  // `TEMPLATES["toString"]` resolve to inherited functions that are truthy,
+  // so the `!Template` guard below would wave them through. Unreachable via
+  // the parser today; this makes the dispatch safe on its own terms.
+  const Template = Object.hasOwn(TEMPLATES, spec.templateId)
+    ? TEMPLATES[spec.templateId]
+    : undefined;
   // Defensive: `parseSiteRenderSpec` already rejects an unknown id, so this
   // is unreachable through the normal path. Rendering nothing is still the
   // right failure — never a partial or unvalidated page.
