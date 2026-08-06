@@ -1,0 +1,21 @@
+# WP26 Progress - Durable Task Workflow And M3 Validation Reports
+
+Append-only progress log. Do not rely on chat history for project state.
+
+## 2026-08-06 - Setup and story freeze
+
+- Branch: `codex/wp26-research-workflow` (created from `codex/wave2-platform-integration` after Wave 2 passed; see `docs/wp/wave-gate-report.md` "Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
+- Assignment: not yet dispatched to a worker. This session (orchestrator) only froze `docs/wp/wp26-stories.md`, recorded the owner's provider/cost/retention rulings in `docs/wp/RULINGS.md` and `docs/wp/program-manifest.md`, and opened the branch. No code was written.
+- Owner rulings obtained this session (2026-08-06, see `docs/wp/RULINGS.md`): model provider is OpenAI GPT (reuses existing `OPENAI_API_KEY`); search/community source is Perplexity API, citation-only; per-report hard cost cap is $4.00 with retry-once-then-refund; cached research is retained indefinitely.
+- File boundaries: per story, see `docs/wp/wp26-stories.md`. `WP26-S1` is the only story touching `convex/schema.ts` (additive only); it is a named contract subgate that must independently gate before WP27 may start, per the manifest.
+- Required checks: standard WP gate (`npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm audit --omit=dev --audit-level=high`, `git diff --check`, secret scan) plus story-specific adversarial/fixture tests listed per story.
+- Initial risks: this is manifest-rated Critical risk, Wave 3, requiring a high-tier AI/backend worker and independent high-risk review. Real provider spend must stay disabled outside isolated fixtures until this WP's own test-mode gate passes (mirrors WP24's development-vs-go-live split) — no live OpenAI/Perplexity call is authorized yet. The workflow execution runtime (candidate: Vercel Workflow DevKit) is an open implementation-time engineering choice, not yet decided; the assigned worker should evaluate and record the choice before S3 implementation.
+- Next: dispatch `WP26-S1` (contract subgate) to a high-tier worker. Do not start S2+ implementation until S1 has independently gated.
+
+## 2026-08-06 - Stories tightened after Codex review
+
+- Ran `/codex:review` against the uncommitted Wave 2 closeout + WP26 prep docs before any commit. It found 1 doc-consistency issue (this repo's truth documents contradicted each other about whether the WP26 provider ruling was resolved and whether WP26 files already existed) and 6 story-completeness issues in the first draft of `docs/wp/wp26-stories.md`. All were fixed in place; none required touching product code, since nothing had been implemented yet.
+- Doc-consistency fixes: `docs/wp/wave-gate-report.md`, `docs/wp/CLAUDE_HANDOFF.md`, and `docs/PROJECT_STRATEGY.md` all now correctly state that the WP26 provider/cost/retention ruling is recorded and that `wp26-stories.md`/`wp26-progress.md` already exist; `docs/wp/wp23-stories.md` and `docs/wp/wp25-stories.md` S6 checkboxes are now checked to match their actually-passed gates.
+- Story fixes (all in `docs/wp/wp26-stories.md`, no code written): `S3`'s idempotency requirement now demands provider-side idempotency or reconciliation-before-resend, not just a local key, plus an explicit crash-window test; `S3`/`S4` now specify retry-**exactly**-once (not zero, not many) with dedicated tests; `S4`'s cost cap is now a pre-call reservation against worst-case cost, not a post-hoc running-total check, so a run can no longer overshoot $4.00 mid-call; a new "After The Package Gate" section spells out the credential-backed sandbox quality gate that must run before any real provider is activated, since fixture-mode evals alone cannot prove real output quality.
+- Two genuine ruling gaps were surfaced rather than invented: the exact OpenAI model ID (the ruling names a provider family, "OpenAI GPT," not a pinned model) and a named keyword-volume/CPC data provider (Perplexity covers market/community signals only, not keyword data). Both are recorded as open blockers on `S2` specifically (not `S1`) in `docs/wp/wp26-stories.md`'s "Ruled Inputs" section, pending the owner.
+- No code changed, no commit made. All changes remain in the working tree on `codex/wp26-research-workflow` pending the owner's decision on committing.

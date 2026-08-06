@@ -5,10 +5,11 @@ Last updated: 2026-08-06 (Europe/London)
 ## Resume Point
 
 - Work from the main checkout on branch `codex/wave2-platform-integration`.
-- The integrated code checkpoint before this handoff is commit `0028594`.
-- The main working tree was clean when this handoff was written.
+- Wave 2 (WP21-WP25) is now fully gated and passed as of this update; see `docs/wp/wave-gate-report.md` ("Wave 2 / WP23 & WP25 Authenticated Browser Gate - 2026-08-06").
+- The main working tree is clean; the only diffs since the prior checkpoint are docs (`wp23-progress.md`, `wp25-progress.md`, `wave-gate-report.md`, `session-ledger.md`, this file) — no product code changed.
 - Treat `docs/wp/program-manifest.md` as the frozen program source of truth. Read `CLAUDE.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, and `docs/wp/RULINGS.md` before acting.
 - Do not resume from the WP23, WP24, or WP25 worktrees. Their reviewed changes are already integrated into `codex/wave2-platform-integration`; the worktrees remain only as clean historical branches.
+- Two local-dev-only test projects ("Wave 2 QA Gate Test Idea", confirmed; one unconfirmed race-test draft) exist in the local Convex deployment as a byproduct of the WP23/WP25 browser gate. They are harmless local dev data (no archive/delete UI exists yet in v1); safe to ignore or manually clear via a fresh `convex dev` local reset if desired.
 
 ## Current Program State
 
@@ -16,30 +17,28 @@ Last updated: 2026-08-06 (Europe/London)
 |---|---|---|
 | WP21 Auth | Development auth gate usable | Credential-backed Resend magic-link sign-in is confirmed locally. Google OAuth credentials and real Google redirect/callback/session/logout E2E are intentionally deferred to go-live. |
 | WP22 Contracts | Passed | Frozen additive schema and owner-only authorization contracts are integrated. No destructive deletion or admin/support bypass. |
-| WP23 Dashboard/Explore | Code and independent review passed | `WP23-S6` remains pending only for authenticated desktop/mobile browser, keyboard, and automated accessibility evidence. |
+| WP23 Dashboard/Explore | **Passed, including S6** | Authenticated desktop/mobile browser, keyboard, focus, Saved/Interested, and automated-a11y evidence gathered live 2026-08-06; see `docs/wp/wp23-progress.md`. Building's positive (repository-idea-derived) branch remains Convex-test-verified only, pending WP27's live UI path — recorded as a scope boundary, not a defect. |
 | WP24 Billing/Credits | Test-mode code gate passed | Live Stripe activation is blocked. Partial refunds, dispute resolution/funds reinstatement, tax/VAT, and credential-backed live E2E require later owner rulings and activation gates. |
-| WP25 Intake/Projects | Code and independent review passed | `WP25-S6` remains pending only for the authenticated browser journey described below. |
-| Wave 2 | Integration checks passed; final UX evidence open | Close WP23-S6 and WP25-S6, then record the Wave 2 gate verdict before opening Wave 3 implementation. |
+| WP25 Intake/Projects | **Passed, including S6** | Authenticated autosave/resume/two-tab-race/review/confirm/a11y evidence gathered live 2026-08-06; see `docs/wp/wp25-progress.md`. |
+| Wave 2 | **Passed** | WP23-S6 and WP25-S6 closed 2026-08-06. WP24 live-activation evidence remains a separately gated future item and does not block WP26. |
 
-## Immediate Next Action — Gate Lane
+## Immediate Next Action — Work Package Lane (WP26)
 
-The owner has just confirmed that magic-link sign-in works and the dashboard opens. Use that authenticated local session to gather the remaining evidence; do not start WP26 code first.
+Wave 2 has passed. WP26 (`Durable task workflow and M3 Validation Reports`) is open on branch `codex/wp26-research-workflow`. The owner ruling on the provider contract is **already recorded** (2026-08-06, see `docs/wp/RULINGS.md` — four WP26 rows: model provider, search source, cost cap, retention), and `docs/wp/wp26-stories.md` plus `docs/wp/wp26-progress.md` are already frozen on that branch. Do not re-ask the owner for these four rulings and do not recreate those files — read them first.
 
-1. Verify WP23 on desktop and mobile widths:
-   - dashboard and Explore load without browser/console errors;
-   - keyboard-only navigation, skip link, focus states, current-route state, mobile contextual sheet, Escape close, and focus restoration;
-   - Saved and Interested persist independently;
-   - Building is derived from an active project;
-   - private routes remain noindex/noarchive;
-   - run the automated accessibility scan.
-2. Verify WP25:
-   - create an own-idea draft and observe autosave before Review;
-   - refresh and resume;
-   - exercise the two-tab conflicting-first-save path and confirm the losing tab does not claim Saved;
-   - verify review focus, confirmation, keyboard order, responsive layout, and automated accessibility;
-   - confirm project cards expose only truthful server state.
-3. Record evidence and verdicts in `docs/wp/wp23-progress.md`, `docs/wp/wp25-progress.md`, and `docs/wp/wave-gate-report.md`. Mark S6 complete only when the journey actually passes.
-4. If code changes are needed, stay inside the frozen WP boundary, rerun the standard checks, obtain independent review, and commit the scoped fix before declaring the gate passed.
+Two ruling gaps remain open from the same review pass and must be closed before `WP26-S2` (provider adapters) can be implemented — ask the owner if not yet answered:
+
+1. The exact OpenAI model ID for synthesis/scoring (the ruling says "OpenAI GPT," which is a family, not a pinned model — cost/quality/the $4 cap all depend on the exact model).
+2. A named keyword-volume/CPC data provider (e.g. DataForSEO or similar) for the pipeline's keywords/demand step — Perplexity covers market stats and community signals only, not keyword/CPC data.
+
+Once those two are ruled (or if this session already resolved them — check `docs/wp/RULINGS.md` for entries dated after 2026-08-06's initial four), proceed:
+
+1. Dispatch `WP26-S1` (the versioned Validation Report and site-input contract subgate) to a high-tier worker. This is the only story touching `convex/schema.ts`.
+2. Independently gate `WP26-S1` alone and record the result in `docs/wp/wave-gate-report.md`. WP27 may begin in parallel only after this named subgate passes — not merely because WP26 opened.
+3. Then proceed through `WP26-S2` through `WP26-S6` per `docs/wp/wp26-stories.md`: provider adapters (fixture-mode only until this WP's own test-mode gate passes), durable resume/retry/cancel/timeout/onComplete with provider-side idempotency (not just a local key) on every paid call, pre-call cost reservation against the $4.00 cap (not a post-hoc check), explicit retry-once-then-refund test coverage, the report compiler/renderer, and fixed-corpus quality evaluation.
+4. A credential-backed quality gate (real OpenAI/Perplexity calls against a small fixed corpus, in an isolated sandbox) is required before any provider is activated beyond fixtures — this is a separate, later, owner-approved activation step, not part of the WP26 package gate itself.
+
+WP26 is high-risk AI/backend/workflow work and requires a high-tier worker plus independent high-risk review. `convex/schema.ts`, `convex/convex.config.ts`, generated Convex files, middleware/proxy, lockfiles, webhooks, and ledger mutations remain serialized one-writer seams.
 
 ## Local Runtime Notes
 
@@ -48,19 +47,6 @@ The owner has just confirmed that magic-link sign-in works and the dashboard ope
 - A recent `auth:signIn` `fetch failed` was caused by the Convex backend being offline after typed environment validation rejected a missing `PLATFORM_BILLING_BRIDGE_SECRET`. A fresh secret was set in the **local Convex deployment only**, Convex was restarted, and port 3210 returned HTTP 200. Never print or copy the secret into files, chat, logs, or client code.
 - If Convex is offline in a new terminal/session, run `npm run convex:dev`. Do not create or rotate production credentials.
 - Resend is the approved magic-link provider. The local credential is already configured; do not expose its value.
-
-## After Wave 2 Passes
-
-Open WP26, `Durable task workflow and M3 Validation Reports`, on branch `codex/wp26-research-workflow` using the Work Package lane.
-
-Before implementation:
-
-1. Ask the owner to rule on the unresolved WP26 provider contract: model provider, search/community sources, source licensing, per-report cost cap, and retention policy. Until ruled, provider adapters remain disabled outside isolated fixtures.
-2. Create and freeze `docs/wp/wp26-stories.md` and `docs/wp/wp26-progress.md` before code.
-3. First deliver and independently gate the versioned Validation Report and site-input contracts. WP27 may begin in parallel only after that named contract subgate passes.
-4. Then implement durable resume/retry/cancel/timeout/onComplete behavior, stable external-step idempotency keys, exact refunds, citation/competitor/score completeness, cost telemetry, and fixed-corpus quality evaluation.
-
-WP26 is high-risk AI/backend/workflow work and requires a high-tier worker plus independent high-risk review. `convex/schema.ts`, `convex/convex.config.ts`, generated Convex files, middleware/proxy, lockfiles, webhooks, and ledger mutations remain serialized one-writer seams.
 
 ## Hard Safety Boundaries
 

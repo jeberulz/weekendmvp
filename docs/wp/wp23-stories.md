@@ -61,7 +61,7 @@ Definition of done: Authenticated users can navigate an accessible, responsive H
     - Signed-out access returns through the established sign-in flow, and private routes remain noindex/noarchive.
   - Verification: focused browser journey at desktop/mobile, keyboard-only pass, automated a11y scan, route/auth tests.
 
-- [ ] `WP23-S6` - Run the WP23 UI/auth gate
+- [x] `WP23-S6` - Run the WP23 UI/auth gate
   - Scope: `docs/wp/wp23-progress.md` plus WP23-owned fixes only.
   - Acceptance criteria:
     - Standard checks and focused Convex/UI/browser/a11y tests pass with no new errors or unwaived high dependency finding.

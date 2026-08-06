@@ -61,7 +61,7 @@ Definition of done: An authenticated user can start from a canonical repository 
     - No `/build/{slug}` implementation, anonymous capability, duplicate research content, personalized public metadata, or indexable private page is introduced here.
   - Verification: representative MDX/Convex/collection/404 route tests, link test, metadata/JSON-LD regression test, automated a11y scan.
 
-- [ ] `WP25-S6` - Run the WP25 data/UX/SEO gate
+- [x] `WP25-S6` - Run the WP25 data/UX/SEO gate
   - Scope: `docs/wp/wp25-progress.md` plus WP25-owned fixes only.
   - Acceptance criteria:
     - Standard checks and focused Convex/UI/browser/SEO/a11y tests pass with no new errors or unwaived high dependency finding.
