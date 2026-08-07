@@ -105,6 +105,13 @@ export function hostRoutingDecision(
  * The body is deliberately bare: an unrecognized host gets no branding, no
  * application shell, and nothing that confirms what else runs here.
  */
+/**
+ * The single extra path a tenant host serves, besides `/`. Deliberately
+ * dunder-prefixed so it cannot collide with anything in a customer's own
+ * page and is obviously not part of their content.
+ */
+export const TENANT_LEAD_PATH = "/__lead";
+
 function hostRejectedResponse(): NextResponse {
   return new NextResponse("Not Found", {
     status: 404,
@@ -170,6 +177,16 @@ export async function middleware(
     // existence, `/robots.txt` and `/sitemap.xml` cannot be inherited, and
     // the auth middleware never runs — a tenant host never touches a session
     // cookie.
+    // Exactly two paths exist on a tenant host: the site itself, and the
+    // lead endpoint. Everything else answers identically, so no platform
+    // route can be probed and neither robots.txt nor sitemap.xml is
+    // inherited.
+    if (request.nextUrl.pathname === TENANT_LEAD_PATH) {
+      // Rewritten, not redirected, so the request never leaves the customer's
+      // host. The route re-derives the hostname from the `Host` header rather
+      // than trusting this rewrite.
+      return NextResponse.rewrite(new URL("/api/tenant/lead", request.url));
+    }
     if (request.nextUrl.pathname !== "/") {
       return hostRejectedResponse();
     }
@@ -204,7 +221,10 @@ export async function middleware(
   // URL they do not control and breaking their canonical.
   if (
     request.nextUrl.pathname === "/site" ||
-    request.nextUrl.pathname.startsWith("/site/")
+    request.nextUrl.pathname.startsWith("/site/") ||
+    request.nextUrl.pathname === TENANT_LEAD_PATH ||
+    request.nextUrl.pathname === "/api/tenant/lead" ||
+    request.nextUrl.pathname.startsWith("/api/tenant/")
   ) {
     return hostRejectedResponse();
   }

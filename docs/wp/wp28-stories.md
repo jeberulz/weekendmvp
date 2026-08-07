@@ -236,7 +236,7 @@ confirmed the default this freeze was written against, so no story changed.
     publish, concurrent hostname claim, replayed publish, rollback then
     forward again, and publish attempts against archived projects.
 
-- [ ] `WP28-S5` - Tenant lead endpoint (synthetic only)
+- [x] `WP28-S5` - Tenant lead endpoint (synthetic only)
   - Scope: lead API route on tenant hosts, `convex/platform/sites/leads.ts`.
   - Acceptance criteria:
     - `projectId`, `ownerId`, and `siteConfigId` are **all derived from the

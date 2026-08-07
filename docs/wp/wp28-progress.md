@@ -553,3 +553,131 @@ open deviation marked closed.
 **Not done:** lead capture (S5); reserved list still provisional pending owner
 ruling #1; the tenant publish check adds one backend round trip per tenant
 request, which is not cached — worth revisiting if tenant traffic grows.
+
+---
+
+## 2026-08-07 - Owner rulings recorded
+
+Four rows appended to `docs/wp/RULINGS.md`, closing both manifest questions:
+legacy fallback removed (bare 404), the 40-name reserved list frozen, tenant
+leads synthetic-only, and Vercel preview deployments as the staging host.
+
+**Every ruling confirmed the default the story freeze was written against, so
+no story changed and no shipped behaviour moved.** The "provisional" markers
+in `lib/tenant-host.ts`, S5, and S6 were cleared. `WP28-S6` is no longer
+blocked on owner rulings.
+
+---
+
+## 2026-08-07 - WP28-S5 tenant lead endpoint (synthetic only)
+
+**What shipped:** `convex/platform/sites/leads.ts` (`recordSynthetic`
+mutation, `listForProject` owner-scoped query), `app/api/tenant/lead/route.ts`,
+`app/api/tenant/lead/_server.ts` (pure body validation), and one extra tenant
+path in `middleware.ts`. **`convex/schema.ts` still untouched.**
+
+### The templates stay inert — a correction to my own plan
+
+I said at the end of S4 that S5 would be "the first time template output
+becomes interactive". The synthetic-only ruling makes that wrong: a live form
+on a published customer site would submit into an endpoint that refuses every
+genuine visitor, so the customer would believe capture worked while every real
+submission was rejected. That is worse than the inert
+`<button type="button">` WP27 deliberately built.
+
+So the templates are unchanged, and a test asserts they contain no `<form>`
+and no reference to the lead path. WP31 wires the UI when real capture is
+activated. Recorded because it reverses a stated plan.
+
+### Ownership derives entirely from the host
+
+`ownerId`, `projectId`, and `siteConfigId` all come from the hostname
+resolution. The mutation's only arguments are `hostname` and a `rateLimitKey`,
+so there is nothing for a forged body to point at another owner's project. The
+route re-derives the hostname from the `Host` header rather than trusting the
+middleware rewrite, so it is safe even if `/api/tenant/lead` were ever
+reachable another way.
+
+### Refusal, not stripping
+
+Personal data is rejected with **422**, never accepted-and-discarded. Three
+independent rules: a personal-data *key* (refused even when its value is
+empty, because its presence means the caller believes we accept one), an
+email-shaped *value* under any key name, and any string over 40 characters.
+Nested objects and arrays are refused outright rather than walked — a
+recursive scan is exactly where a bypass hides.
+
+The `leads` row is written with `email` and `payload` genuinely **absent**
+rather than blanked, so a synthetic row can never be mistaken for a real lead
+whose contents were lost.
+
+### Live evidence (production build, `next start -p 3100`, real Convex data)
+
+| Case | Status |
+|---|---|
+| Published tenant, empty body | **202** `{"ok":true}` |
+| Published tenant, `{"email":"a@b.co"}` | **422** refused |
+| Published tenant, `{"message":"hi there"}` | **422** refused |
+| Published tenant, `{"ref":"x@y.com"}` (email-shaped value) | **422** refused |
+| Unpublished tenant (`draftco`) | **404** |
+| Unknown tenant | **404** |
+| Platform host `/__lead` | **404** |
+| Platform host `/api/tenant/lead` | **404** |
+| Tenant host, `Origin: https://evil.com` | **403** |
+| Tenant host, `Origin: https://www.weekendmvp.app` | **403** |
+| Tenant host, same-origin | **202** |
+| `content-type: text/plain` | **415** |
+| GET instead of POST | **405** |
+| Six rapid POSTs | 202×4 then **429**, **429** |
+
+Our own platform origin is refused on a tenant host, which is the case worth
+calling out: a tenant page is the only legitimate caller.
+
+`npx convex data leads` confirms every stored row is `synthetic: true` with no
+`email` or `payload` column present at all, attributed to two different owners
+matching the two hostnames posted to.
+
+The rate limit is keyed per IP and therefore **shared across tenants** — the
+six-POST run only got four 202s because earlier requests from the same IP had
+already spent budget. That is the right shape for abuse control (the attacker
+is the IP, not the site), but it means a shared NAT could throttle legitimate
+leads across unrelated tenants. Harmless while leads are synthetic; recorded
+for WP31 to revisit before real capture.
+
+### Mutation testing (trap 10)
+
+Five mutations, each confirmed applied by `cmp`, all **red**:
+
+| Mutation | Result |
+|---|---|
+| Accept leads on unpublished sites | red (2) |
+| Store the row as non-synthetic | red (1) |
+| Drop the per-row ownership recheck in `listForProject` | red (1) |
+| Serve whichever row wins a duplicate hostname | red (1) |
+| Skip the rate limit | red (11) |
+
+### Testing notes
+
+- One of my static assertions was **too broad** and failed correctly:
+  it forbade `args.projectId` across the whole module, but `listForProject`
+  legitimately takes one — it is an owner-scoped read that proves ownership
+  before touching the index. Scoped to the anonymous write path instead.
+- The rate limiter is a Convex component whose namespace `convexTest` cannot
+  resolve from the app glob; registered via `@convex-dev/rate-limiter/test`,
+  the same setup `generate.test.ts` uses, so the limit assertions exercise the
+  real component rather than a stub.
+
+### Checks
+
+- `npm run typecheck` — exit 0
+- `npm run lint` — exit 0, 0 errors, 35 pre-existing warnings (unchanged)
+- `npm test` — exit 0. Node groups 91/6/29/**76**/4, vitest groups
+  159/172/84/**624**. Security node 60 → 76, Convex 612 → 624.
+- `npm run build` — exit 0, **315** pages
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities
+- `git diff --check` clean; `convex/schema.ts` unchanged
+
+**Docs updated:** this file; `docs/wp/wp28-stories.md` S5 checked.
+
+**Not done:** `WP28-S6` — activation runbook (dry run against Vercel preview
+deployments) and the package gate, including independent review.
