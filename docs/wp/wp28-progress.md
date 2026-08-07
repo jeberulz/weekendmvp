@@ -743,3 +743,79 @@ Self-review is not sufficient here and the precedent is concrete: on WP27 the
 independent reviewer found a HIGH the implementer missed (GA4 exporting live
 capability tokens), and the implementer's own progress doc had claimed the
 opposite property held.
+
+---
+
+## 2026-08-07 - Independent review returned: 3 HIGH, 3 MEDIUM. Remediation.
+
+The precedent held. The reviewer falsified three claims made in this file.
+
+### Claims of mine that were WRONG
+
+1. **"Fail-open degrades to today's behaviour."** It did not. With
+   `NEXT_PUBLIC_CONVEX_URL` pointed at a dead port, *every* tenant hostname —
+   including arbitrary unclaimed ones — returned **200** serving the full
+   Weekend MVP marketing 404: MegaNav, SiteFooter, Starter Kit signup,
+   cal.com. A single request exceeding the 1500 ms timeout did it too. That is
+   strictly worse than a bare 404 and is what the 2026-08-07 ruling forbids.
+2. **The tenant route's stated contract** ("no analytics, no platform
+   navigation, nothing here can walk a customer's visitor back onto our
+   marketing site") was false. Every published customer page shipped ~27 KB of
+   RSC payload containing the marketing chrome. **My test missed it because it
+   asserted on source text** — `assert.doesNotMatch(source, /www\.weekendmvp\.app/)`
+   stayed green while the rendered output carried all of it.
+3. **"Concurrent publishes… real contention."** `convex-test` takes a global
+   lock in `DatabaseFake.begin`, so `Promise.all` runs strictly sequentially —
+   no OCC, no retry. S4's AC demanded real contention and is **not met**.
+
+### Fixed
+
+| Finding | Fix | Verified |
+|---|---|---|
+| **H1** branded 200 on outage | `app/site/[slug]/not-found.tsx` — a bare boundary: no `components/` import, no link, no brand, `title: { absolute }`, `noindex` | Rebuilt against a dead Convex port: visible markup is **458 bytes**, `<title>Not found</title>`, **zero** branding. Down from ~26,700 bytes of marketing 404. Owner ruled the 200 acceptable (see `RULINGS.md`) |
+| **H2** gate/route divergence | `isPublished` and `resolvePublishedSite` now both delegate to one `resolvePublished` helper. The four conditions the gate omitted (project archived, owner mismatch, archived/missing document, undefined body) can no longer diverge | Test asserts each check appears exactly once in the module |
+| **H3** `/llms.txt` on every host | Added to the middleware `matcher`. The extension exclusion skips `.txt`, which is why `robots.txt` and `sitemap.xml` were already listed individually — `llms.txt` was simply missed | Live: `www` 200, tenant/reserved/unknown **404** |
+| **M1** marketing chrome on customer pages | Same not-found boundary | Live on published `acme`: visible markup 2,949 bytes, **zero** `Starter Kit`/`MegaNav`/`Built to ship`, no MegaNav chunk preload, no `noindex`, headline intact |
+| **M3** double spec read | `React.cache(loadRenderSpec)` — metadata and body can no longer straddle a publish | Test asserts the wrapper |
+| **L7** `ownerId` accepted, `userId` refused | Added `ownerid`/`owner_id`/`projectid`/`project_id` to `PERSONAL_DATA_KEYS` | Existing suite |
+
+### Not fixed — recorded honestly
+
+- **M2 (open deviation).** The concurrency ACs are not backed by evidence. The
+  false comment is replaced with one stating the harness limitation and what
+  the test *does* prove (version numbers are derived server-side, so a second
+  publish cannot reuse the first's number). Real OCC coverage needs an
+  integration test against a live Convex deployment, which this package has no
+  harness for. **S4's AC stands unmet** and is flagged in the stories.
+- **M1 residual.** The RSC flight payload still carries the root not-found
+  markup (~25 KB). It is not visible, not rendered, and not crawled as page
+  content. Closing it fully needs multiple root layouts via route groups —
+  invasive across 315 pages. Deferred with the ruling.
+- **L1–L6, L8** accepted as recorded by the reviewer; L3 (`/_next/static/*`
+  200 on any host) the reviewer independently concurred with as LOW.
+
+### Verified clean by the reviewer — citable at the gate
+
+`convex/schema.ts` unchanged across the package. Host confusion across 15
+header-spoofing combinations (`X-Forwarded-Host` both directions, `Forwarded`,
+duplicate `Host`, credentials, trailing dot, empty, uppercase, non-standard
+port, lookalike parent) — Next 16's `getHostname` reads `headers.host` only.
+Tenant→platform isolation with identical 9-byte 404s and no `location` or
+`set-cookie`. Cookie scope, including forged auth cookies against a tenant
+host. Self-canonical head with zero `www.weekendmvp.app`. `showPreviewChrome`
+mutation-tested twice. Lead ownership including forged owner/project bodies.
+All five new suites confirmed running in the **full** `npm test`. No vacuous
+`api`-proxy assertions; no escaped-`onerror` false positives.
+
+### Checks after remediation
+
+- `npm run typecheck` 0; `npm run lint` 0 errors / 35 pre-existing warnings
+- `npm test` exit 0 — node 91/6/29/**80**/4, vitest 159/172/84/624
+- `npm run build` exit 0, 315 pages
+- `npm audit --omit=dev --audit-level=high` 0; `git diff --check` clean
+- `git diff 0a13b2b..HEAD -- convex/schema.ts` empty
+
+**Gate status: still OPEN.** One MEDIUM (M2) remains unresolved by
+construction, and S6 requires no unresolved critical/high/medium. It needs
+either an owner ruling re-scoping the concurrency AC to what a `convex-test`
+harness can prove, or an integration test against a live deployment.

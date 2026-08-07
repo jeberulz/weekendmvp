@@ -252,6 +252,13 @@ export const config = {
     "/dashboard/:path*",
     "/robots.txt",
     "/sitemap.xml",
+    // `public/llms.txt` is a static file, so the extension exclusion below
+    // skips it. Independent review found it answering 200 on every tenant,
+    // reserved, and unknown host — publishing our marketing copy under a
+    // customer's domain to exactly the AI crawlers this site targets. It is
+    // the same crawler-directive class as robots.txt and sitemap.xml, both of
+    // which were already re-added here for the same reason.
+    "/llms.txt",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|woff2?|css|js|map)$).*)",
   ],
 };

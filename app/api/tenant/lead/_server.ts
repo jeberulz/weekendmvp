@@ -41,6 +41,10 @@ const PERSONAL_DATA_KEYS = [
   "ip",
   "userid",
   "user_id",
+  "ownerid",
+  "owner_id",
+  "projectid",
+  "project_id",
 ] as const;
 
 /** Anything that looks like an email address, in any value, anywhere. */

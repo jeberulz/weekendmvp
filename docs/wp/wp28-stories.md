@@ -208,6 +208,16 @@ confirmed the default this freeze was written against, so no story changed.
     `weekendmvp.app` canonical.
 
 - [x] `WP28-S4` - Atomic publish, versioning, and rollback
+  - **OPEN AC DEVIATION (2026-08-07, raised by independent review):** the ACs
+    "assert this under real OCC contention, not in sequence" and "repeating a
+    publish request with the same idempotency key" are **not met as written**.
+    `convex-test` takes a global lock per transaction, so `Promise.all` runs
+    sequentially — the tests prove version numbers are derived server-side, not
+    that concurrent publishes serialize correctly. Idempotency is structural
+    rather than key-based (no `idempotencyKey` column on `site_versions`, and
+    this package does not touch the schema seam). Needs either an owner ruling
+    re-scoping both ACs, or an integration test against a live Convex
+    deployment. **`WP28-S6` cannot close while this is open.**
   - Scope: `convex/platform/sites/publish.ts` (+ tests). No schema change.
   - Acceptance criteria:
     - Publish is a single Convex mutation that derives identity server-side

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchQuery } from "convex/nextjs";
@@ -82,7 +83,13 @@ export async function generateMetadata({
  */
 export const instant = false;
 
-async function loadRenderSpec(slug: string) {
+/**
+ * Memoised per request. `generateMetadata` and the page body both need the
+ * spec, and `fetchQuery` POSTs so Next's fetch dedupe does not apply — two
+ * independent reads could straddle a publish and render metadata from one
+ * version with a body from another.
+ */
+const loadRenderSpec = cache(async (slug: string) => {
   // Shape-check before the round trip, and reject reserved names here too, so
   // this route cannot serve anything the host classifier would not route.
   if (!isValidTenantSlug(slug)) return null;
@@ -103,7 +110,7 @@ async function loadRenderSpec(slug: string) {
     // nothing.
     return null;
   }
-}
+});
 
 export default async function TenantSitePage({
   params,

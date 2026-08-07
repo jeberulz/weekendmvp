@@ -242,8 +242,16 @@ describe("publish", () => {
     const { projectId, siteConfigId } = await seedProject(t, owner.userId);
     const as = asUser(t, owner.userId, owner.sessionId);
 
-    // Real contention, not sequential calls: Convex serializes these and the
-    // loser retries under OCC, so the second must observe the first's version.
+    // NOT real contention. Independent review established that `convex-test`
+    // takes a global lock in `DatabaseFake.begin`, so `Promise.all` here runs
+    // strictly sequentially — no OCC, no retry. My original comment claiming
+    // otherwise was false about the harness.
+    //
+    // What this still proves: version numbers are derived server-side from
+    // `by_siteConfigId_and_version` rather than passed in, so a second publish
+    // cannot reuse the first's number. The true concurrency property depends
+    // on Convex's serializable transactions and is NOT covered by any test in
+    // this repo — see the open deviation in `docs/wp/wp28-stories.md` S4.
     await Promise.all([
       as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
       as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
@@ -254,7 +262,10 @@ describe("publish", () => {
     expect(new Set(numbers).size).toBe(numbers.length);
   });
 
-  test("only one of two concurrent claims on the same hostname wins", async () => {
+  // Same harness limitation as above: sequential under `convex-test`. This
+  // asserts the guard rejects a second claimant, not that it does so under
+  // real contention.
+  test("only one of two claims on the same hostname wins", async () => {
     const t = convexTest(schema, modules);
     const a = await seedUser(t, "a@example.com");
     const b = await seedUser(t, "b@example.com");

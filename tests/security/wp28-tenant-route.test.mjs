@@ -144,3 +144,47 @@ test("the resolver cannot throw a 500 on duplicate hostnames", async () => {
   assert.match(source, /\.take\(2\)/);
   assert.match(source, /matches\.length !== 1/);
 });
+
+test("the tenant route has its own bare not-found boundary", async () => {
+  // Without this file, `notFound()` falls through to the root
+  // `app/not-found.tsx` — the full marketing 404 with nav, footer, Starter Kit
+  // signup and cal.com — which independent review confirmed shipping on every
+  // published customer page and at 200 on unclaimed subdomains during a Convex
+  // outage.
+  const source = await readCode("app/site/[slug]/not-found.tsx");
+  assert.doesNotMatch(source, /@\/components/);
+  assert.doesNotMatch(source, /MegaNav|SiteFooter|KitSignup|Starter Kit/);
+  assert.doesNotMatch(source, /weekendmvp\.app/i);
+  assert.doesNotMatch(source, /<a |<Link/);
+  // The root layout's title template would otherwise brand it.
+  assert.match(source, /title:\s*\{\s*absolute:/);
+});
+
+test("llms.txt cannot be inherited by a tenant host", async () => {
+  // Same crawler-directive class as robots.txt and sitemap.xml, and the one
+  // file AI crawlers fetch by convention. The extension exclusion in the
+  // matcher skips `.txt`, so it must be listed explicitly.
+  const source = await readCode("middleware.ts");
+  assert.match(source, /"\/llms\.txt"/);
+  assert.match(source, /"\/robots\.txt"/);
+  assert.match(source, /"\/sitemap\.xml"/);
+});
+
+test("the render spec is read once per request", async () => {
+  const source = await readCode(ROUTE);
+  // `generateMetadata` and the body both need it, and `fetchQuery` POSTs so
+  // Next's fetch dedupe does not apply — two reads could straddle a publish.
+  assert.match(source, /cache\(async \(slug: string\)/);
+  assert.match(source, /import \{ cache \} from "react"/);
+});
+
+test("the middleware gate and the route resolver cannot diverge", async () => {
+  const source = await readCode("convex/platform/sites/read.ts");
+  // They checked different conditions; any divergence put a host through the
+  // gate that the route then refused, landing on a 200 soft-404.
+  assert.match(source, /resolvePublished\(ctx, args\.hostname\)\) !== null/);
+  assert.match(source, /await resolvePublished\(ctx, args\.hostname\)/);
+  // Exactly one function performs the checks.
+  assert.equal((source.match(/site\.status !== "published"/g) ?? []).length, 1);
+  assert.equal((source.match(/project\.archivedAt !== undefined/g) ?? []).length, 1);
+});
