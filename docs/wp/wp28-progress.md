@@ -819,3 +819,45 @@ All five new suites confirmed running in the **full** `npm test`. No vacuous
 construction, and S6 requires no unresolved critical/high/medium. It needs
 either an owner ruling re-scoping the concurrency AC to what a `convex-test`
 harness can prove, or an integration test against a live deployment.
+
+---
+
+## 2026-08-07 - WP28-S6 closed. Package gate: PASS.
+
+**M2 resolved by owner ruling**, not by reinterpretation. The `S4` concurrency
+and idempotency ACs are re-scoped to what a `convex-test` harness can prove:
+version numbers derived server-side, and a hostname claim reading and writing
+in one transaction. Serialization itself is a Convex platform guarantee, not
+application logic — asserting it here would be testing Convex. Idempotency is
+structural rather than key-based, which is strictly stronger. The test comment
+now states this rather than claiming contention the harness cannot create.
+Recorded in `docs/wp/RULINGS.md`; revisit if WP29+ adds contention that is
+genuinely ours to get wrong.
+
+With that, no unresolved critical, high, or medium finding remains.
+
+**Gate entry:** `docs/wp/wave-gate-report.md` — "WP28 Package Gate - 2026-08-07".
+
+**Final checks:** `npm run typecheck` 0; `npm run lint` 0 errors / 35
+pre-existing warnings; `npm test` exit 0 — node 91/6/29/80/4, vitest
+159/172/84/624; `npm run build` exit 0, 315 pages; `npm audit --omit=dev
+--audit-level=high` 0; `git diff --check` clean;
+`git diff 0a13b2b..HEAD -- convex/schema.ts` empty.
+
+**Seven owner rulings** were taken during this package (`docs/wp/RULINGS.md`).
+Five confirmed the defaults the story freeze was written against; two —
+fail-open posture and the S4 AC re-scoping — were raised by the independent
+review rather than anticipated.
+
+**What I would tell the next agent.** Two of my own tests passed for the wrong
+reason across multiple stories and were only caught by someone fetching the
+page instead of reading the source: a `doesNotMatch(source, /www\.weekendmvp\.app/)`
+that stayed green while the rendered output carried the entire marketing
+footer, and a `Promise.all` that never ran concurrently. Static assertions
+verify what the code *says*. For anything about what a visitor receives, the
+evidence has to come from a real response.
+
+**Not merged.** The platform program is still unmerged to `main`, and merging
+WP28 without WP27 ships a dead `/build/{slug}` CTA from four already-merged
+components.
+

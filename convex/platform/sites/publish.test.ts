@@ -247,11 +247,12 @@ describe("publish", () => {
     // strictly sequentially — no OCC, no retry. My original comment claiming
     // otherwise was false about the harness.
     //
-    // What this still proves: version numbers are derived server-side from
+    // What this proves, and what the AC was re-scoped to on 2026-08-07:
+    // version numbers are derived server-side from
     // `by_siteConfigId_and_version` rather than passed in, so a second publish
-    // cannot reuse the first's number. The true concurrency property depends
-    // on Convex's serializable transactions and is NOT covered by any test in
-    // this repo — see the open deviation in `docs/wp/wp28-stories.md` S4.
+    // cannot reuse the first's number. Serialization itself is a Convex
+    // platform guarantee, not application logic — testing it here would be
+    // testing Convex. See `docs/wp/RULINGS.md`.
     await Promise.all([
       as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
       as.mutation(api.platform.sites.publish.publish, { projectId, slug: "acme" }),
