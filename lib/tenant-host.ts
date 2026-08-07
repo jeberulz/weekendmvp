@@ -36,9 +36,11 @@ export const TENANT_SLUG_MAX_LENGTH = 63;
  * names a visitor reasonably trusts to be us (`billing`, `security`,
  * `support`) and which would otherwise be available for phishing.
  *
- * Proposed at the WP28 story freeze and pending owner ruling — see
- * `docs/wp/wp28-stories.md`, open ruling #1. Treat as provisional until it is
- * recorded in `docs/wp/RULINGS.md`.
+ * **Frozen by owner ruling 2026-08-07** (`docs/wp/RULINGS.md`, "WP28 /
+ * reserved subdomains"). Not provisional — removing a name here hands a
+ * stranger a subdomain a visitor would trust as ours. Re-checked server-side
+ * in `platform/sites/publish:publish`; this copy is a UX affordance, not the
+ * authorization boundary.
  */
 export const RESERVED_SUBDOMAINS: ReadonlySet<string> = new Set([
   "abuse",

@@ -76,16 +76,20 @@ platform's own authenticated surface, reachable at a customer-controlled
 hostname. This is what the manifest means by "Absent; current fallback
 unsafe," and it is why WP28 must land before WP31 activates the wildcard.
 
-## Open owner rulings (do not close by reinterpretation)
+## Owner rulings — CLOSED 2026-08-07
 
-Both are recorded in `docs/wp/program-manifest.md` as *defaults until ruled*,
-not as rulings. Stories below are written against the defaults so work is not
-blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
+Both manifest questions were ruled by the owner on 2026-08-07 and are recorded
+in `docs/wp/RULINGS.md` (four rows). **Do not re-litigate.** Every ruling
+confirmed the default this freeze was written against, so no story changed.
 
-| # | Question | Default this freeze assumes |
+| # | Manifest question | Ruling |
 |---|---|---|
-| 1 | Is the dead legacy fallback removed or replaced, and which subdomains are permanently reserved? | Remove the fallback from tenant hosts; unknown/reserved hosts return 404. Reserved list proposed in `WP28-S1`. |
-| 2 | Which staging host is approved, and what is the tenant-lead retention period? | Isolated preview deployments with synthetic leads only. Store no production tenant lead until owner-approved retention/privacy text exists. |
+| 1a | Is the dead legacy fallback removed or replaced? | **Removed.** Unknown and reserved hosts answer a bare 404 from middleware — no branding, no shell, no `location`, no `set-cookie`. Redirecting unknown hosts to www was rejected (advertises the deployment as ours), as was splitting behaviour between unknown and reserved (the difference alone reveals the reserved list). |
+| 1b | Which subdomains are permanently reserved? | **The 40-name list frozen in `lib/tenant-host.ts`.** Re-checked server-side in `publish`; the client copy is a UX affordance, not the boundary. |
+| 2a | What is the tenant-lead retention period? | **Synthetic only — WP28 stores no real tenant lead.** `S5` rejects a real email or free-text payload rather than dropping it silently. Real capture is a WP31 activation item, gated on privacy/retention text. |
+| 2b | Which staging host is approved? | **Vercel preview deployments.** No DNS, no certificate, no change to what a production host serves. |
+
+`WP28-S6` is no longer blocked on owner rulings.
 
 ## Architecture Decisions (orchestrator, not owner rulings)
 
@@ -239,10 +243,11 @@ blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
       resolved host**, never from the request body. A forged body cannot
       attach a lead to another owner's project.
     - The endpoint exists only on tenant hosts and only for a published site.
-    - Until owner ruling #2 is recorded, every stored lead has
+    - **Ruled 2026-08-07: synthetic only.** Every stored lead has
       `synthetic: true`, and the endpoint refuses to persist a real email or
       free-text payload. Failing closed is required; silently dropping PII is
-      not acceptable, the request must be rejected.
+      not acceptable, the request must be **rejected**. Real capture is a WP31
+      activation item, gated on privacy/retention text being written first.
     - Rate limited per IP with the same IPv6 `/64` truncation WP27 uses, and
       origin-checked the same way `app/api/platform/preview/_server.ts` does.
     - Leads are readable only by the owning user through an owner-scoped
@@ -257,10 +262,11 @@ blocked, but **`WP28-S6` cannot pass until these are in `docs/wp/RULINGS.md`.**
     `docs/wp/wave-gate-report.md`.
   - Acceptance criteria:
     - A runbook covering wildcard DNS, certificate issuance, the host matrix,
-      rollback, and the exact revert commit — **executed as a dry run only**.
-      No DNS record, domain, or wildcard is created or changed.
-    - Both open owner rulings above are recorded in `docs/wp/RULINGS.md`, or
-      the gate does not pass. Do not close either by reinterpretation.
+      rollback, and the exact revert commit — **executed as a dry run only**
+      against **Vercel preview deployments** (ruled 2026-08-07). No DNS
+      record, domain, or wildcard is created or changed.
+    - Both owner rulings are recorded in `docs/wp/RULINGS.md` (closed
+      2026-08-07, four rows). Verify they still match what shipped.
     - Full checks pass and are reported honestly: `npm run typecheck`,
       `npm run lint` (0 errors), `npm test`, `npm run build`,
       `npm audit --omit=dev --audit-level=high`, `git diff --check`.
