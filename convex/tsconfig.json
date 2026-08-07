@@ -8,6 +8,13 @@
     "allowJs": true,
     "strict": true,
     "moduleResolution": "Bundler",
+    /* Matches the root tsconfig. `convex/platform/sites/publish.ts` reuses
+     * `lib/tenant-host.ts`, which imports `./canonical-path.ts` with an
+     * explicit extension so a `node --test --experimental-strip-types` suite
+     * can load it. Without this, `convex dev` fails its own typecheck and
+     * silently stops pushing functions. Legal here for the same reason:
+     * `noEmit` is already true. */
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,

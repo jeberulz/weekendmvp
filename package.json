@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "test": "npm run test:og && npm run test:links && npm run test:redirects && npm run test:auth && npm run test:security && npm run test:sitemap && npm run test:convex",
     "test:convex": "vitest run convex",
-    "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts",
+    "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts tests/redirects/tenant-publish-check.test.ts",
     "test:auth": "vitest run tests/auth",
     "test:security": "node --test tests/security/*.test.mjs && vitest run tests/security/wp27-templates.test.tsx tests/security/wp28-templates-tenant.test.tsx",
     "test:sitemap": "node --experimental-strip-types --test tests/sitemap/*.test.mjs",

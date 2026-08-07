@@ -422,3 +422,134 @@ one acceptance criterion is unmet and recorded above.
 
 **Not done:** the soft-404 on unpublished tenant hosts (escalated to S4);
 lead capture (S5); reserved list still provisional pending owner ruling #1.
+
+---
+
+## 2026-08-07 - WP28-S4 publish, rollback, unpublish (+ S3 deviation closed)
+
+**What shipped:** `convex/platform/sites/publish.ts` with three mutations —
+`publish`, `rollback`, `unpublish` — plus `isPublished` in
+`convex/platform/sites/read.ts` and `lib/tenant-publish-check.ts`.
+**`convex/schema.ts` remains untouched.**
+
+### Design decisions
+
+- **Idempotency is structural, not key-based.** There is no `idempotencyKey`
+  column on `site_versions`, and WP28 deliberately does not touch the schema
+  seam. Republishing content already live at the same hostname is a no-op that
+  returns the live version. This is stronger than a key: a replayed request
+  cannot create a second version regardless of what key it carries. Recorded
+  as a deviation from the story's wording, which said "same idempotency key".
+- **Hostname uniqueness without a constraint.** The `by_hostname` read and the
+  write happen in one serializable transaction, so two concurrent claims
+  cannot both succeed — the loser hits OCC, retries, sees the winner, and is
+  refused. This is what replaces the uniqueness constraint the frozen schema
+  does not have.
+- **A taken slug and a reserved slug raise the same error.** Splitting them
+  would make this mutation an oracle for which subdomains other customers
+  already hold.
+- **Rollback is forward-only.** It promotes the old *content* as a new version
+  and retires the current one. `siteVersionTransitions.retired` is terminal, so
+  un-retiring is not expressible — and mutating a historical row in place would
+  destroy the record of what was live when.
+- **`unpublish` clears `currentVersionId` and leaves `status: "published"`.**
+  `siteTransitions.published` is terminal, so the pointer is the only takedown
+  mechanism. WP30's kill switch depends on this.
+
+### The S3 soft-404 deviation is CLOSED
+
+S3 recorded that unpublished, retired, and unknown sites answered **200** with
+the not-found body, because `notFound()` cannot set a status under PPR, and
+escalated the fix here.
+
+Resolved with a **best-effort, fail-open** publish check in middleware
+(`lib/tenant-publish-check.ts`). The concern that made me escalate rather than
+implement it at S3 — that a Convex blip would dark every customer site at once
+— is answered by failing *open*:
+
+- Only a definitive `false` produces a 404.
+- Every ambiguous outcome — no configured URL, non-OK response, Convex error
+  payload, non-boolean value, malformed body, network failure, abort/timeout —
+  returns `null`, and middleware serves the route exactly as before.
+- This is **not** an authorization boundary. `app/site/[slug]/page.tsx`
+  independently resolves the site and refuses to render anything unpublished,
+  so the lookup can only ever improve the status code.
+
+A separate `isPublished` query returns a boolean rather than reusing
+`resolvePublishedSite`, so the check does not transfer a whole render spec on
+every request.
+
+**Live evidence (production build, `next start -p 3100`, real Convex data):**
+
+| Host | Case | Before (S3) | After (S4) |
+|---|---|---|---|
+| `acme` / `brightly` / `lumen` | published | 200 site | **200 site** |
+| `draftco` | site status `draft` | 200 soft | **404**, 9-byte bare body |
+| `noversion` | no `currentVersionId` | 200 soft | **404**, 9-byte bare body |
+| `retired` | current version retired | 200 soft | **404**, 9-byte bare body |
+| `nosuchsite` | no such hostname | 200 soft | **404**, 9-byte bare body |
+
+The manifest's "unknown tenant is 404" criterion is now met for unpublished
+*sites* as well as unknown *hosts*.
+
+The fail-open path was also exercised accidentally and for real: before the
+function was deployed, the check received
+`{"status":"error","errorMessage":"Could not find public function…"}` and every
+tenant host continued to serve normally rather than 404ing. That is the
+designed behaviour under backend failure, observed rather than assumed.
+
+### Regression found and fixed: Convex has its own tsconfig
+
+`convex dev` silently **stopped pushing functions**. Root cause: Convex
+typechecks with `convex/tsconfig.json`, which did not carry the
+`allowImportingTsExtensions` flag S1 added to the root config. Once
+`publish.ts` imported `lib/tenant-host.ts` (which imports
+`./canonical-path.ts` with an explicit extension), that typecheck failed and
+the watcher stopped deploying — while the local backend kept serving stale
+functions, so nothing looked broken.
+
+This cost real time and is worth carrying forward: **a wedged `convex dev`
+fails by serving stale functions, not by erroring at the call site.** The
+symptom was `Could not find public function for '…:isPublished'` against a
+backend that was otherwise healthy. Fixed by adding the flag to
+`convex/tsconfig.json` with a comment explaining why. Added to the traps list.
+
+### Mutation testing (trap 10)
+
+Seven mutations, each confirmed applied by `cmp` against a backup:
+
+| Mutation | Result |
+|---|---|
+| Drop the hostname collision guard | **red** (2 failures) |
+| Rollback reuses the old version number instead of promoting | **red** (1) |
+| `unpublish` leaves `currentVersionId` in place | **red** (2) |
+| Drop the server-side slug re-check | green — redundant |
+| Skip the project ownership check | green — redundant |
+| Remove **both** slug guards | **red** (12) |
+| Remove owner scoping from the site lookup index | **red** (3) |
+
+The two green results are genuine defense in depth, traced rather than
+assumed: `tenantHostForSlug` re-validates the slug independently, and the
+`by_ownerId_and_projectId` index scopes ownership on its own. Removing the
+*effective* guard in each pair turns the suite red, so both properties are
+pinned. Recorded because a future refactor that removes the second guard in
+either pair would be caught by nothing.
+
+### Checks
+
+- `npm run typecheck` — exit 0
+- `npm run lint` — exit 0, 0 errors, 35 pre-existing warnings (unchanged)
+- `npm test` — exit 0. Node groups 91/6/**29**/60/4, vitest groups
+  **159**/172/84/**612**. Redirects vitest 147 → 159, Convex 585 → 612.
+  Confirmed in the full run.
+- `npm run build` — exit 0, 314 pages
+- `npm audit --omit=dev --audit-level=high` — 0 vulnerabilities
+- `git diff --check` — clean
+- `convex/schema.ts` — unchanged (`git diff --stat` empty)
+
+**Docs updated:** this file; `docs/wp/wp28-stories.md` S3 and S4 checked, S3's
+open deviation marked closed.
+
+**Not done:** lead capture (S5); reserved list still provisional pending owner
+ruling #1; the tenant publish check adds one backend round trip per tenant
+request, which is not cached — worth revisiting if tenant traffic grows.

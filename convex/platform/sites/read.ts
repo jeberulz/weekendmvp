@@ -49,6 +49,35 @@ async function siteForHostname(
   return matches[0];
 }
 
+/**
+ * WP28-S4. Whether a hostname is live, without shipping the page content.
+ *
+ * Exists for `middleware.ts`, which must answer a genuine 404 for an
+ * unpublished tenant host — `notFound()` cannot set a status under PPR. Kept
+ * separate from `resolvePublishedSite` so the middleware check transfers a
+ * boolean rather than an entire render spec on every request.
+ *
+ * Leaks nothing `resolvePublishedSite` does not already: it answers exactly
+ * the question a visitor could answer anyway by loading the page.
+ */
+export const isPublished = query({
+  args: { hostname: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, args): Promise<boolean> => {
+    const site = await siteForHostname(ctx, args.hostname);
+    if (site === null || site.archivedAt !== undefined) return false;
+    if (site.status !== "published" || site.currentVersionId === undefined) {
+      return false;
+    }
+    const version = await ctx.db.get(site.currentVersionId);
+    return (
+      version !== null &&
+      version.siteConfigId === site._id &&
+      version.status === "published"
+    );
+  },
+});
+
 export const resolvePublishedSite = query({
   args: { hostname: v.string() },
   returns: v.union(v.null(), publishedSiteValidator),

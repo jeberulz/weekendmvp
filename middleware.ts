@@ -13,7 +13,8 @@ import {
   isAuthManagedPath,
   isSensitiveAuthPath,
 } from "./lib/auth-return";
-import { classifyHost } from "./lib/tenant-host";
+import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
+import { checkTenantSitePublished } from "./lib/tenant-publish-check";
 
 /**
  * One-hop host + path canonicalization.
@@ -172,6 +173,24 @@ export async function middleware(
     if (request.nextUrl.pathname !== "/") {
       return hostRejectedResponse();
     }
+    // A genuine 404 for a host that is not live. `notFound()` inside the
+    // route cannot do this: PPR flushes a 200 shell before it runs, which
+    // left an unpublished site answering 200 with a not-found body — a soft
+    // 404 on a public customer page.
+    //
+    // Best-effort and fail-open by design. This is not the authorization
+    // boundary; the route independently refuses to render anything
+    // unpublished. `null` means "could not tell", and serving the route is
+    // the safe answer — failing closed here would take every customer site
+    // offline on a single Convex blip.
+    const hostname = tenantHostForSlug(host.slug);
+    if (hostname !== null) {
+      const published = await checkTenantSitePublished(hostname);
+      if (published === false) {
+        return hostRejectedResponse();
+      }
+    }
+
     // Internal rewrite, not a redirect: the visitor's URL stays on the
     // customer's host. `/site/{slug}` is unreachable by address — it is 404ed
     // on every platform host below.
