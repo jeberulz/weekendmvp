@@ -71,7 +71,7 @@ All provider gaps are now closed. `S2` is unblocked.
     - Independent review of this story alone (it is the contract subgate)
       before any S2+ work is treated as unblocking WP27.
 
-- [ ] `WP26-S2` - Engine provider adapters behind a stable interface
+- [x] `WP26-S2` - Engine provider adapters behind a stable interface
   - Unblocked as of 2026-08-06: all three providers are ruled (see "Ruled
     Inputs" above and `docs/wp/RULINGS.md`).
   - Scope: `convex/platform/engine/providers/{openai,perplexity,keywordData}.ts`,

@@ -25,6 +25,12 @@ import type * as platform_billing_provider from "../platform/billing/provider.js
 import type * as platform_billing_queries from "../platform/billing/queries.js";
 import type * as platform_briefPayload from "../platform/briefPayload.js";
 import type * as platform_engine_contracts from "../platform/engine/contracts.js";
+import type * as platform_engine_providers_fixtures from "../platform/engine/providers/fixtures.js";
+import type * as platform_engine_providers_keywordData from "../platform/engine/providers/keywordData.js";
+import type * as platform_engine_providers_openai from "../platform/engine/providers/openai.js";
+import type * as platform_engine_providers_perplexity from "../platform/engine/providers/perplexity.js";
+import type * as platform_engine_providers_pricing from "../platform/engine/providers/pricing.js";
+import type * as platform_engine_providers_types from "../platform/engine/providers/types.js";
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_projects from "../platform/projects.js";
@@ -61,6 +67,12 @@ declare const fullApi: ApiFromModules<{
   "platform/billing/queries": typeof platform_billing_queries;
   "platform/briefPayload": typeof platform_briefPayload;
   "platform/engine/contracts": typeof platform_engine_contracts;
+  "platform/engine/providers/fixtures": typeof platform_engine_providers_fixtures;
+  "platform/engine/providers/keywordData": typeof platform_engine_providers_keywordData;
+  "platform/engine/providers/openai": typeof platform_engine_providers_openai;
+  "platform/engine/providers/perplexity": typeof platform_engine_providers_perplexity;
+  "platform/engine/providers/pricing": typeof platform_engine_providers_pricing;
+  "platform/engine/providers/types": typeof platform_engine_providers_types;
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/projects": typeof platform_projects;

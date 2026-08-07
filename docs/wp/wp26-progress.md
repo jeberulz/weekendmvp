@@ -54,3 +54,114 @@ Append-only progress log. Do not rely on chat history for project state.
 - Two guardrails were added to `S2` off the back of this, both aimed at failure modes the ruling itself does not prevent: the OpenAI adapter must pin a **dated snapshot** rather than a floating alias, so a provider-side model rotation cannot silently move report quality or cost; and the keyword adapter must **fail closed** on provider error rather than fall back to a model-generated estimate, since a hallucinated search volume is precisely the failure the keyword-provider ruling exists to prevent.
 - `S4`'s pre-call reservations should be calibrated against the ~$0.52 reference figure, and the credential-backed activation gate should compare real spend against it — a real run landing several times higher indicates the estimate model is wrong, even if it technically stayed under the cap.
 - **No ruling gaps remain open in WP26.** `S2` through `S6` are unblocked and may proceed in order. No code was written in this session; changes are docs-only.
+
+---
+
+## 2026-08-07 - WP26-S2 provider adapters delivered
+
+**What shipped:** `convex/platform/engine/providers/` —
+`types.ts` (three role interfaces + typed errors + `requireSecret`),
+`pricing.ts` (rate cards and cost estimation), `openai.ts`, `perplexity.ts`,
+`keywordData.ts`, `fixtures.ts`, `providers.test.ts` (35 tests).
+`.env.example` gained `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`,
+`DATAFORSEO_PASSWORD`. No schema change; no live network call anywhere.
+
+### Deviation: there is no dated snapshot to pin
+
+The AC requires pinning "a dated model snapshot resolved at implementation
+time, not a floating alias". Checked OpenAI's model documentation on
+2026-08-07: **`gpt-5.6-sol` has no dated snapshot.** The docs list a single
+identifier, `gpt-5.6-sol`, with the floating alias `gpt-5.6` routing to it.
+
+Pinned `gpt-5.6-sol` — the concrete model ID — and never the alias. A test
+asserts the adapter's `model` is not `gpt-5.6`. Inventing a plausible date
+would have produced a config that 404s on the first live call, so the
+deviation is recorded rather than papered over. **Re-pin when OpenAI ships a
+dated snapshot.**
+
+### Cost trap the ruling does not mention
+
+OpenAI's documentation (2026-08-07) states prompts above **272K input tokens**
+are billed at **2x input and 1.5x output for the full request** — not for the
+excess. A cost model without this under-reserves by roughly 2x on exactly the
+runs most likely to breach the $4.00 cap. Implemented in
+`estimateSynthesisUsd` and tested: one token over the threshold nearly doubles
+the estimate. Also captured: cached input bills at $0.50/1M rather than $5.00.
+
+`REFERENCE_RUN_USD` ($0.52) is exported alongside the cap so `S6` can assert a
+run has not drifted, rather than only that it stayed under a cap set 8x above
+expected cost — a serious regression would hide beneath it.
+
+### Deviation: fixtures are authored, not recorded
+
+The AC asks for "recorded request/response pairs". No provider credentials
+exist in this environment and the manifest keeps live calls disabled until
+this story's test-mode gate passes, so nothing could be recorded. The fixtures
+are authored from each provider's documented response shape.
+
+They verify **our parsing contract**, not that the provider still emits that
+shape. Adapters under test are the real ones — only the transport is
+substituted — so parsing, fail-closed behaviour and cost estimation all
+execute as in production. Shape drift would surface at `S6`'s eval against a
+live deployment. Nothing needed scrubbing: the fixtures contain no credential,
+account identifier, or request header by construction.
+
+### Fail-closed behaviour, per role
+
+- **Config errors are non-retryable** and typed separately, so `S3` does not
+  spend a retry and `S4` does not reserve budget on a failure that will repeat
+  identically.
+- `requireSecret` **refuses any `NEXT_PUBLIC_*` name outright**, before
+  reading the environment — a credential that reached a client bundle is
+  compromised, and a set value must not make it acceptable.
+- **Synthesis** fails closed on empty model output, which would otherwise
+  become silently missing report sections.
+- **Search** is citation-only: snippets capped at 320 characters, non-`http(s)`
+  URLs dropped (a citation is republished to readers), and a response with no
+  usable citation fails rather than feeding an uncited scored section.
+- **Keyword data never estimates.** `KeywordMetric` has no confidence or
+  source field, so a model guess has nowhere to live. A keyword missing any
+  metric is dropped rather than defaulted to zero — coercing an absent `cpc`
+  to 0 would assert as measured fact that a keyword has no commercial value.
+  An empty result set **throws**, because `[]` downstream reads as "no
+  demand", which is a finding rather than a measurement failure. DataForSEO
+  returns HTTP 200 with an error status in the body, so `response.ok` alone
+  would wave failures through; both the envelope and per-task status codes are
+  checked.
+
+### A test of mine broke WP20's environment gate, correctly
+
+`providers.test.ts` originally set `process.env.NEXT_PUBLIC_LEAKED`. WP20's
+"every statically referenced environment key is named in .env.example" test
+scans for `process.env.X` and failed. Fixed by never assigning it and
+assembling the name instead — which makes the assertion **stronger**: it now
+proves the prefix check rejects the name without consulting the environment
+at all.
+
+### Checks
+
+- `npm run typecheck` exit 0 (after clearing `.next/types` left stale by a
+  build on the WP28 branch — those routes do not exist here)
+- `npm run lint` exit 0, 0 errors, 35 pre-existing warnings
+- `npm test` exit 0 — node 91/6/7/10/4, vitest 125/172/**528**
+- `npm run build` exit 0, 310 pages
+- `git diff --check` clean; `convex/schema.ts` unchanged
+
+### `npm audit` FAILS — pre-existing, not from this story
+
+`npm audit --omit=dev --audit-level=high` exits 1:
+`nanoid <3.3.17` (high, GHSA-2v37-7h3g-55p8), reached via
+`next@16.3.0 → postcss@8.5.23 → nanoid@3.3.16`.
+
+**Not introduced here.** The lockfile pins `nanoid@3.3.16` identically on this
+branch and on `codex/wp28-tenant-hosts`; the advisory is newly published. It
+therefore also invalidates the "0 vulnerabilities" line in the **WP28 gate
+report**, which was true when measured on 2026-08-07 and is now stale.
+
+Not fixed here: `package-lock.json` is a serialized one-writer seam and
+dependency/security baseline is WP20's, not WP26-S2's. **Escalated for owner
+direction.**
+
+**Docs updated:** this file; `docs/wp/wp26-stories.md` S2 checked.
+
+**Next:** `WP26-S3` durable task/workflow execution.
