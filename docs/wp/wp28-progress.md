@@ -681,3 +681,65 @@ Five mutations, each confirmed applied by `cmp`, all **red**:
 
 **Not done:** `WP28-S6` — activation runbook (dry run against Vercel preview
 deployments) and the package gate, including independent review.
+
+---
+
+## 2026-08-07 - WP28-S6 activation runbook written (gate NOT yet closed)
+
+**What shipped:** `docs/wp/wp28-activation-runbook.md`.
+
+Structured as owner-executed steps in the style of `docs/runbooks/2026-cutover.md`:
+prerequisites, wildcard DNS and certificate, the host matrix that gates
+activation, publish/rollback/takedown semantics, a pre-flight check, rollback,
+the dry-run execution record, and carried-forward items.
+
+Three things in it are load-bearing and worth repeating here:
+
+1. **A pre-flight check that refuses activation against a pre-WP28 deployment.**
+   `curl -H 'host: nosuchtenant.weekendmvp.app' <deployment>/dashboard` must
+   return 404. On pre-WP28 code it returns 200 or 307, because every unknown
+   host fell through to the full app. Activating a wildcard against such a
+   deployment would expose `/dashboard` at every subdomain.
+2. **Rollback is DNS-first.** Reverting the WP28 code while the wildcard is
+   still live *re-creates* the original vulnerability. The runbook says so
+   explicitly at the revert step, because the instinct under pressure is to
+   revert the code first.
+3. **The `NEXT_PUBLIC_CONVEX_URL` build-time trap.** It is inlined at build,
+   so if it is empty at build time `lib/tenant-publish-check.ts` returns
+   `null` for every request and every unpublished tenant host soft-404s again
+   — silently. Same class of failure as the `NEXT_PUBLIC_GA_ID` trap already
+   in `CLAUDE.md`.
+
+### Dry run — what was and was not executed
+
+**Executed:** the full §3 host matrix, tenant page assertions, the lead
+endpoint matrix, publish/rollback/unpublish, and the §5 pre-flight, all
+against a local **production build** (`next build` + `next start`) with real
+Convex data. Evidence is in the S1–S5 entries above.
+
+**Not executed:** deploying the branch to a Vercel preview. That requires
+pushing `codex/wp28-tenant-hosts` to `origin` and creating a deployment — an
+outward-facing action on a branch that is currently local-only, and the
+owner's call rather than the package's. Recorded in the runbook as an explicit
+gap, with the specific reason it matters: Vercel's edge sets both `Host` and
+`X-Forwarded-Host`, and middleware reads `Host`, so the matrix should be
+re-run behind the proxy before WP31 activation.
+
+**Not executed:** everything in §2 (wildcard DNS, domain, certificate). WP31
+owns those, and WP28 must not touch them.
+
+### Gate status: OPEN
+
+The package gate is **not closed**. Outstanding:
+
+- Independent high-risk review — commissioned 2026-08-07, running. Covering
+  host confusion and header spoofing, tenant→platform isolation, cookie scope,
+  publish atomicity under concurrency, and lead ownership, plus a test-quality
+  pass for vacuous assertions and suites orphaned from `npm test`.
+- Gate report entry in `docs/wp/wave-gate-report.md`, to be written once the
+  review returns.
+
+Self-review is not sufficient here and the precedent is concrete: on WP27 the
+independent reviewer found a HIGH the implementer missed (GA4 exporting live
+capability tokens), and the implementer's own progress doc had claimed the
+opposite property held.
