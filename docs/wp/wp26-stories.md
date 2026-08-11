@@ -109,7 +109,7 @@ All provider gaps are now closed. `S2` is unblocked.
     - A test proving a failing keyword provider fails closed rather than
       returning synthesized keyword metrics.
 
-- [ ] `WP26-S3` - Durable task/workflow execution (resume/retry/cancel/timeout/onComplete)
+- [x] `WP26-S3` - Durable task/workflow execution (resume/retry/cancel/timeout/onComplete)
   - Scope: workflow mount/manager, `convex/platform/engine/tasks.ts`,
     `convex/platform/engine/steps/*.ts` (one file per pipeline step:
     brief normalization, market stats, competitors, community signals,

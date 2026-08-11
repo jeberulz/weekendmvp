@@ -25,12 +25,27 @@ import type * as platform_billing_provider from "../platform/billing/provider.js
 import type * as platform_billing_queries from "../platform/billing/queries.js";
 import type * as platform_briefPayload from "../platform/briefPayload.js";
 import type * as platform_engine_contracts from "../platform/engine/contracts.js";
+import type * as platform_engine_executor from "../platform/engine/executor.js";
+import type * as platform_engine_pipeline from "../platform/engine/pipeline.js";
 import type * as platform_engine_providers_fixtures from "../platform/engine/providers/fixtures.js";
 import type * as platform_engine_providers_keywordData from "../platform/engine/providers/keywordData.js";
 import type * as platform_engine_providers_openai from "../platform/engine/providers/openai.js";
 import type * as platform_engine_providers_perplexity from "../platform/engine/providers/perplexity.js";
 import type * as platform_engine_providers_pricing from "../platform/engine/providers/pricing.js";
+import type * as platform_engine_providers_registry from "../platform/engine/providers/registry.js";
 import type * as platform_engine_providers_types from "../platform/engine/providers/types.js";
+import type * as platform_engine_reconcile from "../platform/engine/reconcile.js";
+import type * as platform_engine_steps_briefNormalization from "../platform/engine/steps/briefNormalization.js";
+import type * as platform_engine_steps_communitySignals from "../platform/engine/steps/communitySignals.js";
+import type * as platform_engine_steps_competitors from "../platform/engine/steps/competitors.js";
+import type * as platform_engine_steps_keywordsDemand from "../platform/engine/steps/keywordsDemand.js";
+import type * as platform_engine_steps_marketStats from "../platform/engine/steps/marketStats.js";
+import type * as platform_engine_steps_reportRender from "../platform/engine/steps/reportRender.js";
+import type * as platform_engine_steps_runner from "../platform/engine/steps/runner.js";
+import type * as platform_engine_steps_shared from "../platform/engine/steps/shared.js";
+import type * as platform_engine_steps_synthesisScoring from "../platform/engine/steps/synthesisScoring.js";
+import type * as platform_engine_tasks from "../platform/engine/tasks.js";
+import type * as platform_engine_workflow from "../platform/engine/workflow.js";
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_projects from "../platform/projects.js";
@@ -67,12 +82,27 @@ declare const fullApi: ApiFromModules<{
   "platform/billing/queries": typeof platform_billing_queries;
   "platform/briefPayload": typeof platform_briefPayload;
   "platform/engine/contracts": typeof platform_engine_contracts;
+  "platform/engine/executor": typeof platform_engine_executor;
+  "platform/engine/pipeline": typeof platform_engine_pipeline;
   "platform/engine/providers/fixtures": typeof platform_engine_providers_fixtures;
   "platform/engine/providers/keywordData": typeof platform_engine_providers_keywordData;
   "platform/engine/providers/openai": typeof platform_engine_providers_openai;
   "platform/engine/providers/perplexity": typeof platform_engine_providers_perplexity;
   "platform/engine/providers/pricing": typeof platform_engine_providers_pricing;
+  "platform/engine/providers/registry": typeof platform_engine_providers_registry;
   "platform/engine/providers/types": typeof platform_engine_providers_types;
+  "platform/engine/reconcile": typeof platform_engine_reconcile;
+  "platform/engine/steps/briefNormalization": typeof platform_engine_steps_briefNormalization;
+  "platform/engine/steps/communitySignals": typeof platform_engine_steps_communitySignals;
+  "platform/engine/steps/competitors": typeof platform_engine_steps_competitors;
+  "platform/engine/steps/keywordsDemand": typeof platform_engine_steps_keywordsDemand;
+  "platform/engine/steps/marketStats": typeof platform_engine_steps_marketStats;
+  "platform/engine/steps/reportRender": typeof platform_engine_steps_reportRender;
+  "platform/engine/steps/runner": typeof platform_engine_steps_runner;
+  "platform/engine/steps/shared": typeof platform_engine_steps_shared;
+  "platform/engine/steps/synthesisScoring": typeof platform_engine_steps_synthesisScoring;
+  "platform/engine/tasks": typeof platform_engine_tasks;
+  "platform/engine/workflow": typeof platform_engine_workflow;
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/projects": typeof platform_projects;
@@ -112,4 +142,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
+};

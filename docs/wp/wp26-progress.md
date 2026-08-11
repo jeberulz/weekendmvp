@@ -165,3 +165,164 @@ direction.**
 **Docs updated:** this file; `docs/wp/wp26-stories.md` S2 checked.
 
 **Next:** `WP26-S3` durable task/workflow execution.
+
+---
+
+## WP26-S3 — Durable task/workflow execution (2026-08-11)
+
+Branch `codex/wp26-research-workflow`, built in `.worktrees/wp26-research-workflow`
+because a parallel session held the main checkout on `codex/content-prep-2026-08-08`
+with uncommitted content work.
+
+**Files:** `convex/platform/engine/{pipeline,reconcile,executor,tasks,workflow}.ts`,
+`convex/platform/engine/steps/{runner,shared,briefNormalization,marketStats,competitors,communitySignals,keywordsDemand,synthesisScoring,reportRender}.ts`,
+`convex/platform/engine/providers/registry.ts`, `convex/convex.config.ts` (one line),
+`convex/platform/engine/executor.test.ts`, `convex/wp26Workflow.test.ts`, `.env.example`.
+
+### Runtime choice — Convex Workflow, not Vercel Workflow DevKit
+
+The story left this to implementation and required the rationale be recorded.
+
+**Chosen: `@convex-dev/workflow` (already a dependency, previously unmounted).**
+The deciding factor is that the durable journal and the credit ledger must not
+live in different systems. Every piece of state a run touches — `tasks`,
+`task_steps`, `workflow_runs`, `documents`, `credit_ledger` — is already in
+Convex, so a Convex-native journal lets "this step completed" and "these credits
+moved" commit together. Vercel Workflow DevKit would still need a Convex
+mutation per step to persist results, making every step a cross-service round
+trip with **its own** crash window — multiplying the reconciliation surface this
+story exists to close rather than removing it. The component also supplies
+resume, `onComplete`, and out-of-band execution natively, which satisfies the
+"no long-running Next.js request" criterion without a queue of our own.
+
+The frozen schema corroborates this: `tasks`, `task_steps`, and `workflow_runs`
+already exist, and `@convex-dev/workflow` was already in `package.json`.
+
+### Four frozen-schema constraints, and how each was resolved
+
+1. **`STEP_TYPE_VALUES` has five coarse values for a seven-step pipeline**, four
+   of which are all `research`, and `task_steps` has no name column. So
+   `position` is the step's identity, and everything that addresses one specific
+   step keys off position. Positions are a persisted contract: renumbering them
+   re-points in-flight idempotency keys at the wrong steps.
+2. **`stepTransitions.failed` is terminal**, so the retry cannot mark a step
+   failed and reopen it. A step therefore stays `running` across both attempts
+   and transitions exactly once, at the end.
+3. **`task_steps` has no attempt counter, idempotency key, or error field**, so
+   the per-attempt provider-call record lives in `workflow_runs` — the only
+   frozen table carrying `idempotencyKey`, `attempt`, and `errorCode`. One row
+   per attempt (not per step), because `workflowRunTransitions` also makes
+   `succeeded`/`failed` terminal and a reopened row is not expressible.
+4. **No column anywhere stores the component's `WorkflowId`**, so a run cannot
+   be looked up for a component-level `cancel()`. This turned out not to matter
+   — see below.
+
+### Cancellation is cooperative, and that is the correct reading
+
+The component can hard-cancel a run, but that would abandon a provider call
+mid-flight: money spent with nothing recorded, which is exactly the state the
+reconciliation rule exists to prevent. The AC asks that a cancelled run
+"stops issuing new provider calls and **settles any in-flight one** before
+finishing" — that is cooperative cancellation, not a kill. `requestCancel` marks
+the task `cancelled`; the in-flight step settles its own attempt record and the
+next step refuses to start. The missing `WorkflowId` column is therefore not a
+gap for this story.
+
+### Deviation 1 — retry-once fires only on 429/5xx, not on every failure
+
+The AC says a failed step "retries **exactly once**… never zero times". As
+written that would retry every failure class. Implemented narrower, deliberately:
+
+The question that decides whether a retry is safe is not "was this error
+transient" but **"do we know the provider did not bill us"**. Three classes:
+
+| Class | Examples | Retry? |
+|---|---|---|
+| `retryable-unbilled` | 429, 5xx | **yes**, exactly once |
+| `indeterminate` | our timeout, network drop after send, unparseable 200, a 200 whose content was unusable | no — may already be billed |
+| `permanent` | 4xx other than 429, `ProviderConfigError` | no — a retry reproduces it |
+
+Retrying an `indeterminate` failure spends the customer's money twice for one
+step. Retrying a `permanent` one spends the retry budget to reproduce the same
+error. Note this also means S2's `retryable: boolean` is **not** sufficient for
+this decision and is deliberately not consulted: S2 marks an unparseable 200
+`retryable: true`, but that response was billed. A test pins that distinction.
+
+Worth noting the retry policy is narrower than it looks in practice: under a
+provider that dedupes on an idempotency key, a resend returns the *same*
+unusable response, so retrying a billed-but-useless result never helps either.
+
+### Deviation 2 — a third reconciliation branch the AC does not name
+
+The AC offers two safe answers for a resumed step with an unsettled paid call:
+reuse the provider's idempotency key, or look the result up under that key.
+**A provider that offers neither exists.** Perplexity chat completions and
+DataForSEO's synchronous `live` endpoints have no documented idempotency-key
+header and no "fetch the result of call K" lookup. For those, both named
+strategies are unavailable and resending is definitely wrong.
+
+So the third branch is **fail closed and do not resend** — costing one
+already-spent call and routing the run to S4's refund path, which is what the
+program's "money changes only from server-verified, idempotent events" boundary
+demands.
+
+`PROVIDER_REPLAY_SAFETY` accordingly ships with **every role set to `"none"`**.
+This is the fail-safe default, not a placeholder: wrongly assuming a provider
+dedupes double-charges on every crash, while wrongly assuming it does not costs
+one call and refunds the customer. Only the first is a money bug. OpenAI is the
+strongest promotion candidate and the executor already submits a stable key for
+it; promotion is one line plus evidence, and belongs to the credential-backed
+activation gate, which is the only place the claim can actually be verified.
+
+Note this makes resume conservative but not broken: the workflow journal still
+resumes every *completed* step: only the one step that was mid-call when the
+process died fails.
+
+### ESCALATION — a cancelled run can never be refunded
+
+`assertTaskRefundEligible` (WP22-frozen) requires `status === "failed"`, and
+`taskTransitions.cancelled` is terminal with no path to `failed`. So a run
+cancelled after it has already spent provider money **cannot be refunded under
+the frozen contract**. S3 does not invent a money path, so this is left as-is
+and raised for S4 / owner direction. Options: allow refund from `cancelled`,
+require cancellation to route through `failed`, or rule that mid-run
+cancellation forfeits spend.
+
+### Trap 12 — a self-referencing Convex module silently degrades the whole `api` type
+
+`workflow.ts` calls `internal.platform.engine.workflow.validationReport` from
+inside its own module. Without an explicit handler return-type annotation,
+TypeScript resolves that module's exports to `any` — and the damage is **not
+local**: `ideas.test.ts`, `billing.test.ts`, and `platformIdeas.test.ts` all
+started failing with `TS7006/TS7031` implicit-any errors in code S3 never
+touched. Annotating the handler's return type fixed all of them at once. The
+Convex guidelines mention the annotation for `ctx.runQuery` in-file calls; the
+blast radius is what was surprising.
+
+### Checks
+
+- `npm run typecheck` exit 0
+- `npm run lint` exit 0, 0 errors, 35 pre-existing warnings
+- `npm test` exit 0 — node 91/6/7/10/4, vitest: redirects 25, auth 38,
+  **convex 164 → 215** (+51: 29 executor, 22 run/step state)
+- `npm run build` exit 0, 310 pages (unchanged)
+- `git diff --check` clean; `convex/schema.ts` unchanged
+- Executor guards mutation-tested: dropping the attempt ceiling, loosening
+  `< MAX_ATTEMPTS` to `<=`, treating a missing HTTP status as retryable, and
+  bypassing the fail-closed branch each fail a test.
+
+**Correction to the S2 entry:** it records `vitest 125/172/528`. The Convex
+figure is wrong — the suite measures 164 at S2's tree and 215 with S3's tests.
+No tests were lost; all 12 pre-existing Convex files still pass.
+
+### `npm audit` still FAILS — unchanged from S2, still escalated
+
+`nanoid <3.3.17` (high, GHSA-2v37-7h3g-55p8) via `next@16.3.0 → postcss`.
+Identical to the S2 finding; not introduced or worsened by S3, and still not
+fixed because `package-lock.json` is a serialized one-writer seam owned by WP20.
+
+**Docs updated:** this file; `docs/wp/wp26-stories.md` S3 checked.
+
+**Next:** `WP26-S4` cost cap enforcement and exact-once refund — which consumes
+this story's `reserve()` seam (already invoked before every attempt, including
+the retry) and must resolve the cancelled-run refund escalation above.
