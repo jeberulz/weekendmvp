@@ -46,3 +46,15 @@ Append-only progress log. Do not rely on chat history for project state.
   - Playwright reaches `localhost` only with the agent proxy disabled (`--no-proxy-server` plus `NO_PROXY`), otherwise every navigation returns `ERR_PROXY_CONNECTION_FAILED`.
 - Verification NOT done, and why: the live Beehiiv round trip. `BEEHIIV_API_KEY` is absent in this environment, so `/api/subscribe` returns its documented 500 before reaching Beehiiv, and `routed_to.utm_campaign` could not be observed on a success response. What was verified instead: every `utm_campaign` posted from client code resolves against `ALLOWED_UTM_CAMPAIGNS` (both the literal `dare-workshop`/`shipable-workshop` call sites and the `PLAYBOOK_UTM_CAMPAIGN` constant). **Confirm `routed_to.utm_campaign === "playbook"` on the first real signup after deploy.**
 - Next: Deploy, then the follow-ons — a `playbook-8slide` carousel layout, a `playbook` OG surface, and a `/playbooks` index once three exist.
+
+## 2026-08-11 - Post-PR verification attempt
+
+- Actions taken: Opened as [PR #45](https://github.com/jeberulz/weekendmvp/pull/45) on `922999e`. Attempted the outstanding Beehiiv attribution check against the Vercel preview deployment. Corrected the auto-generated PR description and subscribed to PR activity.
+- Decisions made: Did not attempt any workaround for the blocked network egress — no disabling TLS verification, no unsetting `HTTPS_PROXY`. The check moves to post-deploy.
+- Checks run:
+  - `GET` and `POST` against `https://weekendmvp-git-claude-lead-magne-65b4fe-john-iseghohis-projects.vercel.app` — **blocked**. Four attempts, plus `https://www.weekendmvp.app`. The agent proxy answers `403` to `CONNECT` for both hosts (`gateway answered 403 to CONNECT (policy denial or upstream failure)`). This session's network policy does not permit either origin.
+  - CI on the PR: `Vercel Preview Comments` success; `check-links` **failure**.
+- Result: **The Beehiiv attribution check remains unverified.** No subscriber was created — the request never left this environment. The owner approved testing with `iseghohi.john+wp19@gmail.com`; that address was never submitted anywhere.
+- Gotchas:
+  - **`check-links` CI is broken repo-wide and predates this branch.** `.github/workflows/ci.yml` runs `npm run check:links`, `check:stylesheets` and `check:all-nav`. `git log --all -S` confirms **none of those three scripts has ever existed in `package.json` in any commit**. The job therefore fails at its first check step on every PR and every push to `main`, and has never passed. The `npm run build` step inside the same job succeeds here and prerenders `/playbooks/decision-stack`. Out of scope for WP19; raised with the owner rather than silently repointing the repo's merge gates, which is a product decision (`AGENTS.workflow.md`: unknown scope means stop and ask).
+- Next: Owner to confirm `routed_to.utm_campaign === "playbook"` on the first real signup after deploy. Awaiting a decision on whether to repair `ci.yml` as separate work.
