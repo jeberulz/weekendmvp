@@ -39,7 +39,12 @@ Append-only progress log. Do not rely on chat history for project state.
   - Gate matrix in a real browser: fresh visitor locked (2 forms), and unlocked for a `weekendmvp_subscribed` holder, an `ideas_email` holder, and a `?utm_source=beehiiv` arrival (1 form). The framework body renders in all four states.
   - Copy button writes the full 810-character prompt to the clipboard. Tab order follows visual order: logo → hero email → hero submit → both copy buttons → pack email → pack submit → CTA → footer.
   - Contrast: 11 sampled foreground/background pairs computed against WCAG 2.1 AA; all pass. Rendered at 390px and 1280px with no horizontal overflow.
-- Result: Complete. All four stories met their acceptance criteria.
+- Result: S1–S3 met their acceptance criteria. **S4 is code-complete but NOT accepted** — its verification criterion requires a live subscribe response reporting `routed_to.utm_campaign === "playbook"`, which has not been observed. See the 2026-08-11 post-PR entry.
+- Stat-tile citations (WP19-S3), reproduced from the `source` fields in `decisionStack.outcomes.stats`:
+  - `160` — `ideas/manifest.json`, 160 entries
+  - `8–10 hrs` — `ideas/manifest.json` `buildTime`: 8–10 (61), 10 (50), 8 (25) of 160
+  - `3` — the 3-screen MVP rule in `app/(marketing)/starter-kit/_sections.tsx`
+  - `400+` — "a community of 400+ weekend builders", `app/(marketing)/about/page.tsx`
 - Gotchas:
   - **Two defects found and fixed by looking at the rendered page rather than trusting the build.** (1) The loop connectors were `<li>` siblings inside the `<ol>`, so each diagram announced eleven list items with five empty ones and misleading numbering; connectors now sit inside the `<li>` they precede. (2) `border-stone-400` on the email inputs was 2.5:1 against the white panel and failed WCAG 1.4.11; moved to `border-stone-500` at 4.8:1.
   - A stale `next start` from before a rebuild survived a `pkill` and kept serving replaced chunk hashes, which looked like a page failure. Killed by PID; the page was fine.
@@ -58,3 +63,20 @@ Append-only progress log. Do not rely on chat history for project state.
 - Gotchas:
   - **`check-links` CI is broken repo-wide and predates this branch.** `.github/workflows/ci.yml` runs `npm run check:links`, `check:stylesheets` and `check:all-nav`. `git log --all -S` confirms **none of those three scripts has ever existed in `package.json` in any commit**. The job therefore fails at its first check step on every PR and every push to `main`, and has never passed. The `npm run build` step inside the same job succeeds here and prerenders `/playbooks/decision-stack`. Out of scope for WP19; raised with the owner rather than silently repointing the repo's merge gates, which is a product decision (`AGENTS.workflow.md`: unknown scope means stop and ask).
 - Next: Owner to confirm `routed_to.utm_campaign === "playbook"` on the first real signup after deploy. Awaiting a decision on whether to repair `ci.yml` as separate work.
+
+## 2026-08-11 - Review fixes (PR #45)
+
+- Actions taken: Addressed five review findings. Two were functional defects in the gated-pack flow, three were documentation accuracy.
+- Decisions made:
+  - **Hero signup now grants pack access.** `PlaybookCapture` passed no `onSuccess`, so a visitor who subscribed in the hero was asked for the same address again at the pack, and was still locked after a reload. Fixed by granting access on hero success. Because the hero and the pack are sibling components with no shared React state — and the `storage` event does not fire in the tab that wrote the value — a same-tab listener (`onAccessGranted`) was added so the pack unlocks live rather than only on the next mount.
+  - **`?utm_source=beehiiv` is now persisted.** It previously granted access without writing a marker, so the unlock lasted only while the query parameter stayed in the URL and a later direct visit re-asked a known subscriber. Now mirrors `gate-access.ts` and persists on the spot.
+  - **Storage holds a sentinel, not the address.** `grantPackAccess` wrote the raw email to `ideas_email`. `gate-access.ts` only checks that key is non-empty and never reads the value, so this was storing PII for no purpose. Now writes `NEWSLETTER_PLACEHOLDER`; the function no longer takes an email at all.
+  - **WP19-S4 marked pending, not complete.** Its stated criterion requires a live `routed_to.utm_campaign === "playbook"` response, which remains unobserved. The registry status and the "all four stories met their acceptance criteria" line were corrected to match. Marking a story done against an unmet criterion was a bookkeeping error, not a judgement call.
+  - **WP19-S3's criterion pointed at the wrong file.** The stat citations live in the `source` fields of `decisionStack.outcomes.stats`, not in this log. Criterion corrected and the citations reproduced here.
+- Checks run:
+  - `npm run typecheck` clean; `npm test` 108 passing across four node suites plus 5 Convex tests, 0 failures; `npm run build` compiles.
+  - Browser regression for each defect, with `/api/subscribe` stubbed to a success so the client path runs without a Beehiiv key: hero signup flips the pack from locked (2 forms) to unlocked (1 form) without a reload and survives one; a `?utm_source=beehiiv` arrival stays unlocked on a later clean visit; `localStorage.ideas_email` holds `__newsletter__` and does not contain the submitted address.
+  - Original four-state gate matrix re-run — unchanged, no regression.
+- Result: Complete.
+- Gotchas: **My original gate matrix only tested pre-existing subscriber markers; it never tested "sign up here, then use the page".** That hole is exactly where both functional defects lived. The regression script now covers the signup-then-continue path.
+- Next: Unchanged — owner to confirm the live attribution after deploy.

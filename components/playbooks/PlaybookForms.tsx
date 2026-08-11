@@ -25,6 +25,7 @@ import {
   grantPackAccess,
   hasPackAccess,
   isValidEmail,
+  onAccessGranted,
   PLAYBOOK_UTM_CAMPAIGN,
 } from "./playbook-access";
 import {
@@ -64,7 +65,7 @@ function PlaybookEmailForm({
   buttonLabel: string;
   footnote: string;
   successMessage: string;
-  onSuccess?: (email: string) => void;
+  onSuccess?: () => void;
 }) {
   const emailId = React.useId();
   const footnoteId = React.useId();
@@ -106,7 +107,7 @@ function PlaybookEmailForm({
       setStatus("success");
       setMessage(successMessage);
       trackEvent("signup_form_success", { surface, playbook_slug: slug });
-      onSuccess?.(trimmed);
+      onSuccess?.();
       return;
     }
 
@@ -240,6 +241,9 @@ export function PlaybookCapture({
         buttonLabel={buttonLabel}
         footnote={footnote}
         successMessage="You're in. Check your inbox to confirm your subscription."
+        /* Subscribing here unlocks the pack further down the page too —
+           otherwise the visitor is asked for the same address twice. */
+        onSuccess={grantPackAccess}
       />
     </section>
   );
@@ -283,6 +287,9 @@ export function PlaybookPack({
 
   React.useEffect(() => {
     if (hasPackAccess()) setUnlocked(true);
+    // Also unlock live when the hero form succeeds — same tab, sibling
+    // component, so neither React state nor the `storage` event reaches here.
+    return onAccessGranted(() => setUnlocked(true));
   }, []);
 
   return (
@@ -373,10 +380,7 @@ export function PlaybookPack({
             buttonLabel={buttonLabel}
             footnote={footnote}
             successMessage="Unlocked. Check your inbox to confirm your subscription."
-            onSuccess={(email) => {
-              grantPackAccess(email);
-              setUnlocked(true);
-            }}
+            onSuccess={grantPackAccess}
           />
         )}
       </div>

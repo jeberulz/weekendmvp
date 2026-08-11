@@ -36,9 +36,9 @@ Definition of done: A config-driven `/playbooks/{slug}` engine renders chrome-fr
     - Every stat tile is traceable to a value in this repository; no invented metrics and no income or user-count claims
     - Copy follows the established voice: direct, builder-to-builder, no hype
   - Verification:
-    - Each stat tile is cited to its source file in `docs/wp/wp19-progress.md`
+    - Each stat tile carries a `source` field naming where its number comes from, in `decisionStack.outcomes.stats` (`app/playbooks/_playbooks/decision-stack.tsx`); the same citations are reproduced in `docs/wp/wp19-progress.md`
 
-- [x] `WP19-S4` - Email, SEO, and routing plumbing
+- [ ] `WP19-S4` - Email, SEO, and routing plumbing — **pending**: code complete, but the verification criterion below requires a live subscribe response that has not been observed. See `docs/wp/wp19-progress.md`.
   - Scope: `app/api/subscribe/route.ts`, `app/sitemap.ts`, `next.config.ts`
   - Acceptance criteria:
     - `"playbook"` is added to `ALLOWED_UTM_CAMPAIGNS` so the campaign is no longer silently downgraded to `starter-kit`
