@@ -25,12 +25,20 @@ import { SITE } from "@/lib/seo";
 
 const DEFAULT_UTM_CAMPAIGN = "starter-kit";
 
+// A campaign that is not on this list is silently rewritten to
+// DEFAULT_UTM_CAMPAIGN — the subscribe still succeeds, but the attribution is
+// lost. Any new signup surface must add its campaign here.
 const ALLOWED_UTM_CAMPAIGNS = new Set([
   DEFAULT_UTM_CAMPAIGN,
   "shipable-workshop",
+  // app/(marketing)/dare/DareSeatForm.tsx has posted this since the page
+  // shipped; without the entry every DARE seat was recorded as starter-kit.
+  "dare-workshop",
   "newsletter",
   "idea-page",
   "404-page",
+  // app/playbooks/[slug] — the framework microsites (WP19).
+  "playbook",
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { AUDIENCE_SLUGS } from "@/app/ideas-for/[audience]/page";
 import { COLLECTION_SLUGS } from "@/app/ideas/[slug]/collection";
+import { PLAYBOOK_SLUGS } from "@/app/playbooks/_playbooks";
 import { PROBLEM_SLUGS } from "@/app/solve/[problem]/page";
 import {
   listMdxFrontmatter,
@@ -125,6 +126,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const playbooks: Entry[] = PLAYBOOK_SLUGS.map((slug) =>
+    entry(`/playbooks/${slug}`, {
+      changeFrequency: "monthly",
+      priority: 0.85,
+    }),
+  );
+
   return [
     ...rootPages,
     ...ideaPages,
@@ -134,5 +142,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...buildWithHubs,
     ...solveHubs,
     ...collectionHubs,
+    ...playbooks,
   ];
 }
