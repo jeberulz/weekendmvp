@@ -1,0 +1,135 @@
+---
+slug: "supabase-vs-convex-vs-firebase-2026"
+title: "Supabase vs Convex vs Firebase: Which Backend for Your Weekend MVP?"
+description: "A 2026 decision guide for solo founders: free-tier limits, real costs at 10K and 100K users, and the one question that picks your backend in 30 seconds."
+category: "Guide"
+publishedAt: "2026-08-12"
+wordCount: 1445
+readMinutes: 7
+heroAlt: "Three closed hardcover notebooks stacked unevenly on a near-black desk, only the middle spine caught by a narrow lavender beam"
+---
+
+## The Answer First
+
+**Building a web app in TypeScript where live-updating data is the point?** Convex.
+
+**Building anything that would benefit from real SQL, or you want the safest long-term bet?** Supabase.
+
+**Building mobile-first, especially Flutter or native, or you want the fastest possible prototype?** Firebase.
+
+All three are free at weekend-MVP scale. You are not choosing based on price this month — you're choosing based on which one gets your one core flow working by Sunday, and which one you won't resent in a year.
+
+Still deciding what to build before you decide what to build it on? Start at [startup ideas](/startup-ideas).
+
+## Free Tiers, Compared Honestly
+
+| | Firebase (Spark) | Supabase (Free) | Convex (Free) |
+|---|---|---|---|
+| Database | 1 GB Firestore | 500 MB Postgres | ~0.5–1 GB document store |
+| Auth | 50K MAU | 50K MAU | Included |
+| Reads/calls | 50K Firestore reads/day, 20K writes | 5 GB egress | ~1M function calls/month |
+| Storage | 1 GB | 1 GB | Included |
+| Gotcha | Read counts add up invisibly | **Projects pause after 7 days of inactivity** | Function-call ceiling, not storage |
+
+Figures compiled from 2026 comparisons by [Cadence](https://cadence.withremote.ai/blog/convex-vs-supabase-vs-firebase), [DevToolPicks](https://devtoolpicks.com/blog/convex-vs-supabase-vs-firebase-indie-hackers-2026), and [StarterPick](https://starterpick.com/guides/convex-vs-supabase-vs-firebase-2026). Check the pricing pages before you commit — all three move.
+
+**The Supabase 7-day pause is the sharp edge most weekend builders hit.** Your data is safe and you can resume the project, but nothing user-facing should live on the free plan. If you're shipping to real users, you're on the $25 tier from launch day. Budget for it.
+
+## What They Actually Cost as You Grow
+
+| Scale | Firebase (Blaze) | Supabase | Convex |
+|-------|------------------|----------|--------|
+| 1,000 MAU | ~$0 | ~$0 (or $25 to avoid pausing) | ~$0 |
+| 10,000 MAU | ~$30–80 | $25 flat + modest add-ons | $25/dev + usage |
+| 100,000 MAU | ~$300–900 | ~$25–150 | ~$75–300 |
+
+Three billing philosophies, and each fails differently:
+
+**Supabase** bills on database size, bandwidth, and MAU — metrics you already track. That makes it the most forecastable. Pro is $25/month with a $10 compute credit included; production apps commonly land at $30–$150/month once compute and egress scale.
+
+**Firebase** bills per Firestore read: $0.06 per 100,000 reads, $0.18 per 100,000 writes, $0.18/GB stored. Cheap at low read volume, brutal when a dashboard refreshes on a listener loop. A SaaS generating 50M reads/month pays roughly $30 for reads alone before writes and functions. Firestore is where surprise bills come from — not hosting.
+
+**Convex** is per-seat: $25 per developer per month. A solo founder pays $25; a three-person team pays $75. On top of that, function execution and bandwidth meter (roughly $0.20/GB bandwidth), and EU regions cost more. Predictable per call, harder to estimate before launch because you don't yet know how query-heavy your app is.
+
+Whatever you pick, model the bill *before* you price the product. That math is the whole point of [what it actually costs to run an AI app](/articles/what-it-costs-to-run-an-ai-app).
+
+## The Real Differences
+
+### Data model
+
+Firebase gives you Firestore, a NoSQL document store. Fast to start, painful when you discover you need a join.
+
+Supabase gives you actual Postgres: SQL, joins, foreign keys, transactions, plus the extension ecosystem (pgvector, PostGIS, and friends). If your data has relationships — and most products do by month three — this is the one that ages well.
+
+Convex gives you a transactional document store queried with **TypeScript functions instead of SQL**. Relationships work via IDs across tables, and you write reads as code rather than queries.
+
+### Real-time
+
+This is Convex's actual argument. Queries are reactive by default: write a normal query, and connected clients get updates when the underlying data changes. No WebSocket wiring, no subscription bookkeeping, no cache invalidation logic.
+
+Supabase does real-time through Postgres replication and websockets — solid, but you opt into it. Firestore has listeners, which are excellent and also the fastest path to an unexpected read bill.
+
+If your product is collaborative, live, or multiplayer, Convex removes real code. If it's a CRUD app with a dashboard, all three are fine and the real-time question is a distraction.
+
+### Type safety
+
+Convex generates end-to-end types from your schema with no separate codegen step, so a schema change surfaces as a TypeScript error in your React component. Supabase generates TypeScript types from your Postgres schema — very good, one step. Firebase gives you SDK types only.
+
+For a solo founder shipping fast with AI coding tools, this matters more than it sounds. Type errors are the cheapest possible code review, and AI agents make *more* of the mistakes types catch.
+
+### Mobile
+
+Firebase wins, and it isn't close: mature SDKs for iOS, Android, Flutter, Unity, plus Analytics and Crashlytics in the same console. Supabase has Swift, Kotlin, Flutter, and React Native clients. Convex is web and React Native first; native access is via its APIs.
+
+Building the app from [how to build a mobile app in a weekend](/articles/build-a-mobile-app-in-a-weekend-2026)? Firebase or Supabase.
+
+### Lock-in
+
+Supabase is fully open-source with a well-worn self-hosting path — if the pricing or company changes, you can leave with your Postgres. Convex open-sourced its backend, but the self-hosting road is newer and less travelled, and the reactive programming model is genuinely specific to Convex. Firebase is proprietary Google.
+
+Weigh this honestly rather than ideologically: for a weekend MVP that might never see 100 users, lock-in is a rounding error compared to shipping. For a product you intend to run for five years, it's the most expensive decision on this page.
+
+## The 30-Second Decision
+
+1. **Is it mobile-native or Flutter?** → Firebase.
+2. **Is live-updating shared state the core feature?** → Convex.
+3. **Do you need SQL, joins, or a Postgres extension?** → Supabase.
+4. **None of the above / genuinely unsure?** → Supabase. Flat $25, real SQL, open-source escape hatch. It's the lowest-regret default.
+
+Then stop researching and go build. The number of weekend MVPs that died in a backend comparison tab vastly exceeds the number that died from picking wrong.
+
+Pick the build first, then the backend: [startup ideas](/startup-ideas).
+
+## What Nobody Tells You
+
+**Migrating later is easier than the internet claims — but only if you kept business logic out of the database.** Keep your data access in one module. Don't scatter raw queries or platform-specific calls through 40 components. Then a migration is rewriting one folder instead of rewriting your app.
+
+**Your first real cost isn't the database — it's the LLM.** For most AI-flavoured MVPs, model spend dwarfs backend spend by an order of magnitude. Optimizing $25/month while ignoring $400 of token usage is the wrong fight.
+
+**Auth is often the reason to pick a backend.** All three include it, which is why they beat rolling your own — but if you want the smoothest hosted flows, compare against dedicated options in [how to add login to your weekend MVP](/articles/add-auth-to-your-weekend-mvp).
+
+## FAQ
+
+### Is Firebase still a good choice in 2026?
+
+For mobile-first apps and fast prototypes, yes. The risk is read-heavy usage patterns turning into unpredictable bills, and the NoSQL model getting awkward as relationships appear. If you pick Firebase, watch your query patterns from week one.
+
+### Does Convex's per-developer pricing hurt solo founders?
+
+No — solo is the best case at $25/month. It gets expensive as a team grows, since seats stack. Compare seats plus function-call overage against Supabase's flat project fee at your expected team size.
+
+### What about Postgres providers like Neon or PlanetScale?
+
+Great databases, but they're the database only. Supabase, Convex, and Firebase bundle auth, storage, and functions, which is why they save a weekend. Choose a bare Postgres host when you already have the rest of your stack decided.
+
+### Can I use two of them?
+
+You can, and you'll regret it in a weekend project. One backend, one auth system, one deploy target. Complexity is the thing most likely to stop you from shipping.
+
+## TL;DR
+
+All three are free at MVP scale, so pick on fit, not price. Firebase for mobile-first and fastest prototype, with read-volume billing as the risk. Convex for TypeScript web apps where real-time and end-to-end type safety remove real code, billed per developer plus usage. Supabase for real SQL, flat $25 pricing, and an open-source exit — the lowest-regret default when you're unsure.
+
+Watch the two traps: Supabase pauses free projects after 7 days of inactivity, and Firestore read counts are where surprise bills live. Keep data access in one module so a future migration is one folder, not a rewrite.
+
+Then go ship. Pick the thing worth shipping at [startup ideas](/startup-ideas).

@@ -1,0 +1,165 @@
+---
+slug: "build-an-mcp-server-in-a-weekend"
+title: "How to Build an MCP Server in a Weekend (And Why You Should)"
+description: "MCP hit 97M monthly SDK downloads and 13,000+ public servers. Here's how to ship your own MCP server in a weekend — and why it's the cheapest distribution wedge in 2026."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1490
+readMinutes: 7
+heroAlt: "A folded paper map opened partway on a near-black desk, one crease catching a narrow mint beam"
+---
+
+## The Short Version
+
+An MCP server is a small program that exposes your tools and data to any AI agent. A working one is **under 30 lines of TypeScript**. A useful one takes an afternoon.
+
+The reason to care isn't the code. It's that Model Context Protocol went from Anthropic side project to industry standard faster than almost any protocol in recent memory: **97 million monthly SDK downloads by March 2026**, **13,000+ public servers on GitHub**, and adoption by OpenAI, Google, Microsoft, and AWS. It's now governed by the Agentic AI Foundation under the Linux Foundation ([Particula](https://particula.tech/blog/mcp-developer-guide)).
+
+The growth curve, for context: 2M monthly downloads at launch in November 2024, 22M when OpenAI adopted it, 45M with Microsoft, 68M with AWS, 97M by March 2026. React took roughly three years to reach 100M monthly downloads. MCP did it in sixteen months.
+
+Translation for a solo founder: there is a brand-new distribution surface where the competition is thin and the build cost is one weekend.
+
+Need something worth wrapping? Browse scoped builds at [startup ideas](/startup-ideas).
+
+## What an MCP Server Actually Is
+
+Three capability types, that's the whole mental model:
+
+| Concept | What it is | Example |
+|---------|-----------|---------|
+| **Tools** | Actions the agent can call | `create_invoice`, `search_inventory` |
+| **Resources** | Readable data the agent can pull into context | a customer record, a spec doc |
+| **Prompts** | Reusable templates | "draft the weekly ops summary" |
+
+You write it once. It works in Claude Desktop, Cursor, Windsurf, Zed, Codex, and anything else speaking the protocol. That "build once, run everywhere" property is the actual product — before MCP you built an API, then a separate plugin per platform ([jangwook.net](https://jangwook.net/en/blog/en/mcp-server-typescript-sdk-step-by-step-2026/)).
+
+## Should You Build One At All?
+
+Five minutes of honesty saves a wasted weekend. Servers already exist for GitHub, Postgres, Slack, filesystem access, and dozens of common integrations. Building your own makes sense when:
+
+- The system is **proprietary or internal** — your product, your database, your customers' workflow
+- An existing server exists but **doesn't expose the operation you need**
+- You want your product to be **reachable by agents** other people are already using
+- You're learning the protocol hands-on
+
+It does *not* make sense as a me-too wrapper around an API that already has a maintained server. You'll spend your time on config validation and error handling, not on the interesting part.
+
+## The Weekend Build
+
+### Saturday morning: the minimal server
+
+The v2 SDK shipped with protocol revision `2026-07-28`, and `@modelcontextprotocol/server` 2.0.0 is stable on npm. The big change: MCP went **stateless**, which deleted roughly 150 lines of session management you used to write yourself ([DEV](https://dev.to/ialijr/build-an-mcp-v2-server-in-typescript-with-the-new-mcp-sdk-567j)).
+
+Pattern, regardless of version:
+
+1. Create an `McpServer` instance
+2. Register tools with typed schemas
+3. Connect a transport
+
+```ts
+import { McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
+
+const server = new McpServer({ name: "weekend-mvp", version: "1.0.0" });
+
+server.tool(
+  "score_idea",
+  { idea: z.string(), market: z.string().optional() },
+  async ({ idea, market }) => ({
+    content: [{ type: "text", text: await scoreIdea(idea, market) }],
+  }),
+);
+```
+
+A basic server with tools and resources takes **15–30 minutes** with the official SDK. Production-grade — auth, error handling, several tools — is more like one to two days.
+
+### Saturday afternoon: test before you wire it to anything
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+The Inspector is non-optional. It shows you exactly what the agent sees: tool names, schemas, return payloads, errors. Debugging through a chat window instead is a waste of your weekend.
+
+**The one rule that trips up everyone on stdio: never write to stdout.** stdout is the protocol channel. Your `console.log` breaks the transport. Log to stderr.
+
+### Sunday morning: pick a transport honestly
+
+| Transport | Use when | Trade-off |
+|-----------|----------|-----------|
+| **stdio** | Server runs locally next to the AI host | Simplest path; single user; no auth story needed |
+| **Streamable HTTP** | Remote, multi-user, or shared | Needs hosting, OAuth 2.1, multi-tenancy thinking |
+
+Default to stdio for your first server. Remote hosting is the younger half of the ecosystem and best practices are still settling — auth, multi-tenancy, and scaling the HTTP transport are where the real work is.
+
+The stateless v2 design helps a lot here: a fresh server instance serves every request, so you can run behind an ordinary load balancer with no session affinity, or on a scale-to-zero platform.
+
+### Sunday afternoon: tool design (the part that decides if it's good)
+
+This is where most MCP servers fail, and it has nothing to do with the SDK.
+
+**Name tools like a user story, not a database operation.** `get_records` tells an agent nothing. `find_overdue_invoices` tells it when to reach for the tool.
+
+**Write descriptions for the model, not for a docs site.** The description is the selection prompt. Say when to use it *and when not to*.
+
+**Return small, structured, human-readable payloads.** Dumping 4,000 lines of JSON into an agent's context is how you turn a good tool into an expensive one.
+
+**Make destructive actions loud.** Separate read tools from write tools. Name write tools so a human reading the transcript knows money or data just moved.
+
+**Fail with instructions.** "Missing customer_id — call `search_customers` first" is a recoverable error. "500" is a dead end.
+
+## Where the Money Is
+
+Three models are working for indie builders in 2026:
+
+1. **Open-core.** Free server, hosted or premium features paid. Distribution first, monetization second.
+2. **Usage-metered.** Charge per call through an API gateway, particularly when your server wraps something expensive or proprietary.
+3. **Niche B2B integration servers.** The unglamorous winner. A server that connects a specific vertical system — a dental practice-management database, a freight ERP, an obscure inventory platform — to agents. Nobody at that vendor is building it, and the customer's ROI is obvious.
+
+The pattern across the successful ones: **high-value, often read-only integrations where the agent's work replaces a slow manual process.** That's the same wedge logic as [selling AI-powered work instead of AI subscriptions](/articles/stop-selling-ai-subscriptions-start-selling-ai-work).
+
+Ready to find the niche system nobody's wrapped yet? Start with [startup ideas](/startup-ideas).
+
+## The Distribution Argument
+
+Here's the part strategy posts miss.
+
+Every MCP server you ship is a place your product can be *discovered by an agent* instead of by a human clicking a Google result. Your users' agents call your tool because it's installed, not because your landing page converted.
+
+That's an entirely different acquisition channel from SEO or ads, and it's currently under-competed. If you're already thinking about getting cited by AI, this is the executable version of it — pair it with [how to get your app cited by ChatGPT and Perplexity](/articles/get-cited-by-chatgpt-and-perplexity).
+
+## A Weekend Scope That Actually Finishes
+
+- **3 tools maximum.** One read, one search, one write.
+- **stdio transport.** Ship remote later, if anyone asks.
+- **A README with the exact config block** users paste into Claude Desktop or Cursor. Adoption dies at the config step more than at the code step.
+- **One demo GIF** of an agent using it in a real conversation.
+- **Published to npm** so installation is one line.
+
+That's it. If you're adding OAuth on Sunday afternoon, you've overscoped.
+
+## FAQ
+
+### Do I have to use TypeScript?
+
+No. TypeScript and Python have the most mature SDKs, and most host examples target TypeScript. Python's FastMCP pattern gets a working server in under 20 lines. The concepts — tools, resources, prompts, transports — carry over unchanged.
+
+### How long does this really take?
+
+15–30 minutes for a working server with the SDK. An afternoon for one that's genuinely useful. One to two days for production with auth and real error handling.
+
+### Is MCP going to be replaced next year?
+
+Possible, but the ownership signal matters: it's Linux Foundation-governed and adopted by every major model vendor. That's the profile of a protocol that gets extended rather than replaced. And the underlying skill — designing clean tool interfaces for agents — transfers to whatever comes next.
+
+### Can an MCP server *be* the product?
+
+It can be the wedge. It's rarely the whole business, because a protocol adapter is easy to copy. The moat is the proprietary data or workflow behind it — same argument as [building an AI agent rather than another wrapper](/articles/build-an-ai-agent-app-in-a-weekend).
+
+## TL;DR
+
+MCP is the standard interface between AI agents and everything else: 97M monthly SDK downloads, 13,000+ public servers, Linux Foundation governance. A minimal server is under 30 lines; a useful one is an afternoon.
+
+Build one when you're wrapping something proprietary. Ship three tools over stdio, test with the Inspector, never write to stdout, and design tool names and descriptions for a model rather than a docs page. Monetize through open-core, metered usage, or niche B2B integrations that no vendor will build themselves.
+
+The real prize is distribution: agents calling your tool is a channel most founders aren't competing for yet. Pick the system worth wrapping at [startup ideas](/startup-ideas).
