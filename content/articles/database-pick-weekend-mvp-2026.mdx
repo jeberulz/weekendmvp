@@ -1,0 +1,194 @@
+---
+slug: "database-pick-weekend-mvp-2026"
+title: "How to Pick a Database for Your Weekend MVP in 2026"
+description: "Pick a database for your weekend MVP in 2026: Convex, Supabase, PlanetScale, and Firebase compared for solo founders—costs, tradeoffs, and fast defaults."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1451
+readMinutes: 7
+heroAlt: "Neat row of small labeled index cards on dark surface, front card in lavender beam"
+---
+
+## Quick Answer
+
+For most solo founders shipping a **weekend MVP in 2026**, pick based on what you're building:
+
+- **Convex** — best when you want a TypeScript backend with real-time queries, minimal ops, and AI-agent-friendly patterns. Great for Next.js apps where the database and server logic live together.
+- **Supabase** — best when you want Postgres, SQL familiarity, auth and storage in one box, and a huge tutorial ecosystem.
+- **PlanetScale** — best when you already have a traditional app server and want scalable MySQL without managing replicas yourself.
+- **Firebase** — best when you're mobile-first or need Google's auth and push stack, and you accept document-model tradeoffs.
+
+Wrong choice isn't fatal — migrating hurts. Right choice saves two weekends of glue code and a month of "why is sync weird."
+
+If you haven't locked the product yet, [pick an idea with a clear data shape](/startup-ideas) first; the database follows the workflow.
+
+## Who This Is For
+
+You're deploying Sunday night and stuck on "which database."
+
+You've heard Postgres, NoSQL, serverless, edge, and vector search in the same breath.
+
+You're non-technical and want a default that won't embarrass you in a customer demo.
+
+You're technical and tired of re-litigating Firebase vs Postgres every new project.
+
+This is the **database weekend MVP** decision for solo builders — not enterprise architecture review.
+
+## What a Weekend MVP Actually Needs
+
+Ignore benchmarks. Your v1 needs:
+
+1. **Auth-ready or easy to pair** — users, sessions, row-level rules eventually
+2. **Fast local dev** — start Friday, not after a three-hour config ritual
+3. **Predictable free tier** — you won't have revenue on day three
+4. **One happy-path integration** with your framework (Next.js, etc.)
+5. **Ops you can ignore** until roughly $5K–$10K MRR
+
+You do not need multi-region failover on weekend one. You need **working CRUD and permissions** before your first customer call.
+
+## 1. Convex
+
+**What it is:** Backend-as-a-service with a document database, server functions in TypeScript, real-time subscriptions, and scheduled jobs — tuned for app developers who want less infra assembly.
+
+**Weekend MVP strengths:**
+
+- End-to-end TypeScript from schema to UI hooks
+- Real-time lists and dashboards without wiring WebSockets yourself
+- Mutations and queries as server functions — less "API layer" boilerplate
+- Strong fit with Next.js App Router and modern AI coding agents
+
+**Watch-outs:**
+
+- SQL-minded founders miss familiar relational joins at first
+- Ecosystem smaller than Supabase — fewer copy-paste recipes for exotic cases
+- You commit to Convex's data model and hosting path early
+
+**Pick Convex when:** You're building a SaaS dashboard, collaborative tool, or workflow app in Next.js and want the fastest path from schema to live UI with reactivity.
+
+**Skip when:** You need heavy relational reporting in SQL, or you're standardizing a team on raw Postgres everywhere.
+
+## 2. Supabase
+
+**What it is:** Hosted Postgres with auth, storage, edge functions, and realtime channels — positioned as the open-source Firebase alternative with SQL at the center.
+
+**Weekend MVP strengths:**
+
+- Postgres — familiar tables, joins, and later analytics exports
+- Auth, storage, and RLS patterns documented everywhere
+- Massive tutorial surface; every AI model has seen Supabase examples
+- Good Lovable/Bolt-class builder integrations in the happy path
+
+**Watch-outs:**
+
+- You assemble more pieces (policies, functions, client setup) than all-in-one BaaS feels suggest
+- RLS misconfiguration is a common security footgun — test with two test users
+- Realtime and edge features add complexity if you don't need them yet
+
+**Pick Supabase when:** You want SQL, might hire a Postgres-literate dev later, or you're following a stack guide that already assumes Supabase.
+
+**Skip when:** You want zero SQL mental model and maximum "just write TypeScript server code."
+
+## 3. PlanetScale
+
+**What it is:** Serverless MySQL platform with branching, scalable storage, and a focus on traditional app architectures — database as a service, not full backend.
+
+**Weekend MVP strengths:**
+
+- Real MySQL for teams who already run Prisma/Drizzle + a Node server
+- Database branching for schema experiments without fear
+- Clean separation: your app server owns logic; PlanetScale owns data scale
+
+**Watch-outs:**
+
+- Not a full backend — you still build API routes, auth, file storage elsewhere
+- More moving parts for a true weekend MVP than Convex or Supabase
+- Foreign key constraints historically required tradeoffs (check current docs for your use case)
+
+**Pick PlanetScale when:** You already have or want a classic three-tier app (Next API routes + ORM + SQL) and care about MySQL ops at scale later.
+
+**Skip when:** You're non-technical and need auth, storage, and database in one guided box.
+
+## 4. Firebase (Firestore + Auth)
+
+**What it is:** Google's mobile-first BaaS — document database, auth, hosting, functions, push notifications — deeply integrated in the Google ecosystem.
+
+**Weekend MVP strengths:**
+
+- Extremely fast for prototypes, especially mobile and Flutter
+- Auth and anonymous-to-signed-up flows are well trodden
+- Real-time listeners are native to the model
+
+**Watch-outs:**
+
+- Document data modeling bites later — relational thinking in Firestore hurts
+- Complex queries and reporting get awkward fast
+- Pricing surprises if you misdesign listener patterns at scale
+
+**Pick Firebase when:** You're mobile-first, need push notifications early, or your tutorial stack already generated Firebase config.
+
+**Skip when:** You're building B2B SaaS with reporting needs — Postgres paths age better.
+
+## Comparison Table: Solo Founder Weekend Lens
+
+| | Convex | Supabase | PlanetScale | Firebase |
+|---|--------|----------|-------------|----------|
+| Core model | Document + functions | Postgres | MySQL | Document |
+| Auth included | Roll your own or pair | Built-in | Roll your own | Built-in |
+| Real-time | Native | Channels | Not primary | Native |
+| Best framework fit | Next.js + TS | Next.js, broad | Any + ORM | Web + mobile |
+| Weekend setup speed | Fast | Fast | Medium | Fast (mobile) |
+| SQL | No | Yes | Yes | No |
+| Ops burden | Low | Low–medium | Medium | Low |
+| Lock-in risk | Medium | Lower (Postgres) | Lower (MySQL) | Medium–high |
+
+## Decision Flow (Five Minutes)
+
+1. **Mobile app with push?** Lean Firebase unless you strongly prefer SQL — then Supabase.
+2. **Next.js SaaS, minimal backend code?** Convex or Supabase — Convex for TS-native reactivity; Supabase for SQL comfort.
+3. **Already using Prisma on MySQL?** PlanetScale.
+4. **Non-technical, browser builder first?** Whatever your builder defaults to — usually Supabase — then don't fight it until revenue.
+5. **Still deciding the product?** [Choose a wedge with a simple data model](/startup-ideas) — three tables beats forty on weekend one.
+
+## Weekend Setup Tips (Any Pick)
+
+- **Seed two users** Friday night — admin and normal — and test permissions Saturday.
+- **Log nothing sensitive** in client-side debug prints.
+- **Backup export path** — even a manual CSV button builds trust for early B2B buyers.
+- **Defer migrations heroics** — one environment, one schema, ship.
+
+Pair database choice with deploy target: if you're on Vercel + Next.js, Convex and Supabase are the most walked paths in 2026 solo-founder content — not because they're always best, but because **time-to-demo** wins weekends.
+
+## Common Mistakes
+
+- Choosing for hypothetical scale at 10 million rows with 12 rows today
+- Building custom auth when hosted auth exists
+- Skipping row-level security until "later"
+- Picking PlanetScale without wanting to own API code
+
+## Quick Questions
+
+### Can I switch databases after launch?
+
+Yes, with pain. Budget a week of migration and bug risk per non-trivial app. Pick for the next six months, not forever.
+
+### Is Postgres always the right answer?
+
+Postgres is a great default for relational SaaS. Convex and Firebase win when real-time document sync or mobile push is the core UX — SQL isn't free magic.
+
+### What about SQLite or local-first?
+
+Excellent for personal tools and offline-first experiments. For multi-user SaaS weekend MVPs, hosted auth and multi-device sync usually push you to Supabase, Convex, or Firebase.
+
+### Does AI coding change the pick?
+
+Agents generate more Supabase and Convex examples than PlanetScale custom stacks. Faster codegen reduces wrong-pick cost — but ops and data model still belong to you.
+
+## TL;DR
+
+- Weekend MVPs need fast auth, low ops, and framework fit — not multi-region HA.
+- **Convex** — TypeScript-native, real-time, best for Next.js SaaS with reactive UI.
+- **Supabase** — Postgres + auth + storage; best SQL default for solo founders.
+- **PlanetScale** — MySQL scale for classic app-server + ORM architectures.
+- **Firebase** — mobile-first, document model, strong auth and push path.
+- Match database to product data shape and your builder skill — [start from ideas with simple schemas](/startup-ideas).
+- Seed two users, test permissions, ship — optimize for demo Friday, not conference keynote architecture.
