@@ -32,6 +32,30 @@ export const PIPELINE_STEP_IDS = [
 
 export type PipelineStepId = (typeof PIPELINE_STEP_IDS)[number];
 
+/**
+ * The worst-case unit budget a step is allowed to consume.
+ *
+ * `S4` reserves against these numbers before the call, so they are a ceiling
+ * the step must actually respect — not a guess. A step that sent more input
+ * than it reserved would spend money the cap check never saw, which is why the
+ * synthesis steps cap their input and fail closed rather than truncating.
+ */
+export type StepBudget =
+  | {
+      readonly role: "synthesis";
+      readonly maxInputTokens: number;
+      readonly maxOutputTokens: number;
+    }
+  | {
+      readonly role: "search";
+      readonly maxInputTokens: number;
+      readonly maxOutputTokens: number;
+      readonly requests: number;
+      readonly searchContextSize: "low" | "medium" | "high";
+    }
+  | { readonly role: "keywordData"; readonly tasks: number; readonly maxItems: number }
+  | { readonly role: null };
+
 export type PipelineStep = {
   /** Frozen-schema position. Also the step's identity. See module doc. */
   readonly position: number;
@@ -44,6 +68,7 @@ export type PipelineStep = {
    */
   readonly role: ProviderRole | null;
   readonly timeoutMs: number;
+  readonly budget: StepBudget;
 };
 
 /**
@@ -63,6 +88,7 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "generate",
     role: "synthesis",
     timeoutMs: SYNTHESIS_TIMEOUT_MS,
+    budget: { role: "synthesis", maxInputTokens: 4_000, maxOutputTokens: 800 },
   },
   {
     position: 1,
@@ -70,6 +96,13 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "research",
     role: "search",
     timeoutMs: SEARCH_TIMEOUT_MS,
+    budget: {
+      role: "search",
+      maxInputTokens: 2_000,
+      maxOutputTokens: 2_000,
+      requests: 1,
+      searchContextSize: "high",
+    },
   },
   {
     position: 2,
@@ -77,6 +110,13 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "research",
     role: "search",
     timeoutMs: SEARCH_TIMEOUT_MS,
+    budget: {
+      role: "search",
+      maxInputTokens: 2_000,
+      maxOutputTokens: 2_000,
+      requests: 1,
+      searchContextSize: "high",
+    },
   },
   {
     position: 3,
@@ -84,6 +124,13 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "research",
     role: "search",
     timeoutMs: SEARCH_TIMEOUT_MS,
+    budget: {
+      role: "search",
+      maxInputTokens: 2_000,
+      maxOutputTokens: 2_000,
+      requests: 1,
+      searchContextSize: "medium",
+    },
   },
   {
     position: 4,
@@ -91,6 +138,7 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "research",
     role: "keywordData",
     timeoutMs: KEYWORD_TIMEOUT_MS,
+    budget: { role: "keywordData", tasks: 1, maxItems: 50 },
   },
   {
     position: 5,
@@ -98,6 +146,7 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "generate",
     role: "synthesis",
     timeoutMs: SYNTHESIS_TIMEOUT_MS,
+    budget: { role: "synthesis", maxInputTokens: 60_000, maxOutputTokens: 4_000 },
   },
   {
     position: 6,
@@ -105,6 +154,7 @@ export const PIPELINE: readonly PipelineStep[] = [
     type: "render",
     role: null,
     timeoutMs: LOCAL_TIMEOUT_MS,
+    budget: { role: null },
   },
 ] as const;
 

@@ -32,7 +32,7 @@ export const run = internalAction({
           input: `${briefContext(brief)}\n\n${research}`,
           maxOutputTokens: 4_000,
         });
-        return { text: result.value.text };
+        return { value: { text: result.value.text }, cost: result.cost };
       },
     }),
 });

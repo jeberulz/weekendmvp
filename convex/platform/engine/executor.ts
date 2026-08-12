@@ -58,6 +58,38 @@ export function classifyFailure(error: unknown): FailureClass {
   return "indeterminate";
 }
 
+/**
+ * Whether a failed attempt may already have been billed.
+ *
+ * Owned here because the executor is what mints these codes. `S4` charges a
+ * `billed-unknown` failure its full worst-case reservation: we cannot measure
+ * what the provider actually charged, and assuming zero would let a run that
+ * timed out three times keep issuing calls against a budget it had already
+ * spent.
+ *
+ * Only the *last* attempt of a step can be `billed-unknown` — every class that
+ * permits a retry is one we know was not billed — so recording spend for the
+ * final attempt alone is complete, not a shortcut.
+ */
+export function billedOnFailure(errorCode: string): "billed-unknown" | "unbilled" {
+  switch (errorCode) {
+    // Nothing was sent, or the provider rejected it without billing.
+    case "COST_RESERVATION_REJECTED":
+    case "STEP_ATTEMPTS_EXHAUSTED":
+    case "PROVIDER_CONFIG_ERROR":
+      return "unbilled";
+    default:
+      break;
+  }
+  // A request the provider answered with an error status is not billed,
+  // whatever the status was.
+  if (/^PROVIDER_HTTP_\d{3}$/.test(errorCode)) return "unbilled";
+  // STEP_TIMEOUT, PROVIDER_CALL_FAILED, UNSETTLED_ATTEMPT_NOT_REPLAYABLE,
+  // RECONCILE_LOOKUP_UNIMPLEMENTED, and any unrecognised code: the request may
+  // have reached the provider and produced a charge we never saw.
+  return "billed-unknown";
+}
+
 export class StepTimeoutError extends Error {
   constructor(public readonly timeoutMs: number) {
     super(`step exceeded ${timeoutMs}ms`);

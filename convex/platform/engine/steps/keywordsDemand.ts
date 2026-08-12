@@ -35,7 +35,7 @@ export const run = internalAction({
           locationCode: LOCATION_CODE,
           languageCode: LANGUAGE_CODE,
         });
-        return { metrics: result.value.metrics };
+        return { value: { metrics: result.value.metrics }, cost: result.cost };
       },
     }),
 });

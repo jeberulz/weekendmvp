@@ -20,10 +20,14 @@ export const run = internalAction({
       title: "Raw report record",
       documentKind: "validation_report",
       call: async ({ priorDocuments }) => ({
-        sections: priorDocuments.map((doc) => ({
-          title: doc.title,
-          body: doc.body,
-        })),
+        value: {
+          sections: priorDocuments.map((doc) => ({
+            title: doc.title,
+            body: doc.body,
+          })),
+        },
+        // Pays no provider, so there is no cost to reconcile.
+        cost: null,
       }),
     }),
 });

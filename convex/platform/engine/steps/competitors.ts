@@ -23,8 +23,8 @@ export const run = internalAction({
           searchContextSize: "high",
         });
         return {
-          text: result.value.text,
-          citations: result.value.citations,
+          value: { text: result.value.text, citations: result.value.citations },
+          cost: result.cost,
         };
       },
     }),

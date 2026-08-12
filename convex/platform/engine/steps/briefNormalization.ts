@@ -26,7 +26,7 @@ export const run = internalAction({
           input: args.rawIdea,
           maxOutputTokens: 800,
         });
-        return parseBrief(result.value.text);
+        return { value: parseBrief(result.value.text), cost: result.cost };
       },
     }),
 });

@@ -158,7 +158,7 @@ All provider gaps are now closed. `S2` is unblocked.
       not three.
     - Runs entirely on S2's fixture-mode adapters; still zero live spend.
 
-- [ ] `WP26-S4` - Cost cap enforcement and exact-once refund
+- [x] `WP26-S4` - Cost cap enforcement and exact-once refund
   - Scope: `convex/platform/engine/cost.ts`, ledger integration with the
     WP24 credit/refund primitives (namespaced, not a new money path).
   - Acceptance criteria:

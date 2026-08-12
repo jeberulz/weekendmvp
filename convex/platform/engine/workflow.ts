@@ -3,8 +3,9 @@ import type { RunResult } from "@convex-dev/workpool";
 import { v } from "convex/values";
 import { components, internal } from "../../_generated/api";
 import type { Id } from "../../_generated/dataModel";
-import { internalMutation } from "../../_generated/server";
+import { internalMutation, type MutationCtx } from "../../_generated/server";
 import type { StepResult } from "./steps/runner";
+import { VALIDATION_REPORT_CREDITS } from "./cost";
 
 /**
  * WP26-S3. The durable Validation Report workflow.
@@ -108,15 +109,40 @@ export const onValidationReportComplete = internalMutation({
     if (outcome === "cancelled") {
       // The task was already marked cancelled by `requestCancel`; re-asserting
       // it here would be a second write of a state that is already terminal.
+      //
+      // NOTE: a cancelled run is therefore *not* refunded. `assertTaskRefundEligible`
+      // admits only `failed`, and `cancelled` is terminal with no path to it, so
+      // the frozen contract has no way to express this refund. Escalated in
+      // `docs/wp/wp26-progress.md` — this is a deliberate gap, not an oversight.
       return null;
     }
-    await ctx.runMutation(internal.platform.engine.tasks.completeRun, {
-      taskId: args.context.taskId,
-      outcome,
-    });
+    const applied: { applied: boolean; status: string } = await ctx.runMutation(
+      internal.platform.engine.tasks.completeRun,
+      { taskId: args.context.taskId, outcome },
+    );
+    // Refund only on the transition that actually settled the run as failed.
+    // The ledger is idempotent regardless, but gating here keeps a redelivered
+    // callback from re-entering the money path at all.
+    if (applied.applied && outcome === "failed") {
+      await ctx.runMutation(internal.platform.billing.ledger.refundFailedTask, {
+        taskId: args.context.taskId,
+        projectId: await projectIdOf(ctx, args.context.taskId),
+      });
+    }
     return null;
   },
 });
+
+/** The task's own project, read server-side — never taken from the callback. */
+async function projectIdOf(
+  ctx: { runQuery: MutationCtx["runQuery"] },
+  taskId: Id<"tasks">,
+): Promise<Id<"projects">> {
+  const state = await ctx.runQuery(internal.platform.engine.tasks.runState, {
+    taskId,
+  });
+  return state.projectId;
+}
 
 /**
  * Maps the component's result envelope onto our terminal states.
@@ -170,6 +196,17 @@ export const startValidationReport = internalMutation({
     // A duplicate start must not enqueue a second workflow against the same
     // task — that would run the whole paid pipeline twice for one purchase.
     if (!created) return { taskId, started: false };
+
+    // Charge before the pipeline is enqueued. This runs inside the same
+    // mutation, so insufficient credits roll the whole start back — no task
+    // row, no workflow, nothing to reconcile. Debiting *after* enqueueing
+    // would let a run begin spending provider money against an account that
+    // could not pay for it.
+    await ctx.runMutation(internal.platform.billing.ledger.debitTask, {
+      taskId,
+      projectId: args.projectId,
+      credits: VALIDATION_REPORT_CREDITS,
+    });
 
     await workflow.start(
       ctx,

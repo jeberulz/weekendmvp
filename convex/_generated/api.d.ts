@@ -25,6 +25,7 @@ import type * as platform_billing_provider from "../platform/billing/provider.js
 import type * as platform_billing_queries from "../platform/billing/queries.js";
 import type * as platform_briefPayload from "../platform/briefPayload.js";
 import type * as platform_engine_contracts from "../platform/engine/contracts.js";
+import type * as platform_engine_cost from "../platform/engine/cost.js";
 import type * as platform_engine_executor from "../platform/engine/executor.js";
 import type * as platform_engine_pipeline from "../platform/engine/pipeline.js";
 import type * as platform_engine_providers_fixtures from "../platform/engine/providers/fixtures.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   "platform/billing/queries": typeof platform_billing_queries;
   "platform/briefPayload": typeof platform_briefPayload;
   "platform/engine/contracts": typeof platform_engine_contracts;
+  "platform/engine/cost": typeof platform_engine_cost;
   "platform/engine/executor": typeof platform_engine_executor;
   "platform/engine/pipeline": typeof platform_engine_pipeline;
   "platform/engine/providers/fixtures": typeof platform_engine_providers_fixtures;

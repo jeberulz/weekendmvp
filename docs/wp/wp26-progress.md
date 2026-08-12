@@ -326,3 +326,135 @@ fixed because `package-lock.json` is a serialized one-writer seam owned by WP20.
 **Next:** `WP26-S4` cost cap enforcement and exact-once refund — which consumes
 this story's `reserve()` seam (already invoked before every attempt, including
 the retry) and must resolve the cancelled-run refund escalation above.
+
+---
+
+## WP26-S4 — Cost cap enforcement and exact-once refund (2026-08-12)
+
+**Files:** `convex/platform/engine/cost.ts` (new), `pipeline.ts` (per-step
+budgets), `executor.ts` (`billedOnFailure`), `steps/runner.ts` (reserve +
+reconcile), `steps/*.ts` (return provider cost), `workflow.ts` (debit/refund),
+`cost.test.ts`, `wp26Cost.test.ts`.
+
+### The cap is a pre-call reservation, not a running-total check
+
+Before every attempt, `assertReservation` compares
+`already-spent + this call's worst case` against $4.00. The AC is explicit that
+a post-hoc check is not acceptable — it lets a run sit at $3.90 and still issue
+a call that lands at $4.90 — and a test encodes exactly that scenario, asserting
+both that actual spend is under the cap and that the call is still refused.
+
+**Worst case comes from a declared per-step budget**, not from the request about
+to be sent, because the check has to happen *before* the request exists. That
+makes the budget a ceiling the step is obliged to respect: a step that sent more
+than it reserved would spend money the cap never saw.
+
+**Spend is accumulated in micro-USD integers, rounding up.** Summing a dozen
+binary floats and comparing against a boundary is how a run lands at
+`4.0000000000001` and the cap either leaks or fires spuriously. Every conversion
+rounds up, so a reservation is never optimistic.
+
+The configured budgets total ~$0.63 worst-case per run, ~$1.26 if every step
+takes its retry — comfortably inside the cap and close to the ruling's $0.52
+reference. A test pins the budgets against 4x that reference rather than only
+against the cap, because the cap sits ~8x above expected spend and could never
+notice a regression that merely doubled the bill.
+
+### Cost telemetry lives in `audit_events` — a noted schema gap
+
+**The frozen schema has no cost column anywhere**: not on `tasks`, `task_steps`,
+`workflow_runs`, or `documents`. Spend still has to be durable, or a resumed run
+restarts its budget at zero and buys a second $4.00 of calls.
+
+`audit_events` is the one append-only table built for "a system or provider did
+something worth recording", so each settled attempt appends one row with
+`actorType: "provider"`, `subjectId: <taskId>`, and a metadata object whose
+every value is a number. There is no free-text field, so **no customer input can
+reach a cost row by construction** — the PII-redaction criterion is structural
+rather than a rule someone must remember.
+
+Two costs of this choice, both handled: the sum is a scan over the project's
+events since the task started (bounded, and it **throws rather than
+under-counting** if it ever hits its ceiling), and an unparseable row throws
+instead of counting as $0 — spend we know happened but can no longer measure is
+not free.
+
+**Escalated:** a first-class `costMicroUsd` column or an `engine_costs` table
+would be cleaner than borrowing the audit log. That is a `convex/schema.ts`
+change, which is a serialized one-writer seam, so it needs an owner ruling
+rather than a unilateral amendment.
+
+### A failure we cannot prove was unbilled is charged its full reservation
+
+`billedOnFailure` (in `executor.ts`, which mints the codes) splits failures into
+`unbilled` — a provider error status, a config error, a rejected reservation —
+and `billed-unknown`: our timeout, a dropped connection, an unusable 200, or the
+unsettled-attempt case. The second class is charged its full worst-case
+reservation. Assuming zero would let a run that timed out three times keep
+issuing calls against a budget it had already spent.
+
+Falls out of S3's classification: **only the last attempt of a step can be
+`billed-unknown`**, because every class that permits a retry is one we know was
+not billed. Recording spend for the final attempt alone is therefore complete,
+not a shortcut.
+
+### Credits: debit at start, refund on failure, no new money path
+
+`debitTask` and `refundFailedTask` were built by WP24 and had **never been
+called by anything**. S4 wires them; it invents no money mutation.
+
+The debit runs inside the same mutation as `createRun`, so insufficient credits
+roll the whole start back — no task row, no workflow, nothing to reconcile.
+Debiting after enqueueing would let a run start spending provider money against
+an account that could not pay. A control test asserts the funded path really
+does create and charge, so the "no credits, no task" test cannot pass vacuously.
+
+Refund exactness comes from WP24's ledger key (`task-refund:<debitId>`), so
+duplicate and concurrent refunds are both no-ops. A cap breach mid-run reaches
+the same path: the reservation throws, the step fails closed, the run fails,
+`onComplete` refunds once.
+
+### OPEN — the report's credit price is not ruled
+
+`VALIDATION_REPORT_CREDITS = 15n` comes from the plan's pricing table (§6.3),
+which writes it as **"~15 credits"**. A tilde is not a ruling. It is a
+server-side constant so no caller can supply an amount, but **the exact price
+needs an owner ruling before activation.**
+
+### ESCALATION restated — a cancelled run still cannot be refunded
+
+Unchanged from S3 and now pinned by a test that documents the behaviour rather
+than hiding it: `assertTaskRefundEligible` admits only `failed`, `cancelled` is
+terminal, so **a customer who cancels mid-run forfeits their credits.** S4 does
+not invent a path around a frozen money contract. Needs an owner ruling.
+
+### Scope note — the reservation is a query, and that is only safe sequentially
+
+`assertReservation` reads without writing, which is sound because a run's steps
+execute strictly sequentially (`workflow.ts` awaits each in turn). **If steps
+are ever parallelised, this must become a mutation that writes a reservation
+row**, or two concurrent steps will both read the same pre-spend total and both
+pass. Recorded in the module doc as well as here.
+
+### Checks
+
+- `npm run typecheck` exit 0
+- `npm run lint` exit 0, 0 errors, 35 pre-existing warnings
+- `npm test` exit 0 — node 91/6/7/10/4, vitest: redirects 25, auth 38,
+  **convex 215 → 251** (+36: 17 cap arithmetic, 19 spend/refund)
+- `npm run build` exit 0, 310 pages (unchanged)
+- `git diff --check` clean; `convex/schema.ts` unchanged
+- Cap guards mutation-tested: replacing the pre-call check with a post-hoc one
+  (4 failures), rejecting exactly-at-cap, rounding down instead of up,
+  double-counting a redelivered settle, and treating an unreadable cost row as
+  free each fail a test.
+
+### `npm audit` still FAILS — unchanged, still escalated
+
+`nanoid <3.3.17` (high, GHSA-2v37-7h3g-55p8) via `next@16.3.0 → postcss`.
+Identical to S2/S3; not introduced or worsened here. `package-lock.json` is a
+serialized one-writer seam owned by WP20.
+
+**Docs updated:** this file; `docs/wp/wp26-stories.md` S4 checked.
+
+**Next:** `WP26-S5` report compiler and renderer.
