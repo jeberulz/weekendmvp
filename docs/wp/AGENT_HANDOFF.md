@@ -1,10 +1,10 @@
-# Agent Handoff — Build Platform Program (post-WP27)
+# Agent Handoff — Build Platform Program (post-WP28 consolidation)
 
-Last updated: 2026-08-06 (Europe/London). Agent-agnostic. Supersedes
-`docs/wp/CLAUDE_HANDOFF.md`.
+Last updated: 2026-08-12 (UTC). Agent-agnostic. Supersedes prior handoff headers.
 
-**WP27 package gate: Pass.** Next work is owner-directed: WP28, WP26-S2..S6,
-or the preview retention follow-up. Do not reopen closed WP27 ACs.
+**Consolidation branch:** `codex/wp28-tenant-hosts` — integration tip for WP19–28. Draft PR to `main` open.  
+**v1 scope:** `docs/wp/v1-scope-cut.md` — repository-idea path only; WP26 S2–S6 deferred to v1.1.  
+**WP28 package gate: Pass (2026-08-07).** Next work: merge consolidation PR, then WP29-min / WP38-min / WP30-min in parallel.
 
 ---
 
@@ -12,13 +12,14 @@ or the preview retention follow-up. Do not reopen closed WP27 ACs.
 
 1. `CLAUDE.md` (root)
 2. `AGENTS.workflow.md` + `.agentic-workflow.yml`
-3. `docs/wp/program-manifest.md` — **frozen** program source of truth
-4. `docs/wp/RULINGS.md` — append-only. **Never edit a row.** Do not re-ask.
-5. `convex/_generated/ai/guidelines.md` — before any `convex/` work
-6. Then the package you open:
-   - WP28 → freeze `docs/wp/wp28-stories.md` first (does not exist yet)
-   - WP26 → `docs/wp/wp26-stories.md` + `docs/wp/wp26-progress.md` on its branch
-   - Retention Small Fix / WP → see §6
+3. `docs/wp/v1-scope-cut.md` — **v1.0 launch scope** (2026-08-12)
+4. `docs/wp/program-manifest.md` — frozen program source of truth
+5. `docs/wp/RULINGS.md` — append-only. **Never edit a row.** Do not re-ask.
+6. `convex/_generated/ai/guidelines.md` — before any `convex/` work
+7. Then the package you open:
+   - WP29 → freeze `docs/wp/wp29-stories.md` first (does not exist yet)
+   - WP26 → only if v1.1 own-idea reports resume
+   - Retention Small Fix → see §6 in prior handoff body below
 
 **Treat `*-progress.md` as claims, not evidence.** Verify before relying on
 numbers. One WP27 progress line was already proven false (soft-404 measured
@@ -30,11 +31,11 @@ against `next dev`).
 
 | | |
 |---|---|
-| Just closed | WP27 on `codex/wp27-site-preview` |
-| HEAD | `0a13b2b` (`docs(wp27): close S6 gate after claim-only ruling and live signup`) |
-| Branched from | `codex/wp26-research-workflow` (Wave 2 gates + WP26-S1) |
-| Parallel branch | `codex/wp26-research-workflow` — WP26-S2..S6 **unstarted, unblocked** |
-| Not merged to | `main`. **Entire platform program is still unmerged.** |
+| Integration tip | `codex/wp28-tenant-hosts` (WP19–28) |
+| HEAD | `bfc33fb` (`docs(wp28): close the package gate — pass`) |
+| Includes | Wave 2 (WP21–25), WP26-S1, WP27, WP28 |
+| Parallel / deferred | WP26 S2–S6 → v1.1 per scope cut |
+| Not merged to | `main` until consolidation PR lands |
 
 ```
 0f969bc docs(wp27): story freeze

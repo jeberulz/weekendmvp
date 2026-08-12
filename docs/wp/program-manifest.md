@@ -10,7 +10,7 @@ Source of truth for the Weekend MVP Build Platform Program/Migration Lane. This 
 - **Branch:** `codex/platform-wave0-manifest`
 - **Baseline commit:** `f35ccfd`
 - **Goal:** Turn the existing validation/content site into a validation-first build platform where a user can preview a repository idea, sign up, pay, publish a tenant landing page, and manage research, tasks, revisions, leads, and credits from a signed-in workspace.
-- **Launch target:** 2026-08-16 for the v1 repository-idea journey. The date is at risk and cannot override security, ownership, payment, preview-isolation, or restore gates.
+- **Launch target:** 2026-08-16 for the v1 repository-idea journey is **superseded for scheduling** by `docs/wp/v1-scope-cut.md` (2026-08-12). Security, ownership, payment, preview-isolation, restore, and super-admin gates are not waived. Consolidation branch: `codex/wp28-tenant-hosts`.
 - **Independence deadline:** all live Ideabrowser dependencies retired by 2026-09-05 after replacement quality gates pass.
 - **Non-goals:** Tier 2 application scaffolds, arbitrary code execution, code export, custom domains, subscriptions, night shifts, outbound email/ads/social automation, teams, referrals, and a public live-activity feed.
 - **Source docs:** `AGENTS.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, `docs/wp/RULINGS.md`, `docs/wp/program-platform-plan.md`, `docs/wp/platform-ux-brief.md`, `docs/PROJECT_STRATEGY.md`, Convex AI guidelines, and the Program Lane templates.
