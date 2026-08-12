@@ -1,0 +1,195 @@
+---
+slug: "recover-failed-payments-saas-churn"
+title: "How to Recover Failed Payments Before They Become Churn"
+description: "SaaS failed payments dunning for solo founders: involuntary churn, Stripe Smart Retries that recover 20–40%, and a weekend dunning setup before churn hits."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1350
+readMinutes: 7
+heroAlt: "Weathered receipt stack on dark desk, top receipt corner lit by lime side-light"
+---
+
+## Quick Answer
+
+**Involuntary churn** — customers who wanted to stay but left because a card failed — can account for a large slice of total churn in subscription businesses. Industry summaries often put **20–40% of churn** in the involuntary bucket, with failed payments threatening roughly **9% of MRR** on average for typical SaaS (sources vary by stage and billing model).
+
+Your weekend fix stack:
+
+1. Turn on **Stripe Smart Retries** and Customer Billing Portal
+2. Listen for `invoice.payment_failed` and `customer.subscription.updated` webhooks
+3. Send **three dunning emails** — day 0, day 3, day 7 — plain text, from you
+4. Soft-lock paid features after a grace period; don't delete data on first failure
+5. Track failed payment recovery rate monthly — goal: recover **20–40%** of failures with retries + email combined
+
+If you haven't charged anyone yet, add [Stripe to your weekend MVP](/articles/add-stripe-to-weekend-mvp) first — dunning only matters after money moves.
+
+## Who This Is For
+
+You have paying subscribers and Stripe emails you dread opening.
+
+Churn went up and nobody said "I hate your product" — they just disappeared.
+
+You're solo and can't afford a finance ops team or enterprise billing suite.
+
+You want **SaaS failed payments dunning** that works at 50 customers, not 50,000.
+
+You're building a subscription product from [startup ideas with recurring revenue](/startup-ideas) and want retention infrastructure before it's urgent.
+
+## Why Failed Payments Are a Different Churn Problem
+
+Voluntary churn: "This isn't worth it." Fix product, pricing, or positioning.
+
+Involuntary churn: "My card expired and I forgot." Fix billing ops.
+
+The customer still wants the product. You failed to collect — not them. That's why recovery rates can be high when you act fast: **Stripe Smart Retries** and well-timed emails routinely recover **20–40%** of failed payments in aggregate industry reporting (your mileage depends on audience, price, and card mix).
+
+Ignore this layer and you'll misread product churn. You'll rebuild features while revenue leaks through expired corporate cards.
+
+## What You Need Before You Start
+
+- Stripe Billing with subscriptions (or recurring invoices)
+- Webhook endpoint verifying signatures
+- Customer email on the Stripe Customer object
+- A `planStatus` field in your database — `active`, `past_due`, `canceled`
+- Optional: link to Stripe Customer Portal for self-serve card updates
+
+No dunning SaaS required at early stage. Three emails and Stripe defaults beat a $500/month tool when n is small.
+
+## Step 1: Configure Stripe Recovery Settings
+
+In Stripe Dashboard → Settings → Billing → **Subscriptions and emails**:
+
+- Enable **Smart Retries** — Stripe retries failed charges on optimized schedules using card network signals
+- Enable **failed payment emails** from Stripe as backup (your custom emails still perform better with a human tone)
+- Turn on **Customer Portal** — customers update cards without emailing you
+
+Smart Retries are the silent workhorse. Solo founders sometimes recover **20–40%** of failures here alone before a custom email sends. Don't skip because you plan to "write better copy later."
+
+## Step 2: Wire the Webhooks That Matter
+
+Minimum events:
+
+| Event | Your action |
+|-------|-------------|
+| `invoice.payment_failed` | Mark user `past_due`, start dunning sequence, log amount |
+| `invoice.payment_succeeded` | If was past_due, restore `active`, send thank-you |
+| `customer.subscription.updated` | Sync status from subscription object |
+| `customer.subscription.deleted` | Mark `canceled`, stop feature access per policy |
+
+Never unlock or lock access based only on redirect URLs after checkout. Webhooks are truth.
+
+Development tip: Stripe CLI forwarding to localhost while you test failure scenarios with test card numbers.
+
+## Step 3: Build the Three-Email Dunning Sequence
+
+Keep it short, founder-signed, and action-linked.
+
+**Email 1 — Day 0 (payment fails):**
+
+Subject: "Quick fix needed for your [Product] account"
+
+Body: One sentence — payment didn't go through. Link to Customer Portal or direct Stripe hosted update link. No blame. Mobile-friendly.
+
+**Email 2 — Day 3:**
+
+Subject: "Still can't process your payment"
+
+Body: Reminder + what they'll lose (specific feature). Offer to help if corporate card policies block online pay — sometimes they'll invoice manually at this stage.
+
+**Email 3 — Day 7 (before hard lock):**
+
+Subject: "Last step before we pause your account"
+
+Body: Clear deadline. Portal link again. Optional: your calendar link for five minutes if B2B.
+
+Avoid HTML novels. Plain text from a real person converts better at small scale.
+
+## Step 4: Grace Period and Soft Lock
+
+Recommended solo-founder policy:
+
+- **Days 0–7:** Full access, dunning active, banner in app: "Payment issue — update card"
+- **Days 8–14:** Soft lock — read-only or export allowed, no new generations/seats
+- **After day 14:** Cancel subscription in Stripe or leave paused per your terms
+
+Don't delete user data on first failure. B2B buyers hate re-uploading. Recovery after a hard delete is rare.
+
+Document this in your public terms one line — reduces angry surprises.
+
+## Step 5: Track Recovery Metrics
+
+Monthly spreadsheet — five numbers:
+
+1. Failed payment count
+2. Recovered via Stripe retries alone
+3. Recovered after your emails
+4. Total involuntary churn (failed into cancel)
+5. Recovery rate = recovered divided by failed
+
+Target band: **20–40%** combined recovery is a reasonable early benchmark when retries and email both run. Below 10% — check portal links, email deliverability, and whether failures are prepaid corporate cards needing manual invoice.
+
+Above 40% — nice problem; don't over-optimize before product churn.
+
+## Step 6: B2B Tweaks That Matter
+
+- **Corporate cards** expire on weird cycles — annual renewals cluster failures
+- Add **billing email** field at checkout separate from login email
+- Offer **annual plans** carefully — fewer events but bigger single failure spikes
+- For deals above $200/month, a human email on day 1 beats automation
+
+If your buyers come from [narrow B2B wedges in the idea library](/startup-ideas), expect finance departments — dunning is part of customer success, not just billing.
+
+## Real Example: $49/mo Tool, 80 Subscribers
+
+Month with bad luck: 6 failed payments (~7.5% of subs — painful but normal).
+
+- Stripe Smart Retries recover 2 without your involvement (~33% of failures)
+- Email sequence recovers 1 more after retry exhaustion
+- 3 churn involuntarily (~50% of failures lost)
+
+MRR at risk: roughly $294. Saved: ~$147–$196 depending on timing — real money for a solo founder.
+
+Without dunning: six silent cancels, misread as product churn, weekend rebuild wrong feature.
+
+## What If Recovery Still Fails?
+
+- **Ask on cancel webhook** — optional one-line survey: "Card issue or done with product?"
+- **Win-back at 30 days** — single email if they marked involuntary
+- **Annual reminder** — email 30 days before renewal for annual subs
+
+Don't spam. One win-back max.
+
+## Common Mistakes
+
+- No Customer Portal — forces support tickets for card updates
+- Locking account instantly — kills retry window
+- Dunning from `noreply@` — lower trust, lower clicks
+- Ignoring `past_due` in analytics — product team blames features
+- Building custom card forms before Smart Retries and email work
+
+## Quick Questions
+
+### When should I set this up?
+
+Before your tenth paying customer or first annual plan — whichever comes first. Earlier is fine if Stripe is live.
+
+### Do I need a dedicated dunning product?
+
+Not at sub-$20K MRR for most solos. Revisit when failure volume exceeds ~20/month or you have multiple products and tax regimes.
+
+### Does Stripe Smart Retries cost extra?
+
+Retries are part of Stripe Billing; you pay successful charge fees when recovery works — better than no revenue.
+
+### How does this relate to voluntary churn?
+
+Separate metrics. Product retention work ([keeping first customers](/articles/how-to-retain-your-first-customers)) runs parallel to payment recovery. Fix both; confuse neither.
+
+## TL;DR
+
+- Involuntary churn from failed payments can be **20–40% of total churn** — customers who wanted to stay.
+- Enable **Stripe Smart Retries** and Customer Portal first — often recovers **20–40%** of failures automatically.
+- Webhook `invoice.payment_failed` → mark `past_due`, run a 3-email sequence (day 0, 3, 7).
+- Use grace period + soft lock — don't nuke data on first decline.
+- Track recovery rate monthly; separate involuntary from product churn in your head.
+- Building subscriptions this weekend? [Start from recurring-revenue ideas](/startup-ideas) and wire payments before dunning — then dunning before your first card expires.

@@ -6986,6 +6986,446 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "healthsync-personal-health-dashboard",
+      "title": "HealthSync: AI-Powered Personal Health Dashboard",
+      "publishedAt": "2026-08-12",
+      "category": "health",
+      "description": "Pull Apple Health, Oura, Whoop, Fitbit and CGM data into one privacy-first dashboard with AI insights that explain your sleep, activity and biomarkers.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1255",
+      "og": {
+        "subject": "A single glowing aubergine smart-ring resting on a dark slate desk beside a dimmed phone, deep shadows, shallow focus, no people or text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2223,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:12Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-slide-deck-maker",
+      "title": "AI Slide Deck Maker",
+      "publishedAt": "2026-08-12",
+      "category": "ai-tools",
+      "description": "Turn briefs, docs, data, or voice notes into polished, story-driven slide decks in minutes with AI — built for founders and ops teams who present sharp, fast.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1385",
+      "og": {
+        "subject": "a dark desk at night with a single lime-glowing projector beam hitting a blank presentation screen, one closed laptop, no people, no faces, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 7,
+        "wordCount": 2243,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:37:34Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-tutor-matchmaker",
+      "title": "AI Matchmaker for Student-Tutor Pairings",
+      "publishedAt": "2026-08-12",
+      "category": "marketplace",
+      "description": "A K-12 tutor marketplace that scores personality and learning-style fit, ranks best-match tutors with plain-language reasons, then handles booking and re-matching.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1753",
+      "og": {
+        "subject": "A dark wooden desk at night with an open notebook and two mint-glowing puzzle pieces clicking together, soft mint rim light, shallow focus, no people, no faces, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 2513,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:40Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "book-formatting-for-self-publishers",
+      "title": "One-Click Book Formatting for Self-Publishers",
+      "publishedAt": "2026-08-12",
+      "category": "ai-tools",
+      "description": "Turn a plain manuscript into a print-ready PDF and validated EPUB in one click. AI structure detection, pro templates, KDP-ready exports for self-publishers.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1904",
+      "og": {
+        "subject": "An open hardcover book resting on a dark wooden desk, its crisp printed pages catching a soft mint edge-light, shallow focus, late night.",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 6,
+        "wordCount": 2257,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:06Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "shopify-seo-keyword-tool",
+      "title": "Shopify SEO Keyword Tool for Store Owners",
+      "publishedAt": "2026-08-12",
+      "category": "ecommerce",
+      "description": "Affordable, Shopify-native keyword research at $29/month. Find profitable product keywords, track competitors, and fix on-page SEO in plain English.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1906",
+      "og": {
+        "subject": "A dark desk at night with a single glowing aubergine price tag resting beside a closed laptop, soft rim light, shallow focus, no people or text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2219,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:41:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "course-completion-nudge-platform",
+      "title": "Course Completion Nudge Platform for Online Educators",
+      "publishedAt": "2026-08-12",
+      "category": "education",
+      "description": "Attach AI-powered, guilt-free nudges to any online course to lift completion from 30% to 60%+ with personalized reminders for Teachable, Thinkific, Kajabi.",
+      "buildTime": "8-10 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2717",
+      "og": {
+        "subject": "A dark desk at night with a closed laptop glowing faintly lavender along its edge and a single graduation-cap keycap catching the light, shallow focus, no people",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2115,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:37:50Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-student-support-bot-online-educators",
+      "title": "AI Student Support Bot for Online Educators",
+      "publishedAt": "2026-08-12",
+      "category": "education",
+      "description": "An AI support bot that learns your online course and answers repetitive student FAQs instantly, 24/7, so creators can teach instead of firefighting their inbox.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2731",
+      "og": {
+        "subject": "A dark wooden desk at night with a single emerald-glowing chat-bubble icon hovering above a closed laptop, soft shallow focus, no people or text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2132,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:36:14Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "personalized-employee-wellness-platform",
+      "title": "Personalized Employee Wellness Platform for Small Businesses",
+      "publishedAt": "2026-08-12",
+      "category": "health",
+      "description": "AI-driven employee wellness platform that personalizes health programs for small businesses, boosting engagement and retention at an SMB-friendly per-employee price.",
+      "buildTime": "10-12 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:3150",
+      "og": {
+        "subject": "A single glowing lime heartbeat line curving across a dark matte dashboard screen on a desk, one accent-lit object, late-night, shallow focus, no people or text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2210,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:04Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "workflow-audit-app-for-small-businesses",
+      "title": "Workflow Audit App for Small Businesses",
+      "publishedAt": "2026-08-12",
+      "category": "automation",
+      "description": "Turn a small business's tangled tool stack into a visual workflow map with an ROI-ranked automation shortlist—diagnosis before you hire a Zapier consultant.",
+      "buildTime": "8-10 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8316",
+      "og": {
+        "subject": "A dark desk at night with a single glowing emerald node-and-line workflow diagram hovering above a closed laptop, thin light tracing the connections, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 10,
+        "wordCount": 2322,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:20Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "small-order-wholesale-marketplace",
+      "title": "Small-Order Wholesale Marketplace for Boutiques",
+      "publishedAt": "2026-08-12",
+      "category": "marketplace",
+      "description": "Wholesale marketplace where boutiques source small opening orders from emerging brands — 250-dollar minimums, in-platform samples, and lower fees than Faire.",
+      "buildTime": "8-10 hrs",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude"
+      ],
+      "audiences": [
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8877",
+      "og": {
+        "subject": "A dark boutique stockroom at night, a single lavender-lit product box on a wooden shelf beside a shipping label, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2273,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:34Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

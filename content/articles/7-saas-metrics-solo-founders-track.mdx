@@ -1,0 +1,162 @@
+---
+slug: "7-saas-metrics-solo-founders-track"
+title: "7 SaaS Metrics Every Solo Founder Should Track (And 10 to Ignore)"
+description: "Solo founders drown in dashboards. Track MRR, churn, activation, LTV:CAC, and five more — and ignore the vanity metrics that waste your weekends entirely."
+category: "Guide"
+publishedAt: "2026-08-12"
+wordCount: 1407
+readMinutes: 7
+heroAlt: "A clipboard with a short checklist on dark surface, top line highlighted in mint marker under single side lamp"
+---
+
+You opened Stripe, Google Analytics, and your product dashboard before breakfast. By lunch you have 47 numbers and no idea which one matters.
+
+Solo founders do not fail because they lack data. They fail because they track everything except the handful of metrics that tell you whether to keep building, change pricing, or kill the idea and start fresh next weekend.
+
+This is the short list — seven numbers worth a weekly glance, and ten you can safely ignore until you have a team, a bookkeeper, and a reason to care about cohort retention curves on a Tuesday.
+
+If you are still picking what to measure in the first place, start with an idea where the economics are obvious upfront. The [startup ideas library](/startup-ideas) filters for B2B pain and price points that make these metrics legible from customer one.
+
+## The 7 Metrics That Actually Matter
+
+### 1. MRR (Monthly Recurring Revenue)
+
+**What it is:** The predictable subscription revenue you collect each month.
+
+**Why it matters:** MRR is the scoreboard. Not signups. Not trials started. Not "pipeline." Cash that renews.
+
+**How to track it:** Stripe's dashboard, or a simple spreadsheet: customer name, plan price, start date. Update when someone subscribes or churns.
+
+**Solo-founder benchmark:** Anything above $0 means you have proof. [$1K MRR](https://www.micronichebrowser.com/blog/zero-to-1k-mrr-micro-saas-playbook) is the median sustainability zone for most solos — typically 4–8 months of consistent work, not a weekend miracle.
+
+### 2. Net MRR Change
+
+**What it is:** New MRR + expansion MRR − churned MRR − contraction MRR. The net movement month over month.
+
+**Why it matters:** Gross new sales can hide a leaking bucket. Net MRR change tells you if the business is actually growing or just treading water.
+
+**How to track it:** At month end, log: how much new revenue landed, how much left, any upgrades/downgrades. A Google Sheet row per month is enough.
+
+**Solo-founder benchmark:** Positive net MRR change every month is the goal. Two consecutive negative months means stop adding features and fix retention or positioning.
+
+### 3. Churn Rate
+
+**What it is:** The percentage of customers (or MRR) you lose in a period. Usually measured monthly for micro-SaaS.
+
+**How to calculate:** Customers lost this month ÷ customers at start of month. Or MRR churned ÷ starting MRR for a revenue-weighted view.
+
+**Why it matters:** High churn makes every growth effort a treadmill. [Groundwork's micro-SaaS economics research](https://groundworkblog.com/articles/economics-of-micro-saas-businesses) notes that sustainable solo businesses often run under **5% monthly churn** — above that, you are refilling a bucket with a hole in the bottom.
+
+**Solo-founder benchmark:** Under 5% monthly is healthy for B2B micro-SaaS. Over 8% means talk to churned customers before you write another line of code.
+
+### 4. Activation Rate
+
+**What it is:** The percentage of new signups who reach your "aha moment" — the action that correlates with retention and payment.
+
+**Why it matters:** Signups are vanity if users never experience value. Activation tells you whether onboarding works.
+
+**How to define it:** Pick one event. "Uploaded first file." "Connected first integration." "Generated first report." Not "logged in."
+
+**How to track it:** A simple event log in your database, PostHog free tier, or even manual checks for your first 50 users.
+
+**Solo-founder benchmark:** If under 40% of trial users hit activation within 48 hours, your onboarding — not your pricing — is the bottleneck.
+
+### 5. LTV:CAC Ratio
+
+**What it is:** Customer lifetime value divided by customer acquisition cost.
+
+**LTV (simple version):** Average monthly revenue per customer ÷ monthly churn rate. Example: $40/month ÷ 0.05 churn = $800 LTV.
+
+**CAC:** Total sales/marketing spend ÷ new customers acquired in that period.
+
+**Why it matters:** Tells you whether you can afford to grow. Below 3:1, you are buying revenue that does not pay back.
+
+**Solo-founder benchmark:** Early on, CAC is often "$0 and my time" — track hours instead of dollars. If organic acquisition takes 10 hours per customer and LTV is $200, that is a $20/hour business. Know that number.
+
+### 6. CAC Payback Period
+
+**What it is:** How many months until a customer's revenue covers what you spent to acquire them.
+
+**How to calculate:** CAC ÷ monthly gross margin per customer.
+
+**Why it matters:** Cash flow kills solo founders before unit economics do. A 12-month payback on a $500 ad spend hurts when you are bootstrapping.
+
+**Solo-founder benchmark:** Under 6 months for self-serve micro-SaaS. If payback exceeds 12 months, fix conversion before you spend another dollar on ads.
+
+### 7. Quick Ratio
+
+**What it is:** (New MRR + Expansion MRR) ÷ (Churned MRR + Contraction MRR). Measures growth efficiency.
+
+**Why it matters:** A quick ratio above 4 means you are growing healthily. Below 1 means you are shrinking. Between 1 and 4 is the grind zone most solos live in for the first year.
+
+**How to track it:** Same spreadsheet as net MRR change. One formula, calculated monthly.
+
+**Solo-founder benchmark:** Above 2 is fine early on. Panic below 1 for two consecutive months.
+
+## 10 Metrics You Can Ignore (For Now)
+
+These are real metrics. They matter at scale. They waste your weekends before $5K MRR:
+
+1. **Total signups** — without activation and conversion context, this is a vanity parade
+2. **Page views** — traffic without conversion is a hobby
+3. **Social media followers** — audience size does not equal buyers
+4. **DAU/MAU ratio** — engagement metrics matter for social products, not most B2B workflow tools
+5. **NPS score** — with 12 customers, just call them
+6. **Feature usage heatmaps** — talk to five users instead
+7. **Burn rate** — you are profitable by default at micro-SaaS cost levels; track MRR instead
+8. **Cohort retention curves** — meaningful after hundreds of users; premature before
+9. **Viral coefficient** — unless your product is literally collaborative, this is fantasy
+10. **Investor-style TAM slides** — you need 50 customers, not a billion-dollar market story
+
+Ignore does not mean forever. It means until these numbers would actually change a decision you face this week.
+
+## The Weekly Solo-Founder Dashboard
+
+Spend 15 minutes every Sunday:
+
+| Metric | Where to get it | Action if red |
+| --- | --- | --- |
+| MRR | Stripe | Below target → more outreach, not more features |
+| Net MRR change | Spreadsheet | Negative → investigate churn first |
+| Churn | Spreadsheet | Over 5% → exit interviews |
+| Activation | Product analytics | Under 40% → simplify onboarding |
+| LTV:CAC | Spreadsheet | Under 3:1 → raise price or cut acquisition cost |
+| CAC payback | Spreadsheet | Over 12 months → pause paid ads |
+| Quick ratio | Spreadsheet | Under 1 → retention emergency |
+
+That is it. One spreadsheet tab. One Stripe tab. No BI tool required.
+
+## How Metrics Connect to Idea Selection
+
+The best micro-SaaS ideas make these numbers easy to read early:
+
+- **High price floor** ($29+/month) → LTV math works faster
+- **Acute B2B pain** → lower churn, shorter sales cycles
+- **Clear activation event** → you know within 48 hours if the product works
+
+Bad ideas hide behind vanity metrics. Good ideas show paid conversion within weeks. If you are comparing candidates, run the LTV math on each before you build — the [ideas library](/startup-ideas) includes scope and positioning to make that comparison fast.
+
+## FAQ
+
+### Should I track ARR instead of MRR?
+
+ARR is just MRR × 12. Track MRR until you are big enough to bore investors at dinner parties.
+
+### What if I only have 3 customers?
+
+Track MRR and talk to those three humans weekly. Ratios like quick ratio become meaningful around 15–20 customers. Until then, qualitative beats quantitative.
+
+### Do I need analytics software?
+
+Not on day one. Stripe + a spreadsheet covers the first $5K MRR. Add PostHog or similar when activation optimization requires event data you cannot eyeball.
+
+### Which metric matters most pre-launch?
+
+None of these — yet. Pre-launch, track waitlist reply rate and paid pilot conversion. Switch to this dashboard the day someone pays for a subscription.
+
+## TL;DR
+
+- Track **7 metrics weekly**: MRR, net MRR change, churn, activation, LTV:CAC, CAC payback, quick ratio.
+- Ignore vanity numbers (signups, page views, followers) until they would change a real decision.
+- **Under 5% monthly churn** and **positive net MRR change** are the health signals that matter most early.
+- Pick ideas where the economics are obvious — [browse validated startup ideas](/startup-ideas) and run the LTV math before you ship.

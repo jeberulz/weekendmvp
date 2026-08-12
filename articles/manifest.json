@@ -613,6 +613,126 @@
       }
     },
     {
+      "slug": "how-to-pivot-weekend-mvp",
+      "title": "How to Pivot Your Weekend MVP When Nobody Buys",
+      "description": "Nobody bought your weekend MVP? Learn when to pivot vs persist, a 48-hour pivot framework, and the customer signal hierarchy that saves solo founders months.",
+      "wordCount": 1386,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Crumpled paper beside a fresh open notebook on dark desk, lavender light on the clean notebook page",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "customer-support-solo-founder",
+      "title": "Customer Support as a Solo Founder: The 2-Hour-a-Week System",
+      "description": "Solo founder customer support doesn't have to eat your calendar. A 2-hour-a-week system with async batches, docs, canned replies, and the right tools.",
+      "wordCount": 1377,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Sticky note stack on dark surface with one note pulled forward in mint side-light",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "when-to-add-second-feature",
+      "title": "When to Add Your Second Feature (And When It Kills Your MVP)",
+      "description": "MVP feature creep kills more weekend projects than bad code. Learn when to add your second feature, when to wait, and why retention beats expansion early.",
+      "wordCount": 1402,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Index card with two bullet lines on near-black desk, second line crossed out in lavender ink under side light",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "freemium-vs-paid-micro-saas-day-one",
+      "title": "Freemium vs Paid: What Solo Micro-SaaS Founders Should Ship on Day One",
+      "description": "Freemium converts 2-5% vs trials at 15-25%. Solo founders on freemium take 3x longer to revenue. Here's what to ship on day one instead of a free tier.",
+      "wordCount": 1445,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A folded receipt beside a fresh blank notecard on a dark desk, the receipt edge lit by lime side-light, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "7-saas-metrics-solo-founders-track",
+      "title": "7 SaaS Metrics Every Solo Founder Should Track (And 10 to Ignore)",
+      "description": "Seven SaaS metrics solo founders actually need: MRR, net change, churn, activation, LTV:CAC, payback, quick ratio — plus ten vanity metrics to ignore.",
+      "wordCount": 1407,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A clipboard with a short checklist on dark surface, top line highlighted in mint marker under single side lamp",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-waitlist-before-you-build",
+      "title": "Build a Waitlist Before You Build: The 48-Hour Validation Playbook",
+      "description": "Validate with a waitlist before you code: cold traffic benchmarks, warm-audience rates, and the 48-hour playbook that turns signups into real demand signal.",
+      "wordCount": 1484,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open planner with a circled date on near-black desk, mint light on the circled day only",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "b2b-vs-b2c-micro-saas-2026",
+      "title": "B2B vs B2C Micro-SaaS in 2026: Which Should You Build?",
+      "description": "B2b vs b2c SaaS for solo founders in 2026: compare revenue timing, acquisition, support load, and churn so you pick the right micro-SaaS market before you ship.",
+      "wordCount": 1385,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Two index cards side by side on dark desk, left card in lime light right in shadow",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "solo-founder-burnout-shipping",
+      "title": "Solo Founder Burnout: How to Keep Shipping Without Burning Out",
+      "description": "Solo founder burnout kills more projects than bad code. A practical bridge from exhaustion to sustainable shipping — boundaries, rhythms, and scope rules.",
+      "wordCount": 1269,
+      "readMinutes": 6,
+      "og": {
+        "subject": "Paperback book with bookmark on dark surface, bookmark tab catching mint side-light",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "database-pick-weekend-mvp-2026",
+      "title": "How to Pick a Database for Your Weekend MVP in 2026",
+      "description": "Convex vs Supabase vs PlanetScale vs Firebase for a weekend MVP: honest solo-founder picks for speed, auth, realtime, and what you'll regret in month three.",
+      "wordCount": 1451,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Neat row of small labeled index cards on dark surface, front card in lavender beam",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "recover-failed-payments-saas-churn",
+      "title": "How to Recover Failed Payments Before They Become Churn",
+      "description": "Involuntary churn from failed cards is fixable. Dunning emails, Stripe Smart Retries, and a solo-founder playbook to recover 20-40% before customers vanish.",
+      "wordCount": 1350,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Weathered receipt stack on dark desk, top receipt corner lit by lime side-light",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
       "slug": "build-a-mobile-app-in-a-weekend-2026",
       "title": "How to Build a Mobile App in a Weekend (Without Learning Swift)",
       "description": "Ship a real iOS and Android app in one weekend with Expo, EAS, and AI coding tools — plus the store-review timelines that decide when it actually goes live.",
