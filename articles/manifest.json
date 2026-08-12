@@ -611,6 +611,42 @@
         "accent": "lime",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-pivot-weekend-mvp",
+      "title": "How to Pivot Your Weekend MVP When Nobody Buys",
+      "description": "Nobody bought your weekend MVP? Learn when to pivot vs persist, a 48-hour pivot framework, and the customer signal hierarchy that saves solo founders months.",
+      "wordCount": 1386,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Crumpled paper beside a fresh open notebook on dark desk, lavender light on the clean notebook page",
+        "accent": "lavender",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "customer-support-solo-founder",
+      "title": "Customer Support as a Solo Founder: The 2-Hour-a-Week System",
+      "description": "Solo founder customer support doesn't have to eat your calendar. A 2-hour-a-week system with async batches, docs, canned replies, and the right tools.",
+      "wordCount": 1377,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Sticky note stack on dark surface with one note pulled forward in mint side-light",
+        "accent": "mint",
+        "status": "pending"
+      }
+    },
+    {
+      "slug": "when-to-add-second-feature",
+      "title": "When to Add Your Second Feature (And When It Kills Your MVP)",
+      "description": "MVP feature creep kills more weekend projects than bad code. Learn when to add your second feature, when to wait, and why retention beats expansion early.",
+      "wordCount": 1402,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Index card with two bullet lines on near-black desk, second line crossed out in lavender ink under side light",
+        "accent": "lavender",
+        "status": "pending"
+      }
     }
   ]
 }
