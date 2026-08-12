@@ -1,0 +1,225 @@
+---
+slug: "convex-vs-supabase-weekend-mvp-2026"
+title: "Convex vs Supabase for Weekend MVPs (2026)"
+description: "Convex or Supabase for your Next.js weekend MVP? Reactive TypeScript vs Postgres, free-tier reality, and a simple decision tree so you ship this weekend."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1147
+readMinutes: 6
+heroAlt: "Two small index cards side by side on a dark surface, one lit emerald from the left"
+---
+
+## The Short Answer
+
+Pick Convex when your MVP needs live data, fast product loops, and a TypeScript-first backend.
+
+Pick Supabase when your MVP needs SQL, Postgres extensions, self-hosting, or a database model you already understand.
+
+That is the decision.
+
+The trap is spending your whole weekend comparing backend platforms while the product still has no users.
+
+If you are still debating the idea itself, start with a scoped problem from the [Weekend MVP startup ideas library](/startup-ideas). The database choice gets easier once the product is smaller.
+
+## Who This Guide Is For
+
+This is for Next.js builders who want to ship a weekend MVP in 2026.
+
+You are not choosing infrastructure for a 200-person engineering team.
+
+You are choosing the fastest path from blank repo to something a real user can click.
+
+That means the best backend is the one that removes the most decisions for your specific product.
+
+## When Convex Wins
+
+Convex wins when your app is reactive by default.
+
+Think dashboards, task boards, chat, collaborative workflows, internal tools, AI queues, lightweight CRMs, and status-heavy products where users expect the screen to update without refresh.
+
+The big advantage is the shape of the developer experience.
+
+You write backend functions in TypeScript. Your frontend calls them with generated types. React hooks subscribe to query results. When data changes, the UI updates.
+
+You do not spend the weekend wiring REST routes, cache invalidation, realtime subscriptions, and type generation.
+
+For a weekend MVP, that matters.
+
+### Convex Is Strong When You Want
+
+- TypeScript from database function to React component.
+- Realtime updates without running your own WebSocket layer.
+- A backend that feels close to your app code.
+- Server functions instead of manual API route sprawl.
+- Fast iteration on product behavior.
+
+If your MVP is "people create things and other screens update when those things change," Convex is usually the cleaner bet.
+
+Browse [startup ideas that fit a weekend build](/startup-ideas) and you will see this pattern everywhere: small workflows, clear state, and enough live feedback to feel useful.
+
+## When Supabase Wins
+
+Supabase wins when Postgres is the point.
+
+If you need SQL, relational reporting, row-level policies, Postgres extensions, direct database access, or a path to self-hosting, Supabase gives you familiar ground.
+
+It is especially strong when your data model is naturally relational:
+
+- Marketplaces.
+- Booking systems.
+- Finance tools.
+- Analytics products.
+- Apps that need complex joins or reporting.
+- Products where future customers may ask for database portability.
+
+Supabase also fits founders who already know SQL.
+
+If you can sketch your tables in your head and write the queries quickly, that familiarity can beat a newer mental model.
+
+### Supabase Is Strong When You Want
+
+- Postgres as the core database.
+- SQL access for debugging and reporting.
+- A large ecosystem of tools, extensions, and hosting options.
+- Self-hosting as a serious future requirement.
+- A backend that looks familiar to technical buyers.
+
+The tradeoff is that you may own more wiring.
+
+Realtime is available, auth is available, storage is available, and edge functions are available. But the pieces can feel more separate. For a weekend MVP, separate pieces can become separate rabbit holes.
+
+## Free Tier Reality
+
+Both platforms can get you through an early MVP without a scary bill.
+
+For a small product with a few test users, the free tiers are usually enough to validate the idea.
+
+The bigger cost is not hosting.
+
+The bigger cost is building the wrong thing because you spent the weekend optimizing for month six.
+
+Paid plans often start around $25 per month once you need more capacity, production comfort, or fewer limits. That number should not decide your MVP.
+
+If $25 per month would break the idea, the idea probably needs a tighter paid use case.
+
+Use the [startup ideas library](/startup-ideas) to pick a problem where one early customer can justify the tool.
+
+## The Decision Tree
+
+Use this instead of another comparison spreadsheet.
+
+### Question 1: Does the UI Need to Update Live?
+
+If yes, lean Convex.
+
+Examples:
+
+- A shared task board.
+- A chat-style assistant.
+- A live lead inbox.
+- A dashboard that changes as jobs finish.
+- An internal tool where multiple people edit records.
+
+You can build these with Supabase, but Convex makes the reactive path feel more natural.
+
+### Question 2: Do You Need SQL This Weekend?
+
+If yes, lean Supabase.
+
+Not "maybe someday." This weekend.
+
+Do you need joins, reporting queries, Postgres extensions, or direct SQL access to understand the product?
+
+If yes, use the tool built around that.
+
+### Question 3: Are You Mostly Building Product Logic?
+
+If yes, lean Convex.
+
+Convex works well when the hard part is the behavior:
+
+- Who can do what.
+- What happens when a user submits something.
+- Which records update together.
+- What the UI should show right now.
+
+You stay in TypeScript and keep moving.
+
+### Question 4: Will Your Buyer Care About Postgres?
+
+If yes, lean Supabase.
+
+Some products sell into teams that trust Postgres, expect SQL exports, or want a migration story from day one.
+
+That can matter more than your personal preference.
+
+### Question 5: Which One Can You Ship Without Docs Open All Day?
+
+Be honest.
+
+The best weekend stack is the one you can operate while tired on Sunday afternoon.
+
+If Convex clicks for you, use it.
+
+If Supabase clicks for you, use it.
+
+The user does not care which database won the debate. They care whether the product solves the problem.
+
+## What I Would Pick for Common MVPs
+
+### AI Meeting Notes Cleaner
+
+Use Convex if you want live processing status, saved summaries, and a simple React flow.
+
+Use Supabase if you want SQL-backed history, team workspaces, and reporting from day one.
+
+### Micro-CRM for Freelancers
+
+Use Convex if the core loop is fast notes, reminders, and live status.
+
+Use Supabase if the core loop is structured contacts, deals, invoices, and reporting.
+
+### Marketplace MVP
+
+Use Supabase.
+
+Tables, relationships, search, seller profiles, orders, and reporting all fit Postgres well.
+
+### Collaborative Planning Tool
+
+Use Convex.
+
+Realtime collaboration is the product experience, not an add-on.
+
+## What to Do This Weekend
+
+Do not start with the backend.
+
+Start with the promise:
+
+- Who has the problem?
+- What are they doing today?
+- What is the smallest workflow that feels valuable?
+- What screen proves the product works?
+
+Then pick the backend that removes the most friction from that workflow.
+
+If the workflow depends on live updates, pick Convex.
+
+If the workflow depends on relational data and SQL, pick Supabase.
+
+Then stop debating.
+
+Build the first three screens.
+
+## A Simple Rule
+
+Convex is usually better for "state changes and the UI reacts."
+
+Supabase is usually better for "structured data and SQL stays central."
+
+Both can ship a weekend MVP.
+
+Neither can rescue a vague idea.
+
+Pick one, use a scoped idea from the [Weekend MVP startup ideas library](/startup-ideas), and spend the rest of the weekend getting the product in front of a real person.

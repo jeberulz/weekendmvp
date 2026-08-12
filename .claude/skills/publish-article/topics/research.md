@@ -11,7 +11,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 ---
 
 ## Topic 1
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `waitlist-that-converts-before-you-ship`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/waitlist-that-converts-before-you-ship.mdx
 - **Title:** How to Build a Waitlist That Converts (Before You Ship)
 - **Slug:** `waitlist-that-converts-before-you-ship`
 - **Framework:** How-To Tutorial (PIE)
@@ -27,7 +31,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats to use:** Target 15–30% page conversion on qualified traffic; email-only form; every extra field −10–15% conversion; Dropbox referral grew 100K→4M in 15 months (+60% permanent signup lift)
 
 ## Topic 2
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `convex-vs-supabase-weekend-mvp-2026`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/convex-vs-supabase-weekend-mvp-2026.mdx
 - **Title:** Convex vs Supabase for Weekend MVPs (2026)
 - **Slug:** `convex-vs-supabase-weekend-mvp-2026`
 - **Framework:** How-To Tutorial (decision framework)
@@ -43,7 +51,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats/facts:** Both free tiers enough for early MVP; paid often ~$25/mo entry; Convex = TS + reactive; Supabase = Postgres + SQL + self-host
 
 ## Topic 3
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `charge-from-day-one-freemium-vs-paid`
+- **Framework:** Myth-Busting
+- **Published:** 2026-08-12
+- **File:** content/articles/charge-from-day-one-freemium-vs-paid.mdx
 - **Title:** Should You Charge From Day One? Freemium vs Paid MVP
 - **Slug:** `charge-from-day-one-freemium-vs-paid`
 - **Framework:** Myth-Busting
@@ -59,7 +71,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats:** Freemium free→paid ~2–8% (median ~4.5%); card-optional trial ~4–15%; card-required trial ~25–60%; visitor→freemium often ~9–14%
 
 ## Topic 4
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `build-directory-website-weekend-2026`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/build-directory-website-weekend-2026.mdx
 - **Title:** How to Build a Directory Website in a Weekend (2026)
 - **Slug:** `build-directory-website-weekend-2026`
 - **Framework:** How-To Tutorial
@@ -74,7 +90,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats:** Directories often get 60–80% traffic from SEO; programmatic category×location pages; Next.js SSG/ISR stack
 
 ## Topic 5
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `one-feature-product-mvp`
+- **Framework:** PAS
+- **Published:** 2026-08-12
+- **File:** content/articles/one-feature-product-mvp.mdx
 - **Title:** The One-Feature Product: Why Your MVP Should Do Less
 - **Slug:** `one-feature-product-mvp`
 - **Framework:** PAS
@@ -86,7 +106,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Angle:** Contrarian against “full platform” weekend builds; one magic moment
 
 ## Topic 6
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `saas-onboarding-first-5-minutes`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/saas-onboarding-first-5-minutes.mdx
 - **Title:** SaaS Onboarding That Actually Activates (First 5 Minutes)
 - **Slug:** `saas-onboarding-first-5-minutes`
 - **Framework:** How-To Tutorial
@@ -102,7 +126,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats:** Fix if activation &lt;25–30% in 7 days; healthy B2B often 40–60%; checklists +15–25% activation; target magic moment &lt;5–10 min
 
 ## Topic 7
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `b2b-vs-b2c-solo-founder`
+- **Framework:** Myth-Busting
+- **Published:** 2026-08-12
+- **File:** content/articles/b2b-vs-b2c-solo-founder.mdx
 - **Title:** B2B vs B2C as a Solo Founder: Pick One
 - **Slug:** `b2b-vs-b2c-solo-founder`
 - **Framework:** Myth-Busting
@@ -117,7 +145,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats:** B2B often $50–500/mo vs B2C $5–50; B2C churn often monthly 5–15% vs B2B annual 3–10%; $1M ARR may need dozens B2B vs thousands B2C
 
 ## Topic 8
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `how-to-demo-your-mvp`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/how-to-demo-your-mvp.mdx
 - **Title:** How to Demo Your MVP So People Actually Buy
 - **Slug:** `how-to-demo-your-mvp`
 - **Framework:** How-To Tutorial
@@ -132,7 +164,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats:** Keep Loom ≤90s–3min; video in email 1 often hurts; permission-first / touch 3 pattern; follow-up within 2 hours post live demo
 
 ## Topic 9
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `newsletter-before-the-product`
+- **Framework:** BAB
+- **Published:** 2026-08-12
+- **File:** content/articles/newsletter-before-the-product.mdx
 - **Title:** Build the Newsletter Before the Product
 - **Slug:** `newsletter-before-the-product`
 - **Framework:** BAB
@@ -147,7 +183,11 @@ Batch: WP19 — 10 net-new topics (original 14-topic skill queue already publish
 - **Stats/examples:** Beehiiv founder waitlist ~400 qualified creators before launch; AI Central 300k+ readers; referrals + lead magnets as growth loops
 
 ## Topic 10
-- [ ] **QUEUED**
+- [x] **PUBLISHED**
+- **Slug:** `solo-founder-customer-support`
+- **Framework:** How-To Tutorial
+- **Published:** 2026-08-12
+- **File:** content/articles/solo-founder-customer-support.mdx
 - **Title:** Customer Support as a Solo Founder (Without Burning Out)
 - **Slug:** `solo-founder-customer-support`
 - **Framework:** How-To Tutorial

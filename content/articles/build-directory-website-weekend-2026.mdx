@@ -1,0 +1,160 @@
+---
+slug: "build-directory-website-weekend-2026"
+title: "How to Build a Directory Website in a Weekend (2026)"
+description: "Ship a SEO-ready directory MVP this weekend with Next.js — listings, category pages, sitemaps, and a monetization path without building a marketplace."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 872
+readMinutes: 4
+heroAlt: "A neat row of blank index cards on a dark desk under lavender side light, shallow focus"
+---
+
+## Who This Is For
+
+You want a business that compounds through search, not one viral tweet.
+
+You are fine curating listings before you have "network effects."
+
+You can ship Next.js pages in a weekend and improve the data later.
+
+If that is you, a directory is one of the highest-leverage MVPs you can build in 2026. Done right, directories often pull **60–80% of traffic from SEO** because every category and listing is a crawlable page with intent built in.
+
+If you still need the niche, browse [startup ideas](/startup-ideas) and pick a vertical you can actually list by Sunday night.
+
+## Why Directories Still Work
+
+Directories are boring. That is the feature.
+
+People search "[tool type] for [niche]" and "[category] in [city]" every day. A good directory answers those queries with structured pages Google can index.
+
+You do not need a marketplace on day one. You need:
+
+1. A clear niche
+2. Enough quality listings to not look empty
+3. Category pages that are not thin spam
+4. A path to monetize later (featured placements, lead forms, sponsorships)
+
+Skip the 10,000 empty rows fantasy. **Thirty to fifty strong listings** beat a scraped wasteland.
+
+## The Weekend Stack
+
+Keep it boring and shippable:
+
+- **Next.js App Router** on Vercel — SSR/SSG/ISR, metadata, sitemaps
+- **Convex or Supabase** for listings (pick one; do not debate all weekend)
+- **Tailwind** for a clean, fast UI
+- **Manual seed data** first — CSV or a seed script, not a submission portal yet
+
+Optional later: Algolia/Meilisearch when filters get heavy. Postgres full-text is enough early.
+
+## Friday Night: Niche + Schema
+
+### Pick a wedge you can fill
+
+Bad: "AI tools directory" (infinite, competitive, mushy).
+
+Good: "AI tools for real estate agents" or "billing tools for solo therapists."
+
+You should be able to name 40 real products or places without inventing them.
+
+### Define the listing object
+
+Minimum fields:
+
+- name, slug, one-line pitch
+- category (and maybe subcategory)
+- website URL
+- pricing model (free / freemium / paid)
+- optional: location, tags, "best for"
+
+Write this as a TypeScript type or Convex schema. One table. No reviews yet. No user accounts yet unless submissions are the product.
+
+Still fuzzy on the wedge? Steal a vertical from [startup ideas](/startup-ideas) and force the directory to serve that buyer only.
+
+## Saturday: Routes That Rank
+
+### Build the pages that matter
+
+1. **Home** — promise + search + top categories
+2. **Category index** — `/category/[slug]`
+3. **Listing detail** — `/listing/[slug]`
+4. **About / submit** — even if submit is a Typeform for week one
+
+### SEO that is not optional
+
+- `generateMetadata` per listing and category (unique title + description)
+- `app/sitemap.ts` that enumerates listings + categories
+- `robots.ts` that allows crawlers
+- JSON-LD for `ItemList` / `SoftwareApplication` / `LocalBusiness` as appropriate
+- Canonical URLs on every page
+
+Directories die when every page shares the same meta description. Unique copy beats keyword stuffing.
+
+### Content rules for thin-page risk
+
+- Each category needs a short intro (who it is for, how you pick listings)
+- Each listing needs a real description, not three scraped adjectives
+- Internal links: category → listings → related listings
+
+## Sunday: Seed, Polish, Monetize Path
+
+### Seed quality over quantity
+
+Manually add 30–50 listings. Write honest blurbs. Link out. Verify URLs.
+
+If you cannot fill 30 without lying, your niche is wrong — pick another before you "scale scraping."
+
+### Ship a minimal search
+
+Even a client filter on name + category is fine for v1. Facets can wait.
+
+### Monetization you can add next week
+
+Do **not** build Stripe + seller dashboards this weekend unless that is the whole product.
+
+Simple paths:
+
+- Featured listing badge (manual invoice first)
+- "Get a quote" lead form for service directories
+- Sponsored category slot
+- Newsletter of new listings (owned audience)
+
+## What Not to Build Yet
+
+- Full user accounts + OAuth
+- Review systems with moderation
+- Map pins for every listing
+- "Claim this listing" workflows
+- AI that auto-generates 5,000 junk pages
+
+Those are week-two problems after you have indexing and a few humans using the site.
+
+## A Concrete Weekend Schedule
+
+**Friday (2–3 hours):** niche sentence, schema, empty Next.js app, first listing type.
+
+**Saturday (6–8 hours):** home, category, detail routes, metadata, sitemap, seed 20 listings.
+
+**Sunday (4–6 hours):** seed to 40+, polish copy, deploy, submit URL to Search Console, write one launch post.
+
+By Sunday night you should have a live URL, crawlable pages, and a list of ten people to ask: "What is missing from this directory?"
+
+## FAQ
+
+### Do I need a CMS?
+
+Not for weekend one. A seed file or database table is enough. Add a CMS when non-devs must edit listings daily.
+
+### Is scraping okay?
+
+Scraping into thin pages is how directories get ignored — or worse. Curate. Attribute. Prefer original blurbs.
+
+### What if my niche is tiny?
+
+Tiny can be profitable. A directory of 80 high-intent listings with buyers who pay for leads beats a generic AI tools zoo.
+
+## TL;DR
+
+Pick a narrow niche. Ship Next.js listing + category pages with real metadata and a sitemap. Seed 30–50 quality listings. Monetize later with featured spots or leads. Skip marketplace complexity until search traffic proves the asset.
+
+When you need the next product angle after the directory ships, go back to [startup ideas](/startup-ideas) and pick something that feeds — or sits beside — the traffic you just built.
