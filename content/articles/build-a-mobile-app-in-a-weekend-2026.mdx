@@ -1,0 +1,166 @@
+---
+slug: "build-a-mobile-app-in-a-weekend-2026"
+title: "How to Build a Mobile App in a Weekend (Without Learning Swift)"
+description: "Ship a real iOS and Android app in one weekend with Expo, EAS, and AI coding tools — plus the store-review timelines that decide when it actually goes live."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1521
+readMinutes: 8
+heroAlt: "A folded paper airplane resting on a closed notebook on a near-black desk, one wing edge caught by a narrow lime beam"
+---
+
+## Who This Is For
+
+You want an app on a phone. Not a website that looks like an app — an icon on a home screen, a push notification, a TestFlight link you can text to a friend.
+
+You also don't want to spend six months learning Swift and Kotlin to find out nobody wanted it.
+
+Good news: the build is genuinely a weekend now. The part that isn't a weekend is Apple. Plan for both and you'll be fine.
+
+If you don't have the *what* yet, pick something already scoped to weekend size from [startup ideas](/startup-ideas) before you install anything.
+
+## First, The Decision Gate Nobody Makes
+
+Most "app ideas" should ship as a mobile web app first. Ask one question:
+
+**Does the core value require something only a phone can do?**
+
+Camera, offline mode, push notifications, background location, HealthKit, home-screen habit loops, App Store discovery. If yes, build native. If your app is forms, dashboards, or a chat interface, ship a web app this weekend instead and skip store review entirely — see [how to build your first app in a weekend](/articles/how-to-build-your-first-app-in-a-weekend).
+
+Being honest here saves you the single most common rejection, which we'll get to.
+
+## The 2026 Stack
+
+| Layer | Pick | Why |
+|-------|------|-----|
+| Framework | Expo (React Native) | One codebase for iOS + Android; no Xcode wrestling |
+| Builds | EAS Build | Compiles signed binaries in the cloud — you don't need a Mac |
+| Submission | EAS Submit | Uploads straight to App Store Connect / Play Console |
+| Code | Claude Code or Cursor | Writes the screens; you review and steer |
+| Backend | Supabase or Convex | Auth + data without writing a server |
+| Updates | EAS Update | Ship JS/copy fixes without a new review |
+
+The reason this works is Expo Application Services. It handles builds, signing, credentials, and store upload in the cloud, which removes the two things that historically killed solo mobile projects: provisioning profiles and needing a Mac ([ShipNative](https://www.shipnative.dev/blog/expo-eas-app-store-submission-checklist), [VP0](https://vp0.com/blogs/can-ai-make-an-ios-app)).
+
+**Cash cost:** Apple Developer Program is **$99/year**. Google Play is a **$25 one-time** fee. Everything else has a free tier that covers a launch.
+
+## The Weekend Plan
+
+### Friday night (2 hours): scope and scaffold
+
+Write the app in one sentence: *"[User] opens this to [do one thing] in under 30 seconds."*
+
+Then cut it to three screens: a list, a detail/input, and a settings screen. That's it. No onboarding carousel, no social login matrix, no dark-mode toggle.
+
+Scaffold it:
+
+```bash
+npx create-expo-app@latest myapp
+cd myapp
+npm install -g eas-cli
+eas login
+eas build:configure
+```
+
+Then write your `AGENTS.md` (or `CLAUDE.md`) *before* you prompt. Give the agent the stack, the file conventions, and the three screens. AI coding tools drift badly on mobile projects without a project context file — a written instruction file is the difference between one coherent app and four half-apps. More on that in [the AGENTS.md guide](/articles/agents-md-ai-coding-instructions).
+
+### Saturday (6–8 hours): build the one flow
+
+Work screen by screen, not feature by feature. Order that works:
+
+1. Navigation shell (Expo Router, tabs or stack)
+2. The single core interaction — the reason the app exists
+3. Persistence (local storage first; remote DB only if multi-device matters)
+4. Empty states and one loading state
+5. App icon and splash screen
+
+Test on a real device via Expo Go all day. Simulators lie about tap targets, keyboard behavior, and scroll physics.
+
+**Rule for the day:** if a feature isn't in your one-sentence description, write it on a list and don't build it. Weekend scope discipline is the whole game — the [3-screen MVP framework](/articles/the-3-screen-mvp-framework) is the same idea applied to web.
+
+### Sunday morning (2 hours): the compliance chores
+
+These are boring and they are exactly what gets apps rejected. Do them before you build:
+
+- **Privacy policy at a live URL.** Not a placeholder. Not "coming soon."
+- **Account deletion path** if you collect emails or accounts. Apple requires it.
+- **Encryption compliance:** set `ios.config.usesNonExemptEncryption: false` in `app.json` if you're not doing custom crypto.
+- **Working demo credentials** if there's a login wall. Reviewers reject broken logins instantly.
+- **Screenshots** at the required sizes, plus a description that says what the app does in the first line.
+
+### Sunday afternoon (1 hour): build and submit
+
+```bash
+eas build -p ios --profile production
+eas submit -p ios
+```
+
+A production iOS build takes roughly 12–25 minutes on EAS; Android is usually faster ([tech-insider](https://tech-insider.org/react-native-tutorial-mobile-app-complete-guide-2026/)). Then you wait.
+
+Ready to pick the thing you'll actually ship? Scoped, researched builds live at [startup ideas](/startup-ideas).
+
+## The Part That Isn't a Weekend: Review
+
+This is the expectation-setting most tutorials skip.
+
+| Store | Typical review | Safe planning buffer |
+|-------|----------------|----------------------|
+| App Store | 24–48 hours | 1 week (longer if flagged) |
+| Google Play (established account) | Hours to a few days | 1 week |
+| Google Play (new personal account) | Plus closed testing | **12 testers opted in for 14 continuous days** before you can request production access |
+
+That Google Play testing requirement is the one that ambushes solo founders in 2026. If you created a personal Play developer account recently, you cannot go straight to production — you need a closed test with at least 12 testers running for 14 continuous days ([gmi.software](https://gmi.software/blog/react-native-app-store-launch-checklist)).
+
+Practical sequencing: **ship iOS TestFlight first** for real feedback while the Play testing clock runs.
+
+### The rejection that will get you
+
+Guideline 4.2 — minimum functionality. If your app is a thin wrapper around a website, or has no capability a mobile browser lacks, Apple rejects it ([ShipNative](https://www.shipnative.dev/blog/expo-eas-app-store-submission-checklist)).
+
+The fix isn't clever wording in your review notes. It's building one genuinely native thing: notifications that matter, offline capability, camera input, a widget, HealthKit. One is enough. Zero is a rejection.
+
+Other frequent causes: placeholder privacy policies, missing account deletion, broken demo credentials, and Guideline 2.1 questions about AI-generated content and data collection.
+
+## Never Lose Your Android Keystore
+
+Write this on a sticky note: if you lose your Android upload keystore, you cannot ship updates to that package name. EAS manages credentials for you — leave it that way, and don't hand-roll signing to save five minutes.
+
+## After Launch: Ship Without Re-Review
+
+EAS Update pushes JavaScript, layout, copy, and translation changes over the air — no new store review. What it can't do: native code, new SDKs, permission changes, or Expo SDK upgrades. Those need a fresh build and a fresh review.
+
+Practically, this means your Sunday-night binary can get five copy fixes on Monday. Use it. Don't abuse it — shipping a fundamentally different app via OTA is a policy problem, not a shortcut.
+
+## Common Weekend Killers
+
+1. **Building for both platforms simultaneously.** Ship iOS or Android first. Expo makes the second one cheap later.
+2. **Native modules on day one.** Every custom native dependency is a new build failure surface. Stay in the managed workflow.
+3. **Auth before value.** Let the app work anonymously for v1 if you can. Login is the number one place weekend apps die — see [how to add login without building auth](/articles/add-auth-to-your-weekend-mvp).
+4. **Designing in Figma on Saturday.** Use a component library. You are not shipping a design portfolio.
+5. **Scheduling a launch date around approval.** You do not control the queue. Announce after you're live.
+
+## FAQ
+
+### Do I need a Mac to build an iOS app?
+
+No. EAS Build compiles the signed iOS binary in the cloud, and you can manage App Store Connect from any browser. You still need an Apple Developer account at $99/year to distribute.
+
+### Can AI actually write the whole app?
+
+It can write most of the screens and wire the plumbing, but it needs a written project context file and a human reviewing what it ships. The people shipping monthly with this stack are steering it, not watching it — the [Claude Code 48-hour workflow](/articles/claude-code-48-hour-workflow) shows the same discipline applied end to end.
+
+### Should I charge for it?
+
+Not in week one. Get 20 people using it, watch where they stall, then price. Start with [how to price your weekend MVP](/articles/how-to-price-your-weekend-mvp) once you know what the app is worth.
+
+### Is React Native fast enough?
+
+For a CRUD app, a habit tracker, a client tool, or an AI chat interface: yes, easily. If you're building a 3D game or a real-time video editor, this article isn't your path.
+
+## TL;DR
+
+The build is a weekend: Expo + EAS + AI coding tools, three screens, one core flow, tested on a real device. Cash cost is $99/year for Apple and $25 once for Google.
+
+The launch isn't a weekend: review is typically 24–48 hours but budget a week, and a new personal Play account needs 12 testers for 14 continuous days before production. Ship one genuinely native capability so Guideline 4.2 doesn't sink you, get your privacy policy and demo credentials right, and use EAS Update for post-launch fixes.
+
+Pick something small enough to survive that timeline — start with a scoped build from [startup ideas](/startup-ideas).

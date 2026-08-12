@@ -1,0 +1,152 @@
+---
+slug: "move-off-lovable-bolt-to-real-code"
+title: "How to Move Your Lovable or Bolt App Into a Real Codebase"
+description: "Hit the ceiling in Lovable, Bolt, or v0? Here's how to export cleanly, why the exported app looks broken on first run, and how to keep shipping with AI afterwards."
+category: "Tutorial"
+publishedAt: "2026-08-12"
+wordCount: 1557
+readMinutes: 8
+heroAlt: "A hardcover book lying flat on a near-black desk with its paper dust jacket slid halfway off, the exposed cloth spine caught by a narrow lime beam"
+---
+
+## You Hit the Ceiling. That's the Good News.
+
+The same prompt that worked yesterday now breaks something else. You're burning credits re-fixing the same bug. You need a scheduled job, or a webhook, or a query that doesn't melt, and the builder simply won't do it.
+
+That isn't failure. **Outgrowing an AI app builder is the success condition** — the tool's entire job was to get you to a working product fast enough to find out whether anyone wanted it ([LOW/CODE](https://www.lowcode.agency/blog/when-to-stop-using-lovable)).
+
+Now you own the code, and the migration is smaller than you think — if you do it while the app is still small enough to understand completely.
+
+Between builds? Keep a scoped next project ready at [startup ideas](/startup-ideas).
+
+## The Six Signals It's Time
+
+1. **The credit ceiling.** You're spending more on regenerations than a month of hosting.
+2. **Regression whack-a-mole.** Prompts that used to work now break unrelated things — the codebase has outgrown what fits in a single context window.
+3. **Custom backend logic** the builder can't generate: background jobs, cron, worker queues, complex webhooks.
+4. **Database performance work** — indexing strategy, query optimization, anything requiring direct access.
+5. **Traffic** beyond what builder-hosted infrastructure is designed for.
+6. **Cost inversion.** Your monthly platform bill exceeds what self-hosting the same app would cost.
+
+One more, and it's the most important: **the cleanup cost grows with every week you stay.** A project built over two weeks in Lovable takes a few hours to tidy after export. One built over six months can take weeks, because AI-specific patterns and platform dependencies accumulate the whole time ([Vibe Coder](https://blog.vibecoder.me/exporting-from-app-builders-what-you-get)).
+
+The honest advice: export **sooner than feels necessary**. Ideally the moment you have validation, before you have paying customers, and definitely before your builder changes its pricing.
+
+## What You Actually Get Out
+
+This is where expectations break, so be precise about your platform.
+
+| Platform | How you get the code | Two-way? | What you get |
+|----------|---------------------|----------|--------------|
+| **Lovable** | GitHub integration (Settings → connectors), auto-syncs | Yes — keep prompting in Lovable | Full-stack React + TypeScript + Tailwind + Supabase config |
+| **Bolt.new** | Project title → Export → Download ZIP, or push to GitHub | Partially (re-import is manual) | Frontend + client logic; **often no backend at all** |
+| **v0** | GitHub sync or download from project menu | Mostly one-way | Next.js project; copy your Vercel env vars out |
+| **Replit** | Git pane → connect GitHub → push | Yes | Everything, plus Replit-specific dependencies to replace |
+
+Compiled from [StackBrief](https://stackbrief.dev/article/migrate-lovable-bolt-app-to-codebase), [Sentido](https://sentido.cloud/own-your-ai-built-app), and [Vibe Coder](https://blog.vibecoder.me/exporting-from-app-builders-what-you-get).
+
+**The Bolt caveat matters most.** Bolt is primarily a frontend tool. If your app stored data in local storage or hit a mock API, that's exactly what exports: an app that runs but doesn't persist data or handle multiple users. You are not migrating a backend — you are writing one.
+
+**Lovable's git history will be a mess.** It commits every AI-generated change, so hundreds of rapid iterations produce a history nobody can read. That's cosmetic, not fatal. Squash to a single "import from Lovable" commit and start clean.
+
+## Why the Exported App Looks Broken (The Number One Gotcha)
+
+You export, run `npm install && npm run dev`, and the app loads with no data and console errors. Nothing is wrong with the code.
+
+**Builders hide your secrets behind their own UI.** Your Supabase URL and keys, your API keys — they don't come with the export, and they shouldn't, for security. So a freshly exported app runs and can't reach its database.
+
+The fix:
+
+```bash
+cp .env.example .env.local   # or create it
+# then paste from the builder's / Supabase's dashboard:
+# NEXT_PUBLIC_SUPABASE_URL=...
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+Get these from your Supabase project settings (which you already own — Supabase was always a separate account) and from wherever you configured other API keys. If you were on v0, copy the environment variables out of the Vercel project before you disconnect anything.
+
+That's it. That's the entire mystery behind "the export is broken."
+
+## The Migration, Step by Step
+
+### 1. Get it into your own GitHub repo
+
+Not a ZIP on your desktop. A repo. You own the code on paper the moment it's generated; you own it in practice when a copy lives in version control with history.
+
+Lovable's GitHub sync is available on every plan including free, and it's two-way — you can keep prompting in Lovable while the repo stays current. Bolt and v0 are effectively one-way, which is fine, because after export you continue with repo-based AI tools anyway.
+
+### 2. Make it run locally
+
+Install, add `.env.local`, run. Fix the import errors. Don't refactor anything yet — the only goal is a green dev server and a working core flow.
+
+### 3. Deploy it somewhere you control
+
+| Your export | Best independent home | Why |
+|-------------|----------------------|-----|
+| React/Vite SPA (typical Lovable, Bolt) | Cloudflare Pages or Azure Static Web Apps | Free tiers allow commercial use; build on every push |
+| Next.js (typical v0) | Vercel | Native, zero-config — see [deploying to Vercel](/articles/deploy-nextjs-mvp-to-vercel) |
+| Node server (some Bolt/Replit) | Railway or Fly.io | Real servers from about $5/month |
+
+Do this **before** you start cleaning code. A deployed app you control is the thing that makes the migration real; a local branch is a project you might abandon.
+
+### 4. Write your AGENTS.md, then clean up
+
+This is the step that determines whether you keep momentum. Your new environment is Cursor or Claude Code operating on files, and those tools need a project context file to behave consistently — see [AGENTS.md: the one file that makes AI write better code](/articles/agents-md-ai-coding-instructions).
+
+Then clean in this order:
+
+1. **Secrets audit.** Nothing hard-coded. Rotate anything that ever sat in a public preview.
+2. **Auth and data-access boundaries.** Verify row-level security actually exists — AI builders frequently generate permissive policies. This is the highest-risk item on the list; check it against [vibe coding security](/articles/vibe-coding-security-for-founders).
+3. **Duplicated components.** Builders generate near-identical components repeatedly. Consolidate the top three offenders, not all of them.
+4. **Dead code and unused dependencies.** One pass, then stop.
+5. **Types.** Turn on strict mode and fix what screams. This catches more real bugs than any refactor.
+
+**Do not rewrite the app.** The exported code runs and users are using it. Clean the risky parts, leave the ugly-but-working parts alone, and improve them as you touch them.
+
+For reference, a moderately complex Lovable app takes an experienced developer roughly two to six weeks to migrate properly. Yours will take less if you export early and don't gold-plate.
+
+### 5. Keep shipping with AI
+
+Nothing about this means abandoning AI-assisted development. It means moving from prompting a hosted builder to prompting an agent that works on your files, with git history, tests, and a real deploy pipeline. Most people ship *faster* after the move, because they stop fighting the builder's context limits. If you're picking a tool, start with [Cursor vs Claude Code vs Lovable](/articles/cursor-vs-claude-code-vs-lovable-2026).
+
+Got the codebase, need the next idea? [startup ideas](/startup-ideas).
+
+## What You Inherit (Be Honest About This)
+
+Migrating hands you responsibilities the builder was quietly covering:
+
+- **Your own secrets and environment management** across local, preview, and production
+- **Reviewing AI changes** — no platform is sanity-checking the diff now
+- **Deploys, rollbacks, and monitoring** when something breaks at 11pm
+- **Rough edges in generated code** that you'll be maintaining
+
+That's the trade for control, lower costs, and no ceiling. Worth it once you have users. Premature if you're still guessing whether anyone wants the thing.
+
+## FAQ
+
+### Will my exported app definitely run?
+
+The code will. It won't work until you re-add your secret keys in a local `.env` file — that's the number-one reason a fresh export looks broken.
+
+### Can I keep using Lovable after exporting?
+
+Yes. Lovable's GitHub sync is two-way, so you can prompt there and pull locally. v0 and Bolt are effectively one-way, so after export you continue in a repo-based AI tool.
+
+### Should I rewrite the code with AI once it's exported?
+
+No — not as a project. Rewriting a working app is how migrations stall. Clean secrets, auth policies, and types; then improve files as you touch them for real features.
+
+### Is the exported code good enough to hand to a developer?
+
+Yes, with caveats. It's standard React/TypeScript in conventional structure. A developer will grumble about duplication and git history, and will be far happier if you exported at two weeks rather than six months.
+
+## TL;DR
+
+Hitting the builder's ceiling means it worked. Export while the app is still small: cleanup cost scales with time spent inside the builder.
+
+Lovable gives you a full-stack React + Supabase project with two-way GitHub sync. Bolt gives you a frontend that may have no backend at all. v0 and Replit export cleanly but mostly one-way. In every case the app looks broken on first run for one reason — the builder hid your secret keys, so you recreate them in `.env.local`.
+
+Then: own the repo, run locally, deploy somewhere you control, write your `AGENTS.md`, and clean only the risky parts (secrets, auth policies, types). Don't rewrite a working app.
+
+Keep the momentum going on the next build: [startup ideas](/startup-ideas).
