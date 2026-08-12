@@ -52,6 +52,16 @@ const nextConfig: NextConfig = {
         destination: "/ideas/today",
         permanent: false,
       },
+
+      // Playbook short aliases (WP19). Memorable enough to say out loud in a
+      // video; the canonical stays /playbooks/{slug}. These MUST stay as
+      // explicit per-slug entries — a catch-all here would shadow the
+      // `fallback` rewrite above and swallow every unmigrated legacy path.
+      {
+        source: "/decision-stack",
+        destination: "/playbooks/decision-stack",
+        permanent: false,
+      },
     ];
   },
 };
