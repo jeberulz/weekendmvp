@@ -117,6 +117,10 @@ export const AUDIENCE_NAMES: Record<string, string> = {
   "solo-founders": "Solo Founders",
   "weekend-builders": "Weekend Builders",
   "side-hustlers": "Side Hustlers",
+  marketers: "Marketers",
+  freelancers: "Freelancers",
+  creators: "Creators",
+  "small-business-owners": "Small Business Owners",
 };
 
 /** "developer-tools" → "Developer Tools" fallback for unmapped slugs. */

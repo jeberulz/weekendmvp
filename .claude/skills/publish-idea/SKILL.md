@@ -139,8 +139,11 @@ Use this mapping (the MCP gives you most fields directly — don't re-research).
 |---|---|
 | `title` (frontmatter) | `title` (clean it: strip "($XM ARR)" suffixes) |
 | `description` (→ manifest, not MDX) | `summary` rewritten as a ~155-char SEO blurb |
-| Category (→ manifest) | Map `categorization.type` + content domain → site category (SaaS/Productivity/Developer/etc.) |
-| Build time (→ manifest) | If `builder_confidence >= 7` → 8-10 hrs. If 5-6 → 10-12 hrs. |
+| Category (→ manifest) | Map `categorization.type` + content domain → **exactly one** of the 12 live kebab slugs: `saas`, `productivity`, `health`, `marketplace`, `ai-tools`, `automation`, `education`, `b2b`, `developer-tools`, `ecommerce`, `creator-tools`, `fintech`. Never use display names (`SaaS`, `Creator`). |
+| Build time (→ manifest) | Canonical hour string only (matches hub `buildTimeValues`): `builder_confidence >= 7` → `"10"`; `5–6` → `"12"`; lower → `"20"`. **Never** write `"8-10 hrs"` / `"10-12 hrs"` — those miss `/ideas/build-in-weekend`. |
+| Tools (→ manifest) | ≥2 from: `cursor`, `claude`, `bolt`, `v0`, `lovable`, `replit`, `windsurf`, `no-code`. Pick for stack fit — do **not** default to only `[cursor, claude]`. (`claude-code` is a Build With hub alias for `claude` — tag `claude`, not `claude-code`.) |
+| Audiences (→ manifest) | ≥2 from: `developers`, `designers`, `non-technical`, `solo-founders`, `weekend-builders`, `side-hustlers`, `marketers`, `freelancers`, `creators`, `small-business-owners`. Choose from the idea's buyer — do **not** default to only `[solo-founders]`. Free-text niches are forbidden. |
+| Revenue goal (→ manifest) | Exactly one of: `1k-month`, `5k-month`, `10k-month`, `passive-income`, `quick-wins`. |
 | **`## The Problem`** | `detailed_idea.pain_points_addressed` + `scores.pain.key_pain_points` + `scores.pain.market_evidence` |
 | **`## The Solution`** (incl. `**How it works:**` numbered list) | `detailed_idea.detailed_summary` + `research_summaries.analysis.core_proposition.solution` + `product_offerings` for the steps |
 | **`## Market Research`** | `scores.opportunity.market_potential.reason` + `tags.highlight_justification` + `research_market_insight` (real numbers + CAGR, already cited) |
@@ -329,12 +332,18 @@ Based on research findings, write ORIGINAL content for each section. **Do NOT co
 **Metadata fields (live in `ideas/manifest.json`, NOT in MDX frontmatter):**
 - `title` — the idea name (the only thing copied verbatim from raw.md); also the MDX `title`
 - `description` — full meta description for SEO (write fresh, ~155 chars)
-- `category` — one of: SaaS, Productivity, Creator, E-commerce, Fintech, Health, Education, Developer
-- `buildTime`, `revenueGoal`, `applicationCategory`, `tools[]`, `audiences[]` — see the manifest schema in Step 6
+- `category` — **exactly one** of: `saas`, `productivity`, `health`, `marketplace`, `ai-tools`, `automation`, `education`, `b2b`, `developer-tools`, `ecommerce`, `creator-tools`, `fintech`
+- `buildTime` — **canonical hour string only**: `"8"`, `"10"`, `"12"`, `"20"`, `"24"`, `"30"`, or `"40"` (must match `/ideas/build-in-*` hub `buildTimeValues`). Never `"8-10 hrs"`.
+- `revenueGoal` — exactly one of: `1k-month`, `5k-month`, `10k-month`, `passive-income`, `quick-wins`
+- `tools[]` — **≥2** from: `cursor`, `claude`, `bolt`, `v0`, `lovable`, `replit`, `windsurf`, `no-code` (these feed `/build-with/{tool}`)
+- `audiences[]` — **≥2** from: `developers`, `designers`, `non-technical`, `solo-founders`, `weekend-builders`, `side-hustlers`, `marketers`, `freelancers`, `creators`, `small-business-owners` (these feed `/ideas-for/{audience}`). No free-text niches.
+- `applicationCategory` — Schema.org SoftwareApplication category (see Step 6)
 - `og.subject` — a concrete, single-subject director's-note for the per-page OG card. Used by `npm run og:generate` (Step 9). Example: `"A glowing laptop screen on a dark counter, lavender backlight, late night, shallow focus"`. Match the brand: dark scene, one accent color visible, one tactile object, no people/faces/text. See `IMAGES.md` for the full prompt-writing guide.
 - `og.accent` — one of `lime`, `mint`, `lavender`, `emerald`, `aubergine` — the brand accent for the card's logo chip / dot / bottom bar. Pick one that fits the idea's vibe and avoids monotony with adjacent manifest entries.
 
-> Do **not** add `description`, `category`, `og`, or any other field to the MDX frontmatter. All 57 existing idea files carry **only** `slug` and `title`, and the route derives everything else from the manifest. Richer idea frontmatter is a bug.
+> Do **not** add `description`, `category`, `og`, or any other field to the MDX frontmatter. All existing idea files carry **only** `slug` and `title`, and the route derives everything else from the manifest. Richer idea frontmatter is a bug.
+>
+> **Hub enrichment is mandatory.** A publish that only sets `category` + `[cursor,claude]` + `[solo-founders]` is incomplete — it under-feeds Build With / Ideas For / build-time hubs. Run `npm run validate:idea-tags -- --slug {slug}` before seeding.
 
 ### Step 4: Generate AI Build Prompts
 
@@ -461,8 +470,8 @@ Add an entry to `ideas/manifest.json` `ideas[]` that captures full provenance so
   "publishedAt": "{YYYY-MM-DD}",
   "category": "{category}",
   "description": "{meta_description}",
-  "buildTime": "{hours}",
-  "revenueGoal": "{1k-month|5k-month|10k-month}",
+  "buildTime": "10",
+  "revenueGoal": "5k-month",
   "applicationCategory": "{SchemaCategory}",
   "tools": ["cursor", "claude", "bolt"],
   "audiences": ["developers", "solo-founders"],
@@ -494,6 +503,11 @@ Add an entry to `ideas/manifest.json` `ideas[]` that captures full provenance so
 
 Field rules:
 - `description` — the meta description you wrote in Step 3. This feeds Convex and the grid card excerpt, and is the route's preferred meta description. Always set it.
+- `category` — exactly one of the 12 live kebab slugs (see Step 3). Never display names.
+- `buildTime` — canonical hour string (`"8"|"10"|"12"|"20"|"24"|"30"|"40"`). This is what `/ideas/build-in-weekend` (`["8","10","12"]`), `/ideas/build-in-8-hours` (`["8"]`), and `/ideas/build-in-1-week` (`["20","24","30","40"]`) match on — exact string equality.
+- `revenueGoal` — exactly one of `1k-month|5k-month|10k-month|passive-income|quick-wins`.
+- `tools[]` — ≥2 allowlisted tools (see Step 3). These feed `/build-with/{tool}`. Do not invent tool slugs; do not tag `claude-code` (alias of `claude`).
+- `audiences[]` — ≥2 allowlisted audiences (see Step 3). These feed `/ideas-for/{audience}`. Free-text niches (`shopify-merchants`, `educators`, Title Case strings) are rejected by `npm run validate:idea-tags`.
 - `source` — Mode A: `"ideabrowser:{idea_id}"`. Mode B (`--from-draft`): `"draft:{folder-name}"` and **drop the `scores` block** (scores are Mode A only).
 - `applicationCategory` — Schema.org category for the SoftwareApplication node (e.g. `BusinessApplication` for SaaS, `DeveloperApplication` for Developer, `ProductivityApplication` for Productivity, `HealthApplication`, `FinanceApplication`, `EducationalApplication`, `MultimediaApplication`, `ShoppingApplication`).
 - `og.subject` / `og.accent` — copy the values you authored in Step 3. `og.status` is `"pending"` here; Step 9 flips it to `"ready"` (success) or `"failed"` (both providers errored — non-blocking, page still ships).
@@ -503,9 +517,9 @@ Field rules:
 
 Use today's date for `publishedAt`.
 
-### Step 7: Manual section gate (replaces the old audit script)
+### Step 7: Manual section gate + tagging gate
 
-There is **no audit script** anymore. Manually verify the MDX body against `ideas/SECTIONS.md` before seeding:
+There is **no audit script** for body prose anymore. Manually verify the MDX body against `ideas/SECTIONS.md` before seeding:
 
 - [ ] All 7 required `##` sections present, in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This (plus `## Sources`).
 - [ ] `## The Solution` contains the `**How it works:**` line + a numbered list (1./2./3.) — confirm it's there or the HowTo schema breaks.
@@ -515,7 +529,16 @@ There is **no audit script** anymore. Manually verify the MDX body against `idea
 - [ ] **No bare `<` or `{` in prose** (outside fenced code) — these compile as JSX and 500 the page. Watch unit-economics lines like `<$0.01`.
 - [ ] Frontmatter is exactly `slug` + `title`, both quoted.
 
-Quick mechanical check you can run:
+**Tagging gate (mechanical — required):**
+
+```bash
+npm run validate:idea-tags -- --slug {slug}
+# expect: 1/1 ideas pass tagging contract (0 fail)
+```
+
+This fails if `category` / `tools[]` / `audiences[]` / `revenueGoal` / `buildTime` are missing, under-tagged (<2 tools or <2 audiences), or outside the allowlists. Fix the manifest entry before seeding. To re-check the whole corpus: `npm run validate:idea-tags`.
+
+Quick body checks you can run:
 
 ```bash
 grep -c '^## ' content/ideas/{slug}.mdx        # expect 8 (7 canonical + Sources)
@@ -525,7 +548,7 @@ wc -w content/ideas/{slug}.mdx                  # expect ~800+ words
 awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/ideas/{slug}.mdx
 ```
 
-If any check fails, fix the MDX before continuing. Do not set `provenance.auditPassed: true` until this passes. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
+If any check fails, fix the MDX (or tags) before continuing. Do not set `provenance.auditPassed: true` until both the section gate and the tagging gate pass. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
 
 ### Step 8: Seed Convex — DEV **and** PROD (required for grid/hub visibility)
 
@@ -649,10 +672,12 @@ Before marking complete:
 - [ ] Wrote `content/ideas/{slug}.mdx` — frontmatter exactly `slug` + `title`, slug matches `^[a-z0-9-]+$`
 - [ ] Added `ideas/manifest.json` entry with full provenance (researchCalls, citations, wordCount, auditPassed, auditRunAt), `description`, `scores` (Mode A only), `source`, `applicationCategory`
 - [ ] Manifest entry includes `og.subject` + `og.accent` + `og.status: "pending"`
+- [ ] **Tagging contract:** `category` is one of the 12 live slugs; `tools[]` ≥2 allowlisted; `audiences[]` ≥2 allowlisted; `revenueGoal` allowlisted; `buildTime` canonical (`"8"|"10"|"12"|"20"|"24"|"30"|"40"`) — ran `npm run validate:idea-tags -- --slug {slug}` and it passed
 - [ ] Passed the Step 7 manual section gate (8 `##` sections, How-it-works list, ≥ ~800 words, no placeholders)
 - [ ] Ran `npm run seed:convex` (dev) **AND** `npm run seed:convex -- --prod` (production — required for live grid/hub visibility) and confirmed both succeeded; if either failed, surfaced the fix and did NOT claim grid visibility
 - [ ] **Deployed (Step 10):** committed + pushed the MDX + OG PNG so the page/image exist in prod (git push → Vercel); confirmed `/ideas/{slug}` returns 200 live. (If no push authorized, reported it as staged + seeded, NOT live.)
 - [ ] Ran `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Confirmed `og.status` is `"ready"` or `"failed"` (publish proceeds either way)
 - [ ] Verified `/ideas/{slug}` renders all 8 sections in `npm run dev`
+- [ ] Spot-checked that the idea appears on at least one `/build-with/{tool}` and one `/ideas-for/{audience}` hub after seed (not just `/startup-ideas`)
 - [ ] Listed research sources in the output report
