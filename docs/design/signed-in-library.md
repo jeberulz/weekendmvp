@@ -108,7 +108,7 @@ Walk localhost against the wireframe. Taste is the gate.
 
 ## Out of scope (this freeze)
 
-Preview is frozen separately: [`preview.md`](./preview.md). Publish checkout packet. Account menu. How Day n’s other-projects list is reached from Account. Own-idea Validation Report path (v1.1). Visual design system. Coding. Whether leftover `idea_intents` rows are ever deleted (ignore them; do not surface).
+Preview is frozen separately: [`preview.md`](./preview.md). Publish packet is frozen separately: [`publish.md`](./publish.md). Account menu. How Day n’s other-projects list is reached from Account. Own-idea Validation Report path (v1.1). Visual design system. Coding. Whether leftover `idea_intents` rows are ever deleted (ignore them; do not surface).
 
 ## Decision log
 

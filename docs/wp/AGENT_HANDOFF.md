@@ -9,8 +9,9 @@ Last updated: 2026-08-14 (UTC). Agent-agnostic. Supersedes prior handoff headers
 - **Signed-in home law:** `docs/design/signed-in-home.md` + `docs/design/signed-in-home-wireframe.html`.
 - **Signed-in Library law:** `docs/design/signed-in-library.md` + `docs/design/signed-in-library-wireframe.html`.
 - **Preview / customisation law:** `docs/design/preview.md` + `docs/design/preview-wireframe.html`.
-- **Supersedes** Hilos dual-rail home, Explore destination views, and the `/build` CMS in `docs/wp/platform-ux-brief.md` (bannered). Rulings appended 2026-08-14 in `RULINGS.md`.
-- Next product dives (pick one, still not code): publish packet, Account chrome.
+- **Publish packet law:** `docs/design/publish.md` + `docs/design/publish-wireframe.html`.
+- **Supersedes** Hilos dual-rail home, Explore destination views, the `/build` CMS, and cockpit-as-Launch / pack-shop-to-publish in `docs/wp/platform-ux-brief.md` (bannered). Rulings appended 2026-08-14 in `RULINGS.md`.
+- Next product dive (still not code): Account chrome.
 
 The sections below are **historical** (pre-merge consolidation). Production E2E is still blocked on `PLATFORM_PREVIEW_BRIDGE_SECRET`. Local first. Do not resume deleted `codex/wp23|24|25` worktrees.
 

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Publish · wireframe</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #1a1a1a;
+      --paper: #f3f1eb;
+      --frame: #fff;
+      --note: #9a3412;
+      --fill: #e8e4d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 32px 28px 80px;
+    }
+    h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .job {
+      max-width: 52rem;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 550;
+      margin: 0 0 6px;
+    }
+    .meta { color: var(--mute); font-size: 13px; margin: 0 0 28px; }
+    .note {
+      color: var(--note);
+      font-size: 12px;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .shell-compare {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 800px) { .shell-compare { grid-template-columns: 1fr; } }
+    .tiny-frame { border: 1.5px solid var(--line); background: var(--frame); font-size: 11px; }
+    .tiny-frame .main { padding: 10px; min-height: 88px; color: var(--mute); }
+    .urlbar {
+      border-bottom: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--mute);
+    }
+    .chrome {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .chrome span { color: var(--mute); font-weight: 500; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 24px;
+      max-width: 1100px;
+    }
+    @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+    .screen.wide { grid-column: 1 / -1; }
+    .frame {
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
+    .day {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      flex: 1;
+      min-height: 0;
+    }
+    .site {
+      position: relative;
+      background: var(--fill);
+      padding: 22px 18px 16px;
+      overflow: hidden;
+    }
+    .hero { font-size: 18px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 6px; max-width: 14em; }
+    .sub { font-size: 12px; color: var(--mute); margin: 0 0 12px; }
+    .cta {
+      display: inline-block;
+      border: 1.5px solid var(--line);
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 650;
+      background: var(--frame);
+    }
+    .fill { height: 36px; background: var(--frame); border: 1.5px solid var(--line); margin-top: 12px; }
+    .mark {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      border: 1.5px dashed var(--line);
+      padding: 3px 7px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(243, 241, 235, 0.92);
+    }
+    .rail {
+      border-left: 1.5px solid var(--line);
+      padding: 12px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rail h3 { margin: 0; font-size: 12px; font-weight: 650; }
+    .field {
+      border: 1.5px solid var(--line);
+      padding: 7px 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .price { font-size: 16px; font-weight: 650; letter-spacing: -0.03em; }
+    .btn {
+      border: 1.5px solid var(--line);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--ink);
+      color: #fff;
+      text-align: center;
+    }
+    .ghost { font-size: 11px; color: var(--mute); }
+    .err { color: var(--note); font-size: 12px; }
+    .formish { padding: 16px; font-size: 12px; color: var(--mute); }
+    .formish .row { border: 1.5px solid var(--line); padding: 8px; margin-bottom: 8px; }
+    .killed {
+      max-width: 1100px;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--line);
+    }
+    .killed h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+    .killed ul { margin: 0; padding-left: 1.1em; color: var(--mute); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <p class="meta">Lo-fi wireframe · not visual design · design/platform-experience · law: publish.md (same folder)</p>
+  <h1>Publish, drawn</h1>
+  <p class="job">Take this page live. Show me the address and what it costs. I say yes once.</p>
+  <p class="meta">Pay-to-publish. Dollars on the packet. Canvas stays. If this looks like a credit shop or a cockpit, the sentence is wrong.</p>
+
+  <div class="shell-compare">
+    <div>
+      <div class="label"><span>Now (killed)</span><span class="note">cockpit + packs</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">www.weekendmvp.app/dashboard/projects/… · /billing</div>
+        <div class="formish">
+          <div class="row">Status · tasks · artifacts · credits remaining</div>
+          <div class="row">Launch pack · 1 credit · or 5 / 20</div>
+          <div class="row">Buy credits → then Launch</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Proposed</span><span class="note">still looking at the site</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">Day 1 canvas · packet on the rail</div>
+        <div class="main">Live (watermarked) page in view. Address: {slug}.weekendmvp.app. One price in dollars. One confirm. No Publish in the top bar.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <section class="screen">
+      <div class="label">
+        <span>Ready</span>
+        <span class="note">URL + $ + yes</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>Cool Shop</span> Library · Account</div>
+        <div class="day">
+          <div class="site">
+            <span class="mark">Preview · not live</span>
+            <p class="hero">Cool Shop carts, recovered.</p>
+            <p class="sub">The page they kept. Still watermarked until pay succeeds and the host serves.</p>
+            <span class="cta">Get the sequence</span>
+            <div class="fill"></div>
+          </div>
+          <div class="rail">
+            <h3>Take it live</h3>
+            <div>
+              <div class="ghost">Address</div>
+              <div class="field">cool-shop.weekendmvp.app</div>
+            </div>
+            <div>
+              <div class="ghost">This charge</div>
+              <div class="price">$—</div>
+            </div>
+            <div class="btn">Pay and publish</div>
+            <div class="ghost">One charge. Not a pack.</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Slug is editable. Amount is the launch price as one number — figure is not this freeze. Confirm without URL or price is illegal.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Slug clash</span>
+        <span class="note">Not charged</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>Cool Shop</span> Library · Account</div>
+        <div class="day">
+          <div class="site">
+            <span class="mark">Preview · not live</span>
+            <p class="hero">Cool Shop carts, recovered.</p>
+            <p class="sub">Same canvas. They have not left.</p>
+            <span class="cta">Get the sequence</span>
+            <div class="fill"></div>
+          </div>
+          <div class="rail">
+            <h3>Take it live</h3>
+            <div>
+              <div class="ghost">Address</div>
+              <div class="field">cool-shop.weekendmvp.app</div>
+            </div>
+            <p class="err">cool-shop is unavailable. Pick another.</p>
+            <div class="ghost">Same line for taken or reserved. Do not explain which.</div>
+            <div class="btn">Pay and publish</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Stay on the packet. Do not send them to Account or a ticket.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Hold</span>
+        <span class="note">Paid · not live · WP30</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>Cool Shop</span> Library · Account</div>
+        <div class="day">
+          <div class="site">
+            <span class="mark">Preview · not live</span>
+            <p class="hero">Cool Shop carts, recovered.</p>
+            <p class="sub">Watermark stays until the hostname actually serves.</p>
+            <span class="cta">Get the sequence</span>
+            <div class="fill"></div>
+          </div>
+          <div class="rail">
+            <h3>Paid</h3>
+            <p>We’re reviewing this before it goes live. You’ll get the address when it does.</p>
+            <div class="ghost">One sentence. Not a queue, not a ticket ID, not “pending policy.”</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Do not say you’re live. Receipts live in Account later. This is Day 1 with a receipt, not Day n.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>After yes · Day n</span>
+        <span class="note">Packet gone</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>cool-shop.weekendmvp.app</span> Library · Account</div>
+        <div class="day">
+          <div class="site">
+            <p class="hero">Cool Shop carts, recovered.</p>
+            <p class="sub">Watermark off. Public host serving. Title in chrome is the live URL.</p>
+            <span class="cta">Get the sequence</span>
+            <div class="fill"></div>
+          </div>
+          <div class="rail">
+            <h3>Live</h3>
+            <p class="ghost">No fake visitors. No fake revenue. Don’t promise lead capture.</p>
+            <p class="ghost">Other projects sit under the object. Revisions are not this packet.</p>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Return unpaid = Ready again (idempotent). Already live = this frame, never the packet.</p>
+    </section>
+  </div>
+
+  <div class="killed">
+    <h2>Not on this surface</h2>
+    <ul>
+      <li>Credit pack picker · remaining credits as a gate · “you need 1 Launch credit”</li>
+      <li>WP29 cockpit as Launch · /dashboard/billing as the publish path</li>
+      <li>Billing in the top bar · Publish as a chrome item</li>
+      <li>Three prices · upsells · subscriptions on this packet</li>
+      <li>Policy as a customer queue / ticket UI</li>
+      <li>Confirm with no URL or no price · “you’re live” before the hostname serves</li>
+      <li>Fake visitors, revenue, or lead capture as success theatre</li>
+      <li>Receipts / payment method (Account, later)</li>
+    </ul>
+  </div>
+</body>
+</html>

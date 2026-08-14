@@ -24,7 +24,7 @@ Business translation (never on the screen): preview is free, signup keeps it, pa
 
 One top bar: wordmark · **current object name** · Library · Account (Research is an exit from Day 1, not a peer of the canvas).
 
-No icon rail. No duplicate sidebar. No header search that is only a link. No composer. No Saved / Interested / For you as destinations. Billing is not a peer in the chrome; it appears when they hit Publish.
+No icon rail. No duplicate sidebar. No header search that is only a link. No composer. No Saved / Interested / For you as destinations. Billing is not a peer in the chrome; it appears as the publish packet when they hit Publish (`docs/design/publish.md`).
 
 Mobile: Home, Library, Account.
 
@@ -102,7 +102,7 @@ Walk localhost against the wireframe. Taste is the gate. `npm run typecheck` is 
 
 ## Out of scope (this freeze)
 
-Library is frozen separately: [`signed-in-library.md`](./signed-in-library.md). Preview/customisation is frozen separately: [`preview.md`](./preview.md). Publish checkout packet. Account menu. Own-idea Validation Report path (v1.1). Visual design system / production styling. Coding.
+Library is frozen separately: [`signed-in-library.md`](./signed-in-library.md). Preview/customisation is frozen separately: [`preview.md`](./preview.md). Publish packet is frozen separately: [`publish.md`](./publish.md). Account menu. Own-idea Validation Report path (v1.1). Visual design system / production styling. Coding.
 
 ## Decision log
 

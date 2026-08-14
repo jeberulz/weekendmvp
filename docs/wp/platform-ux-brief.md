@@ -1,10 +1,10 @@
 # Platform UX Brief
 
-> **2026-08-14 — signed-in home, chrome, Library, and preview customisation are superseded.**
-> Do not implement the Hilos dual-rail, dashboard-as-command-center, Saved/Interested-as-nav, home composer, Explore destination views, or the `/build/{slug}` CMS from this brief.
-> Home: [`docs/design/signed-in-home.md`](../design/signed-in-home.md). Library: [`docs/design/signed-in-library.md`](../design/signed-in-library.md). Preview: [`docs/design/preview.md`](../design/preview.md).
-> Still in force here: public `/ideas/{slug}` as the sole canonical research page, preview isolation (7-day, `noindex`, inert leads, claim-only), billing/publish gates, super-admin as a separate plane.
-> The publish packet and Account chrome are **not** decided by those freezes.
+> **2026-08-14 — signed-in home, chrome, Library, preview customisation, and the publish packet are superseded.**
+> Do not implement the Hilos dual-rail, dashboard-as-command-center, Saved/Interested-as-nav, home composer, Explore destination views, the `/build/{slug}` CMS, WP29 cockpit as Launch, or `/dashboard/billing` as the publish path from this brief.
+> Home: [`docs/design/signed-in-home.md`](../design/signed-in-home.md). Library: [`docs/design/signed-in-library.md`](../design/signed-in-library.md). Preview: [`docs/design/preview.md`](../design/preview.md). Publish: [`docs/design/publish.md`](../design/publish.md).
+> Still in force here: public `/ideas/{slug}` as the sole canonical research page, preview isolation (7-day, `noindex`, inert leads, claim-only), Stripe exact-once / WP30 policy / WP31 activation, super-admin as a separate plane.
+> Account chrome is **not** decided by those freezes.
 
 Approved product and interaction contract for the signed-in Weekend MVP build platform. This brief translates the reviewed Hilos and IdeaBrowser patterns into Weekend MVP's own UX; it is not a visual clone. The signed-in **home/shell** sections below are historical for WP23; they are not the build spec.
 
