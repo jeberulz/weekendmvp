@@ -3,8 +3,9 @@
 > **Active now:** branch `design/platform-experience`. Product thinking, not
 > coding. Signed-in home is `docs/design/signed-in-home.md`; Library is
 > `docs/design/signed-in-library.md`; preview is `docs/design/preview.md`;
-> publish is `docs/design/publish.md` — do not implement the Hilos dashboard,
-> Explore tabs, `/build` CMS, or cockpit-as-Launch from
+> publish is `docs/design/publish.md`; Account is `docs/design/account.md` —
+> do not implement the Hilos dashboard, Explore tabs, `/build` CMS,
+> cockpit-as-Launch, or `/dashboard/billing` as Account from
 > `docs/wp/platform-ux-brief.md`. Read
 > `docs/wp/AGENT_HANDOFF.md` for traps only; its WP27/consolidation body is
 > stale. `docs/wp/CLAUDE_HANDOFF.md` is history.

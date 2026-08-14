@@ -66,7 +66,7 @@ Dollar **amount** is not this freeze. One publish charge; the figure is the laun
 
 ## Quiet (later)
 
-Receipts, payment method, invoices → Account (later freeze). Not on this packet.
+Receipts, payment method, invoices → Account ([`account.md`](./account.md)). Not on this packet.
 
 ## Mechanism vs frame
 
@@ -78,7 +78,7 @@ If they already paid and the site is live, do not re-open this packet.
 
 ## Out of scope (this freeze)
 
-Account chrome (receipts, payment method). Exact dollar figure. Custom domains. Subscriptions. Real lead capture. WP31 DNS/live Stripe. How Day n revisions are charged. Coding.
+Account is frozen separately: [`account.md`](./account.md). Exact dollar figure. Custom domains. Subscriptions. Real lead capture. WP31 DNS/live Stripe. How Day n revisions are charged. Coding.
 
 ## Decision log
 

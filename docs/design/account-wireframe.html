@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account · wireframe</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #1a1a1a;
+      --paper: #f3f1eb;
+      --frame: #fff;
+      --note: #9a3412;
+      --fill: #e8e4d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 32px 28px 80px;
+    }
+    h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .job {
+      max-width: 52rem;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 550;
+      margin: 0 0 6px;
+    }
+    .meta { color: var(--mute); font-size: 13px; margin: 0 0 28px; }
+    .note {
+      color: var(--note);
+      font-size: 12px;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .shell-compare {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 800px) { .shell-compare { grid-template-columns: 1fr; } }
+    .tiny-frame { border: 1.5px solid var(--line); background: var(--frame); font-size: 11px; }
+    .tiny-frame .main { padding: 10px; min-height: 88px; color: var(--mute); }
+    .urlbar {
+      border-bottom: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--mute);
+    }
+    .chrome {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .chrome span { color: var(--mute); font-weight: 500; }
+    .chrome .here { text-decoration: underline; text-underline-offset: 3px; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 24px;
+      max-width: 1100px;
+    }
+    @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+    .frame {
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .stage {
+      position: relative;
+      flex: 1;
+      background: var(--fill);
+      padding: 22px 18px 16px;
+      overflow: hidden;
+    }
+    .hero { font-size: 18px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 6px; max-width: 14em; }
+    .sub { font-size: 12px; color: var(--mute); margin: 0 0 12px; }
+    .cta {
+      display: inline-block;
+      border: 1.5px solid var(--line);
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 650;
+      background: var(--frame);
+    }
+    .fill { height: 36px; background: var(--frame); border: 1.5px solid var(--line); margin-top: 12px; }
+    .mark {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      border: 1.5px dashed var(--line);
+      padding: 3px 7px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(243, 241, 235, 0.92);
+    }
+    .menu {
+      position: absolute;
+      top: 44px;
+      right: 10px;
+      width: 240px;
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      padding: 10px 12px;
+      font-size: 12px;
+      z-index: 2;
+    }
+    .menu .who { font-weight: 650; margin: 0 0 10px; word-break: break-all; }
+    .menu .row {
+      border: 1.5px solid var(--line);
+      padding: 7px 8px;
+      margin-bottom: 6px;
+    }
+    .menu .row.inert { background: var(--fill); color: var(--mute); }
+    .menu .ghost { color: var(--mute); font-size: 11px; margin: 0 0 8px; }
+    .menu .out {
+      margin-top: 8px;
+      border-top: 1.5px solid var(--line);
+      padding-top: 8px;
+      font-weight: 650;
+    }
+    .lib {
+      padding: 16px;
+      font-size: 12px;
+      color: var(--mute);
+    }
+    .lib .card {
+      border: 1.5px solid var(--line);
+      padding: 10px;
+      margin-bottom: 8px;
+      background: var(--frame);
+    }
+    .formish { padding: 16px; font-size: 12px; color: var(--mute); }
+    .formish .row { border: 1.5px solid var(--line); padding: 8px; margin-bottom: 8px; }
+    .killed {
+      max-width: 1100px;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--line);
+    }
+    .killed h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+    .killed ul { margin: 0; padding-left: 1.1em; color: var(--mute); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <p class="meta">Lo-fi wireframe · not visual design · design/platform-experience · law: account.md (same folder)</p>
+  <h1>Account, drawn</h1>
+  <p class="job">This isn’t the page. My other sites, what I paid, sign out.</p>
+  <p class="meta">A menu, not a destination. Canvas stays. If this looks like billing or settings, the sentence is wrong.</p>
+
+  <div class="shell-compare">
+    <div>
+      <div class="label"><span>Now (killed)</span><span class="note">/dashboard/billing</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">www.weekendmvp.app/dashboard/billing</div>
+        <div class="formish">
+          <div class="row">Balance · 3 credits · Buy a pack</div>
+          <div class="row">Launch 1 · Builder 5 · Studio 20</div>
+          <div class="row">Profile · plan · usage · member since</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Proposed</span><span class="note">opens on the chrome item</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">same page · Account menu</div>
+        <div class="main">Email. Sign out. Switcher only if 2+. Receipt + Stripe portal only if they actually paid. No fourth chrome item.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <section class="screen">
+      <div class="label">
+        <span>Bare</span>
+        <span class="note">Never paid · one unpublished</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>Cool Shop</span> Library · <span class="here">Account</span></div>
+        <div class="stage">
+          <span class="mark">Preview · not live</span>
+          <p class="hero">Cool Shop carts, recovered.</p>
+          <p class="sub">Day 1 canvas stays. Menu is the only new thing.</p>
+          <span class="cta">Get the sequence</span>
+          <div class="fill"></div>
+          <div class="menu">
+            <p class="who">you@shop.test</p>
+            <p class="ghost">No list of one. No $0. No credits.</p>
+            <div class="out">Sign out</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Cold with zero projects is the same menu minus a current object — still just email + sign out. Don’t invent “Your sites (0).”</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Money</span>
+        <span class="note">One live site · they paid</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>cool-shop.weekendmvp.app</span> Library · <span class="here">Account</span></div>
+        <div class="stage">
+          <p class="hero">Cool Shop carts, recovered.</p>
+          <p class="sub">Day n. Watermark off. Still not a billing page.</p>
+          <span class="cta">Get the sequence</span>
+          <div class="fill"></div>
+          <div class="menu">
+            <p class="who">you@shop.test</p>
+            <div class="row">Publish · $— · receipt</div>
+            <div class="row">Update card → Stripe</div>
+            <p class="ghost">No list of one. Chrome already is this site.</p>
+            <div class="out">Sign out</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Hold: same receipt row, don’t mark live. Hold copy stays on the Day 1 packet, not in this menu.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Switcher</span>
+        <span class="note">2+ · opened from Library</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">Weekend MVP <span>cool-shop.weekendmvp.app</span> <span class="here">Library</span> · Account</div>
+        <div class="lib">
+          <div class="card">Abandoned cart recovery · Preview</div>
+          <div class="card">Waitlist for local gyms · Preview</div>
+          <div class="card">Invoice chaser for freelancers · Preview</div>
+          <div class="menu" style="top: 52px;">
+            <p class="who">you@shop.test</p>
+            <div class="row inert">cool-shop.weekendmvp.app · current</div>
+            <div class="row">Gym Waitlist (preview)</div>
+            <div class="row">Publish · $— · receipt</div>
+            <div class="row">Update card → Stripe</div>
+            <div class="out">Sign out</div>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Live row = hostname. Unpublished / Hold = object name. Current is inert. Pick → close → that object’s home.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Sign out</span>
+        <span class="note">Lands public /</span>
+      </div>
+      <div class="frame">
+        <div class="urlbar">www.weekendmvp.app</div>
+        <div class="stage">
+          <p class="hero">Weekend MVP</p>
+          <p class="sub">Marketing home. No ghost dashboard. No signed-out Account.</p>
+          <span class="cta">Get Started</span>
+          <div class="fill"></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Day n’s short other-projects list still sits under the object on home. Account is this inventory when they’ve left the canvas. Two places, one set.</p>
+    </section>
+  </div>
+
+  <div class="killed">
+    <h2>Not on this surface</h2>
+    <ul>
+      <li>/dashboard/billing · credit balance · packs · “Launch credits”</li>
+      <li>Profile editor · settings · notifications · theme · plan</li>
+      <li>Billing as a fourth chrome item</li>
+      <li>Empty “Your sites (0)” · a list of one</li>
+      <li>Hold / policy copy in the menu · fake Pro · member-since · usage meters</li>
+      <li>Landing here after signup or after pay</li>
+      <li>Card form (Stripe portal) · GDPR delete (later)</li>
+    </ul>
+  </div>
+</body>
+</html>

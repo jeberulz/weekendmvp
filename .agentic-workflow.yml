@@ -12,6 +12,7 @@ truth_docs:
   - docs/design/signed-in-library.md
   - docs/design/preview.md
   - docs/design/publish.md
+  - docs/design/account.md
   - docs/PROJECT_STRATEGY.md
   - README.md
 

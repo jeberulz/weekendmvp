@@ -102,7 +102,7 @@ Walk localhost against the wireframe. Taste is the gate. `npm run typecheck` is 
 
 ## Out of scope (this freeze)
 
-Library is frozen separately: [`signed-in-library.md`](./signed-in-library.md). Preview/customisation is frozen separately: [`preview.md`](./preview.md). Publish packet is frozen separately: [`publish.md`](./publish.md). Account menu. Own-idea Validation Report path (v1.1). Visual design system / production styling. Coding.
+Library is frozen separately: [`signed-in-library.md`](./signed-in-library.md). Preview/customisation is frozen separately: [`preview.md`](./preview.md). Publish packet is frozen separately: [`publish.md`](./publish.md). Account is frozen separately: [`account.md`](./account.md). Own-idea Validation Report path (v1.1). Visual design system / production styling. Coding.
 
 ## Decision log
 

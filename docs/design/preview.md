@@ -96,7 +96,7 @@ Compile quality (Aura `DESIGN.md` library, first `pageSpec`s, preview host DNS) 
 
 ## Out of scope (this freeze)
 
-Publish packet is frozen separately: [`publish.md`](./publish.md). Account menu. Exact preview-host naming and WP31 DNS. How many `DESIGN.md` files and who runs the first compile. Day 1 proposal copy. Own-idea path (v1.1). Coding.
+Publish packet is frozen separately: [`publish.md`](./publish.md). Account is frozen separately: [`account.md`](./account.md). Exact preview-host naming and WP31 DNS. How many `DESIGN.md` files and who runs the first compile. Day 1 proposal copy. Own-idea path (v1.1). Coding.
 
 ## Decision log
 
