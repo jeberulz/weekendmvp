@@ -4,21 +4,45 @@ import { useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, CheckCircle2, FilePenLine } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  CheckCircle2,
+  Coins,
+  FilePenLine,
+  Globe,
+} from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  ideaHref,
+  publishControl,
+  publishErrorMessage,
+  slugFieldError,
+  suggestedTenantSlug,
+  tenantUrlFromSite,
+} from "./cockpit";
 
 export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const router = useRouter();
   const beginRevision = useMutation(api.platform.intake.beginRevision);
+  const publishSite = useMutation(api.platform.sites.publish.publish);
   const data = useQuery(api.platform.projects.getOwned, {
     projectId: projectId as Id<"projects">,
   });
+  const billing = useQuery(api.platform.billing.queries.summary, {
+    historyLimit: 1,
+  });
   const [revisionError, setRevisionError] = useState("");
   const [startingRevision, setStartingRevision] = useState(false);
+  const [slugOverride, setSlugOverride] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  const [slugAttempted, setSlugAttempted] = useState(false);
 
   if (data === undefined) {
     return (
@@ -29,7 +53,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     );
   }
 
-  const { project, currentDraft, latestConfirmed, history } = data;
+  const { project, currentDraft, latestConfirmed, history, site } = data;
+  const researchHref = ideaHref(project.sourceSlug);
+  const tenantUrl = tenantUrlFromSite(site);
+  const control = publishControl({ source: project.source, site });
+  const slug = slugOverride ?? suggestedTenantSlug(project.sourceSlug);
+  const slugError = slugFieldError(slug);
+  const showSlugError = slugAttempted && slugError !== null;
 
   async function editAsNewRevision() {
     if (!latestConfirmed) return;
@@ -49,6 +79,34 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     }
   }
 
+  async function publishNow() {
+    setSlugAttempted(true);
+    if (slugError) return;
+    setPublishing(true);
+    setPublishError("");
+    try {
+      await publishSite({
+        projectId: project.projectId,
+        slug: slug.trim().toLowerCase(),
+      });
+    } catch (error) {
+      setPublishError(publishErrorMessage(error));
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  const publishDisabled =
+    control.kind !== "ready" || publishing || slugError !== null;
+  const publishDisabledReason =
+    control.kind === "blocked"
+      ? control.reason
+      : control.kind === "live"
+        ? "This site is already live."
+        : publishing
+          ? "Publishing…"
+          : slugError;
+
   return (
     <div className="mx-auto max-w-4xl">
       <Link
@@ -64,8 +122,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <h1 className="text-3xl font-semibold tracking-[-0.03em] text-zinc-50 sm:text-4xl">
               {project.title}
             </h1>
-            <Badge variant="secondary" className="font-normal text-zinc-300">
-              {project.status === "validating" ? "Brief confirmed" : project.status}
+            <Badge variant="secondary" className="font-normal capitalize text-zinc-300">
+              {project.status}
             </Badge>
           </div>
           <p className="mt-2 text-sm text-zinc-400">
@@ -79,15 +137,149 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               Resume draft
             </Link>
           </Button>
-        ) : project.sourceSlug ? (
+        ) : researchHref ? (
           <Button asChild variant="outline">
-            <Link href={`/ideas/${project.sourceSlug}`}>
+            <Link href={researchHref}>
               Read source research
               <ArrowUpRight aria-hidden="true" />
             </Link>
           </Button>
         ) : null}
       </div>
+
+      <section aria-labelledby="cockpit-heading" className="border-b border-white/10 py-8">
+        <h2 id="cockpit-heading" className="text-lg font-semibold text-zinc-100">
+          Cockpit
+        </h2>
+        <p className="mt-2 max-w-[65ch] text-sm leading-6 text-zinc-400">
+          Live project facts from the server. Publishing does not change DNS.
+        </p>
+        <dl className="mt-5 divide-y divide-white/10">
+          <div className="grid gap-2 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+            <dt className="text-sm text-zinc-400">Status</dt>
+            <dd className="text-sm leading-6 text-zinc-200">
+              <span className="capitalize">{project.status}</span>
+              {site ? (
+                <span className="text-zinc-400">
+                  {" "}
+                  · site <span className="capitalize text-zinc-200">{site.status}</span>
+                  {site.live ? " · live" : ""}
+                </span>
+              ) : (
+                <span className="text-zinc-400"> · no site record</span>
+              )}
+            </dd>
+          </div>
+          <div className="grid gap-2 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+            <dt className="text-sm text-zinc-400">Credits</dt>
+            <dd className="text-sm leading-6 text-zinc-200">
+              {billing === undefined ? (
+                <span>Loading credit balance…</span>
+              ) : (
+                <span className="inline-flex items-center gap-2 tabular-nums">
+                  <Coins className="size-4 text-amber-300" aria-hidden="true" />
+                  {billing.balance.toString()} available
+                </span>
+              )}
+            </dd>
+          </div>
+          {researchHref ? (
+            <div className="grid gap-2 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+              <dt className="text-sm text-zinc-400">Canonical idea</dt>
+              <dd className="text-sm leading-6">
+                <Link
+                  href={researchHref}
+                  className="inline-flex items-center gap-1 rounded-md text-orange-300 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                >
+                  {researchHref}
+                  <ArrowUpRight className="size-4" aria-hidden="true" />
+                </Link>
+              </dd>
+            </div>
+          ) : null}
+          {tenantUrl ? (
+            <div className="grid gap-2 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
+              <dt className="text-sm text-zinc-400">Tenant URL</dt>
+              <dd className="text-sm leading-6">
+                <a
+                  href={tenantUrl}
+                  className="inline-flex items-center gap-1 rounded-md text-orange-300 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+                >
+                  <Globe className="size-4" aria-hidden="true" />
+                  {tenantUrl}
+                </a>
+                {site && !site.live ? (
+                  <p className="mt-1 text-zinc-400">Hostname is stored. The site is not currently live.</p>
+                ) : null}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+
+        {control.kind !== "hidden" ? (
+          <form
+            className="mt-5 space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void publishNow();
+            }}
+          >
+            {control.kind === "ready" || control.kind === "blocked" ? (
+              <div className="max-w-md space-y-2">
+                <Label htmlFor="tenant-slug">Subdomain</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="tenant-slug"
+                    name="slug"
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={slug}
+                    disabled={control.kind !== "ready" || publishing}
+                    aria-invalid={showSlugError}
+                    aria-describedby={
+                      showSlugError
+                        ? "tenant-slug-error"
+                        : "tenant-slug-hint"
+                    }
+                    onChange={(event) => setSlugOverride(event.target.value)}
+                    className="h-9 min-w-0 flex-1 rounded-md border border-white/15 bg-white/5 px-3 text-sm text-zinc-100 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                  />
+                  <span className="shrink-0 text-sm text-zinc-500">.weekendmvp.app</span>
+                </div>
+                <p id="tenant-slug-hint" className="text-xs leading-5 text-zinc-500">
+                  Chooses the hostname stored for this project. It does not activate DNS.
+                </p>
+                {showSlugError ? (
+                  <p id="tenant-slug-error" className="text-sm text-red-300" role="alert">
+                    {slugError}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button
+                type="submit"
+                disabled={publishDisabled}
+                aria-describedby="publish-status"
+              >
+                {control.kind === "live"
+                  ? "Published"
+                  : publishing
+                    ? "Publishing…"
+                    : "Publish"}
+              </Button>
+              <p id="publish-status" className="min-h-5 text-sm text-zinc-400" aria-live="polite">
+                {publishError ||
+                  (control.kind === "blocked" ? control.reason : null) ||
+                  (control.kind === "live" ? "This site is already live." : null) ||
+                  (publishDisabled && publishDisabledReason && control.kind === "ready"
+                    ? publishDisabledReason
+                    : null)}
+              </p>
+            </div>
+          </form>
+        ) : null}
+      </section>
 
       <section aria-labelledby="brief-heading" className="py-8">
         <h2 id="brief-heading" className="text-lg font-semibold text-zinc-100">Brief</h2>

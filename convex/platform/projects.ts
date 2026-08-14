@@ -1,9 +1,14 @@
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
-import { query } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
+import { query, type QueryCtx } from "../_generated/server";
 import { requireCurrentPlatformUser, requireOwnedProject } from "./authz";
 import { assertBriefPayloadSource, parseBriefPayload } from "./briefPayload";
-import { projectSourceValidator, projectStatusValidator } from "./validators";
+import {
+  projectSourceValidator,
+  projectStatusValidator,
+  type SiteStatus,
+} from "./validators";
 
 const projectCardValidator = v.object({
   projectId: v.id("projects"),
@@ -67,6 +72,55 @@ export const listOwned = query({
   },
 });
 
+export type OwnedSiteSummary = {
+  status: SiteStatus;
+  hostname?: string;
+  publishable: boolean;
+  live: boolean;
+};
+
+async function ownedSiteSummary(
+  ctx: QueryCtx,
+  project: Doc<"projects">,
+): Promise<OwnedSiteSummary | null> {
+  const sites = await ctx.db
+    .query("site_configs")
+    .withIndex("by_ownerId_and_projectId", (q) =>
+      q.eq("ownerId", project.ownerId).eq("projectId", project._id),
+    )
+    .take(2);
+  const site = sites.length === 1 ? sites[0] : null;
+  if (
+    site === null ||
+    site.archivedAt !== undefined ||
+    site.ownerId !== project.ownerId ||
+    site.projectId !== project._id
+  ) {
+    return null;
+  }
+  const latest = await ctx.db
+    .query("site_versions")
+    .withIndex("by_siteConfigId_and_version", (q) =>
+      q.eq("siteConfigId", site._id),
+    )
+    .order("desc")
+    .first();
+  const publishable =
+    latest !== null &&
+    latest.documentId !== undefined &&
+    latest.ownerId === project.ownerId &&
+    latest.projectId === project._id;
+  return {
+    status: site.status,
+    ...(site.hostname !== undefined ? { hostname: site.hostname } : {}),
+    publishable,
+    live:
+      site.status === "published" &&
+      site.hostname !== undefined &&
+      site.currentVersionId !== undefined,
+  };
+}
+
 export const getOwned = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -113,6 +167,7 @@ export const getOwned = query({
         status: project.status,
         updatedAt: project.updatedAt,
       },
+      site: await ownedSiteSummary(ctx, project),
       currentDraft: history.find((item) => item.status === "draft") ?? null,
       latestConfirmed:
         history.find((item) => item.status === "confirmed") ?? null,
