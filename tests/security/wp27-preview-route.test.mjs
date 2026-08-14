@@ -118,6 +118,7 @@ test("no lead-write path is reachable from the preview", async () => {
     readCode("app/preview/[token]/not-found.tsx"),
     readCode("components/preview/templates/index.tsx"),
     readCode("components/preview/templates/PreviewWatermark.tsx"),
+    readCode("components/preview/PreviewConversion.tsx"),
   ]);
   for (const source of sources) {
     // Structurally inert, not disabled by a flag: there is no endpoint to

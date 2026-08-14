@@ -50,8 +50,8 @@ export async function POST(request: Request) {
       {
         mode: "payment",
         line_items: [{ price: config.priceIds[input.packId], quantity: 1 }],
-        success_url: `${config.appOrigin}/dashboard/billing?checkout=return`,
-        cancel_url: `${config.appOrigin}/dashboard/billing?checkout=cancelled`,
+        success_url: `${config.appOrigin}/dashboard?project=${input.projectId}`,
+        cancel_url: `${config.appOrigin}/dashboard?project=${input.projectId}`,
         client_reference_id: purchase.purchaseId,
         metadata: {
           purpose: PLATFORM_BILLING_PURPOSE,

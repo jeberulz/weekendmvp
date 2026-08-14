@@ -79,7 +79,7 @@ export type OwnedSiteSummary = {
   live: boolean;
 };
 
-async function ownedSiteSummary(
+export async function ownedSiteSummary(
   ctx: QueryCtx,
   project: Doc<"projects">,
 ): Promise<OwnedSiteSummary | null> {

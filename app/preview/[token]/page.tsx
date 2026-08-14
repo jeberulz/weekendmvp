@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchAction } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { parseSiteRenderSpec } from "@/convex/platform/preview/renderSpec";
 import { PreviewTemplateRenderer } from "@/components/preview/templates";
+import { PreviewConversion } from "@/components/preview/PreviewConversion";
 import { PreviewViewed } from "@/components/preview/PreviewViewed";
 
 /**
@@ -120,43 +120,8 @@ export default async function PreviewPage({
       {/* Template only: no site nav, no footer, nothing that would let a
           visitor navigate out of the preview into the marketing site. */}
       <PreviewTemplateRenderer spec={spec} showPreviewChrome />
-      <PreviewClaimBar token={token} />
+      <PreviewConversion token={token} />
       <PreviewViewed template={spec.templateId} />
     </div>
-  );
-}
-
-/**
- * The signup path that converts this preview into an owned project.
- *
- * The token travels as a query parameter to `/signin`, which is the same
- * secret the visitor already has in their address bar and is same-origin, so
- * this adds no exposure — and `Referrer-Policy: no-referrer` on this route
- * keeps it out of any cross-origin referer. WP27-S5 owns consuming
- * `claimPreview`; until it lands, sign-in simply ignores the parameter.
- */
-function PreviewClaimBar({ token }: { token: string }) {
-  return (
-    <aside
-      aria-label="Keep this preview"
-      // Deliberately in normal flow, not `sticky bottom-0`. The first draft
-      // was sticky and the live pass showed the consent banner — also
-      // bottom-anchored, and shown to exactly the first-time anonymous
-      // visitors this route exists for — sitting on top of it, hiding the
-      // one conversion path the story requires this route to offer.
-      className="border-t border-white/10 bg-black/90 px-5 py-6"
-    >
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-zinc-300">
-          This preview expires in 7 days. Create a free account to keep it.
-        </p>
-        <Link
-          href={`/signin?claimPreview=${encodeURIComponent(token)}`}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-700 px-5 font-medium text-white transition-colors hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-        >
-          Keep this site
-        </Link>
-      </div>
-    </aside>
   );
 }

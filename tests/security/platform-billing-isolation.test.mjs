@@ -37,6 +37,8 @@ test("platform and legacy Stripe handlers remain purpose-separated", async () =>
   assert.match(platformWebhook, /constructEvent\(/);
   assert.match(platformWebhook, /request\.text\(\)/);
   assert.match(platformCheckout, /mode:\s*"payment"/);
+  assert.match(platformCheckout, /success_url: `\$\{config\.appOrigin\}\/dashboard\?project=\$\{input\.projectId\}`/);
+  assert.doesNotMatch(platformCheckout, /\/dashboard\/billing/);
   assert.doesNotMatch(platformCheckout, /charges\.create|paymentMethods\.create/);
 });
 
@@ -60,6 +62,8 @@ test("billing UI is private, server-confirmed, and keyboard-operable", async () 
     readFile(files.billingWorkspace, "utf8"),
   ]);
   assert.match(page, /robots:\s*\{\s*index:\s*false/);
+  assert.match(page, /redirect\(SIGNED_IN_HREF\.home\)/);
+  assert.doesNotMatch(page, /BillingWorkspace/);
   assert.match(workspace, /useQuery\(api\.platform\.billing\.queries\.summary/);
   assert.match(workspace, /webhook, not the redirect/);
   assert.match(workspace, /<button/);

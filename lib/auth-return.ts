@@ -1,3 +1,5 @@
+import { canonicalSignedInReturn } from "./signed-in-chrome";
+
 export const DEFAULT_AUTH_RETURN = "/dashboard";
 
 /** Restrict post-auth navigation to the private platform namespace. */
@@ -13,7 +15,11 @@ export function safePlatformReturn(value: unknown) {
       (target.pathname === "/dashboard" ||
         target.pathname.startsWith("/dashboard/"))
     ) {
-      return `${target.pathname}${target.search}${target.hash}`;
+      return canonicalSignedInReturn(
+        target.pathname,
+        target.search,
+        target.hash,
+      );
     }
   } catch {
     // Use the bounded default below.

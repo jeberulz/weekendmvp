@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { AuthPlatformProvider } from "../AuthPlatformProvider";
-import { WorkspaceShell } from "@/components/platform/shell/WorkspaceShell";
+import { SignedInShell } from "@/components/platform/shell/SignedInShell";
 
 export const metadata: Metadata = {
-  title: "Workspace",
+  title: "Weekend MVP",
   robots: {
     index: false,
     follow: false,
@@ -25,7 +25,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthPlatformProvider>
-      <WorkspaceShell>{children}</WorkspaceShell>
+      <SignedInShell>{children}</SignedInShell>
     </AuthPlatformProvider>
   );
 }

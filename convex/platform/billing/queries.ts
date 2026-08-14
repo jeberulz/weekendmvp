@@ -63,6 +63,7 @@ export const summary = query({
         credits: purchase.credits,
         createdAt: purchase.createdAt,
         updatedAt: purchase.updatedAt,
+        providerCheckoutSessionId: purchase.providerCheckoutSessionId,
       })),
       projects: projects
         .filter((project) => project.archivedAt === undefined)

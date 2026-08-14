@@ -1,106 +1,69 @@
 /// <reference types="vite/client" />
 
 import { describe, expect, test } from "vitest";
+import accountMenuSource from "../../components/platform/shell/AccountMenu.tsx?raw";
+import billingPageSource from "../../app/dashboard/billing/page.tsx?raw";
 import dashboardLayoutSource from "../../app/dashboard/layout.tsx?raw";
-import dashboardPageSource from "../../app/dashboard/page.tsx?raw";
-import sheetSource from "../../components/ui/sheet.tsx?raw";
-import shellSource from "../../components/platform/shell/WorkspaceShell.tsx?raw";
-import { isWorkspaceLinkCurrent } from "../../components/platform/shell/workspace-current";
+import explorePageSource from "../../app/dashboard/explore/page.tsx?raw";
+import newPageSource from "../../app/dashboard/new/page.tsx?raw";
+import projectsPageSource from "../../app/dashboard/projects/page.tsx?raw";
+import projectPageSource from "../../app/dashboard/projects/[projectId]/page.tsx?raw";
+import shellSource from "../../components/platform/shell/SignedInShell.tsx?raw";
+import signOutSource from "../../app/dashboard/SignOutButton.tsx?raw";
 
-describe("WP23 authenticated workspace shell", () => {
-  test("retains the request-time auth boundary and private metadata", () => {
+describe("signed-in product chrome", () => {
+  test("keeps the request-time auth boundary and private metadata", () => {
     expect(dashboardLayoutSource).toContain("<AuthPlatformProvider>");
-    expect(dashboardLayoutSource).toContain("<WorkspaceShell>");
+    expect(dashboardLayoutSource).toContain("<SignedInShell>");
+    expect(dashboardLayoutSource).not.toContain("WorkspaceShell");
+    expect(shellSource).toContain("theme-cream");
     expect(dashboardLayoutSource).toContain("index: false");
     expect(dashboardLayoutSource).toContain("noarchive: true");
     expect(dashboardLayoutSource).toContain("nocache: true");
   });
 
-  test("owns the only main landmark and provides keyboard navigation", () => {
+  test("owns one main landmark and one desktop product bar", () => {
     expect(shellSource.match(/<main\b/g)).toHaveLength(1);
-    expect(shellSource.match(/<nav\b/g)).toHaveLength(1);
-    expect(shellSource).toContain('href="#workspace-main"');
-    expect(shellSource).toContain('aria-current={current ? "page" : undefined}');
-    expect(shellSource).toContain("<SheetContent");
-    expect(shellSource).toContain("<SheetClose asChild>");
-    expect(dashboardPageSource).not.toContain("<main");
+    expect(shellSource).toContain('href="#signed-in-main"');
+    expect(shellSource).toContain('aria-current={here ? "page" : undefined}');
+    expect(shellSource).toContain("Library");
+    expect(shellSource).toContain("AccountMenu");
+    expect(shellSource).not.toContain("Workspace");
+    expect(shellSource).not.toContain("lg:pl-[19.5rem]");
+    expect(shellSource).not.toContain("Search the idea library");
   });
 
-  test("exposes the frozen primary routes without a free-agent control", () => {
+  test("does not expose killed chrome destinations", () => {
     for (const route of [
-      "/dashboard",
-      "/dashboard/explore",
-      "/dashboard/new",
       "/dashboard/billing",
+      "/dashboard/new",
+      "/dashboard/projects",
+      "view=saved",
+      "view=interested",
     ]) {
-      expect(shellSource).toContain(route);
+      expect(shellSource).not.toContain(route);
     }
-    expect(shellSource).not.toContain("Ask Weekend MVP");
+    expect(shellSource).not.toContain("Billing");
+    expect(shellSource).not.toContain("Saved");
+    expect(shellSource).not.toContain("Interested");
+    expect(shellSource).not.toContain("New idea");
   });
 
-  test("keeps the mobile navigation labelled and the sheet operable", () => {
-    expect(shellSource).toContain('compact && "min-h-12 min-w-12 flex-col');
-    expect(shellSource).toContain("<span>{item.label}</span>");
-    expect(shellSource).toContain("<SheetContent");
-    expect(shellSource).toContain("<SignOutButton />");
-    const mobileSheet = shellSource.slice(
-      shellSource.indexOf("<SheetContent"),
-      shellSource.indexOf(">", shellSource.indexOf("<SheetContent")) + 1,
-    );
-    expect(mobileSheet).toContain(
-      'overlayClassName="motion-reduce:animate-none"',
-    );
-    expect(mobileSheet).toContain("motion-reduce:animate-none");
-    expect(mobileSheet).toContain("motion-reduce:transition-none");
-    expect(sheetSource).toContain(
-      "<SheetOverlay className={overlayClassName} />",
-    );
+  test("sign out lands on public home", () => {
+    expect(signOutSource).toContain('router.replace("/")');
+    expect(signOutSource).not.toContain('router.replace("/signin")');
+    expect(accountMenuSource).toContain("SignOutButton");
+    expect(accountMenuSource).toContain("user?.email");
   });
 
-  test("derives Saved and Interested current state from the query", () => {
-    expect(shellSource).toContain("useSearchParams().get(\"view\")");
-    expect(shellSource).toContain('queryView: "saved"');
-    expect(shellSource).toContain('queryView: "interested"');
-    expect(shellSource).toContain("isWorkspaceLinkCurrent(pathname, activeView, item)");
-
-    const explore = {
-      href: "/dashboard/explore",
-      match: "prefix" as const,
-    };
-    const saved = {
-      href: "/dashboard/explore?view=saved",
-      queryView: "saved" as const,
-    };
-    const interested = {
-      href: "/dashboard/explore?view=interested",
-      queryView: "interested" as const,
-    };
-    expect(
-      isWorkspaceLinkCurrent("/dashboard/explore", "saved", saved),
-    ).toBe(true);
-    expect(
-      isWorkspaceLinkCurrent("/dashboard/explore", "saved", explore),
-    ).toBe(false);
-    expect(
-      isWorkspaceLinkCurrent("/dashboard/explore", "interested", interested),
-    ).toBe(true);
-    expect(
-      isWorkspaceLinkCurrent("/dashboard/explore", "for_you", explore),
-    ).toBe(true);
-    expect(
-      isWorkspaceLinkCurrent("/dashboard/explore", "for_you", saved),
-    ).toBe(false);
-    expect(
-      isWorkspaceLinkCurrent("/dashboard", null, {
-        href: "/dashboard",
-        match: "exact",
-      }),
-    ).toBe(true);
-  });
-
-  test("uses AA-oriented text and action colors in the WP23 shell", () => {
-    expect(shellSource).not.toMatch(/text-zinc-(500|600)/);
-    expect(shellSource).not.toContain("bg-orange-600");
-    expect(shellSource).toContain("bg-orange-800");
+  test("kill-map routes redirect home and drop their old workspaces", () => {
+    expect(billingPageSource).toContain("redirect(SIGNED_IN_HREF.home)");
+    expect(billingPageSource).not.toContain("BillingWorkspace");
+    expect(newPageSource).toContain("redirect(SIGNED_IN_HREF.home)");
+    expect(newPageSource).not.toContain("OwnIdeaIntake");
+    expect(projectsPageSource).toContain("redirect(SIGNED_IN_HREF.home)");
+    expect(projectPageSource).toContain("redirect(objectHomeHref(projectId))");
+    expect(explorePageSource).toContain("shouldStripLibraryView(view)");
   });
 });
+

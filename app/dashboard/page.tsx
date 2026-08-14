@@ -1,14 +1,21 @@
-import { DashboardHome } from "@/components/platform/shell/DashboardHome";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
+import { SignedInHome } from "@/components/platform/shell/SignedInHome";
+import { Suspense } from "react";
 
 export default function DashboardPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
-      {/* WP27-S5. Claims a capability stashed on `/signin`, if there is one.
-          Renders nothing when there is not, so the ordinary dashboard is
-          unchanged for everyone who did not arrive from a preview. */}
+    <>
       <PreviewClaimRunner />
-      <DashboardHome />
-    </div>
+      <Suspense
+        fallback={
+          <div
+            aria-label="Loading home"
+            className="mx-auto h-64 max-w-6xl animate-pulse px-5 py-10 motion-reduce:animate-none"
+          />
+        }
+      >
+        <SignedInHome />
+      </Suspense>
+    </>
   );
 }

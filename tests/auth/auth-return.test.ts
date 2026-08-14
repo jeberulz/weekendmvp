@@ -22,10 +22,16 @@ describe("auth redirect allowlist", () => {
 
   test.each([
     ["/dashboard", "/dashboard"],
-    ["/dashboard/projects/one", "/dashboard/projects/one"],
+    ["/dashboard/explore", "/dashboard/explore"],
+    ["/dashboard/billing", "/dashboard"],
+    ["/dashboard/new", "/dashboard"],
+    ["/dashboard/projects", "/dashboard"],
+    ["/dashboard/projects/one", "/dashboard?project=one"],
+    ["/dashboard/explore?view=saved", "/dashboard/explore"],
+    ["/dashboard/explore?view=interested", "/dashboard/explore"],
     [
-      "/dashboard/projects/one?tab=preview#status",
-      "/dashboard/projects/one?tab=preview#status",
+      "/dashboard/explore?q=cart",
+      "/dashboard/explore?q=cart",
     ],
   ])("allows a platform dashboard target", (target, expected) => {
     expect(safePlatformReturn(target)).toBe(expected);
@@ -58,7 +64,16 @@ describe("sensitive auth route analytics policy", () => {
 
 describe("auth middleware route matrix", () => {
   test.each([
-    ["https://www.weekendmvp.app/dashboard", false, "/signin?returnTo=%2Fdashboard"],
+    [
+      "https://www.weekendmvp.app/dashboard/billing",
+      false,
+      "/signin?returnTo=%2Fdashboard",
+    ],
+    [
+      "https://www.weekendmvp.app/dashboard/explore?view=saved",
+      false,
+      "/signin?returnTo=%2Fdashboard%2Fexplore",
+    ],
     [
       "https://www.weekendmvp.app/dashboard/project?tab=build",
       false,
