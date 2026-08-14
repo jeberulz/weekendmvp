@@ -1,10 +1,10 @@
 # Agent Handoff — Build Platform Program (post-WP28 consolidation)
 
-Last updated: 2026-08-12 (UTC). Agent-agnostic. Supersedes prior handoff headers.
+Last updated: 2026-08-14 (UTC). Agent-agnostic. Supersedes prior handoff headers.
 
-**Consolidation branch:** `codex/wp28-tenant-hosts` — integration tip for WP19–28. Draft PR to `main` open.  
-**v1 scope:** `docs/wp/v1-scope-cut.md` — repository-idea path only; WP26 S2–S6 deferred to v1.1.  
-**WP28 package gate: Pass (2026-08-07).** Next work: merge consolidation PR, then WP29-min / WP38-min / WP30-min in parallel.
+**Consolidation branch:** `feat/platform-wp19-28-onto-main` — WP19–28 stacked onto current `main` (merge of `origin/codex/wp28-tenant-hosts` @ `d3ae862` + `origin/main`).  
+**v1 scope:** `docs/wp/v1-scope-cut.md` — repository-idea path only; WP26 S2–S6 deferred to v1.1. Owner ratified 2026-08-14 (`RULINGS.md`).  
+**WP28 package gate: Pass (2026-08-07).** Next work after this PR merges: WP29-min / WP38-min / WP30-min in parallel. Do not start WP26 S2–S6.
 
 ---
 
@@ -31,11 +31,11 @@ against `next dev`).
 
 | | |
 |---|---|
-| Integration tip | `codex/wp28-tenant-hosts` (WP19–28) |
-| HEAD | `bfc33fb` (`docs(wp28): close the package gate — pass`) |
-| Includes | Wave 2 (WP21–25), WP26-S1, WP27, WP28 |
-| Parallel / deferred | WP26 S2–S6 → v1.1 per scope cut |
-| Not merged to | `main` until consolidation PR lands |
+| Integration tip | `feat/platform-wp19-28-onto-main` (WP19–28 + current `main`) |
+| HEAD | `e9db424` (`fix(ci): load security .ts tests on Node 22.14 and pin nanoid 3.3.18`) |
+| Includes | Wave 2 (WP21–25), WP26-S1, WP27, WP28, plus `origin/main` content/CI since `d7a5dd7` |
+| Parallel / deferred | WP26 S2–S6 → v1.1 per scope cut (owner ratified 2026-08-14) |
+| Not merged to | `main` until the consolidation PR lands. Do not merge it from this unit. |
 
 ```
 0f969bc docs(wp27): story freeze
@@ -100,45 +100,32 @@ exists on this branch now.
 
 ---
 
-## 4. Choose next work (owner must pick)
+## 4. Choose next work (after this PR merges)
 
-Do **not** start coding until the owner names a lane. Options:
+Do **not** start coding until the owner names a lane. v1.0 next packages:
 
-### A. WP28 — tenant publish, host routing, leads (natural sequel)
+### A. WP29-min — project cockpit + publish UX
 
-- Manifest: Critical, Wave 3. Sole owner of `proxy.ts`/`middleware.ts` host
-  routing, tenant routes, lead APIs, activation runbook.
-- Depends on WP21, WP22, WP27 (all code-gated; WP27 just passed).
-- **No production wildcard/DNS/domain activation** in WP28 — that is WP31.
-- Unknown product questions still open in the manifest (legacy fallback,
-  reserved subdomains, staging host, lead retention) — escalate to
-  `RULINGS.md` before freezing stories.
-- Branch: create `codex/wp28-…` from an agreed base (likely this WP27 branch
-  or the integration branch — **ask**, do not assume).
+- Manifest: project status, publish action, tenant URL, credit balance, link back to canonical `/ideas/{slug}`.
+- Freeze `docs/wp/wp29-stories.md` first (does not exist yet).
 
-### B. WP26-S2..S6 — Validation Report engine (parallel, unblocked)
+### B. WP38-min — super_admin bootstrap + audit + activation seam
 
-- Branch already exists: `codex/wp26-research-workflow`
-- S1 contract subgate passed. Providers ruled: `gpt-5.6-sol` (pin dated
-  snapshot at S2), Perplexity (citation-only), DataForSEO (keywords; no LLM
-  fallback), **$4.00/report** hard cap.
-- High-risk AI work: fixture-mode only until WP26's own gate; cost reserved
-  pre-call; keyword step fails closed if provider missing.
+- Bootstrap one `super_admin`; immutable privileged-action audit; activation/rollback commands; no customer impersonation.
+- Must land before production activation; follows WP30, gates WP31.
 
-### C. Preview retention cron (MEDIUM, blocks public free-preview)
+### C. WP30-min — policy gate + kill switch
 
-- `preview_capabilities.by_expiresAt` exists; nothing reads it; no
-  `convex/crons.ts` yet. Expired rows accumulate unboundedly.
-- First cron in this deployment → new scope. Prefer a small Work Package or
-  owner-scoped story, not a silent drive-by on the WP27 branch.
-- **Required before exposing anonymous free preview publicly.**
+- Manual policy gate before first publish; project kill switch; publish rate limits; audit on deny/approve.
+- Needs owner rulings still open in `v1-scope-cut.md`.
+
+WP26 S2–S6 is **v1.1**, not the next pick. Do not resume it on this stack.
 
 ### Also pending (not the immediate pick unless asked)
 
+- Preview retention cron (MEDIUM, blocks public free-preview): `preview_capabilities.by_expiresAt` exists; nothing reads it; no `convex/crons.ts` yet.
 - Bridge HMAC: no nonce/expiry/single-use (LOW today; blast radius if logged)
 - ConsentBanner contrast 4.17 (site-wide Small Fix, outside WP27)
-- WP38 admin plan (`codex/wp38-admin-plan`) must merge before production
-  activation; follows WP30, gates WP31
 
 ---
 
@@ -264,11 +251,10 @@ pre-existing — ignore.
 
 ## 10. First message to the owner
 
-Ask which lane to open:
+Ask which lane to open after the consolidation PR is merged (do not merge it here):
 
-1. **WP28** (tenant hosts / publish / leads) — freeze stories first  
-2. **WP26-S2..S6** on `codex/wp26-research-workflow`  
-3. **Retention cron** for `preview_capabilities` before public free-preview  
+1. **WP29-min** (project cockpit / publish UX) — freeze stories first  
+2. **WP38-min** (super_admin bootstrap + audit)  
+3. **WP30-min** (policy gate + kill switch) — needs remaining owner rulings  
 
-Then branch (if needed), read the matching stories/manifest slice, and proceed
-in the Work Package lane.
+WP26 S2–S6 stays v1.1. Then branch (if needed), read the matching stories/manifest slice, and proceed in the Work Package lane.
