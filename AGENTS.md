@@ -1,3 +1,14 @@
+<!-- BEGIN:active-handoff -->
+## Active work — read before coding
+
+The Build Platform program is mid-flight on branch `codex/wp27-site-preview`.
+**Read `docs/wp/AGENT_HANDOFF.md` first.** It carries the current state, the
+two open items blocking the WP27 gate, the local environment setup, and a list
+of traps that have already cost real time (soft-404 under Cache Components,
+`convex-test` ignoring internal/public visibility, vacuous proxy assertions,
+root-absolute `import.meta.glob`, and tests that match their own comments).
+<!-- END:active-handoff -->
+
 <!-- convex-ai-start -->
 
 This project uses [Convex](https://convex.dev) as its backend.
@@ -60,3 +71,13 @@ Do **not** use `/api/mcp/sse` for Cloud Agents — SSE/`mcp-remote` are unsuppor
 Repo config lives in `.cursor/mcp.json` (Cursor) and `.mcp.json` (Claude Code).
 
 <!-- END:ideabrowser-mcp -->
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

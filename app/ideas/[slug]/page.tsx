@@ -24,6 +24,7 @@ import {
 import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
+import { PreviewIdeaCta } from "@/components/ideas/PreviewIdeaCta";
 import { ideaMdxComponents } from "@/components/ideas/mdx-light";
 import {
   CATEGORY_META,
@@ -536,6 +537,8 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                 components={ideaMdxComponents}
                 codeTheme="github-light"
               />
+
+              <PreviewIdeaCta slug={slug} title={title} />
 
               {/* Explore More (cross-linking) */}
               {idea ? (

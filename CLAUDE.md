@@ -1,5 +1,11 @@
 # Weekend MVP — Claude Code guidelines
 
+> **Active Build Platform handoff:** Before continuing the current platform
+> program, read `docs/wp/AGENT_HANDOFF.md`. It records the active branch
+> (`codex/wp27-site-preview`), the two items blocking the WP27 gate, the local
+> environment setup, and the traps that have already cost real time.
+> `docs/wp/CLAUDE_HANDOFF.md` is superseded and kept only for history.
+
 Next.js (App Router) + MDX + Convex site for startup idea validation and the
 Weekend MVP Starter Kit. Pages are React Server Components; long-form content
 (ideas, articles, newsletters) is MDX in `content/`; metadata lives in Convex

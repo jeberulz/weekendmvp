@@ -1,10 +1,33 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
+import { previewTemplateValidator } from "./platform/preview/renderSpec";
+import {
+  auditActorValidator,
+  briefStatusValidator,
+  documentFormatValidator,
+  documentKindValidator,
+  ledgerReasonValidator,
+  projectSourceValidator,
+  projectStatusValidator,
+  purchaseProviderValidator,
+  purchaseStatusValidator,
+  siteStatusValidator,
+  siteVersionStatusValidator,
+  stepStatusValidator,
+  stepTypeValidator,
+  submissionStatusValidator,
+  taskStatusValidator,
+  taskTypeValidator,
+  workflowRunStatusValidator,
+  workflowTypeValidator,
+} from "./platform/validators";
 
-// Initial schema (U1) — expanded with queries/indexes in U2.
-// `users` and `saved_ideas` are reserved for the future auth layer (Clerk +
-// ConvexProviderWithClerk); nothing reads or writes them in this migration.
+// Initial schema (U1) — expanded with queries/indexes in U2 and Convex Auth in
+// WP21. The custom users table below intentionally keeps the legacy fields
+// optional so existing document IDs and saved_ideas references remain valid.
 export default defineSchema({
+  ...authTables,
   ideas: defineTable({
     slug: v.string(),
     title: v.string(),
@@ -174,16 +197,24 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_stripeEventId", ["stripeEventId"]),
 
-  // ===== Reserved for future auth layer — intentionally unused today =====
+  // Convex Auth's users table, customized in place for legacy compatibility.
   users: defineTable({
-    tokenIdentifier: v.string(),
-    email: v.string(),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    tokenIdentifier: v.optional(v.string()),
     displayName: v.optional(v.string()),
     stripeCustomerId: v.optional(v.string()),
-    createdAt: v.number(),
+    createdAt: v.optional(v.number()),
   })
-    .index("by_token", ["tokenIdentifier"])
-    .index("by_email", ["email"]),
+    // `email` and `phone` are required exact names for Convex Auth internals.
+    .index("email", ["email"])
+    .index("phone", ["phone"])
+    .index("by_token", ["tokenIdentifier"]),
 
   saved_ideas: defineTable({
     userId: v.id("users"),
@@ -192,4 +223,331 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_idea", ["userId", "ideaId"]),
+
+  projects: defineTable({
+    ownerId: v.id("users"),
+    source: projectSourceValidator,
+    sourceIdeaId: v.optional(v.id("ideas")),
+    title: v.string(),
+    status: projectStatusValidator,
+    idempotencyKey: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
+    .index("by_ownerId_and_status_and_updatedAt", [
+      "ownerId",
+      "status",
+      "updatedAt",
+    ])
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_ownerId_and_sourceIdeaId", ["ownerId", "sourceIdeaId"])
+    .index("by_ownerId_and_sourceIdeaId_and_archivedAt", [
+      "ownerId",
+      "sourceIdeaId",
+      "archivedAt",
+    ]),
+
+  briefs: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    status: briefStatusValidator,
+    revision: v.int64(),
+    documentId: v.optional(v.id("documents")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_projectId_and_status_and_updatedAt", [
+      "projectId",
+      "status",
+      "updatedAt",
+    ])
+    .index("by_ownerId_and_projectId_and_revision", [
+      "ownerId",
+      "projectId",
+      "revision",
+    ]),
+
+  submissions: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    status: submissionStatusValidator,
+    idempotencyKey: v.string(),
+    payload: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_projectId_and_status_and_createdAt", [
+      "projectId",
+      "status",
+      "createdAt",
+    ]),
+
+  idea_intents: defineTable({
+    ownerId: v.id("users"),
+    ideaId: v.id("ideas"),
+    saved: v.boolean(),
+    interested: v.boolean(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"])
+    .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
+    .index("by_ownerId_and_saved_and_updatedAt", [
+      "ownerId",
+      "saved",
+      "updatedAt",
+    ])
+    .index("by_ownerId_and_interested_and_updatedAt", [
+      "ownerId",
+      "interested",
+      "updatedAt",
+    ]),
+
+  tasks: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    type: taskTypeValidator,
+    status: taskStatusValidator,
+    title: v.string(),
+    idempotencyKey: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_projectId_and_createdAt", ["projectId", "createdAt"])
+    .index("by_projectId_and_status_and_createdAt", [
+      "projectId",
+      "status",
+      "createdAt",
+    ]),
+
+  task_steps: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    taskId: v.id("tasks"),
+    type: stepTypeValidator,
+    status: stepStatusValidator,
+    position: v.int64(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_taskId_and_position", ["taskId", "position"])
+    .index("by_projectId_and_status_and_createdAt", [
+      "projectId",
+      "status",
+      "createdAt",
+    ]),
+
+  documents: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    taskId: v.optional(v.id("tasks")),
+    kind: documentKindValidator,
+    format: documentFormatValidator,
+    title: v.string(),
+    body: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
+    contentSha256: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_projectId_and_updatedAt", ["projectId", "updatedAt"])
+    .index("by_projectId_and_kind_and_updatedAt", [
+      "projectId",
+      "kind",
+      "updatedAt",
+    ])
+    .index("by_taskId_and_createdAt", ["taskId", "createdAt"]),
+
+  document_citations: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    documentId: v.id("documents"),
+    position: v.int64(),
+    url: v.string(),
+    title: v.string(),
+    publisher: v.optional(v.string()),
+    publishedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_documentId_and_position", ["documentId", "position"])
+    .index("by_projectId_and_createdAt", ["projectId", "createdAt"]),
+
+  site_configs: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    status: siteStatusValidator,
+    hostname: v.optional(v.string()),
+    currentVersionId: v.optional(v.id("site_versions")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_projectId", ["ownerId", "projectId"])
+    .index("by_hostname", ["hostname"])
+    .index("by_ownerId_and_status_and_updatedAt", [
+      "ownerId",
+      "status",
+      "updatedAt",
+    ]),
+
+  site_versions: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    siteConfigId: v.id("site_configs"),
+    status: siteVersionStatusValidator,
+    version: v.int64(),
+    documentId: v.optional(v.id("documents")),
+    storageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    publishedAt: v.optional(v.number()),
+    retiredAt: v.optional(v.number()),
+  })
+    .index("by_siteConfigId_and_version", ["siteConfigId", "version"])
+    .index("by_projectId_and_status_and_createdAt", [
+      "projectId",
+      "status",
+      "createdAt",
+    ]),
+
+  leads: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    siteConfigId: v.id("site_configs"),
+    email: v.optional(v.string()),
+    payload: v.optional(v.string()),
+    synthetic: v.boolean(),
+    createdAt: v.number(),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_projectId_and_createdAt", ["projectId", "createdAt"])
+    .index("by_siteConfigId_and_createdAt", ["siteConfigId", "createdAt"])
+    .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"]),
+
+  audit_events: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.optional(v.id("projects")),
+    actorType: auditActorValidator,
+    actorUserId: v.optional(v.id("users")),
+    action: v.string(),
+    subjectType: v.string(),
+    subjectId: v.string(),
+    metadata: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_ownerId_and_createdAt", ["ownerId", "createdAt"])
+    .index("by_projectId_and_createdAt", ["projectId", "createdAt"]),
+
+  credit_accounts: defineTable({
+    ownerId: v.id("users"),
+    balance: v.int64(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
+
+  credit_ledger: defineTable({
+    ownerId: v.id("users"),
+    accountId: v.id("credit_accounts"),
+    projectId: v.optional(v.id("projects")),
+    purchaseId: v.optional(v.id("purchases")),
+    taskId: v.optional(v.id("tasks")),
+    reason: ledgerReasonValidator,
+    delta: v.int64(),
+    balanceAfter: v.int64(),
+    idempotencyKey: v.string(),
+    provider: v.optional(v.string()),
+    providerEventId: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_accountId_and_createdAt", ["accountId", "createdAt"])
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_provider_and_providerEventId", ["provider", "providerEventId"]),
+
+  purchases: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    provider: purchaseProviderValidator,
+    status: purchaseStatusValidator,
+    amountMinor: v.int64(),
+    currency: v.string(),
+    credits: v.int64(),
+    idempotencyKey: v.string(),
+    providerCheckoutSessionId: v.optional(v.string()),
+    providerPaymentIntentId: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_ownerId_and_status_and_createdAt", [
+      "ownerId",
+      "status",
+      "createdAt",
+    ])
+    .index("by_provider_and_providerCheckoutSessionId", [
+      "provider",
+      "providerCheckoutSessionId",
+    ])
+    .index("by_provider_and_providerPaymentIntentId", [
+      "provider",
+      "providerPaymentIntentId",
+    ]),
+
+  workflow_runs: defineTable({
+    ownerId: v.id("users"),
+    projectId: v.id("projects"),
+    taskId: v.optional(v.id("tasks")),
+    type: workflowTypeValidator,
+    status: workflowRunStatusValidator,
+    idempotencyKey: v.string(),
+    attempt: v.int64(),
+    errorCode: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_idempotencyKey", ["ownerId", "idempotencyKey"])
+    .index("by_projectId_and_status_and_createdAt", [
+      "projectId",
+      "status",
+      "createdAt",
+    ])
+    .index("by_taskId_and_createdAt", ["taskId", "createdAt"])
+    .index("by_status_and_createdAt", ["status", "createdAt"]),
+
+  /**
+   * WP27-S1, additive only (owner ruling 2026-08-06). Every other platform
+   * table requires `ownerId`, so an anonymous pre-signup preview had nowhere
+   * to live. This table holds that artifact until signup claims it into a
+   * real owned project; it is deliberately NOT registered in the WP22
+   * owner/project authorization helpers, because its authorization *is* the
+   * capability token rather than an owner. No frozen table, validator, or
+   * index was modified to add it.
+   */
+  preview_capabilities: defineTable({
+    // SHA-256 of the token. The plaintext exists only in the generating
+    // response and the visitor's URL, so a database read can never
+    // reconstruct a working preview link.
+    tokenHash: v.string(),
+    sourceIdeaId: v.id("ideas"),
+    templateId: previewTemplateValidator,
+    // Serialized SiteRenderSpec. Stored inline rather than in `documents`
+    // because that table requires both an owner and a project, neither of
+    // which exists before signup.
+    renderSpec: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    claimedByUserId: v.optional(v.id("users")),
+    claimedProjectId: v.optional(v.id("projects")),
+    claimedAt: v.optional(v.number()),
+  })
+    .index("by_tokenHash", ["tokenHash"])
+    .index("by_claimedByUserId_and_createdAt", ["claimedByUserId", "createdAt"])
+    .index("by_expiresAt", ["expiresAt"]),
 });
