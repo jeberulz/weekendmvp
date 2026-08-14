@@ -1,0 +1,134 @@
+---
+slug: "ai-slide-deck-maker"
+title: "AI Slide Deck Maker"
+---
+
+## The Problem
+
+Every founder and operator knows the Sunday-night dread of the blank slide. A board meeting is Monday, the numbers are scattered across Notion, a spreadsheet, and three Slack threads, and somehow they have to become a narrative that a room of investors or executives will respect. So the work starts: pick a template, fight the layout, hunt for a chart style that does not look like it shipped with Office 2003, rewrite the same headline four times, and realize at midnight that the story still does not land. The deck is not the product, yet it eats the hours that should have gone to the product.
+
+The pain is not occasional; it is structural and recurring. Operations teams rebuild the same weekly reporting deck every Friday. Sales teams re-skin the same pitch for every prospect. Consultants bill hours to slide polish that clients never see as value. The core complaint that surfaces again and again in community discussion is blunt: "Decks still feel like PowerPoint circa 2003," and the dream is equally blunt: "I wrote this doc and got a deck back in 30 seconds." Reddit's r/startups (2.3M+ members), r/Entrepreneur (600K+), and r/powerpoint (30K+) run constant threads asking which tool finally makes decks painless, and a single Reddit discussion on AI presentation tools drew 371 responses. Facebook's SaaS AI Tools group (12K+ members) and hundreds of YouTube tutorials on "AI slide deck generator" reinforce the same demand signal.
+
+The downstream cost is real money and real momentum. Board meetings get pushed back because the deck is not ready. Investor pitches fall flat because the story was assembled under deadline pressure instead of designed. Team updates become homework nobody wants, so reporting slips and stakeholders lose visibility. The people feeling this most acutely are exactly the people with the least time to spare: early-stage founders raising a round and ops leads keeping a company's stakeholders informed. They do not need another template gallery. They need the distance between "here is what I want to say" and "here is a deck I am proud to present" to collapse to minutes.
+
+## The Solution
+
+SlidePilot is an AI assistant that turns scattered inputs into a polished, story-driven presentation. You drop in a brief, a doc, raw data, or even a voice note, and it builds a slide-by-slide narrative that actually argues a point rather than just formatting bullets. The wedge is not "make a slide look nice" — it is "understand what I am trying to communicate and structure the whole deck around it." GPT-4o with vision reads your uploaded content, proposes an outline, and then generates each slide with an appropriate layout, chart style, and headline. You stay in control: reorder sections, tweak copy, swap a chart, and the deck stays visually consistent because the design system, not the human, enforces the rules.
+
+The MVP is deliberately narrow. Start with a web app that accepts a document or bullet outline and returns an editable deck in a Figma-style canvas, then one-click export to PowerPoint or Google Slides so the output drops straight into workflows people already use. The differentiator versus template tools is context: SlidePilot keeps a link to the source material, so when your numbers change you regenerate the affected slides instead of rebuilding the deck. That "living deck" behavior is what turns a one-time novelty into a weekly habit for ops teams.
+
+**How it works:**
+
+1. **Drop in your source** — Upload a brief, doc, spreadsheet, or voice note; GPT-4o with vision parses the content and pulls out the key points, numbers, and structure.
+2. **Get a narrative outline** — The AI proposes a slide-by-slide story arc (problem, insight, data, ask) that you can reorder or edit before any design happens.
+3. **Generate the deck** — Each slide is composed with an on-brand layout, auto-selected chart type, and a sharp headline, all consistent with your brand kit.
+4. **Refine and export** — Edit inline, regenerate any slide, then one-click export to PowerPoint or Google Slides, or share a live link that auto-updates when the source data changes.
+
+The goal for the first 10 to 15 design-hating founders is a single reaction: "I actually want to present this," delivered in about 15 minutes instead of an afternoon.
+
+## Market Research
+
+Presentation software is one of the clearest cases of a large, boring category being re-underwritten by AI — and the numbers show the money is following.
+
+- **The AI presentation makers market was valued at about $748 million in 2024 and is projected to reach roughly $1.525 billion by 2031, an 11.3% CAGR.** This is the category directly in play for SlidePilot, and it is compounding at double digits without a dominant winner yet.
+- **The broader deck software market was about $331 million in 2024 and is projected to grow at a 12.1% CAGR from 2025 to 2034.** Two overlapping markets both compounding above 11% signals durable, not faddish, demand.
+- **The overall presentation software market is expanding from roughly $6.7 billion toward $16.5 billion by 2032.** Even capturing a sliver of the AI-native slice of this base clears the bar for a bootstrapped or lightly funded business.
+- **Investors have poured over $250 million into top AI presentation startups since 2022**, with Series A and B rounds commonly in the $15 million to $45 million range for players like Gamma, Tome, and Beautiful.ai. Capital is validating the thesis, not inventing it.
+- **Canva alone has over 100 million active users**, and its rapid Magic Design AI rollout shows how quickly this behavior is going mainstream across non-designers.
+
+Demand is not theoretical. Google Trends shows a 20% to 70% rise in "AI slide deck generator" searches, YouTube AI-presentation content has drawn over 2 million views, and the keyword research flags "ai slide deck generator," "powerpoint slide decks," and "pitch deck for investors" as high commercial-intent terms. You are routing existing, high-intent demand, not manufacturing it.
+
+## Competitive Landscape
+
+The market is best described as competitive rather than saturated: lots of attention, real funding, rapid feature launches, and no single company holding more than an estimated 20% to 30% share. That is the ideal shape for a focused entrant — proven demand, but the winner is not yet decided.
+
+- **Beautiful.ai** — The category leader among AI-first deck makers. Strong auto-layout, design suggestions, and team brand controls under a "design without designers" pitch. Subscriptions start around $12/month with higher enterprise tiers. Weakness: limited deep custom visuals and restrictive export options.
+- **Canva (Magic Design)** — Over 100 million users and a massive template ecosystem with AI baked in. Freemium, with Pro from about $12.99/month. Weakness: AI output can feel generic and slide-specific automation is shallow for power users.
+- **Microsoft PowerPoint with Copilot** — The incumbent, generating slides from outlines inside the tool enterprises already own. Bundled with Microsoft 365 business plans priced roughly $6 to $30 per user per month. Weakness: AI feels bolted on, the interface is heavy, and innovation moves slowly.
+- **Slidesgo** — The accessible free option, fast to a first deck for students and cost-sensitive users. Free basic use with paid plans from about $5.99/month. Weakness: PowerPoint export sits behind a paywall and branding controls are limited.
+- **Gamma, Tome, and Plus AI** — Well-funded AI-native entrants pushing document-to-deck generation, typically freemium with pro tiers in the $8 to $20 per month range. They validate the wedge but are chasing broad general use rather than a specific workflow.
+
+**Your Opportunity**
+
+The gap sits between the generic free tools and the heavy enterprise suites: a modestly priced, power-user product built around a specific, recurring workflow rather than one-off decks. Win on three things incumbents will not chase quickly: deep source-to-slide syncing so decks update themselves, native integration with the tools founders and ops teams live in (Notion, Linear, Airtable, Slack), and narrative-first generation that structures an argument instead of just formatting bullets. Beautiful.ai's design tilt, Canva's generic output, and Copilot's bundle inertia are all openings for a tool that obsesses over "recurring, integrated, collaborative decks" for one clear audience.
+
+## Business Model
+
+Subscription SaaS with a freemium wedge that converts on usage and team features, not crippled quality. The positioning target is Series A startups prepping investor decks and ops teams drowning in weekly reporting — audiences with real budgets and daily pain.
+
+- **Free** ($0) — A few decks per month, standard templates, watermark on export. The lead-gen wedge that seeds founder-community word of mouth.
+- **Pro** ($49/month) — Unlimited decks, PowerPoint and Google Slides export, brand kit, source-linked regeneration, and priority generation. Aimed at solo founders and individual operators.
+- **Team** ($99 to $199/month) — Real-time collaboration, shared brand controls, team analytics, and integrations with Notion, Linear, and Airtable. Aimed at ops teams and small companies standardizing their reporting.
+
+**Unit Economics**
+
+- **~$0.10 to $0.40** — LLM and image cost per generated deck at gpt-4o pricing.
+- **~85%** — Target gross margin on Pro and Team plans.
+- **$60 to $150** — Target blended CAC via founder communities and content, not paid ads.
+- **$140** — Blended average revenue per account per month at the target mix.
+
+The path to $1M ARR is roughly 600 teams at a $140/month blended average — a reachable number in a market with tens of millions of decks made monthly. Expansion revenue comes from industry template packs (SaaS metrics, fundraising, board reporting), seat growth as ops teams standardize, and integrations that raise switching costs. Distribution runs through founder Slack communities, YC and accelerator alumni networks, and LinkedIn content on "how to not suck at presenting."
+
+## Recommended Tech Stack
+
+The hard parts are not the model calls — they are reliable content parsing, consistent layout generation, and clean export to PowerPoint and Google Slides. Optimize for a fast upload-to-outline-to-deck loop and a design system that keeps output on-brand without human babysitting.
+
+- **Next.js 14 (App Router) on Vercel** — One repo for the marketing site, the editor canvas, and the API routes. Edge functions handle upload intake; serverless functions run the heavier generation jobs.
+- **Supabase (Postgres + Auth + Storage)** — Tables for users, decks, slides, brand kits, and source documents. Storage for uploads and exported files; row-level security so each account only sees its own decks.
+- **OpenAI gpt-4o with vision** — Primary model for parsing uploaded docs and images, generating the narrative outline, and writing per-slide copy. Add a cheaper model for low-stakes rewrites to protect margin.
+- **A rendering layer (react-pdf or pptxgenjs)** — Use pptxgenjs to emit real PowerPoint files and the Google Slides API for native Google export, so output drops into existing workflows instead of trapping users.
+- **Stripe Billing** — Free, Pro, and Team tiers plus annual prepay, with a customer portal for self-serve upgrades and metered nudges on free-tier limits.
+- **Inngest or Vercel Cron** — Durable background jobs for multi-slide generation and for the source-sync feature that regenerates decks when linked data changes.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) project called "SlidePilot."
+Provision Supabase with these tables:
+- users (id, email, plan TEXT default 'free', brand_kit JSONB)
+- decks (id, user_id, title, source_document_id, status TEXT, created_at)
+- slides (id, deck_id, position INT, layout TEXT, headline TEXT, body JSONB, chart JSONB)
+- source_documents (id, user_id, kind TEXT CHECK kind IN ('doc','data','voice','brief'), storage_path, parsed_json JSONB)
+Enable row-level security so each user only reads/writes rows where user_id matches auth.uid().
+Add Stripe with Free, Pro ($49/mo), and Team ($99-$199/mo) products.
+Set env vars OPENAI_API_KEY, STRIPE_SECRET_KEY, and Supabase keys. Install the OpenAI and pptxgenjs SDKs.
+```
+
+**2. Core Feature: Document to Deck**
+
+```text
+Build POST /api/generate-deck. Input: a source_document_id.
+Steps:
+1. Load the parsed source content from Supabase.
+2. Call gpt-4o with a strict JSON schema to produce a deck outline:
+   { title: string, slides: [{ layout: "title"|"bullets"|"chart"|"quote", headline: string, points: string[], chart_hint?: string }] }.
+   The prompt must instruct the model to build a narrative arc (context, insight, evidence, ask), not just reformat bullets.
+3. Persist the outline as slide rows.
+4. For each chart slide, map chart_hint to a chart config the renderer understands.
+Handle long documents by chunking and summarizing before outlining. Run generation as a background job and stream progress to the client.
+```
+
+**3. Export and Brand Kit**
+
+```text
+Add per-account brand kits and export.
+- Brand kit: primary color, accent color, font pair, logo URL, stored on users.brand_kit.
+- Apply the brand kit to every slide layout so output is visually consistent.
+- Build POST /api/export that renders a deck to PowerPoint via pptxgenjs and to Google Slides via the Slides API.
+- Free plan exports carry a watermark; Pro and Team remove it.
+- Add a "regenerate slide" action that re-runs generation for a single slide while preserving the brand kit and surrounding narrative.
+```
+
+## Sources
+
+- [Plus AI — Best AI Presentation Makers (competitor lineup and features)](https://plusai.com/blog/best-ai-presentation-makers)
+- [GMInsights — Deck Software Market ($331M in 2024, 12.1% CAGR 2025–2034)](https://www.gminsights.com/industry-analysis/deck-software-market)
+- [Win Market Research — AI Presentation Makers Market ($748M in 2024 to $1.525B by 2031, 11.3% CAGR)](https://winmarketresearch.com/home/goods/detail/id/3822717.html)
+- [Zapier — Best AI Presentation Maker (feature and pricing comparison)](https://zapier.com/blog/best-ai-presentation-maker/)
+- [Beautiful.ai — product and pricing reference](https://www.beautiful.ai)
+- [Presentations.ai — market and product reference](https://www.presentations.ai)
+- [Global Cybersecurity Network — Best AI Presentation Makers roundup](https://globalcybersecuritynetwork.com/blog/best-ai-presentation-makers/)

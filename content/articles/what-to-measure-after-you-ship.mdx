@@ -1,0 +1,161 @@
+---
+slug: "what-to-measure-after-you-ship"
+title: "What to Measure After You Ship (The First 30 Days)"
+description: "Five metrics that matter in your first 30 days, with 2026 benchmarks: 37% median activation, 22-minute median time-to-value, and why 70% of churn happens before day 30."
+category: "Guide"
+publishedAt: "2026-08-12"
+wordCount: 1551
+readMinutes: 8
+heroAlt: "A folded paper tape measure curled on a near-black desk beside a closed notebook, its edge caught by a narrow mint beam"
+---
+
+## The Dashboard Trap
+
+You shipped. Now you're refreshing a page-views chart eleven times a day and learning nothing.
+
+Page views tell you whether your tweet worked. They tell you nothing about whether your product works. And the window where you can still fix the product is short: roughly **70% of SaaS users who churn do so in the first 30 days** — not because the product failed them, but because they never got far enough in to find out ([Jimo](https://jimo.ai/blog/conducting-effective-benchmarking-analysis-a-step-by-step-guide), citing Wyzowl).
+
+They signed up, clicked around, hit friction, and left quietly. No feedback, no cancellation email.
+
+So here are the five numbers worth instrumenting, the 2026 benchmarks to judge them against, and the ones to ignore until you have real volume.
+
+Haven't shipped yet? Pick something small enough to measure honestly at [startup ideas](/startup-ideas).
+
+## 1. Activation Rate
+
+**Definition:** (users who reached the value milestone ÷ total signups) × 100.
+
+The hard part isn't the math, it's choosing the milestone. It must be the first moment the user gets real value — not "completed onboarding," not "logged in twice." For a scheduling tool, it's *first meeting booked*. For an invoicing tool, *first invoice sent*. For an AI tool, *first output they kept*.
+
+**2026 benchmarks:**
+
+| Segment | Median | Top quartile | Broken |
+|---------|--------|--------------|--------|
+| B2B SaaS (all) | ~37% | 52–65% | under 20% |
+| Pure PLG | 34.6% | ~50% | — |
+| Sales-led | 41.6% | 65%+ | — |
+| Developer tools | 18–28% | 25–35% | under 8% |
+| AI / ML products | 54.8% | — | — |
+| FinTech | 5–15% | — | — |
+
+Sources: [Growth Engineer](https://growthengineer.ai/blog/saas-activation-rate-benchmarks-2026) (aggregating Userpilot, OpenView, ProductLed, Amplitude, Mixpanel), [Artisan](https://www.artisangrowthstrategies.com/blog/saas-onboarding-benchmarks-2026-activation-rates-company-size-vertical), [Skene](https://www.skene.ai/resources/blog/activation-rate-benchmarks-improvement).
+
+Note the spread by category. A 22% activation rate is mediocre for a general B2B tool and completely fine for a developer tool. Compare against your category or don't compare at all.
+
+**Two rules:**
+
+- **Measure by cohort, never cumulative.** "Users who signed up in week 1" is a number you can move. A cumulative total drifts toward your all-time average and hides every improvement you make.
+- **Validate that your milestone correlates with retention.** If activated and non-activated users retain identically, you picked a proxy for "logged in," not a value moment. Pick again.
+
+One reason to care: a 25% relative improvement in activation has been associated with roughly a **34% lift in MRR** over a year. Onboarding is usually the cheapest growth lever you own.
+
+## 2. Time to First Value (TTFV)
+
+**Definition:** median minutes from signup to the activation event.
+
+**Benchmarks:** best-in-class products deliver first value in **under 3 minutes**. The industry median is **22 minutes**. TTFV beyond 24 hours correlates strongly with churn.
+
+Track the **median and the 90th percentile**, not the mean. A long tail means some users are hitting serious friction that the average hides.
+
+The gap between 3 minutes and 22 minutes explains most of the variance in activation rates between products. It's usually not a hard fix, either — it's normally one of:
+
+- Email verification before anything works
+- An empty state with no sample data
+- Asking for a team invite, integration, or credit card before value
+- A setup wizard that must be completed in order
+
+Practical target for a weekend MVP: **make something useful happen before you ask for anything.** No signup wall in front of the demo if you can avoid it.
+
+## 3. 30-Day Cohort Retention
+
+**Definition:** percentage of a signup cohort still doing the core action 30 days later.
+
+**Benchmarks:** average 25–35%; strong B2B SaaS clears 40% at day 30; below 20% means churn is structural rather than seasonal.
+
+For a weekend MVP with 50 signups this number is noisy — but the *shape* still tells you something no benchmark can. Track a simple weekly curve: week 1, week 2, week 3, week 4. If it goes 100 → 30 → 12 → 4, you have a novelty product. If it flattens anywhere above zero, you have a real one. A flattening curve at 15% beats a smooth decay to 5% every time.
+
+Also track activation at multiple windows — 7, 14, and 30 days. The gap between 7-day and 30-day tells you how many "slow activators" you have, and slow activators are people you can rescue with an email.
+
+## 4. Qualitative Signal Count
+
+**Definition:** the number of unprompted human signals per week.
+
+Count these:
+
+- Unsolicited emails or DMs about the product
+- Feature requests (a request means they used it enough to want more)
+- Someone returning without a nudge from you
+- A user showing it to someone else
+
+This is the least fashionable metric here and the most useful under 100 users, because your quantitative data is statistically meaningless at that scale and the qualitative data isn't.
+
+**Zero unsolicited signals in 30 days is itself a result.** Not a rounding error — a result. See [when to kill your side project](/articles/when-to-kill-your-side-project) for what to do with that answer.
+
+Get better signal by asking better questions — the discipline in [how to talk to customers without lying to yourself](/articles/how-to-talk-to-customers-mom-test) applies directly.
+
+## 5. Churn (Once You Have Paying Users)
+
+**2026 benchmarks:** median monthly B2B SaaS logo churn is about **3.5%**. Healthy ranges are 3–5% for SMB and prosumer products, 1.5–3% mid-market, 1–2% enterprise. Best-in-class holds under 1% ([Koji](https://www.koji.so/blog/saas-churn-rate-benchmarks-2026)).
+
+Split it, because the two halves have completely different fixes:
+
+- **Voluntary churn** (~2.6% of the median) — customers deciding to leave. Product and value problem.
+- **Involuntary churn** (~0.8–0.9%) — failed payments and expired cards. Plumbing problem, and dunning emails plus a card-updater flow can recover roughly a quarter of it.
+
+Involuntary churn is the fastest win available to most solo founders, and almost nobody instruments it in year one. Turn on Stripe's automatic retries and dunning the day you take your first payment — see [adding Stripe to your weekend MVP](/articles/add-stripe-to-weekend-mvp).
+
+For context on the ceiling: median B2B SaaS net revenue retention is 82%, with elite companies clearing 120–130%.
+
+## What To Ignore For Now
+
+- **Page views and sessions.** Traffic vanity. Fine for judging a launch post, useless for judging a product.
+- **Total signups (cumulative).** Goes up forever. Tells you nothing.
+- **NPS under 100 users.** Statistically meaningless; the survey costs you goodwill you can't spare.
+- **MAU as your headline metric.** "Active" usually means "opened the tab." Count the core action instead.
+- **Anything you can't act on this week.** If a number can't change your next decision, it's decoration.
+
+## The Instrumentation That Takes 30 Minutes
+
+You don't need a data stack. You need five events.
+
+1. `signup`
+2. `activation` (your one value milestone)
+3. `core_action` (the repeatable thing)
+4. `paid`
+5. `churned`
+
+Log them with a timestamp and a user id. That's it — PostHog, Amplitude, a Convex table, or honestly a spreadsheet works at this scale. What matters is that each event is defined once, in writing, and never redefined. Silently changing what "activation" means is how founders convince themselves things improved.
+
+Then run a **weekly review with one question**: *which single number moved, and what did I change?* One metric, one hypothesis, one change per week. Ten dashboards make you feel busy; one number per week makes you learn.
+
+Segment by acquisition channel and plan tier once you have volume — different channels activate at wildly different rates, and the difference tells you where to spend your time. If you're getting users from Reddit versus cold email, expect [very different behaviour](/articles/find-customers-on-reddit-saas).
+
+Ready to run this on something real? Grab a scoped build from [startup ideas](/startup-ideas).
+
+## FAQ
+
+### What if I only have 30 users?
+
+Then activation and TTFV are still meaningful (they're per-user), retention is directional, and churn is noise. Lean hard on the qualitative signal count. Talk to all 30.
+
+### How do I pick the activation event?
+
+Ask what the user came to do, and pick the first moment they've done it once. Then verify: do users who hit it retain better than users who don't? If not, it's the wrong event.
+
+### Should I use a fancy analytics tool?
+
+Not initially. Five named events in whatever you already have beats a beautifully configured product-analytics suite you check twice. Upgrade when you're segmenting cohorts weekly and hitting real limits.
+
+### My numbers are below every benchmark. Now what?
+
+Fix TTFV first — it's upstream of everything else and usually the cheapest change. Then fix your empty state. Then, if activation still won't move, question whether the value milestone is actually valuable. Retention is the honest judge here: [retention is the new growth](/articles/how-to-retain-your-first-customers).
+
+## TL;DR
+
+Instrument five events (signup, activation, core action, paid, churned) and track five numbers: activation rate, time to first value, 30-day cohort retention, unsolicited signal count, and churn split into voluntary versus involuntary.
+
+Benchmarks to judge yourself against: median activation ~37% for B2B SaaS (18–28% for developer tools), best-in-class TTFV under 3 minutes against a 22-minute median, 30-day retention averaging 25–35% with strong products above 40%, and median monthly churn around 3.5%.
+
+Measure by cohort, verify your activation event actually predicts retention, ignore page views, and run one question per week: which number moved, and what did I change?
+
+Then apply it to something worth measuring: [startup ideas](/startup-ideas).

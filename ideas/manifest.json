@@ -231,7 +231,7 @@
       "tools": [
         "cursor",
         "claude",
-        "expo"
+        "replit"
       ],
       "audiences": [
         "solo-founders",
@@ -275,7 +275,7 @@
       "tools": [
         "cursor",
         "claude",
-        "expo"
+        "replit"
       ],
       "audiences": [
         "solo-founders",
@@ -1167,7 +1167,7 @@
       "title": "Focus Session Timer",
       "publishedAt": "2026-04-23",
       "category": "productivity",
-      "buildTime": "6",
+      "buildTime": "8",
       "revenueGoal": "1k-month",
       "applicationCategory": "ProductivityApplication",
       "tools": [
@@ -2862,7 +2862,7 @@
       "title": "MeetingMood AI",
       "publishedAt": "2026-05-22",
       "category": "saas",
-      "buildTime": "10-12",
+      "buildTime": "12",
       "revenueGoal": "1k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -2914,7 +2914,7 @@
       "title": "TrendScout",
       "publishedAt": "2026-06-03",
       "category": "creator-tools",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "MultimediaApplication",
       "tools": [
@@ -2968,7 +2968,7 @@
       "title": "ReviewIQ",
       "publishedAt": "2026-06-03",
       "category": "ecommerce",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ShoppingApplication",
       "tools": [
@@ -3020,7 +3020,7 @@
       "title": "Vibe Coders for Hire",
       "publishedAt": "2026-06-03",
       "category": "saas",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "DeveloperApplication",
       "tools": [
@@ -3580,7 +3580,6 @@
       ],
       "audiences": [
         "solo-founders",
-        "startup-founders",
         "marketers"
       ],
       "source": "ideabrowser:31",
@@ -3664,8 +3663,7 @@
       ],
       "audiences": [
         "marketers",
-        "solo-founders",
-        "startup-founders"
+        "solo-founders"
       ],
       "source": "ideabrowser:42",
       "og": {
@@ -3703,18 +3701,17 @@
       "publishedAt": "2026-07-04",
       "category": "ecommerce",
       "description": "Shopify app that writes abandoned-cart recovery emails from session behavior — sizing doubts, shipping friction, price hesitation — not generic discount blasts. Recover lost revenue on autopilot.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "ShoppingApplication",
       "tools": [
         "cursor",
         "claude",
-        "shopify"
+        "no-code"
       ],
       "audiences": [
         "solo-founders",
-        "ecommerce-founders",
-        "shopify-merchants"
+        "small-business-owners"
       ],
       "source": "ideabrowser:1395",
       "og": {
@@ -3944,7 +3941,7 @@
       "publishedAt": "2026-07-10",
       "category": "creator-tools",
       "description": "AI-generated brand identity, weekly content prompts, and pitch materials for camera-shy freelancers and consultants who refuse to get on camera.",
-      "buildTime": "8-10 hours",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4056,7 +4053,6 @@
       "audiences": [
         "solo-founders",
         "side-hustlers",
-        "startup-founders",
         "freelancers"
       ],
       "source": "ideabrowser:1473",
@@ -4144,7 +4140,7 @@
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
       "description": "Turn a finished product into a complete launch in an afternoon: AI-generated video scripts, carousels, an email sequence, an FAQ page, and a support agent trained on your product. Built for solo creators with no marketing team.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4189,7 +4185,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "A no-code, white-label client portal freelancers brand and launch in 15 minutes to replace scattered Drive, Slack, and invoice links.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4199,7 +4195,7 @@
       ],
       "audiences": [
         "freelancers",
-        "boutique-agencies"
+        "solo-founders"
       ],
       "source": "ideabrowser:1745",
       "og": {
@@ -4234,7 +4230,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "A plug-and-play analytics tool that reads support chats and surfaces plain-language revenue insights for small businesses, starting at $29/month.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4244,7 +4240,7 @@
       ],
       "audiences": [
         "small-business-owners",
-        "marketing-teams"
+        "marketers"
       ],
       "source": "ideabrowser:2164",
       "og": {
@@ -4279,7 +4275,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "AI-personalized career transition planner that turns your salary, savings, and family constraints into a dated 6-month/1-year/2-year exit roadmap.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4288,8 +4284,8 @@
         "bolt"
       ],
       "audiences": [
-        "mid-career-professionals",
-        "burned-out-high-earners"
+        "side-hustlers",
+        "solo-founders"
       ],
       "source": "ideabrowser:3529",
       "og": {
@@ -4333,8 +4329,8 @@
         "bolt"
       ],
       "audiences": [
-        "small-wholesalers",
-        "ecommerce-sellers"
+        "small-business-owners",
+        "solo-founders"
       ],
       "source": "ideabrowser:1993",
       "og": {
@@ -4369,7 +4365,7 @@
       "publishedAt": "2026-07-13",
       "category": "fintech",
       "description": "A bank-linked app that turns your own transactions into 3-minute daily challenges, builds real money habits, and sells to HR wellness programs.",
-      "buildTime": "10-14",
+      "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "FinanceApplication",
       "tools": [
@@ -4378,8 +4374,8 @@
         "bolt"
       ],
       "audiences": [
-        "young-adults",
-        "hr-benefits-teams"
+        "side-hustlers",
+        "small-business-owners"
       ],
       "source": "ideabrowser:6285",
       "og": {
@@ -4414,7 +4410,7 @@
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
       "description": "AI video editor that turns raw footage into a graded, paced, publish-ready cut in minutes using natural-language edit commands.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "MultimediaApplication",
       "tools": [
@@ -4459,7 +4455,7 @@
       "publishedAt": "2026-07-13",
       "category": "ecommerce",
       "description": "AI that reads your Shopify inventory and margin data, then auto-builds flash sale campaigns: discount codes, timers, and urgency copy in one click.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4468,7 +4464,7 @@
         "bolt"
       ],
       "audiences": [
-        "ecommerce-sellers",
+        "small-business-owners",
         "solo-founders"
       ],
       "source": "ideabrowser:1397",
@@ -4504,7 +4500,7 @@
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
       "description": "Automatically scan Amazon KDP categories for profitable, low-competition book niches — with opportunity scores, keywords, and revenue estimates.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4549,7 +4545,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "AI dashboard that flags failing water heaters, HVAC units, and roofs before they cost rental owners thousands in emergency repairs and compliance fines.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4558,7 +4554,7 @@
         "bolt"
       ],
       "audiences": [
-        "real-estate-investors",
+        "side-hustlers",
         "solo-founders"
       ],
       "source": "ideabrowser:4969",
@@ -4594,7 +4590,7 @@
       "publishedAt": "2026-07-13",
       "category": "productivity",
       "description": "AI-powered app that scans room photos and turns them into exact, waste-adjusted material shopping lists for DIY renovations.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "ProductivityApplication",
       "tools": [
@@ -4603,7 +4599,7 @@
         "bolt"
       ],
       "audiences": [
-        "diy-renovators",
+        "side-hustlers",
         "solo-founders"
       ],
       "source": "ideabrowser:3515",
@@ -4639,7 +4635,7 @@
       "publishedAt": "2026-07-13",
       "category": "creator-tools",
       "description": "AI storybook generator that makes kids the illustrated hero of their own story — personalized plot, consistent likeness, priced under every incumbent.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "MultimediaApplication",
       "tools": [
@@ -4648,8 +4644,8 @@
         "bolt"
       ],
       "audiences": [
-        "parents",
-        "educators"
+        "non-technical",
+        "creators"
       ],
       "source": "ideabrowser:5268",
       "og": {
@@ -4684,7 +4680,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "A directory that only lists freelancers who pass a hands-on AI skills challenge — verified badges, graded work samples, no self-reported skill tags.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4693,8 +4689,8 @@
         "bolt"
       ],
       "audiences": [
-        "Startup founders hiring AI talent",
-        "AI-skilled freelancers"
+        "developers",
+        "freelancers"
       ],
       "source": "ideabrowser:1430",
       "og": {
@@ -4729,7 +4725,7 @@
       "publishedAt": "2026-07-13",
       "category": "developer-tools",
       "description": "Fast, fixed-price security audits from vetted ethical hackers for indie and AI-built apps — an embeddable trust badge from $199, no $10K SOC 2 required.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "DeveloperApplication",
       "tools": [
@@ -4738,8 +4734,8 @@
         "bolt"
       ],
       "audiences": [
-        "indie app builders",
-        "AI-focused startups"
+        "developers",
+        "solo-founders"
       ],
       "source": "ideabrowser:1616",
       "og": {
@@ -4774,7 +4770,7 @@
       "publishedAt": "2026-07-13",
       "category": "ecommerce",
       "description": "Automate TikTok Shop order sync, batch shipping labels, and tracking updates so sellers stop drowning in manual fulfillment.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4783,8 +4779,8 @@
         "bolt"
       ],
       "audiences": [
-        "TikTok Shop sellers",
-        "e-commerce entrepreneurs"
+        "creators",
+        "small-business-owners"
       ],
       "source": "ideabrowser:2078",
       "og": {
@@ -4819,7 +4815,7 @@
       "publishedAt": "2026-07-13",
       "category": "fintech",
       "description": "Split-pay checkout for SaaS and online courses, with access tied to installments instead of shipping. Built where Klarna and Affirm don't underwrite.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "FinanceApplication",
       "tools": [
@@ -4828,8 +4824,8 @@
         "bolt"
       ],
       "audiences": [
-        "online course creators",
-        "SMB SaaS founders"
+        "creators",
+        "solo-founders"
       ],
       "source": "ideabrowser:4147",
       "og": {
@@ -4864,7 +4860,7 @@
       "publishedAt": "2026-07-13",
       "category": "ecommerce",
       "description": "Predictive fraud screening and automated chargeback dispute responses for Shopify, Amazon, and eBay sellers losing revenue to buyer scams.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4873,8 +4869,8 @@
         "bolt"
       ],
       "audiences": [
-        "ecommerce sellers",
-        "online resellers"
+        "small-business-owners",
+        "side-hustlers"
       ],
       "source": "ideabrowser:1472",
       "og": {
@@ -4909,7 +4905,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "A recruitment CRM add-on that scores client engagement and fires psychology-timed nudges before hiring managers ghost mid-process, saving $10K-$30K placements.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -4918,8 +4914,8 @@
         "bolt"
       ],
       "audiences": [
-        "independent recruiters",
-        "small recruiting agencies"
+        "freelancers",
+        "solo-founders"
       ],
       "source": "ideabrowser:1595",
       "og": {
@@ -4954,7 +4950,7 @@
       "publishedAt": "2026-07-13",
       "category": "health",
       "description": "Daily AI voice calls check in on seniors living alone and flag concerning patterns to family — proactive peace of mind, not another emergency pendant.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "HealthApplication",
       "tools": [
@@ -4963,8 +4959,8 @@
         "bolt"
       ],
       "audiences": [
-        "Adult children of aging parents",
-        "Senior care professionals"
+        "non-technical",
+        "freelancers"
       ],
       "source": "ideabrowser:7292",
       "og": {
@@ -4999,7 +4995,7 @@
       "publishedAt": "2026-07-13",
       "category": "education",
       "description": "Training, certification, and a job board that turn self-taught n8n builders into well-paid automation freelancers — with pricing templates and a commercial workflow vault.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "EducationApplication",
       "tools": [
@@ -5008,8 +5004,8 @@
         "bolt"
       ],
       "audiences": [
-        "n8n freelancers",
-        "small automation agencies"
+        "freelancers",
+        "solo-founders"
       ],
       "source": "ideabrowser:1680",
       "og": {
@@ -5044,7 +5040,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "An AI-first SaaS that turns a midsize brand's messy supplier PDFs into a verified supply chain map, passing audit reports, and a scannable consumer transparency label.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5053,8 +5049,8 @@
         "bolt"
       ],
       "audiences": [
-        "midsize-brand-operations-teams",
-        "sustainability-and-compliance-directors"
+        "marketers",
+        "small-business-owners"
       ],
       "source": "ideabrowser:1694",
       "og": {
@@ -5089,7 +5085,7 @@
       "publishedAt": "2026-07-13",
       "category": "health",
       "description": "A digital-first postpartum support platform pairing recovery tracking, certified professional access, and birth-month peer cohorts for new mothers in year one.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "HealthApplication",
       "tools": [
@@ -5098,8 +5094,8 @@
         "bolt"
       ],
       "audiences": [
-        "new-mothers",
-        "pregnant-women"
+        "non-technical",
+        "solo-founders"
       ],
       "source": "ideabrowser:1695",
       "og": {
@@ -5134,7 +5130,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "No-code people analytics for mid-sized companies: connect your HRIS, auto-clean the data, and surface attrition risk, engagement, and turnover in minutes.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5143,8 +5139,8 @@
         "bolt"
       ],
       "audiences": [
-        "hr-people-ops-leaders",
-        "smb-founders-operators"
+        "small-business-owners",
+        "solo-founders"
       ],
       "source": "ideabrowser:1776",
       "og": {
@@ -5179,7 +5175,7 @@
       "publishedAt": "2026-07-13",
       "category": "saas",
       "description": "Match your small business to the government contracts it actually qualifies for. AI scans SAM.gov, grants, and state portals daily and alerts you before deadlines.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5189,7 +5185,7 @@
       ],
       "audiences": [
         "small-business-owners",
-        "solopreneurs"
+        "solo-founders"
       ],
       "source": "ideabrowser:6378",
       "og": {
@@ -5224,7 +5220,7 @@
       "publishedAt": "2026-07-13",
       "category": "fintech",
       "description": "A flat-fee service that migrates small businesses off sunsetting QuickBooks Desktop to Xero, Zoho, or FreshBooks with penny-accurate, guaranteed data fidelity.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "FinanceApplication",
       "tools": [
@@ -5234,7 +5230,7 @@
       ],
       "audiences": [
         "small-business-owners",
-        "bookkeepers-and-accountants"
+        "freelancers"
       ],
       "source": "ideabrowser:1458",
       "og": {
@@ -5269,7 +5265,7 @@
       "publishedAt": "2026-07-17",
       "category": "saas",
       "description": "A productized service that redesigns outdated small-business websites with AI in 24 hours for a flat $199 — mobile-first, brand-preserving, with a recurring care plan.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5279,7 +5275,7 @@
       ],
       "audiences": [
         "small-business-owners",
-        "local-service-businesses"
+        "solo-founders"
       ],
       "source": "ideabrowser:15",
       "og": {
@@ -5314,7 +5310,7 @@
       "publishedAt": "2026-07-17",
       "category": "developer-tools",
       "description": "Turn any repo, OpenAPI spec, or legacy Excel/Word file into a clean, always-current API reference — with a CI check that reopens a PR the moment docs drift from code.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "DeveloperApplication",
       "tools": [
@@ -5324,7 +5320,7 @@
       ],
       "audiences": [
         "developers",
-        "technical-writers"
+        "freelancers"
       ],
       "source": "ideabrowser:27",
       "og": {
@@ -5359,7 +5355,7 @@
       "publishedAt": "2026-07-17",
       "category": "saas",
       "description": "A cross-channel messaging hub for youth sports teams: coaches post once, parents get every update by text, email, and push, plus RSVP, carpool, and fees.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5368,8 +5364,8 @@
         "bolt"
       ],
       "audiences": [
-        "youth-sports-coaches",
-        "parents"
+        "creators",
+        "non-technical"
       ],
       "source": "ideabrowser:2107",
       "og": {
@@ -5404,7 +5400,7 @@
       "publishedAt": "2026-07-17",
       "category": "saas",
       "description": "Build a renter move-in/move-out documentation app that captures time-stamped photos, generates condition reports, and drafts state-specific deposit dispute letters.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5413,8 +5409,8 @@
         "bolt"
       ],
       "audiences": [
-        "renters-and-tenants",
-        "tenant-rights-advocates"
+        "non-technical",
+        "solo-founders"
       ],
       "source": "ideabrowser:3883",
       "og": {
@@ -5449,7 +5445,7 @@
       "publishedAt": "2026-07-17",
       "category": "saas",
       "description": "Turn a product link or short brief plus a brand-tone quiz into correctly-sized ad visuals, copy, and A/B variations in under a minute — built for small marketing teams.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5458,8 +5454,8 @@
         "bolt"
       ],
       "audiences": [
-        "small-business-marketers",
-        "marketing-agencies"
+        "marketers",
+        "solo-founders"
       ],
       "source": "ideabrowser:37",
       "og": {
@@ -5494,7 +5490,7 @@
       "publishedAt": "2026-07-25",
       "category": "automation",
       "description": "Record desktop chores once and replay them by voice with checkpoints, approvals, and undo—no scripting required for freelancers and small teams.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ProductivityApplication",
       "tools": [
@@ -5538,7 +5534,7 @@
       "publishedAt": "2026-07-25",
       "category": "automation",
       "description": "One ops dashboard for AI automation agencies: deploy Make/n8n/Zapier workflows, catch errors early, bill usage, and prove ROI across every client.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5582,7 +5578,7 @@
       "publishedAt": "2026-07-25",
       "category": "automation",
       "description": "Clone macros, triggers, SLAs, and routing when switching help desks—so day-one support keeps working after Zendesk, Freshdesk, or Intercom migrations.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5626,7 +5622,7 @@
       "publishedAt": "2026-07-25",
       "category": "automation",
       "description": "Automate WhatsApp guest messaging for tour guides—confirmations, meeting pins, weather packing lists, FAQs, and review asks that still sound personal.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5670,7 +5666,7 @@
       "publishedAt": "2026-07-25",
       "category": "automation",
       "description": "An AI inbox agent that prioritizes mail, drafts replies in your voice, schedules sends, and surfaces only the threads that need you—Gmail and Outlook.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ProductivityApplication",
       "tools": [
@@ -5714,7 +5710,7 @@
       "publishedAt": "2026-07-25",
       "category": "marketplace",
       "description": "A marketplace that connects aspiring local businesses with verified vacant storefronts in small towns — rent, zoning, foot traffic, and grants in one listing.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5757,7 +5753,7 @@
       "publishedAt": "2026-07-25",
       "category": "marketplace",
       "description": "Creators open idea boards where fans lock deposits to vote with money — fund production only when real demand clears the threshold.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5800,7 +5796,7 @@
       "publishedAt": "2026-07-25",
       "category": "marketplace",
       "description": "A deal marketplace matching creators with verified manufacturers for royalty and equity partnerships — contracts, milestones, and payouts on-platform.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5843,7 +5839,7 @@
       "publishedAt": "2026-07-25",
       "category": "marketplace",
       "description": "Vetted AI implementers for small local businesses — plain-English scopes, escrow milestones, and reputation that Upwork cannot match.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5886,7 +5882,7 @@
       "publishedAt": "2026-07-25",
       "category": "marketplace",
       "description": "Vendor-to-vendor marketplace for second shooters and day-of help — escrow, calendar sync, and reliability scores for peak wedding weekends.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5929,7 +5925,7 @@
       "publishedAt": "2026-07-25",
       "category": "b2b",
       "description": "Plain-English ADA/WCAG scanner for small-business sites — crawl, prioritize fixes, and re-scan without enterprise overlay pricing.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -5973,7 +5969,7 @@
       "publishedAt": "2026-07-25",
       "category": "b2b",
       "description": "AI assistant that schedules, chases proposal follow-ups, and clears admin so solo consultants reclaim billable hours.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6016,7 +6012,7 @@
       "publishedAt": "2026-07-25",
       "category": "b2b",
       "description": "Scan Shopify stores for missing trust signals — badges, reviews, policies, shipping transparency — ranked by conversion impact.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6059,7 +6055,7 @@
       "publishedAt": "2026-07-25",
       "category": "b2b",
       "description": "Turn markdown proposals into branded client-ready PDFs in seconds — keep writing in Obsidian or VS Code.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6103,7 +6099,7 @@
       "publishedAt": "2026-07-25",
       "category": "b2b",
       "description": "SMS alerts when Google or Yelp ratings take a coordinated one-star hit — evidence and response templates in minutes.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6146,7 +6142,7 @@
       "publishedAt": "2026-08-05",
       "category": "education",
       "description": "Generate standards-aligned lesson plans grounded in your state's actual standards text, then push them straight to Google Classroom in one click.",
-      "buildTime": "10-12",
+      "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "EducationalApplication",
       "tools": [
@@ -6192,7 +6188,7 @@
       "publishedAt": "2026-08-05",
       "category": "health",
       "description": "Track every prescription, supplement, and OTC in one profile that re-screens the whole list for documented interactions each time something changes.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "HealthApplication",
       "tools": [
@@ -6238,7 +6234,7 @@
       "publishedAt": "2026-08-05",
       "category": "marketplace",
       "description": "Concierge-onboarded marketplace that turns churches, gyms, and clubs into bookable event venues, with house rules and per-event insurance built in.",
-      "buildTime": "10-12",
+      "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6283,7 +6279,7 @@
       "publishedAt": "2026-08-05",
       "category": "b2b",
       "description": "Audit any inherited Excel workbook for broken references, off-by-one ranges, and mismatched formulas, with fixes you approve one diff at a time.",
-      "buildTime": "10-12",
+      "buildTime": "12",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6328,7 +6324,7 @@
       "publishedAt": "2026-08-05",
       "category": "fintech",
       "description": "Find every recurring charge across your accounts, cancel the dead ones, and verify the following month that the charge actually stopped.",
-      "buildTime": "10-12",
+      "buildTime": "12",
       "revenueGoal": "5k-month",
       "applicationCategory": "FinanceApplication",
       "tools": [
@@ -6373,7 +6369,7 @@
       "publishedAt": "2026-08-05",
       "category": "b2b",
       "description": "AI drafts funder-specific grant proposals and LOIs from one org profile, tracks deadlines and outcomes — built for nonprofits too small to afford a grant writer.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6382,7 +6378,7 @@
         "v0"
       ],
       "audiences": [
-        "non-technical-founders",
+        "non-technical",
         "freelancers",
         "solo-founders"
       ],
@@ -6411,7 +6407,7 @@
       "publishedAt": "2026-08-05",
       "category": "saas",
       "description": "AI tool that audits NAP consistency across Google, Yelp, Apple Maps & Bing for multi-location businesses, then drafts corrected listings and GBP posts.",
-      "buildTime": "10-14",
+      "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6420,7 +6416,7 @@
         "v0"
       ],
       "audiences": [
-        "agencies",
+        "freelancers",
         "developers",
         "weekend-builders"
       ],
@@ -6449,7 +6445,7 @@
       "publishedAt": "2026-08-05",
       "category": "developer-tools",
       "description": "Turn a described user flow or app screenshots into an exportable QA checklist with edge cases, so no-code builders can regression-test releases in minutes.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "DeveloperApplication",
       "tools": [
@@ -6460,7 +6456,7 @@
       "audiences": [
         "solo-founders",
         "weekend-builders",
-        "non-technical-founders"
+        "non-technical"
       ],
       "source": "mode-b:websearch",
       "og": {
@@ -6487,7 +6483,7 @@
       "publishedAt": "2026-08-05",
       "category": "b2b",
       "description": "HVAC, plumbing, and electrical contractors quote jobs blind to true cost. This tool logs tech time, materials, and drive time in seconds and shows real-time margin per job.",
-      "buildTime": "10-14",
+      "buildTime": "12",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6498,7 +6494,7 @@
       "audiences": [
         "solo-founders",
         "weekend-builders",
-        "non-technical-founders"
+        "non-technical"
       ],
       "source": "mode-b:websearch",
       "og": {
@@ -6525,7 +6521,7 @@
       "publishedAt": "2026-08-05",
       "category": "health",
       "description": "AI drafts insurer-ready appeal letters from your denial letter and EOB, citing the exact reason code and tracking every deadline so appeals never lapse.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "HealthApplication",
       "tools": [
@@ -6536,7 +6532,7 @@
       "audiences": [
         "side-hustlers",
         "solo-founders",
-        "non-technical-founders"
+        "non-technical"
       ],
       "source": "mode-b:websearch",
       "og": {
@@ -6563,7 +6559,7 @@
       "publishedAt": "2026-08-05",
       "category": "automation",
       "description": "Sync Airbnb/VRBO calendars, auto-schedule cleaners, and flag tight same-day turnovers before they cause missed cleanings and bad reviews.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6601,7 +6597,7 @@
       "publishedAt": "2026-08-05",
       "category": "ecommerce",
       "description": "Small electronics and appliance retailers track warranty coverage in spreadsheets. Build the tool that logs plans, verifies coverage in 5 seconds, and auto-sends renewal reminders.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ShoppingApplication",
       "tools": [
@@ -6612,7 +6608,7 @@
       "audiences": [
         "solo-founders",
         "weekend-builders",
-        "non-technical-founders"
+        "non-technical"
       ],
       "source": "mode-b:websearch",
       "og": {
@@ -6639,7 +6635,7 @@
       "publishedAt": "2026-08-05",
       "category": "creator-tools",
       "description": "Centralize micro-influencer contracts, deliverable approvals, and payment triggers so a small team can run a 50-creator campaign without losing track.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "MultimediaApplication",
       "tools": [
@@ -6649,7 +6645,7 @@
       ],
       "audiences": [
         "solo-founders",
-        "agencies",
+        "freelancers",
         "weekend-builders"
       ],
       "source": "mode-b:websearch",
@@ -6677,7 +6673,7 @@
       "publishedAt": "2026-08-05",
       "category": "b2b",
       "description": "AI writes SMB job posts from a short brief, publishes free, then ranks resumes with a plain-English fit explanation per candidate — no black-box scores.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6686,9 +6682,9 @@
         "bolt"
       ],
       "audiences": [
-        "non-technical-founders",
+        "non-technical",
         "solo-founders",
-        "agencies"
+        "freelancers"
       ],
       "source": "mode-b:websearch",
       "og": {
@@ -6715,7 +6711,7 @@
       "publishedAt": "2026-08-05",
       "category": "saas",
       "description": "Generate SOC 2-ready privacy, security, and retention policies plus a gap checklist in minutes — the paperwork starter kit priced under Vanta and Drata.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "BusinessApplication",
       "tools": [
@@ -6725,7 +6721,7 @@
       ],
       "audiences": [
         "solo-founders",
-        "non-technical-founders",
+        "non-technical",
         "developers"
       ],
       "source": "mode-b:websearch",
@@ -6753,7 +6749,7 @@
       "publishedAt": "2026-08-05",
       "category": "education",
       "description": "A calm operations hub for microschools: enrollment, attendance, family updates, tuition reminders, documents, and compliance checklists in one place.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "EducationalApplication",
       "tools": [
@@ -6762,7 +6758,7 @@
         "bolt"
       ],
       "audiences": [
-        "educators",
+        "creators",
         "solo-founders",
         "weekend-builders"
       ],
@@ -6801,7 +6797,7 @@
       "publishedAt": "2026-08-05",
       "category": "health",
       "description": "A transparent evidence database and certification workflow that helps families compare appliance materials and helps brands prove non-toxic claims.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "10k-month",
       "applicationCategory": "HealthApplication",
       "tools": [
@@ -6810,8 +6806,8 @@
         "bolt"
       ],
       "audiences": [
-        "health-conscious-families",
-        "manufacturers",
+        "non-technical",
+        "small-business-owners",
         "weekend-builders"
       ],
       "source": "ideabrowser:2153",
@@ -6849,7 +6845,7 @@
       "publishedAt": "2026-08-05",
       "category": "marketplace",
       "description": "A verified marketplace and blueprint library for rare classic-car parts, pairing fitment evidence with print-on-demand fulfillment for restorers.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ShoppingApplication",
       "tools": [
@@ -6858,9 +6854,9 @@
         "bolt"
       ],
       "audiences": [
-        "car-enthusiasts",
-        "restoration-shops",
-        "makers"
+        "side-hustlers",
+        "small-business-owners",
+        "creators"
       ],
       "source": "ideabrowser:1797",
       "og": {
@@ -6897,7 +6893,7 @@
       "publishedAt": "2026-08-05",
       "category": "fintech",
       "description": "Reconcile Square, Venmo, Zelle, cash, and bank exports in a five-minute market-day close, with clear exceptions and accountant-ready reports.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "FinanceApplication",
       "tools": [
@@ -6906,9 +6902,8 @@
         "bolt"
       ],
       "audiences": [
-        "market-vendors",
-        "craft-sellers",
-        "food-trucks"
+        "small-business-owners",
+        "creators"
       ],
       "source": "ideabrowser:3530",
       "og": {
@@ -6945,7 +6940,7 @@
       "publishedAt": "2026-08-05",
       "category": "ecommerce",
       "description": "Guided AI and human verification for resale goods: collect better evidence, flag counterfeit risks, and produce portable trust reports.",
-      "buildTime": "8-10",
+      "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "ShoppingApplication",
       "tools": [
@@ -6954,9 +6949,8 @@
         "bolt"
       ],
       "audiences": [
-        "resellers",
-        "collectible-traders",
-        "marketplaces"
+        "side-hustlers",
+        "small-business-owners"
       ],
       "source": "ideabrowser:1955",
       "og": {
@@ -6984,6 +6978,476 @@
         "pain": 9,
         "timing": 9,
         "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "healthsync-personal-health-dashboard",
+      "title": "HealthSync: AI-Powered Personal Health Dashboard",
+      "publishedAt": "2026-08-12",
+      "category": "health",
+      "description": "Pull Apple Health, Oura, Whoop, Fitbit and CGM data into one privacy-first dashboard with AI insights that explain your sleep, activity and biomarkers.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "replit"
+      ],
+      "audiences": [
+        "solo-founders",
+        "side-hustlers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:1255",
+      "og": {
+        "subject": "A single glowing aubergine smart-ring resting on a dark slate desk beside a dimmed phone, deep shadows, shallow focus, no people or text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2223,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:12Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-slide-deck-maker",
+      "title": "AI Slide Deck Maker",
+      "publishedAt": "2026-08-12",
+      "category": "ai-tools",
+      "description": "Turn briefs, docs, data, or voice notes into polished, story-driven slide decks in minutes with AI — built for founders and ops teams who present sharp, fast.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "solo-founders",
+        "marketers",
+        "freelancers"
+      ],
+      "source": "ideabrowser:1385",
+      "og": {
+        "subject": "a dark desk at night with a single lime-glowing projector beam hitting a blank presentation screen, one closed laptop, no people, no faces, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 7,
+        "wordCount": 2243,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:37:34Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-tutor-matchmaker",
+      "title": "AI Matchmaker for Student-Tutor Pairings",
+      "publishedAt": "2026-08-12",
+      "category": "marketplace",
+      "description": "A K-12 tutor marketplace that scores personality and learning-style fit, ranks best-match tutors with plain-language reasons, then handles booking and re-matching.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "creators",
+        "non-technical",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:1753",
+      "og": {
+        "subject": "A dark wooden desk at night with an open notebook and two mint-glowing puzzle pieces clicking together, soft mint rim light, shallow focus, no people, no faces, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 9,
+        "wordCount": 2513,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:40Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "book-formatting-for-self-publishers",
+      "title": "One-Click Book Formatting for Self-Publishers",
+      "publishedAt": "2026-08-12",
+      "category": "ai-tools",
+      "description": "Turn a plain manuscript into a print-ready PDF and validated EPUB in one click. AI structure detection, pro templates, KDP-ready exports for self-publishers.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:1904",
+      "og": {
+        "subject": "An open hardcover book resting on a dark wooden desk, its crisp printed pages catching a soft mint edge-light, shallow focus, late night.",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 6,
+        "wordCount": 2257,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:06Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "shopify-seo-keyword-tool",
+      "title": "Shopify SEO Keyword Tool for Store Owners",
+      "publishedAt": "2026-08-12",
+      "category": "ecommerce",
+      "description": "Affordable, Shopify-native keyword research at $29/month. Find profitable product keywords, track competitors, and fix on-page SEO in plain English.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "creators",
+        "marketers"
+      ],
+      "source": "ideabrowser:1906",
+      "og": {
+        "subject": "A dark desk at night with a single glowing aubergine price tag resting beside a closed laptop, soft rim light, shallow focus, no people or text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2219,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:41:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "course-completion-nudge-platform",
+      "title": "Course Completion Nudge Platform for Online Educators",
+      "publishedAt": "2026-08-12",
+      "category": "education",
+      "description": "Attach AI-powered, guilt-free nudges to any online course to lift completion from 30% to 60%+ with personalized reminders for Teachable, Thinkific, Kajabi.",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "non-technical",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2717",
+      "og": {
+        "subject": "A dark desk at night with a closed laptop glowing faintly lavender along its edge and a single graduation-cap keycap catching the light, shallow focus, no people",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2115,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:37:50Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-student-support-bot-online-educators",
+      "title": "AI Student Support Bot for Online Educators",
+      "publishedAt": "2026-08-12",
+      "category": "education",
+      "description": "An AI support bot that learns your online course and answers repetitive student FAQs instantly, 24/7, so creators can teach instead of firefighting their inbox.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "non-technical",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2731",
+      "og": {
+        "subject": "A dark wooden desk at night with a single emerald-glowing chat-bubble icon hovering above a closed laptop, soft shallow focus, no people or text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2132,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:36:14Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "personalized-employee-wellness-platform",
+      "title": "Personalized Employee Wellness Platform for Small Businesses",
+      "publishedAt": "2026-08-12",
+      "category": "health",
+      "description": "AI-driven employee wellness platform that personalizes health programs for small businesses, boosting engagement and retention at an SMB-friendly per-employee price.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "ideabrowser:3150",
+      "og": {
+        "subject": "A single glowing lime heartbeat line curving across a dark matte dashboard screen on a desk, one accent-lit object, late-night, shallow focus, no people or text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 11,
+        "wordCount": 2210,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:04Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "workflow-audit-app-for-small-businesses",
+      "title": "Workflow Audit App for Small Businesses",
+      "publishedAt": "2026-08-12",
+      "category": "automation",
+      "description": "Turn a small business's tangled tool stack into a visual workflow map with an ROI-ranked automation shortlist—diagnosis before you hire a Zapier consultant.",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "non-technical",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8316",
+      "og": {
+        "subject": "A dark desk at night with a single glowing emerald node-and-line workflow diagram hovering above a closed laptop, thin light tracing the connections, shallow focus",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 10,
+        "wordCount": 2322,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:20Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "small-order-wholesale-marketplace",
+      "title": "Small-Order Wholesale Marketplace for Boutiques",
+      "publishedAt": "2026-08-12",
+      "category": "marketplace",
+      "description": "Wholesale marketplace where boutiques source small opening orders from emerging brands — 250-dollar minimums, in-platform samples, and lower fees than Faire.",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8877",
+      "og": {
+        "subject": "A dark boutique stockroom at night, a single lavender-lit product box on a wooden shelf beside a shipping label, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "community_analysis",
+          "market_stage_analysis",
+          "keyword_list"
+        ],
+        "citations": 8,
+        "wordCount": 2273,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-12T08:38:34Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
       },
       "researchLevel": "deep"
     }

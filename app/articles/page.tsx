@@ -96,6 +96,12 @@ async function listFromFilesystem(): Promise<ArticleListItem[]> {
  * convex/articles.upsertBySlug); the MDX frontmatter on disk is the build-time
  * fallback when Convex is unreachable, and always supplies `category`,
  * which the articles table does not store.
+ *
+ * A stale or partially-seeded articles table must never hide a published
+ * article, so anything on disk that Convex lacks is backfilled from the
+ * frontmatter — the same guarantee `app/startup-ideas/page.tsx` gives the
+ * ideas grid. Without it a seed that misses (or never reaches) production
+ * silently drops articles from this index while their pages stay live.
  */
 async function getArticles(): Promise<ArticleListItem[]> {
   "use cache";
@@ -108,16 +114,28 @@ async function getArticles(): Promise<ArticleListItem[]> {
     if (!url) throw new Error("NEXT_PUBLIC_CONVEX_URL is not set");
     const docs = await fetchQuery(api.articles.list, {}, { url });
     if (!docs.length) throw new Error("articles table is empty");
-    const categoryBySlug = new Map(fsItems.map((i) => [i.slug, i.category]));
-    return docs.map((doc) => ({
-      slug: doc.slug,
-      title: doc.title,
-      description: doc.description,
-      category: categoryBySlug.get(doc.slug),
-      readMinutes: doc.readMinutes,
-      publishedAt: doc.publishedAt,
-      displayDate: formatDate(doc.publishedAt),
-    }));
+    const fromDisk = new Map(fsItems.map((i) => [i.slug, i]));
+    const items: ArticleListItem[] = docs.map((doc) => {
+      // `publishedAt` is absent on rows seeded before the manifest carried it;
+      // the frontmatter still has the date, and it is this list's sort key.
+      const publishedAt = doc.publishedAt ?? fromDisk.get(doc.slug)?.publishedAt;
+      return {
+        slug: doc.slug,
+        title: doc.title,
+        description: doc.description,
+        category: fromDisk.get(doc.slug)?.category,
+        readMinutes: doc.readMinutes,
+        publishedAt,
+        displayDate: formatDate(publishedAt),
+      };
+    });
+
+    const seen = new Set(docs.map((doc) => doc.slug));
+    for (const item of fsItems) {
+      if (!seen.has(item.slug)) items.push(item);
+    }
+    items.sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0));
+    return items;
   } catch {
     // Convex unavailable (e.g. at build time) — serve frontmatter listing.
     return fsItems;

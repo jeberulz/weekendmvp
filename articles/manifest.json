@@ -611,6 +611,294 @@
         "accent": "lime",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-pivot-weekend-mvp",
+      "title": "How to Pivot Your Weekend MVP When Nobody Buys",
+      "description": "Nobody bought your weekend MVP? Learn when to pivot vs persist, a 48-hour pivot framework, and the customer signal hierarchy that saves solo founders months.",
+      "wordCount": 1386,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Crumpled paper beside a fresh open notebook on dark desk, lavender light on the clean notebook page",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "customer-support-solo-founder",
+      "title": "Customer Support as a Solo Founder: The 2-Hour-a-Week System",
+      "description": "Solo founder customer support doesn't have to eat your calendar. A 2-hour-a-week system with async batches, docs, canned replies, and the right tools.",
+      "wordCount": 1377,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Sticky note stack on dark surface with one note pulled forward in mint side-light",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "when-to-add-second-feature",
+      "title": "When to Add Your Second Feature (And When It Kills Your MVP)",
+      "description": "MVP feature creep kills more weekend projects than bad code. Learn when to add your second feature, when to wait, and why retention beats expansion early.",
+      "wordCount": 1402,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Index card with two bullet lines on near-black desk, second line crossed out in lavender ink under side light",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "freemium-vs-paid-micro-saas-day-one",
+      "title": "Freemium vs Paid: What Solo Micro-SaaS Founders Should Ship on Day One",
+      "description": "Freemium converts 2-5% vs trials at 15-25%. Solo founders on freemium take 3x longer to revenue. Here's what to ship on day one instead of a free tier.",
+      "wordCount": 1445,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A folded receipt beside a fresh blank notecard on a dark desk, the receipt edge lit by lime side-light, shallow focus",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "7-saas-metrics-solo-founders-track",
+      "title": "7 SaaS Metrics Every Solo Founder Should Track (And 10 to Ignore)",
+      "description": "Seven SaaS metrics solo founders actually need: MRR, net change, churn, activation, LTV:CAC, payback, quick ratio — plus ten vanity metrics to ignore.",
+      "wordCount": 1407,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A clipboard with a short checklist on dark surface, top line highlighted in mint marker under single side lamp",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-waitlist-before-you-build",
+      "title": "Build a Waitlist Before You Build: The 48-Hour Validation Playbook",
+      "description": "Validate with a waitlist before you code: cold traffic benchmarks, warm-audience rates, and the 48-hour playbook that turns signups into real demand signal.",
+      "wordCount": 1484,
+      "readMinutes": 7,
+      "og": {
+        "subject": "An open planner with a circled date on near-black desk, mint light on the circled day only",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "b2b-vs-b2c-micro-saas-2026",
+      "title": "B2B vs B2C Micro-SaaS in 2026: Which Should You Build?",
+      "description": "B2b vs b2c SaaS for solo founders in 2026: compare revenue timing, acquisition, support load, and churn so you pick the right micro-SaaS market before you ship.",
+      "wordCount": 1385,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Two index cards side by side on dark desk, left card in lime light right in shadow",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "solo-founder-burnout-shipping",
+      "title": "Solo Founder Burnout: How to Keep Shipping Without Burning Out",
+      "description": "Solo founder burnout kills more projects than bad code. A practical bridge from exhaustion to sustainable shipping — boundaries, rhythms, and scope rules.",
+      "wordCount": 1269,
+      "readMinutes": 6,
+      "og": {
+        "subject": "Paperback book with bookmark on dark surface, bookmark tab catching mint side-light",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "database-pick-weekend-mvp-2026",
+      "title": "How to Pick a Database for Your Weekend MVP in 2026",
+      "description": "Convex vs Supabase vs PlanetScale vs Firebase for a weekend MVP: honest solo-founder picks for speed, auth, realtime, and what you'll regret in month three.",
+      "wordCount": 1451,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Neat row of small labeled index cards on dark surface, front card in lavender beam",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "recover-failed-payments-saas-churn",
+      "title": "How to Recover Failed Payments Before They Become Churn",
+      "description": "Involuntary churn from failed cards is fixable. Dunning emails, Stripe Smart Retries, and a solo-founder playbook to recover 20-40% before customers vanish.",
+      "wordCount": 1350,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Weathered receipt stack on dark desk, top receipt corner lit by lime side-light",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-a-mobile-app-in-a-weekend-2026",
+      "title": "How to Build a Mobile App in a Weekend (Without Learning Swift)",
+      "description": "Ship a real iOS and Android app in one weekend with Expo, EAS, and AI coding tools — plus the store-review timelines that decide when it actually goes live.",
+      "wordCount": 1521,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A folded paper airplane resting on the cover of a closed notebook on a near-black desk, one wing edge caught by a single narrow lime beam, very shallow focus, deep shadow, no text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-an-mcp-server-in-a-weekend",
+      "title": "How to Build an MCP Server in a Weekend (And Why You Should)",
+      "description": "MCP hit 97M monthly SDK downloads and 13,000+ public servers. Here's how to ship your own MCP server in a weekend — and why it's the cheapest distribution wedge in 2026.",
+      "wordCount": 1490,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A folded paper map opened partway on a near-black desk, one deep crease catching a single narrow mint beam from the left, very shallow focus, deep shadow, no legible markings",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-a-directory-website-that-ranks",
+      "title": "How to Build a Directory Website That Actually Gets Traffic",
+      "description": "Directory sites are the most under-rated weekend build in 2026 — $100–$500 to start, businesses pay for visibility. Here's the niche, stack, and SEO architecture that works.",
+      "wordCount": 1523,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A tabbed paper card-index box open on a near-black desk, one alphabet tab standing higher than the rest and caught by a single narrow lime beam, very shallow focus, deep shadow, no readable text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "supabase-vs-convex-vs-firebase-2026",
+      "title": "Supabase vs Convex vs Firebase: Which Backend for Your Weekend MVP?",
+      "description": "A 2026 decision guide for solo founders: free-tier limits, real costs at 10K and 100K users, and the one question that picks your backend in 30 seconds.",
+      "wordCount": 1445,
+      "readMinutes": 7,
+      "og": {
+        "subject": "Three closed hardcover notebooks stacked unevenly on a near-black desk, only the middle spine caught by a single narrow lavender beam, very shallow focus, deep shadow, no readable titles",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "agents-md-ai-coding-instructions",
+      "title": "AGENTS.md: The One File That Makes AI Write Better Code",
+      "description": "60,000+ repos ship an AGENTS.md and ~20 coding agents read it. Here's what to put in it, what to leave out, and why autogenerated ones make your agent worse.",
+      "wordCount": 1431,
+      "readMinutes": 7,
+      "og": {
+        "subject": "A small brass pocket compass lying on a folded paper sheet on a near-black desk, its needle caught by one narrow mint beam from the left, very shallow focus, deep shadow, no hands, no people, no legible text",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "sell-ai-automations-to-local-businesses",
+      "title": "How to Sell AI Automations to Local Businesses (2026 Rate Card)",
+      "description": "Real 2026 pricing for AI automation work: $500–$2,000 per workflow, $300–$1,500/month retainers, and the paid audit that turns a cold call into a signed build.",
+      "wordCount": 1605,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A small brass hand-bell resting on a worn wooden desk beside a closed ledger, a single emerald beam catching the bell's curved rim, very shallow focus, deep shadow, no text",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "what-to-measure-after-you-ship",
+      "title": "What to Measure After You Ship (The First 30 Days)",
+      "description": "Five metrics that matter in your first 30 days, with 2026 benchmarks: 37% median activation, 22-minute median time-to-value, and why 70% of churn happens before day 30.",
+      "wordCount": 1551,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A folded cloth tape measure curled on a near-black desk beside a closed notebook, a single narrow mint beam catching its printed edge, very shallow focus, markings deliberately illegible",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "when-to-kill-your-side-project",
+      "title": "When to Kill Your Side Project (And How to Do It Cleanly)",
+      "description": "80%+ of side projects aren't profitable within 12 months. Here are the kill criteria to write before you build, and the 90-minute shutdown checklist when it's time.",
+      "wordCount": 1561,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A single blown-out matchstick lying alone on a near-black desk, a thin curl of smoke rising from its blackened tip, one narrow emerald beam catching the smoke, very shallow focus, deep shadow, no hands, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "move-off-lovable-bolt-to-real-code",
+      "title": "How to Move Your Lovable or Bolt App Into a Real Codebase",
+      "description": "Hit the ceiling in Lovable, Bolt, or v0? Here's how to export cleanly, why the exported app looks broken on first run, and how to keep shipping with AI afterwards.",
+      "wordCount": 1557,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A hardcover book lying flat on a near-black desk with its loose paper dust jacket slid halfway off and curling at the edge, the exposed cloth spine caught by one narrow lime beam, very shallow focus, deep shadow, no glassware, no hands, no people, no readable title",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "build-a-voice-ai-agent-in-a-weekend",
+      "title": "How to Build a Voice AI Agent People Don't Hang Up On",
+      "description": "A weekend build guide for voice AI in 2026: platform choice, the 800ms latency budget, real per-minute costs, and the tuning most builders skip before shipping.",
+      "wordCount": 1629,
+      "readMinutes": 8,
+      "og": {
+        "subject": "A metal tuning fork resting across the page of an open paper notebook on a near-black desk, one narrow lavender beam along its tines, very shallow focus, deep shadow, no readable writing",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "how-to-demo-your-mvp",
+      "title": "How to Demo Your MVP So People Actually Buy",
+      "description": "Live demos and Loom walkthroughs that sell — 90-second async scripts, permission-first outreach, and a 48-hour follow-up that turns curiosity into cash.",
+      "wordCount": 1086,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A closed paperback book with a cloth bookmark on a near-black desk, lit by a single lavender side beam, deep shadow, very shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "newsletter-before-the-product",
+      "title": "Build the Newsletter Before the Product",
+      "description": "Before you write code, own an audience. How founders use a newsletter to validate demand, grow a waitlist, and launch — with beehiiv-style growth loops.",
+      "wordCount": 1209,
+      "readMinutes": 6,
+      "og": {
+        "subject": "An open notebook on a near-black surface with a blank page catching a single mint side light, late-night atmosphere, very shallow focus, no readable handwriting",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "one-feature-product-mvp",
+      "title": "The One-Feature Product: Why Your MVP Should Do Less",
+      "description": "Stop shipping a half-built platform. The one-feature product gets you to a magic moment faster — and to first revenue before you drown in leftover scope.",
+      "wordCount": 936,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A single wooden pencil mid-stroke on a near-black notebook page, mint side light catching the graphite tip, deep shadow, no readable writing, very shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "saas-onboarding-first-5-minutes",
+      "title": "SaaS Onboarding That Actually Activates (First 5 Minutes)",
+      "description": "Activation beats signup vanity metrics. Define your magic moment, kill friction, add sample data, and get new users to real value in the first five minutes.",
+      "wordCount": 891,
+      "readMinutes": 4,
+      "og": {
+        "subject": "An open daily planner on a near-black desk with one date circled, lit by a single emerald overhead lamp on that page only, deep shadows beyond, no readable text",
+        "accent": "emerald",
+        "status": "ready"
+      }
     }
   ]
 }

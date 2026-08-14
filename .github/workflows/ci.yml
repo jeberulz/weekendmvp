@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 22, not 20: `test:redirects`, `test:sitemap`, and `test:security`
+      # run `node --experimental-strip-types`, which was added in 22.6 and does
+      # not exist in 20 — on 20 they die with `node: bad option`.
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'

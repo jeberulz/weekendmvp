@@ -19,7 +19,9 @@
  * Usage:
  *   node scripts/seed-convex.mjs --dry-run            # print counts, no writes
  *   node scripts/seed-convex.mjs                      # seed the dev deployment
- *   node scripts/seed-convex.mjs --prod               # seed production
+ *   node scripts/seed-convex.mjs --prod               # seed the CLI's linked prod deployment
+ *   node scripts/seed-convex.mjs --deployment first-squirrel-244
+ *                                                    # seed a named deployment (the live site)
  *   node scripts/seed-convex.mjs --include-drafts     # also seed manifest.draft.json ideas
  *   node scripts/seed-convex.mjs --only ideas         # ideas|articles|newsletters|refs
  *
@@ -43,6 +45,23 @@ const prod = argv.includes('--prod');
 const includeDrafts = argv.includes('--include-drafts');
 const onlyIdx = argv.indexOf('--only');
 const only = onlyIdx !== -1 ? argv[onlyIdx + 1] : null;
+// `--prod` resolves to whatever the local CLI has linked as this project's
+// production deployment, which is not necessarily the one the live site reads.
+// `--deployment <name>` targets a deployment explicitly. See RULINGS: the site
+// reads `first-squirrel-244`.
+const deploymentIdx = argv.indexOf('--deployment');
+const deployment = deploymentIdx !== -1 ? argv[deploymentIdx + 1] : null;
+if (deploymentIdx !== -1 && !deployment) {
+  console.error('error: --deployment requires a deployment name');
+  process.exit(1);
+}
+if (deployment && prod) {
+  console.error('error: pass either --prod or --deployment <name>, not both');
+  process.exit(1);
+}
+/** CLI flags selecting the target deployment, appended to every `convex run`. */
+const targetFlags = deployment ? ['--deployment', deployment] : prod ? ['--prod'] : [];
+const targetLabel = deployment ?? (prod ? 'prod' : 'dev');
 
 const MAX_BATCH = 25; // keep in sync with convex/seed.ts
 const MAX_JSON_BYTES = 200_000; // stay far below argv + Convex arg limits
@@ -181,11 +200,25 @@ function buildIdeas() {
   return items;
 }
 
+/**
+ * articles/manifest.json carries no `publishedAt` — the date lives only in the
+ * MDX frontmatter. Without this the whole table seeds with an empty sort key
+ * and `articles.list` (indexed by_publishedAt) returns an arbitrary order.
+ */
+function publishedAtFromArticleMdx(slug) {
+  const p = path.join(root, 'content', 'articles', `${slug}.mdx`);
+  if (!fs.existsSync(p)) return undefined;
+  const raw = fs.readFileSync(p, 'utf8');
+  return raw.match(/^publishedAt:\s*["']?(\d{4}-\d{2}-\d{2})["']?/m)?.[1];
+}
+
 function buildArticles() {
   const manifest = readJson('articles/manifest.json');
   return manifest.articles.map((a) => {
     const doc = pick(a, ['slug', 'title', 'description', 'wordCount', 'readMinutes', 'og']);
-    if (a.publishedAt) doc.publishedAt = parsePublishedAt(a.publishedAt, a.slug);
+    const publishedAt = a.publishedAt || publishedAtFromArticleMdx(a.slug);
+    if (publishedAt) doc.publishedAt = parsePublishedAt(publishedAt, a.slug);
+    else console.warn(`  note: ${a.slug} has no publishedAt in manifest or MDX`);
     return doc;
   });
 }
@@ -256,10 +289,10 @@ function buildReferenceTables() {
 function convexRun(fn, args) {
   const json = JSON.stringify(args);
   if (dryRun) {
-    console.log(`  [dry-run] npx convex run ${fn}${prod ? ' --prod' : ''}  (${Buffer.byteLength(json)} bytes)`);
+    console.log(`  [dry-run] npx convex run ${fn} ${targetFlags.join(' ')}  (${Buffer.byteLength(json)} bytes)`);
     return null;
   }
-  const cmd = ['convex', 'run', fn, json, ...(prod ? ['--prod'] : [])];
+  const cmd = ['convex', 'run', fn, json, ...targetFlags];
   const res = spawnSync('npx', cmd, { cwd: root, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
   if (res.status !== 0) {
     console.error(res.stdout || '');
@@ -297,6 +330,7 @@ function seedBatched(label, fn, items) {
 }
 
 function main() {
+  console.log(`target deployment: ${targetLabel}${dryRun ? ' (dry run)' : ''}`);
   const want = (k) => !only || only === k;
 
   if (want('refs')) {
