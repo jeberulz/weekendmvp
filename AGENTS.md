@@ -1,12 +1,15 @@
 <!-- BEGIN:active-handoff -->
 ## Active work — read before coding
 
-The Build Platform program is mid-flight on branch `codex/wp27-site-preview`.
-**Read `docs/wp/AGENT_HANDOFF.md` first.** It carries the current state, the
-two open items blocking the WP27 gate, the local environment setup, and a list
-of traps that have already cost real time (soft-404 under Cache Components,
+Active branch: `design/platform-experience`. Product-thinking freeze, not a
+build pass. **Signed-in home law:** `docs/design/signed-in-home.md`. **Library
+law:** `docs/design/signed-in-library.md`. Do not implement DashboardHome /
+WorkspaceShell / ExploreWorkspace from this freeze.
+Do not spawn WP30. Do not resume `codex/wp23-*`.
+Also read `docs/wp/AGENT_HANDOFF.md` for traps (soft-404 under Cache Components,
 `convex-test` ignoring internal/public visibility, vacuous proxy assertions,
-root-absolute `import.meta.glob`, and tests that match their own comments).
+root-absolute `import.meta.glob`, tests that match their own comments). The
+handoff body below WP28 is stale; `origin/main` already has WP19–29-min.
 <!-- END:active-handoff -->
 
 <!-- convex-ai-start -->

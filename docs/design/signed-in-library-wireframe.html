@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signed-in library · wireframe</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #1a1a1a;
+      --paper: #f3f1eb;
+      --frame: #fff;
+      --note: #9a3412;
+      --fill: #e8e4d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 32px 28px 80px;
+    }
+    h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .job {
+      max-width: 52rem;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 550;
+      margin: 0 0 6px;
+    }
+    .meta { color: var(--mute); font-size: 13px; margin: 0 0 28px; }
+    .note {
+      color: var(--note);
+      font-size: 12px;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .frame {
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chrome {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 14px;
+      border-bottom: 1.5px solid var(--line);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chrome .grow { flex: 1; color: var(--mute); font-weight: 500; }
+    .chrome .here { text-decoration: underline; text-underline-offset: 3px; }
+    .body { padding: 22px 18px 18px; flex: 1; }
+    .kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin: 0 0 8px; }
+    .title { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; line-height: 1.15; }
+    .lede { margin: 0 0 18px; color: var(--mute); font-size: 14px; max-width: 36em; }
+    .tools {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 140px 140px;
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+    @media (max-width: 700px) { .tools { grid-template-columns: 1fr; } }
+    .field {
+      border: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--mute);
+    }
+    .card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      gap: 16px;
+      padding: 14px 0;
+      border-top: 1.5px solid var(--line);
+      align-items: start;
+    }
+    @media (max-width: 700px) { .card { grid-template-columns: 1fr; } }
+    .card h3 { font-size: 16px; font-weight: 650; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .card h3 .r { color: var(--mute); font-weight: 500; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+    .card p { margin: 0; font-size: 13px; color: var(--mute); max-width: 42em; }
+    .meta-row { font-size: 11px; color: var(--mute); margin: 0 0 6px; }
+    .mark {
+      display: inline-block;
+      border: 1.5px solid var(--line);
+      padding: 1px 6px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-right: 6px;
+    }
+    .actions { display: flex; flex-direction: column; gap: 8px; }
+    .btn {
+      border: 1.5px solid var(--line);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--ink);
+      color: #fff;
+      text-align: center;
+    }
+    .btn.ghost { background: transparent; color: var(--ink); }
+    .btn.mute { background: var(--fill); color: var(--mute); font-weight: 500; }
+    .ghost-link { font-size: 13px; color: var(--mute); margin: 16px 0 0; }
+    .shell-compare {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 800px) { .shell-compare { grid-template-columns: 1fr; } }
+    .tiny-frame { border: 1.5px solid var(--line); background: var(--frame); font-size: 11px; }
+    .tiny-frame .tabs { display: flex; gap: 8px; padding: 8px 10px; border-bottom: 1.5px solid var(--line); color: var(--mute); }
+    .tiny-frame .main { padding: 10px; min-height: 72px; color: var(--mute); }
+    .arrivals {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 900px) { .arrivals { grid-template-columns: 1fr; } }
+    .arrivals .tiny-frame .chrome { font-size: 11px; gap: 10px; padding: 8px 10px; }
+    .picker { max-width: 1100px; }
+    .killed {
+      max-width: 1100px;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--line);
+    }
+    .killed h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+    .killed ul { margin: 0; padding-left: 1.1em; color: var(--mute); font-size: 14px; }
+    s { text-decoration-thickness: 1.5px; }
+  </style>
+</head>
+<body>
+  <p class="meta">Lo-fi wireframe · not visual design · design/platform-experience · law: signed-in-library.md (same folder)</p>
+  <h1>Library, drawn</h1>
+  <p class="job">This isn’t the one. Pick another from the same public library and preview it. Then leave.</p>
+  <p class="meta">One body. Three arrival frames only change the chrome and what happens after keep. If this layout feels like a workspace, the sentence is wrong.</p>
+
+  <div class="shell-compare">
+    <div>
+      <div class="label"><span>Now (killed)</span><span class="note">Explore costume</span></div>
+      <div class="tiny-frame">
+        <div class="tabs">All · For you · Saved · Interested · Building</div>
+        <div class="main">Search loaded metadata · Save · Mark Interested · two CTAs · score /10 · policy copy</div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Proposed</span><span class="note">one picker, then leave</span></div>
+      <div class="tiny-frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">current object</span>
+          <span class="here">Library</span>
+          <span>Account</span>
+        </div>
+        <div class="main">Same public corpus. Preview is the step. Research is a title link. Then home takes over.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrivals">
+    <div>
+      <div class="label"><span>Replace</span><span class="note">Day 0 / 1 · not this</span></div>
+      <div class="tiny-frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Abandoned cart recovery</span>
+          <span class="here">Library</span>
+          <span>Account</span>
+        </div>
+        <div class="main">Object name stays until the new keep. Old unpublished is not deleted. Not a Library tab.</div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Add</span><span class="note">Day n · another</span></div>
+      <div class="tiny-frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">abandoned-cart.weekendmvp.app</span>
+          <span class="here">Library</span>
+          <span>Account</span>
+        </div>
+        <div class="main">Live one stays in the bar. New keep becomes current. Live one moves under the object.</div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>First pick</span><span class="note">cold · skipped the three</span></div>
+      <div class="tiny-frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Choose an idea</span>
+          <span class="here">Library</span>
+          <span>Account</span>
+        </div>
+        <div class="main">Same list as Replace/Add. Home’s three cards are a shortcut, not a fourth Library.</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="picker">
+    <div class="label">
+      <span>The body (all three arrivals)</span>
+      <span class="note">Never the default after signup</span>
+    </div>
+    <div class="frame">
+      <div class="chrome">
+        <span>Weekend MVP</span>
+        <span class="grow">Abandoned cart recovery</span>
+        <span class="here">Library</span>
+        <span>Account</span>
+      </div>
+      <div class="body">
+        <p class="kicker">Library</p>
+        <h2 class="title">This isn’t the one.</h2>
+        <p class="lede">Pick another and preview it. Same library as the public site. Then you’re back on home.</p>
+        <div class="tools">
+          <div class="field">Search title or description</div>
+          <div class="field">Category · all</div>
+          <div class="field">Sort · default</div>
+        </div>
+
+        <article class="card">
+          <div>
+            <p class="meta-row"><span class="mark">Current</span> Ecommerce · 8 hours</p>
+            <h3>Abandoned cart recovery <span class="r">research</span></h3>
+            <p>A one-mail recovery sequence for shops that already have Stripe.</p>
+          </div>
+          <div class="actions">
+            <span class="btn mute">This is the one you’re on</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <p class="meta-row">Creator tools · 12 hours</p>
+            <h3>Newsletter-to-course funnel <span class="r">research</span></h3>
+            <p>Turn a Beehiiv issue into a paid cohort page without a new stack.</p>
+          </div>
+          <div class="actions">
+            <span class="btn">Preview this idea</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <div>
+            <p class="meta-row"><span class="mark">Building</span> B2B · 10 hours</p>
+            <h3>Inbound audit landing <span class="r">research</span></h3>
+            <p>You already have a project for this. Don’t mint a second preview.</p>
+          </div>
+          <div class="actions">
+            <span class="btn ghost">Open project</span>
+          </div>
+        </article>
+
+        <p class="ghost-link">I have my own idea instead</p>
+      </div>
+    </div>
+    <p class="note" style="margin-top:8px">
+      Default sort = canonical score + recency, unlabeled — same rank as home’s three. Alternate = newest. Title is the research link. Preview is the only primary. Search and category apply to the whole published corpus. Object name in the bar is back to home.
+    </p>
+  </section>
+
+  <div class="killed">
+    <h2>Not on this surface</h2>
+    <ul>
+      <li>All / For you / Saved / Interested / Building as places you can be</li>
+      <li>Save and Mark Interested on the card</li>
+      <li>Sort: Recommended</li>
+      <li>Canonical score printed on the card</li>
+      <li>Two equal CTAs (Preview + Read research)</li>
+      <li>“Search loaded idea metadata” / per-page filters / “saved state unchanged”</li>
+      <li>Landing on Library after signup</li>
+      <li>A second catalog or a personalized corpus</li>
+      <li>Re-showing home’s three cards at the top</li>
+      <li>Credits, billing, composer, header search</li>
+    </ul>
+  </div>
+</body>
+</html>

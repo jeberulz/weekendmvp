@@ -13,13 +13,14 @@ Source of truth for the Weekend MVP Build Platform Program/Migration Lane. This 
 - **Launch target:** 2026-08-16 for the v1 repository-idea journey is **superseded for scheduling** by `docs/wp/v1-scope-cut.md` (2026-08-12). Security, ownership, payment, preview-isolation, restore, and super-admin gates are not waived. Consolidation branch: `codex/wp28-tenant-hosts`.
 - **Independence deadline:** all live Ideabrowser dependencies retired by 2026-09-05 after replacement quality gates pass.
 - **Non-goals:** Tier 2 application scaffolds, arbitrary code execution, code export, custom domains, subscriptions, night shifts, outbound email/ads/social automation, teams, referrals, and a public live-activity feed.
-- **Source docs:** `AGENTS.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, `docs/wp/RULINGS.md`, `docs/wp/program-platform-plan.md`, `docs/wp/platform-ux-brief.md`, `docs/PROJECT_STRATEGY.md`, Convex AI guidelines, and the Program Lane templates.
+- **Source docs:** `AGENTS.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, `docs/wp/RULINGS.md`, `docs/wp/program-platform-plan.md`, `docs/wp/platform-ux-brief.md`, `docs/design/signed-in-home.md` (signed-in home/chrome; supersedes Hilos dual-rail in the UX brief), `docs/design/signed-in-library.md` (signed-in Library; supersedes Explore views in the UX brief), `docs/PROJECT_STRATEGY.md`, Convex AI guidelines, and the Program Lane templates.
 - **Required gates:** configured checks; zero unwaived high production dependency vulnerabilities on auth/routing/data paths; WCAG 2.1 AA; anonymous/cross-user denial; super-admin denial/allow matrix and immutable privileged-action audit; canonical/SEO regression; Stripe replay and concurrency; workflow retry/refund; preview isolation; tenant host matrix; policy/abuse; backup/restore; owner-approved production activation; engine/compiler evals.
 
 ## Binding Product Contract
 
 - Public `/ideas/{slug}` remains the only canonical, shareable research page for a published idea.
-- Signed-in Explore uses the same idea records and adds personal and project state. `Saved` and `Interested` are independent flags; `Building` is derived from an active project.
+- Signed-in **home and chrome** follow `docs/design/signed-in-home.md` (2026-08-14): last explicit keep, one top bar, Day 1 = live canvas + one proposal. Hilos dual-rail, Saved/Interested as destinations, and the home composer are not the home spec.
+- Signed-in **Library** follows `docs/design/signed-in-library.md` (2026-08-14): one picker over the public idea corpus; Preview then leave. No For you / Saved / Interested / Building views. `Saved` and `Interested` may still exist as leftover rows; they are not product UI. `Building` is derived from an active project and shows as a card mark (Open project), not a tab.
 - Repository path: research -> free anonymous preview -> signup to keep -> checkout -> policy gate -> publish -> project.
 - Own-idea path: signup -> first free Validation Report -> preview -> checkout -> policy gate -> publish -> project.
 - Marketing uses dollars; credits are an internal task currency.
@@ -135,6 +136,8 @@ WP31 + WP37 -> Wave 6 closeout
 | 2026-08-06 | WP27 | Anonymous preview storage, capability lifetime, template set | Add one additive `preview_capabilities` table (frozen tables cannot hold an ownerless artifact); 7-day reusable capability with server-side expiry; three templates with a picker, with per-template XSS/a11y matrices as the accepted cost | Owner |
 | 2026-08-06 | WP26 | Exact model pin and keyword-data provider | `gpt-5.6-sol` for synthesis/scoring (pin the dated snapshot at implementation); DataForSEO for keyword volume/CPC/competition. Full run prices at ~$0.52, ~$1.04 with retries — well inside the $4.00 cap. No LLM may synthesize keyword metrics. | Owner |
 | 2026-08-06 | WP38 | Super-admin and editorial control | One server-verified super-admin controls the operator plane, Idea Engine/editorial queues, canonical content compilation, activation, and rollback. Customers keep owner-scoped product workflows only; no generic bypass or impersonation. | Owner |
+| 2026-08-14 | UX | Signed-in home | Supersedes the Hilos dual-rail workspace **for home and chrome only**. Contract: `docs/design/signed-in-home.md`. Do not implement until a later build pass. Public `/ideas/{slug}` and preview/publish gates unchanged. | Owner |
+| 2026-08-14 | UX | Signed-in Library | Supersedes Explore All / For you / Saved / Interested / Building. Contract: `docs/design/signed-in-library.md`. One picker, Preview then leave. Do not implement until a later build pass. | Owner |
 
 ## Dispatch Rules
 

@@ -1,14 +1,24 @@
 # Platform UX Brief
 
-Approved product and interaction contract for the signed-in Weekend MVP build platform. This brief translates the reviewed Hilos and IdeaBrowser patterns into Weekend MVP's own UX; it is not a visual clone.
+> **2026-08-14 — signed-in home, chrome, and Library are superseded.**
+> Do not implement the Hilos dual-rail, dashboard-as-command-center, Saved/Interested-as-nav, home composer, or Explore `All` / `For you` / `Saved` / `Interested` / `Building` from this brief.
+> Home: [`docs/design/signed-in-home.md`](../design/signed-in-home.md). Library: [`docs/design/signed-in-library.md`](../design/signed-in-library.md).
+> Still in force here: public `/ideas/{slug}` as the sole canonical research page, preview isolation, billing/publish gates, `noindex` on private routes, super-admin as a separate plane.
+> Preview customisation and the publish packet are **not** decided by those freezes.
+
+Approved product and interaction contract for the signed-in Weekend MVP build platform. This brief translates the reviewed Hilos and IdeaBrowser patterns into Weekend MVP's own UX; it is not a visual clone. The signed-in **home/shell** sections below are historical for WP23; they are not the build spec.
 
 ## Product Promise
 
 Weekend MVP is validation-first: people discover evidence-backed ideas, see a concrete landing-page preview, and only then decide whether to publish and keep building. The public content library remains the acquisition and SEO layer. The signed-in product adds personal state, project state, generated artifacts, billing, and an operating workspace.
 
-The activation path is:
+The activation path **as shipped in WP23** is:
 
 `Explore -> Research -> Save or mark Interested -> Preview -> Customise -> Publish -> Project`
+
+The **accepted 2026-08-14 home job** is: public idea → preview → last explicit keep → signed-in Day 1 canvas → confirm → publish. Save/Interested are not destinations on home.
+
+The **accepted 2026-08-14 Library job** is: this isn’t the one; pick another from the same public corpus; preview; leave. One picker, no Explore tabs. See `docs/design/signed-in-library.md`.
 
 For a repository idea, the free artifact is the landing-page preview. For a customer's own idea, the first free artifact is the Validation Report after signup.
 
@@ -26,7 +36,7 @@ For a repository idea, the free artifact is the landing-page preview. For a cust
 ### Signed-in layer
 
 - `/dashboard`: at-a-glance home with active projects, recent artifacts, credit balance, and next actions.
-- `/dashboard/explore`: the complete idea library with `All`, `For you`, `Saved`, `Interested`, and `Building` views, search, filters, and sorting.
+- `/dashboard/explore`: **historical WP23.** Signed-in Library is `docs/design/signed-in-library.md` — one picker over the public corpus, Preview primary, no destination views.
 - `/dashboard/new`: bring-your-own-idea intake.
 - `/dashboard/projects/{projectId}`: project cockpit with status, tasks, artifacts, website, leads, credits, and revisions.
 - `/dashboard/projects/{projectId}/research`: the persisted Validation Report.
@@ -73,6 +83,8 @@ Private platform routes, checkout returns, and previews are `noindex` and exclud
 
 ## Desktop Shell
 
+**Superseded for signed-in home/chrome** by `docs/design/signed-in-home.md` (one top bar, current object in the middle, Library + Account as exits). The ASCII below is the WP23 Hilos costume. Do not rebuild it.
+
 The shell uses a narrow product rail plus a contextual sidebar, inspired by Hilos' calm workspace model:
 
 ```text
@@ -97,6 +109,8 @@ The shell uses a narrow product rail plus a contextual sidebar, inspired by Hilo
 The persistent composer is contextual help and a shortcut into supported actions. It is not an unbounded autonomous agent. Suggestions must map to explicit, auditable workflows.
 
 ## Explore And Research
+
+**Superseded for signed-in Library** by `docs/design/signed-in-library.md`. The bullets below are the WP23 Explore costume. Do not rebuild All / For you / Saved / Interested / Building, or Save/Interested as card actions.
 
 Explore is an authenticated workspace over the same idea records that power the public library. It adds pagination, recommendations, intent state, and project state; it does not fork or duplicate the underlying research.
 

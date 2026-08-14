@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signed-in job · wireframe</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #1a1a1a;
+      --paper: #f3f1eb;
+      --frame: #fff;
+      --note: #9a3412;
+      --fill: #e8e4d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 32px 28px 80px;
+    }
+    h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .job {
+      max-width: 52rem;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 550;
+      margin: 0 0 6px;
+    }
+    .meta { color: var(--mute); font-size: 13px; margin: 0 0 28px; }
+    .note {
+      color: var(--note);
+      font-size: 12px;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 24px;
+      max-width: 1100px;
+    }
+    @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+    .screen { min-width: 0; }
+    .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .frame {
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
+    .screen.wide { grid-column: 1 / -1; }
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      flex: 1;
+      min-height: 460px;
+    }
+    @media (max-width: 700px) {
+      .stage { grid-template-columns: 1fr; }
+      .proposal { border-top: 1.5px solid var(--line); border-left: 0; }
+    }
+    .canvas {
+      background: var(--fill);
+      position: relative;
+      overflow: hidden;
+    }
+    .canvas-page {
+      margin: 18px 18px 18px 18px;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      min-height: 400px;
+      padding: 20px 18px 16px;
+    }
+    .canvas-page .hero {
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
+    }
+    .canvas-page .sub { font-size: 13px; color: var(--mute); margin: 0 0 14px; max-width: 28em; }
+    .canvas-page .cta {
+      display: inline-block;
+      border: 1.5px solid var(--line);
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .watermark {
+      position: absolute;
+      right: 28px;
+      top: 36px;
+      border: 1.5px dashed var(--line);
+      padding: 4px 8px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(243, 241, 235, 0.92);
+    }
+    .proposal {
+      border-left: 1.5px solid var(--line);
+      padding: 14px;
+      background: var(--frame);
+    }
+    .proposal .kicker { margin-bottom: 6px; }
+    .proposal p { margin: 0 0 12px; font-size: 13px; }
+    .proposal .choices { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; }
+    .choice {
+      border: 1.5px solid var(--line);
+      padding: 8px;
+      font-size: 12px;
+    }
+    .choice.on { background: var(--ink); color: #fff; }
+    .chrome {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 14px;
+      border-bottom: 1.5px solid var(--line);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chrome .grow { flex: 1; color: var(--mute); font-weight: 500; }
+    .chrome a, .linkish { text-decoration: underline; text-underline-offset: 3px; }
+    .body { padding: 22px 18px 18px; flex: 1; }
+    .kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin: 0 0 8px; }
+    .title { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; line-height: 1.15; }
+    .lede { margin: 0 0 18px; color: var(--mute); font-size: 14px; max-width: 36em; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+    .btn {
+      border: 1.5px solid var(--line);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--ink);
+      color: #fff;
+    }
+    .btn.ghost { background: transparent; color: var(--ink); }
+    .ghost-link { font-size: 13px; color: var(--mute); }
+    .box {
+      border: 1.5px dashed var(--line);
+      padding: 12px;
+      margin: 0 0 10px;
+      font-size: 13px;
+    }
+    .box strong { display: block; margin-bottom: 4px; }
+    .list { margin: 16px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .fill { height: 72px; background: var(--fill); border: 1.5px solid var(--line); margin-bottom: 8px; }
+    .killed {
+      max-width: 1100px;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--line);
+    }
+    .killed h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+    .killed ul { margin: 0; padding-left: 1.1em; color: var(--mute); font-size: 14px; }
+    .shell-compare {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 800px) { .shell-compare { grid-template-columns: 1fr; } }
+    .tiny-frame { border: 1.5px solid var(--line); background: var(--frame); font-size: 11px; }
+    .tiny-frame .bar { display: flex; border-bottom: 1.5px solid var(--line); }
+    .tiny-frame .col { width: 28px; border-right: 1.5px solid var(--line); padding: 8px 4px; writing-mode: vertical-rl; transform: rotate(180deg); }
+    .tiny-frame .side { width: 72px; border-right: 1.5px solid var(--line); padding: 8px; color: var(--mute); }
+    .tiny-frame .main { flex: 1; padding: 10px; min-height: 88px; color: var(--mute); }
+    s { text-decoration-thickness: 1.5px; }
+  </style>
+</head>
+<body>
+  <p class="meta">Lo-fi wireframe · not visual design · design/platform-experience · law: signed-in-home.md (same folder)</p>
+  <h1>Job, drawn</h1>
+  <p class="job">Take the idea I just chose and turn it into a real page I can keep, then a live URL when I say so. One confirmed step at a time.</p>
+  <p class="meta">Home is that object. Nav is how you leave it. If this layout feels wrong, the sentence is wrong. This HTML is the visual spec; the markdown is the contract a later build must pass.</p>
+
+  <div class="shell-compare">
+    <div>
+      <div class="label"><span>Now (killed)</span><span class="note">Hilos costume</span></div>
+      <div class="tiny-frame" style="display:flex;min-height:120px">
+        <div class="col">icons</div>
+        <div class="side">Dashboard<br>Explore<br>Saved<br>Interested<br>New<br>Billing</div>
+        <div class="main">Welcome back<br>Move one idea forward<br>empty lists · policy copy · shortcuts</div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Proposed chrome</span><span class="note">one bar, all days</span></div>
+      <div class="tiny-frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">current idea or project name</span>
+          <span>Library</span>
+          <span>Account</span>
+        </div>
+        <div class="main" style="min-height:72px">The object. The next confirmed step. Nothing else competes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <section class="screen">
+      <div class="label">
+        <span>Day 0 · arrived from preview</span>
+        <span class="note">Default after magic-link from /build or /preview</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Abandoned cart recovery</span>
+          <span>Library</span>
+          <span>Account</span>
+        </div>
+        <div class="body">
+          <p class="kicker">You previewed this</p>
+          <h2 class="title">Abandoned cart recovery</h2>
+          <p class="lede">Keep it on your account. Publishing waits until you confirm.</p>
+          <div class="row">
+            <span class="btn">Keep this preview</span>
+            <span class="btn ghost">Read the research</span>
+          </div>
+          <p class="ghost-link">Not this one? Browse the library</p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">No credits. No Saved/Interested. The object they came with is the page. Secondary exit is the library, not a dashboard module.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Day 0 · cold signup</span>
+        <span class="note">No return idea. Job is pick one.</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Choose an idea</span>
+          <span>Library</span>
+          <span>Account</span>
+        </div>
+        <div class="body">
+          <p class="kicker">Start here</p>
+          <h2 class="title">Pick one idea.</h2>
+          <p class="lede">Preview it. That is the whole first session.</p>
+          <div class="fill"></div>
+          <div class="fill"></div>
+          <div class="fill"></div>
+          <p class="ghost-link">I have my own idea instead</p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Own-idea is a text link, not a primary nav item. Three library cards (or a single Preview CTA into Explore). Not For you / Saved / Interested tabs.</p>
+    </section>
+
+    <section class="screen wide">
+      <div class="label">
+        <span>Day 1 · live canvas (this is the page)</span>
+        <span class="note">Kill the rest of THIS screen only. Day 0 and Day n stay.</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Abandoned cart recovery</span>
+          <span>Research</span>
+          <span>Library</span>
+          <span>Account</span>
+        </div>
+        <div class="stage">
+          <div class="canvas" aria-label="Live preview of the unpublished site">
+            <span class="watermark">Preview · not live</span>
+            <div class="canvas-page">
+              <p class="kicker">Your store</p>
+              <p class="hero">Still in the cart. Still yours.</p>
+              <p class="sub">A one-mail recovery sequence for shops that already have Stripe. This is the real render, not a dashboard card.</p>
+              <span class="cta">Get the sequence</span>
+              <div class="fill" style="height:48px;margin-top:18px"></div>
+              <div class="fill" style="height:48px"></div>
+            </div>
+          </div>
+          <aside class="proposal">
+            <p class="kicker">One proposal</p>
+            <p><strong>Headline B is tighter.</strong> Confirm to apply. Publish is the next card after this, not a row of buttons.</p>
+            <div class="choices">
+              <div class="choice">A · Recover abandoned carts this week</div>
+              <div class="choice on">B · Still in the cart. Still yours.</div>
+              <div class="choice">C · Your cart is waiting</div>
+            </div>
+            <div class="row">
+              <span class="btn">Use B</span>
+              <span class="btn ghost">Keep current</span>
+            </div>
+            <p class="ghost-link">When the checklist is green: Publish</p>
+          </aside>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">
+        “Kill the rest of the page” = on Day 1, delete the workspace furniture: welcome, empty lists, three equal CTAs, blocked-on box, shortcuts. Not Day 0 (pick / keep) and not Day n (live URL + other projects). Those are different jobs. Day 1 is only the site plus one confirmable proposal. Billing still waits until they hit Publish.
+      </p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Day n · live, maybe another idea</span>
+        <span class="note">Still one object. Others are a list.</span>
+      </div>
+      <div class="frame">
+        <div class="chrome">
+          <span>Weekend MVP</span>
+          <span class="grow">Abandoned cart recovery</span>
+          <span>Library</span>
+          <span>Account</span>
+        </div>
+        <div class="body">
+          <p class="kicker">Live</p>
+          <h2 class="title">abandoned-cart.weekendmvp.app</h2>
+          <p class="lede">Next: a revision, or start another idea. Your call.</p>
+          <div class="row">
+            <span class="btn ghost">Open live site</span>
+            <span class="btn">Request a revision</span>
+          </div>
+          <ul class="list">
+            <li><span>Abandoned cart recovery</span><span>live</span></li>
+            <li><span>Tutor landing (kept)</span><span>preview</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Other projects are a list under the current object, not a dashboard of cards. Switching objects changes the chrome name. Library is how you add a third.</p>
+    </section>
+  </div>
+
+  <div class="killed">
+    <h2>Not on any of these frames</h2>
+    <ul>
+      <li>Icon rail + duplicate sidebar</li>
+      <li>Saved vs Interested as destinations</li>
+      <li>For you</li>
+      <li>Header search that is a link</li>
+      <li>Composer / “supported shortcuts”</li>
+      <li>Credit balance on day 0</li>
+      <li>Project rows that do not open</li>
+      <li>“Move one idea forward” over empty lists</li>
+      <li>Day 1 workspace furniture: title stack, three CTAs, blocked-on box (the live canvas replaced that)</li>
+    </ul>
+  </div>
+</body>
+</html>

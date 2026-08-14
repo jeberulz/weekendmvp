@@ -8,6 +8,8 @@ truth_docs:
   - docs/wp/program-platform-plan.md
   - docs/wp/program-manifest.md
   - docs/wp/platform-ux-brief.md
+  - docs/design/signed-in-home.md
+  - docs/design/signed-in-library.md
   - docs/PROJECT_STRATEGY.md
   - README.md
 
