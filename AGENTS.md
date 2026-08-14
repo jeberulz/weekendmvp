@@ -3,8 +3,9 @@
 
 Active branch: `design/platform-experience`. Product-thinking freeze, not a
 build pass. **Signed-in home law:** `docs/design/signed-in-home.md`. **Library
-law:** `docs/design/signed-in-library.md`. Do not implement DashboardHome /
-WorkspaceShell / ExploreWorkspace from this freeze.
+law:** `docs/design/signed-in-library.md`. **Preview law:** `docs/design/preview.md`.
+Do not implement DashboardHome / WorkspaceShell / ExploreWorkspace /
+BuildPreviewForm from this freeze.
 Do not spawn WP30. Do not resume `codex/wp23-*`.
 Also read `docs/wp/AGENT_HANDOFF.md` for traps (soft-404 under Cache Components,
 `convex-test` ignoring internal/public visibility, vacuous proxy assertions,

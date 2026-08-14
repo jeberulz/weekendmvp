@@ -10,6 +10,7 @@ truth_docs:
   - docs/wp/platform-ux-brief.md
   - docs/design/signed-in-home.md
   - docs/design/signed-in-library.md
+  - docs/design/preview.md
   - docs/PROJECT_STRATEGY.md
   - README.md
 

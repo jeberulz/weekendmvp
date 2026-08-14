@@ -1,10 +1,10 @@
 # Platform UX Brief
 
-> **2026-08-14 — signed-in home, chrome, and Library are superseded.**
-> Do not implement the Hilos dual-rail, dashboard-as-command-center, Saved/Interested-as-nav, home composer, or Explore `All` / `For you` / `Saved` / `Interested` / `Building` from this brief.
-> Home: [`docs/design/signed-in-home.md`](../design/signed-in-home.md). Library: [`docs/design/signed-in-library.md`](../design/signed-in-library.md).
-> Still in force here: public `/ideas/{slug}` as the sole canonical research page, preview isolation, billing/publish gates, `noindex` on private routes, super-admin as a separate plane.
-> Preview customisation and the publish packet are **not** decided by those freezes.
+> **2026-08-14 — signed-in home, chrome, Library, and preview customisation are superseded.**
+> Do not implement the Hilos dual-rail, dashboard-as-command-center, Saved/Interested-as-nav, home composer, Explore destination views, or the `/build/{slug}` CMS from this brief.
+> Home: [`docs/design/signed-in-home.md`](../design/signed-in-home.md). Library: [`docs/design/signed-in-library.md`](../design/signed-in-library.md). Preview: [`docs/design/preview.md`](../design/preview.md).
+> Still in force here: public `/ideas/{slug}` as the sole canonical research page, preview isolation (7-day, `noindex`, inert leads, claim-only), billing/publish gates, super-admin as a separate plane.
+> The publish packet and Account chrome are **not** decided by those freezes.
 
 Approved product and interaction contract for the signed-in Weekend MVP build platform. This brief translates the reviewed Hilos and IdeaBrowser patterns into Weekend MVP's own UX; it is not a visual clone. The signed-in **home/shell** sections below are historical for WP23; they are not the build spec.
 
@@ -30,8 +30,8 @@ For a repository idea, the free artifact is the landing-page preview. For a cust
 - `/ideas/{slug}`: the sole canonical, shareable research page for a published idea.
 - `/build`: platform marketing and example builds.
 - `/pricing`: prices in dollars, not internal credits.
-- `/build/{slug}`: anonymous preview setup for a repository idea.
-- `/preview/{token}`: expiring, watermarked, non-indexable preview.
+- `/build/{slug}`: **historical WP27 CMS.** Mint URL only per `docs/design/preview.md` — not a customisation form.
+- `/preview/{token}`: isolated preview fallback per `docs/design/preview.md` (preview host is the wanted conversion; WP31). Still expiring, watermarked, `noindex`.
 
 ### Signed-in layer
 
@@ -122,7 +122,9 @@ Explore is an authenticated workspace over the same idea records that power the 
 
 ## Preview, Signup, And Publish
 
-1. A visitor selects `Preview this idea` from a public idea or signed-in Explore view.
+**Preview customisation superseded** by `docs/design/preview.md`. Step 2 below (CMS form) is historical. Mint → compiled page → identity stamp on the page → Keep this site.
+
+1. A visitor selects `Preview this idea` from a public idea or signed-in Library view.
 2. They answer a short, idea-prefilled customisation step.
 3. The system generates an expiring, watermarked preview without requiring payment or signup.
 4. Signup is required to keep the preview and turn it into a project.

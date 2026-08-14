@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preview · wireframe</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --mute: #5c5c5c;
+      --line: #1a1a1a;
+      --paper: #f3f1eb;
+      --frame: #fff;
+      --note: #9a3412;
+      --fill: #e8e4d9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      padding: 32px 28px 80px;
+    }
+    h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; }
+    .job {
+      max-width: 52rem;
+      font-size: 18px;
+      line-height: 1.4;
+      font-weight: 550;
+      margin: 0 0 6px;
+    }
+    .meta { color: var(--mute); font-size: 13px; margin: 0 0 28px; }
+    .note {
+      color: var(--note);
+      font-size: 12px;
+      line-height: 1.4;
+      font-style: italic;
+    }
+    .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .shell-compare {
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 0 0 36px;
+    }
+    @media (max-width: 800px) { .shell-compare { grid-template-columns: 1fr; } }
+    .tiny-frame { border: 1.5px solid var(--line); background: var(--frame); font-size: 11px; }
+    .tiny-frame .main { padding: 10px; min-height: 88px; color: var(--mute); }
+    .urlbar {
+      border-bottom: 1.5px solid var(--line);
+      padding: 8px 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--mute);
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 24px;
+      max-width: 1100px;
+    }
+    @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+    .screen.wide { grid-column: 1 / -1; }
+    .frame {
+      background: var(--frame);
+      border: 1.5px solid var(--line);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
+    .site {
+      position: relative;
+      flex: 1;
+      background: var(--fill);
+      padding: 28px 22px 18px;
+      overflow: hidden;
+    }
+    .hero { font-size: 22px; font-weight: 650; letter-spacing: -0.03em; margin: 0 0 8px; max-width: 16em; }
+    .sub { font-size: 13px; color: var(--mute); margin: 0 0 14px; max-width: 32em; }
+    .cta {
+      display: inline-block;
+      border: 1.5px solid var(--line);
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 650;
+      background: var(--frame);
+    }
+    .fill { height: 48px; background: var(--frame); border: 1.5px solid var(--line); margin-top: 14px; }
+    .mark {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      border: 1.5px dashed var(--line);
+      padding: 3px 7px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(243, 241, 235, 0.92);
+    }
+    .stamp {
+      position: absolute;
+      left: 22px;
+      bottom: 72px;
+      border: 1.5px solid var(--line);
+      background: var(--frame);
+      padding: 10px 12px;
+      width: min(280px, calc(100% - 44px));
+      font-size: 12px;
+    }
+    .stamp label { display: block; color: var(--mute); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+    .stamp .field { border: 1.5px solid var(--line); padding: 6px 8px; color: var(--mute); }
+    .keep {
+      border-top: 1.5px solid var(--line);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .btn {
+      border: 1.5px solid var(--line);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--ink);
+      color: #fff;
+      white-space: nowrap;
+    }
+    .ghost { font-size: 12px; color: var(--mute); }
+    .formish { padding: 16px; font-size: 12px; color: var(--mute); }
+    .formish .row { border: 1.5px solid var(--line); padding: 8px; margin-bottom: 8px; }
+    .killed {
+      max-width: 1100px;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--line);
+    }
+    .killed h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+    .killed ul { margin: 0; padding-left: 1.1em; color: var(--mute); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <p class="meta">Lo-fi wireframe · not visual design · design/platform-experience · law: preview.md (same folder)</p>
+  <h1>Preview, drawn</h1>
+  <p class="job">Show me this idea as a page. Stamp my name on it if I have one. Don’t make me write the landing page first.</p>
+  <p class="meta">The compiled page is the product. Identity is a sticker. Keep is the only conversion. If this still looks like a CMS, the sentence is wrong.</p>
+
+  <div class="shell-compare">
+    <div>
+      <div class="label"><span>Now (killed)</span><span class="note">/build CMS</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">www.weekendmvp.app/build/abandoned-cart-recovery</div>
+        <div class="formish">
+          <div class="row">Layout · Editorial / Product / Minimal</div>
+          <div class="row">Headline · Subhead · Problem · 6 benefits · Button</div>
+          <div class="row">Build my preview</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label"><span>Proposed</span><span class="note">the site is the page</span></div>
+      <div class="tiny-frame">
+        <div class="urlbar">abandoned-cart-p7k.weekendmvp.app</div>
+        <div class="main">Compiled per-idea page. One stamp field. Keep this site. No marketing nav. Path /preview/{token} until the preview host exists.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <section class="screen">
+      <div class="label">
+        <span>First look · anonymous</span>
+        <span class="note">Mint is invisible. This is the landing.</span>
+      </div>
+      <div class="frame">
+        <div class="urlbar">abandoned-cart-p7k.weekendmvp.app</div>
+        <div class="site">
+          <span class="mark">Preview · not live</span>
+          <p class="hero">Still in the cart. Still yours.</p>
+          <p class="sub">A one-mail recovery sequence for shops that already have Stripe. This page was compiled from the research, not typed in a form.</p>
+          <span class="cta">Get the sequence</span>
+          <div class="fill"></div>
+          <div class="stamp">
+            <label>Your shop / brand</label>
+            <div class="field">optional — leave blank to keep the idea name</div>
+          </div>
+        </div>
+        <div class="keep">
+          <span>Keep this site</span>
+          <span class="btn">Keep this site</span>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">One honest mark, not three sermons. Page CTA is inert. Ghost “not this” can sit under Keep. No account lecture beyond the button.</p>
+    </section>
+
+    <section class="screen">
+      <div class="label">
+        <span>Stamped</span>
+        <span class="note">Copy overlay only. Same pageSpec.</span>
+      </div>
+      <div class="frame">
+        <div class="urlbar">abandoned-cart-p7k.weekendmvp.app</div>
+        <div class="site">
+          <span class="mark">Preview · not live</span>
+          <p class="hero">Cool Shop carts, recovered.</p>
+          <p class="sub">Same sequence. Your name on it. The layout did not regenerate.</p>
+          <span class="cta">Get the sequence</span>
+          <div class="fill"></div>
+          <div class="stamp">
+            <label>Your shop / brand</label>
+            <div class="field">Cool Shop</div>
+          </div>
+        </div>
+        <div class="keep">
+          <span>Keep this site</span>
+          <span class="btn">Keep this site</span>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">Stamp is not a rebuild. Missing stamp after signup becomes the first Day 1 proposal, not a trip back to /build.</p>
+    </section>
+
+    <section class="screen wide">
+      <div class="label">
+        <span>Signed-in Preview (from Library)</span>
+        <span class="note">No keep sermon. Claim → Day 1.</span>
+      </div>
+      <div class="frame">
+        <div class="urlbar">abandoned-cart-p7k.weekendmvp.app</div>
+        <div class="site">
+          <span class="mark">Preview · not live</span>
+          <p class="hero">Still in the cart. Still yours.</p>
+          <p class="sub">Same compiled page. They already have an account, so this view is brief — then home’s canvas + one proposal.</p>
+          <span class="cta">Get the sequence</span>
+          <div class="fill"></div>
+        </div>
+        <div class="keep">
+          <span class="ghost">Already signed in · this becomes the current object</span>
+          <span class="btn">Continue</span>
+        </div>
+      </div>
+      <p class="note" style="margin-top:8px">If they already have a project for this idea, don’t mint. Open that project. /build/{slug} stays the mint URL so public CTAs don’t break — it should not look like a page.</p>
+    </section>
+  </div>
+
+  <div class="killed">
+    <h2>Not on this surface</h2>
+    <ul>
+      <li>Layout picker · headline · subhead · problem · benefits · button copy · “Build my preview”</li>
+      <li>LLM wait / unique HTML per click / Aura export as the served page</li>
+      <li>Visitor-chosen Editorial / Product / Minimal</li>
+      <li>Triple expiry copy (banner + watermark word + claim paragraph)</li>
+      <li>Sending them back to /build to edit copy</li>
+      <li>Credits, billing, marketing nav, lead capture on the preview CTA</li>
+      <li>Email-me-a-link (not on this freeze; Keep this site is the keep)</li>
+    </ul>
+  </div>
+</body>
+</html>
