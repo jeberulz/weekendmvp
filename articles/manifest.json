@@ -851,6 +851,54 @@
         "accent": "lavender",
         "status": "ready"
       }
+    },
+    {
+      "slug": "how-to-demo-your-mvp",
+      "title": "How to Demo Your MVP So People Actually Buy",
+      "description": "Live demos and Loom walkthroughs that sell — 90-second async scripts, permission-first outreach, and a 48-hour follow-up that turns curiosity into cash.",
+      "wordCount": 1086,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A closed paperback book with a cloth bookmark on a near-black desk, lit by a single lavender side beam, deep shadow, very shallow focus",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "newsletter-before-the-product",
+      "title": "Build the Newsletter Before the Product",
+      "description": "Before you write code, own an audience. How founders use a newsletter to validate demand, grow a waitlist, and launch — with beehiiv-style growth loops.",
+      "wordCount": 1209,
+      "readMinutes": 6,
+      "og": {
+        "subject": "An open notebook on a near-black surface with a blank page catching a single mint side light, late-night atmosphere, very shallow focus, no readable handwriting",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "one-feature-product-mvp",
+      "title": "The One-Feature Product: Why Your MVP Should Do Less",
+      "description": "Stop shipping a half-built platform. The one-feature product gets you to a magic moment faster — and to first revenue before you drown in leftover scope.",
+      "wordCount": 936,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A single wooden pencil mid-stroke on a near-black notebook page, mint side light catching the graphite tip, deep shadow, no readable writing, very shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "saas-onboarding-first-5-minutes",
+      "title": "SaaS Onboarding That Actually Activates (First 5 Minutes)",
+      "description": "Activation beats signup vanity metrics. Define your magic moment, kill friction, add sample data, and get new users to real value in the first five minutes.",
+      "wordCount": 891,
+      "readMinutes": 4,
+      "og": {
+        "subject": "An open daily planner on a near-black desk with one date circled, lit by a single emerald overhead lamp on that page only, deep shadows beyond, no readable text",
+        "accent": "emerald",
+        "status": "ready"
+      }
     }
   ]
 }
