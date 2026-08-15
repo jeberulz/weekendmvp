@@ -73,7 +73,7 @@ export default function PrivacyPolicyPage() {
           <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">
             Privacy Policy
           </h1>
-          <p className="text-neutral-400 text-sm">Last updated: January 2025</p>
+          <p className="text-neutral-400 text-sm">Last updated: August 2026</p>
         </div>
 
         <div className="space-y-8 text-sm text-neutral-400 leading-relaxed">
@@ -101,6 +101,16 @@ export default function PrivacyPolicyPage() {
             email address and first name through Beehiiv. This information is
             used solely to deliver the kit and occasional updates. You can
             unsubscribe at any time.
+          </SectionCard>
+
+          <SectionCard id="starter-kit-feedback" heading="Starter Kit Feedback">
+            If you choose to share Starter Kit feedback, we collect your
+            progress stage, usefulness score, selected resource and blocker,
+            and any comments you provide so we can improve the kit. Feedback
+            is anonymous by default. You may separately provide an email and
+            explicit consent for us to follow up about your experience. We use
+            a one-way browser key to update an existing response and apply a
+            rate limit without storing your browser identifier or IP address.
           </SectionCard>
 
           <SectionCard id="contact" heading="Contact">

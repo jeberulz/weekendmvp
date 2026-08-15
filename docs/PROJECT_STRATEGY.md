@@ -24,6 +24,7 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP16 | Bolt and Windsurf hub enrichment | Work Package | `cursor/wp16-bolt-windsurf-enrichment` | Complete | Both hubs have improved search copy and featured idea rails. |
 | WP17 | Sitemap indexing signals | Work Package | `cursor/wp17-sitemap-indexing` | Complete — merged (#42) | Stable idea lastmod, apex system-file redirects, and indexing runbook/check script are present. |
 | WP18 | Five research-backed startup ideas | Work Package | `feat/publish-five-ideas` | Complete — merged (#44) | Five pages pass research/section gates, are seeded, and have OG assets live on `main`. |
+| WP39 | Starter Kit feedback and effectiveness insights | Work Package | `codex/wp39-starter-kit-feedback` | PR ready — production secret provisioning pending | Starter Kit visitors can submit anonymous-by-default, abuse-bounded feedback and the operator can retrieve a bounded effectiveness summary without exposing responses publicly. |
 
 ## Build Platform Program
 
