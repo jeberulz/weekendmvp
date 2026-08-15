@@ -122,7 +122,7 @@ export default async function TenantSitePage({
   if (spec === null) notFound();
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-[100dvh] bg-[#fcfaf7]">
       <PreviewTemplateRenderer spec={spec} showPreviewChrome={false} />
     </div>
   );

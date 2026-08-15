@@ -116,7 +116,7 @@ export default async function PreviewPage({
     // permanently underneath the banner and cannot be clicked. Verified by
     // hit-testing the CTA's own centre point at both widths; the banner is
     // 308px tall at 375x812, which is why mobile needs the larger value.
-    <div className="min-h-screen bg-black pb-96 sm:pb-56">
+    <div className="min-h-[100dvh] bg-[#fcfaf7] pb-96 sm:pb-56">
       {/* Template only: no site nav, no footer, nothing that would let a
           visitor navigate out of the preview into the marketing site. */}
       <PreviewTemplateRenderer spec={spec} showPreviewChrome />

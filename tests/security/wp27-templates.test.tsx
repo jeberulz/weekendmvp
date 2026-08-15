@@ -87,6 +87,14 @@ describe.each(PREVIEW_TEMPLATE_VALUES)("template: %s", (templateId) => {
     expect(html).toContain("Get early access");
   });
 
+  test("renders ink-on-paper rather than zinc-on-black", () => {
+    const html = render(templateId, benignInput());
+    expect(html).toContain("compiled-landing");
+    expect(html).toContain("bg-[#fcfaf7]");
+    expect(html).not.toContain("text-zinc-100");
+    expect(html).not.toContain("text-zinc-300");
+  });
+
   test.each(INJECTION_PAYLOADS)(
     "escapes injection payload rather than emitting markup: %s",
     (payload) => {

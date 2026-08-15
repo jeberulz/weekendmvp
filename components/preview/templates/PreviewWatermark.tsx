@@ -16,7 +16,7 @@ export function PreviewWatermark() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-40 select-none overflow-hidden"
     >
-      <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-45 whitespace-nowrap text-[12vw] font-semibold uppercase tracking-widest text-white/[0.06]">
+      <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-45 whitespace-nowrap text-[12vw] font-semibold uppercase tracking-widest text-stone-900/[0.06]">
         Preview
       </p>
     </div>
@@ -30,7 +30,7 @@ export function PreviewWatermark() {
  */
 export function PreviewNotice() {
   return (
-    <div className="border-b border-white/10 bg-white/5 px-5 py-3 text-center text-sm text-zinc-300">
+    <div className="border-b border-stone-900/10 bg-[#f3f1eb] px-5 py-3 text-center text-sm text-[#44403c]">
       This is a private preview. It expires in 7 days and is not published.
     </div>
   );

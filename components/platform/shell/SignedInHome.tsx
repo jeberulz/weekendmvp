@@ -67,16 +67,16 @@ function HomeCanvas({
   return (
     <div
       aria-label={label}
-      className="relative min-h-112 overflow-hidden rounded-3xl bg-stone-900/5"
+      className="relative overflow-hidden rounded-3xl border border-stone-900/10 bg-[#fcfaf7] shadow-[0_20px_40px_-24px_rgba(28,25,23,0.18)]"
     >
       {live ? null : (
-        <p className="absolute right-4 top-4 z-10 rounded-2xl border border-dashed border-stone-900/30 bg-[#f3f1eb]/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-stone-700">
+        <p className="pointer-events-none absolute right-4 top-4 z-10 rounded-2xl border border-dashed border-stone-900/25 bg-[#fcfaf7]/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-stone-700">
           Preview · not live
         </p>
       )}
       {spec ? (
-        <div className="origin-top scale-[0.92]">
-          <PreviewTemplateRenderer spec={spec} showPreviewChrome={!live} />
+        <div className="max-h-[min(80vh,52rem)] overflow-y-auto">
+          <PreviewTemplateRenderer spec={spec} showPreviewChrome={false} />
         </div>
       ) : (
         <p className="px-6 py-16 text-sm text-stone-600">
