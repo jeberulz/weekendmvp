@@ -1,0 +1,149 @@
+---
+slug: "gamified-coding-rpg"
+title: "Gamified Coding RPG for Adult Learners"
+---
+
+## The Problem
+
+Adults quit learning to code within weeks. The tutorials are dry. The feedback loop is a green checkmark on a multiple-choice quiz. Progress is invisible unless you count certificates you would not show a hiring manager. You copy Stack Overflow, the tests pass, and you still do not know whether you got better or got lucky.
+
+Traditional coding education treats programming like a textbook. It should feel like a skill tree. Codecademy and freeCodeCamp did important work and still lose people to boredom — the research around this idea cites dropout on the order of 60% for traditional platforms. r/learnprogramming (1 million-plus) runs posts like "games that teach adults computer coding" that pull 90+ comments. r/gamedev (2 million) argues about whether game-based learning actually transfers. Facebook groups such as Gamification For Education (6.6K) are mostly aimed at K-12, which is exactly the problem: the adult who wants to ship an API is offered Scratch.
+
+AI coding assistants made completion easier and comprehension optional. That is a different product (see Code Coach on this site). This product is about *staying in the chair long enough to build the reps*. The dopamine of a game, the output of a GitHub repo. If those two are not the same artifact, you have built entertainment with a programming skin.
+
+## The Solution
+
+CodeQuest wraps production-grade challenges in RPG framing. You are not "completing module 3." You are debugging a crashed ship's nav system or writing an API to decode a scroll. The skills are real: HTML/CSS/JS, Python and databases, pandas and SQL. The wrapper is missions, XP, loot (reusable snippets), and guilds of 5–10 people. Automated tests grade the quest. Passing ships a commit to the learner's GitHub so the portfolio is a side effect of play.
+
+v1 is one chapter, not Unreal Engine. In-browser editor (CodeMirror or Monaco), a Node test runner, three quests in a single storyline (Web Dev Warrior: a landing page, a form API, a deploy checklist). Free first chapter on r/learnprogramming. Paid unlocks the rest of the track plus an AI "wizard" that reviews the *diff*, not a chatbot that writes the quest for them.
+
+Do not target kids. Scratch, Tynker, and CodeCombat already own that shelf. Adult tone, adult failure states, adult loot (auth middleware, not a magic sword PNG — or a sword PNG that *is* a code component, if you must).
+
+**How it works:**
+
+1. **Enter the first quest** — Browser IDE, story brief, failing tests, a 15-minute first win
+2. **Submit to the test runner** — Hidden tests + visible tests; XP only on pass; loot is a snippet saved to the player's inventory
+3. **Push the artifact** — One-click GitHub repo per quest so the portfolio exists even if they never pay
+4. **Join a guild (paid)** — 5–10 person group, weekly boss (a timed integration challenge), leaderboard optional and off by default for the anti-gamer adult
+
+The wedge is entertainment. The hook is visible progress. The outcome is employable work. If any of those three is fake, churn looks like every other bootcamp clone.
+
+## Market Research
+
+Gamified learning is a high-CAGR market whose adult-coding corner is still thin:
+
+- **Global gamified learning is projected around $25.7B by 2025 at a 27.3% CAGR from 2020** (figures cited throughout Ideabrowser competitive analysis, idea 7147). Coding education as a subset is described as $5B+ with ~25% annual growth in the same research. Treat the $25.7B number as the ocean; your SAM is adults who start Python/JS and quit.
+- **Keyword demand for "coding games" is on the order of 74,000 searches**, with adjacent "scratch coding games" growing fast (122% in the keyword work) — that growth is *kids*. Your SEO should not fight Scratch. Rank for "learn python by making a game" and "coding rpg for adults."
+- **Community pull is documented.** r/learnprogramming 1M+, 90-comment threads on adult coding games; YouTube challenge/coding-game videos routinely in the 1M+ view range (Code Bullet, n8dev, Goodgis). Facebook gamification groups are educator-heavy — useful for B2B later, not the v1 buyer.
+- **Retention claims in the category** (3x engagement, 70% module completion vs traditional) are vendor-favorable. Use them as a hypothesis to measure, not as a homepage fact. Your own chapter-1 completion rate is the only number that matters in month one.
+- **Build-cost collapse** is the why-now: in-browser IDEs, cheap auto-graders, and AI review make a solo MVP plausible at a fraction of a 2020 serious-games budget. The research cites startup costs down into the $100K range versus million-dollar builds. A weekend builder should ignore the $100K and ship chapter 1.
+
+The stage is *growth, kids-mature, adult-solo underserved*. CodeCombat moved toward schools and Roblox. CodinGame moved toward hiring. The bored adult on a Tuesday night is still watching YouTube.
+
+## Competitive Landscape
+
+- **CodeCombat** — 530+ levels, Python/JS, RPG, Roblox integration, freemium, school-friendly. Strongest narrative competitor. Kid-to-teen center of gravity. Weak on adult "boss fights" like OAuth and deployments. Do not clone their pixel art. Clone their "curriculum in a world" idea for grown-ups.
+- **CodinGame** — 25+ languages, puzzles, Clash of Code, bots, hiring certifications (they claim much better talent prediction for employers). Free core, enterprise recruiting. Competitive, not a dungeon crawl. Great if you want multiplayer later; wrong v1 feel for the bored beginner.
+- **Codewars** — Katas, 50+ languages, solution comparison, free + premium. Community gold. Minimal story, no loot-as-components, easy to feel like LeetCode. Adjacent, not a substitute for a campaign.
+- **Codecademy / freeCodeCamp** — The boredom baseline. freeCodeCamp will always be free and trusted. Your paid reason is the campaign and the guild, not the explanations.
+- **Scratch / Tynker / Code.org** — Kids. If your landing page looks like them, adults bounce. "Scratch coding games" search growth is a trap for this positioning.
+- **Duolingo** — The north-star habit loop, not a coding product. If they ship coding, you need a deeper quest-to-portfolio link than streaks.
+
+**Your Opportunity**
+
+Adult-only dungeon crawl with real GitHub artifacts and API/auth boss fights. Freemium chapter 1. $10/month for full storylines + AI review of *their* code. $5–$20 content packs for extra tracks. At 8,300 paid users and $10/month you are at $1M ARR — that is the research's illustration, not a forecast. Path to $5K/month is 500 paying users. Sell entertainment in the ad, skills in the onboarding, portfolio in the settings page.
+
+Stay out of schools until the adult product has retention. School sales will kid-ify the art and kill the Reddit launch.
+
+## Business Model
+
+- **Free** — Chapter 1, GitHub export, no guilds
+- **Adventurer** ($10/month) — Full current storyline, AI wizard review, inventory of loot snippets
+- **Packs** ($5–$20) — Extra tracks (mobile, ML) sold separately so a data-science buyer does not pay for web-dev chapters they will skip
+- **Annual** ($49/year) — Continuity
+- **Workshop** ($500, backend) — Live "boss rush" for the high-ticket learner; skip until 200 subs
+
+**Unit Economics**
+
+- **~$0.05–$0.15** — Test-runner compute per submit; AI review maybe $0.10 extra on paid
+- **~80%** — Gross margin on $10/month after compute
+- **$20–$40** — Target CAC via Reddit and YouTube; first 200 users should be $0
+- **~$70** — LTV at 7-month average (habit products churn; design the guild for month 2)
+
+Path to $5K/month: 500 Adventurer subs. Path to $10K/month: 800 subs plus packs. Do not count hiring-enterprise CodinGame money until you have a skills graph employers believe.
+
+## Recommended Tech Stack
+
+- **Next.js 15** — Marketing + quest UI. Keep the IDE in a client island.
+- **Monaco or CodeMirror 6** — In-browser editor. Monaco if you want VS Code muscle memory.
+- **Judge0 or a homegrown Node VM** — Isolated test runs. Timeouts and memory caps are not optional.
+- **Supabase** — users, quests, attempts, inventory (snippet text), guilds, xp_events.
+- **GitHub App** — Create a repo per user, push quest folders on pass.
+- **Claude** — Paid-only review of the diff against the quest rubric. Never auto-complete the quest in the editor — that destroys the game.
+- **Stripe** — $10/month and packs.
+- **Vercel + a small Fly.io worker** — Web on Vercel; judge on Fly so a fork bomb is not your serverless bill.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "CodeQuest" — an adult-toned coding RPG. No cartoon mascots. Dark UI, one gold accent.
+
+Schema:
+- profiles(id, user_id, xp INT, chapter INT, github_login TEXT)
+- quests(id, slug, title, story_md TEXT, starter_code TEXT, tests TEXT, xp_reward INT)
+- attempts(id, user_id, quest_id, passed BOOLEAN, code TEXT, created_at)
+- inventory(id, user_id, name TEXT, snippet TEXT)
+
+Routes: /, /play/[quest], /inventory, /guild (stub)
+Seed 3 quests in a "Web Dev Warrior" chapter:
+1. Fix the ship's status page (HTML/CSS)
+2. POST /nav/correct with a JSON body (API)
+3. Add session auth so only the captain can fire thrusters
+
+Stripe: Adventurer $10/mo.
+```
+
+**2. In-Browser Editor + Test Runner**
+
+```text
+Play page:
+- Left: story + visible tests
+- Right: CodeMirror 6
+- Submit posts code to /api/judge
+- Judge runs the quest's tests in a sandboxed Node worker with 3s timeout and no network
+- On pass: award xp, insert inventory loot (a snippet from the solution template), show "Push to GitHub" if connected
+- On fail: show the first failing assertion only (do not dump the hidden tests)
+
+Hidden tests live only on the server. Never send them to the client.
+```
+
+**3. GitHub Artifact + AI Wizard (Paid)**
+
+```text
+GitHub App: on first pass, create repo codequest-<username> and commit /chapter-1/<quest-slug>/ with README generated from story_md (strip game voice into a professional summary).
+
+Paid wizard:
+- Send {quest rubric, student diff} to Claude
+- Return 3 bullets: what worked, the real-world analog (e.g. "this is session auth"), one improvement
+- Refuse to paste a full solution. If the user asks for the answer, return a hint that points at the failing test name.
+
+Guild stub: table guilds(id, name) and memberships; UI can wait.
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #7147 and the public research it cites (August 2026 snapshot). Verify competitor positioning on live sites; gamified-ed reports disagree on totals.
+
+- [CodeCombat](https://codecombat.com)
+- [CodinGame](https://www.codingame.com)
+- [AlgoCademy — coding games roundup](https://algocademy.com/blog/19-coding-games-to-learn-programming-fun-ways-to-sharpen-your-skills/)
+- [Tynker — coding games](https://www.tynker.com/blog/coding-games/)
+- [Codementor — coding games](https://www.codementor.io/@johnselawsky/8-coding-games-to-improve-and-level-up-your-programming-skills-xtiaq9dvo)
+- [r/learnprogramming](https://www.reddit.com/r/learnprogramming/)
+- [r/gamedev](https://www.reddit.com/r/gamedev/)
+
+Page sourced via Ideabrowser MCP (idea_id 7147): get_idea_research, competitive_analysis, go_to_market, community_analysis, keyword_list, why_now.

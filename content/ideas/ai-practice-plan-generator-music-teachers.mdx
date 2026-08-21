@@ -1,0 +1,156 @@
+---
+slug: "ai-practice-plan-generator-music-teachers"
+title: "AI Practice Plan Generator for Music Teachers"
+---
+
+## The Problem
+
+It is 9pm. The piano teacher finished her last student three hours ago. She is still at the kitchen table writing Monday's C-major scales, Tuesday's measures 5–8 of the recital piece, and Wednesday's chord transition that keeps tripping him up. Twenty-three students. Then the parent emails: progress, encouragement, a gentle nudge about practice. By 11pm she is done. Thursday she does it all again.
+
+This is not a time-management failure. It is the job. After every lesson, independent music coaches spend 15–30 minutes typing notes, assembling homework, and sending recaps — extra work multiplied by each student. The admin load is what caps how many students a coach can actually take. They are not limited by teaching hours. They are limited by how many emails they can stomach.
+
+The signal is loud in the places teachers already hang out. r/MusicTeachers (about 4,900 members) and r/pianoteachers (about 8,900) run constant threads on lesson-note overhead. r/guitarlessons sits at 431,000 members and treats interactive teaching tools as a standing topic. Facebook's Acoustic Guitar Players group (216,000+) and Simply Piano Community talk about time-saving lesson workflows the way K-12 teachers talk about Sunday planning. Otter and Notion templates get recommended, then abandoned, because a generic transcript does not know what a "bow hold" or a "ii-V-I" is, and a blank homework doc still has to be written by hand.
+
+The cost is capacity. A coach at $60/lesson who drops two students to stay sane is leaving roughly $5,000/year on the table — before counting the churn from students who never get a written practice plan and quietly quit. Online 1:1 instruction is already about 47.6% of online music-education spend. The coaches running that slice still do the follow-up with a keyboard and a memory of what they said an hour ago.
+
+## The Solution
+
+Note By Note (LessonRecapAI in the research, same product) listens so teachers do not have to write. Hit record on the phone. Teach the lesson like normal. The AI transcribes the session, extracts what actually matters — mistakes corrected, techniques introduced, pieces assigned, tempo targets mentioned — and generates three editable outputs: a student recap highlighting wins and next work, a practice plan broken into daily assignments, and a parent email summarizing progress. Twenty minutes of typing becomes twenty seconds of review.
+
+The product is coach-side, not another student practice app. Yousician and Simply Piano already occupy the student-facing feedback slot. What they do not do is sit in the teacher's post-lesson workflow and emit documents the teacher would have written anyway, in the teacher's voice. Templates are tuned to how music teachers actually talk ("slow the left hand, keep the right hand light") rather than generic meeting-summary language. Consent is first-class: recording is opt-in per lesson, audio is processed then discarded on the free and Starter plans, and a dictation fallback exists for teachers or parents who will not record minors.
+
+**How it works:**
+
+1. **Record the lesson** — One tap starts capture on the teacher's phone or a Zoom bot for online lessons; consent banner is shown to the student/parent before audio flows
+2. **Extract the pedagogy** — Whisper transcribes; an LLM tagged with a music ontology (technique, repertoire, theory, tempo, assignment) pulls structured events out of the transcript
+3. **Generate the three outputs** — Student recap, daily practice plan, and parent email render from templates the teacher can edit in place
+4. **Send and remember** — One-click email or SMS to the family; the system stores last-assigned work so next week's plan continues the thread instead of restarting
+
+The retention mechanic is longitudinal memory. By week four the tool knows this student always rushes the B section and this parent wants a Friday reminder. Switching to Otter means losing that student history, which is the switching cost incumbents cannot copy without becoming a music product.
+
+## Market Research
+
+Online music education is a growth market sitting next to a much faster AI-in-music layer. The coach-admin niche inside it is still empty:
+
+- **Online music education is estimated at roughly $3.3B in 2025, growing to about $6.6B by 2030 at a 14.8% CAGR**, with live 1:1 instruction around 47.6% of spend (Market.us / Ideabrowser competitive analysis, idea 4844). Alternative estimates put the category at $17B in 2024 heading to $86.2B by 2034 at 17.6% CAGR — the point is consistent double-digit growth, not a single number.
+- **AI in music overall sits near $5.2B in 2024 and is forecast toward $60.4B by 2034 (27.8% CAGR)**; generative AI in music is $569.7M in 2024 heading to $2.79B by 2030 at 30.5% CAGR (Grand View Research, Market.us). Capital and model quality are flowing into audio. Almost none of it is aimed at the teacher's after-lesson admin.
+- **The education ERP/LMS layer that studios already pay for is $12.7B heading to $25.2B at 14.7% CAGR.** Teachworks and MyMusicStaff own scheduling and billing. They do not own AI recap. That is the integration surface, not the competitor to fight.
+- **Community demand is already organized.** r/guitarlessons at 431K, Facebook Acoustic Guitar Players at 216K, Pianote-class YouTube channels pulling a million-plus views per lesson video. Ideabrowser's community analysis found no default AI tool recommended in these channels for lesson admin — the distribution channel exists and is unoccupied.
+- **Adult beginners are a demand spike** in keyword data (guitar and piano beginner queries), and they are the students who most need a written plan between weekly lessons. The follow-up is what keeps them from quitting in month two.
+
+The stage is *nascent inside a growth market*. Student-side AI practice tools are crowded. Teacher-side post-lesson automation is not. That gap closes the moment a studio ERP ships a "good enough" recap button, which is why the first 12 months are about becoming the default copilot in teacher Facebook groups before Teachworks copies the feature.
+
+## Competitive Landscape
+
+There is no category-defining "AI lesson recap + homework generator for music teachers." Competition is adjacent:
+
+- **Otter.ai** — Mature ASR, Zoom/Meet/Teams integrations, brand trust. Freemium with per-user monthly plans that fit a teacher budget. Completely pedagogy-blind: it cannot name a technique, a repertoire piece, or a practice goal, and it will not emit a homework plan. Strength is transcription. Weakness is everything after the transcript.
+- **MyMusicStaff / Teachworks / LessonMate** — Vertical studio ERPs: scheduling, billing, parent comms, a notes field. Typical pricing sits under $40–$60/month per teacher or studio. High switching costs because they own the calendar and invoices. Notes and homework are still typed by hand. They are the distribution partner or the fast-follower, not the current AI layer.
+- **Muzie, Rock Out Loud Live, and other lesson-video platforms** — Native to music, sometimes with notation and a notes panel. Recap and homework remain manual. Good place to embed as a Zoom-app-style add-on.
+- **Yousician / Simply Piano** — Student-side pitch and rhythm scoring. They reduce the *need* for written homework for some beginners, which is the substitute threat, not a coach-admin product. Consumer subscription pricing.
+- **ChatGPT + a Notion template** — The real incumbent. Free or $20/month, infinitely flexible, and it still requires the teacher to remember and retype what happened in the lesson. The capture problem is unsolved.
+
+**Your Opportunity**
+
+Own the AI layer on top of the studio OS, do not try to replace it. Sell "twenty minutes of typing becomes twenty seconds of review" to independent teachers at $49/month, then white-label into MyMusicStaff-class ERPs. The wedge is pedagogy-aware extraction — an ontology of techniques, levels, and repertoire trained on real lessons — plus the three-output pack (student / plan / parent) that generic note-takers will not ship. Start with piano and violin (highest lesson density, most parent-email load), then guitar. You only need about 850 teachers at $49/month to hit $500K ARR.
+
+## Business Model
+
+Per-teacher SaaS that converts into studio and school licenses. Teachers buy personally the same way they buy a metronome app; studio owners consolidate seats once three teachers in the building are already on it.
+
+- **Starter** ($20/month) — Transcription + lesson summary, 40 lessons/month, email send, audio discarded after processing
+- **Pro** ($49/month, or $99/month for a studio of up to 5 teachers) — Personalized daily practice plans, parent emails, longitudinal student memory, SMS send, 200 lessons/month
+- **Annual** ($200/year per teacher) — Continuity discount, priority support, early access to new instrument packs
+- **Institutional** ($1K–$10K/year per school) — Shared teacher accounts, FERPA/COPPA packet, SSO, retained audio only on signed DPA, roster sync
+
+**Unit Economics**
+
+- **$0.08–$0.20** — Whisper + LLM cost per 45-minute lesson
+- **~85%** — Gross margin on Pro at $49 with 80 lessons/month typical
+- **$40–$70** — Target CAC via Facebook music-teacher groups and YouTube pedagogy channels
+- **~$420** — LTV at 10-month average tenure on Pro
+
+Path to $5K/month: 100 Pro teachers. Path to $10K/month: 150 Pro plus two $8K school contracts. The free webinar / 10-lesson trial is the bait; conversion happens the first week a teacher sends an unedited parent email and does not get a correction reply.
+
+## Recommended Tech Stack
+
+The hard problem is not ASR. It is turning a noisy home-studio recording into structured pedagogy without inventing assignments the teacher never gave.
+
+- **Next.js 15 (App Router) on Vercel** — Teacher dashboard, review UI for the three outputs, magic-link auth. Mobile-first record screen as a PWA so the App Store is optional for v1.
+- **Supabase (Postgres + Auth)** — Tables for `teachers`, `students`, `lessons` (transcript, events JSON, outputs), `practice_plans`, `consent_events`. RLS scoped to the teacher. Do not store raw audio on Starter/Pro unless the institutional DPA is signed.
+- **Whisper (OpenAI or Groq) + Claude Sonnet** — Whisper for transcription; Claude with a constrained JSON schema for pedagogical events (`technique`, `repertoire`, `assignment`, `tempo_bpm`, `praise`). Reject any assignment that cannot be tied to a transcript span.
+- **Twilio or Resend** — Parent email as the default send path; SMS as a Pro add-on. A2P 10DLC if you text US numbers.
+- **Zoom SDK or a recall.ai-style meeting bot** — Online-lesson capture without asking the teacher to run a second recorder.
+- **Stripe Billing** — Starter/Pro/Studio/Institutional. Metered overage on lesson count so power users upgrade instead of churning.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "Note By Note" — an AI practice-plan generator for private music teachers.
+
+Supabase schema:
+- teachers(id, user_id, email, plan TEXT, instrument_focus TEXT[], stripe_customer_id)
+- students(id, teacher_id, name, instrument TEXT, level TEXT, parent_email TEXT, notes TEXT)
+- lessons(id, teacher_id, student_id, recorded_at, duration_sec INT, transcript TEXT, events JSONB, recap TEXT, practice_plan JSONB, parent_email_body TEXT, status TEXT)
+- consent_events(id, lesson_id, granted_by TEXT, granted_at TIMESTAMPTZ)
+- practice_items(id, lesson_id, student_id, day TEXT, minutes INT, instruction TEXT, source_span TEXT)
+
+RLS: teachers read/write only their rows. Do not add an audio_url column on lessons for v1 (process-and-discard).
+
+Routes: /record, /lessons/[id] (review + edit the three outputs), /students, /settings.
+Stripe products: Starter $20/mo (40 lessons), Pro $49/mo (200 lessons), Studio $99/mo (5 seats).
+Env: OPENAI_API_KEY, ANTHROPIC_API_KEY, RESEND_API_KEY, SUPABASE_SERVICE_ROLE_KEY.
+```
+
+**2. Pedagogy Extraction + Three Outputs**
+
+```text
+Build the core pipeline as a Server Action that runs after upload.
+
+1. Transcribe with Whisper. Store transcript on lessons.transcript.
+2. Call Claude with a strict JSON schema:
+   {events: [{type: "technique"|"repertoire"|"assignment"|"tempo"|"praise"|"correction", span: string, detail: string}]}
+   System prompt: "You extract music-lesson pedagogy. Only emit events that are directly supported by a transcript span. Never invent an assignment the teacher did not give. If the teacher said 'practice measures 5-8 slowly', that is an assignment. If they only praised tone, that is praise, not homework."
+3. Render three outputs from the events:
+   - Student recap: 3-5 sentences, second person, name the piece and one win.
+   - Practice plan: Mon-Sun rows with minutes and a single instruction per day, totaling the teacher's stated practice target or 20 minutes default.
+   - Parent email: 120-180 words, warm, no jargon without a translation, one ask (practice days).
+4. Show all three in an editor with a "send" button. Sending writes status=sent and emails parent_email via Resend.
+
+If any assignment event has an empty span, drop it and flag "unverified — add manually" rather than shipping a hallucinated task.
+```
+
+**3. Record + Consent + Longitudinal Memory**
+
+```text
+Mobile-first record flow:
+- Before MediaRecorder starts, show a consent sheet: who is being recorded, that audio is processed and discarded on this plan, and a "use dictation instead" fallback that opens a textarea.
+- Write a consent_events row before upload.
+- Upload audio to a short-lived signed URL, run the pipeline, delete the blob.
+
+Longitudinal memory:
+- On generate, fetch the last 3 sent practice_plans for this student.
+- Pass them into the Claude user message as "do not repeat last week's exact assignments unless the teacher restated them; continue unfinished work."
+- Surface a "continue from last week" chip on the review screen.
+
+Add a weekly cron that emails the teacher a one-line digest: N recaps sent, N still in draft, students with no plan in 14 days.
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #4844 and the public research it cites (August 2026 snapshot). Verify studio-software pricing on live product pages before quoting it.
+
+- [Market.us — AI in Music Market](https://market.us/report/ai-in-music-market/)
+- [Grand View Research — Generative AI in Music](https://www.grandviewresearch.com/horizon/outlook/generative-ai-in-music-market-size/global)
+- [Verified Market Reports — AI Music Generator](https://www.verifiedmarketreports.com/product/ai-music-generator-market/)
+- [Otter.ai](https://otter.ai)
+- [MyMusicStaff](https://www.mymusicstaff.com)
+- [Teachworks](https://teachworks.com)
+- [r/MusicTeachers](https://www.reddit.com/r/MusicTeachers/)
+- [r/guitarlessons](https://www.reddit.com/r/guitarlessons/)
+
+Page sourced via Ideabrowser MCP (idea_id 4844): get_idea_research, competitive_analysis, go_to_market, community_analysis, keyword_list, why_now.

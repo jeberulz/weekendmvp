@@ -7450,6 +7450,235 @@
         "builder_confidence": 9
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-practice-plan-generator-music-teachers",
+      "title": "AI Practice Plan Generator for Music Teachers",
+      "publishedAt": "2026-08-21",
+      "category": "education",
+      "description": "Turn recorded music lessons into student recaps, daily practice plans, and parent emails so coaches stop typing 20 minutes after every session.",
+      "buildTime": "8",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "non-technical",
+        "developers"
+      ],
+      "source": "ideabrowser:4844",
+      "og": {
+        "subject": "An open practice notebook on a dark piano bench, lime edge light, late night, shallow focus, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2273,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-21T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-vocal-coach-realtime-pitch",
+      "title": "AI Vocal Coach with Real-Time Pitch Feedback",
+      "publishedAt": "2026-08-21",
+      "category": "education",
+      "description": "On-device real-time pitch feedback during Zoom vocal lessons so students see intonation while they sing and coaches stop rewinding recordings.",
+      "buildTime": "8",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:4845",
+      "og": {
+        "subject": "A condenser microphone on a dark vocal-booth stand, aubergine backlight, shallow focus, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 1957,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-21T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "skill-path-course-finder",
+      "title": "SkillPath: The Course Finder for Any Skill",
+      "publishedAt": "2026-08-21",
+      "category": "education",
+      "description": "Sequenced learning paths across YouTube, Udemy, and docs — one skill, one level, one weekly time budget instead of a 10,000-course catalog.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "non-technical",
+        "developers"
+      ],
+      "source": "ideabrowser:5535",
+      "og": {
+        "subject": "A closed laptop on a dark desk with a short trail of blank index cards receding into emerald light, shallow focus, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 1804,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-21T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "python-training-for-professionals",
+      "title": "Python Training for Professionals with Day Jobs",
+      "publishedAt": "2026-08-21",
+      "category": "education",
+      "description": "Profession-first Python courses that start with MLS scraping or contract parsing — a tool you use Monday, not another weather-app bootcamp.",
+      "buildTime": "8",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "developers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:6809",
+      "og": {
+        "subject": "An industry binder beside a laptop showing a terminal cursor, mint edge light, late night, no people, no faces, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 1775,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-21T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "gamified-coding-rpg",
+      "title": "Gamified Coding RPG for Adult Learners",
+      "publishedAt": "2026-08-21",
+      "category": "education",
+      "description": "Adult coding RPG with real GitHub artifacts — quests, XP, and boss fights that ship portfolio work instead of cartoon katas.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:7147",
+      "og": {
+        "subject": "A game controller beside a small glowing cube on a dark desk, lavender backlight, shallow focus, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 1762,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-21T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
