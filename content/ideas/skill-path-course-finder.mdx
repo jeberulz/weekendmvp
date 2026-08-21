@@ -1,0 +1,152 @@
+---
+slug: "skill-path-course-finder"
+title: "SkillPath: The Course Finder for Any Skill"
+---
+
+## The Problem
+
+Learning a skill online is no longer a content problem. It is a navigation problem. YouTube has 47 tutorials on Excel pivot tables. Udemy has 200 Python courses. Coursera, Skillshare, LinkedIn Learning, and a pile of newsletters all claim to be the starting point. People spend more time choosing *what to learn from* than learning. Half quit because they picked the wrong resource for their level — a 14-hour "complete bootcamp" when they had 45 minutes on Thursday, or a beginner video when they needed the chapter on window functions.
+
+Busy professionals feel this as decision fatigue, not as a lack of ambition. r/IWantToLearn (1.5 million members) and r/Productivity (1.3 million) are full of "what should I watch to learn X" threads that never converge. Facebook groups for micro-learning and soft-skills training (Soft Skills Training & Personality Development at 14.4K members) complain about course-catalog overload the same way. YouTube engagement on TEDx, Simon Sinek, and Jim Kwik proves people will watch — they will not finish a path they assembled themselves from twelve tabs.
+
+The incumbent answer is "here are 10,000 options, ranked by popularity." Popularity is a proxy for production value, not for whether a mid-career marketer with four hours a week should start on that video. LinkedIn Learning is slightly better at job-alignment and still course-shaped. ChatGPT will happily hallucinate a curriculum that cites videos that do not exist. The missing layer is a navigator: one skill, one level, one time budget, one sequenced path across platforms that already exist.
+
+## The Solution
+
+SkillPath does not host courses. It sequences them. You enter a skill, a current level, and hours per week. The app returns a path: this free YouTube series for foundations, this Udemy course for applied practice, this project tutorial for portfolio proof. Every resource is matched to level and duration. Users rate resources after they finish. Completion and abandon data feed back into the ranking so paths that people actually complete rise and paths that dump users at module three fall.
+
+v1 is not an AI that scrapes the entire internet. It is a curated graph. Start with ten high-demand skills (Excel, Python, SQL, graphic design, copywriting, video editing, personal finance, web development, data analysis, AI tools). Three to five paths per skill across beginner / intermediate / advanced. Manual curation in Airtable or Postgres, an assessment quiz that places the user, and a week-by-week plan. The AI layer is placement and sequencing, not a fake "we watched every video" claim.
+
+The "one video" marketing line from the original idea is the lead magnet (a quiz that returns a single best next video). The paid product is the multi-week path plus progress tracking. That split matters: the quiz goes viral; the path is what retains.
+
+**How it works:**
+
+1. **Place the learner** — Quiz: skill, self-reported level, hours per week, deadline if any; output a starting node on the skill graph
+2. **Return a sequenced path** — Ordered resources (YouTube / Udemy / docs / project) with estimated hours that fit the weekly budget
+3. **Track completion** — User marks a node done or abandoned; time-to-complete and drop-off write back to the resource
+4. **Resequence** — If they abandon, the next node is a shorter alternative at the same level, not "try harder on the 14-hour course"
+
+Network effect is the completion graph. After a few thousand marked nodes, ranking is empirical. That is the moat Udemy cannot copy without admitting most of its catalog should not be step one.
+
+## Market Research
+
+Video learning is a large, compounding market whose UX has not caught up to the catalog size:
+
+- **The e-learning market was about $258.7B in 2024, projected to $712.46B by 2032 at a 13.5% CAGR** (SkyQuest). Video-based content already takes 40%+ of that mix in several segmentations.
+- **Online learning platforms are expected to generate about $61.59B in 2026** at roughly 13% CAGR through 2030 (Statista outlook cited in Ideabrowser competitive analysis, idea 5535).
+- **Educational video licensing grows from $3.99B in 2025 to $8.26B by 2030 at 15.6% CAGR** (EIN / industry PR citing the licensing forecast). Rights are a real constraint — which is why SkillPath *links out* rather than hosting.
+- **The video-learning slice is also cited at $16.14B in 2025 heading to $50.63B by 2033** in the idea's highlight tags — treat it as a second cut of the same boom, not a third independent TAM. Micro-learning and AI curation are the named growth drivers.
+- **Demand channels are huge and free to post in.** r/IWantToLearn 1.5M, r/Productivity 1.3M, r/elearning 20K+ educators, r/socialskills 6.3M. "Skill learning" keyword volume in the research sits around 60,500/month. You are routing existing search, not creating a category.
+
+The stage is *growth, fragmented consumer curation*. Enterprise LMS is mature. The "one path through the mess" consumer layer is not. YouTube could ship this. They have not, because it would downrank 90% of the catalog.
+
+## Competitive Landscape
+
+Everyone sells a library. Nobody sells a route:
+
+- **Udemy** — 200K+ courses, marketplace, $10–$20 sale pricing, Personal Plan subscription. Scale and SEO ("python programming course" in the tens of thousands of monthly searches). Quality variance and search overload are the product. Lifetime access is a feature and a trap — you bought the wrong one forever.
+- **Skillshare** — Creative-class library, community projects, about $15/month or $99/year. Better taste, still a catalog. Weak on "I have 3 hours this week, start here."
+- **LinkedIn Learning** — $29.99/month or bundled with Premium. Job-aligned, certificates, 1B-user graph. Course-heavy, not single-next-step. Best of the incumbents for professionals; still not a cross-platform sequencer.
+- **Coursera** — University brand, 148M users, about $59/month plus enterprise. Multi-video, credential-shaped. Wrong granularity for "Excel pivot tables this afternoon."
+- **YouTube search** — Free, infinite, unstructured. The default workaround. 70% of people in the research prefer video and still cite choice overload.
+- **ChatGPT custom GPTs** — Will invent a path. Will cite dead links. No completion data.
+
+**Your Opportunity**
+
+Position against choice, not against content. "We do not host the course. We tell you which 40 minutes to do this week." Affiliate revenue on Udemy/Skillshare links is a margin kicker; do not make it the only revenue or you will rank the highest-commission junk. Start with career skills that have messy catalogs (Excel, Python, AI tools) where a wrong first resource costs weeks. Distribution: r/IWantToLearn AMAs, LinkedIn creators, bootcamp-prep partnerships. The 90-day free-path launch is how you get the completion data that makes the ranking real.
+
+## Business Model
+
+Consumer subscription with a team plan. Affiliate is gravy.
+
+- **Free** ($0) — Quiz + one path, ads or affiliate links, 90-day promo with all paths unlocked for early users
+- **Plus** ($9/month) — Unlimited paths, personalized resequencing, progress tracking, no ads
+- **Yearly** ($29/year) — Aggressive annual to beat "I already pay for Udemy"
+- **Teams** ($29/user/year or a $10K/year corporate package at the top of the ladder) — Shared paths, manager dashboard, skills the company actually wants
+
+Value ladder from the research also includes a $30/year exclusive-creator tier and a $10K corporate training package. Keep v1 at Free / $9 / Teams. Do not build exclusive video hosting until licensing is a department.
+
+**Unit Economics**
+
+- **Under $0.01** — LLM cost per placement quiz
+- **~90%** — Gross margin on Plus (no video hosting)
+- **$15–$25** — Target CAC via Reddit and LinkedIn organic; paid is optional
+- **~$80** — LTV at 9-month Plus tenure
+
+Path to $5K/month: ~550 Plus subs. Path to $10K/month: 900 Plus plus one $10K corporate. Affiliates can add 10–20% on top if you stay ruthless about not ranking junk.
+
+## Recommended Tech Stack
+
+This is a catalog-and-graph problem, not a streaming problem.
+
+- **Next.js 15 on Vercel** — Quiz, path player, progress. Server Components for path pages (SEO on "/learn/excel-pivot-tables").
+- **Supabase** — `skills`, `resources` (url, platform, hours, level, affiliate_url), `paths` (ordered resource_ids), `enrollments`, `events` (started, completed, abandoned). pgvector later for "more like this," not on day one.
+- **Airtable as the editorial CMS for v1** — Non-engineers curate the first 50 paths; sync to Postgres nightly.
+- **Claude for placement only** — Map quiz answers onto a starting node. Do not let it invent URLs.
+- **Stripe Billing** — $9 and $29/year. Affiliate redirects via a `/go/[resource]` hop for attribution.
+- **PostHog** — Funnel: quiz start → path view → first complete. Abandon is the product roadmap.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "SkillPath" — a cross-platform learning-path sequencer. You do not host video.
+
+Schema (Supabase):
+- skills(id, slug, name)
+- resources(id, skill_id, title, url, platform TEXT, hours FLOAT, level TEXT, affiliate_url TEXT)
+- paths(id, skill_id, level TEXT, title, resource_ids UUID[])
+- profiles(id, user_id, hours_per_week INT, plan TEXT)
+- enrollments(id, user_id, path_id, current_index INT)
+- events(id, user_id, resource_id, type TEXT, created_at) -- type in started|completed|abandoned
+
+Seed 3 Excel paths (beginner/intermediate/advanced) with real YouTube and Udemy URLs.
+Routes: /, /quiz, /learn/[skill]/[level], /app/today
+Stripe: Plus $9/mo, Plus annual $29/yr.
+```
+
+**2. Placement Quiz + Path Player**
+
+```text
+Quiz fields: skill (select), level (beginner/intermediate/advanced), hours_per_week (1|3|5|10), deadline (optional date).
+
+Placement: pick the path where path.level = quiz.level. If hours_per_week is 1, split the path into more weeks by grouping resources so no week exceeds 1.2 hours.
+
+Today view:
+- Show the current resource, estimated minutes, and buttons: Started / Done / This wasn't for me
+- Done increments current_index
+- This wasn't for me writes events.abandoned and swaps in an alternate resource at the same level with lower hours if one exists
+
+Never call an LLM to invent a URL. If no alternate exists, show "we'll add one — skip to next."
+```
+
+**3. Ranking from Completions**
+
+```text
+Nightly job:
+- For each resource, compute completion_rate = completed / (completed + abandoned) with Laplace smoothing (add 1/1)
+- Store on resources.completion_rate
+- When assembling a path for a new user, stable-sort candidate resources by completion_rate desc after filtering level
+
+Admin page /admin/resources shows completion_rate and event counts so curators can kill duds.
+
+Add a /go/[resourceId] redirect that appends affiliate params and logs a click event.
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #5535 and the public research it cites (August 2026 snapshot). Verify subscription prices on live pages before quoting them.
+
+- [SkyQuest — E-learning Market](https://www.skyquestt.com/report/e-learning-market)
+- [Statista — Online Learning Platforms Outlook](https://www.statista.com/outlook/emo/online-education/online-learning-platforms/worldwide)
+- [Educational video licensing market to $8.26B by 2030](https://tech.einnews.com/pr_news/888563562/the-educational-video-licensing-market-is-projected-to-grow-to-usd-8-26-billion-by-2030-expanding-at-a-cagr-of-15-6)
+- [The Business Research Company — Online Learning Platforms](https://www.thebusinessresearchcompany.com/report/online-learning-platforms-market-report)
+- [Udemy](https://www.udemy.com)
+- [Skillshare](https://www.skillshare.com)
+- [LinkedIn Learning](https://www.linkedin.com/learning/)
+- [r/IWantToLearn](https://www.reddit.com/r/IWantToLearn/)
+
+Page sourced via Ideabrowser MCP (idea_id 5535): get_idea_research, competitive_analysis, go_to_market, community_analysis, keyword_list, why_now.

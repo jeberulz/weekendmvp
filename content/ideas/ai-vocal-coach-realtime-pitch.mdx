@@ -1,0 +1,154 @@
+---
+slug: "ai-vocal-coach-realtime-pitch"
+title: "AI Vocal Coach with Real-Time Pitch Feedback"
+---
+
+## The Problem
+
+Most vocal training is broken in a specific way. You sing the exercise. Then the coach rewinds the Zoom recording and tells you what went wrong 30 seconds ago. By then you have already forgotten what your voice *felt* like in that moment. Students who practice alone all week drill the same mistake into muscle memory until the next lesson. It is learning to shoot a basketball blindfolded and finding out you missed after fifty shots.
+
+Zoom cannot give real-time pitch feedback. Latency and compressed audio make live pitch overlays on the *coach's* machine a lie — the student already sang the note. Apps like Yousician score you after the phrase in a self-paced curriculum that a working vocal coach cannot steer. Melodyne and Auto-Tune are accurate and live in a DAW, which means the teacher records, exports, and inspects contours after the lesson. That workflow is why coaches lose an hour or two a week to clip review.
+
+The demand is not theoretical. r/singing has 1.4 million members and regularly runs 90-comment threads on "which app actually tells me if I'm on pitch *while* I sing." r/transvoice (125,000+) and r/asktransgender treat real-time pitch as a medical-adjacent need, not a nice-to-have — gender-affirming voice work without live visual feedback is guesswork. Facebook's Vocal Training group sits above 205,000 members and complains about Melodyne's post-hoc workflow by name. Cheryl Porter's YouTube exercises pull 5 million views per video from people trying to get *any* feedback at home. Coaches in those same threads keep asking "what tools do you use?" because the answer is still a tuner app on a second phone.
+
+## The Solution
+
+VocalCoach Pro (PitchCoachAI in the research) runs on the *student's* device. The Web Audio API captures the mic locally, a pitch tracker lights a meter green or red against the target note *as they sing*, and the coach sees the same overlay beside the Zoom window. No cloud round-trip on the audio path. Correction happens in the millisecond the student can still feel the vowel.
+
+For teachers it is a second pair of ears that does not get tired. For students it is the practice partner they could never afford between weekly lessons. Coaches preload exercises with target pitches (a five-note siren, a major-scale on "gee"), students hit record in the browser, and a session log stores on-pitch percentage, range extrema, and the timestamps of the worst drift so the coach does not scrub the recording.
+
+v1 is deliberately dumb: open browser, grant mic, pick an exercise, sing, see the meter. Breath-support and vibrato classifiers wait until the pitch meter is trusted. The product positioning is "AI assistant, not judge" — coaches stay in charge of pedagogy; the tool only makes intonation visible.
+
+**How it works:**
+
+1. **Open the lesson room** — Student joins a link; mic permission stays on-device; coach opens the same room as a spectator overlay next to Zoom
+2. **Load the exercise** — Coach picks a template (siren, five-note scale, song snippet) with target MIDI notes and a tolerance in cents
+3. **Sing against the meter** — Pitch is estimated locally (autocorrelation / CREPE-lite WASM); the meter is green inside tolerance, red outside, with a trailing pitch curve
+4. **Review the take** — Session writes on-pitch %, range, and flagged timestamps; coach drops a 10-second voice note on a flag instead of rewatching the whole take
+
+The expansion after trust: breath dynamics from RMS envelope, range maps over months, and adaptive practice sets that target the intervals the student misses. That is the Grammarly-of-voice endgame. Do not ship it before the meter is believed.
+
+## Market Research
+
+Vocal learning is a multi-billion slice of a fast-growing online music-education market, and the live-lesson tool layer is still early:
+
+- **Online music education is estimated between about $4B and $17B today, heading toward $10–$86B over the next decade at roughly 8–18% CAGR** depending on the report. The vocal/singing segment inside it is about $3B at roughly 9% CAGR; a narrower online-singing-course niche is about $500M in 2025 at about 15% CAGR (Ideabrowser why-now / competitive analysis, idea 4845).
+- **Some forecasts put online music education at $4.27B in 2025 growing to $14.75B by 2035.** Music-education CAGR figures cited in the same research run as high as 17.63% through 2034. Directionally: remote lessons are not a pandemic leftover.
+- **Voice AI infrastructure is a separate rocket** — voice AI infra ~$5.4B heading to $133B by 2034 at 37.8% CAGR; AI voice generators ~$3.5B to $21.8B by 2030 at 29.6% CAGR (Market.us, Grand View Research). That spend is going into *generation and agents*. Pedagogy-aware live analysis is the unclaimed vertical on the same rails.
+- **Search already names the category.** "Online vocal lessons" at about 14.8K/month and "vocal pitch analyzer" at about 6.6K/month, with analyzer queries growing (Ideabrowser keyword analysis).
+- **Community proof is concentrated.** r/singing 1.4M, Vocal Training Facebook 205K+, trans-voice subs at 125K+, YouTube vocal-coach videos in the millions of views. People are not waiting to be educated about the problem. They are waiting for a tool that works *during* the note.
+
+The stage is *early for live, coach-centric analysis* inside a mature-enough lesson market. Yousician owns self-paced scoring. Nobody owns the Zoom-adjacent overlay. That is the window.
+
+## Competitive Landscape
+
+Direct competitors score pitch. Almost none of them sit inside a live 1:1 lesson:
+
+- **Yousician** — Category leader for interactive, mic-scored lessons across instruments including voice. Consumer subscription, huge brand, polished UX. Built for self-paced curricula, not for a coach running Zoom. Teacher data model is weak. You are not beating them at gamified homework. You are selling the live overlay they do not have.
+- **Smule** — Social karaoke, pitch correction, massive UGC network. Freemium. Entertainment-first. No pedagogy, no coach dashboard, no session history a teacher would bill against.
+- **Singing Carrots** — Browser pitch/range tools, some exercises, used in Facebook groups. Mostly post-hoc (upload a clip). Low price. Not a live-lesson companion.
+- **Tuner apps (Pano Tuner and clones)** — Freemium or one-time. Singers already use them on a second device during lessons. They prove the need and the UX expectation: a needle. They do not log a semester of lessons or let a coach preload targets.
+- **VoiceLessons.com and similar teacher OS tools** — Scheduling, payments, materials. SaaS / marketplace fees. They own the coach relationship. They do not analyze audio. Integration target.
+- **Melodyne / Auto-Tune in a DAW** — Accurate, expensive in time. The workaround your product deletes.
+
+**Your Opportunity**
+
+Sell to independent vocal coaches first ($29–$30/month), not to the Yousician consumer. The pitch is time recovered (no record-and-rewind) plus a visual the student can use alone on Tuesday. School licenses at $199/month or $500–$2,000/year sit behind that. Trans-voice and speech-adjacent users are a second wedge with higher willingness-to-pay and different privacy requirements — keep audio on-device and say so. Partner with VoiceLessons / Lessonface as a Zoom-adjacent plugin rather than replacing their CRM.
+
+## Business Model
+
+Freemium student practice, paid coach seats, school licenses. Coaches are the buyer; students are the daily active.
+
+- **Student Starter** ($9/month) — Real-time meter, basic exercises, 4-week history
+- **Coach Pro** ($30/month) — Live spectator overlay, custom exercise templates, session flags, student roster, voice notes on timestamps
+- **Technique add-ons** ($10/month each) — Vibrato, breath envelope — sold after the meter is trusted
+- **School / studio** ($199/month or $500–$2,000/year) — Multi-teacher, shared exercise library, progress exports for recitals
+
+**Unit Economics**
+
+- **Near $0 on the audio path** — Pitch runs in WASM on the student device; cloud cost is session metadata + optional coach voice notes
+- **~$0.02** — LLM cost only if you add post-session "what to practice" copy; skip it in v1
+- **~90%** — Gross margin on Coach Pro
+- **$50–$90** — Target CAC via YouTube coach collabs and Facebook group betas
+- **~$280** — LTV at 9-month coach tenure
+
+Path to $5K/month: ~170 Coach Pro seats. Path to $10K/month: 250 coaches plus three $8K school contracts. The free pitch-meter demo (no account) is the YouTube Short; conversion is the coach who runs one lesson with the overlay and never rewinds again.
+
+## Recommended Tech Stack
+
+Latency is the product. If pitch leaves the device, you have built another post-hoc analyzer.
+
+- **Next.js 15 + Web Audio API** — Lesson room as a client component; AudioWorklet for capture; no server in the pitch loop.
+- **Pitch detection in WASM** — Start with a well-tested autocorrelation (or a quantized CREPE) compiled to WASM. Tune for singing (wider range, vibrato wobble) not guitar tuners.
+- **LiveKit or Daily (optional)** — Only if you want a single room instead of "Zoom + overlay." v1 can be overlay-only and tell coaches to keep Zoom.
+- **Supabase** — `coaches`, `students`, `exercises` (target MIDI JSON), `sessions` (on_pitch_pct, fmin, fmax, flags JSON). No raw audio blobs on the default plan.
+- **Stripe Billing** — Student / Coach / School. Meter nothing on audio.
+- **Vercel** — Static + serverless for auth and session writes. The hot path never hits Vercel.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 App Router project (TypeScript, Tailwind v4) called "VocalCoach Pro" — real-time pitch feedback for online vocal lessons.
+
+Requirements:
+- /practice — student view: mic permission, pitch meter, start/stop
+- /coach — spectator overlay + exercise picker + roster
+- Pitch MUST be computed in the browser (AudioWorklet + WASM). Do not send PCM to the server.
+- Supabase tables: coaches, students, exercises(id, name, targets JSONB, cents_tolerance INT), sessions(id, student_id, exercise_id, started_at, on_pitch_pct FLOAT, fmin FLOAT, fmax FLOAT, flags JSONB)
+- Stripe: Student $9/mo, Coach $30/mo, School $199/mo
+- Env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY
+
+Accessibility: meter is not color-only — include a numeric cents readout and an aria-live "on pitch / sharp / flat" announcement throttled to 1Hz.
+```
+
+**2. Real-Time Pitch Meter**
+
+```text
+Implement an AudioWorkletProcessor that:
+1. Reads input frames at 48kHz
+2. Estimates F0 with autocorrelation, ignoring frames below a noise gate
+3. Converts F0 to MIDI and cents-off versus the current target note from the exercise timeline
+4. Posts {midi, cents, rms, t} to the main thread at ~30Hz
+
+UI:
+- Horizontal target line for the current note
+- Moving pitch curve for the last 3 seconds
+- Green when abs(cents) <= exercise.cents_tolerance (default 30), red otherwise
+- Big numeric cents readout
+
+Coach overlay reads the same data over a lightweight WebSocket of metadata only (no audio). If WebSocket fails, the student meter still works fully offline for that take.
+```
+
+**3. Exercises + Session Review**
+
+```text
+Exercise templates as JSON: {name, bpm, notes: [{midi, startMs, endMs}]}.
+Ship three built-ins: five-note major scale on A3, glissando siren, sustained "gee" on a single note.
+
+On stop:
+- Compute on_pitch_pct = share of voiced frames inside tolerance
+- Compute fmin/fmax of voiced frames
+- Flag any 500ms+ window with abs(cents) > 50
+- Store session row
+- Coach can click a flag and record a 10s voice note (MediaRecorder) uploaded to Supabase Storage, referenced from flags[i].note_url
+
+Do not add an LLM in this prompt. Accuracy of the meter is the trust feature.
+```
+
+## Sources
+
+Market sizing, competitor set, and demand signals sourced from Ideabrowser MCP idea #4845 and the public research it cites (August 2026 snapshot). Verify app pricing on live pages before quoting it.
+
+- [Market.us — Voice AI Infrastructure](https://market.us/report/voice-ai-infrastructure-market/)
+- [Grand View Research — AI Voice Generators](https://www.grandviewresearch.com/industry-analysis/ai-voice-generators-market-report)
+- [Verified Market Research — Voice Changing Software](https://www.verifiedmarketresearch.com/product/voice-changing-software-market/)
+- [Yousician](https://yousician.com)
+- [Singing Carrots](https://singingcarrots.com)
+- [r/singing](https://www.reddit.com/r/singing/)
+- [r/transvoice](https://www.reddit.com/r/transvoice/)
+
+Page sourced via Ideabrowser MCP (idea_id 4845): get_idea_research, competitive_analysis, go_to_market, community_analysis, keyword_list, why_now.
