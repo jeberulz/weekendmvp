@@ -1,0 +1,159 @@
+---
+slug: "add-email-to-weekend-mvp"
+title: "How to Add Email to Your Weekend MVP (Without SendGrid Hell)"
+description: "Resend for receipts, Loops for onboarding, Beehiiv for the list. The 2026 email split, the DNS you actually need, and what to skip until you have paying users."
+category: "Tutorial"
+publishedAt: "2026-08-21"
+wordCount: 1100
+readMinutes: 6
+heroAlt: "A blank envelope on a dark desk caught by a single mint side light, shallow focus, no text"
+---
+
+## Who This Is For
+
+Your app can create an account.
+
+It cannot send a password reset that lands in the inbox.
+
+You pasted a SendGrid tutorial from 2019, hit a sender-identity maze, and decided email was "phase two." Phase two is how people get stuck in your product with no way back in.
+
+This is the plumbing article. If you do not have a product yet, grab a wedge from [startup ideas](/startup-ideas), ship login, then come back and wire mail before you invite anyone.
+
+## Three Jobs, Three Tools
+
+Founders break email by forcing one vendor to do three jobs:
+
+1. **Transactional** — magic links, receipts, "your export is ready." Must arrive. Must not look like marketing.
+2. **Lifecycle** — day-1 onboarding, "you never activated," dunning. Triggered by product events.
+3. **Audience** — a newsletter people opted into on purpose.
+
+In 2026 the boring split is:
+
+- **Resend** for transactional (React Email, `npm install resend`, free **3,000 emails/month**, 100/day cap on free; Pro about **$20/month for 50,000**).
+- **Loops** when you want visual onboarding sequences tied to user properties (paid plans commonly start around **$49/month**; unlimited transactional on paid is the pitch versus Resend's per-send curve).
+- **Beehiiv** when the list *is* the product or the waitlist engine (free through **2,500 subscribers** on Launch). That is a different surface than receipts.
+
+Do not put password resets on Beehiiv. Do not put a weekly essay on Resend. Mixing them is how you train Gmail that your domain is a newsletter farm, then wonder why receipts die.
+
+If you already run a list-first motion, [build the newsletter before the product](/articles/newsletter-before-the-product) is the strategy piece. This article is the app-side send.
+
+## What To Ship This Weekend
+
+**Must have by Sunday**
+
+- One verified sending domain (not `@gmail.com`, not the Resend onboarding domain in production).
+- Magic link or password reset.
+- One "you signed up" email that names the magic moment (see [onboarding in five minutes](/articles/saas-onboarding-first-5-minutes)).
+
+**Nice after 10 customers**
+
+- Failed-payment email ([dunning is its own article](/articles/recover-failed-payments-saas-churn)).
+- "You have not activated" at 24 hours.
+
+**Skip until someone asks**
+
+- Broadcast newsletters from the product database.
+- Five-step drip with branching.
+- Open-rate dashboards you will not look at.
+
+## Step 1: DNS Before Code
+
+Buy or use a subdomain: `mail.yourproduct.com` or `updates.yourproduct.com`. Keep marketing on a *different* subdomain if you run both. Shared reputation is how one promo blast tanks resets.
+
+Add what the provider shows you:
+
+- SPF
+- DKIM
+- DMARC (`p=none` is fine on day one; you are collecting data, not punching Yahoo)
+
+Send 20 test emails to Gmail, Outlook, and a catch-all you own. If they land in spam, **stop coding features**. Fix alignment first. A beautiful app that cannot reset a password is a locked box.
+
+## Step 2: Transactional With Resend
+
+Resend is the 2026 default for Next.js founders because the DX matches the stack. React Email templates live next to the app. Webhooks cover delivered / bounced / complained.
+
+Weekend shape:
+
+```text
+POST /api/send
+  to, subject, react template or html
+  idempotency key = userId + template + day
+```
+
+Idempotency matters. Cursor will happily fire welcome email on every page load if you let it.
+
+Free tier: **3,000/month**, **100/day**. That is enough for a launch. When you cross it, Pro at **$20** for **50k** is still cheaper than a day of SendGrid archaeology.
+
+Use Resend (or Postmark, if inbox placement is the product) for:
+
+- Auth
+- Invoices
+- "Your job finished"
+
+Not for: weekly roundups, affiliate blasts, "we miss you" novels.
+
+## Step 3: Lifecycle Only When You Have an Event
+
+Loops (and Customer.io, later) earn their keep when you can fire `user.activated` from the product.
+
+Until that event exists, a Resend template on a cron that checks "signed up, never created a record" is enough. You do not need a visual journey builder for twelve users.
+
+The crossover math circulating in 2026 comparisons: Resend stays cheaper at modest volume; Loops' **$49** unlimited-transactional pitch starts to win somewhere north of **~100k sends/month** *if* contact-tier pricing does not eat you. You will not be there this weekend. Start Resend.
+
+## Step 4: Beehiiv Is Opt-In, Not Auth
+
+Beehiiv is correct when:
+
+- You collect emails **before** the product exists.
+- You publish on a cadence.
+- You want referrals and an ad network later.
+
+It is wrong as your magic-link pipe. Keep `form_id` and automations on the Beehiiv side for the list (this site's own subscribe flow does that). Keep `users.email` in your database for product mail. Sync later if you must. Do not make Beehiiv your user table.
+
+## The One Template That Matters
+
+Subject: Your login link for Acme
+
+Body, three lines:
+
+1. You asked to sign in.
+2. Button.
+3. If you did not ask, ignore this.
+
+No "we're building the future of X." Auth email is not a landing page.
+
+Welcome email, four lines:
+
+1. You are in.
+2. The one action that proves the product (link deep, not to `/dashboard`).
+3. Reply to this email — it hits you, not a void.
+4. Unsubscribe footer even on transactional-adjacent welcome if it is marketing-flavored. When in doubt, separate types.
+
+## Common Ways This Breaks
+
+- **From: noreply@** — people cannot ask for help. Use `from` you actually read, or `reply-to`.
+- **One domain for promo + resets** — split them.
+- **Sending from the app server on localhost in prod** — you will look like a botnet. Use the vendor API.
+- **No bounce handling** — a full mailbox is not a lead. Suppress it.
+
+Need a product worth emailing into? Pick a scoped build from [startup ideas](/startup-ideas) so the first email has a magic moment to point at.
+
+## FAQ
+
+### Can I use Gmail SMTP for v1?
+
+For you and three testers, maybe. The day you email 50 strangers, Gmail will rate-limit you and you will look unprofessional. Spend the hour on Resend.
+
+### Is SendGrid still fine?
+
+It works. The DX and reputation story in 2026 indie write-ups is why people leave. If you already have it configured and mail lands, do not rewrite it this weekend.
+
+### Do I need a dedicated IP?
+
+No. Dedicated IPs are a Scale-plan problem for people sending hundreds of thousands. You are not that person yet.
+
+## TL;DR
+
+Verify a domain. Resend for anything the app *must* deliver. Add Loops when you have real lifecycle events. Put the newsletter on Beehiiv, not on your auth pipe.
+
+Ship the product first — start from [startup ideas](/startup-ideas) — then send the one email that gets them to the magic moment.

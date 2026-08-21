@@ -899,6 +899,66 @@
         "accent": "emerald",
         "status": "ready"
       }
+    },
+    {
+      "slug": "choose-which-startup-idea-to-build",
+      "title": "How to Choose Which Startup Idea to Build This Weekend",
+      "description": "Stop rotating through a notes app of ideas. Score three candidates in 30 minutes, kill two, and spend this weekend on the one strangers will actually pay for.",
+      "wordCount": 1101,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A short stack of blank index cards on a near-black desk, one card pulled a finger-width forward and caught by a single lavender side beam, very shallow focus, no writing, no hands",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "add-email-to-weekend-mvp",
+      "title": "How to Add Email to Your Weekend MVP (Without SendGrid Hell)",
+      "description": "Resend for receipts, Loops for onboarding, Beehiiv for the list. The 2026 email split, the DNS you actually need, and what to skip until you have paying users.",
+      "wordCount": 1100,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A single unopened cream envelope on a near-black desk, flap catching a narrow mint side light, no address, no stamp, very shallow focus, deep shadow",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "7-education-saas-ideas-weekend-2026",
+      "title": "7 Education Micro-SaaS Ideas You Can Build This Weekend",
+      "description": "EdTech SaaS hit about $48B in 2025. Seven weekend education products for teachers, coaches, and course pickers — already researched and scoped to ship.",
+      "wordCount": 1039,
+      "readMinutes": 5,
+      "og": {
+        "subject": "An open composition notebook on a near-black desk with a wooden pencil resting in the gutter, mint-lime side light on the blank page edge, very shallow focus, no readable writing",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "first-customer-testimonial",
+      "title": "How to Get Your First Customer Testimonial (Without Begging)",
+      "description": "A specific quote can lift conversions 14% in controlled tests. Ask after a win, capture before/after/result, and put the quote next to the buy button.",
+      "wordCount": 959,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A metal clipboard with a blank sheet clipped at the top lying on a near-black desk, one emerald beam along the clip, very shallow focus, no readable text",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cursor-prompts-that-dont-wreck-your-code",
+      "title": "How to Prompt Cursor So It Doesn't Wreck Your Code",
+      "description": "Cursor agents fail because your prompt was a product pitch. One task, a file list, a done check — plus when to kill the chat and start a fresh thread.",
+      "wordCount": 973,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A wooden pencil mid-stroke on a near-black notebook page, a single lime beam on the graphite tip, deep shadow, no readable writing, very shallow focus",
+        "accent": "mint",
+        "status": "ready"
+      }
     }
   ]
 }

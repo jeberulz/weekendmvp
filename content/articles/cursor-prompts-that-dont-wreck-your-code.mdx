@@ -1,0 +1,135 @@
+---
+slug: "cursor-prompts-that-dont-wreck-your-code"
+title: "How to Prompt Cursor So It Doesn't Wreck Your Code"
+description: "Cursor agents fail because your prompt was a product pitch. One task, a file list, a done check — plus when to kill the chat and start a fresh thread."
+category: "Tutorial"
+publishedAt: "2026-08-21"
+wordCount: 973
+readMinutes: 5
+heroAlt: "A wooden pencil mid-stroke on dark paper under lime side light, very shallow focus, no readable writing"
+---
+
+## Who This Is For
+
+You opened Cursor, pasted the entire startup idea, and said "build it."
+
+Forty-five minutes later you have auth stubs, a settings page, three half-wired APIs, and a git diff you are afraid to read.
+
+The model is not drunk. **You handed it a company.** Companies do not fit in one context window. Weekend products fit in one magic moment — see [the one-feature product](/articles/one-feature-product-mvp).
+
+This article is about the **message you type in the chat**. The standing instruction file is a different layer: [AGENTS.md](/articles/agents-md-ai-coding-instructions). Put durable facts there. Put *this task* in the prompt.
+
+If you do not have a repo yet, pick a scoped brief from [startup ideas](/startup-ideas) so the first prompt has a boundary.
+
+## The Lie: Longer Prompts Are Better
+
+A product pitch feels thorough. To the agent it is permission to invent surface area.
+
+Cursor's own 2026 agent-practice wave (and every serious `AGENTS.md` guide) rhymes on the same point: **static context should be short.** Augment's 2026 AGENTS.md write-up argues for **~150–200 lines** of standing rules, not a novel. RockB's Cursor agent notes say keep `AGENTS.md` under **~500 words** because it loads every run. Your chat prompt should be even meaner: one outcome, not a manifesto.
+
+If you already dumped 2,000 words of "vision" into `.cursor/rules`, the chat cannot save you. Cut the standing files first.
+
+## The Prompt Shape That Works
+
+Copy this skeleton. Fill the brackets in plain English. Do not add a fifth section "also make it beautiful."
+
+**Task:** one sentence. The user-visible change.
+
+**Touch:** files or folders allowed. "Only `app/(app)/onboarding/` and tests for that route."
+
+**Do not:** two or three hard nos. "Do not add a new table. Do not install a component library. Do not refactor auth."
+
+**Done when:** a command or a click path. "`npm test` passes. I can submit the form and see the toast."
+
+**Verify:** "Run the test. If it fails, fix it. Paste the command output."
+
+That last line is how you stop the agent from claiming victory on a type error.
+
+## Bad Prompt vs Good Prompt
+
+**Bad**
+
+> Build a complete SaaS for piano teachers with subscriptions, dashboards, AI lesson plans, parent emails, and a mobile-ready design system. Use best practices.
+
+That is how you get a settings page.
+
+**Good**
+
+> Add a page at /plans/new with a textarea and a Generate button. On submit, call the existing `generatePlan` Convex mutation and render the three returned fields. Do not add auth, billing, or email. Done when I can paste text, click Generate, and see the plan without a full-page reload. Run the relevant tests.
+
+Same weekend. Opposite blast radius.
+
+## Five Rules for the Chat Itself
+
+### 1. One job per thread
+
+When the task changes — "now add Stripe" — **new chat**. Saturated threads start "fixing" files you did not mention. Cursor's 2026 best-practice videos are blunt: start a fresh agent when context gets mushy.
+
+### 2. Name the files
+
+"Look around and do the right thing" is how you get a second `Button.tsx`. If you do not know the files, your first message is: "Where is signup handled? List paths. Do not edit."
+
+### 3. Plan when the change spans more than two folders
+
+Switch to plan/ask, get a file list, then implement. Multi-folder improvisation is how schema and UI drift apart.
+
+### 4. Tests are the spec
+
+If you cannot write a test, you cannot describe done. For UI, a Playwright click path or a "I will click X and see Y" sentence is the spec. Agents that cannot check their work will cheerfully regress you.
+
+### 5. You still read the diff
+
+Non-negotiable. Especially auth, payments, and anything that talks to the network. [Vibe coding security](/articles/vibe-coding-security-for-founders) is what happens when you skip this.
+
+## What Belongs in AGENTS.md vs the Prompt
+
+| Lives in AGENTS.md / rules | Lives in this chat |
+| --- | --- |
+| `npm run test` command | "Add the empty-state on /plans" |
+| "We use Convex, not Prisma" | "Do not touch schema.ts" |
+| Never commit `.env` | Today's definition of done |
+
+Do not paste the idea thesis into both. The thesis belongs in an issue or a brief. The agent needs the *diff*.
+
+## A Weekend Cadence
+
+**Friday night:** write the magic-moment sentence. Open the idea page if you used [startup ideas](/startup-ideas). One prompt: scaffold the three screens, nothing else.
+
+**Saturday morning:** prompt #2 is the core mutation/API only.
+
+**Saturday afternoon:** prompt #3 is the UI wired to that API. No dashboard.
+
+**Sunday:** prompt #4 is deploy + the one email. New chats for each.
+
+Four prompts. Not one "build my startup" novella.
+
+## When It Starts Wrecking Things
+
+Symptoms:
+
+- Files you did not name in the diff
+- New dependencies you did not ask for
+- Reformatting the whole repo
+- "While I was here I also..."
+
+Stop. `git checkout` the junk. New chat. Smaller prompt. If it keeps "helping," your standing rules are bloated or contradictory — trim those before you type another word.
+
+## FAQ
+
+### Should I paste stack traces raw?
+
+Yes, plus the command you ran. "It doesn't work" wastes a turn. The error is the spec.
+
+### Is Composer/agent mode always better than inline edit?
+
+For multi-file, agent. For a 10-line fix in a file you have open, inline. Matching tool to blast radius is the whole game.
+
+### Can I reuse a mega-prompt as a Cursor command?
+
+Only after it has succeeded three times. Then it is a command. Until then it is superstition.
+
+## TL;DR
+
+Standing rules stay short. Each chat is one task, named files, explicit nos, and a checkable done. Read the diff.
+
+Want a product small enough that the first prompt fits on a card? Start at [startup ideas](/startup-ideas) and build the how-it-works list, not a platform.
