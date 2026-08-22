@@ -13,6 +13,10 @@ const app = defineApp({
     // local and CI deployments keep booting; generation fails closed when it
     // is unset rather than running unprotected.
     PLATFORM_PREVIEW_BRIDGE_SECRET: v.optional(v.string()),
+    // WP39. Anonymous Starter Kit feedback is accepted only through the
+    // Next.js route that can derive a per-IP rate-limit key. Optional keeps
+    // existing deployments bootable; feedback fails closed when it is unset.
+    STARTER_KIT_FEEDBACK_BRIDGE_SECRET: v.optional(v.string()),
   },
 });
 

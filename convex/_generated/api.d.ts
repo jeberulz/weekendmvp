@@ -14,6 +14,8 @@ import type * as authUser from "../authUser.js";
 import type * as currentUser from "../currentUser.js";
 import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
+import type * as marketing_starterKitFeedback from "../marketing/starterKitFeedback.js";
+import type * as marketing_starterKitFeedbackValidators from "../marketing/starterKitFeedbackValidators.js";
 import type * as newsletter from "../newsletter.js";
 import type * as payments from "../payments.js";
 import type * as platform_authz from "../platform/authz.js";
@@ -59,6 +61,8 @@ declare const fullApi: ApiFromModules<{
   currentUser: typeof currentUser;
   http: typeof http;
   ideas: typeof ideas;
+  "marketing/starterKitFeedback": typeof marketing_starterKitFeedback;
+  "marketing/starterKitFeedbackValidators": typeof marketing_starterKitFeedbackValidators;
   newsletter: typeof newsletter;
   payments: typeof payments;
   "platform/authz": typeof platform_authz;

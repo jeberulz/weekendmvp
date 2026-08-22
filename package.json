@@ -15,7 +15,7 @@
     "test:convex": "vitest run convex",
     "test:redirects": "node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts tests/redirects/tenant-publish-check.test.ts",
     "test:auth": "vitest run tests/auth",
-    "test:security": "node --experimental-strip-types --test tests/security/*.test.mjs && vitest run tests/security/wp27-templates.test.tsx tests/security/wp28-templates-tenant.test.tsx",
+    "test:security": "node --experimental-strip-types --test tests/security/*.test.mjs && vitest run tests/security/wp27-templates.test.tsx tests/security/wp28-templates-tenant.test.tsx tests/security/wp39-starter-kit-feedback-ui.test.tsx",
     "test:sitemap": "node --experimental-strip-types --test tests/sitemap/*.test.mjs",
     "convex:dev": "convex dev",
     "og:generate": "node scripts/generate-og-cards.mjs",

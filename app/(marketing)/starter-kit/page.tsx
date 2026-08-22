@@ -15,6 +15,7 @@ import {
 } from "@/lib/seo";
 
 import { StarterKitShell } from "./StarterKitShell";
+import { StarterKitFeedback } from "./StarterKitFeedback";
 import { SubscribedModal } from "./SubscribedModal";
 import {
   KitHero,
@@ -113,6 +114,7 @@ export default function StarterKitPage() {
             <Step4Ideas />
             <Step5Prompts />
             <TemplatesSection />
+            <StarterKitFeedback />
           </div>
 
           {/* Final CTA */}
