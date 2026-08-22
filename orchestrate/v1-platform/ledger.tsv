@@ -1,0 +1,4 @@
+pr	sha	verdict	evidence	verifier	ts
+56	1386262af39454125c59ef444ce7de976a4c9b18	unit-test-verified	reports/U-land-verify.md	84041a88-4308-463a-9876-5c98794b1855	2026-08-14T02:32:06.747Z
+56	80d6f27fa6bfee1bd9150e07a11fba699e8d8377	verifier-blocked	reports/U-e2e-verify.md	38c2ac97-2d52-4eb3-887c-1978dbf3f373	2026-08-14T02:48:09.591Z
+58	b9db0d0ce562d59d34cb3c609493c459e33fdd2c	unit-test-verified	reports/U-wp29-verify.md	5ab43686-c455-4fab-816f-95d24dfcebfa	2026-08-14T06:27:00.000Z

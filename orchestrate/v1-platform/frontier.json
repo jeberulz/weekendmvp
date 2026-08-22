@@ -1,0 +1,18 @@
+{
+  "generation": 3,
+  "prs": [
+    {
+      "pr": 56,
+      "branches": "feat/platform-wp19-28-onto-main",
+      "sha": "80d6f27",
+      "state": "MERGED"
+    },
+    {
+      "pr": 58,
+      "branches": "feat/wp29-min",
+      "sha": "b9db0d0",
+      "state": "MERGED"
+    }
+  ],
+  "lowestUnmerged": null
+}

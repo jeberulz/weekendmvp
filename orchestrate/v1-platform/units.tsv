@@ -1,0 +1,11 @@
+id	track	state	branch	pr	sha	brief
+U-backup-wp26	land	done	codex/wp26-v1.1-engine		c99351bb74f720d16863c07b0c142746b61ee5ad	briefs/U-backup-wp26.md
+U-land-stacker	land	done	feat/platform-wp19-28-onto-main	56	1386262af39454125c59ef444ce7de976a4c9b18	briefs/U-land-stacker.md
+U-wp29-min	product	done	feat/wp29-min	58	7d212b88f151e39e2114acd4061763fcb0bb59a8	briefs/U-wp29-min.md
+U-wp30-min	product	pending				
+U-wp38-min	product	pending				
+U-retention-cron	product	pending				
+U-e2e-verify	verify	done	origin/main		80d6f27fa6bfee1bd9150e07a11fba699e8d8377	briefs/U-e2e-verify.md
+U-land-verify	land	done	feat/platform-wp19-28-onto-main	56	1386262af39454125c59ef444ce7de976a4c9b18	briefs/U-land-verify.md
+U-e2e-reverify	verify	pending				briefs/U-e2e-verify.md
+U-wp29-verify	verify	done	origin/main	58	b9db0d0ce562d59d34cb3c609493c459e33fdd2c	briefs/U-wp29-verify.md
