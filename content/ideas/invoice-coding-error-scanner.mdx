@@ -1,0 +1,122 @@
+---
+slug: "invoice-coding-error-scanner"
+title: "Invoice Coding Error Scanner for Bookkeeping Firms"
+---
+
+## The Problem
+
+A bookkeeper at a 6-person firm opens Monday with 200 bills sitting in the AP queue. BILL already captured the PDFs. QuickBooks already guessed categories. Twenty minutes in she finds a $4,200 “office supplies” line that is actually the owner’s personal Best Buy run, a vendor that used to code to COGS now hitting marketing because someone changed a default, and a duplicate that survived because the amounts were $11,990 and $12,000. She cannot skip the other 197. The firm’s product is “we catch this,” and catching it still means reading everything.
+
+AP automation solved capture, routing, and payment. It did not solve coding judgment. Native QBO categorization is bundled into the $30–$90/month QuickBooks plans and is fine until a vendor drifts, an owner draw looks like an expense, or a bill’s line items do not match the source PDF. Dext and Hubdoc at roughly $20–$40 per client per month get the document into the system. They do not tell you the system coded it wrong. BILL at about $45–$79+ per user per month plus payment fees is an AP suite, not a reviewer. Vic.ai and Stampli go upmarket and still want to own the workflow rather than sit in front of the ledger as a check.
+
+The error rate is not a rounding story. Industry writeups still cite manual AP error rates around 39%, and the “clerical tax” on a business is commonly framed as 1–3% of revenue once you count recodes, missed duplicates, and tax-basis cleanup. Bookkeeping firms eat that as write-downs, rushed close, and partners reviewing what staff already “finished.” Reddit is blunt about it: r/Accounting (1.9M), r/Bookkeeping (~64k), and r/QuickBooks (~139k) are full of “why did QBO put this in supplies” and “how do I stop owner personal cards from hitting OpEx.” Paid search for AP automation keywords often clears $100 CPC, which is how you know the buyers have budget—and how you know you should not try to outbid BILL for the same head term.
+
+The job to be done is pre-posting QA. Firms do not want another AP product. They want 20 records to review instead of 200, with an explanation they can defend to a partner or a client.
+
+## The Solution
+
+Winnow sits between AP automation and the ledger. It does not capture invoices, does not pay vendors, and does not replace BILL, QBO, or Xero. It pulls coded-but-not-posted (or recently posted) transactions, runs anomaly checks plus an LLM explanation pass, and returns a review queue: vendor category drift, amount-vs-source mismatch, owner draws that look personal, duplicate near-matches, and “this default changed last month.” Reviewers handle the exceptions. The rest posts.
+
+The MVP is connectors + rules + a queue, not a general ledger. Start with QBO, Xero, and BILL APIs. Store a vendor baseline per client (typical category, typical amount band, tax code, payment account). Flag deviations with a score and a one-paragraph why. Humans see the source snippet, the proposed code, the last five bills from that vendor, and buttons: accept, recode, or escalate to the partner. Twenty ugly records beat two hundred quiet ones. Price $500–$2,000/month per firm (or per book of clients) so the math is “less than one staff hour a day saved” rather than “another $49 SaaS.”
+
+**How it works:**
+
+1. **Connect the stack** — OAuth into QBO, Xero, and/or BILL; pull vendors, accounts, and in-flight bills. Postgres keeps baselines per client, not a global model that invents GAAP.
+2. **Score every bill** — Deterministic checks first (amount vs OCR/PDF total, vendor category vs trailing 12, duplicate windows). LLM only writes the explanation and the “personal vs business” pass.
+3. **Queue the exceptions** — Reviewers open 20 flagged records, not 200. Each row has source image, proposed code, why-it-fired, and last-N vendor history.
+4. **Post or recode** — Accept writes through to the ledger; recode updates QBO/Xero and feeds the baseline. Unflagged bills pass with a Winnow stamp the partner can sample.
+
+## Market Research
+
+Invoice software is a giant market. Your product is a thin, expensive slice of it—the QA layer firms buy after they already bought capture:
+
+- **Invoice processing software is cited around $49B in 2026 growing to about $94B by 2030**, 17–21% CAGR (Research and Markets). That number is the whole stack: capture, workflow, payments. You are not that TAM. You are the budget line that appears once the stack still produces recodes.
+- **AI for invoice management is projected near $47B by 2034** at roughly 32.6% CAGR (Market.us). Treat it as a timing tell: buyers already believe models belong in AP. They are still buying suites. A scanner that supervises the suite is easier to attach than a rip-and-replace.
+- **Manual AP error rates around 39%** show up in vendor-adjacent roundups (Factura). Partners still act like the miss is hiding in the pile they did not personally touch.
+- **Clerical tax of 1–3% of revenue** is the CFO-language version of the same pain (Rillion and similar AP education content). A bookkeeping firm that keeps a client from eating that tax can raise fees. A firm that misses it loses the client.
+- **AP automation keywords often run past $100 CPC.** That is BILL’s and Vic.ai’s fight. You win on “invoice coding review for bookkeepers” and partner referrals, not on “AP automation software.”
+- **Community density is high and specific.** r/Accounting (1.9M), r/Bookkeeping (~64k), r/QuickBooks (~139k). These people already compare Dext vs Hubdoc vs QBO bank rules. They do not need education that coding is messy. They need a queue.
+
+A 20-person firm with 80 clients will feel a $1,200/month tool if it turns a full review day into a short list. That is a better first customer than a Fortune 500 AP team shopping Vic.ai.
+
+## Competitive Landscape
+
+You will get compared to AP platforms. That comparison is a trap unless you say the sentence out loud: you supervise them, you do not replace them.
+
+- **BILL (Bill.com)** — The AP suite SMBs and firms already live in. Roughly $45–$79+ per user per month plus payment fees. Capture, approvals, payments. Coding QA is not the product. Competing with BILL is how you die. Sitting on the BILL export (or API) is how you live.
+- **Vic.ai** — Autonomous AP for mid-market and enterprise, often in the ballpark of $1+ per invoice processed, custom contracts. Strong extraction and learning. Bookkeeping firms doing 15 clients on QBO are not their ICP, and you should not pretend they are.
+- **Stampli** — Communications-centric AP, custom pricing, typically mid-market. Owns the inbox-to-post workflow. Again: a suite. If a prospect is mid-implementation on Stampli, do not pitch rip-out. Pitch a coding audit on the exceptions Stampli still dumps on accounting.
+- **QuickBooks Online native AI categorization** — Bundled in ~$30–$90/month QBO. Fine on coffee shops with three vendors. Unreliable on nuance: owner draws, mixed personal/business cards, vendors that span two accounts, seasonal amount spikes. Firms already distrust it; that distrust is your demo.
+- **Dext / Hubdoc** — ~$20–$40 per client per month for capture and publish-to-ledger. Excellent at “get the receipt in.” Not a coding QA layer. Many of your buyers already pay this. Complement, do not clone.
+
+**Your Opportunity**
+
+BILL, Vic.ai, and Intuit sell workflow. You sell a second set of eyes that only looks where the first set is statistically weak. They will not productize “our automation is wrong this often”—it punches their own story. Win on three things they will not chase: (1) system-agnostic pre-posting QA across QBO + Xero + BILL, (2) a reviewer queue sized for a bookkeeper (20, not 200), and (3) firm-level pricing at $500–$2,000/month that maps to staff time, not per-invoice enterprise contracts.
+
+## Business Model
+
+Seat-light SaaS sold to bookkeeping and accounting firms, priced per firm or per client-book, billed monthly. Starter at $500/month: one practice, cap on connected clients, QBO + PDF amount checks, email queue. Firm at $1,200/month: Xero + BILL connectors, owner-draw model, partner sampling reports, Slack/Teams ping. Practice at $2,000/month: higher client caps, SSO, white-label client comments, API for the shops that already run a review checklist in Airtable.
+
+Path to $15k MRR is 10–20 firms, not 2,000 solopreneurs. Sell through Facebook bookkeeper groups, r/Bookkeeping, and one integration marketplace listing (Intuit or Xero) once the connector is boring.
+
+**Unit Economics**
+
+- **$1,000–$2,000** — Target CAC (founder-led outbound + one conference + referral kickbacks to ops coaches)
+- **~$1,100/mo** — Blended ARPU in the $500–$2,000 band
+- **~80%** — Gross margin if you keep LLM calls on flagged rows only (deterministic checks are cheap; explaining 200 bills with a frontier model is how margin dies)
+- **~$10k** — LTV at ~9 months (firms that embed you in close will stick; the ones who wanted magic categorization will churn at day 45)
+
+Do not price per invoice on day one unless you want to look like a worse Vic.ai. Price against a staff hour. At $35/hour fully loaded, three hours saved per close makes $500 obvious; ten hours makes $2,000 obvious.
+
+## Recommended Tech Stack
+
+Reliability and connectors beat model cleverness. A wrong recode is a support incident. A missed flag is a lost client. Bias the stack toward auditability.
+
+- **Next.js on Vercel** — Reviewer queue, partner sampling dashboard, admin for firm/client mapping. Keep webhook handlers on a Node runtime, not a toy Edge function that times out on QBO payloads.
+- **QBO, Xero, and BILL APIs** — OAuth, incremental pull, write-back for recodes. Store raw payloads. Map their account trees into your baseline tables; do not invent a fourth chart of accounts.
+- **Postgres** — clients, connections, vendors, bills, line_items, baselines, flags, reviews, writebacks. Indexes on (client_id, vendor_id, posted_at). RLS by firm.
+- **Anomaly models plus LLM explanations** — Rules and z-scores first. LLM second, on the flagged subset, with a schema: flag_type, confidence, explanation, suggested_account. Humans never see a recode without a why.
+- **Stripe Billing** — Three products in the $500 / $1,200 / $2,000 band. Usage visible internally (bills scored, flags opened) even if the customer sees a flat invoice.
+- **Object storage for source PDFs** — Signed URLs in the queue UI. Do not ship images through the LLM unless the amount-vs-source check actually needs pixels that OCR missed.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app called Winnow, an invoice coding QA layer for bookkeeping firms. Postgres: firms, users, clients, connections (provider: qbo|xero|bill, tokens encrypted), vendors, bills, line_items, baselines (vendor_id, typical_account, amount_p50, amount_p90, last_seen), flags, reviews, writebacks. RLS by firm_id. Stripe products: Starter $500/mo, Firm $1200/mo, Practice $2000/mo. Env: QUICKBOOKS_CLIENT_ID, QUICKBOOKS_CLIENT_SECRET, XERO_CLIENT_ID, XERO_CLIENT_SECRET, BILL_API_KEY, OPENAI_API_KEY or ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, DATABASE_URL. Stub QBO OAuth first; keep Xero and BILL behind the same Connection interface.
+```
+
+**2. Scoring Engine + Review Queue**
+
+```text
+Build the pre-posting scanner. For each in-flight bill: (1) amount vs source total mismatch, (2) vendor category vs baseline (flag if account differs from last 8 of 10 bills), (3) near-duplicate window 7 days amount within 2%, (4) owner-draw heuristic: payee matches owner name or known personal merchants vs an OpEx account. Deterministic first; call the LLM only for flags, returning JSON { flag_type, confidence, explanation, suggested_account }. Review queue UI: 20 rows, source thumbnail, proposed code, explanation, last-N vendor bills, actions accept / recode / escalate. Accept is a no-op post; recode writes to QBO/Xero and patches baseline. Log every decision. Never auto-post a flagged row.
+```
+
+**3. Landing Page**
+
+```text
+Marketing page for Winnow. Hero: “Your AP tool codes 200 bills. Your reviewer should see 20.” Sub: “Between BILL/QBO/Xero and the ledger: vendor drift, amount mismatches, personal draws.” Sections: Monday pile, 4-step how-it-works, queue screenshot, $500 / $1,200 / $2,000, “we do not replace BILL.” FAQ: native QBO AI (not on nuance), write-back (recode only). Off-white, forest accent. CTA: “Connect a sandbox company, score last month.”
+```
+
+**4. Branding Package**
+
+```text
+Brand Winnow as a sieve, not a robot accountant. Wordmark plus a winnowing/filter mark. Palette: ink, paper, forest green. Type: Geist UI, tabular numbers for amounts. Voice: talk like a senior bookkeeper, not a fintech. Never say “autonomous AP.” Always say “pre-posting QA.” Never dunk on BILL; position as supervision. Deliver brand sheet, three flag-explanation examples (category drift, amount mismatch, personal draw), and an empty state for “0 flags this batch — sample 5 anyway.”
+```
+
+## Sources
+
+Market sizing and pricing collated from Ideabrowser MCP idea 8377 and the reports below. Error-rate and “clerical tax” figures are vendor-adjacent; check a prospect’s recode log before using them in a deck.
+
+- [Research and Markets — Invoice Processing Software Market Report](https://www.researchandmarkets.com/reports/5980383/invoice-processing-software-market-report)
+- [Market.us — AI for Invoice Management Market](https://market.us/report/ai-for-invoice-management-market/)
+- [Factura — AI Invoice Processing Accuracy Statistics](https://factura.ai/ai-invoice-processing-accuracy-statistics/)
+- [Rillion — Invoice Coding (AP education, clerical-tax framing)](https://www.rillion.com/learn-ap/invoice-coding/)
+- [BILL — pricing reference (~$45–$79+/user/mo plus payment fees)](https://www.bill.com/pricing)
+- [QuickBooks Online — pricing reference (~$30–$90/mo plans)](https://quickbooks.intuit.com/pricing/)
+- [Dext — pricing reference (~$20–$40/client/mo capture)](https://dext.com/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 8377).

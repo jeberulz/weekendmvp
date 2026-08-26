@@ -1,0 +1,117 @@
+---
+slug: "ai-podcast-producer"
+title: "AI Podcast Producer"
+---
+
+## The Problem
+
+A solo host finishes a 52-minute interview at 11:40 p.m., stares at a WAV file sitting on the desktop, and already knows the next six hours. Strip the "ums" and false starts. Level the guest who sat too far from the mic. Write show notes nobody will read if they sound like a transcript dump. Cut a 15-second audiogram for Instagram. Pick a title that is not "Episode 47 with Sarah." Then upload to the host, paste the notes into the CMS, and hope the RSS feed fires. Most independent shows die here — not from a bad idea, but from production debt that compounds every week the host still has a day job.
+
+The complaint is not subtle. r/podcasting sits at roughly 250,000 members and the weekly threads are a greatest-hits of the same bottleneck: "I am three episodes behind on editing," "Descript ate my multitrack," "I cannot afford $300 an episode for a human editor." Hosts who record on Riverside or Zencastr still export a raw file and then bounce between a DAW, a transcript tool, a notes doc, and Canva. There is no single surface that treats the episode as one production object from ingest to publish-ready assets. The video-editor products in this market solve a different job — YouTube timelines, color, b-roll — and the meeting-notes tools solve a third job: decision logs for Zoom. Neither is an audio producer.
+
+The downstream cost is hours and churn. Industry estimates put more than two million active podcasts in the wild, and the long tail is overwhelmingly self-edited. A host who records weekly and spends four to six hours per episode on cleanup is burning a full workday of unpaid labor for a show that might make $400 in ads. Human editors at $150–$500 per episode are the quality ceiling and the budget killer. The gap is a production stack priced like SaaS, not a freelancer invoice, that does the mechanical 80 percent (filler, levels, notes, audiograms) and leaves taste — pacing, jokes, which clip is the hook — with the host.
+
+## The Solution
+
+PodcastPilot is an audio production stack, not a video editor and not a meeting-notes cleaner. Drop in a raw recording. Get back a cleaned master, a chaptered transcript, listener-facing show notes, a set of audiogram clips, and a short style brief ("your guest talk-over rate is high; tighten intros; your last three cold opens ran past 90 seconds"). The job is one episode, start to publish kit, in a single pass.
+
+The product is opinionated about audio. It does not grade color, sync multi-cam, or write a RACI. It removes filler and breaths, applies speech enhancement, writes notes in the host's voice, and renders square or vertical audiograms with a waveform and a pull quote. Style suggestions are a producer, not a critic: they point at patterns across the last N episodes so the host can course-correct without hiring a showrunner.
+
+**How it works:**
+
+1. **Ingest the raw file** — Host uploads WAV, MP3, or a Riverside/Zencastr export. Deepgram or Whisper transcribes with word-level timestamps; ffmpeg splits stems if a multitrack zip is present.
+2. **Clean the master** — Filler words, long silences, and mouth noise get flagged on a timeline the host can accept or reject in bulk. Speech enhancement runs as a second pass. The output is a loudness-normalized MP3 plus a lossless archival WAV.
+3. **Generate the publish kit** — Claude writes show notes, chapter markers, guest bio pull, and three title options from the transcript. Remotion or Canvas renders 3–5 audiograms (waveform plus quote, 1:1 and 9:16) ready for social.
+4. **Style the next episode** — A producer brief compares this cut to the last four: intro length, talk-over, question density, CTA placement. Host exports to their existing host (Buzzsprout, Transistor, Spotify for Podcasters) via RSS-friendly files, not a locked proprietary timeline.
+
+## Market Research
+
+Podcasting is a growth market with a production bottleneck that software has only half-solved. Transcription is cheap. A full producer is not. That gap is the TAM.
+
+- **The global podcasting market was $36.28 billion in 2024 and $47.83 billion in 2025**, a 31.8% CAGR — The Business Research Company, Podcasting Global Market Report. Distribution, ads, and hosting are scaling; the editing layer for independents has not kept up.
+- **AI in podcasting was $3.07 billion in 2024 and $4.06 billion in 2025**, a 32.2% CAGR (EIN Presswire / AI in Podcasting Market Forecast 2025–2034). Capital is flowing into speech models, enhancement, and clip generation. The category is no longer a science project.
+- **More than two million active podcasts** sit in public directories, and the median show is still self-produced. You are not hunting a rare buyer. You are selling time back to people who already record.
+- **r/podcasting at ~250,000 members** is a dense, complaint-rich channel. Adjacent rooms — r/podcasts, indie host Discords, Facebook "podcast editors for hire" groups — are where $150–$500/episode quotes get shared and then quietly abandoned.
+- **Timing is a 9.** Speech-to-text is a commodity API. ffmpeg is free. LLM show notes went from "embarrassing" to "good enough to edit" in one model generation. Audiogram rendering is a solved graphics problem. The stack a studio would have staffed in 2019 is now a weekend MVP with a Stripe meter.
+- **Opportunity 9, pain 8, builder confidence 7.** Pain is weekly (hours per episode). Willingness to pay is proven by Descript seats and $150–$500 editor invoices. Remaining work is taste: a stack, not another transcript box. SAM is hosts already paying for a recorder plus a DAW; a few thousand $29–$199 seats is a bootstrap business before iHeart.
+
+## Competitive Landscape
+
+Every incumbent owns a slice. None of them own the full production object — clean master plus notes plus audiograms plus a producer brief — at indie pricing.
+
+- **Descript** — Closest analog: overdub, filler removal, plus a screen-and-video editor hosts did not ask for. Free / Hobbyist $19 / Creator $35 / Pro $60 / Business ~$96 per user per month. Do not beat Descript at being Descript. Beat it by staying audio-first and shipping the publish kit they treat as extras.
+- **Riverside.fm** — Best-in-class remote recording, local backups, decent editor bolted on. Hosts still export and finish elsewhere. Free / Standard $19 / Pro $29 / Business $79. Riverside wins the capture layer. PodcastPilot starts after the file lands.
+- **Adobe Enhance Speech** — Genuinely good enhancement, almost free as a one-off, then you live inside Creative Cloud at $54.99/month if you want the rest of the suite. It does not write notes, cut audiograms, or remember your show's style. A utility, not a producer.
+- **Otter.ai** — Transcription and meeting summaries. Free / Pro $16.99 / Business $30. Fine for a standup recap. Wrong artifact for a public episode: listener notes, chapters, and a clip for social are a different job than "action items and owners."
+- **Human editors** — $150–$500 per episode, often booked two weeks out. Quality ceiling is real. Economics fail for a weekly indie. Your conversion story is "keep the human for the flagship interview, run PodcastPilot on the other three."
+
+**Your Opportunity**
+
+Do not build another transcript box or a YouTube NLE. Sell the production stack: filler, enhancement, show notes, audiograms, style — one job, one invoice. Indie hosts at $29/month will not get this from Descript's Business seat or a $300 editor. Small networks at $199/month want a shared show bible, batch ingest, and consistent audiogram templates across three titles. Incumbents will not drop down; it cannibalizes their per-seat video SKUs. Win on audio-only scope, publish-kit completeness, and a price that makes "I will just edit it Sunday" look expensive.
+
+## Business Model
+
+Subscription SaaS with usage gates on hours processed, not on whether notes exist. The $29 indie seat is the wedge. The $199 network seat is the margin. Path to $1M ARR is roughly 1,400 indie subs plus 120 network subs, or a heavier mix of networks.
+
+- **Indie** ($29/mo) — 8 hours of audio per month, filler removal, enhancement, show notes, 10 audiograms, style brief on the last 4 episodes. Enough for a weekly show plus a bonus.
+- **Studio** ($79/mo) — 25 hours, multitrack stem cleanup, custom audiogram templates, guest one-sheeters, RSS-friendly chapter files.
+- **Network** ($199/mo) — 80 hours, shared show bible, batch ingest, seat-light collaboration (producer + host), brand kit, priority queue.
+
+Backend: a $499 setup for networks that want their existing art and lower-thirds in the audiogram renderer, and a $1,500 "launch week" concierge that migrates the last ten episodes into the style model. Annual prepay (two months free) for hosts who hate another monthly.
+
+**Unit Economics**
+
+- **$40–$80** — Target CAC (SEO on "remove ums from podcast" plus Reddit and podcast-Slack communities)
+- **$45** — Blended ARPU across Indie / Studio / Network
+- **~70%** — Gross margin after ASR, LLM tokens, ffmpeg compute, and R2 storage
+- **~$380** — 12-month LTV at creator-tool retention
+
+Watch variable cost. A 45-minute file (ASR, enhancement, one Claude pass, five audiograms) must stay well under $0.80 or the $29 plan dies. Cache transcripts. Do not re-enhance on a title tweak.
+
+## Recommended Tech Stack
+
+The hard part is a reliable audio pipeline with a timeline the host trusts, not a chat window that "improves" the file in the dark.
+
+- **Next.js (App Router) + Vercel** — Dashboard, upload, review timeline, billing. Long jobs do not run on serverless timeouts; they enqueue.
+- **Deepgram or Whisper** — Word-level timestamps are the spine of filler cuts and chapter markers. Deepgram for latency; Whisper (self-host or hosted) as a cost/quality fallback.
+- **ffmpeg** — Cut, concat, loudness (EBU R128), format. This is the actual editor. Wrap it; do not reimplement it.
+- **Claude** — Show notes, titles, chapters, style brief. Prompt against a per-show bible (tone, banned phrases, CTA). Keep the transcript in the cache so regenerating notes is cheap.
+- **Remotion or Canvas** — Audiograms. Remotion if you want React-shaped templates and brand kits; Canvas if you want a thinner renderer. Waveform from the cleaned master, quote from the transcript, 1:1 and 9:16.
+- **Cloudflare R2** — Raw ingest and masters. Egress will kill you on S3 once hosts re-download WAV. R2's zero-egress math matters.
+- **Stripe Billing** — Indie / Studio / Network plus metered overage on hours. Customer portal for plan changes.
+- **Postgres (Supabase or Neon)** — Shows, episodes, cuts, assets, usage. Store the cut list as data so "undo filler" is a re-render, not a new model call.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app called PodcastPilot. Schema (Postgres): shows (id, user_id, name, bible_text, loudness_target), episodes (id, show_id, status, duration_sec, raw_r2_key, master_r2_key, transcript_json), cuts (id, episode_id, start_ms, end_ms, type: filler|silence|manual, accepted), assets (id, episode_id, kind: notes|audiogram|chapters, r2_key, meta_json), usage (id, user_id, month, seconds_processed). Auth with Clerk or Supabase. Stripe products: Indie $29, Studio $79, Network $199, metered overage on seconds. Env: DEEPGRAM_API_KEY, ANTHROPIC_API_KEY, R2_*, STRIPE_*. Queue episode jobs (Inngest or similar). Do not build a video timeline.
+```
+
+**2. Cleanup + Publish Kit Pipeline**
+
+```text
+Build the episode pipeline. On upload: store raw in R2, enqueue job. Job steps: (1) transcribe with Deepgram word timestamps, (2) detect filler and silences over 1.2s, write cuts rows, (3) ffmpeg apply accepted cuts + loudness normalize, write master, (4) Claude: show notes, 8-12 chapters, 3 titles, 5 pull quotes using the show bible, (5) render 3 audiograms via Remotion or Canvas (waveform + quote, 1080x1080 and 1080x1920), (6) set status to review. UI: waveform with cut markers, bulk accept filler, regenerate notes without re-enhancing. Never send the user a meeting-style action-item list.
+```
+
+**3. Landing Page**
+
+```text
+Marketing page for PodcastPilot. Hero: "Raw tape in. Episode kit out." Sub: "Filler gone, levels fixed, show notes written, audiograms rendered. You keep the jokes." Sections: the Sunday-night editing spiral, four-step how-it-works matching the product, pricing Indie $29 / Studio $79 / Network $199 vs $150–$500 human editors and Descript's $96/user Business seat, FAQ that this is audio production not a YouTube editor and not a Zoom notes tool. Geist, dark studio background, one lime or lavender accent. CTA: "Drop a sample file."
+```
+
+## Sources
+
+Market sizing, competitor pricing, and community signals collated from Ideabrowser MCP idea 1112 and the public research it cites. Triangulate before you cite in investor materials.
+
+- [The Business Research Company — Podcasting Global Market Report ($36.28B 2024, $47.83B 2025, 31.8% CAGR)](https://www.thebusinessresearchcompany.com/report/podcasting-global-market-report)
+- [EIN Presswire — AI in Podcasting Market Forecast 2025–2034 ($3.07B 2024, $4.06B 2025, 32.2% CAGR)](http://www.einpresswire.com/article/785338785/ai-in-podcasting-market-forecast-2025-2034-comprehensive-insights-on-market-size-growth-factors-trends)
+- [Descript — pricing reference (Free / Hobbyist $19 / Creator $35 / Pro $60 / Business ~$96 per user per month)](https://www.descript.com/pricing)
+- [Riverside.fm — pricing reference (Free / Standard $19 / Pro $29 / Business $79)](https://riverside.fm/pricing)
+- [Adobe — Creative Cloud pricing ($54.99/mo; Enhance Speech as a speech utility)](https://www.adobe.com/creativecloud/plans.html)
+- [Otter.ai — pricing reference (Free / Pro $16.99 / Business $30)](https://otter.ai/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 1112): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.

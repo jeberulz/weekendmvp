@@ -1,0 +1,126 @@
+---
+slug: "ai-merge-inspector"
+title: "Pull Request Scanner That Flags Risky AI Code"
+---
+
+## The Problem
+
+A staff engineer opens a 400-line pull request at 6:12 p.m. The description says “small refactor.” Half the hunks were written by Cursor. A Copilot-authored commit sits underneath. The reviewer skims the green, trusts the test that the model also wrote, and hits merge so they can eat dinner. Two weeks later production dies on a package that never existed on npm, a permission flag that quietly went from `read` to `admin`, and a 90-line function whose only comment is “handle edge cases.” The review tool they already pay for left a dozen style nits. It never asked whether a model was guessing.
+
+That is the new review failure mode. AI coding assistants did not just speed up typing — they changed the shape of the diff. Human PRs tend to be small, commented, and locally reasoned. Agent PRs are large, fluent, and locally plausible. Hallucinated imports look like real modules. Permission escalations hide inside “cleanup.” Dense logic arrives under thin comments because the model was optimizing for compile, not for the next human. Generic AI reviewers treat that output like human code: they score style, naming, and maybe a CWE pattern. They do not isolate **AI-origin** risk. The bottleneck is no longer “did anyone look at this.” It is “did anyone look at the parts a model invented.”
+
+The pain is already loud where senior engineers talk. r/ExperiencedDevs threads on AI review tools keep landing on sparse feedback, missed logic, and zero provenance. r/codereview has 13,200 members arguing about context and noise. GitHub Discussions around review apps sit in front of 203,000 followers. Copilot already normalized $10 Individual / $19 Business per developer per month — the seat budget exists — and still nobody can tell which lines a human wrote. Security scanners catch known CVEs. They do not catch a made-up dependency. That is an incident, not a lint miss.
+
+## The Solution
+
+MergeGate is a GitHub App that treats AI-authored code as a distinct risk class, not as “more code.” It reads commit and editor metadata from assistants like Cursor and Copilot to mark AI-origin lines, then scores the risky patterns humans keep missing: fabricated imports and packages that do not exist in the lockfile or registry, permission and IAM diffs that widen scope, and dense logic sitting under comments that would not pass a junior-dev smell test. Each flagged hunk gets a confidence score and a reason, so the required reviewer is not reading a novel — they are signing off on the three places the model was most likely bluffing. CodeRabbit reviews the whole diff for quality. MergeGate isolates origin risk and runs as a required check, which means flagged AI code does not reach main until a human says so.
+
+The product surface is GitHub, not a dashboard you forget to open. Install the App, pick repos, set branch protection so MergeGate is a required status. Every pull_request webhook classifies hunks, runs the three detectors, posts an inline summary, and fails the check past threshold. Slack fires on high-confidence flags. A thin dashboard shows false-positive rate and which reviewers rubber-stamp. Ship to five teams, tune against real PRs — the product is the signal, not the model. Once it is the required check, uninstalling means shipping unverified AI code to main.
+
+**How it works:**
+
+1. **Install the GitHub App** — One-click install, repo picker, branch protection so MergeGate is a required status check before merge
+2. **Classify AI-origin hunks** — Read Cursor/Copilot commit metadata and diff heuristics; mark which lines a model wrote versus a human
+3. **Score the risky patterns** — Flag hallucinated deps, permission escalations, and dense logic under thin comments; attach confidence plus a one-line reason
+4. **Block or escalate** — Fail the required check above threshold, ping Slack, and require named human sign-off before the merge button works
+
+## Market Research
+
+The category is not “another linter.” It is merge-time assurance for a codebase increasingly not written by the people who own the blast radius. Firms tracking AI code tools put the market at **$10.12 billion in 2026**, with a path to **$91.09 billion by 2035** (Ideabrowser idea 8902, triangulating Grand View / TBRC-class reports). That is the parent category. MergeGate’s slice is the review-and-governance layer that appeared because assistants won: more PR volume than seniors can actually read.
+
+- **$10.12B AI code tools in 2026 → $91.09B by 2035** — parent TAM; MergeGate sells the merge-gate, not the autocomplete (Ideabrowser idea 8902 highlight justification).
+- **Copilot at $10 / $19 per developer per month** normalized a $10–$30/dev band for anything that sits next to GitHub. Buyers already have a line item. You are competing for the second seat, not inventing the budget.
+- **CodeRabbit closed a $16M Series A in 2024** (TechCrunch) and proved teams will pay for PR-native AI review. The category is funded. The remaining gap is origin, not comments.
+- **r/codereview (13.2k), r/ExperiencedDevs, GitHub Discussions at 203k followers** — the evaluation committee, not an awareness play. Tool-comparison threads with 140-plus comments are how this buyer picks vendors (Ideabrowser community analysis).
+- **Seat math:** 5–30 person teams already on Copilot will add a $20 required-check if it prevents one production incident.
+- **Why now:** agentic PRs made “who wrote this line” a merge question. Window is 12–24 months before GitHub ships a first-party origin tag and CodeRabbit bolts provenance onto comments.
+
+Stage: *emerging niche inside a crowded parent*. Pitch “AI-origin merge risk,” not “AI code review.” The second phrase is a bake-off with CodeRabbit. The first is a required check they do not replace.
+
+## Competitive Landscape
+
+Every incumbent comments on the diff. Almost none of them ask where the diff came from. Price the wedge against the seats they already occupy:
+
+- **CodeRabbit** — Category leader for AI PR review. Deep comments, language coverage, learning per repo. Reviews the whole diff for quality; does not isolate AI-authored hunks or treat hallucinated deps as a first-class detector. Free → $15/dev/mo Pro → $30/dev/mo Enterprise. Series A $16M (TechCrunch, 2024).
+- **Greptile** — Full-codebase index, strong architectural context, answers “what does this repo do.” Complements a merge gate; it is not one. About $30/dev/mo.
+- **GitHub Copilot Code Review** — Bundled into Copilot. Zero extra install for teams already on it, lighter context, no origin-risk policy, shares the $10 Individual / $19 Business seat. Fine for nits. Not a required check for AI-origin.
+- **Snyk** — Real security product. CVE and license scanning, about $25+/dev/mo. Catches known vulns, not invented packages or “the model widened this IAM role.” Adjacent, not overlapping, unless the buyer collapses everything into DevSecOps.
+- **Qodo (Codium)** — AI review plus test generation, about $12–$19/dev/mo. Quality and coverage. Same comment-on-the-diff shape as CodeRabbit. No provenance gate.
+
+**Your Opportunity**
+
+Sell the required check CodeRabbit will not become: AI-origin detection plus three risk detectors plus human escalation, at **$20/dev/mo**. Do not out-comment them. Out-specialize them. Copilot Review stays shallow because Microsoft sells autocomplete. Snyk will not hero invented-package detection. One prevented incident pays a year of seats for a 10-person team ($2,400). Marketplace plus anonymized r/ExperiencedDevs case studies is the GTM. Once the check is required, removing you is a security decision.
+
+## Business Model
+
+Per-developer SaaS with a required-check premium. Free on public OSS to seed Marketplace installs. Team is the default for 5–30 person shops already on Copilot. Enterprise adds audit export, SSO, retention, and a signed evidence pack for the change types you already flag. Implementation help ($100/hr, optional) is a wedge for the first five design-partner teams, not a services company in disguise.
+
+- **OSS / Free** ($0) — Public repos, origin labeling, standard detectors, MergeGate comments; no required-check enforcement on private repos
+- **Team** ($20/dev/mo) — Private repos, required status check, Slack, confidence thresholds, reviewer routing, 30-day flag history
+- **Enterprise** (custom, typically $35–$50/dev/mo) — Audit trail, SSO, data-retention controls, custom detectors, dedicated false-positive review
+
+**Unit Economics**
+
+- **$0.08–$0.25** — LLM cost per PR (classify hunks + three detectors; cache repo policy)
+- **~75%** — Gross margin at Team after inference, GitHub API, and queue
+- **$40–$80** — Target CAC (Marketplace + community; no enterprise AE in year one)
+- **$20** — ARPU on Team; **~$180** LTV at 9-month average life if you stay a required check
+- **Payback** — One caught hallucinated dependency or permission leak covers roughly a year of seats for a 10-dev team
+
+Path: 50 Team seats = $1k MRR. 1,000 seats ≈ $20k MRR before Enterprise. Constraint is false-positive rate, not sales. Noisy flags get the required check deleted in a week.
+
+## Recommended Tech Stack
+
+This is a GitHub App with a scoring worker behind it. The hard parts are webhook durability, origin classification without drowning in tokens, and a required-check that never flakes. Keep the UI thin.
+
+- **GitHub App + Octokit** — `pull_request` and `check_run` webhooks, signed payloads, Checks API for the required status. Installation tokens scoped per org. Marketplace listing is the storefront.
+- **Claude + GPT-4o** — Claude for hunk classification and the three detectors with prompt cache on repo policy; GPT-4o failover. Deterministic scanners (registry lookup, permission-diff AST) run *before* the LLM so you do not spend tokens proving npm does not have `lodash-utils-v2`.
+- **Postgres** — Installations, repos, PRs, hunks, flags, reviewer decisions, token-usage per review. You need the decision log or Enterprise is vapor.
+- **BullMQ + Redis** — Inbound webhook acks in under one second; review jobs retry with backoff. Per-install concurrency caps so one noisy monorepo cannot starve the queue.
+- **Stripe Billing** — Per-seat Team, usage-capped OSS, Enterprise invoices. Seat count from GitHub membership, reconciled nightly.
+- **Fly.io or Vercel** — Fly for the worker (long-running, multi-region ack). Vercel is fine for the dashboard. Do not run inference on the webhook request.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a TypeScript monorepo for MergeGate, a GitHub App that flags AI-origin risk on pull requests. Apps: (1) webhook + worker, (2) Next.js dashboard. Postgres schema: installations (id, account_login, plan), repos, pull_requests, hunks (pr_id, path, start_line, end_line, origin: 'ai'|'human'|'unknown', assistant: 'cursor'|'copilot'|'other'|null), flags (hunk_id, kind: 'hallucinated_dep'|'permission_escalation'|'thin_comment_dense_logic', confidence, reason, status: 'open'|'accepted'|'dismissed'), check_runs, usage_ledger (pr_id, input_tokens, output_tokens, cost_cents). Octokit GitHub App auth. BullMQ queues: ingest, classify, detect, notify. Stripe products: Free, Team $20/dev/mo. Env: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY, OPENAI_API_KEY, DATABASE_URL, REDIS_URL, STRIPE_SECRET_KEY. Required check via Checks API. No dashboard feature that is not a read-model of GitHub state.
+```
+
+**2. Origin Classifier + Three Detectors**
+
+```text
+Build the PR pipeline. On pull_request opened/synchronize: ack webhook, enqueue ingest. Ingest fetches the diff and commit list. Classify origin per hunk using (a) commit trailers and author metadata from Cursor/Copilot when present, (b) heuristic fallback (commit message patterns, known assistant co-author emails) — never claim certainty without metadata. Then run three detectors in parallel: (1) hallucinated deps — parse added imports/require/package.json diffs, lookup npm/PyPI/crates, flag names that 404 or are not in the lockfile; (2) permission escalations — AST/diff rules for IAM, RBAC, GitHub Actions permissions, authz middleware going from read to write/admin; (3) thin-comment dense logic — cyclomatic/line density vs comment ratio on AI-origin hunks only. Each flag: kind, confidence 0-1, reason under 200 chars, suggested reviewer. If max confidence is at or above 0.7, fail the required check; else pass with a summary comment. Persist flags. Post inline annotations. Skip LLM when the registry lookup or AST rule already decided.
+```
+
+**3. Required Check + Slack + Pricing**
+
+```text
+Wire GitHub Checks API so MergeGate is a required status on protected branches. Check name: "MergeGate AI-origin". Output: pass/fail, title with flag counts, summary markdown listing each flag with file:line, kind, confidence, reason, and a "Dismiss" deep link that requires a logged-in org member plus a written rationale (stored, never silent). Slack: high-confidence fails post to a configured channel with PR URL and top three flags. Dashboard: false-positive rate (dismissed vs accepted), PRs per repo, cost per PR. Stripe: map GitHub org members to seats; unpaid Team orgs get comments but cannot set the required check. Write a 12-test suite: hallucinated package, real package, permission widen, permission unchanged, AI hunk with no comments, human hunk with dense logic (must NOT flag), webhook replay idempotency, seat billing.
+```
+
+**4. Landing Page**
+
+```text
+Single-page site for MergeGate. Headline: "The required check for AI-authored code." Sub: "CodeRabbit reviews the diff. MergeGate flags the lines a model invented." Sections: 6:12 p.m. merge story, 4-step how-it-works, detector cards, $0 OSS / $20 Team, one-row comparison vs CodeRabbit / Copilot Review / Snyk (AI-origin required check). CTA: "Install the GitHub App." Geist, near-black on off-white, one lime accent.
+```
+
+## Sources
+
+Market sizing, community counts, and competitor shape from Ideabrowser MCP idea 8902 (July 2026) plus public sources it cites.
+
+- [Ideabrowser — idea 8902](https://www.ideabrowser.com)
+- [Grand View Research — AI Code Tools Market](https://www.grandviewresearch.com/industry-analysis/ai-code-tools-market-report)
+- [TechCrunch — CodeRabbit $16M Series A (2024)](https://techcrunch.com/2024/08/15/coderabbit-raises-16m-to-bring-ai-to-code-reviews/)
+- [GitHub Copilot pricing](https://github.com/features/copilot)
+- [CodeRabbit pricing](https://www.coderabbit.ai/pricing)
+- [Greptile](https://www.greptile.com/pricing)
+- [Snyk plans](https://snyk.io/plans/)
+- [Qodo pricing](https://www.qodo.ai/pricing)
+- [r/ExperiencedDevs — AI code review](https://www.reddit.com/r/ExperiencedDevs/comments/1grd2d9/whats_your_experience_with_aibased_code_review/)
+- [r/codereview — AI code reviews](https://www.reddit.com/r/codereview/comments/1libcxw/ai_code_reviews/)
+
+Page sourced via Ideabrowser MCP (idea_id 8902).

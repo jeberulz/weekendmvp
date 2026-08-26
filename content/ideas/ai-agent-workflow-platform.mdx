@@ -1,0 +1,119 @@
+---
+slug: "ai-agent-workflow-platform"
+title: "AI Agent Workflow Platform"
+---
+
+## The Problem
+
+An ops lead at a 40-person SaaS company maps the same broken loop every Monday: a Salesforce opportunity moves to "Closed Won," someone is supposed to provision the workspace, send the welcome sequence, open a Slack channel, and file a kickoff task in Linear. Step two fails because HubSpot rate-limited. The zap retries once, posts a cryptic error into a channel nobody watches, and the customer sits in onboarding hell until a human notices on Thursday. The company already pays for Zapier, a bit of Make, and a graveyard of n8n JSON. What they do not have is a runtime that can recover — diagnose the failure, try a fallback, escalate with context, and resume without a human re-running the whole graph.
+
+This is not a template problem. There is a different product on this site — an AI workflow library for solopreneurs — that sells curated zaps you install. That is a catalog. This is the engine. Teams that have already picked their recipes still drown in silent failures, brittle auth, and "if this, then that" graphs that cannot reason when the world is messy. r/automation (~430,000), r/AI_Agents (~118,000), and r/dataengineering (~301,000) are full of the same post: the happy path works in the editor; production is where agents go to die.
+
+The downstream cost is headcount dressed up as software spend. UiPath quotes that look like $420-plus per bot per month, or six-figure contracts, buy you RPA that still needs a center of excellence. Zapier Team at $69 and Company at $103.50 buy you more tasks, not more judgment. Microsoft Power Automate Premium at about $15 per user is cheap until the flow is a 40-step monster only one person understands. Lindy starts around $50/month and is the closest "agent that does the job" story — still thin on durable execution, audit, and recovery that an ops org will bet a customer-facing process on. The missing product is an ops OS: natural-language setup, real agent loops, Temporal-grade durability, and error recovery that is a feature, not a Slack apology.
+
+## The Solution
+
+RelayOS (working name) is a runtime for autonomous agent workflows with error recovery, positioned as the ops OS for teams — not a template marketplace, not a solopreneur zap gallery, and not a chatbot with a webhook. You describe the job in English. The system compiles an agent graph (tools, retries, compensation, escalation). Temporal (or equivalent) runs it so a crashed worker does not lose the Salesforce write. When HubSpot 429s, the agent waits, retries with backoff, switches to a fallback tool if one is configured, and only then pages a human with the transcript of what it already tried.
+
+The wedge is recovery plus setup, not connector count. Zapier will always have more apps. You win when a failed step is a first-class state: replay from the cursor, fork a patch, mark a poison message, and keep an audit log a SOC2 reviewer can read. Natural language is how graphs get born; the durable worker is how they stay alive.
+
+**How it works:**
+
+1. **Describe the job** — Ops writes "when a deal closes in Salesforce, provision the tenant, email the champion, open Slack, create Linear kickoff." The compiler proposes a graph: triggers, tools, schemas, retry policy, human-in-the-loop gates.
+2. **Connect systems** — OAuth to Salesforce and HubSpot, API keys for Slack and Linear, secrets in a vault. Each tool has a typed contract so the agent cannot invent a field that does not exist.
+3. **Run with recovery** — Temporal (or a custom LangGraph loop on top of a durable queue) executes steps. Failures classify: retryable, compensating, or escalate. The agent writes a run log; poison steps do not silently drop.
+4. **Operate** — Dashboard of in-flight runs, SLAs, cost per run, and a replay button. Pro and enterprise add SSO, sandbox vs prod, and change-sets so a prompt edit does not ship straight into the close-won path.
+
+## Market Research
+
+Analyst ranges on "AI agents" are noisy. Use the conservative recent figure as the planning number and treat the rest as a timing signal, not a TAM you can capture.
+
+- **Precedence Research puts the AI agents market at $7.92 billion in 2025, reaching $236.03 billion by 2034**, about 45.8% CAGR. That is the primary cite: large, compounding, still early on production-grade ops.
+- **Grand View Research** covers the same category with its own (also aggressive) trajectory. Read it as confirmation that multiple firms see agents as a platform layer, not a feature inside chat.
+- **Earlier Ideabrowser snapshots** floated $3.7 billion in 2023 exploding toward $150 billion by 2025. Treat that as the "analysts got drunk" range. Prefer Precedence for decks; mention the spread so you do not look naive when a VC quotes a different PDF.
+- **Community density is real demand.** r/automation ~430k, r/AI_Agents ~118k, r/dataengineering ~301k — operators, builders, and platform engineers arguing about retries, idempotency, and whether GPT should be allowed to POST to production. That is your ICP arguing in public.
+- **Timing scores 9.** Models can tool-call. Orchestrators (Temporal, Inngest, Trigger.dev) are boring enough to bet on. CRM APIs are stable. The window is "agents that survive contact with Salesforce," not another demo that books a meeting in a sandbox.
+- **Opportunity 9, pain 8, builder confidence 7.** Pain is operational (failed onboardings, missed SLAs). Builder confidence is 7 because Temporal plus a graph compiler is a real engineering product, not a CRUD weekend — still buildable as an MVP if you scope to two verticals (onboarding + lead routing) instead of "any workflow."
+
+SAM is ops and RevOps teams already paying Zapier or Power Automate who will pay mid-three-figures a month to stop babysitting failures. Enterprise is a later motion: $20k–$100k contracts once you have audit, SSO, and a Salesforce-shaped success story.
+
+## Competitive Landscape
+
+Infrastructure players own triggers. RPA owns the enterprise RFP. Agent startups own the demo. Nobody owns durable recovery as the headline for mid-market ops.
+
+- **Zapier** — Default glue for SMBs. Enormous connector catalog, weak agent reasoning, retries that feel like "run it again." Free / Pro about $19.99–$28.75 / Team $69 / Company $103.50. You will lose a bake-off on app count. You will win on "this run failed, here is what we did, here is the resume token."
+- **Lindy.ai** — Closest agent-native peer. Natural-language agents, email and calendar muscle, from about $49.99/month. Great for a founder assistant. Thin as an ops OS: less Temporal-grade durability, less CRM-grade audit, less "the close-won path is a change-controlled production workflow."
+- **UiPath** — Enterprise RPA. Often $420-plus per bot per month or six-figure contracts, plus a services layer. Wins regulated industries and Citrix-era UI automation. Slow, expensive, and culturally wrong for a 40-person SaaS ops team that lives in APIs, not Win32.
+- **Microsoft Power Automate** — About $15/user for Premium, bundled gravity if you are already in 365. Flows get unmaintainable; error handling is a Power Fx puzzle; agents are a bolt-on. Fine as the corporate default. Poor as a product you love.
+- **n8n** — Free self-host / Cloud from about $20/month. Best OSS graph editor. Developers love it; ops teams still build the recovery themselves. Your hosted opinionated runtime is what n8n users reinvent at 2 a.m.
+
+**Your Opportunity**
+
+Be the ops OS, not the template shop. Natural-language setup so RevOps can draft a graph without a contractor. True autonomous error recovery so the graph does not page a human on the first 429. Price above Zapier (you are not a task meter) and below UiPath (you are not a six-month implementation). Starter kit at $249 gets a team onto one production workflow. Pro at $499–$2,000/month is the core SaaS. Enterprise at $20k–$100k is SSO, VPC, and Salesforce/HubSpot professional services. The library product on this site remains a different SKU: recipes. You sell the machine that runs them when recipes are not enough.
+
+## Business Model
+
+Hybrid: a paid starter implementation plus subscription, because mid-market ops will not trust a $29 self-serve toggle on the close-won path. The starter kit is a productized onboarding, not custom software.
+
+- **Starter kit** ($249 one-time) — One production workflow (onboarding or lead routing), two connectors, recovery defaults, a week of email support. Converts to Pro.
+- **Pro** ($499–$2,000/mo) — Usage and connector bands. Multiple graphs, replay, sandbox, run-cost dashboard, Slack escalation. Most revenue lives here.
+- **Enterprise** ($20k–$100k/year) — SSO, audit exports, dedicated region or VPC peering, legal review, Salesforce/HubSpot solution mapping, uptime SLA.
+
+Land with RevOps via a single painful process (closed-won provisioning is the canonical design partner story). Expand to support macros, billing dunning, and data-sync agents once recovery is trusted. Annual contracts for Pro at the high band.
+
+**Unit Economics**
+
+- **$400–$1,200** — Target CAC (content on "Salesforce zap failed closed won" plus partnerships with HubSpot/Salesforce independents)
+- **$900** — Target blended monthly ARPU on Pro (mix of $499 and $2,000 bands)
+- **~75%** — Gross margin after LLM tokens, Temporal/cloud, and connector API costs; watch token blowups on retry storms
+- **~$8,000+** — 12-month LTV if you keep one production workflow sticky (switching cost is the graph plus the audit trail)
+
+Cap retries. Charge for run-minutes or successful completions, not unbounded agent thought. A retry storm that re-prompts Claude on a 429 can erase the $499 plan. Budget tokens per run and kill loops that exceed it.
+
+## Recommended Tech Stack
+
+You are shipping a durable agent runtime with a compiler on top. The demo is LangGraph. The business is Temporal plus typed tools plus Stripe.
+
+- **Next.js + Vercel** — App, graph editor, run inspector, billing. Workers do not live on Vercel serverless; they live on a long-running fleet.
+- **Temporal** — Durable execution, timers, heartbeats, replay. This is the recovery story. Do not fake it with a cron and a status column.
+- **LangGraph or a custom agent loop** — Planning and tool selection. Keep it swappable. The graph compiler emits Temporal workflows that call tools; the LLM is not the source of truth for "did this write succeed."
+- **Postgres** — Tenants, graphs, run history, tool contracts, audit. Append-only run events.
+- **Salesforce and HubSpot connectors** — First two, done properly (idempotency keys, pagination, OAuth refresh). Resist the 400-app trap until one vertical is boringly reliable.
+- **Stripe** — Starter kit SKU, Pro bands, enterprise invoices. Usage meters for runs.
+- **Auth** — WorkOS or Clerk with SSO on Pro/enterprise. Secrets vault (Doppler or AWS SM) for API keys; never in graph JSON.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript app called RelayOS, an ops OS for agent workflows. Postgres schema: orgs, users, connections (provider, oauth_meta, status), graphs (name, dsl_json, version), runs (graph_id, temporal_workflow_id, status, started_at, cost_cents), run_events (run_id, seq, type, payload_json), tool_contracts (provider, name, json_schema). Stripe: one-time Starter $249, Pro prices $499 and $2000, metered runs. Env: TEMPORAL_ADDRESS, ANTHROPIC_API_KEY, SALESFORCE_*, HUBSPOT_*, STRIPE_*. Workers in a separate Node process that hosts Temporal activities. This is a runtime, not a template marketplace.
+```
+
+**2. Compiler + Recoverable Runner**
+
+```text
+Build POST /api/graphs/compile: take a natural-language job, emit a typed graph (trigger, steps, retry policy, compensation, escalate_to). Validate every tool against tool_contracts. POST /api/runs starts a Temporal workflow. Activities: call Salesforce/HubSpot/Slack with idempotency keys. On 429 or 5xx: exponential backoff, then fallback tool if configured, then escalate with a run transcript. UI: run inspector showing events, Replay from step N, Kill switch. Never drop a failed step without an event row. Do not implement a Zapier-style template gallery.
+```
+
+**3. Landing Page**
+
+```text
+Marketing site for RelayOS. Hero: "The ops OS that recovers." Sub: "Agents that retry, compensate, and escalate — not zaps that die in a Slack channel." Contrast: template libraries sell recipes; this product runs production graphs. How it works: four steps matching the product. Pricing: $249 starter kit, Pro $499–$2000/mo, enterprise $20k–$100k. Competitor anchors: Zapier Company $103.50 (no recovery), Lindy from ~$49.99 (assistant, not ops OS), UiPath $420+/bot (too heavy). FAQ: not n8n with a skin; Temporal is the spine. CTA: "Pick one broken Salesforce flow."
+```
+
+## Sources
+
+Market sizing and competitive pricing collated from Ideabrowser MCP idea 61 and the public research it cites. Analyst ranges on agents disagree by an order of magnitude — use Precedence as primary and disclose the spread.
+
+- [Precedence Research — AI Agents Market ($7.92B 2025 to $236.03B by 2034, ~45.8% CAGR)](https://www.precedenceresearch.com/ai-agents-market)
+- [Grand View Research — AI Agents Market Report](https://www.grandviewresearch.com/industry-analysis/ai-agents-market-report)
+- [Zapier — pricing reference (Free / Pro ~$19.99–$28.75 / Team $69 / Company $103.50)](https://zapier.com/pricing)
+- [Lindy.ai — pricing reference (from ~$49.99/mo)](https://www.lindy.ai/pricing)
+- [Microsoft Power Automate — Premium ~$15/user](https://www.microsoft.com/en-us/power-platform/products/power-automate/pricing)
+- [n8n — Cloud from ~$20/mo; self-host free](https://n8n.io/pricing)
+- [UiPath — enterprise RPA; per-bot and contract pricing varies](https://www.uipath.com/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 61): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_market_insight, research_trend.

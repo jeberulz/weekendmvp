@@ -7679,6 +7679,476 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-startup-governance-copilot",
+      "title": "AI Risk and Compliance Copilot for Startups",
+      "publishedAt": "2026-08-26",
+      "category": "saas",
+      "description": "Scan your AI stack, map EU AI Act and SOC 2 gaps, and auto-draft missing policies — a $99/mo copilot, not a $50k Vanta contract.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:5861",
+      "og": {
+        "subject": "A closed laptop beside a stamped compliance folder on a dark oak desk, lime edge light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 12,
+        "wordCount": 2198,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "voice-copilot-field-technicians",
+      "title": "Voice Copilot for HVAC and Plumbing Pros",
+      "publishedAt": "2026-08-26",
+      "category": "saas",
+      "description": "HVAC and plumbing techs narrate the job; AI fills ServiceTitan, Jobber, or Housecall Pro work orders at $29 per tech per month.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8166",
+      "og": {
+        "subject": "A dusty work-order tablet on a metal toolbox in a dim garage, mint LED rim, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 2162,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-merge-inspector",
+      "title": "Pull Request Scanner That Flags Risky AI Code",
+      "publishedAt": "2026-08-26",
+      "category": "developer-tools",
+      "description": "GitHub App that flags risky AI-authored code — hallucinated deps, permission jumps, thin comments — as a required check before merge.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8902",
+      "og": {
+        "subject": "A glowing merge-check badge on a dark keyboard, emerald backlight, shallow focus, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 10,
+        "wordCount": 2200,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-prompt-optimization-marketers",
+      "title": "AI Prompt Optimization Service for Marketers",
+      "publishedAt": "2026-08-26",
+      "category": "ai-tools",
+      "description": "Brand-voice prompt libraries and audits for marketing teams — $499–1999/mo, not another $20 ChatGPT subscription.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:35",
+      "og": {
+        "subject": "A stack of prompt cards next to a fountain pen on black slate, lavender backlight, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 2195,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "no-code-ai-agent-platform",
+      "title": "No-Code AI Agent Platform",
+      "publishedAt": "2026-08-26",
+      "category": "ai-tools",
+      "description": "Zapier-like builder for AI employees: describe the job in English, connect tools, and ship an agent without writing code.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:58",
+      "og": {
+        "subject": "A small robot figurine facing a blank flowchart notebook, aubergine lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 2026,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-arbitrage-agent-resellers",
+      "title": "AI Arbitrage Agent for Resellers",
+      "publishedAt": "2026-08-26",
+      "category": "ecommerce",
+      "description": "24/7 cross-platform scanner that surfaces underpriced flips on eBay, Marketplace, Amazon, and Shopify for resellers.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "side-hustlers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1098",
+      "og": {
+        "subject": "A vintage price sticker gun on a dark warehouse shelf, lime bounce light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 1955,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 10,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-content-factory-human-qc",
+      "title": "AI Content Factory with Human Quality Control",
+      "publishedAt": "2026-08-26",
+      "category": "creator-tools",
+      "description": "AI drafts at scale with a critic layer that routes only flagged sections to human editors — hybrid QC for agencies, not another writer.",
+      "buildTime": "8",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "creators"
+      ],
+      "source": "ideabrowser:1029",
+      "og": {
+        "subject": "A red editor's pencil on a thick manuscript beside a dark monitor, mint glow, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 2185,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "invoice-coding-error-scanner",
+      "title": "Invoice Coding Error Scanner for Bookkeeping Firms",
+      "publishedAt": "2026-08-26",
+      "category": "fintech",
+      "description": "QA layer between AP automation and the ledger: flags vendor drift, amount mismatches, and personal-looking owner draws.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:8377",
+      "og": {
+        "subject": "A paper invoice under a magnifying glass on a dark accountant's blotter, emerald lamp, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 7,
+        "wordCount": 2181,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-podcast-producer",
+      "title": "AI Podcast Producer",
+      "publishedAt": "2026-08-26",
+      "category": "creator-tools",
+      "description": "Raw recording to polished episode — filler removal, enhancement, show notes, audiograms — for indie podcasters, not a video editor.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1112",
+      "og": {
+        "subject": "A vintage microphone on a dark studio desk with a single waveform LED, lavender backlight, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 2199,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-agent-workflow-platform",
+      "title": "AI Agent Workflow Platform",
+      "publishedAt": "2026-08-26",
+      "category": "automation",
+      "description": "Durable agent runtime with error recovery for ops teams — an execution OS, not a template marketplace or Zapier clone.",
+      "buildTime": "8",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:61",
+      "og": {
+        "subject": "A tangled cable uncoiling into a single clean loop on a dark ops desk, aubergine light, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_market_insight",
+          "research_trend"
+        ],
+        "citations": 7,
+        "wordCount": 2162,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-26T12:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
