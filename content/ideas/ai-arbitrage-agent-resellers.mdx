@@ -1,0 +1,126 @@
+---
+slug: "ai-arbitrage-agent-resellers"
+title: "AI Arbitrage Agent for Resellers"
+---
+
+## The Problem
+
+A side-hustle reseller finishes a shift, opens Facebook Marketplace on a phone with a cracked screen, and scrolls for ninety minutes looking for a mispriced KitchenAid, a lot of Lego, anything that clears 30% after fees and gas. They screenshot three listings, alt-tab to eBay sold comps, punch shipping into a calculator, and by the time they message the seller the item is gone. Tomorrow they will do it again—Amazon, Shopify clearance, OfferUp—because the money is real and the workflow is still a human eyeball. Jungle Scout will tell you what sells on Amazon. It will not tell you that a local Marketplace listing is $80 under the eBay median tonight.
+
+The pain shows up at industrial scale in reseller communities. r/Flipping has 226k members arguing about sourcing apps that still assume Amazon. r/reselling sits at 294k. r/FulfillmentByAmazon is 116k of people who already pay for Keepa and still spend nights on Marketplace because that is where the dumb prices live. Facebook’s Hustle Buddies FBA group (66k) plus Marketplace-for-sellers groups in the tens of thousands are the same complaint in a different UI: too many tabs, too much math, too slow. YouTube channels like Reezy Resells and Fields of Profit pull 55k–120k views on sourcing vlogs. They are not teaching a niche. They are documenting a job that software has not taken.
+
+The downstream cost is hours, not theory. Broader resale ran about $200B in 2023 and is on a path toward ~$400B by 2027. Secondhand apparel alone is projected around $367B by 2029 with online resale compounding near 13% CAGR. Seventy-eight percent of retail executives are already putting money into AI. The arbitrage spread still belongs to whoever looks first. A 24/7 agent that ranks today’s best ROI across platforms is not a nice dashboard—it is the only design that survives contact with how this segment actually hunts.
+
+## The Solution
+
+A web app whose primary surface is a morning brief, not a spreadsheet. Users connect the marketplaces they already sell on, set a floor margin and a few category allow-lists, then let ResalePilot scan overnight. Each listing is matched to sold comps, fees, shipping, and a risk flag (condition language, brand authenticity, local-pickup only). The dashboard is today’s best flips sorted by ROI, with a one-tap “why this is a deal” receipt. Power users add buy rules (auto-message under a threshold, never auto-purchase on day one) and, later, a Shopify push so a sourced item can become a draft listing. You are selling a night shift without hiring one—the user’s criteria are the entire policy engine.
+
+**How it works:**
+
+1. **Connect sources** — User OAuths eBay (Finding/Browse APIs), Amazon Product Advertising API, Shopify if they have a store; Marketplace starts as saved-search ingest plus official export where it exists—no ToS-blind scraping as the default
+2. **Scan overnight** — Workers pull new listings on a schedule, normalize title/price/condition, match to comps, compute fees + shipping + ROI, drop anything under the user’s floor
+3. **Rank today’s book** — Dashboard lists deals by ROI and risk; each card shows source, dest, spread, and the sold-comp receipt so the user can audit the math in ten seconds
+4. **Act with rules** — User messages, watches, or (Pro) auto-drafts a listing; buy-rules stay conservative until the user opts in; every action is logged
+
+## Market Research
+
+Resale is no longer a garage economy, and AI search is no longer a science project. The overlap is the product:
+
+- **Global secondhand apparel is projected around $367B by 2029**, with online resale growing near 13% CAGR (Closo / resale trend roundups). That is the apparel slice alone, not the whole thrift pile.
+- **Broader resale ran ~$200B in 2023 and is widely cited toward ~$400B by 2027.** Even if those topside numbers are messy, the direction is not: more listings, more platforms, more need for a machine that reads all of them.
+- **AI search engines are a $43.63B 2025 segment** in one Coherent cut, heading toward $108B by 2032 at ~14% CAGR. ResalePilot is a vertical search engine with a P&L attached, not a chatbot with a shopping hobby.
+- **78% of retail executives are already investing in AI.** The category is funded on the brand side. The sourcing side—the person hunting the spread—is still on a phone.
+- **Community is pre-assembled:** r/Flipping 226k, r/reselling 294k, r/FulfillmentByAmazon 116k, Hustle Buddies FBA 66k. TikTok profit-screenshot culture is the unpaid ad unit.
+- **Incumbent tools are Amazon-shaped.** Jungle Scout, Keepa, Helium 10: excellent if your world is ASIN. Tactical Arbitrage is the cross-retail SKU hunter at $97–$197/mo with a learning cliff. Casual Marketplace flippers are still free-and-slow.
+
+At $49/mo Scout, 1,700 paying users is about $1.0M ARR. Cross-platform is the wedge that Amazon-only suites will not copy without rebuilding their data plane.
+
+## Competitive Landscape
+
+Sourcing software is a real category. Almost all of it is a single-marketplace database with a chrome extension glued on:
+
+- **Jungle Scout** — Category leader for Amazon sellers. Product research, opportunity finder, inventory. Weak the moment the source listing is not an ASIN. From ~$49/mo
+- **Tactical Arbitrage** — The serious online-arbitrage scanner. Deep filters, multi-retail search, ugly UI, steep learning curve. Built for people who already know what OA means. $97–$197/mo
+- **Keepa** — Amazon price history, drop alerts, extension. Indispensable and Amazon-only. You still do Marketplace by hand. ~$17/mo
+- **AutoDS** — Dropshipping-first: source, list, fulfill. Fine if you never want to touch the item. Wrong product for flippers who buy, photograph, and ship. $20–$100/mo
+- **Manual Marketplace scrolling** — The incumbent with 100% share of casual sourcing. Cost is $0 and several hours a night. This is the competitor you actually displace at the low end.
+- **ChatGPT plus a spreadsheet** — Tech-savvy flippers already paste titles into a model. No live inventory, no fee math, no overnight scan. Free until you miss the $400 spread that expired at 1 a.m.
+
+**Your Opportunity**
+
+Jungle Scout will not become a Marketplace hunter—it would dilute the Amazon data moat they sell. Tactical Arbitrage will not become friendly at $49. Keepa will not grow a second marketplace. Win on three things they will not chase: (1) true cross-platform ranking (eBay + Marketplace + Amazon + Shopify) as the default view, (2) a $49 Scout tier for casual flippers who refuse a $197 tool, and (3) an API-first ingest so you stay alive when platforms tighten scraping.
+
+## Business Model
+
+Subscription SaaS with a calculator that converts on deal volume, not features. Path to $1M ARR is about 1,700 Scout seats or a mix of ~900 Scout plus ~250 Pro. Compute is workers plus API units, not a giant LLM bill; use the model for matching messy titles, not for generating essays. Gross margin should hold near 80% if you cap free scans and pass through Amazon PA-API and eBay call costs on Pro.
+
+- **Free calculator** ($0) — Paste one listing URL, get a single ROI estimate—the lead-gen wedge
+- **Scout** ($49/mo) — Overnight scan on 2 platforms, 50 deal cards/day, sold-comp receipts, watchlist
+- **Pro** ($149/mo) — All connected platforms, 500 cards/day, Shopify draft push, buy-rules, CSV of the book
+- **Desk** ($199/mo) — Team seats, webhook to Discord, inventory snapshot, priority API quota
+
+Skip auto-buy on the first SKU. Liability and ToS are not a launch feature. Charge for ranking and receipts; let humans still click purchase. Add-on analytics ($15–$50/mo) for people who want category heatmaps without jumping to Desk.
+
+**Unit Economics**
+
+- **$60** — Target CAC (Reddit value posts + YouTube sourcing collabs, not Amazon-keyword bidding against Jungle Scout)
+- **$72/mo** — Blended ARPU
+- **~80%** — Gross Margin
+- **~$520** — LTV (9-mo conservative)
+
+## Recommended Tech Stack
+
+Optimize for scheduled ingest → normalize → rank → dashboard. The hard part is not the model. It is staying inside platform rules while the data is still fresh enough to trade.
+
+- **Next.js + Vercel** — Dashboard, auth, Stripe customer portal. Keep the UI boring; the product is the book of deals.
+- **Workers on Railway or Fly** — Long-running scan jobs, per-user concurrency caps, retry with backoff when an API 429s. Do not run this on a serverless timeout.
+- **Official APIs first** — eBay Finding/Browse, Amazon Product Advertising API, Shopify Admin API. Treat Playwright as a last resort behind a ToS review, rate limits, and a kill switch. Prefer user-exported Marketplace data over crawling.
+- **Postgres** — users, connections, listings, comps, deals, actions. Index (user_id, scored_at) and (source, external_id) so you do not double-alert.
+- **Stripe Billing** — Free / Scout $49 / Pro $149 / Desk $199. Meter deal cards so power users feel the upgrade, not a surprise overage hammer.
+- **Small LLM for matching only** — Title/condition normalization and “same SKU?” confidence. Do not send full pages to a frontier model on every listing.
+
+Legal note, not optional: marketplaces ban automated access that their ToS forbid. Ship API-backed sources first. Document the restriction in-product. If you add a scraper later, isolate it, log consent, and expect the integration to die. The durable product is ranking plus receipts, not a cat-and-mouse crawler.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app named ResalePilot. Postgres tables: users, connections (provider, credentials_encrypted), listings (source, external_id, title, price_cents, condition, url, seen_at), comps (listing_id, dest, median_cents, sample_size), deals (listing_id, roi_bps, fees_cents, ship_cents, risk, scored_at), actions (deal_id, type, created_at). Auth with Clerk. Stripe: Free, Scout $49, Pro $149, Desk $199. Env: EBAY_APP_ID, AMAZON_PAAPI_KEY, SHOPIFY_API_KEY, STRIPE_SECRET_KEY, OPENAI_API_KEY. Workers deploy to Fly. No scraper in v1.
+```
+
+**2. Overnight Ranker**
+
+```text
+Build a Fly worker that, for each Pro/Scout user, pulls new items from connected official APIs, upserts listings on (source, external_id), estimates dest comps, subtracts marketplace fees and a shipping heuristic, and inserts deals where roi_bps is above the user’s floor. Cap cards per plan (50 Scout, 500 Pro). Deduplicate. Attach a short “why” string from the comp sample. Never place an order. Expose GET /api/deals/today for the dashboard.
+```
+
+**3. Landing Page**
+
+```text
+Design a marketing page for ResalePilot. Hero: “Tonight’s best flips, ranked by ROI.” Sub: “We scan eBay, Amazon, Shopify, and Marketplace-style sources while you sleep. You wake up to a book of deals with the math already done.” Sections: fake dashboard of five deals, problem (scrolling is the job), how it works (4 steps), pricing $49 / $149 / $199 vs Jungle Scout $49 Amazon-only and Tactical Arbitrage $97–$197, FAQ on ToS, auto-buy (we don’t), and data sources. Geist, dark slate background, lime accent. CTA: “See today’s sample book.”
+```
+
+**4. Branding Package**
+
+```text
+Brand ResalePilot like a trading terminal for garage-scale capital, not a coupon app. Wordmark plus a small radar-pip icon. Near-black, one lime accent, two cool grays. Geist for UI, IBM Plex Mono for ROI and prices. Voice rules: always show spread next to ROI, never shame manual flippers, never promise guaranteed profit. Output a one-page brand sheet and three sample deal-card copy blocks.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #1098 and the public research it cites. Triangulate before you cite in investor materials.
+
+- [Closo — Resale market trends for 2025](https://closo.co/blogs/data-driven-insights-market-analytics/resale-market-trends-for-2025-what-to-expect)
+- [Coherent Market Insights — AI search engines market](https://www.coherentmarketinsights.com/industry-reports/ai-search-engines-market)
+- [Statista — Artificial intelligence outlook](https://www.statista.com/outlook/tmo/artificial-intelligence/worldwide)
+- [Precedence Research — AI market size](https://www.precedenceresearch.com/artificial-intelligence-market)
+- [Retail TouchPoints — AI and resale pathways](https://www.retailtouchpoints.com/topics/consumer-trends/tariffs-ai-social-trends-create-powerful-new-pathways-for-resale)
+- [Jungle Scout — pricing reference](https://www.junglescout.com/pricing/)
+- [Keepa — pricing reference](https://keepa.com/)
+- [Tactical Arbitrage — pricing](https://tacticalarbitrage.com/)
+- [AutoDS — pricing](https://www.autods.com/pricing/)
+
+Page sourced via Ideabrowser MCP (idea_id 1098): get_idea_research, competitive_analysis, community_analysis.

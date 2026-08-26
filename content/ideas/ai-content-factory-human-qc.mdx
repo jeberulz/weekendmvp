@@ -1,0 +1,121 @@
+---
+slug: "ai-content-factory-human-qc"
+title: "AI Content Factory with Human Quality Control"
+---
+
+## The Problem
+
+A content director at a 12-person SEO agency dumps 40 programmatic briefs into Jasper on Thursday, exports the drafts Friday morning, and spends the weekend reading every paragraph because three of last month’s posts hallucinated a competitor’s pricing and a client’s legal team noticed. The model did not fail loudly. It failed in section 4 of article 17, and the only way anyone found it was a human who still had to read the other 39. That is the actual job now: not writing, but hunting the 8–12% of generated copy that would get you fired.
+
+Agencies and publishers cannot ship raw GPT. Brand voice, claims, and compliance are not optional, and the tools that made drafting cheap did not make reviewing cheap. Jasper, Copy.ai, and a pile of “write 50 blogs” Chrome extensions optimized tokens-out. They left the expensive part—an editor with judgment—exactly where it was. Fully human shops still charge $0.10–$0.50 per word because the review is the product. Hybrid shops pretend they have a process and then paste everything into Google Docs anyway.
+
+The complaint is loud in the places these buyers already hang out. r/SEO sits around 290k members and the recurring thread is not “how do I generate more,” it is “how do I stop this from sounding like everyone else’s AI sludge.” r/digital_marketing (~250k) and r/artificial (1.1M) run the same loop: volume is solved, trust is not. Grammarly Business at ~$15/user/month catches commas. It does not catch a made-up case study, a drifted ICP, or a CTA that violates the client’s regulated-claims list. ZimmWriter will fill a folder of posts for ~$23–$29/month on Windows and then dump the QC problem on whoever owns the CMS.
+
+The cost shows up as editor hours, not API invoices. If a senior editor can honestly review 4,000 words per hour and you are generating 80,000 words a week, you have bought yourself a second full-time headcount to babysit a model. Agencies eat that as margin. Publishers eat it as slip risk. The wedge is not a better writer. It is a factory that only bothers a human when a critic model says a section actually needs one.
+
+## The Solution
+
+ContentFactory is a production line, not a chatbot. You connect brand kits, style guides, banned-claim lists, and CMS destinations. The system drafts at scale with Claude, then a separate critic pass scores every section against those constraints. Only flagged spans hit the editor queue—paragraphs, not whole articles. The product’s own claim is a 78% cut in review time; treat that as a number you will have to prove on the first three clients, not a slogan to put on a homepage. What you are actually selling is routing: humans stay in the loop, they just stop rereading the 78% that already cleared the bar.
+
+The MVP is an ingest → draft → critic → human-QC → publish pipeline with an audit trail. Every shipped paragraph keeps the model version, the critic score, who approved it, and which rule fired. That log is how you sell into publishers who have already been burned. Editors work in a portal that looks like a diff tool, not a second Word doc: accept, rewrite, or escalate. Unflagged sections still render so context is not lost, but they are collapsed by default. You are the QA layer that sits on top of whatever writer the client already pays for—including Jasper—if they insist on keeping it.
+
+**How it works:**
+
+1. **Load constraints** — Client uploads brand kit, voice samples, claims list, and SEO brief; Postgres stores them as versioned policies the critic will score against
+2. **Draft in bulk** — A queue (Inngest) fans Claude jobs across the brief list; each article lands as sectioned Markdown, not a blob
+3. **Critic pass** — A second model scores every section for voice drift, unsupported claims, duplication, and policy hits; only below-threshold spans are marked `needs_review`
+4. **Human QC** — Editors see flagged spans in a portal, fix or approve, and publish to CMS; unflagged copy ships with the audit stamp unless a human expands it
+
+## Market Research
+
+AI content spend is real and still mostly going to generation, which is the wrong layer to compete on if you are late. The interesting money is the QC layer sitting on top of that spend:
+
+- **AI-powered content creation was about $2.09–$2.15B in 2023**, with Zion Market Research putting the category near $8.45B by 2032. A separate cut lands around $7.9B by 2033 at roughly 7.7% CAGR.
+- **Broader AI marketing is cited at $35.54B in 2025 growing to $106.54B by 2029** in Ideabrowser research on idea 1029. Treat that as parent TAM, not your SAM. You are not selling “AI marketing.” You are selling review-time reduction for people who already bought the writer.
+- **Content moderation and review services are a parallel market** (Grand View Research). Publishers already pay humans to keep user-generated and branded copy on the right side of policy. Generative workflows just dumped a new firehose into the same cost center.
+- **Demand is already aggregated.** r/artificial (1.1M), r/SEO (~290k), and r/digital_marketing (~250k) are not looking for another “write a blog post” prompt. They are looking for a way to use the prompts they have without lighting brand equity on fire.
+- **Agencies still bill $0.10–$0.50/word for human copy.** That price exists because review and liability sit with the shop. A product that keeps the liability path (human sign-off) while cutting the hours is priced against editor salary, not against Jasper seats.
+- **Timing is the GPT-sludge hangover.** Buyers tried raw generation in 2023–2025, got burned by sameness and hallucinations, and are now shopping for process. That is a worse time to launch a writer and a better time to launch a checkpoint.
+
+A thin slice of agencies already spending four figures a month on seats plus editors puts you in $2k–$5k/month per account—above typical indie ARPU, below the content-ops RFP circus.
+
+## Competitive Landscape
+
+Every well-known name in this category is a writer, a grammar checker, or a human shop. Nobody is the intelligent checkpoint between them:
+
+- **Jasper** — Category brand for marketing teams that want brand voices and campaign workflows. Creator/Pro land around $39–$69 per seat per month; Business is custom. Excellent at producing volume. The review surface is still “a human reads the doc.” They will not ship a product that implies their drafts need a critic.
+- **Copy.ai** — GTM workflow and copilot positioning, roughly $29–$249/month depending on tier. Strong on sales and marketing automation around the copy, weak on section-level QA with an audit trail a publisher’s counsel would accept.
+- **Grammarly Business** — ~$15 per user per month. Best-in-class mechanics. It will not tell you the case study is invented or the ICP in paragraph two contradicts the brief. Agencies already have this and still miss brand failures.
+- **ZimmWriter** — Windows-native bulk writer at about $23–$29/month. Loved by affiliate SEOs who need hundreds of posts. Human QA is “open the folder.” Limited as a collaboration or compliance product.
+- **Fully human agencies and freelance desks** — $0.10–$0.50/word, sometimes more for regulated verticals. Quality can be excellent. Economics do not survive 80,000 words a week unless you hire a newsroom. They are not going to productize their own bottleneck.
+
+**Your Opportunity**
+
+Incumbents sell words-out or seats. You sell hours-not-spent, with a human still on the hook. They will not build a critic that flags their own drafts as untrustworthy, and the $0.10/word shops will not become software. Win on three things they will not chase: (1) section-level routing instead of article-level review, (2) an editor portal with an audit log that a publisher can defend, and (3) pricing against editor time ($500 starter, $2k–$5k pro, $15k+ enterprise) rather than against a $69 writing seat.
+
+## Business Model
+
+B2B SaaS for agencies and publishers, priced like a junior editor, not like a writing tool. The $500 starter is the wedge: one brand kit, capped monthly word volume, critic-on-Claude, and a two-seat editor portal. Pro at $2k–$5k/month unlocks more brands, higher throughput, CMS push, and SSO-ish basics. Enterprise at $15k+ is custom policy packs, on-prem-ish data handling if you must, and a named CSM. A pay-per-review SKU at $100–$500 per batch lets you land a skeptical publisher without a six-month procurement.
+
+Path to $20k MRR is six Pro accounts, or ten Starters plus two Pros. You need a dozen shops that already pay editors, not 9,000 users.
+
+**Unit Economics**
+
+- **$800–$1,500** — Target CAC (outbound to agency owners, SEO Twitter/LinkedIn, partner with ops consultants)
+- **~$2,400/mo** — Blended ARPU once Pro is the center of gravity
+- **~75%** — Gross margin if critic+draft tokens stay well under $40 per $2,400 invoice and editors are the client’s, not yours
+- **~$18k** — LTV at ~8 months average (agencies churn slower than indie writers; publishers slower still)
+
+Do not staff a human bench on day one. Employing the editors rebuilds an agency with worse margins. Sell routing; let clients keep their people.
+
+## Recommended Tech Stack
+
+The hard parts are durable queues, section-level critic scores, and an editor UI that feels faster than Google Docs. The model is not the product.
+
+- **Next.js on Vercel** — App Router for the editor portal and admin. Server actions for policy CRUD. Keep the marketing site in the same repo.
+- **Inngest (or equivalent queue)** — Draft fan-out, critic retries, CMS publish. Do not inline 40 Claude calls in a request. Idempotent jobs keyed on brief ID plus policy version.
+- **Claude for draft plus a critic model** — Separate prompts, separate temperatures. Draft writes; critic only returns structured scores (voice, claims, duplication, policy). Swap critic independently when a cheaper model is “good enough” on a client’s eval set.
+- **Postgres (Supabase or Neon)** — Tables: orgs, brand_kits, policies, briefs, documents, sections, flags, reviews, publishes. Every section row has critic JSON and a reviewer ID. RLS by org.
+- **Editor portal** — Diff-style review of flagged spans, keyboard accept/reject, collapse-unflagged default. This UI is the moat, not the prompt.
+- **Stripe Billing** — Starter / Pro / Enterprise plus a one-off pay-per-review product. Usage meter on words drafted and sections flagged, even if you bill flat, so you know who is about to explode your token bill.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app called ContentFactory. Postgres schema: orgs, users, brand_kits (voice_samples, banned_claims, icp_notes, policy_version), briefs, documents, sections (document_id, ordinal, markdown, critic_json, status: drafted|needs_review|approved|rejected), reviews, publishes. Row-level security by org_id. Wire Inngest for three functions: draftDocument, criticPass, publishToCms. Stripe products: Starter $500/mo, Pro $2500/mo, Enterprise custom, plus a one-off ReviewBatch $100–$500. Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, DATABASE_URL, INNGEST_EVENT_KEY. Auth via Clerk or Supabase Auth.
+```
+
+**2. Critic Router + Editor Queue**
+
+```text
+Build the critic pass and editor queue. Input: a document split into sections. Call Claude with a strict JSON schema: array of { section_id, voice_score 0-1, claims_score 0-1, duplication_score 0-1, policy_hits: string[], needs_review: boolean, rationale }. Mark needs_review true if any score is under 0.7 or policy_hits is non-empty. Persist critic_json on the section. Create review tasks only for needs_review true. Editor API: list queue, get section with prev/next context, POST accept (optional rewrite), POST reject with reason. Unflagged sections stay approved unless a reviewer expands them. Never send the full article to a human by default. Log model, prompt_version, and reviewer_id on every state change.
+```
+
+**3. Landing Page**
+
+```text
+Marketing page for ContentFactory. Hero: “AI drafts at scale. Humans only see what failed the critic.” Sub: “Route flagged sections to editors; collapse the rest.” Sections: Thursday-batch problem, 4-step how-it-works, fake editor portal with three flagged spans, pricing Starter $500 / Pro $2k–$5k / Enterprise $15k+ plus pay-per-review $100–$500, Jasper-is-a-writer callout. FAQ: replace Jasper (no), liability (human still signs). Geist, off-white, one ink accent. CTA: “Send a 10-URL batch, get a critic report.”
+```
+
+**4. Branding Package**
+
+```text
+Brand ContentFactory as industrial QC, not a playful AI writer. Wordmark plus a stamp mark. Near-black, paper white, one lime or steel-blue accent. Geist headings; a serif for sample article text. Voice: editor-hours saved and sections flagged, never “AI-powered content”; never claim 78% unless that client’s eval set shows it. One-page brand sheet, three critic-rationale examples (voice drift, unsupported claim, banned phrase), two empty states: “0 flags — still reviewable” and “12 flags across 4 articles.”
+```
+
+## Sources
+
+Market sizing and pricing collated from Ideabrowser MCP idea 1029 and the reports below. Triangulate before investor materials. The 78% review-time cut is a product claim to validate on real editor workflows, not a third-party stat.
+
+- [Zion Market Research — AI-Powered Content Creation Market](https://www.zionmarketresearch.com/report/ai-powered-content-creation-market)
+- [Grand View Research — Content Moderation Services Market](https://www.grandviewresearch.com/industry-analysis/content-moderation-services-market-report)
+- [Jasper — pricing reference (Creator/Pro ~$39–$69/seat/mo; Business custom)](https://www.jasper.ai/pricing)
+- [Copy.ai — pricing reference (~$29–$249/mo)](https://www.copy.ai/pricing)
+- [Grammarly Business — pricing reference (~$15/user/mo)](https://www.grammarly.com/business)
+- [ZimmWriter — pricing reference (~$23–$29/mo)](https://zimmwriter.com/)
+
+Page sourced via Ideabrowser MCP (idea_id 1029).

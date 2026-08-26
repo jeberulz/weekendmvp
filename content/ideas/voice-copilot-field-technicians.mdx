@@ -1,0 +1,140 @@
+---
+slug: "voice-copilot-field-technicians"
+title: "Voice Copilot for HVAC and Plumbing Pros"
+---
+
+## The Problem
+
+An HVAC tech is on a roof in July with a condenser, a manifold, and a customer who wants to know why the second-floor rooms still will not cool. Both hands are occupied. The work order in ServiceTitan or Jobber is a blank that will get filled — maybe — in the van at 6:40 p.m., from memory, after three other jobs. Inventory that came off the truck is a guess. The customer note that would prevent a callback (“capacitor was swollen, recommended replacement, declined, quoted 90 days”) never gets typed. Dispatch sees “diagnostic, no parts” and the shop eats a warranty return two weeks later. Every field-service platform on the market assumes a tablet and a clean minute. The job assumes gloves, a flashlight, and a homeowner hovering.
+
+The incumbents know this and still sell typing. ServiceTitan is the category cathedral — dispatch, flat-rate books, memberships — at a per-tech price shops quote in the mid-hundreds per month past the brochure. Jobber and Housecall Pro win smaller shops on a $49-to-$229-ish plan, then the same data-entry tax hits every completed job. Microsoft sells Copilot inside Dynamics 365 Field Service if you already live there, at enterprise seat prices, locked to that CRM. Dragon or Nuance will dictate a paragraph into a notes field for fifteen to thirty dollars a month and leave the work order, parts, and customer history untouched. Nobody’s product is “talk the job the way you talk to the helper, and the FSM gets a structured closeout.”
+
+The leak is concrete. Ten techs with two incomplete notes a day is twenty weekly chances at a missed upsell, a wrong part reorder, or a review that says they never explained the work. HVAC software clicks sit around **$184 CPC** — owners already pay to acquire the job. Losing the structured record on the driveway burns that CAC. Facebook HVAC groups and r/FieldService (about 2.7 thousand members) repeat it: the software is fine in the office and hostile on the roof. Voice is how techs already narrate work to apprentices. The software has not met them there.
+
+## The Solution
+
+Sayso is a **FSM-agnostic voice layer** for tradespeople whose hands are busy. The tech starts a job in the app (or from a widget on the home screen), talks the way they talk — “found a 40/5 capacitor swollen, swapped it, 3-ton, still got a 25-degree split, customer approved the maintenance agreement, used one 40/5 from the van” — and the model turns that monologue into a work order update, inventory decrement, and customer-facing note formatted for ServiceTitan, Jobber, or Housecall Pro. You do not replace the system of record. You sit on top of it, the way a headset sits on top of a radio. Pricing is **$29 per tech per month**, cheap enough that a five-person shop tries it without a committee, expensive enough that you are not a novelty dictation SKU.
+
+Offline-tolerant recording matters. Cellars and rural runs drop LTE; the app queues audio, transcribes when the radio returns, and the tech glances at a three-field confirm screen (what we did, what we used, what the customer should see) before it writes back. That confirm step is the product, not a cop-out: one wrong part number in Jobber is worse than a blank note. The copilot proposes; the tech taps green.
+
+**How it works:**
+
+1. **Narrate the job** — Tech hits record on a phone in a pocket or on a magnet mount, talks through diagnosis, parts, and customer conversation; audio stores locally if the signal is gone.
+2. **Structure the closeout** — Speech-to-text plus an LLM maps the transcript into work-order fields, line items, and a customer-safe summary; the tech confirms or edits three cards in under 20 seconds.
+3. **Write to the FSM** — Confirmed payload posts to Jobber, ServiceTitan, or Housecall Pro via their APIs (inventory, notes, job complete); exceptions land in a “needs office” queue instead of silently failing.
+
+Onboarding: admin connects one FSM key, invites techs by SMS, runs a ten-minute fake capacitor-swap drill. Success is the owner opening Jobber at 7 p.m. and seeing every job closed with parts that match the truck.
+
+## Market Research
+
+Two curves are stacking: FSM is a real software budget, and voice recognition is cheap enough for a phone in a truck.
+
+- **Field service management software is a roughly $4 billion to $6 billion global market**, high-teens CAGR depending on the cut. HVAC, plumbing, and electrical are the loudest SMB verticals: you are not asking a shop to digitize from paper — you are asking them to stop typing.
+- **Voice and speech recognition was about $20.25 billion in 2023 and is projected to about $53.67 billion by 2030** (Grand View Research). Streaming STT and noise-robust models can now survive a condenser fan.
+- **Voice assistant applications are forecast around $11.2 billion by 2026** (MarketsandMarkets). Consumer Alexa is not your buyer; the same model families now show up in vertical copilots. Prophecy’s AI copilot work (see Sources) is the narrative investors already know: copilots attach to existing systems of record.
+- **HVAC software CPC around $184** is commercial-intent noise. Owners who pay that for a lead will pay $29 per tech to keep the job data from rotting.
+- **Community proof is messy and useful:** r/FieldService is small (about 2.7 thousand) but operator-dense; Facebook HVAC and plumbing groups are where owners complain that “my guys won’t put notes in Titan.”
+
+Timing: every FSM is bolting on “AI” as a slide. Titan’s AI is secondary to the suite. Microsoft Copilot is real and **platform-locked**. An independent voice layer that writes to **all three** SMB FSMs is still a wedge for 12–24 months, not forever.
+
+## Competitive Landscape
+
+You are not competing with “voice” in the abstract. You are competing with how a job gets written down after the wrench turns.
+
+- **ServiceTitan** — Full FSM: dispatch, marketing, memberships, accounting. AI is not why a shop pays. Street pricing commonly **$250 to $400-plus per technician per month** in a real deployment; implementation is a project. Too expensive to displace; perfect to sit on top of. ([ServiceTitan](https://www.servicetitan.com/))
+- **Jobber** — Default for smaller home-service shops. Invoicing, requests, client hub. Plans commonly **about $49 to $229 per month** at shop level. Mobile still expects typing. No “narrate the job, fill the work order” loop. ([Jobber pricing](https://www.getjobber.com/pricing/))
+- **Housecall Pro** — Same band: **about $59 to $229 per month** shop plans, reviews and payments attached. Same on-site data-entry hole. ([Housecall Pro pricing](https://www.housecallpro.com/pricing/))
+- **Microsoft Copilot in Dynamics 365 Field Service** — Bundled into **enterprise D365 seats often around $95 to $200-plus per user**. Irrelevant to a five-van HVAC shop; proof that “voice plus work order” is a known pattern at the top of the market. ([Dynamics 365 Field Service](https://www.microsoft.com/en-us/dynamics-365/products/field-service))
+- **Dragon / Nuance dictation** — **About $15 to $30 per month** into whatever field has focus. No FSM schema, no inventory writeback, no customer-safe rewrite. Proves techs will talk. Does not close the job.
+
+**Your Opportunity**
+
+Do not replace ServiceTitan. **Charge $29 per tech per month** for the voice layer the suite will not prioritize until it is too late for a startup SKU. Jobber and Housecall Pro will not build first-class writeback for Titan; Titan will not make a $29 companion for Jobber shops. Dragon will not learn a 40/5 capacitor from a mumbled roof recording. Your wedge is FSM-agnostic, confirm-before-write, trades-noisy-audio, and priced as a line item next to gloves — not next to an ERP. Lead with HVAC and plumbing (highest ticket, nastiest environments), then electrical and garage door once the adapters exist.
+
+## Business Model
+
+Per-technician SaaS so the bill scales with vans, not with a fake “location” SKU. Shop admin is free; techs are the meter.
+
+- **Shop trial** ($0, 14 days, 2 techs) — Connect one FSM, record ten jobs, see writeback. No credit card if you can stomach the abuse; otherwise card-up-front with easy cancel.
+- **Sayso** ($29 per tech per month) — Unlimited jobs, one FSM connection, confirm UI, inventory + notes writeback, English first. This is the whole company for year one.
+- **Shop pack** (example: 8 techs = $232 per month) — Volume courtesy, still per seat, so a 20-van outfit does not get a custom discount that wrecks the price map.
+- **Second FSM / extra adapter** ($15 per shop per month) — Rare but real for shops mid-migration off Titan onto Jobber or the reverse.
+- **Office copilot add-on** ($49 per shop per month, later) — CSR listens to the recording and gets a callback script; keep it off the v1 critical path.
+
+**Unit Economics**
+
+Streaming STT on a 4-minute job plus a GPT-4o extract is typically **under $0.08 per job**, often **under $0.04** if you cap audio. Six jobs a day, 20 days a month, is about 120 jobs: **under $10 COGS** against **$29 revenue** — **gross margin mid-60s to mid-70s** after app-store cut, better on a web wrap. Target **CAC under $120** via Facebook HVAC groups, supply-house counter cards, and Jobber’s app directory. Six techs for 12 months is **about $2,088** before churn — LTV works if the buyer is the shop, not the individual tech.
+
+Path: 40 shops times 6 techs = 240 seats = **about $7.0 thousand MRR**. 200 shops is a real business without out-featuring Titan. Churn kills you if writeback is flaky — spend engineering there, not on an owner dashboard.
+
+## Recommended Tech Stack
+
+Phone-first, API-second. The LLM is a formatter. The product is durable audio, a tight JSON schema, and three vendor adapters that fail loud.
+
+- **React Native or Expo** — iOS first (techs’ personal phones), Android next. Background recording, offline queue, fat-finger confirm UI.
+- **Deepgram (primary) / Whisper (fallback)** — Streaming when LTE is fine; file batch when queued. Eval on real condenser noise, not a conference room.
+- **GPT-4o structured output** — Force a JSON schema: job_summary, customer_note, line_items (sku or description + qty), equipment identifiers, follow_up_flag. No free-form “essay” into the FSM.
+- **Jobber / ServiceTitan / Housecall Pro APIs** — Build Jobber first (docs and SMB oauth are friendlier), then Housecall Pro, then Titan (partner process is slower; fake it with a CSV drop if the API access lags). Never dual-write without an idempotency key.
+- **Supabase or Convex** — Shops, techs, recordings metadata, transcripts, payloads, writeback logs. Store audio in S3/R2 with short retention; transcripts are the long-lived record. Consent banner: customer might be in the audio.
+- **Stripe Billing** — Per-tech seats, proration when a van is hired mid-month. Shop admin portal. Usage alerts if a tech’s minutes explode (pocket-dials).
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an Expo (React Native) + Next.js admin app called Sayso. Backend: Supabase.
+
+Schema: shops (fsm jobber|servicetitan|housecallpro), technicians, jobs (status recording|queued|confirm|pushed|failed), recordings, payloads (transcript, structured_json, confirmed_at), writebacks (adapter, request_hash, status).
+
+Mobile: record, pause, confirm three cards (what we did / parts / customer note), retry failed push.
+Admin: FSM OAuth, SMS tech invites, writeback log.
+Stripe: $29/tech/month seats. Env: DEEPGRAM_API_KEY, OPENAI_API_KEY, JOBBER_CLIENT_ID, JOBBER_CLIENT_SECRET, STRIPE_SECRET_KEY, S3_BUCKET.
+```
+
+**2. Voice Pipeline + Structured Extract**
+
+```text
+Build Sayso’s audio pipeline.
+
+Expo: record AAC; upload on LTE; if offline, persist and drain a queue with backoff. Persistent notification while recording so techs do not pocket-stop.
+
+STT: Deepgram with HVAC/plumbing boosting (capacitor, contactor, TXV, evaporator, PEX, shutoff, reclaim). Fallback Whisper if confidence is low.
+
+GPT-4o structured extract: summary, customer_note_plain_language, line_items (description, qty, guessed_sku), equipment, follow_up boolean, confidence number. Never invent a part the tech did not mention. Missing qty defaults to 1 with flag_uncertain true.
+
+Confirm UI: three editable cards. Disable Push until Confirm. Log diffs vs model output for prompt tuning.
+```
+
+**3. FSM Adapters + Stripe Seats**
+
+```text
+Implement FSM writeback behind pushCloseout(fsm_job_id, summary, customer_note, line_items).
+
+Jobber first: OAuth, map line items (or notes if SKU unknown), append customer_note. Default: do not auto-complete the visit unless the shop setting says so.
+Housecall Pro: same mapping.
+ServiceTitan: typed client plus partner-pending flag; if no API access, email the office a formatted closeout and mark writeback manual.
+
+Idempotency key: sha256 of job_id plus payload version. Retry 429/5xx three times.
+Stripe seats = active technicians; deactivate at period end. invoice.paid unlocks recording.
+
+Admin replay for failed jobs. Never auto-retry inventory decrements without a new confirm — double-decrement loses the shop.
+```
+
+## Sources
+
+Market sizing and competitor pricing from Ideabrowser idea 8166 plus public vendor pages. Triangulate before quoting TAM.
+
+- [Grand View Research — Voice Recognition Market](https://www.grandviewresearch.com/industry-analysis/voice-recognition-market)
+- [MarketsandMarkets — Voice Assistant Market](https://www.marketsandmarkets.com/Market-Reports/voice-assistant-market-145315234.html)
+- [Prophecy Market Insights — AI Copilot Market](https://www.prophecymarketinsights.com/market_insight/ai-copilot-market-6008)
+- [ServiceTitan](https://www.servicetitan.com/)
+- [Jobber pricing](https://www.getjobber.com/pricing/)
+- [Housecall Pro pricing](https://www.housecallpro.com/pricing/)
+- [Microsoft Dynamics 365 Field Service](https://www.microsoft.com/en-us/dynamics-365/products/field-service)
+- [Nuance Dragon speech recognition](https://www.nuance.com/dragon.html)
+- [Reddit r/FieldService](https://www.reddit.com/r/FieldService/)
+
+Page sourced via Ideabrowser (idea_id 8166): opportunity 9, pain 9, timing 9, builder confidence 8.
