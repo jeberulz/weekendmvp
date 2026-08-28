@@ -38,6 +38,7 @@ const TOC: TocGroup[] = [
       { href: "#step-4", label: "4. 10 MVP Ideas" },
       { href: "#step-5", label: "5. 10 Build Prompts" },
       { href: "#templates", label: "Templates & Scripts" },
+      { href: "#feedback", label: "Share Feedback" },
     ],
   },
 ];
@@ -51,6 +52,7 @@ const SECTION_IDS = [
   "step-4",
   "step-5",
   "templates",
+  "feedback",
 ];
 
 /** Explore row ported from partials/nav-starter-kit.html (hrefs extensionless). */

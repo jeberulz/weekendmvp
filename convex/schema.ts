@@ -3,6 +3,11 @@ import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
+  starterKitBlockerValidator,
+  starterKitProgressValidator,
+  starterKitSectionValidator,
+} from "./marketing/starterKitFeedbackValidators";
+import {
   auditActorValidator,
   briefStatusValidator,
   documentFormatValidator,
@@ -184,6 +189,29 @@ export default defineSchema({
   })
     .index("by_email", ["email"])
     .index("by_createdAt", ["createdAt"]),
+
+  /**
+   * WP39. Anonymous-by-default outcome feedback for the public Starter Kit.
+   * `respondentKey` is a one-way HMAC of a browser-generated UUID, never the
+   * raw identifier or an IP address. A browser updates its row as it moves
+   * from planning to shipping instead of inflating the response count.
+   */
+  starter_kit_feedback: defineTable({
+    respondentKey: v.string(),
+    progress: starterKitProgressValidator,
+    helpfulness: v.number(),
+    mostUseful: v.optional(starterKitSectionValidator),
+    blocker: v.optional(starterKitBlockerValidator),
+    comments: v.optional(v.string()),
+    followUpEmail: v.optional(v.string()),
+    followUpConsent: v.boolean(),
+    submissionCount: v.int64(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_respondentKey", ["respondentKey"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_updatedAt", ["updatedAt"]),
 
   stripe_events: defineTable({
     stripeEventId: v.string(),
