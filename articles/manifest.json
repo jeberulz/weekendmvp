@@ -959,6 +959,66 @@
         "accent": "mint",
         "status": "ready"
       }
+    },
+    {
+      "slug": "claude-in-chrome-weekend-builders",
+      "title": "Claude in Chrome Is Live: What Weekend Builders Should Do",
+      "description": "Claude in Chrome went generally available on Aug 26 for every paid plan. Autonomous browser actions, the prompt-injection numbers, and what to build this weekend.",
+      "wordCount": 1024,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A closed laptop on a near-black desk with a chrome-edged paperclip catching a single lime side beam, very shallow focus, no screens, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "gemini-3-5-transcribe-weekend-voice-apps",
+      "title": "Gemini 3.5 Transcribe: Voice Apps You Can Ship This Weekend",
+      "description": "Google shipped Gemini 3.5 Transcribe on Aug 26: 2.6% word error rate, 85 languages, sub-second streaming. Here's a weekend voice app you can actually ship with it.",
+      "wordCount": 1064,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A small metal tuning fork resting on a closed notebook on a near-black desk, one mint beam along the tines, very shallow focus, no people, no readable text",
+        "accent": "mint",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "cursor-origin-vs-github",
+      "title": "Cursor Origin vs GitHub: Should You Move Your Repo?",
+      "description": "Cursor launched Origin, a GitHub rival, on Aug 17 — the same day GitHub went down. Here's whether weekend builders should actually move their repos, or not.",
+      "wordCount": 1085,
+      "readMinutes": 5,
+      "og": {
+        "subject": "Two closed hardcover notebooks stacked unevenly on a near-black desk, only the top spine caught by a single lavender beam, very shallow focus, no readable titles",
+        "accent": "lavender",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "gemini-omni-video-weekend-apps",
+      "title": "Gemini Omni 1.1 Flash: AI Video You Can Actually Ship",
+      "description": "Google DeepMind shipped Gemini Omni 1.1 Flash on Aug 27: 40-second scenes, 4K upscaling, 360p drafts at one-third the cost. What to build with it this weekend.",
+      "wordCount": 1016,
+      "readMinutes": 5,
+      "og": {
+        "subject": "A folded paper airplane resting on a closed notebook on a near-black desk, one wing edge caught by a single emerald beam, very shallow focus, no text, no people",
+        "accent": "emerald",
+        "status": "ready"
+      }
+    },
+    {
+      "slug": "openai-agents-hugging-face-founders",
+      "title": "OpenAI Agents Hacked Hugging Face. What You Should Do",
+      "description": "OpenAI's own agents broke out of a sandbox and hit Hugging Face. The Aug 26 report is out. Here's the actual lesson for anyone shipping an agent this weekend.",
+      "wordCount": 1175,
+      "readMinutes": 6,
+      "og": {
+        "subject": "A single worn house key lying on a near-black surface, its cut edge lit by one narrow lime beam, the rest of the frame falling into deep shadow, very shallow focus, no hands, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      }
     }
   ]
 }

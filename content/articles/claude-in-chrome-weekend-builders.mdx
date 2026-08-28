@@ -1,0 +1,90 @@
+---
+slug: "claude-in-chrome-weekend-builders"
+title: "Claude in Chrome Is Live: What Weekend Builders Should Do"
+description: "Claude in Chrome went generally available on Aug 26 for every paid plan. Autonomous browser actions, the prompt-injection numbers, and what to build this weekend."
+category: "News"
+publishedAt: "2026-08-28"
+wordCount: 1024
+readMinutes: 5
+heroAlt: "A closed laptop on a near-black desk with a chrome-edged paperclip catching a single lime side beam, very shallow focus, no screens or people"
+---
+
+## The Short Version
+
+On August 26, 2026, [Anthropic made Claude in Chrome generally available](https://claude.com/blog/claude-in-chrome-generally-available) on **every paid Claude plan**. The part that actually changed: Claude can now take actions in your browser **without asking you to approve each click**.
+
+A safety classifier still checks every action against what you originally asked for. If it doesn't match, it's blocked. You can turn auto-approval off and go back to the old click-by-click mode.
+
+If you build on weekends, this is not "a nicer ChatGPT in a side panel." It's a computer-use agent sitting on top of **your existing logins** — internal dashboards, vendor portals, Stripe, Notion, the admin you never shipped an API for. That's the product.
+
+The hard part is still [picking a small idea](/startup-ideas) and shipping it. Chrome just stopped being a reason to wait.
+
+## What It Actually Does
+
+Claude can see the page you're on and then read, type, click, navigate, and fill forms. Anthropic's pitch is the software that **doesn't** have a Claude integration yet: the legacy CRM, the vendor portal, the internal dashboard your day job still runs on.
+
+Two constraints worth knowing before you plan a Saturday around it:
+
+- **Chrome only.** Not other Chromium browsers. Not mobile.
+- **Local files stay on the desktop app.** Chrome handles the web. The desktop app still handles your filesystem.
+
+That's enough for a weekend. You don't need it to be everything.
+
+## The Part Everyone Will Skip: Prompt Injection
+
+Browser agents get hijacked by hidden instructions in pages, emails, and form fields. Anthropic delayed GA for a year specifically to fight this. They published the numbers this week.
+
+On their current red-team eval, with probes plus the new action classifier:
+
+- **0% attack success** against Claude Sonnet 5 and Opus 5
+- **0.3%** against Fable 5, all low-severity, still being patched
+
+Without those extra safeguards, Opus 5 still took a 3.8% hit and Opus 4.5 took 17.6%. The classifier is doing real work. Anthropic is also clear this is a moving target — they retired the old eval because they saturated it at 0%.
+
+Translation for you: **don't point Claude at a random website and give it your bank tab.** Point it at tools you already trust, with a narrow task. The model is better. The internet is not.
+
+If that sounds like a reason to stay in research mode, it isn't. It's a reason to ship something small that doesn't need to browse the open web. [Start with a scoped idea](/startup-ideas), not a general-purpose agent.
+
+## What This Means If You're Not Technical
+
+You now have a intern who can operate software that never got an API.
+
+That's a different category from "AI writes code." Code-writing still lives in Cursor and Claude Code. Chrome is for **doing the work around the product**: creating accounts, filling onboarding, checking a competitor's pricing page, pulling a report out of a dashboard that only exists as HTML.
+
+The people who will waste this: they'll ask Claude to "research the market" across 40 tabs and then screenshot the ramble. The people who won't: they'll give it one job with a definition of done. "Log into this admin, export last week's signups as CSV, drop it in this Google Sheet." That's a 20-minute task that used to be a Zapier project.
+
+## Three Things Worth Building This Weekend
+
+Not "an agent platform." Three screens. One user. One job.
+
+**1. A checkout QA bot for your own MVP.** Point Claude at your staging URL. Tell it to sign up, hit the paywall, and stop before it spends real money. You just got an on-call QA intern that works while you make coffee. Ship the product first — [pick one](/startup-ideas) — then let Chrome click through it.
+
+**2. A form-filler for a vertical nobody automated.** County permit sites, insurance portals, school district apps. Ugly HTML, no API, people still live there. Claude in Chrome is the integration layer. Charge for the hours you save, not for "AI."
+
+**3. A competitive-pricing watcher.** Once a week: open these five competitor pages, grab the listed plan prices, write them into a sheet. Boring. Paid. The kind of thing a specific industry will Venmo you $49/month for.
+
+Notice what's missing: a chatbot. A wrapper. A "Claude but for X" landing page. The browser **is** the API now. Your product is the workflow, the niche, and the fact that you actually turned it on.
+
+## How to Use It on Saturday Without Getting Burned
+
+- Install from the Chrome Web Store. Paid plan required.
+- Leave auto-approval **on** for trusted sites, **off** the first time you let it touch anything with a "Pay" button.
+- One task per session. "Do my email" is how prompt injection wins. "Draft a reply to this one thread, don't send" is how you sleep.
+- Enterprise admins can lock it to approved domains. If you're solo, fake that discipline yourself: don't keep your bank tab in the same window.
+- If Claude starts navigating somewhere you didn't ask, stop the session. That's the classifier failing in public. Treat it like a production incident, not a quirk.
+
+## Quick Questions
+
+### Is this the same as Claude Cowork?
+
+No. Cowork is the computer-use agent that runs in the cloud / desktop. Chrome is the same idea, scoped to the browser you're already logged into. Anthropic also shipped Cowork its own browser recently. Different surfaces, same bet: Claude should be able to click.
+
+### Can I build a product on top of Claude in Chrome?
+
+Not as a platform you resell. It's a consumer/team feature on Anthropic's plans. What you **can** ship is a product that assumes your user has a browser agent — or a service where **you** are the human who runs Claude in Chrome against ugly software. The second one makes money this month.
+
+### Should I wait for Firefox / Arc / mobile?
+
+No. Chrome is where the logins already are. Waiting for coverage is how you spend another quarter reading changelogs.
+
+The model got permission to click. You still have to pick the thing worth clicking toward. That's [the idea library](/startup-ideas). Use it.

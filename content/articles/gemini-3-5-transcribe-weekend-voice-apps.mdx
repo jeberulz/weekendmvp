@@ -1,0 +1,109 @@
+---
+slug: "gemini-3-5-transcribe-weekend-voice-apps"
+title: "Gemini 3.5 Transcribe: Voice Apps You Can Ship This Weekend"
+description: "Google shipped Gemini 3.5 Transcribe on Aug 26: 2.6% word error rate, 85 languages, sub-second streaming. Here's a weekend voice app you can actually ship with it."
+category: "News"
+publishedAt: "2026-08-28"
+wordCount: 1064
+readMinutes: 5
+heroAlt: "A small metal tuning fork resting on a closed notebook on a near-black desk, one mint beam along the tines, very shallow focus, no people or text"
+---
+
+## Who This Is For
+
+You wanted to ship a voice feature and bounced off Whisper's cleanup, Assembly's invoice, or a model that turned "order ID A17" into "order I.D. eighty-seven."
+
+You don't want to build a phone agent. You want **speech in, structured text out**, in a product a specific person will pay for.
+
+If that's you, Google just handed you the missing piece.
+
+## Why the Old Way Was a Trap
+
+Speech-to-text used to be a science project you bolted onto a real app. You paid for a raw transcript, then wrote a second pipeline to strip ums, fix "no wait Wednesday," and guess which of three people on the call was the dentist.
+
+That second pipeline is where weekend projects died. The demo looked fine in a quiet room. The first real user was in a car.
+
+On August 26, 2026, Google shipped [Gemini 3.5 Transcribe](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-5-transcribe/) as a public preview in the Gemini API. The pitch is not "another ASR model." It's transcription that already behaves like a product: filler gone, self-corrections resolved, custom vocab, speaker labels.
+
+## The Numbers That Matter
+
+From Google's announcement, measured by Artificial Analysis:
+
+- **2.6% word error rate** on non-streaming (batch) audio
+- **4.0% WER** on streaming
+- **70% faster** time-to-final-transcription versus Chirp 3
+- **85+ languages**, auto-detected, including live language switches
+- **Up to three speakers** labeled with word-level timestamps (more than three is experimental)
+
+FLEURS, the multilingual benchmark they published: 5.04% WER batch, 5.50% streaming — better than Chirp 3 across the languages they tested.
+
+You do not need those numbers to be the best in the world. You need them to be **good enough in a noisy kitchen** that a plumber will trust the note. 2.6% WER on batch is that line.
+
+Two APIs, don't mix them up:
+
+- **Live:** `gemini-3.5-transcribe-live` — bidirectional streaming, sub-second latency, for apps that talk back
+- **Batch:** `gemini-3.5-transcribe` via the Interactions API — recordings, meetings, call logs, speaker attribution
+
+LiveKit, Pipecat, Agora, LangChain, and Vercel are already wiring the Live API. You don't have to invent the WebRTC layer. That's the whole point of a weekend.
+
+If you still don't know **what** the voice app is for, stop reading model cards and [pick a researched idea](/startup-ideas) with a real buyer. Then come back to the API.
+
+## The 3-Screen Voice MVP
+
+Forget "an AI assistant." Ship this:
+
+1. **Landing:** One sentence. "We turn your job-site voice notes into a customer-ready recap."
+2. **Input:** Hold to talk, or drop an audio file. That's it.
+3. **Output:** Clean transcript + three bullets + one action (email the recap, create the ticket, save the SOAP note).
+
+The transcription model is the Input. Your product is the Output format. That's the moat, because Google will not know that this plumber's customers expect the recap in this exact shape.
+
+Custom vocabulary is the underrated feature. Feed it the SKUs, the street names, the drug names. That's how you stop looking like a generic dictation toy.
+
+## Four Weekend Products That Aren't a Phone Agent
+
+We already covered [voice agents people don't hang up on](/articles/build-a-voice-ai-agent-in-a-weekend). This is the other half: **capture**, not conversation.
+
+**Job-site recap.** Contractor talks for 90 seconds in the truck. You email the homeowner a clean summary. Charge per job, not per seat.
+
+**Clinic after-visit note.** Three speakers: clinician, patient, maybe a parent. Batch API, speaker labels, custom vocab for meds. HIPAA is the work — the model is the easy part. Don't ship PHI on day one; ship a demo with fake names and a BAA conversation in week two.
+
+**Support call to ticket.** Drop a recorded call. Get a ticket title, severity, and the verbatim sentence that proves the bug. Support managers will pay to stop re-listening.
+
+**Meeting → decision log.** Not another "AI notes" clone. One page: decisions, owners, dates. Kill the filler. If your output is a wall of transcript, you built Chirp with extra steps.
+
+Don't build a general recorder. [Niche down](/startup-ideas) until you can name the person holding the phone.
+
+## Saturday Plan
+
+**Friday night:** Pick one vertical. Write the output template on paper. If you can't describe the output without saying "a transcript," you don't have a product yet.
+
+**Saturday morning:** Hit Google AI Studio. Batch-transcribe three real recordings from that vertical (yours, a friend's, a YouTube clip if you must). Measure whether names, IDs, and jargon survive. If they don't, add custom vocab and retry before you write any app code.
+
+**Saturday afternoon:** 3-screen app. Next.js, one upload, one Gemini call, one formatted result. Auth can wait until Monday. Stripe can wait until someone asks "how much?"
+
+**Sunday:** Send it to ten people who already record this kind of audio. Watch where they wince. That's your Monday list.
+
+Public preview means pricing and SLA can move. Build anyway. The switching cost of "we already formatted your notes this way" is higher than "we called a different STT endpoint."
+
+## What Will Burn You
+
+- **Streaming when you needed batch.** Live is for interruption and voice UI. Batch is for accuracy, speakers, timestamps. Use the wrong one and you'll blame the model.
+- **Treating 2.6% WER as "solved."** That's still a wrong word every other sentence in a dense note. Show the transcript. Let humans fix the one word that matters (the dose, the address, the amount).
+- **Skipping consent.** Voice is personal data. Say you're recording, say why, say how to delete it. This is not optional in the EU and it shouldn't be optional in a weekend MVP either.
+
+## Quick Questions
+
+### Is this cheaper than Whisper self-host?
+
+Self-hosting Whisper is "free" until you count GPU time, ops, and the cleanup model you still have to write. For a weekend MVP, call the API. Revisit hosting when you have a bill you can point at.
+
+### Can I vibe-code the voice UI?
+
+Yes. Google even wired 3.5 Transcribe into AI Studio Build mode so you can talk the app into existence. That's cute. The product is still the output template, not the fact that you dictated the React.
+
+### Do I need a LiveKit specialist?
+
+Not for v1. File upload plus batch transcription ships a real demo. Add streaming when a user asks to interrupt.
+
+Voice input just got cheap and clean enough to be a feature, not a company. The company is still [the idea](/startup-ideas). Ship the recap.
