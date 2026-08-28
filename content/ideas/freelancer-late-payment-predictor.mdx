@@ -1,0 +1,157 @@
+---
+slug: "freelancer-late-payment-predictor"
+title: "Late Payment Predictor for Freelancers"
+---
+
+## The Problem
+
+A copywriter sends a $4,800 invoice on a Friday. Net-30. The client loved the draft, approved on Slack, then vanished. Week five: the writer is covering rent from a credit card and writing a “just circling back” email that will get ignored. Nothing in Harvest, FreshBooks, or Stripe told her this client was a late-pay risk *before* she booked the kickoff. The tools she already pays for are invoicing machines. They are not early-warning systems.
+
+That gap is the whole job. Late payment is not a bookkeeping inconvenience — it is the cash-flow event that kills a solo practice. Freelancers Union membership sits above 500K, r/freelance has 543K members, and r/smallbusiness has 1.8M; the same thread repeats in all three: work ships, invoice goes out, silence, then an awkward chase that costs the relationship *and* the money. Facebook’s Wave Accounting User Group (5.7K) and Zoho CRM community (8.2K+) are full of the same complaint from people who already own invoicing software. The quote that keeps showing up: “Nothing kills creativity faster than playing debt collector.”
+
+The industry built two answers and both miss the timing. Marketplace escrow (Upwork, Fiverr) only covers jobs that stay on-platform, and it is reactive — you find out after the milestone fails. Accounting SaaS (Wave, FreshBooks, Zoho, HoneyBook) will fire a reminder *after* the due date. Neither scores a new client from public signals, past invoice behavior, and the email thread *before you start the work*. California’s Freelance Worker Protection Act (in force 1 January 2025) now requires written contracts and faster pay on covered engagements, which means the paper trail is about to matter in court — and most freelancers still have a spreadsheet and a prayer. The product they actually need is a risk score on the prospect, a predicted pay date on every open invoice, and a follow-up sequence that runs without them writing the uncomfortable email.
+
+## The Solution
+
+A weekend-build SaaS that treats late payment as a prediction problem, not a reminder problem. The freelancer pastes a prospect’s domain, the proposal email, and (optionally) a CSV of past invoices. A scoring job returns a 0–100 risk score plus the three reasons that moved it: payment-term mismatch, domain/company age, communication red flags, invoice aging history. High-risk prospects get a “take a deposit / shorten terms” recommendation *before* the contract is signed. Once work is invoiced, a cron watches days-to-due and fires an escalating sequence (friendly → firm → final) from the freelancer’s own domain. Payment webhooks kill the sequence the moment money lands.
+
+You are not building invoice insurance, a collections agency, or a new accounting suite. You are the layer that sits on top of the tools they already have and answers two questions incumbents will not: “Will this client pay late?” and “What should I do about it this week?” The MVP ships with a three-client free score, Stripe/CSV import, email sequences via Resend, and a 30-day predicted-cash chart. Collections-as-a-service and invoice underwriting stay on the value ladder for later — they are the $79 Agency and insurance add-ons, not the weekend build.
+
+**How it works:**
+
+1. **Score the prospect** — Paste the client’s domain and the proposal thread; gpt-4o-mini returns a 0–100 late-pay score with reasons in under five seconds
+2. **Track the invoice** — Import from Stripe or CSV; each open invoice gets a predicted pay date and a risk badge that updates as the due date approaches
+3. **Warn before due** — If predicted risk crosses the threshold, the app texts/emails the freelancer three days before due with a suggested deposit or terms tweak
+4. **Chase without writing** — Overdue invoices enter a three-step sequence from the freelancer’s domain; a Stripe paid webhook stops it immediately
+
+## Market Research
+
+The freelance platforms market is no longer a side-hustle niche, and payment reliability is the feature platforms still treat as an afterthought:
+
+- **Freelance platforms are a $7.65B market in 2025**, forecast to $14.39B–$16.54B by 2030 at a 16.7–17.7% CAGR (Grand View Research; Data Bridge; GlobeNewswire April 2025). Freelancers themselves are 51% of that market — the buyer, not the employer, is the majority segment.
+- **The US freelance population is already huge and still growing.** Community research puts it at 64 million (38% of the 2023 workforce); timing analysis projects 79.6 million in 2025 and 90.1 million by 2028, with $1.27T in 2023 earnings. 48% of CEOs plan to increase freelancer hiring this year (Amra & Elma / Scoop.market.us). Every one of those people invoices.
+- **Search demand is paying factoring prices, not SaaS prices.** Trend research on “freelancer late payment invoice protection” returned 44,420 monthly searches across 15 keywords. “Invoice factoring,” “invoice financing,” and “factoring company” each pull 6,600 volume at $67–$125 CPC. That is what desperate cash-flow looks like in Google Ads: people are shopping 1–5% haircuts on invoices because they cannot wait. A $9–$29/mo predictor is a rounding error next to that.
+- **Communities are already looking for this exact tool.** r/freelance (543K), r/smallbusiness (1.8M), r/Accounting (300K), Freelancers Union (500K+), Wave Accounting User Group (5.7K), Zoho CRM (8.2K+). YouTube invoicing tutorials on Merchant Maverick (~60K avg views) and Stewart Gauld (130K+) plus Zoho Invoice overviews (~100K) are the content channel. You are not creating demand; you are routing it.
+- **Regulation is a tailwind, not a footnote.** California’s Freelance Worker Protection Act (SB 988) took effect 1 January 2025 — written contracts, 30-day payment on covered work, and a paper trail that actually holds up. NY and LA already had “Freelance Isn’t Free”-style rules. A product that logs every score, every reminder, and every client response is both a cash-flow tool and an evidence file.
+- **Stage: early-to-mid maturity on invoicing, greenfield on prediction.** Wave, FreshBooks, HoneyBook, and marketplace escrow exist. Cross-platform, pre-engagement risk scoring with hands-free chase does not. The 12–18 month window is the time before Upwork or QuickBooks ship a “risk insights” toggle and call it done.
+
+## Competitive Landscape
+
+Four clusters, none sitting on the prediction wedge. Marketplace escrow is on-platform only. Invoicing SaaS is reactive. Factoring is expensive. Spreadsheets are free and useless.
+
+- **Upwork** — Category leader on talent marketplaces (~61% share, ~12M freelancers). Escrow, dispute mediation, milestone holds. Payment protection is reactive and dies the moment the job moves to email. Freelancer take rate 5–20% depending on lifetime billings; Connects and Boosts on top. No predictive late-pay alerts, no off-platform coverage.
+- **Fiverr** — 3.6M active buyers, 380K sellers, ~27% buyer conversion. Escrow on gigs, automated dispute flow, 20% seller fee. Fast for packaged work; useless the second a client says “can we just do this on Stripe.” No client risk score, no off-platform chase.
+- **Freelancer.com** — Global marketplace with milestone escrow and contests. Transaction fees plus paid membership / promo listings. Weaker collections UX than Upwork or Fiverr; no predictive module. Fine if the job stays on-platform, which high-value work often does not.
+- **Wave / Zoho Invoice / FreshBooks** — The actual default invoicing stack. Wave: free invoicing, paid payments (~2.9% + $0.30 card). Zoho Invoice: free up to 5 clients, paid above that. FreshBooks: Lite from ~$19/mo, Plus ~$33/mo, Premium ~$55/mo. Automated reminders exist. None of them score a prospect before you send the proposal, and none will make the collection call for you.
+- **HoneyBook** — Ideabrowser’s listed main competitor. Client-flow CRM for creatives: proposals, contracts, invoices, limited automation. Emerging from ~$36/mo, higher tiers ~$79/mo and up. Strong on “look professional.” Weak on “this client has a 70 late-pay score, take 50% up front.”
+- **Invoice factoring / financing** — The nuclear option people Google when an invoice is already late. 6,600 monthly searches, $67–$125 CPC, typical haircut 1–5% of face value plus origination. Solves cash *after* the miss. Does not stop the next one.
+
+**Your Opportunity**
+
+Incumbents will not ship a $9 predictive score. Upwork and Fiverr would cannibalize take-rate economics by warning sellers off bad buyers. FreshBooks and HoneyBook sell “send the invoice beautifully,” not “do not take this client.” Win on three things they will not chase: (1) score *before* the contract, (2) coverage that follows the work off-platform, (3) a price that is cheaper than one factoring haircut on a single $3k invoice. Position as “the insurance policy you wish you had on day one” — without actually being an insurance product in v1.
+
+## Business Model
+
+Subscription SaaS with a free score that converts on volume, not features. The $5k/mo goal is ~170 Pro seats or a mix of ~400 Solo + 40 Pro. Variable cost is model inference plus a handful of emails; even at $9, blended gross margin holds above 80%.
+
+- **Free** ($0) — 3 prospect scores/month, 1 active invoice sequence, “Powered by” footer on reminder emails
+- **Solo** ($9/mo) — Unlimited scores, Stripe + CSV import, email sequences, 30-day predicted-cash chart, CSV export
+- **Pro** ($29/mo) — SMS + email escalation, Harvest/FreshBooks import, deposit-recommendation copy, audit log for FWPA-style disputes
+- **Agency** ($79/mo) — 5 seats, shared client risk ledger, branded sequences, priority scoring queue
+
+Backend of the ladder (do not build in the weekend): automated collections as a usage add-on (fee per chase or a cut of recovered invoices), and an invoice-insurance partner once you have enough scored outcomes to underwrite. Annual prepay at ~10 months for Solo/Pro matches the “I hate recurring” freelancer segment.
+
+**Unit Economics**
+
+- **~$0.02** — LLM cost per prospect score (gpt-4o-mini, short context)
+- **under $0.50/user/mo** — Email + optional SMS at typical usage
+- **~85%** — Gross margin on Solo/Pro
+- **$25–$40** — Target CAC (Reddit AMAs, Freelancers Union, factoring-keyword SEO)
+- **~$180** — LTV at 12 months blended ARPU ~$15
+
+Path: 100 Solo + 50 Pro = $2.4k MRR. 300 Solo + 120 Pro + 15 Agency = $7.4k MRR. Retention hinge is month-2: the first time the score is right and the chase email gets paid, they do not churn.
+
+## Recommended Tech Stack
+
+The hard part is not the model. It is durable sequences, idempotent webhooks, and a score the user can explain to themselves. Keep the dashboard thin; the product surface is “score, warn, chase.”
+
+- **Next.js 14 + Vercel** — App Router dashboard, Route Handlers for Stripe webhooks and inbound email events, Vercel Cron for daily aging + sequence ticks.
+- **Supabase (Auth + Postgres)** — Tables: users, clients (domain, notes, last_score), invoices (amount_cents, due_at, status, predicted_pay_at, risk), scores (inputs_hash, score, reasons JSON, model), sequences (step, send_at, sent_at, channel). RLS keyed on user_id. Never store raw bank credentials.
+- **OpenAI gpt-4o-mini** — Structured JSON: score 0–100, reasons array, recommended_terms (deposit_pct, net_days). Prompt-cache the scoring rubric. Fall back to a deterministic rules engine (days-late history, term length, missing contract flag) if the API is down so a score still returns.
+- **Stripe Billing + Stripe Invoicing webhooks** — Subscriptions for Free/Solo/Pro/Agency. `invoice.paid` / `invoice.overdue` to pause or start sequences. CSV import for everyone not on Stripe yet.
+- **Resend + optional Twilio** — Transactional email from the freelancer’s verified domain; SMS for Pro “due in 3 days, high risk” alerts. Keep copy under 500 characters and never threaten legal action from the template — that is a collections-law footgun.
+- **Inngest (optional after cron)** — When sequence volume or retries outgrow Vercel Cron, same functions, durable execution. Not required for the weekend MVP.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a new Next.js 14 (App Router, TypeScript, Tailwind) project for “LatePay,” a freelancer late-payment predictor. Provision Supabase with:
+
+- users (id, email, plan TEXT default 'free', stripe_customer_id, timezone)
+- clients (id, user_id, name, domain, notes, last_score INT, last_scored_at)
+- invoices (id, user_id, client_id, source TEXT CHECK source IN ('stripe','csv','manual'), external_id, amount_cents INT, currency TEXT default 'usd', issued_at TIMESTAMPTZ, due_at TIMESTAMPTZ, status TEXT CHECK status IN ('draft','open','overdue','paid','void'), predicted_pay_at, risk INT, stripe_invoice_id)
+- scores (id, user_id, client_id, score INT, reasons JSONB, recommended_deposit_pct INT, recommended_net_days INT, model TEXT, created_at)
+- sequences (id, invoice_id, step INT, channel TEXT CHECK channel IN ('email','sms'), send_at, sent_at, body, provider_id)
+
+Enable RLS so every row is scoped by user_id. Wire Stripe Billing with Free, Solo ($9), Pro ($29), Agency ($79). Env: OPENAI_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RESEND_API_KEY, NEXT_PUBLIC_APP_URL. Install the Vercel AI SDK and Stripe Node SDK.
+```
+
+**2. Scoring Engine + Sequence State Machine**
+
+```text
+Build POST /api/score. Auth required. Body: { clientId, domain, proposalText, invoiceHistory?: { daysLate: number, amountCents: number }[] }.
+
+Call gpt-4o-mini with a strict JSON schema:
+{ score: number, reasons: string[], recommended_deposit_pct: number, recommended_net_days: number, confidence: number }
+
+System rubric (encode in the prompt, do not invent extra keys):
+- Missing written contract or vague payment terms: +20
+- Domain registered under 90 days or generic gmail-only contact: +15
+- Prior invoices averaging over 14 days late: +25
+- Proposal language that dodges deposits / Net-15: +15
+- Cap at 100. Always return at least two human-readable reasons.
+
+Persist to scores, patch clients.last_score. Then build a daily cron: for each open invoice, if due_at is within 3 days and risk >= 60, enqueue a user-facing warning; if status is overdue, advance sequences (step 1 day 3, step 2 day 10, step 3 day 21). POST /api/stripe/webhook: on invoice.paid, mark paid and cancel unsent sequence rows. Never send a step twice (unique on invoice_id, step).
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for LatePay. Hero: “Know which clients will pay late — before you start the work.” Sub: “Score the prospect. Predict the invoice. Auto-chase the overdue. Stop writing the circling-back email.”
+
+Sections:
+- Live demo: a fake client card that animates from “score 72 — take 50% deposit” to a three-step chase timeline
+- Problem: marketplace escrow only covers on-platform jobs; FreshBooks reminds you after the miss
+- How it works: four steps matching the product (score, track, warn, chase)
+- Pricing: Free / Solo $9 / Pro $29 / Agency $79, anchored against “one factoring haircut on a $3k invoice”
+- FAQ: data privacy (we never store bank credentials), FWPA audit log, “is this collections?” (no — templates stay polite; no legal threats)
+
+Geist font, off-white background, aubergine accent. Primary CTA: “Score your next client free.”
+```
+
+## Sources
+
+Market sizing, competitive pricing, community signals, and timing collated from Ideabrowser MCP idea #2688 and the public research it cites (August 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Grand View Research — Freelance Platforms Market](https://www.grandviewresearch.com/industry-analysis/freelance-platforms-market-report)
+- [Data Bridge — Global Freelance Platforms Market](https://www.databridgemarketresearch.com/reports/global-freelance-platforms-market)
+- [GlobeNewswire — Freelance Platforms Market Report 2025–2030 ($14.39B, 17.7% CAGR)](https://www.globenewswire.com/news-release/2025/04/23/3066710/28124/en/Freelance-Platforms-Market-Report-2025-2030-Industry-Growth-Driven-by-Shift-to-Gig-Economy-and-Technology-Advancements.html)
+- [Barchart — Freelance platforms forecast to $16.54B by 2030](https://www.barchart.com/story/news/35362705/freelance-platforms-market-forecast-to-reach-usd-1654-billion-by-2030-driven-by-digital-skills-demand-and-flexible-workforce-trend)
+- [Amra & Elma — Freelance marketing platform usage statistics](https://www.amraandelma.com/freelance-marketing-platform-usage-statistics/)
+- [Scoop.market.us — Freelance statistics](https://scoop.market.us/freelance-statistics/)
+- [Moneycorp — Why investing in payment technology for freelancers pays off](https://www.moneycorp.com/en-us/news-hub/why-investing-in-payment-technology-for-freelancers-pays-off/)
+- [Freelancers Union](https://freelancersunion.org)
+- [AAAA — California freelancer law effective 1 January 2025](https://www.aaaa.org/blog/new-california-freelancer-law-takes-effect-on-january-1-2025/)
+- [KMM — Freelance Worker Protection Act (California)](https://www.kmm.com/freelance-worker-protection-act-underway-in-california/)
+- [AALRR — SB 988 / FWPA employer alert](https://www.aalrr.com/newsroom-alerts-4162)
+- [Upwork pricing / take rate](https://www.upwork.com/freelance-jobs/how-it-works/)
+- [Fiverr seller fees](https://www.fiverr.com/selling)
+- [FreshBooks pricing](https://www.freshbooks.com/pricing)
+- [HoneyBook pricing](https://www.honeybook.com/pricing)
+- [Wave invoicing](https://www.waveapps.com/invoicing)
+
+Page sourced via Ideabrowser MCP (idea_id 2688): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, research_trend.

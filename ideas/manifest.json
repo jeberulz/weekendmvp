@@ -8149,6 +8149,491 @@
         "builder_confidence": 7
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "freelancer-late-payment-predictor",
+      "title": "Late Payment Predictor for Freelancers",
+      "publishedAt": "2026-08-28",
+      "category": "fintech",
+      "description": "Score new freelance clients before you start, predict which invoices will pay late, and auto-chase overdue bills. A weekend-build payment protector.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "solo-founders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:2688",
+      "og": {
+        "subject": "an unpaid invoice on a dark desk next to a phone showing a risk alert, aubergine glow, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "research_trend"
+        ],
+        "citations": 16,
+        "wordCount": 2085,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:48:44Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "nocode-specialist-repair-marketplace",
+      "title": "Specialist Repair Marketplace for No-Code Builders",
+      "publishedAt": "2026-08-28",
+      "category": "marketplace",
+      "description": "Post the Bubble, Webflow, or Make break. Platform specialists claim it, escrow holds the funds, and you get the fix without browsing freelancer profiles.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "no-code"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:7255",
+      "og": {
+        "subject": "a dark wooden task board with a single claimed ticket card under lavender light, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "product_offerings",
+          "research_trend"
+        ],
+        "citations": 14,
+        "wordCount": 2399,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:44:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "solo-founder-health-score",
+      "title": "Productivity and Recovery Dashboard for Solo Founders",
+      "publishedAt": "2026-08-28",
+      "category": "productivity",
+      "description": "A weekly operating-health score for solo founders that merges shipping velocity, calendar load, and recovery into one 90-second check-in.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:7784",
+      "og": {
+        "subject": "a dark desk with a single score card, Oura ring, and closed laptop, emerald glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend",
+          "why_now_analysis",
+          "product_offerings"
+        ],
+        "citations": 12,
+        "wordCount": 2404,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:45:00.000Z",
+        "publishNotes": "research_trend Deep Discover cap; why_now_analysis used for timing"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "feed-free-social-workspace",
+      "title": "Task-Based Social Media Workspace for Creators",
+      "publishedAt": "2026-08-28",
+      "category": "creator-tools",
+      "description": "Feed-free social workspace that turns comments, DMs, and posts into a finite task queue—a Hootsuite alternative for creators and agencies.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "marketers",
+        "freelancers"
+      ],
+      "source": "ideabrowser:8510",
+      "og": {
+        "subject": "a dark inbox of three unread comment cards with no feed, aubergine glow, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend",
+          "why_now"
+        ],
+        "citations": 10,
+        "wordCount": 2399,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:50:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-schema-markup-tool",
+      "title": "AI Schema Markup Tool for Small Businesses",
+      "publishedAt": "2026-08-28",
+      "category": "b2b",
+      "description": "AI schema tool that scans a small-business site, writes JSON-LD, and injects it so Google can show rich snippets. No developer, no agency invoice.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "marketers",
+        "non-technical"
+      ],
+      "source": "ideabrowser:1117",
+      "og": {
+        "subject": "a dark storefront laptop showing a rich-snippet preview with emerald accent glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "why_now_analysis",
+          "product_offerings",
+          "execution_plan",
+          "research_trend"
+        ],
+        "citations": 14,
+        "wordCount": 2422,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:49:28.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "code-audit-for-ai-built-apps",
+      "title": "Code Audit for Apps Built Without a Developer",
+      "publishedAt": "2026-08-28",
+      "category": "developer-tools",
+      "description": "Connect a Cursor, Claude, or Lovable repo and get a plain-English audit: what the app does, what breaks next, and a fair price to fix it.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:9035",
+      "og": {
+        "subject": "a laptop showing a plain-English audit report beside a GitHub repo printout on a dark desk, mint backlight, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_verified_research",
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend"
+        ],
+        "citations": 21,
+        "wordCount": 2533,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T15:00:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "shopify-b2b-wholesale-setup",
+      "title": "Guided B2B Wholesale Setup for Shopify",
+      "publishedAt": "2026-08-28",
+      "category": "ecommerce",
+      "description": "A guided wizard that configures native Shopify B2B on Basic, Grow, and Advanced — companies, catalogs, terms, and theme checks — without Plus.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders",
+        "non-technical"
+      ],
+      "source": "ideabrowser:9168",
+      "og": {
+        "subject": "a Shopify admin screen as a printed catalog on a dark counter with lavender backlight, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_verified_research",
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 20,
+        "wordCount": 2404,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:50:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-website-launch-rescue",
+      "title": "Launch Rescue for AI-Built Websites",
+      "publishedAt": "2026-08-28",
+      "category": "automation",
+      "description": "48-hour launch rescue for Lovable, Bolt, and v0 sites: custom domain, SSL, SEO, security, and a signed pass certificate. $47 audit, $497 live.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "non-technical",
+        "small-business-owners",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8893",
+      "og": {
+        "subject": "a dark server rack and a signed certificate card under lime light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_verified_research",
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend"
+        ],
+        "citations": 15,
+        "wordCount": 2403,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T15:00:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "hydration-app-for-hikers",
+      "title": "Hydration App for Hikers",
+      "publishedAt": "2026-08-28",
+      "category": "health",
+      "description": "GPS-aware hydration coach for hikers. Adapts sip and electrolyte timing to altitude, heat, and sweat rate. Offline-first watch nudges for weekend builders.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:3400",
+      "og": {
+        "subject": "a hydration bladder and GPS watch on a dark granite rock at dusk, mint glow, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "product_offerings",
+          "why_now_analysis",
+          "research_trend"
+        ],
+        "citations": 14,
+        "wordCount": 2408,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:50:55Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "automated-multi-modal-marketing-tools",
+      "title": "Automated Multi-Modal Marketing Tools",
+      "publishedAt": "2026-08-28",
+      "category": "ai-tools",
+      "description": "Generate on-brand text and image ads across Meta, LinkedIn, and Google in one AI workflow — with brand-safety checks. For marketers and small businesses.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "small-business-owners",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:36",
+      "og": {
+        "subject": "a dark desk with a phone, print ad mockup, and glowing prompt card under mint light, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "research_trend",
+          "why_now"
+        ],
+        "citations": 15,
+        "wordCount": 2407,
+        "auditPassed": true,
+        "auditRunAt": "2026-08-28T14:52:20Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [

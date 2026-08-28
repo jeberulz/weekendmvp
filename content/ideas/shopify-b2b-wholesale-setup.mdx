@@ -1,0 +1,142 @@
+---
+slug: "shopify-b2b-wholesale-setup"
+title: "Guided B2B Wholesale Setup for Shopify"
+---
+
+## The Problem
+
+On April 2, 2026 Shopify moved company profiles, catalogs, volume pricing, net terms, vaulted cards, and ACH off Plus and onto Basic, Grow, and Advanced. A DTC founder on a $39/month plan can sell wholesale without writing a $2,300/month check. The door opened. The map did not. One wrong toggle shows wholesale prices to retail buyers or breaks the live storefront they cannot afford to experiment on. Documentation reads like a developer manual, so the feature sits unlocked and untouched.
+
+The setup fails in three places the threads already named. New Customer Accounts auto-email an access code to any address typed in, so “approved buyers only” needs Locksmith, Onboard B2B, or Helium Customer Fields. There is no native register-as-a-company form — 99% of hybrid stores offer a company-or-individual toggle at signup; Shopify does not, so any workaround form sits next to native login and confuses the buyer. Volume pricing fires in the cart, but the table block that displays tiers on the product page is still Plus-only. Catalogs, companies, Markets, and the theme have to be wired in a specific order or nothing shows. A 30-year B2B veteran on the Shopify Community said the most basic wholesale things are just not there, and stacking apps becomes a deadlock.
+
+Demand is loud and unpaid. r/shopify has about 373,700 followers; “Anyone actually managed to set up B2B features on the Basic plan?” pulled 40-plus comments, and the parallel non-Plus thread pulled 30-plus. The official Community b2b tag is a graveyard of unresolved setup posts. LevelOps’s How to Set Up Shopify B2B Wholesale (No Plus Needed, 2026) did 21,780 views in a month. Google Trends for “shopify b2b” sat near 50 through late 2025, spiked to 100 the week of April 12, then cooled to about 30 by late August. The first-look wave is still live, and it is narrowing.
+
+## The Solution
+
+A Shopify embedded app that configures native B2B — not a second wholesale portal. Scan products, variants, tags, theme, and catalogs, then walk five decisions: who sees wholesale, how many price lists, net terms versus card-on-file, whether retail stays public, and which templates hide B2B prices. The app creates companies, catalogs, and price lists in order via the Admin API, sets payment terms, and audits visibility so retail carts still work. The Plus-locked volume-pricing table gets patched as a theme block. A living runbook covers new SKUs without reopening the help docs.
+
+The wedge versus SparkLayer and BSS is not “another wholesale app with free onboarding” — they already win that shelf. Use Shopify’s own objects so the merchant is not locked into a $49–$299/month portal, and close the two native gaps app onboarding leaves: the approval loop and the Plus-only price table. Sell the scan free, the wizard as a subscription, and a 7-day done-for-you sprint off the same scan.
+
+**How it works:**
+
+1. **Connect and scan** — Shopify OAuth; read products, variants, tags, theme, Markets, companies. Score the six break points (accounts, catalogs, theme block, terms, tax, checkout) before writing anything.
+2. **Pick the wholesale model** — Five questions: hybrid versus wholesale-only, catalog count (capped at three on non-Plus), payment terms, approval flow, theme visibility. Save a config the rest of the run consumes.
+3. **Apply native objects** — Create companies, catalogs, and price lists in order; assign catalogs via Markets; set net terms. Dry-run first. One-click rewind if a toggle breaks retail.
+4. **Patch theme and approval** — Inject the volume-pricing table the native block will not render on Basic/Grow; wire register-as-a-company and the approval lock so random emails do not get access codes.
+5. **Hand over the runbook** — Store-specific checklist for new SKUs, seasonal catalogs, and staff changes. Optional monthly monitor re-runs the visibility audit when the theme or a catalog changes.
+
+## Market Research
+
+Shopify’s own B2B materials put global B2B ecommerce at $19.34 trillion in 2024, headed for $47.5 trillion by 2030. The pond you are fishing is smaller and timed: Shopify reported B2B GMV on the platform grew 96% year over year in 2025, and two-thirds of B2B buyers abandon if their preferred payment terms are missing. On April 2, 2026 the Changelog confirmed company profiles, up to three catalogs, volume discounts, vaulted cards, payment terms, and U.S. ACH on Basic ($39/month), Grow ($105), and Advanced ($399) at no extra B2B fee. Milk Bottle Labs counted more than 36 features that moved off Plus. Unlimited catalogs, direct catalog-to-company assignment, partial payments, and deposits stay Plus-only — which is why a guided setup on the lower plans has a ceiling, and why merchants will still rage at the three-catalog cap.
+
+Search is category-shaped, not “setup-wizard”-shaped. “shopify b2b” does about 1,300 Google Ads searches a month at $7.22 CPC; “shopify wholesale” 390 at $5.78; “shopify wholesale app” 210 at $11.17; “shopify b2b app” 110 at $20.00 CPC. “shopify b2b setup” shows zero measurable volume — merchants do not search those words. They search the category, then get stuck in r/shopify (373K), r/ecommerce (666K), the Community b2b tag, and YouTube walkthroughs (Sunrise Integration tutorials average ~30K views). GTM is answer-the-thread, not buy-the-keyword.
+
+The window is real and closing. Trends peaked at 100 the week of April 12, held 73–92 through mid-July, then slid to 30 by late August 2026. An On Tap Group partner: “Can we afford B2B on Shopify?” is dead; “How do we set it up right?” is the question. Shopify already ships Admin UI extensions and Flow that auto-assign catalogs when a company is created — a first-party wizard is a normal roadmap item. Ship in 60–90 days or you are documenting a feature Shopify will absorb.
+
+## Competitive Landscape
+
+Not an empty shelf. Crowded, priced, and the incumbents already do concierge setup. You compete with native Shopify, monthly wholesale apps, $30 Fiverr gigs, and $15K Partner agencies at once.
+
+- **Shopify native B2B** — Company profiles, catalogs, Markets, volume pricing, payment terms on Basic/Grow/Advanced with no separate B2B fee. Zero extra stack. Weakness is the setup: multi-step admin, Plus-only price table, broken approval loop, three-catalog cap. Price: included in $39 / $105 / $399 plans. Plus remains ~$2,300/month for unlimited catalogs.
+- **SparkLayer** — Full B2B portal. 3,858 stores, 4.9 stars. Their team installs the app and configures price lists on every plan, including the free tier. Paid $49–$299/month; Enterprise from $499. Installs grew 0.6% quarter over quarter. You do not beat them on “we will set it up for you.”
+- **BSS B2B Wholesale Pricing** — 5,111 stores, 4.9 stars (1,100-plus reviews), installs up 23% year over year. Free plan; paid adds net terms and registration forms (free to about $100/month). Reviewers thank support for setup and theme fixes. Same concierge as SparkLayer, cheaper.
+- **Wholesale Helper (Wholesale Pricing Discount B2B)** — $19.99–$44.99/month, 16,000-plus merchants across the suite. Positions as “the next step when native B2B is not enough.” Net terms and custom signup from $44.99. Wins on price and App Store SEO. Pricing layer, not a native-catalog wizard.
+- **Wholesale Gorilla** — 3,956 stores, 4.7 stars. Lite $34.95/month, Premium $149.95. Installs down 9.7% year over year. Net terms only on the top tier.
+- **Onboard B2B (Helium)** — From $50/month, 5.0 stars (13 reviews), Built for Shopify badge. Attacks the missing register-as-a-company flow. Closest guided-setup wedge; still a subscription, not a native-object wizard.
+- **Fiverr / Partner agencies** — Setup gigs from $30, packages to ~$1,500. Partners bid $15K–$60K per B2B migration ($60K–$150K for Plus). Empty band: fixed-fee done-for-you between $1,500 and $15K. PortalSphere sits in the app lane with a dedicated onboarding specialist on every plan.
+
+**Your Opportunity**
+
+Do not list a $29/month wholesale app. SparkLayer, BSS, and Wholesale Helper already bundle free onboarding onto 3,000–16,000 installs. Win on three things they will not chase: native companies/catalogs/Markets (no portal lock-in), the approval-loop and Plus-only price-table holes, and a $1,500 7-day sprint for merchants who will not click through a wizard. Distribution is r/shopify and the Community b2b tag, not App Store search. List a free scan app only after 20 sprints.
+
+## Business Model
+
+Hybrid on purpose. The weekend MVP is the scan plus wizard; the money that hits $5K/month in year one is the sprint. Priced against Fiverr at the floor and Partners at the ceiling:
+
+- **Free** ($0) — Readiness scan: six break points, 5-minute Loom, no writes to the store. Bio link in every thread you answer.
+- **Wizard** ($49/month) — Guided native setup, theme patch, approval-loop wiring, runbook, rewind.
+- **Audit** ($149 one-time) — Written 10-page report: exact objects, exact order, which apps to add, which Liquid to patch. DIY or upgrade to the sprint.
+- **Sprint** ($1,500 flat) — 7-day done-for-you: companies, up to three catalogs, price lists, terms, approval patch, volume-price theme block, runbook. Core offer.
+- **Retainer** ($199/month) — SKU and catalog updates, Slack, quarterly re-audit. Optional.
+
+Path to $5K/month: 60 free scans → ~9 audits ($1,340) → ~2 sprints ($3,000) plus a handful of Wizard subs. ~$4,500–$5,000 by month six if you answer three threads a day. Year-one solo: $40K–$70K. Two-operator ceiling: $600K–$900K. Productized service with a SaaS wrapper, not a venture app.
+
+**Unit Economics**
+
+- **~$2–$8** — Shopify API plus hosting per completed wizard run; optional Claude pass on the scan report is about $0.04
+- **~90%** — Gross margin on Wizard and Audit (support is the real cost)
+- **~70%** — Gross margin on Sprint once a store finishes in under two days
+- **$0–$30** — CAC if you live in r/shopify; paid search on “shopify b2b” at $7 CPC is retargeting only
+- **~$1,800** — Blended revenue per sprint customer who also bought the audit
+
+## Recommended Tech Stack
+
+Treat the write-path as production. A bad catalog assignment shows the wrong price to a live buyer. Scan, dry-run, apply, rewind.
+
+- **Shopify app (Remix + Polaris)** — Official template for OAuth, session tokens, Admin UI extensions. Five-step flow stays inside the admin.
+- **Admin GraphQL API** — Companies, catalogs, price lists, Markets, payment terms. Read before write. Idempotent mutations with an audit log.
+- **Postgres (Supabase or Neon)** — shops, scans, configs, apply_runs, runbooks, rewind_snapshots. Pre-apply JSON snapshot so rewind is a replay.
+- **Theme app extension + Liquid** — Volume-pricing table the native block will not render on non-Plus.
+- **Claude (scan report only)** — Admin dump → 10-page audit. The model never applies mutations.
+- **Stripe + Shopify Billing + Vercel** — Wizard $49/month via Shopify Billing; Audit and Sprint on Stripe Checkout; Vercel cron for the visibility re-scan.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Shopify embedded app named Catalog Clerk (Remix + Polaris, TypeScript). Managed OAuth. Tables: shops, scans (break_points JSONB, score), configs (catalog_count 1-3, terms, approval_mode, visibility), apply_runs (dry_run, snapshot JSONB), runbooks. RLS by shop_id. Env: SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_SCOPES (companies, catalogs, price lists, markets, themes, customers), DATABASE_URL, STRIPE_SECRET_KEY, ANTHROPIC_API_KEY. Shopify Billing: Wizard $49/month. Stripe Checkout: Audit $149, Sprint $1500, Retainer $199/month. No Admin mutation until dry_run succeeds.
+```
+
+**2. Scan, Wizard, and Native Apply**
+
+```text
+Build the core Catalog Clerk flow.
+
+GET /api/scan: fetch products, variants, customer tags, published theme, Markets, companies, catalogs, price lists. Score six break points: (1) New Customer Accounts auto-emailing access codes, (2) missing register-as-a-company form, (3) volume-pricing table block absent or Plus-gated, (4) catalogs not assigned via Markets, (5) payment terms unset, (6) retail theme leaking wholesale prices. Return a report, write a scans row, do not mutate.
+
+POST /api/config: accept the five wizard answers, validate catalog_count is 1-3 on non-Plus, persist configs.
+
+POST /api/apply?dry_run=true: compute the mutation plan (create companies, catalogs, price lists, Markets assignments, terms) and store it on apply_runs.snapshot. POST /api/apply?dry_run=false: execute in order, log each mutation, stop on first GraphQL userError. POST /api/rewind: replay the snapshot to restore pre-apply state.
+
+Theme app extension: render a volume-pricing table on product templates when the logged-in company has quantity breaks. Approval: a customer-account UI extension plus a Flow trigger that does not send an access code until the company is approved.
+```
+
+**3. Landing Page and Thread Funnel**
+
+```text
+Single-page site for Catalog Clerk. Hero: “Shopify opened B2B on Basic. We finish the setup.” Sub: “Companies, catalogs, payment terms, and the volume-price table Shopify still hides behind Plus — configured in order, with a rewind if a toggle breaks retail.” Sections: three break points, five-step how-it-works, pricing (Free scan / $49/mo Wizard / $149 audit / $1,500 sprint) vs SparkLayer $49–$299/mo and agencies at $15K. FAQ: 3-catalog cap, theme compatibility, “is this another wholesale app?” (no: native objects). CTAs: “Scan my store” and “Get the $149 audit.” Geist, off-white, near-black, one lavender accent. No people.
+```
+
+**4. Runbook Generator**
+
+```text
+After a successful apply_run, generate a merchant runbook in markdown: how to add a SKU to an existing catalog, how to create a seasonal price list without blowing the 3-catalog cap, how to approve a company, how to check that retail prices did not leak, how to rewind. Pull object IDs from the apply_run snapshot so every instruction is store-specific. Optional Claude pass to rewrite the report in the merchant’s tone. Email via Resend. Re-run the visibility scan nightly via Vercel Cron; Slack the merchant if a theme publish dropped the volume-price block.
+```
+
+## Sources
+
+Market sizing, competitor pricing, and demand signals collated from Ideabrowser verified research on idea #9168 (August 2026 snapshot) plus competitive_analysis, go_to_market, keyword_list, and community_analysis. Triangulate before you cite in investor materials.
+
+- [Shopify News — B2B for all (April 2, 2026)](https://www.shopify.com/news/b2b-for-all)
+- [Shopify Changelog — Key B2B features on non-Plus plans](https://changelog.shopify.com/posts/key-b2b-features-now-available-on-non-plus-plans)
+- [Shopify — B2B ecommerce market size ($19.34T / $47.5T)](https://www.shopify.com/enterprise/blog/b2b-ecommerce)
+- [Milk Bottle Labs — 36-plus features moved off Plus](https://milkbottlelabs.com/blogs/news/shopify-b2b-is-no-longer-a-plus-only-game/)
+- [Mastroke — B2B GMV +96% YoY, payment-terms abandonment](https://blog.mastroke.com/store-setup-management/shopify-b2b-features-explained-standard-vs-plus-limitations/)
+- [On Tap Group — affordability objection is dead](https://www.ontapgroup.com/blog/shopify-opens-b2b-to-everyone)
+- [Google Trends — shopify b2b](https://trends.google.com/trends/explore?q=shopify%20b2b)
+- [r/shopify — B2B on Basic setup thread](https://www.reddit.com/r/shopify/comments/1ses3ko/anyone_actually_managed_to_set_up_b2b_features_on/)
+- [r/shopify — volume pricing table is Plus-only](https://www.reddit.com/r/shopify/comments/1sr0vqt/)
+- [r/shopify — no native register-as-a-company form](https://www.reddit.com/r/shopify/comments/1si2kzt/)
+- [Shopify Community — customer-accounts loop](https://community.shopify.com/t/b2b-hide-pricing-help-frustration-w-customer-accounts/553813)
+- [YouTube — LevelOps B2B wholesale setup (21,780 views)](https://www.youtube.com/watch?v=M06n7EpzQKw)
+- [SparkLayer pricing ($49–$299/mo)](https://www.sparklayer.io/pricing/)
+- [BSS B2B Wholesale Pricing](https://apps.shopify.com/partners/bss-commerce-b2b)
+- [Wholesale Helper ($19.99–$44.99/mo)](https://apps.shopify.com/wholesale-pricing-discount)
+- [Wholesale Gorilla ($34.95–$149.95/mo)](https://apps.shopify.com/wholesale-gorilla)
+- [Onboard B2B by Helium (from $50/mo)](https://apps.shopify.com/onboard-b2b)
+- [Fiverr — Shopify B2B gigs from $30](https://www.fiverr.com/gigs/shopify-b2b)
+- [GigRadar — Partner agencies $15K–$60K](https://gigradar.io/blog/shopify-development-agency-upwork)
+- [Ask Phill — Admin UI extensions as a native wizard path](https://askphill.com/blogs/blog/b2b-on-shopify)
