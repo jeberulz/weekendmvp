@@ -1,0 +1,126 @@
+---
+slug: "ai-website-launch-rescue"
+title: "Launch Rescue for AI-Built Websites"
+---
+
+## The Problem
+
+A dentist builds her practice site in Lovable on a Saturday. Preview looks finished: booking widget, gallery, a navy hero that matches the office. Sunday she hits Publish. The live URL 404s. Google never indexes a page. The contact form swallows submissions. She spends three nights in DNS panels that read like a foreign language, then posts in r/lovable that she is at her wit's end and about to pull the project down. The site is 80 percent done, which is worse: she already spent the weekend, already told patients it is coming, and the last mile is a stack she cannot open.
+
+This stall is the default outcome, not a freak bug. Lovable now adds about a million new projects a week and hosts more than 50 million in total; its own survey puts non-developers at 60 percent of the base. Replit showed only 5 percent of AI-generated apps reaching production in 2025; Lovable lands around 12 percent production-capable. That is tens of millions of pretty prototypes that die at deploy, indexing, and stay-up. The same threads repeat daily: the site works inside the builder and fails the moment it is published externally; a founder ships auth and payments on localhost then watches env vars and CORS explode in production; an SEO auditor reviewed ten Lovable and Claude Code home-service sites in one month and found duplicate AI copy, junk sitemaps, and most pages never indexed.
+
+Security is the quiet twin of the launch stall. CVE-2025-48757 found row-level security off on 10.3 percent of analyzed Lovable apps — 303 endpoints across 170 of 1,645 projects — so a stranger with fifteen lines of Python could read tables the owner thought were private. Veracode tested 100-plus language models across 80 coding tasks and found 45 percent of AI-generated code still carries OWASP Top-10 issues; two years of model upgrades did not move the number. OWASP added a dedicated vibe-coding category in 2025. The buyer is not shopping for another builder. She already has a builder. She is shopping for someone to finish the last mile and hand her a signed artifact she can show a partner, an insurer, or herself.
+
+## The Solution
+
+A productized launch-rescue shop with a URL box as the entire front door. The owner pastes the preview or staging link, names the builder (Lovable, Bolt, v0, Cursor export), and pays. Software runs a fixed checklist — custom domain and DNS, TLS, form posts, mobile layout, Core Web Vitals, indexability, analytics, Supabase RLS, security headers — then an AI-assisted operator applies the fixes. Forty-eight hours later she gets a live URL on her domain plus a signed Launch Pass certificate listing what was tested and what passed. No sales call. The certificate is portable proof the site runs in production.
+
+The wedge is not "we write websites." Builders already do that. The wedge is the work platforms will not own: wiring a real domain, making Google index client-rendered pages, turning RLS on, and standing behind a 30-day fix guarantee. Lead with a free scanner that emails a 10-check PDF in about a minute, then a $47 human-reviewed audit that credits toward the launch package. The $497 rescue is the upsell for the 20 to 30 percent whose audit shows real blockers. After handoff, Site Watch at $97 a month keeps uptime, index, and a monthly security sweep.
+
+**How it works:**
+
+1. **Paste the URL** — Owner submits the preview or staging link, builder, and domain; Stripe charges the audit or the rescue up front; intake writes a job into Postgres
+2. **Run the checklist** — Playwright plus Lighthouse plus DNS and TLS probes score indexability, forms, mobile, Core Web Vitals, RLS, headers, and analytics; Claude drafts a ranked fix list the operator confirms
+3. **Fix and ship** — Operator applies DNS, certificate, SSR or noscript fallbacks, form wiring, and security patches; site goes live on the custom domain within 48 hours
+4. **Sign the Launch Pass** — A signed certificate lists every check, pass or fail, with a public verification URL; optional Site Watch retainer attaches at handoff
+
+## Market Research
+
+AI website builders turned site creation into a $10-to-$50-a-month habit while leaving verification as a human bottleneck. The overlay market is the stall, not the builder:
+
+- **The AI website builder market sits around $3.1 to $3.8 billion in 2025**, with forecasts from roughly $8.7 billion by 2030 (about 20 percent CAGR) to $10.7 to $17.4 billion by 2033–2035. Hostinger citing Precedence Research puts $17.43 billion by 2035. SMEs take about 49 percent of AI-builder end-user share; North America about 38 percent of revenue.
+- **Lovable hit $500 million annualized revenue by June 2026**, adding about a million projects a week and 200,000 products a day, with 50 million-plus projects hosted. Forbes: built for the 99 percent who never learned to program.
+- **Only 5 to 12 percent of AI-built apps ever ship.** Replit published 5 percent to production in 2025; Lovable's production-capable share is about 12 percent. The started-versus-shipped gap is the TAM.
+- **"AI website builder" and close variants pull about 110,000 monthly searches at $13.48 CPC** (Ideabrowser trend research, August 2026). "Lovable seo" is only 170 searches a month at $8.24 CPC and "lovable developer" is 50 at $11.20 — tiny volume, expensive clicks. Direct seeds like "fix my lovable website" show zero volume. You will not buy the first 100 customers on Google Ads.
+- **r/lovable has 54,200-plus followers** with daily threads on broken deploys and sites that will not index. Sibling pool: r/boltnewbuilders. Broader DIY demand still lives in r/smallbusiness (about 873k), r/nocode (about 365k), and r/web_design (about 971k). One Ben Milsom Lovable SEO video has 22,935 views; adjacent tutorials sit at 62k and 85k.
+- **CVE-2025-48757 plus Veracode's 45 percent OWASP miss rate** turn "it looks live" into a liability. A Launch Pass that includes RLS and header checks is why a small-business owner can sleep after publishing AI-generated backend code. Distribution is thread-native: diagnose in public on r/lovable, list a cheap Fiverr gig as school, convert real launches onto the $497 SKU.
+
+## Competitive Landscape
+
+The rescue market is already a barbell. Fiverr clears one-off fixes at $10 to $100. Certified agencies start at $5,000 after a call. Nothing sits in the middle that a non-coder can buy from a Stripe button.
+
+- **Lovable911** — Closest productized specialist. $7 Quick Rescue (one hour, one small fix), $14 Rescue Sprint (two to three small fixes), custom Stabilize-and-Ship above that. Lovable-only. They sell micro-fixes, not a signed production launch.
+- **Joshua_matth on Fiverr** — $30 "rescue fix lovable ai website" gig, 3-day delivery, 5-star over 20 reviews, one-hour response. Category pages show 24-plus live gigs; prices start at $10, cluster at $30 to $100, and hit $150 to $200 for full-build packages. This is the price the scared owner sees first.
+- **Hephon** — Multi-tool rescue across Lovable, Bolt, v0, Replit, Cursor, Base44, Claude Code, and Windsurf. Forty-eight-hour written audit, one fixed price, most jobs 2 to 4 weeks, 30 days of post-launch fixes. Closest structural incumbent — but the quote still comes after the audit.
+- **Hyperbrainlabs** — Free 24-to-48-hour written audit, then custom fix pricing. Tool-specific pages for Bolt, Lovable, Replit, and v0. Same audit-then-quote friction. Strong on RLS-off tables, env failures, and preview-only deploys.
+- **LovableXperts** — First agency pitching 100 percent Lovable specialization. Public budget tiers start at $5,000 to $15,000 and run to $50,000-plus; 4 to 8 week delivery. The non-coder with a busted personal site will never take that sales call.
+- **DoodleWeb** — Certified Lovable Solution Partner. Fixed-scope, fixed-price after discovery; full builds in 4 to 12 weeks. Same $5k to $40k agency band as Gaincafe (custom quotes, free consultation) and the rest of the partner program. Still a call, still a proposal.
+- **Wix / Shopify / Squarespace / GoDaddy** — The builders. Jointly over half of website-builder revenue. They ship "publish now" and will not offer a cross-builder Launch Pass.
+
+**Your Opportunity**
+
+Win the gap between a $30 Fiverr gig and a $5,000 agency: one price on the landing page, 48-hour clock, no call, 30-day fix guarantee, and a signed certificate. Hephon and Hyperbrainlabs hide the real number behind an audit. Lovable911 owns micro-fixes at $7 to $14. Apply to Lovable's Solution Partner Program (Registered tier is enough for the badge). Lead with SEO and security for Lovable non-coders — that is the work the platforms will not eat when they one-click deploy.
+
+## Business Model
+
+Productized service, not seat SaaS. The $497 launch is the hero SKU; the $47 audit is the tripwire; Site Watch is where margin compounds. A solo AI-assisted operator can clear a rescue in 4 to 6 hours. Twenty launches in 90 days is about $10k before retainers. Year-one realistic: $60k to $120k.
+
+- **Free Vibe-Code Site Scanner** ($0) — URL in, PDF out in about 60 seconds: indexability, Core Web Vitals, exposed Supabase, meta gaps, analytics. Captures email.
+- **48-Hour Written Audit** ($47) — Human-reviewed blocker list plus a fix estimate. Credit applied if they upgrade to Launch Rescue within 7 days.
+- **48-Hour Launch Rescue** ($497) — Done-for-you deploy on a custom domain, on-page SEO and AEO, Core Web Vitals pass, GA4 and Search Console, RLS on, security headers, signed Launch Pass, 30-day fix guarantee. Full refund if it is not live and indexable in 48 hours.
+- **Site Watch** ($97/month) — Uptime, weekly index check, monthly dependency and security scan, one small fix per month. Sold at handoff; expect roughly 20 to 30 percent attach.
+- **Custom / Partner builds** ($2,500 to $15,000) — Referrals that outgrow the flat SKU; optional Lovable Partner revenue share once certified.
+
+**Unit Economics**
+
+- **4–6 hours** — Operator time per Launch Rescue with AI agents writing the patches
+- **about $8–$20** — Variable cost (LLM, Playwright runs, DNS and certificate APIs, one Loom)
+- **~$400** — Contribution per $497 rescue after tools
+- **$0 paid CAC at first** — Reddit comments, Fiverr ladder, public teardowns; paid search waits until rescue-intent keywords actually have volume
+- **~$1,200** — Blended LTV if one in four rescues attaches Site Watch for a year
+
+Path to $5k a month: 8 Launch Rescues plus about 12 Site Watch retainers.
+
+## Recommended Tech Stack
+
+The hard part is not generation. It is a deterministic checklist against live URLs, durable job state, and a certificate that will still verify in six months.
+
+- **Next.js + Vercel** — App Router for intake, dashboard, and public certificate pages. Vercel Cron for Site Watch. Edge route for the scanner so the free PDF feels instant.
+- **Playwright + Lighthouse CI** — Real browser passes for forms, mobile, and Core Web Vitals. Store traces so the certificate deep-links to evidence.
+- **Claude (Sonnet) with a strict JSON schema** — Turns probe output into a ranked fix list. Operator confirms before any write. Prompt-cache the checklist spec.
+- **Supabase (Auth, Postgres, Storage)** — Jobs, checks, artifacts, certificates, retainers. RLS so an owner only sees their rescues.
+- **Stripe Checkout** — $47 and $497 one-time plus $97/month Site Watch. No proposals. Audit credit is a coupon at upgrade.
+- **Let's Encrypt via Vercel or Cloudflare** — Automate TLS. DNS as copy-paste records plus an optional token path for Cloudflare and Namecheap.
+- **Resend** — Scanner PDF, "your site is live" with the certificate, Site Watch weekly digest.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind project called Launch Rescue. Supabase tables: owners, jobs (url, builder, domain, sku: scanner|audit|rescue|watch, status), checks, certificates (public_slug UNIQUE, checksum, pdf_url), watch_subscriptions. RLS: owners only read their rows. Stripe products: Audit $47, Launch Rescue $497 (audit credit via coupon), Site Watch $97/month. Public routes: / (intake), /scan, /pass/[slug]. Dashboard at /app for job status.
+```
+
+**2. Checklist Runner + Certificate**
+
+```text
+Build a worker that, given a job URL, runs: DNS lookup, TLS probe, Playwright visit of / /contact catching failed POSTs and mobile overflow, Lighthouse, sitemap/robots, optional Supabase REST probe for tables reachable without a JWT. Persist each check. Claude returns JSON only: array of key, severity (blocker|warn|info), title, fix. Blockers: no valid cert, apex not pointing at host, forms 4xx/5xx, document not indexable, RLS-off heuristic. After the operator marks shipped, generate a Launch Pass PDF plus /pass/[slug] listing every check and a SHA-256 of the evidence bundle. If any blocker remains, refuse to sign.
+```
+
+**3. Landing Page**
+
+```text
+Single-page site for Launch Rescue. Hero: "Your AI site is 80 percent done. We ship the last mile in 48 hours." Sub: "Paste the preview URL. We fix DNS, SSL, forms, indexing, and security, then hand you a signed Launch Pass." Fake certificate card (dark, lime seal, no customer names). Sections: the stall, how it works (4 steps), pricing (Free scanner / $47 audit / $497 rescue / $97 Site Watch) vs Fiverr $30 and LovableXperts $5,000, FAQ on the 48-hour refund and covered builders (Lovable, Bolt, v0, Cursor). CTA: Stripe checkout, not "book a call." Geist, near-black, lime accent.
+```
+
+## Sources
+
+Market sizing, competitor pricing, and demand signals from Ideabrowser verified research on idea #8893 (August 2026) plus competitive_analysis, go_to_market, keyword_list, community_analysis, and trend research on "AI website builder launch SSL DNS rescue." Triangulate before citing in investor materials.
+
+- [TechCrunch — Lovable hits $500M annualized revenue, 1 million new projects a week](https://techcrunch.com/2026/06/09/lovable-says-it-has-hit-500m-in-annualized-revenue-with-1-million-new-projects-a-week/)
+- [Forbes — Vibe coding at 600 million monthly visits; built for the 99 percent who never learned to program](https://www.forbes.com/sites/jodiecook/2026/07/16/what-vibe-coding-looks-like-at-600-million-monthly-visits/)
+- [codingwithvibe — 5 percent of Replit AI apps to production; Lovable about 12 percent production-capable](https://codingwithvibe.com/best-ai-coding-tool-non-developers-comparison-2026/)
+- [Taskade — State of Vibe Coding; Lovable survey 60 percent non-developers](https://www.taskade.com/blog/state-of-vibe-coding)
+- [Hostinger — AI website builder statistics ($17.43B by 2035, Precedence Research)](https://www.hostinger.com/blog/ai-website-builder-statistics)
+- [vibeappscanner — CVE-2025-48757; 10.3 percent of Lovable apps with RLS off](https://vibeappscanner.com/vibe-coding-security-statistics)
+- [Veracode via Mothasa — 45 percent of AI-generated code contains OWASP Top-10 issues](https://mothasa.substack.com/p/vibe-coding-has-a-security-problem)
+- [Lovable911 — $7 Quick Rescue, $14 Rescue Sprint](https://www.lovable911.dev/)
+- [Joshua_matth on Fiverr — $30 Lovable rescue, 3-day delivery](https://www.fiverr.com/joshua_matth/rescue-fix-lovable-ai-website-lovable-dev-lovable-app-lovable-saas-mvp-vibe-code)
+- [Hephon — 48-hour audit, fixed-price multi-tool rescue](https://hephon.ai/vibe-coding-rescue/lovable/hire-a-developer)
+- [Hyperbrainlabs — free 24–48 hour Bolt/Lovable/Replit/v0 audit](https://www.hyperbrainlabs.com/app-rescue/bolt)
+- [LovableXperts — $5,000–$15,000 Lovable agency tiers](https://lovablexperts.com/)
+- [DoodleWeb — certified Lovable Solution Partner](https://doodleweb.io/lovable-solutions-partner)
+- [Lovable Solution Partner Program](https://lovable.dev/partners)
+- [r/lovable — 54k+ members, daily launch-failure threads](https://www.reddit.com/r/lovable/)

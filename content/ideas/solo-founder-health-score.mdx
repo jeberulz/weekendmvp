@@ -1,0 +1,128 @@
+---
+slug: "solo-founder-health-score"
+title: "Productivity and Recovery Dashboard for Solo Founders"
+---
+
+## The Problem
+
+A solo founder opens Monday the way they always do: GitHub shows a green week, RescueTime logs 32 focused hours, Superhuman is at inbox zero, Oura sits at 78 recovery. Every dashboard is green. None of them will tell you that customer response time slipped past the threshold that historically precedes a burnout week, or that meeting load ate the only hours that used to produce shipped work. The founder keeps building because dashboards have always been the proof of working, and the question of whether any of this is moving the company forward goes unanswered.
+
+The stack is the trap. Indie founders typically keep eight tools in rotation — calendar, time tracker, git, email, Stripe, a wearable, a task app, a notes vault — and assemble vibes into a guess at the Sunday review. Reddit’s r/entrepreneur (2M members) and r/startups (819K) are full of “what are you using to track productivity” threads that never converge on one answer. r/Productivity (1.3M) and r/mentalhealth (300K) add the other half of the complaint: the same people drowning in tools are also drowning in stress, and the two problems are treated as separate products. Facebook’s Indie Hackers group (104K), Freelancers and Entrepreneurs (73K), and Solopreneurs! (38K) repeat it in plainer language — juggling the stack is the job, and nobody has a single operating-health signal.
+
+The cost is wasted mornings and missed warning signs. Twenty minutes of tab-switching produces no decision; skipping the ritual means you notice the crash only when shipping and sleep fall together. Freeman’s entrepreneur mental-health research, plus years of accelerator “founder wellbeing” programming, already treated this as an operating risk. What is still missing is a weekly number that combines work telemetry and recovery into one 90-second read — so the check-in happens before GitHub, not after.
+
+## The Solution
+
+A web app whose primary surface is one weekly operating-health score, not another dashboard wall. The founder connects the stack they already pay for: GitHub (or GitLab) for ship velocity, RescueTime or Toggl for deep-work hours, Google Calendar for meeting load, and Oura or Whoop for recovery. Optional later sources — Stripe for revenue rhythm, Help Scout or Gmail for customer response time — deepen the score without blocking first value. A weighted algorithm turns those streams into two numbers the founder actually uses: momentum (shipping, focus, responsiveness) and recovery (sleep, after-hours load, calendar fragmentation), plus one red flag when a pattern historically precedes a bad week.
+
+The morning ritual is the product. Overnight, webhooks land in Postgres, the scorer runs, and an LLM writes three sentences: what moved, why it might matter, and the highest-leverage action this week. The founder opens one page, spends 90 seconds, and either ships or recovers on purpose. Premium layers add revenue-linked pattern analysis (“weeks that look like this have preceded an MRR dip”), an AI ops coach that refuses medical claims, and anonymized peer benchmarks against other indie founders at a similar stage. You are not selling another tracker. You are selling the interpretation layer the stack never had.
+
+**How it works:**
+
+1. **Connect the stack** — OAuth GitHub, Google Calendar, a time tracker, and a wearable in under five minutes. First value ships from calendar plus git alone; more sources raise confidence, they do not gate the score.
+2. **Score overnight** — Webhooks and a nightly job compute momentum, recovery, and one trajectory flag. Partial data is labeled honestly so a missing wearable does not fake a 90.
+3. **Ninety-second check-in** — Morning page plus optional digest: this week’s score, what moved, and one recommended action. No feed, no vanity charts competing for attention.
+4. **Act, then compare** — Log the action, watch the trajectory, and (on Pro) see anonymized percentiles versus similar-stage founders without a shame leaderboard.
+
+## Market Research
+
+There is no dedicated “founder health OS” category yet. Adjacent markets are large, paying, and already sitting on the founder’s credit card — which is the wedge.
+
+- **64 million independent workers in the U.S. in 2023** (MBO Partners State of Independence). Even a narrow slice of high-skill solo operators is a real SAM; at $15–25/month, capturing a few tens of thousands of them is a bootstrap-scale business, not a rounding error.
+- **U.S. business applications stayed near historic highs through 2024–2025** (Census Bureau Business Formation Statistics). Solo and micro-business formation is structurally elevated versus pre-2020, which expands the buyer pool beyond “venture-backed founder.”
+- **Productivity and work-management software sits in the $40–60B range** by the mid-2020s with roughly **7–10% CAGR through 2030** (Ideabrowser competitive analysis on idea 7784, aggregating project, time, and collaboration segments). Founders already pay Notion, Linear, Motion, and Toggl; this product rides that spend as the missing interpretation layer.
+- **Mental-health apps were estimated at $6–8B in 2023 with 20–25% CAGR through 2030** in the same analysis — Calm and Headspace trained people to pay for recovery, but none of them ingest git or calendar.
+- **Wearables exceed $60B globally**; Oura, Whoop, and Apple Watch normalized recovery data. McKinsey’s 2024 AI survey shows users now expect a next action, not another chart — which is why an ops coach works without a human bench.
+- Community demand is already loud: r/entrepreneur + r/startups + r/Productivity + r/SaaS exceed **4 million members**, and Ali Abdaal / Jeff Su-class YouTube still pulls millions of views on systems content (Ideabrowser community analysis, idea 7784). You are routing demand, not creating it.
+
+Stage: *pre-category*. Time trackers, AI calendars, and quantified-self apps each own one axis. Nobody owns “solo founder operating health.” Product_offerings research puts a founder-specific TAM around **$500M globally** at roughly **10% CAGR**. Name the score before Motion or a wearable vendor ships a lightweight weekly summary and calls it done.
+
+## Competitive Landscape
+
+Time tracking, calendar AI, and quantified-self dashboards are crowded. Founder-specific scoring that mixes shipping, responsiveness, and recovery is not. Closest practical competitors, even when they refuse the “health score” label:
+
+- **RescueTime / Timing / Rize** — Mature device-level telemetry, productivity scores, idle and distraction alerts. Excellent at “where did the hours go,” silent on git, Stripe, support latency, and recovery. RescueTime has served a large installed base for years. Pricing: about **$6–12/month** per user, with a free tier on RescueTime.
+- **Motion / Reclaim.ai / Clockwise** — AI calendars that protect focus time, defragment meetings, and proxy overload via after-hours work. Direct effect on the day, zero claim on founder identity or revenue patterns. “Time management software” still carries high CPC, which is how you know the category is funded. Pricing: **$8–30/user/month**, typically tiered by team features.
+- **Exist.io / Gyroscope / Welltory** — Quantified-self integrators that already prove people will pay for a composite score across wearables and some productivity sources. Exist.io is the correlation engine (about **$7–30/month** depending on plan and billing); Gyroscope is the polished life dashboard, with paid tiers that climb into biohacker pricing; Welltory is HRV-first. None of them position for indie founders or ship-velocity plus MRR.
+- **Notion (Plus $10/user/month, Business $18)** — The default DIY founder cockpit. Templates sell as one-offs; the cost is weekly manual entry. Notion could ship a “founder dashboard + AI” template tomorrow and still would not own GitHub-event and Stripe-event telemetry without painful setup.
+- **Whoop / Oura** — Data sources, not the product. Whoop membership is roughly **$199–$359/year**; Oura is hardware plus a membership. Ingest their scores; do not compete with them.
+- **Human coaching** — $200–600+/month, no telemetry. Your $15–49 band sits between a $12 tracker and a $400 coach.
+
+**Your Opportunity**
+
+Incumbents will not move down into a $15/month founder-only score. RescueTime will not add Stripe; Motion is calendar autopilot; Gyroscope’s buyer is a health geek, not a bootstrapper watching MRR. Win on founder-specific weighting, a 90-second Monday ritual, and anonymized peer benchmarks. Own “Solo Founder Health Score” the way CX owns NPS — the methodology is the moat.
+
+## Business Model
+
+Subscription SaaS with a free weekly PDF that converts on history, not on hiding the score. Ideabrowser value ladder (idea 7784): bait report, $15 dashboard, $30 patterns, $50 AI coach, incubator backend at $500/user/year. The idea brief’s $19 / $49 GTM pitch sits inside that band — pick one ladder and stick to it.
+
+- **Free** ($0) — Connect up to 2 sources, 4-week history, weekly PDF score. Lead-gen wedge; “Powered by” footer.
+- **Core** ($15/month, or $144/year) — Unlimited sources, live dashboard, 90-second check-in, one recommended action, CSV/PDF export.
+- **Pro** ($29/month) — Revenue-linked pattern analysis, confidence intervals (no fake causality), anonymized peer percentiles, Slack/email digest.
+- **Coach** ($49/month) — AI ops coach (operational recommendations only), monthly review call slot in a small founder circle, priority integrations.
+
+Incubator backend: **$500/founder/year**. Two thousand blended paying users at about $22 ARPU is **$44K MRR**. The $5K/month goal is about **230 Core** or **170 Pro** subscribers — Indie Hackers, r/entrepreneur, one YouTube comparison, then ads.
+
+**Unit Economics**
+
+- **under $0.40** — LLM + API cost per active user per month (weekly score narrative, gpt-4o-mini class, plus calendar/git sync)
+- **about 85%** — Gross margin on Core/Pro after wearable and git API overhead
+- **$30–60** — Target CAC via community and comparison content; paid search on “time management software” is too expensive for a $15 plan
+- **about $200** — 12-month LTV at ~$22 ARPU and mid-80s percent monthly retention on founders who survive week 4 (the second scored month)
+
+## Recommended Tech Stack
+
+The hard part is not the model. It is reliable OAuth, a founder-shaped data model, and a scorer that degrades honestly when a source is missing. Optimize for webhook in, score, one page out.
+
+- **Next.js 14 + Vercel** — App Router for the dashboard, Route Handlers for OAuth callbacks and GitHub/Stripe webhooks, Vercel Cron for the nightly score job. One repo.
+- **Supabase (Auth + Postgres)** — Tables: users, connections, events (source, type, occurred_at, payload_hash), weekly_scores (momentum, recovery, flag, confidence), actions. Row-level security on user_id. Store hashes and aggregates, not raw email bodies.
+- **GitHub App + Google Calendar API** — Ship velocity and meeting load are the two sources that produce a believable v1 score. Time-tracker and wearable can follow in week two.
+- **Terra or Vital (optional)** — If you want Oura/Whoop without maintaining four wearable OAuth flows. Skip until the git+calendar loop retains.
+- **OpenAI gpt-4o-mini (or Claude Haiku)** — One JSON-schema prompt: week of aggregates in, three-sentence briefing plus one action out. Prompt-cache the founder’s weighting prefs. No diagnostic language.
+- **Stripe Billing** — Free / Core $15 / Pro $29 / Coach $49 plus annual SKUs. Customer portal. Metered “extra source” is a later upsell, not v1.
+- **PostHog** — Track connect-rate, day-1 score viewed, week-4 retained. If founders connect one source and never open Monday, the product is a dashboard, and dashboards churn.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) app called Buildline — a solo-founder operating-health score. Supabase tables: users (id, email, timezone, plan, score_weights jsonb default {shipping: 0.3, focus: 0.25, meetings: 0.2, recovery: 0.25}), connections (id, user_id, provider text check in ('github','google_calendar','rescuetime','toggl','oura','whoop','stripe'), status, scopes, last_synced_at), events (id, user_id, source, kind, occurred_at, numeric_value, payload_hash), weekly_scores (id, user_id, week_start date, momentum int, recovery int, flag text, confidence float, narrative text, action text), actions_taken (id, weekly_score_id, label, completed_at). RLS: user_id = auth.uid(). Stripe products: Free, Core $15, Pro $29, Coach $49, plus $144/$276/$468 annual. Env: GITHUB_APP_ID, GITHUB_PRIVATE_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, OPENAI_API_KEY, STRIPE_SECRET_KEY. Install Octokit, googleapis, Stripe, Vercel AI SDK.
+```
+
+**2. Scorer + Monday Briefing**
+
+```text
+Build the weekly scorer as a Vercel Cron at 05:00 in the user’s timezone. For each user with at least one healthy connection: aggregate last 7 days into shipping (commits + merged PRs), focus_hours, meeting_hours, after_hours_events, recovery_proxy (HRV or sleep if present, else calendar-derived rest). Compute momentum 0-100 and recovery 0-100 with the user’s score_weights. Set flag to 'burnout_risk' when recovery drops more than 15 vs the 4-week mean AND shipping is flat or down; otherwise 'stable' or 'up'. confidence = connected_sources / 4, capped at 1. Call gpt-4o-mini with response_format json_schema { narrative: string (max 3 sentences), action: string (one operational recommendation), rationale: string }. System prompt: you are an ops coach for a solo founder, not a clinician. Never diagnose. Never claim causation with revenue. Prefer one action over a list. Persist weekly_scores and email/Slack the briefing. If only calendar is connected, still score meetings vs focus using free/busy, and say so in narrative.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for Buildline. Hero: “One weekly number for the operator and the company.” Sub: “GitHub, calendar, hours, and recovery — scored overnight. Ninety seconds on Monday, then ship or rest on purpose.” Sections: the eight-tab problem, live mock of a score card (momentum 72, recovery 64, red flag on response time), how it works (4 steps), pricing Free / Core $15 / Pro $29 / Coach $49 anchored against RescueTime $12 and a $400/mo coach, FAQ on privacy (we store hashes and aggregates, not your mail), medical claims (we don’t make them), and what happens with missing sources. Geist, off-white background, emerald accent, near-black type. Primary CTA: “Connect GitHub and see this week’s score.”
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for Buildline: a wordmark and a small mark that reads as a single score pip, not a heart or a leaf. Primary near-black, one emerald accent, two warm neutrals. Geist for UI, IBM Plex Mono for the score digits. Voice rules: never moralize about hustle, always show momentum and recovery as a pair, never use clinical words (diagnosis, disorder, treatment). Output a one-page brand sheet plus three Monday-briefing copy variants under 80 words.
+```
+
+## Sources
+
+Collated from Ideabrowser MCP idea 7784 (May 2026): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, product_offerings. research_trend hit a monthly Deep Discover cap. Triangulate before investor materials.
+
+- [MBO Partners — State of Independence (64M U.S. independent workers, 2023)](https://www.mbopartners.com/state-of-independence/)
+- [U.S. Census Bureau — Business Formation Statistics](https://www.census.gov/econ/bfs/)
+- [McKinsey — The state of AI in 2024](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai)
+- [RescueTime — pricing](https://www.rescuetime.com/pricing)
+- [Motion — pricing](https://www.usemotion.com/pricing)
+- [Reclaim.ai — pricing](https://reclaim.ai/pricing)
+- [Exist.io](https://exist.io/)
+- [Gyroscope](https://gyrosco.pe/)
+- [Notion — pricing](https://www.notion.so/pricing)
+- [Whoop — membership](https://www.whoop.com/)
+- [Wellness360 — corporate wellness platform landscape (adjacent wellbeing vendors)](https://www.wellness360.co/the-top-11-corporate-wellness-platforms-in-2025/)
+- [SBA — market research and competitive analysis](https://www.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis)
