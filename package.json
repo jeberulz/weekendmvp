@@ -29,6 +29,8 @@
     "publish:newsletter": "node scripts/publish-newsletter.mjs",
     "seed:convex": "node scripts/seed-convex.mjs",
     "seed:convex:dry": "node scripts/seed-convex.mjs --dry-run",
+    "audit:idea": "node scripts/audit-idea-mdx.mjs",
+    "engine:eval": "node scripts/engine-eval.mjs",
     "validate:idea-tags": "node scripts/validate-idea-tags.mjs",
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",

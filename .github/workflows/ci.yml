@@ -40,5 +40,11 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Validate idea tagging contract
+        run: npm run validate:idea-tags
+
+      - name: Audit idea page structure
+        run: npm run audit:idea -- --all
+
       - name: Build
         run: npm run build
