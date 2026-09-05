@@ -1,0 +1,122 @@
+---
+slug: "lightroom-preset-generator"
+title: "AI-Powered Lightroom Preset Generator"
+---
+
+## The Problem
+
+Photographers still buy static preset packs on FilterGrade and Creative Market, slam them onto a wedding set, and then spend forty minutes undoing the orange. Adobe already ships Adaptive Presets inside Lightroom Classic / CC and owns 80%+ of the pro share. Evoto sells AI retouching as a subscription or pay-as-you-go. A "Lightroom Preset Builder" plugin exists as freemium / one-time. None of them take *this* shoot — this skin, this gym, this cloudy 4pm — and emit an XMP that matches a reference the shooter actually likes.
+
+r/photography (5.5 million) and r/Lightroom (370k) are the complaint department. Facebook's Photoshop and Lightroom group (390k) and Beginners Photography (917k) are the volume. The beginner buys a $29 pack and thinks they did something. The shooter who invoices $3,000 wants a recipe they can reuse next Saturday.
+
+The hidden cost is inconsistency across a gallery. One preset that looked right on the ceremony aisle wrecks the reception tungsten. Adaptive Presets help. They still do not start from *this couple's* skin and *this* venue's gel. That is the support ticket you will get, and the reason the product has to emit sliders — not a baked JPEG they cannot undo.
+
+## The Solution
+
+Upload 3–8 selects plus a reference image (or a named look: "editorial indoor, 5200K, low sat skin"). Get a Lightroom XMP / DNG profile, a before/after, and a one-line "what this preset actually does" so they can tweak. $15 Starter / $30 Pro in the Ideabrowser ladder. Marketplace add-on at $10 if you later let shooters sell their generated packs — that is year two.
+
+**How it works:**
+
+1. **Shoot lock** — Upload selects. The app reads EXIF (WB, camera, lens) and refuses to pretend a phone JPEG is a raw wedding file.
+2. **Look lock** — Reference photo or a constrained look picker. No "make it cinematic" text box.
+3. **Emit XMP** — Predicted slider recipe (WB, tone curve, HSL, color grading, grain). User downloads XMP, applies, and can nudge. Pro unlocks batch across a folder.
+
+## Market Research
+
+Photo editing " $5 billion by 2027" shows up in the idea summary — treat it as a wide umbrella, not your SAM. AI image generation: $349.6 million (2023) at 17.7% CAGR (Grand View / GM Insights). Broader AI image + video: $8.7 billion in 2024 to $60.8 billion by 2030 (38.2%, MarketsandMarkets) — that is a wider TAM than presets; cite it as gravity, not as your revenue.
+
+The Aesthetic of Photography / AI-photography stats cluster is the cultural timing: shooters already accept AI *assistance* and still reject AI *replacement* of the file. A preset is assistance. A generative reshoot is a fight you do not want.
+
+Adobe can clone this inside CC tomorrow. Your distribution is the $15 impulse and the YouTube "I generated a preset from my mood board" video, not a Creative Cloud RFP.
+
+Privacy is a ship-blocker. These are client faces. 24-hour TTL on uploads, no training, no "community lookbook" of weddings. If you skip that, you do not have a photography product. You have a leak.
+
+## Competitive Landscape
+
+- **Adobe Lightroom Adaptive Presets** — inside the CC subscription. 80%+ pro share. Good, generic, not "from my reference photo."
+- **Evoto AI** — subscription / PAYG. Retouching, not XMP recipes.
+- **Lightroom Preset Builder plugins** — freemium or one-time. Manual slider work with a nicer UI.
+- **FilterGrade / Creative Market** — static packs. The incumbent the buyer already regrets.
+- **Luminar Neo, ON1, VSCO, Prisma** — indirect. Different catalogs, same "buy a look" motion.
+
+**Your Opportunity**
+
+Free preview (3 sliders, no XMP) → $15 Starter (one XMP) → $30 Pro (batch + DNG profile) → $10 marketplace take-rate later → $10k+/year if a school or a brand studio wants seats. Do not fight Adobe on catalog. Fight FilterGrade on "this was built from *my* files."
+
+YouTube is the channel: one preset-from-reference tutorial a week, XMP attached for Pro buyers. Reddit will call it a gimmick until a shooter posts a slider map that matches what they would have dialed. That post is the launch.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| Preview | Free | Before/after, no download |
+| Starter | $15 one-time | 1 XMP |
+| Pro | $30 one-time or /month* | Batch + DNG |
+| Marketplace | $10 add-on / take-rate | Sell packs |
+| Studio | $10k+/year | Seats + brand looks |
+
+\*Ship Pro as $30 one-time first. Convert to monthly only if they batch weekly.
+
+Unit economics:
+
+- Vision + recipe call under $0.10 per generate
+- $15 is impulse; support is "it didn't match" — show the slider map so they can fix it
+- Never auto-install into Lightroom; sideload XMP keeps you out of Adobe's ToS meat grinder in v1
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe
+- **Storage:** R2 for selects (short TTL — these are client photos)
+- **DB:** Supabase — `looks`, `generations`, `xmps`
+- **Models:** vision model to estimate WB/tone/HSL deltas vs reference; emit numeric sliders, not a baked JPEG
+- **XMP:** a tested template per Lightroom version (Classic vs CC)
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 Lightroom preset generator.
+
+Set up:
+- Clerk + Stripe ($15 / $30)
+- Supabase + R2 with 24h TTL on uploads (client photos)
+- EXIF reader; reject files with no camera make as "phone JPEG warning"
+- XMP writer from a versioned slider schema (WB, tone curve, HSL, color grading, grain)
+
+No social feed. Generate and download.
+```
+
+**2. Core Feature**
+
+```text
+Build Shoot Lock → Look Lock → Emit XMP.
+
+Requirements:
+- 3–8 selects + 1 reference (or a constrained look picker)
+- Predict sliders; show a before/after using those sliders on a preview JPEG
+- Download XMP that Lightroom Classic 13+ accepts
+- Pro: batch the same recipe across a folder
+
+User flow: upload selects → lock look → preview sliders → pay → XMP.
+```
+
+**3. Slider Map**
+
+```text
+Add a "what this preset does" panel that lists each slider delta in English so the shooter can nudge in Lightroom instead of filing a refund. Store the map next to the XMP.
+```
+
+## Sources
+
+- [GM Insights — AI image generator](https://www.gminsights.com/industry-analysis/ai-image-generator-market)
+- [Grand View — AI image generator](https://www.grandviewresearch.com/industry-analysis/ai-image-generator-market-report)
+- [MarketsandMarkets — AI image/video generator](https://www.marketsandmarkets.com/Market-Reports/ai-image-generator-market-26443491.html)
+- [Aesthetics of Photography — AI photography stats](https://aestheticsofphotography.com/)
+- [Adobe Lightroom](https://www.adobe.com/products/photoshop-lightroom.html)
+- [Evoto AI](https://www.evoto.ai/)
+- [FilterGrade](https://filtergrade.com/)
+- [r/Lightroom](https://www.reddit.com/r/Lightroom/)

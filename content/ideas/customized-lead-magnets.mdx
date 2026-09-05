@@ -1,0 +1,121 @@
+---
+slug: "customized-lead-magnets"
+title: "Customized Lead Magnets"
+---
+
+## The Problem
+
+Most "lead magnets" are a recycled PDF with the founder's face on page one. The form is a Mailchimp embed. The promise is generic. ConvertKit and HubSpot will host it. Canva will make it pretty. None of them assemble a magnet that matches the visitor's job, tool stack, and the page they came from.
+
+Marketers know this. r/Emailmarketing (80k+) and r/marketing (1.8 million) are a graveyard of "my lead magnet converts at 0.8%." Klaviyo's Facebook group (64k) is the same complaint with better merch. Hormozi's YouTube (hundreds of thousands per upload) sold everyone on the value ladder and then left them with Canva.
+
+HubSpot from $50/month is a CRM that happens to have forms. Canva Pro at $12.99/month is a design tool that happens to export PDFs. Pathmonk will personalize B2B magnets — price unspecified in the Ideabrowser cut — but they are not a weekend-MVP you can clone for creators.
+
+The other failure mode is the opposite: a 40-page "ultimate guide" nobody finishes. Opt-in looks fine in Klaviyo. Sales calls start with "I haven't read it yet." A customized magnet is shorter on purpose — a 4-page checklist that names *their* stack — so the email sequence can assume they did the work.
+
+## The Solution
+
+A magnet builder that starts from the landing-page offer and the visitor segment, then emits a unique PDF / quiz / checklist. $49 DIY one-time or $99/month Pro in the ladder. Free templates are the wedge. The product is "this visitor got a different magnet than the last one."
+
+**How it works:**
+
+1. **Offer lock** — Paste the landing page or describe the offer, ICP, and the one transformation. The app refuses to generate until those three fields exist.
+2. **Segment hooks** — 3–5 segments (role, tool, pain). Each gets a title, outline, and CTA that still sells the same backend.
+3. **Ship** — Generate the assets, host the form, drop the embed. $20 analytics add-on shows which segment magnet actually opted in.
+
+## Market Research
+
+Digital marketing tools: 17.6% CAGR 2023–2030 in the Ideabrowser pack. "91% of marketers prioritizing lead gen by 2025" is an MCP-cited figure — use it as category heat, not a footnote you invent a study for. GetResponse, Pathmonk, and the usual lead-magnet listicles are the citation cluster; they agree the format works and the execution is lazy.
+
+HubSpot did $1.73 billion in 2024. That is the gravity well. You do not beat HubSpot. You sit in front of it: the asset, not the CRM. Canva's 125 million users are the other gravity well — they will design the cover. You design the *variant logic*.
+
+The 155% sign-up lift in the Ideabrowser highlight is a positioning number. Do not put it on the homepage unless you can point at the study. Put it in the sales conversation as "personalized magnets outperform static ones" and measure your own.
+
+Lead-gen listicles (GetResponse, FounderPal, the usual) keep proving the same thing: the magnet still works, the static PDF is the leak. Personalization used to mean a first-name merge tag. It now means a different asset. That is a product, not a merge field.
+
+## Competitive Landscape
+
+- **HubSpot** — from $50/month. $1.73B (2024). Forms + CRM. The magnet is still a static file you uploaded.
+- **Canva** — Pro $12.99/month, 125M users. Makes the PDF. Does not route by segment.
+- **Mailchimp / ConvertKit (Kit)** — form + email. No asset engine.
+- **Pathmonk** — AI-personalized B2B magnets. Closest product. Price not in the Ideabrowser extract. Enterprise motion.
+- **DIY GPT + Canva** — the real substitute. Slow, untracked, ugly UTM.
+
+**Your Opportunity**
+
+Free template pack (email) → $49 DIY (one magnet, three segments, you export) → $99/month Pro (hosted forms, variants, swap without republishing) → $20 analytics add-on → $10k+/year if an agency wants 25 clients on one invoice. Pathmonk can have B2B sales teams. You take creators and small info products who already live in Kit and Klaviyo.
+
+Ship the embed so ripping you out hurts. DIY $49 is a Twitter impulse. Pro $99 is the business because the form lives on your origin. If they export a ZIP they will not come back.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| Template pack | Free | 8 static outlines + email |
+| DIY | $49 one-time | 1 magnet, 3 segments, ZIP |
+| Pro | $99/month | Hosted variants + embed |
+| Analytics | $20/month | Segment-level opt-in |
+| Agency | $10k+/year | 25 brands, shared billing |
+
+Unit economics:
+
+- PDF/LLM per magnet under $0.30
+- $99/month only if you host and they fear losing the embed — that is why Pro is hosted, not a ZIP
+- DIY $49 is the Impulse buy from a Twitter thread
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe
+- **DB:** Supabase — `offers`, `segments`, `magnets`, `submissions`
+- **Gen:** Claude for outline + copy; a PDF renderer (react-pdf) not a screenshot
+- **Forms:** your embed + a native Kit / Klaviyo webhook
+- **Analytics:** PostHog or a thin events table — $20 add-on is this query
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 customized lead-magnet builder.
+
+Set up:
+- Clerk + Stripe ($49 one-time, $99/month, $20 analytics)
+- Supabase: offers, segments, magnets, submissions
+- react-pdf renderer
+- Embeddable form that picks a segment and returns the right PDF URL
+
+No CRM. Push the email to Kit/Klaviyo via webhook.
+```
+
+**2. Core Feature**
+
+```text
+Build Offer Lock → Segment Hooks → Ship.
+
+Requirements:
+- Refuse generation until offer, ICP, and transformation exist
+- Produce 3–5 segment variants that sell the same backend
+- Host the files; embed is a single script tag
+- Log which variant was served
+
+User flow: paste landing page → confirm offer lock → generate variants → embed.
+```
+
+**3. Analytics Add-on**
+
+```text
+Add a $20/month view: opt-in rate by segment, by landing page, by last 7 / 30 days. Flag the dead variant. One-click regenerate for that segment only.
+```
+
+## Sources
+
+- [GetResponse — lead magnet study](https://www.getresponse.com/blog/lead-magnets)
+- [Pathmonk — B2B lead magnets](https://pathmonk.com/b2b-lead-magnets/)
+- [My Codeless Website — lead magnet statistics](https://mycodelesswebsite.com/lead-magnet-statistics/)
+- [FounderPal — lead magnet ideas](https://founderpal.ai/lead-magnet-ideas)
+- [HubSpot pricing](https://www.hubspot.com/pricing)
+- [Canva Pro pricing](https://www.canva.com/pricing/)
+- [Kit (ConvertKit)](https://kit.com/pricing)

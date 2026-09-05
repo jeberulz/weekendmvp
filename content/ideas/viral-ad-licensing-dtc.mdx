@@ -1,0 +1,123 @@
+---
+slug: "viral-ad-licensing-dtc"
+title: "Viral Ad Licensing for DTC Brands"
+---
+
+## The Problem
+
+DTC paid-social teams do not have a "creative strategy" problem. They have a sourcing problem. Organic UGC that crushed on TikTok dies the week you whitelist it — r/ecommerce has the $4,800 / 4-of-6-deposits horror story on repeat. A founder pays $150–$600 a shoot, waits a week, and still cannot explain why the last winner worked. Brands lighting $10k a month on creators are buying volume, not rights to posts that already proved they can hold attention.
+
+Yotpo's published cut still holds: UGC in Facebook ads can 4x CTR and cut CPC about 50%. That is why everyone wants it. It is also why the calendar is a graveyard. Meta's Andromeda stack in 2026 crushed creative lifespan from about six weeks to two or three. Median time to a 15% CTR drop and a 20% CPM rise is 8.4 days. Meta's own test: 25 diverse creatives produced +17% conversions at −16% cost. You cannot shoot that many originals every week. You can license posts that already ran.
+
+Buyers are not searching "viral TikTok ad rights." That query is zero volume. They search "UGC creators" — 33,100 US searches a month at $6.50 CPC. Sell "skip the sourcing," not "viral licensing SaaS."
+
+## The Solution
+
+A category board of posts that already worked, with Spark codes and usage rights attached, delivered in 72 hours. The first SKU is one licensed post with a money-back guarantee. The business is an $3,500/month proven-creative pack, not a seat license.
+
+Do not launch a marketplace SaaS. Aspire and GRIN already tax brands $24k a year to manage influencers. You are a creative desk that pre-clears winners.
+
+**How it works:**
+
+1. **Category Viral Board** — Brand picks a category (supplements, skincare, kitchen gadgets). The board shows 20–40 posts that already cleared a CTR / completion bar in that category, anonymized until they pay.
+2. **First Licensed Post** — $299, 72-hour turnaround: Spark Ads code or Meta partnership ad, usage window, creator fee bundled. Money back if the code is dead on arrival.
+3. **Proven Creative Pack** — $3,500/month for 8–12 licensed posts. Creative Ops at $7,500/month adds weekly refresh against the 8.4-day decay curve and a Slack channel with the sourcing lead.
+
+## Market Research
+
+US TikTok ads were about $11 billion in 2025 and are forecast at $14.5 billion in 2026. Meta CPMs sat at $13.48, up 20% year over year — you are paying more to show the same tired static. TikTok Spark Ads still print: 7.21% CTR and $0.89 CPC in the published cuts Ideabrowser pulled. That is the format you are licensing, not a new ad unit.
+
+Meta required AI-content disclosure in March 2026. Human UGC still beats AI UGC 85–110% on CTR in trust categories (supplements, finance, baby). That is your moat against the "just generate 50 ads" tools. r/UGCcreators crossed 84,700 members. The talent exists. The clearinghouse for *already-viral* posts with paid rights does not.
+
+Andromeda is the timing. Creative that used to live six weeks now dies in under three. Brands that used to brief four creators a month now need a weekly rights pipeline. That is a service motion, not a $99 SaaS.
+
+Do not confuse organic comments with paid performance. The r/ecommerce whitelist flop (80k views, 4.2% — dead as an ad) is the teaching story. You license posts that already held *paid* or you are selling vibes. The board has to show the metric, even if the first 40 rows are curator-labeled rather than Ads Manager–verified.
+
+## Competitive Landscape
+
+- **Aspire** — $1,000–$2,499 per user per month on annual (call it $24k/year). Dyson, HelloFresh, Samsung. Influencer CRM for teams that already have a roster.
+- **GRIN** — usage-based $0 / $200 / $500 / $1,000 / $1,500. Same job: manage creators you already found.
+- **Insense** — closest incumbent. $500 Brand / $800 Agency plus 10–20% fee. Spark Ads support. 1,400+ ecommerce brands. They still start from a brief, not from a board of posts that already worked.
+- **Billo** — $99/video. **Trend** — $50–$92. **JoinBrands** — $25–$29. Volume UGC factories. Cheap, slow to a winner, no licensing of existing virals.
+- **Minisocial** — $3,000 for 10 creators. Agency-shaped. **TikTok One / Ads Manager Spark codes** — free commodity once you have the creator. The code is not the product. Finding the post that deserves a code is.
+
+**Your Opportunity**
+
+Insense will keep the brief-to-creator workflow. You sell the opposite: the post already exists, the rights are the SKU. Free Category Viral Board (email gate) → $299 First Licensed Post (72h, money-back) → $3,500/month Proven Creative Pack → $7,500/month Creative Ops. Creator payouts $100 / $150 / $300 by tier. Year-one is a $60–180k service book. Day-90 napkin if three retainers land: about $11k blended monthly. Do not productize the board into seats until the service is ugly and profitable.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| Category Viral Board | Free | 20–40 anonymized winners + email |
+| First Licensed Post | $299 one-time | Spark/partnership code, 72h, money-back |
+| Proven Creative Pack | $3,500/month | 8–12 licensed posts, usage windows, creator paid |
+| Creative Ops | $7,500/month | Weekly refresh vs 8.4-day decay + Slack |
+
+Unit economics:
+
+- Creator fee $100–$300; keep $150–$200 gross on the $299 SKU after tools
+- Pack: 10 posts × $150 avg creator = $1,500 COGS on $3,500 → about $2,000 gross
+- Ops: same COGS shape, higher attach on strategy hours
+- Scrape/board tooling is under $50/month until you have 20 brands
+
+Charge the brand. Pay the creator on clearance. Never take a marketplace cut as the primary model — Insense already owns that tax.
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel, customer board + admin clearance desk
+- **Auth / billing:** Clerk + Stripe invoices (service-first; skip self-serve seats)
+- **DB:** Supabase — `brands`, `posts`, `licenses`, `spark_codes`, `payouts`
+- **Ingest:** TikTok / Meta oEmbed + a manual curator queue (do not pretend you have a ranking model in week one)
+- **Rights:** HelloSign or DocuSign for the one-page license; Stripe Connect later if creator payouts get messy
+- **Comms:** Slack Connect for Creative Ops, Resend for board delivery
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 app for a DTC viral-ad licensing desk.
+
+Set up:
+- Clerk for brand logins, Stripe invoices for $299 / $3500 / $7500
+- Supabase tables: brands, posts, licenses, spark_codes, payouts
+- Public Category Viral Board (anonymized thumbnails, email gate)
+- Admin desk to attach a Spark code and mark a license cleared
+
+No self-serve marketplace. This is a service ops tool.
+```
+
+**2. Core Feature**
+
+```text
+Build First Licensed Post checkout.
+
+Requirements:
+- Brand picks one post from the board
+- Collect usage window, platforms (TikTok Spark, Meta partnership), and shipping address for any physical product seeding
+- Generate a one-page license, collect signature, pay creator $100–$300
+- Deliver the Spark code within 72 hours or auto-flag refund
+
+User flow: board → pick post → $299 → signed license → code in inbox.
+```
+
+**3. Decay Refresh**
+
+```text
+Add a Creative Ops weekly job: list active licenses older than 8 days, pull the brand's last 7-day CTR/CPM if they pasted Ads Manager exports, and queue 3 replacement posts from the same category board. Post the queue to a Slack channel. Do not auto-charge extra posts.
+```
+
+## Sources
+
+- [Yotpo — UGC in Facebook ads](https://www.yotpo.com/blog/ugc-facebook-ads/)
+- [Insense pricing](https://www.insense.pro/pricing)
+- [Aspire pricing](https://www.aspire.io/pricing)
+- [GRIN pricing](https://www.grin.co/pricing)
+- [Billo](https://www.billo.app/)
+- [TikTok Spark Ads](https://ads.tiktok.com/help/article/spark-ads)
+- [Meta Andromeda / creative diversity](https://www.facebook.com/business/news)
+- [r/UGCcreators](https://www.reddit.com/r/UGCcreators/)
+- [r/ecommerce whitelist threads](https://www.reddit.com/r/ecommerce/)

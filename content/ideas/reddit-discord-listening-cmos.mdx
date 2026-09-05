@@ -1,0 +1,124 @@
+---
+slug: "reddit-discord-listening-cmos"
+title: "Reddit and Discord Listening Tool for Fractional Marketing Teams"
+---
+
+## The Problem
+
+Fractional CMOs do not need another Brandwatch seat. They need to hear the three Discords and twelve subreddits their clients actually live in, before the weekly. Sprout will sell listening as an add-on on top of $250–$500 per user. Brandwatch and Talkwalker want a multi-thousand-dollar contract. Qualtrics is a five- or six-figure research stack. GummySearch and the F5 Reddit toys cost tens of dollars a month and are built for indie hackers hunting startup ideas, not for an operator running three to five retainers.
+
+The job is ugly and manual: saved posts, a Notion dump, a Slack screenshot, a "I think sentiment flipped on the new pricing" slide. r/marketing (609k) and the Fractional CMO Facebook groups are full of people who sell "community-led" and then listen with a browser window. Discord is worse — no native export that a CMO can bill against.
+
+When the client asks "what is Reddit saying about us," the honest answer is "I scrolled." That does not survive a $12k/month retainer review.
+
+## The Solution
+
+A per-brand listener at $150/month that a fractional CMO can stack. Three clients is $450. Five is $750. The product (call it InsightAI if you want a name) watches named subreddits, Discord channels the client already belongs to, and a keyword list. It ships a Monday brief: volume, sentiment shift, exact threads to reply to, and a "do not touch" pile.
+
+**How it works:**
+
+1. **Brand kit** — CMO adds a client: domains, product names, competitor names, 8–15 subreddits, Discord server IDs they admin or have a bot invite for.
+2. **Listen + cluster** — Daily pull, embed, cluster. Noise (memes, off-topic) drops. Buying-intent and complaint clusters stay.
+3. **Monday brief** — One PDF/Slack message per brand: top 10 threads, sentiment delta vs last week, suggested replies in the client's voice. The CMO forwards it. They do not rebuild the slide.
+
+## Market Research
+
+Online community-engagement software is a $0.35 billion market in 2026 headed to $0.76 billion by 2035 (8.7% CAGR) per Business Research Insights. That is the boring TAM. The real TAM is "fractional operators who already charge for insights and currently produce them by hand."
+
+AI platforms: $24 billion in 2025 to $165.6 billion in 2035 (21.3%, Future Market Insights). Macro AI: $294.16 billion in 2025, $375.93 billion in 2026, $2.48 trillion by 2034 (26.6%, Fortune Business Insights). Qualtrics' 2026 research-trends cut: 66% of researchers use AI embedded in research software, while generic chatbot use slipped from 75% to 67%. Buyers want the insight inside the tool, not another ChatGPT tab.
+
+DataReportal 2026: Instagram reaches 55.1% of online adults, WhatsApp 54%, TikTok 36%. Reddit and Discord are smaller — and that is why enterprise suites underweight them. Fractional CMOs overweight them because that is where the complaint lands first.
+
+r/artificial at 1.2 million is not the buyer. r/marketing at 609k and the Facebook fractional groups are.
+
+The Discord half is the lock-in. Reddit tools are a commodity. A CMO who invited your bot into three client servers will not rip you out for GummySearch. Keep the bot boring: read, cluster, never post. The first time you auto-reply you become a moderation incident and the retainer dies.
+
+## Competitive Landscape
+
+- **Brandwatch** — enterprise, multi-thousand dollars per month. Fine for Unilever. A $8k/month CMO will not expense it for a $4k/month client.
+- **Sprout Social** — $250–$500+ per user, plus a listening add-on. You pay for publishing you do not need.
+- **Talkwalker** — enterprise contract, same motion as Brandwatch.
+- **GummySearch / F5-class Reddit tools** — tens of dollars a month. Built for founders hunting ideas. No Discord, no client-ready brief, no multi-brand seat for a fractional.
+- **Qualtrics** — 5–6 figures a year. Research org software. Wrong buyer.
+
+**Your Opportunity**
+
+Price for the portfolio, not the enterprise. Free AI Sentiment Guide (PDF, email gate) → $50 Starter (one brand, Reddit only) → $150 Standard (Reddit + Discord + Monday brief) → $100–$300 add-ons (competitor pack, Slack delivery, extra brands at a discount) → $10k+/year if a small agency wants SSO later. The wedge is Discord + a brief a CMO can paste. Sprout will not staff that for $150.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| AI Sentiment Guide | Free | PDF + email |
+| Starter | $50/month | 1 brand, Reddit only |
+| Standard | $150/brand/month | Reddit + Discord + Monday brief |
+| Add-ons | $100–$300/month | Extra brands, Slack, competitor set |
+| Agency | $10k+/year | SSO, shared inbox, 15+ brands |
+
+Unit economics:
+
+- CMO with 4 Standard brands = $600/month — cheaper than one Sprout seat with listening
+- Pull + embed cost per brand per day is under $0.20 if you cap Discord to opted-in servers
+- Support is async; the brief is the product
+
+Land fractional CMOs on Twitter/LinkedIn and in those Facebook groups. Do not run Google ads against "social listening software." That query belongs to Brandwatch.
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe per-brand subscription
+- **DB:** Convex — `teams`, `brands`, `sources`, `clusters`, `briefs`
+- **Reddit:** official API + keyword search; respect rate limits
+- **Discord:** bot with `GUILD_MESSAGES` on servers the CMO can invite
+- **LLM:** OpenAI embeddings + Claude for the brief
+- **Delivery:** Slack incoming webhook + Resend PDF
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 + Convex app for fractional CMOs who listen on Reddit and Discord.
+
+Set up:
+- Clerk and Stripe billed per brand ($50 / $150)
+- Tables: teams, brands, sources, clusters, briefs
+- Reddit API connector and a Discord bot invite flow
+- A Monday cron that writes one brief per brand
+
+TypeScript, env validation, no Brandwatch-style vanity dashboards in v1.
+```
+
+**2. Core Feature**
+
+```text
+Build the Monday brief.
+
+Requirements:
+- Cluster last 7 days of posts/messages per brand
+- Score sentiment delta vs prior week
+- Rank 10 threads the CMO should reply to and 10 they should ignore
+- Draft replies in a stored brand voice
+- Deliver via Slack and email PDF
+
+User flow: add brand → add sources → wait for Monday → forward brief to client.
+```
+
+**3. Multi-brand Portfolio**
+
+```text
+Add a CMO home that lists 3–5 brands, unpaid Starter vs Standard badges, and a single "generate now" button for a mid-week crisis. Cap Discord ingest to invited servers only. Log token spend per brand so $150 stays profitable.
+```
+
+## Sources
+
+- [Business Research Insights — community engagement software](https://www.businessresearchinsights.com/market-reports/online-community-engagement-software-market-110089)
+- [Future Market Insights — AI platforms](https://www.futuremarketinsights.com/reports/ai-platform-market)
+- [Fortune Business Insights — AI market](https://www.fortunebusinessinsights.com/artificial-intelligence-market-102559)
+- [Qualtrics market research trends](https://www.qualtrics.com/blog/market-research-trends/)
+- [DataReportal Digital 2026](https://datareportal.com/reports/digital-2026-global-overview-report)
+- [Sprout Social pricing](https://sproutsocial.com/pricing/)
+- [GummySearch](https://gummysearch.com/)
+- [Brandwatch](https://www.brandwatch.com/)

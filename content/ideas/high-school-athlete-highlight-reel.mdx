@@ -1,0 +1,123 @@
+---
+slug: "high-school-athlete-highlight-reel"
+title: "Highlight Reel Generator for High School Athletes"
+---
+
+## The Problem
+
+Recruiting still runs on a two-minute tape. Parents pay $500–$2,000 for a local editor to hand-cut a season. Ideabrowser's community pull: about 500,000 families in that spend band, and 74% of parents in the Reddit sample said they would use a cheaper automatic reel. r/YouthSports (50k) is full of "does anyone know an editor who won't take six weeks." r/VideoEditing (248k) is the supply side — freelancers who do not want another $150 soccer job.
+
+Hudl already sits on 14 million-plus users. They can ship native AI tomorrow. That is the existential risk, not Magisto. Until they do, the tape is still a dad with a phone on a stick and a weekend in Premiere.
+
+Soccer first. The field is a rectangle, the ball is a high-contrast object, and club culture already shares Hudl links. Football and basketball come after the first 200 paying families.
+
+## The Solution
+
+Upload the game. Get a 90-second reel with the touches that look like recruiting film — not a random "best moments" montage with stock music. $29 a reel or $149 a season in the one-liner; the ladder that actually matches weekend-MVP math is a free first game, then $15/month unlimited or $5–$15 per game.
+
+**How it works:**
+
+1. **Ingest** — Parent or coach drops a 90-minute file or a YouTube/Hudl URL. Jersey number + team color are required. No "we'll figure out who you are."
+2. **Detect + rank** — Player tracking + ball events (shots, take-ons, saves). Rank clips by coach-shaped rules: successful action + camera stability + duration, not just "fast motion."
+3. **Reel + share** — 60–120 second cut, captions, a clean end card with grad year and position. One-tap share to Hudl, X, and the club group chat. Season pass concatenates across games.
+
+## Market Research
+
+Video-editor software: $1,009.66 million in 2026 to $1,449.55 million by 2035 (4.1% CAGR). That is the mature NLE market. AI video editing: $0.9 billion in 2023 to $4.4 billion by 2033 (17.2%). AI video generators: about $1.5 billion by 2029 at ~20% CAGR. Youth-sports highlights are a sliver — and that is why the big NLEs ignore the jersey-number form.
+
+Vitrina's 2026 AI sports-video note is the category timing: broadcasters already automate multi-cam highlights. The leftover is the $0 consumer who has one camera and a kid who needs a tape by Tuesday.
+
+r/sports at 18.9 million is noise. Sell in club Slack, TeamSnap, and the Hudl comments. 74% "interested" is a Reddit number — treat it as a waitlist conversion target, not a TAM.
+
+Hudl integration is both distribution and the kill shot. Build export-to-Hudl on day one so you look like a plugin. If they clone you, you already have the email list.
+
+Legal: youth likeness. Parent is the account. Coach can upload but cannot publish without the parent toggle. Do not scrape Hudl. Do not train on the files. If a club asks for a team seat, that is the $149 season SKU times 18 — still cheaper than one editor.
+
+## Competitive Landscape
+
+- **Magisto (Vimeo)** — from $4.99/month. Generic auto-edit. No jersey lock.
+- **Splice** — about $4.99/month. Mobile cuts for creators, not recruiting film.
+- **Filmora** — free + subscription / perpetual. Template highlight maker. Parent still picks the clips.
+- **InVideo** — free limited, paid for watermark-off. Same template problem.
+- **Hudl** — team subscriptions. The platform of record. No consumer "make my kid's reel tonight" SKU that is good.
+- **Premiere Rush / Canva Video** — manual substitutes. This is what the $500 editor is replacing.
+
+**Your Opportunity**
+
+Free "how coaches read a tape" guide → first game free → $15/month unlimited or $5–$15/game → $12/month annual → $500+/season custom (human cleanup, music rights, multiple positions). Magisto will not add jersey ID. Hudl might — so your brand has to be "the recruiting reel," not "AI video."
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| Coach tape guide | Free | Email + waitlist |
+| First game | $0 | One reel, watermark OK |
+| Per game | $5–$15 | No watermark |
+| Season | $15/month or $149 | Unlimited games, season compilation |
+| Custom | $500+/season | Human pass + multi-angle |
+
+Unit economics:
+
+- GPU / API per 90-minute 1080p ingest: budget $1–$3; price the per-game SKU at $9 to stay 3x
+- Season $15/month only works if most families upload 2–4 games, not 40
+- Club coach as the multiplier: one coach, 18 families
+
+Do not build a marketplace for editors. That is the $500 problem you are deleting.
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 + a Python worker (Modal or Fly) for the model
+- **Auth / billing:** Clerk + Stripe ($15 sub + per-game checkout)
+- **Storage:** Mux or Cloudflare Stream for ingest + playback
+- **DB:** Supabase — `athletes`, `games`, `clips`, `reels`
+- **Models:** off-the-shelf player tracking (e.g. RF-DETR / ByteTrack) + a ball detector; Claude only for the end-card copy
+- **Share:** Hudl link paste + native MP4 download
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 + Stripe app for high-school highlight reels.
+
+Set up:
+- Clerk family accounts (parent owns the athlete profile)
+- Supabase: athletes (jersey, color, grad year, position), games, clips, reels
+- Mux ingest from file upload
+- $0 first game, then $9/game or $15/month
+
+No social network. One athlete, many games.
+```
+
+**2. Core Feature**
+
+```text
+Build the detect + rank pipeline.
+
+Requirements:
+- Parent enters jersey number and team color before upload
+- Worker tracks that player and ball events (shot, take-on, save)
+- Rank clips by successful action + stability + duration
+- Assemble a 90-second reel with captions and a grad-year end card
+
+User flow: create athlete → upload game → pick 8 of 20 suggested clips → export.
+```
+
+**3. Season Compilation**
+
+```text
+Add a season pass that concatenates the top 20 clips across games into a 2-minute recruiting tape, with a chapter per game. Export MP4 and a Hudl-ready link. Charge $149 if they are not already on $15/month.
+```
+
+## Sources
+
+- [Vitrina — AI sports video 2026](https://vitrina.ai/)
+- [Gudsho — video editing stats](https://www.gudsho.com/)
+- [Industry Research — video editor market](https://www.industryresearch.biz/)
+- [Filmora highlight maker](https://filmora.wondershare.com/)
+- [Magisto](https://www.magisto.com/)
+- [Hudl](https://www.hudl.com/)
+- [Splice](https://splice.com/)
+- [r/YouthSports](https://www.reddit.com/r/YouthSports/)

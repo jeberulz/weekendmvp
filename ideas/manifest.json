@@ -8149,6 +8149,459 @@
         "builder_confidence": 7
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "ai-search-publicist-freelancers",
+      "title": "AI Search Publicist for High-Ticket Freelancers",
+      "publishedAt": "2026-09-05",
+      "category": "saas",
+      "description": "Put high-ticket freelancers in ChatGPT answers with a 21-day placement sprint — not another enterprise GEO dashboard.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "marketers"
+      ],
+      "source": "ideabrowser:9280",
+      "og": {
+        "subject": "A closed laptop beside a stamped press kit on a dark oak desk, lime edge light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 13,
+        "wordCount": 1454,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 7,
+        "pain": 5,
+        "timing": 8,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "viral-ad-licensing-dtc",
+      "title": "Viral Ad Licensing for DTC Brands",
+      "publishedAt": "2026-09-05",
+      "category": "ecommerce",
+      "description": "License posts that already worked for DTC paid social in 72 hours. Skip creator sourcing. Service-first, not another influencer CRM.",
+      "buildTime": "12",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:9317",
+      "og": {
+        "subject": "A 35mm film canister and a phone on a dark counter, mint glow, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 9,
+        "wordCount": 1303,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 7,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 6
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "wedding-flower-pinterest-budget",
+      "title": "Wedding Flower Calculator from Pinterest Boards",
+      "publishedAt": "2026-09-05",
+      "category": "marketplace",
+      "description": "Paste a Pinterest wedding board, get a real metro flower budget, then match to a florist who will honor the number.",
+      "buildTime": "20",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:4877",
+      "og": {
+        "subject": "A single white ranunculus on a dark marble slab, lavender rim light, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 9,
+        "wordCount": 1200,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 5,
+        "pain": 8,
+        "timing": 7,
+        "builder_confidence": 4
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "reddit-discord-listening-cmos",
+      "title": "Reddit and Discord Listening Tool for Fractional Marketing Teams",
+      "publishedAt": "2026-09-05",
+      "category": "saas",
+      "description": "Reddit and Discord listening for fractional CMOs — a $150/brand Monday brief, not a Brandwatch contract.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "freelancers"
+      ],
+      "source": "ideabrowser:4896",
+      "og": {
+        "subject": "A closed laptop and a glowing chat bubble pin on a dark desk, emerald edge light, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 1163,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "high-school-athlete-highlight-reel",
+      "title": "Highlight Reel Generator for High School Athletes",
+      "publishedAt": "2026-09-05",
+      "category": "creator-tools",
+      "description": "Turn a high-school game film into a 90-second recruiting reel. Jersey-locked, parent-owned, cheaper than a $2k editor.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:5060",
+      "og": {
+        "subject": "A scuffed soccer ball on a dark gym floor, aubergine rim light, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 1089,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "auto-repair-estimate-translator",
+      "title": "Repair Estimate Translator for Auto Shops",
+      "publishedAt": "2026-09-05",
+      "category": "saas",
+      "description": "Translate auto-repair estimates into plain English with annotated bay photos so customers approve the RO.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:5057",
+      "og": {
+        "subject": "A clipboard and a socket wrench on a dark steel bench, lime edge light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 1110,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "retro-ad-generator",
+      "title": "AI-Powered Retro Ad Generator for Modern Brands",
+      "publishedAt": "2026-09-05",
+      "category": "creator-tools",
+      "description": "Lock a decade and a SKU, then generate retro print and TV-still ads that do not invent your logo.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "creators"
+      ],
+      "source": "ideabrowser:40",
+      "og": {
+        "subject": "A vintage Polaroid camera on a dark walnut desk, mint backlight, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 6,
+        "wordCount": 1095,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "customized-lead-magnets",
+      "title": "Customized Lead Magnets",
+      "publishedAt": "2026-09-05",
+      "category": "saas",
+      "description": "Build lead magnets that change by visitor segment — hosted variants, not another static Canva PDF.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "creators"
+      ],
+      "source": "ideabrowser:43",
+      "og": {
+        "subject": "A stack of blank notecards on a dark desk, lavender sidelight, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 1087,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "lightroom-preset-generator",
+      "title": "AI-Powered Lightroom Preset Generator",
+      "publishedAt": "2026-09-05",
+      "category": "creator-tools",
+      "description": "Generate a Lightroom XMP from this shoot and a reference look. Sliders you can undo, not a baked filter pack.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "MultimediaApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "designers"
+      ],
+      "source": "ideabrowser:106",
+      "og": {
+        "subject": "A film negative strip on a dark light table, emerald glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 1120,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "video-sales-funnel-builder",
+      "title": "Video Sales Funnels That Convert 3x Better Than Landing Pages",
+      "publishedAt": "2026-09-05",
+      "category": "creator-tools",
+      "description": "A $499 video sales funnel sprint: script, cut, and checkout page. The missing band between DIY and $6k agencies.",
+      "buildTime": "10",
+      "revenueGoal": "10k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "marketers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:1054",
+      "og": {
+        "subject": "A clapperboard on a dark studio floor, aubergine rim light, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 1128,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-05T19:30:00Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "researchLevel": "deep"
     }
   ],
   "categories": [
