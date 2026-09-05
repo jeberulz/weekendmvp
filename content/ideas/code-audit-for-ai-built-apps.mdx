@@ -1,0 +1,135 @@
+---
+slug: "code-audit-for-ai-built-apps"
+title: "Code Audit for Apps Built Without a Developer"
+---
+
+## The Problem
+
+A founder ships a Lovable app on a Saturday, takes the first Stripe payment on Sunday, and by Tuesday a Reddit thread is circulating screenshots of someone else's vibe-coded database sitting wide open. The product works. Users are in it. The owner cannot read a single file holding their revenue. When they paste an error back into the agent and ask it to "just fix it," they feel productive. A University of Virginia paper found the opposite: agents pass functional tests 61% of the time, but only 10.5% of those passing builds are actually secure, and five rounds of that loop raise critical vulnerabilities 37%. The owner is paying tokens to make the app worse.
+
+The pain is not hypothetical. r/vibecoding has 334,500-plus members. r/lovable has 53,700-plus. A five-month-old r/lovable post walked through 16 vulnerabilities in a showcased app and 18,697 exposed user records with no auth required. Another thread documented 170 Lovable apps leaking home addresses, API keys, and payment records after one bad Supabase pattern. The trap in one sentence: the app can look finished on the surface while basic security assumptions were never checked. A security engineer on X named the buyer — people shipping real products with real customers, with no idea what is sitting underneath, because every tool in the category assumes you already know what a security report means.
+
+The current options punish that buyer. A fractional CTO quotes $150–$300 an hour or $1,000–$5,000, then hands back a PDF written for an engineer. SonarQube and Snyk speak in quality gates and contributing-dev seats. Lovable's own v2.0 scan checks that Row Level Security exists, not whether the policy is actually restrictive — so the platform's green check is the thing that keeps the owner from looking. Agencies already sell "plain-language reports for non-technical founders." What nobody sells is a number the owner can act on today: here is what is broken, here is what it should cost to fix. Until that exists, the founder either overpays a contractor they cannot evaluate, or they keep shipping.
+
+## The Solution
+
+A GitHub-connected scorecard for the person who built the app but cannot read it. The owner links a Cursor, Claude Code, Lovable, Bolt, or Replit repo. Static analysis plus an LLM rewrite produce a briefing in board-meeting English: what the app actually does, which services are running, which ones are draining money, what breaks at the next scale threshold, and a per-item fix quote. Every claim points at a file. The report is something they can forward to a contractor or an investor without translating it first.
+
+The wedge is not another one-off PDF. Eight SaaS scanners already sell that at $5–$29 a month, and five agencies already sell the human version from $199 to $2,500. The missing layer is a repeat-buyer scorecard: a 0–100 score that updates on every ship, a public `security.md` badge, and a batched fix pack priced against the work instead of an hourly fog. Charge for the fix, not the finding. Continuity is $29 per app per month, sold per repo, not per engineer.
+
+**How it works:**
+
+1. **Connect the repo** — Owner signs in with GitHub, picks the Lovable / Cursor / Claude Code repo, and grants read-only access. A webhook indexes the tree; nothing is rewritten on disk.
+2. **Score the ship** — Static rules plus Claude read auth, RLS, secrets, dependency pins, and cost-heavy services. Output is a 0–100 score, a plain-English narrative, and a per-finding fix quote in dollars and tokens.
+3. **Hand it off** — Owner downloads a founder-readable report, publishes an optional public `security.md` badge, or pays for a 48-hour human pass on the top 20 items. Each finding cites the file so a contractor can start without a kickoff call.
+4. **Watch the next PR** — On the $29/mo plan, every push re-runs the scorecard. New issues get a fresh quote. The owner sees drift in the same language they used at lunch, not a new vocabulary.
+
+## Market Research
+
+Three curves crossed in the first half of 2026 and turned this from a scolding into a product.
+
+- **AI is now the default author.** Sonar's January 2026 survey put AI at 42% of committed code. Google said 75% of new code in April 2026 was AI-generated. Microsoft reported 20–30%. The review surface is no longer "help a junior"; it is "explain a codebase nobody on the payroll can read."
+- **The non-technical builder base is huge.** Lovable hit 8 million users by February 2026, $500M ARR by June, 1 million new projects a week, and about 600 million monthly visits to apps built on it. The owner of those apps is the buyer. They are not searching "static code analysis tools."
+- **The leaks got counted.** RedAccess scanned roughly 380,000 apps on Lovable, Base44, Replit, and Netlify in May 2026 and found about 5,000 leaking sensitive data. Georgia Tech's Vibe Security Radar tracked CVEs attributed to AI-generated code from 6 in January 2026 to 15 in February to 35 in March. IBM's 2025 Cost of a Data Breach report says 20% of organizations have already had a breach tied to AI-generated or shadow-AI code. A Q2 2026 batch scan of 4,785 vibe-coded production apps reported 669 critical findings, including wide-open databases on 7% of Lovable/Bolt apps.
+- **Search is the wrong channel.** "Vibe coding" runs about 110,000 US searches a month, but "AI generated code audit" and "Lovable app security" sit at zero. "AI code review" does 1,300/month at $63.85 CPC — an engineer buying Snyk, not a founder buying a second opinion. Demand shows up as a 40–150 comment thread after a hack.
+- **The TAM is real, the owner slice is unnamed.** Ideabrowser sizes engineering-facing AI code review at about $6.7B in 2024 growing to $25.7B by 2030. That money already goes to SonarQube and CodeRabbit. This product is translation, not another quality gate.
+
+Timing is perishable. Google Trends for "vibe coding" peaked at 100 in March 2026 and sat in the 47–65 range by August. Lovable shipped a $100 native pentest in March 2026. If the next platform scan actually checks restrictive policies, the independent doctor has to be more than a scanner.
+
+## Competitive Landscape
+
+The market already split into three priced tiers. Do not pretend the plain-language audit is empty water.
+
+- **VibeCheck, Aikido, ChakraView, amihackable.dev** — SaaS scanners aimed at the same owner. A March 2026 roundup counted eight named tools, up from three the week before. Ladder: $5 quick scan, $14 deep report, $29/mo monitoring. They find issues. They do not quote a fair fix.
+- **Valletta Software** — Fixed-fee "Vibe Coding Audit" from $199. Senior engineer, buyer-facing summary for fundraising diligence. Cursor / Lovable / Bolt / v0 / Replit founders. Gap: one-shot, no priced fix pack.
+- **Sherlock Forensics** — Audits from $1,500 CAD. Injection, broken auth, exposed APIs, hardcoded secrets. Free scorecard as top-of-funnel. Gap: boutique engagement, not continuity.
+- **Beesoul / Varyence** — 12-page audits from $2,500. Beesoul is the listicle reference (8–14 issues per app). Gap: a weekend builder will not start here.
+- **Vibecode-audit.com / Damian Galarza** — 24–48 hour agency turnaround, and a solo operator from $500 plus retainer. Gap: human calendar, not a productized score.
+- **Snyk** — Team $25 per contributing developer per month. Wrong buyer: a DevSecOps seat, not an owner briefing.
+- **SonarQube** — Cloud from $34/month for 100k LOC; Developer Edition about $2,500/year; Enterprise about $16,000/year. The incumbent quality meter. Gap: engineer vocabulary, no "what do I tell the contractor."
+- **Lovable native scan + $100 pentest** — The default green check. Gap: the built-in scan confirms RLS exists without checking whether the policy is restrictive.
+- **Upwork / Fiverr gigs** — $100–$500 per gig, fix work billed separately. Gap: quality variance, no shared score format.
+
+**Your Opportunity**
+
+Every incumbent sells a finding. None of them sell a Kelley Blue Book number for the next ship. Win on three things they will not chase without eating their own model: (1) per-app, not per-dev pricing at $29, (2) a fix quote in tokens the owner can approve before anything runs, and (3) a public `security.md` that turns every scanned app into a referral. SonarQube will not write for a Lovable founder. Beesoul will not drop to $29. Lovable will not grade itself honestly. That is the six-month window.
+
+## Business Model
+
+Lead with free. Charge for the quote the owner can pay. Continuity is the $5k-month math.
+
+- **Free Vibe Risk Score** ($0) — Connect the repo, get a 0–100 scorecard and a public `security.md`. Every issue listed with a fix-cost estimate in dollars and tokens. This is the Reddit-comment wedge.
+- **Human-Reviewed Audit** ($299 flat) — A senior engineer reads the top 20 flagged items in 48 hours and writes the report the owner can hand to a developer or an investor. Priced just above Valletta's $199 entry.
+- **Token Saver Fix Pack** ($499–$1,500) — Batched agent pass that groups related bugs into one run. One quote per app, undercuts Sherlock ($1,500 CAD) and Beesoul ($2,500). Owner approves before anything writes to the repo.
+- **Per-Ship Scorecard** ($29/mo per app) — Re-runs on every PR, updates the badge, flags new bugs with a fresh quote. Sits at the top of the $5–$29 scanner tier, sold per app not per developer.
+
+**Unit Economics**
+
+- **$40–$80** — Target CAC (Reddit comments and public scorecards, not $63 CPC ads)
+- **$45–$90** — Blended ARPU across $29 subs and $299–$1,500 packs
+- **~75%** — Gross margin after Claude tokens, GitHub API, and the optional human pass
+- **under $0.40** — LLM cost per scan on a typical weekend-app repo
+- **~170** — $29 subs to $5k MRR, or ~17 human audits, or a mix of 40 subs plus 8 fix packs
+
+Verified napkin: 300 free scans in 90 days at 8% convert and a $450 blend is about $10,800. Year one in the two subreddits lands around $80k–$120k if comment presence holds.
+
+## Recommended Tech Stack
+
+Optimize for connect-repo → score → quote in minutes. The hard parts are trust (cite the file) and quote quality (do not invent a $200 fix for a rewrite).
+
+- **Next.js + Vercel** — App Router for the dashboard and public score page. GitHub webhook on Edge. Vercel Cron for paid re-scans.
+- **GitHub App (Octokit)** — Read-only contents and pull-request webhooks. No write access until the owner buys a Fix Pack and clicks approve.
+- **Supabase (Auth + Postgres)** — installs, repos, scans, findings, quotes, badges. RLS on the owner. Store hashed diffs, not the whole tree.
+- **Claude + a rules engine** — Semgrep-style rules for secrets, RLS-shaped SQL, missing auth; Claude for the owner narrative and the fix quote. Ground every sentence in a finding id.
+- **Stripe Billing** — $0 / $299 / quoted Fix Pack / $29/mo per app. Meter free-tier scans so a second repo nudges upgrade.
+- **Inngest (optional)** — Durable scan jobs so a 400-file Lovable dump does not time out the webhook.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) project called Secondread. Provision Supabase with tables: users, github_installs (installation_id, account_login, user_id), repos (id, install_id, full_name, default_branch), scans (id, repo_id, score int, summary_md, status), findings (id, scan_id, file_path, start_line, severity, owner_summary, engineer_detail, fix_usd_cents, fix_tokens, evidence_sha), quotes (id, scan_id, pack text, amount_cents, status), badges (repo_id, public_slug, security_md). RLS: a user only reads rows joined through github_installs.user_id. Wire Stripe products: Free scan, Human Audit $299, Fix Pack quoted, Scorecard $29/mo per app. Env: GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY, GITHUB_WEBHOOK_SECRET, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. Use Octokit for the GitHub App and the Vercel AI SDK for Claude.
+```
+
+**2. Scan Pipeline + Owner Report**
+
+```text
+Build POST /api/github/webhook. Validate the GitHub signature. On installation.created and push, enqueue a scan. Scan steps: (1) fetch tree via Octokit, skip lockfiles and node_modules, (2) run a Semgrep-style pass for hardcoded secrets, permissive RLS, missing auth on API routes, (3) send a packed architecture digest plus the top 40 findings to Claude with a strict JSON schema: findings[].owner_summary must be one sentence a non-technical founder can read, findings[].fix_usd_cents must be a range the owner can compare to a contractor quote, every finding must include file_path. Write a markdown report with sections: What this app does, What is costing you, What breaks at 10x users, What to tell a developer this week. Never claim a CVE that is not in the findings table. Reply to the webhook in under two seconds; do the model work on Inngest.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page site for Secondread. Hero: "A second opinion on the app AI built you." Sub: "Connect the GitHub repo. Get a score, a plain-English report, and a fair price to fix what is broken. Written for the founder, not the engineer." Sections: a sample report (fake phone-or-laptop UI, no tiny unreadable text), the problem (working app, leaking data, owner cannot read the code), how it works (4 steps matching the product), pricing (Free / $299 / $499–$1,500 / $29/mo) anchored against Valletta $199, Sherlock $1,500 CAD, Beesoul $2,500, and Lovable's $100 pentest, FAQ covering GitHub read-only access, why the platform green check is not enough, and what happens to the code after the scan. Geist font, near-black on off-white, mint accent. Primary CTA: "Connect GitHub — first score is free."
+```
+
+## Sources
+
+Market sizing, competitor prices, and demand signals from Ideabrowser verified research on idea #9035 (completed 2026-08-11) plus competitive_analysis, go_to_market, keyword_list, community_analysis, and a discover-mode trend pull. Triangulate before citing in investor materials.
+
+- [TechCrunch — Lovable $500M ARR, 1 million new projects a week](https://techcrunch.com/2026/06/09/lovable-says-it-has-hit-500m-in-annualized-revenue-with-1-million-new-projects-a-week/)
+- [Sacra — Lovable native $100 pentest](https://sacra.com/c/lovable/)
+- [Uvik / Sonar 2026 survey — 42% of committed code is AI-written; Google 75%](https://uvik.net/blog/ai-code-generation-statistics/)
+- [Vibe Graveyard / RedAccess — 380,000 vibe-coded apps scanned, 5,000 leaking](https://vibegraveyard.ai/story/redaccess-vibe-coded-apps-380k-data-exposure-study/)
+- [Mothasa — UVA paper: 61% pass functional tests, 10.5% of those secure, +37% vulns after five fix rounds](https://mothasa.substack.com/p/vibe-coding-has-a-security-problem/)
+- [Georgia Tech Vibe Security Radar via Modall — CVEs 6 → 15 → 35 in Q1 2026](https://modall.ca/blog/vibe-coding-security-risks)
+- [securityscanner.dev Q2 2026 — 4,785 apps, 669 critical findings, 7% wide-open DBs](https://securityscanner.dev/reports/2026-q2)
+- [dev.to — eight vibe-coding scanners, $5 / $14 / $29 ladder](https://dev.to/solobillions/i-tested-every-vibe-coding-security-scanner-2026-heres-what-actually-works-p9k)
+- [Valletta Software — Vibe Coding Audit from $199](https://vallettasoftware.com/blog/post/vibe-coding-audit)
+- [Sherlock Forensics — vibe coding security audits from $1,500 CAD](https://www.sherlockforensics.com/pages/vibe-coding-security.html)
+- [vibecoding.app — Beesoul / Varyence from $2,500, agency directory](https://vibecoding.app/blog/best-vibe-code-audit-agencies)
+- [Vibecode-audit.com — 24–48h vibe code audits](https://vibecode-audit.com/)
+- [Damian Galarza — solo vibe code audit from $500](https://www.damiangalarza.com/vibe-code-audit/)
+- [Snyk pricing — $25 per contributing developer / month](https://snyk.io/plans/)
+- [SonarQube pricing — Cloud $34/mo, Developer ~$2,500/year](https://www.sonarsource.com/plans-and-pricing/)
+- [GoodFirms — professional code audits $1,000–$5,000 small codebases](https://www.goodfirms.co/blog/how-much-does-vibe-coding-cost)
+- [r/vibecoding — 334,500+ members](https://www.reddit.com/r/vibecoding/)
+- [r/lovable — 16 vulns, 18,697 records exposed](https://www.reddit.com/r/lovable/comments/1rffj3y/i_vibe_hacked_a_lovableshowcased_app_16/)
+- [r/vibecoding — 170 Lovable apps hacked on one Supabase pattern](https://www.reddit.com/r/vibecoding/comments/1q2sw99/170_lovable_apps_got_hacked_because_of_one/)
+- [r/lovable — "get an actual developer to look over the app"](https://www.reddit.com/r/lovable/comments/1tqcw0c/my_boss_hacked_our_clients_lovable_built_app_in/)
+- [Simon Willison via Yahoo/Semafor — insecure code as the core vibe-coding risk](https://tech.yahoo.com/cybersecurity/articles/hottest-vibe-coding-startup-may-175840430.html)
+
+Page sourced via Ideabrowser MCP (idea_id 9035): get_verified_research, competitive_analysis, go_to_market, keyword_list, community_analysis, research_trend.

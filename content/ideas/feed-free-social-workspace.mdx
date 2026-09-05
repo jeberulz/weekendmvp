@@ -1,0 +1,129 @@
+---
+slug: "feed-free-social-workspace"
+title: "Task-Based Social Media Workspace for Creators"
+---
+
+## The Problem
+
+A freelance social manager opens Instagram to reply to three product comments. Twenty minutes later she is six posts deep in a creator she does not even work for, the comments are still unread, and the client Slack ping that started the session is buried. She bills the hour. The work that needed doing was three replies. The feed stole the rest.
+
+That leak is the job. Hootsuite, Buffer, Sprout Social, and Metricool were built to keep you *in* social media: column streams, live inboxes that never empty, dashboards that reward more posting, more monitoring, more time. The product thesis of the category is engagement volume. The people who get paid to be online need the opposite: a finite list of work, a clock, and a way to leave. A scheduled post that turns into an algorithm rabbit hole is not a feature gap. It is the architecture of every incumbent dashboard.
+
+The pain shows up in the same rooms weekend builders already lurk. r/SocialMediaMarketing (about 110K members) is full of tool-recommendation threads from managers juggling five to twenty client accounts who still bounce between native apps, a scheduler, a spreadsheet, and email. r/productivity (roughly 1.9–2.4M) and r/TimeManagement (about 50.7K) trade systems for stopping context-switch bleed. r/digitalminimalism (261K) and Facebook’s “Social Media Management for Beginners” (31K+) make the same complaint from two angles: the tools that are supposed to professionalize the work still expose an infinite feed. YouTube comparison videos of Hootsuite versus Metricool rack up views because buyers are shopping for *less* friction, then land in another streams UI.
+
+The downstream cost is billable. An agency specialist who loses 20–40 minutes of scroll per “just reply” session, across eight clients, is leaking a day a week that cannot be invoiced cleanly. Time-per-client is invisible, so retainers eat unlogged hours. Freedom and Opal can block Instagram; they cannot clear a comment queue. Native Creator Studio will not stop the For You page. The missing product treats social work as a helpdesk ticket, not a lifestyle.
+
+## The Solution
+
+A web app that connects Instagram, X, LinkedIn, and Facebook Page accounts and refuses to render a feed. Mentions, comments awaiting reply, unread DMs, and posts that are due to publish become cards in a single queue: To do, In progress, Done. No recommendations. No “while you’re here.” When the queue is empty, the session is over.
+
+Each client or brand gets an **attention budget** (minutes per day) and an **access window** (the hours the manager is allowed to touch that account). A timer starts when a card is opened and writes minutes against the brand, so the Friday invoice is a report, not a reconstruction. Claude drafts a reply in the brand voice; the human edits or sends. Spam, duplicates, and “liked this comment” noise get clustered off the main list so the queue stays finite even on a loud account. A weekly digest shows feed-exposure minutes avoided versus last week—the metric incumbents will not ship because it contradicts their engagement thesis.
+
+Ship the MVP as a queue plus a clock. Scheduling can wait until card one is habit. The first ten agency owners will tell you which task types they actually clear; instrument queue-completion rate per session and kill any surface that drops it.
+
+**How it works:**
+
+1. **Connect accounts** — OAuth into Meta (Instagram + Facebook Page), X, and LinkedIn. The app stores tokens and pulls only actionable objects: unreplied comments, unread DMs, mentions, and due scheduled posts. Nothing that looks like a timeline is fetched for display.
+2. **Work the queue** — Cards land in To do. Open one, the session timer starts against that brand. Optional Claude draft; one-click send via the platform API. Done moves the card. Empty queue ends the session and locks the brand until the next access window.
+3. **Budget attention** — Per-client daily minute caps and working hours. Hit the cap and the queue greys out with a “come back at 9:00” state. Managers see time-per-client on a simple report they can paste into a retainer review.
+4. **Prove the week** — Sunday email: cards cleared, minutes per brand, estimated feed minutes avoided, and a CSV for whoever invoices. Queue-completion rate is the only north-star chart on the dashboard.
+
+## Market Research
+
+Social media management is a mature, still-fast category sitting on top of a cultural revolt against the infinite scroll. That collision is the wedge.
+
+- **The social media management software market is projected around $39.1B by 2026 at a 19.7% CAGR**, with longer-range forecasts stretching past $160B in the early 2030s (Fortune Business Insights; triangulated in Ideabrowser competitive analysis at $24–32B for 2024–2026 and roughly 20–23% CAGR). Incumbents are fighting over posting volume. The productivity layer on top of the same APIs is thinly occupied.
+- **“Social media scheduler” alone does about 165,000 monthly searches** with low competition and a $22.73 CPC. Adjacent commercial queries: “social media management software” (3,600/mo, $20.06 CPC), “hootsuite alternative” (1,900/mo, $17.50 CPC), “digital detox app” (2,400/mo). Combined keyword set in the Ideabrowser quick-check: 172,970 monthly searches. People are already typing the switching query. They are landing on Buffer roundups, not a feed-free product.
+- **Hootsuite’s own Social Trends research** documents the work-life and overstimulation backlash among the Millennial and Gen Z cohorts who staff social teams. The category leader is publishing the cultural case for a product it is structurally unwilling to build.
+- **Community demand is not hypothetical.** r/productivity (1.9–2.4M), r/SocialMediaMarketing (110K), r/digitalminimalism (261K), r/TimeManagement (50.7K), plus a 31K Facebook beginner-SMM group, already trade “batch the work and get out” workflows. You are routing existing demand.
+- **AI triage is finally cheap enough** to turn a raw comment stream into a deduplicated task list without a data-science team—the unlock the 2018 dashboards did not have. Wait, and Buffer ships a Focus Mode toggle that copies the screenshot and none of the time-per-client economics.
+
+At $29/mo Solo, 175 paying users is $5K MRR. At a blended $45 ARPU, about 110 customers. That is Reddit AMAs and “Hootsuite alternative” posts, not a sales team.
+
+## Competitive Landscape
+
+Every named incumbent still shows you a feed. Pricing below is from Zapier’s 2026 social-tool roundup (a source already in the Ideabrowser competitive packet); Web Ascender’s independent comparison is cited where list prices diverge.
+
+- **Buffer** — Best UX in the creator/SMB band. Scheduling, light inbox, per-channel pricing. Still a growth product: more posting, more channels. No attention budgets, no time-per-client. Free (1 user, 3 accounts, 10 scheduled posts per profile) / Essentials $6 per channel per month / Team $12 per channel per month.
+- **Hootsuite** — Streams UI is the opposite of a finite queue. Zapier: Standard from $99/user/month billed annually (10 profiles). Web Ascender lists from $199/user/month. Either way you are in enterprise-adjacent money before the product respects a freelancer’s calendar.
+- **Sprout Social** — Unified inbox, listening, analytics. Optimized for responsiveness, not exit. Essentials from $99/user/month (5 profiles) / Standard from $199/user/month. Fine for a brand team. Absurd for a two-person studio.
+- **Agorapulse** — Closest cousin on inbox quality; still engagement-first, not session-first. Free (1 user, 3 profiles) / Standard from $99/user/month (10 profiles). Web Ascender’s annual ladder starts at $79/month.
+- **Metricool** — Analytics-and-ads pane that happens to schedule. Free (1 brand, 20 posts/month) / Starter from $25/month (5 brands). Cheap enough to keep as a report layer while someone else owns the queue.
+
+**Your Opportunity**
+
+No incumbent will lead with “spend less time in our app.” That copy cannibalizes seat expansion and contradicts every case study they sell. Win on three things they will not ship: (1) no feed, ever—cards only; (2) attention budgets and access windows that make time-per-client a first-class report; (3) a $29 Solo price under Buffer Team math and a $99 Studio seat under Hootsuite’s annual floor. Position as the ops cockpit for people who already hit their numbers and want the afternoon back.
+
+## Business Model
+
+Self-serve SaaS with a 14-day full-product trial (the Ideabrowser frontend offer). Convert on the moment the first Sunday digest makes a retainer conversation easier. Path to $5K/month is 170 Solo seats or a mix of about 40 Studio seats—reachable from agency Facebook groups and r/SocialMediaMarketing without paid acquisition if the case studies have minutes-saved numbers.
+
+- **Trial** ($0, 14 days) — 3 brands, full queue, time tracking, Claude drafts. Card-complete email on day 12.
+- **Solo** ($29/month) — 5 brands, 1 user, attention budgets, weekly CSV, 500 AI drafts/month
+- **Studio** ($99/month) — 15 brands, 3 seats, shared queues, client-ready time report, 2,000 AI drafts/month
+- **Agency** ($299/month) — 50 brands, 10 seats, SSO-ready later, priority API quota, white-label PDF
+
+Backend ladder: $49/month Pro add-on on Solo (custom reports, matching the Ideabrowser continuity offer) and a $500+/month Enterprise SKU only after Agency accounts ask. Annual prepay at two months free for the freelancer who hates Stripe emails.
+
+**Unit Economics**
+
+- **$40–80** — Target CAC (community + comparison SEO, not ads)
+- **~$45** — Blended ARPU (mostly Solo, some Studio)
+- **~85%** — Gross margin after Meta/X API cost and Claude drafts (drafts land well under $0.02 per card at current mini-tier rates)
+- **~$400** — LTV at 9 months (conservative; habit tools that own Friday invoicing churn slower)
+
+## Recommended Tech Stack
+
+This is an inbox plus a state machine, not a growth dashboard. Optimize for webhook → queue row → reply send in a few seconds, and for never accidentally rendering a timeline widget.
+
+- **Next.js (App Router) + Vercel** — Dashboard, OAuth callback routes, Edge-friendly webhooks. One repo; Bolt can scaffold the shell, Cursor/Claude fill the queue state machine.
+- **Supabase (Auth + Postgres)** — Tables: users, brands (platform, token, attention_budget_minutes, access_window), queue_items (type, status, brand_id, opened_at, closed_at), sessions, weekly_summaries. Row-level security by workspace. Store raw payloads, not rendered HTML from platforms.
+- **Official platform APIs only** — Meta Graph (Instagram comments/DMs, Facebook Page), X API for mentions and DMs you are allowed to read, LinkedIn Community Management. Expect App Review. Do not scrape feeds; that is how you get banned and how you accidentally rebuild Hootsuite.
+- **Claude (Haiku or Sonnet) via the Vercel AI SDK** — Two prompts: (1) cluster spam/duplicates, (2) draft a reply in the saved brand voice. Keep the human on the send button for v1.
+- **Inngest or Vercel Cron** — Poll or webhook-drain into queue_items; auto-close sessions at access-window end; Sunday digest fan-out.
+- **Stripe Billing** — Trial → Solo / Studio / Agency. Customer portal. Meter AI drafts only if Studio users blow past the included bucket.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app called Dispatchr, a feed-free social workspace. Provision Supabase with: workspaces, users (workspace_id, email), brands (workspace_id, platform: instagram|x|linkedin|facebook_page, external_id, access_token encrypted, attention_budget_minutes INT, access_start TIME, access_end TIME, timezone), queue_items (brand_id, type: comment|dm|mention|scheduled_post, external_id UNIQUE, status: todo|in_progress|done|snoozed, snippet TEXT, author_handle TEXT, received_at TIMESTAMPTZ, opened_at, closed_at, seconds_on_task INT, ai_draft TEXT), sessions (user_id, started_at, ended_at), weekly_summaries (workspace_id, week_start, minutes_by_brand JSONB, cards_cleared INT, sent_at). RLS so users only see their workspace. Stripe products: Solo $29, Studio $99, Agency $299, 14-day trial. Env: META_APP_ID, META_APP_SECRET, X_CLIENT_ID, X_CLIENT_SECRET, LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. No timeline or explore UI anywhere in the app.
+```
+
+**2. Queue + Attention Budget State Machine**
+
+```text
+Build the core workspace. GET /api/sync/{brandId} pulls unreplied comments, unread DMs, mentions, and due scheduled posts from the correct API and upserts queue_items by external_id. The home page is a Kanban of todo / in_progress / done with zero infinite scroll. Opening a card sets status in_progress, opened_at=now(), starts a visible timer billed to that brand. Closing or sending sets closed_at, seconds_on_task, status done. If sum(seconds_on_task) for that brand today exceeds attention_budget_minutes, or now() is outside access_start/access_end in the brand timezone, reject new opens with a locked state and the next window timestamp. Claude: given snippet + brand_voice, return JSON { draft, cluster: "actionable"|"spam"|"duplicate", confidence }. Never call any endpoint that returns a home-feed or recommended-posts payload. Add a Sunday cron that emails minutes by brand, cards cleared, and a CSV link.
+```
+
+**3. Landing Page**
+
+```text
+Design a marketing page for Dispatchr. Headline: “Social media work with an off switch.” Sub: “Comments, DMs, and due posts as a queue. No feed. When the list is empty, you leave.” Sections: a dark mock of three unread comment cards (not a timeline), problem (20 minutes lost per ‘quick reply’), how it works (connect, queue, budget, digest), pricing Solo $29 / Studio $99 / Agency $299 anchored against Hootsuite from $99/user/month and Sprout from $199/user/month, FAQ on Meta App Review, whether limiting feed time hurts engagement (lead with output-per-minute, not detox moralizing), and data retention. Geist, near-black, one aubergine accent. Primary CTA: “Start a 14-day queue trial.”
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for Dispatchr: wordmark plus an icon that is three stacked cards, not a bird or a megaphone. Primary near-black, aubergine accent, two warm neutrals. Type: Geist for UI, IBM Plex Mono for timers and minute counts. Voice rules: never shame people for being online, always show minutes next to cards, never say “grow your following” on the dashboard. Six icons: comment, dm, mention, scheduled, timer, lock. Output a one-page brand sheet and three empty-queue celebration lines under 80 characters.
+```
+
+## Sources
+
+Market sizing, competitive pricing, community counts, and keyword volumes collated from Ideabrowser MCP idea #8510 (June 2026 research snapshot) plus an August 2026 keyword quick-check. Triangulate before you cite in investor materials. Hootsuite list price disagrees across roundups ($99/user/mo annual vs $199/user/mo); both sources are linked.
+
+- [Fortune Business Insights — Social Media Management Market ($39.1B by 2026, 19.7% CAGR)](https://www.fortunebusinessinsights.com/industry-reports/social-media-management-market-100638)
+- [Zapier — Best social media management tools 2026 (Buffer, Hootsuite, Sprout, Agorapulse, Metricool pricing)](https://zapier.com/blog/best-social-media-management-tools/)
+- [Web Ascender — Top 7 social media management platforms compared (Hootsuite $199/user/mo, Agorapulse $79/mo annual, Buffer channel add-ons)](https://www.webascender.com/blog/comparing-the-top-7-social-media-management-platforms/)
+- [Buffer — Best social media management tools](https://buffer.com/resources/best-social-media-management-tools/)
+- [Hootsuite — Social Trends (work-life / overstimulation research)](https://www.hootsuite.com/research/social-trends)
+- [Sprout Social — platform / social intelligence positioning](https://sproutsocial.com)
+- [Fast Company — Reddit productivity communities](https://www.fastcompany.com/91039106/reddit-subreddits-how-to-be-productive-disciplined-motivated)
+- [r/productivity](https://www.reddit.com/r/productivity/)
+- [Hive Index — r/productivity community stats](https://thehiveindex.com/communities/r-productivity/)
+- [PMC — attention / addictive-design research](https://pmc.ncbi.nlm.nih.gov/articles/PMC10031722/)
+
+Page sourced via Ideabrowser MCP (idea_id 8510): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now, research_trend (quick_check).

@@ -1,0 +1,92 @@
+---
+slug: "cursor-origin-vs-github"
+title: "Cursor Origin vs GitHub: Should You Move Your Repo?"
+description: "Cursor launched Origin, a GitHub rival, on Aug 17 — the same day GitHub went down. Here's whether weekend builders should actually move their repos, or not."
+category: "News"
+publishedAt: "2026-08-28"
+wordCount: 1085
+readMinutes: 5
+heroAlt: "Two closed hardcover notebooks stacked unevenly on a near-black desk, only the top spine caught by a single lavender beam, very shallow focus, no titles"
+---
+
+## The Belief That's Going Around
+
+GitHub had another outage. Cursor launched a git host the same morning. Therefore you should move your repos to Origin this weekend.
+
+That's the tweet. It's also how you strand a side project on a beta with no public repos, no Issues, and unpublished data-handling terms.
+
+On August 17, 2026, [Cursor started rolling Origin](https://cursor.com/changelog/origin-code-hosting) to paid plans: repos, pull requests, code browsing, GitHub sync. Agent-native features "ship soon." Three hours later GitHub spent **six hours and 42 minutes** degraded — roughly 20% errors on PRs, issues, and the API, worse on archives, Copilot included. The coincidence wrote the marketing.
+
+You still shouldn't migrate your source of truth. Here's why, and what to do instead.
+
+## Myth 1: "Origin replaces GitHub"
+
+**Why it spreads:** Cursor said the quiet part. They bought Graphite. They talk about "agent scale." 35% of pull requests merged inside Cursor were opened by agents in cloud VMs, per reporting around the launch. GitHub's own CTO has said the platform wasn't built for the load it's under — LeadDev counted 257 incidents in a year, 48 major.
+
+**The truth:** For anything you **sync from GitHub**, Origin is a mirror. [Cursor's own changelog](https://cursor.com/changelog/origin-code-hosting): pushes still go to GitHub, which **stays the source of truth**. Two-way PR comments. Disconnect anytime.
+
+Origin-native repos (created in Cursor, not synced) are the actual new host. Those are the ones where you're betting the company. That's a different decision from "I want my PRs inside the editor."
+
+A weekend MVP needs a clone URL that still works if you cancel Cursor. GitHub, GitLab, or a tarball on a disk you control. Origin can sit **beside** that. It should not **be** that. Not in early beta. Not with agent-native features still vapor.
+
+If you're still picking what to put in that repo, [browse a scoped idea](/startup-ideas) first. Hosting debates are a stall tactic.
+
+## Myth 2: "The outage proves it's time to leave"
+
+**Why it spreads:** GitHub Actions had 57 outages in twelve months. February 2026 was ugly. Developers are tired. Origin plus Vercel previews on every PR looks like a grown-up stack.
+
+**The truth:** Availability is an engineering problem. GitHub's Monday outage closed at 20:22 UTC. Custody is not an engineering problem. Origin rolled out with **no public pricing page for the host**, no published retention/training policy for code at rest, and an **opt-out for enterprise admins** — not opt-in.
+
+Cursor completed a **$60 billion** SpaceX acquisition on August 14. Whatever you think of that, "the editor that writes my code also stores my code inside a rocket company with its own model lab" is a sentence you should be able to say out loud to a customer who asked where their data lives.
+
+If your weekend app is a todo list, nobody cares. If it ever handles other people's source or secrets, you care.
+
+## Myth 3: "Agents need a new git host or they don't work"
+
+**Why it spreads:** Cursor's pitch is that forges were built for humans opening one PR a day, not agents opening a dozen. Stacked PRs (the Graphite bet) and merge queues that understand agents are the future. That's probably true.
+
+**The truth:** Your agent already opens PRs **on GitHub**. Copilot, Claude Code, Cursor cloud agents, GitHub Agentic Workflows — the substrate is still git remotes and `origin`. Origin makes that loop nicer **inside Cursor**. It does not unlock a capability you lack today.
+
+If 35% of Cursor's internal PRs are agent-opened, that's a Cursor-scale problem. You are not Cursor. You are one human and maybe one cloud agent on Saturday. GitHub's 180 million developers and 43 million PRs a month (Octoverse 2025) are still where your users, issues, and "star this" social proof live.
+
+Don't rebuild your forge to match someone else's traffic shape.
+
+## What To Do Instead (This Weekend)
+
+**Keep GitHub as SoT.** Create the repo there. Connect Vercel from GitHub the way you already know. That's still the [fastest path to a live URL](/articles/deploy-nextjs-mvp-to-vercel).
+
+**Turn on Origin sync if you already pay for Cursor.** Use it as a Codebase tab: browse, ask questions, review a PR without switching tabs. Treat it like Graphite-in-the-editor, not like a move.
+
+**Do not** create Origin-only repos for anything you might open-source, hand to a contractor, or keep after a Cursor plan change. Public projects aren't in the beta. That's not a footnote. That's the product.
+
+**Do** invest in the thing Origin is actually a symptom of: agents touching your repo constantly. That means an [AGENTS.md](/articles/agents-md-ai-coding-instructions), a two-account auth test, and not pasting secrets into prompts. Hosting brand is downstream of that.
+
+If you don't have a product in the repo yet, this entire debate is cosplay. [Pick an idea](/startup-ideas), push it to GitHub, ship a preview. Argue about forges when you have users.
+
+## The Honest Scorecard
+
+| You need… | Use |
+| --- | --- |
+| A clone URL that survives cancelling Cursor | GitHub / GitLab |
+| PR review without leaving the editor | Origin sync |
+| Preview deploys | Vercel on GitHub (or Origin's Vercel app once you trust it) |
+| Issues, stars, "it's open source" | GitHub |
+| Agent-stacked PRs as a daily workflow | Origin, later, after the beta stops being a changelog |
+
+Depot and Buildkite will run your existing GitHub Actions workflows. That's the tell: Origin is wrapping GitHub's CI universe, not replacing it.
+
+## Quick Questions
+
+### Is Origin free?
+
+It's rolling to **paid** Cursor plans in early beta. If you're on Hobby, you're not in this story yet.
+
+### What about the git.exe repo-poisoning thing?
+
+Mindgard reported Cursor would run a malicious `git.exe` from a Windows repo root with no prompt. Cursor called it out of scope. Same class showed up in Copilot CLI, Gemini CLI, and Codex. It's a reason to be careful about **where agents execute**, not a unique reason to reject Origin — but it's an awkward footnote for "please host our source."
+
+### Should teams migrate?
+
+Not while GitHub remains SoT for synced repos and Origin has no public-project story. Dual-running is the point of the beta. Dual-running is also how you learn whether PR sync actually feels faster than `github.com` plus the editor you already have.
+
+Cursor is building a forge because agents are about to open more PRs than humans. That's a real 2026 problem. It is not **your** Saturday problem. Your Saturday problem is still a working URL and a person who cares. [Start there](/startup-ideas).
