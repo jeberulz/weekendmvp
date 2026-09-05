@@ -1,0 +1,124 @@
+---
+slug: "video-sales-funnel-builder"
+title: "Video Sales Funnels That Convert 3x Better Than Landing Pages"
+---
+
+## The Problem
+
+Info-product and coaching sellers still buy a ClickFunnels template and a talking-head from Fiverr and call it a VSL. Agencies (Gisteo, Skyline) will build the real thing for $1,500–$8,000. ClickFunnels is $97–$297/month plus templates that look like 2017. Synthesia will give you an avatar. InVideo / Canva / Animoto will give you a slideshow. The missing SKU is a $499 done-in-a-week funnel that is actually a sales video with a page, not a page with a video slapped on it.
+
+The "3x better than landing pages" line is category folklore — ClickFunnels and the VSL listicle industrial complex repeat it. Use it as positioning, then measure your own close rate. Do not print it as a peer-reviewed fact.
+
+The buyer is a solo founder who already has a $99–$2,000 offer and a Loom that is too long. They will not pay $6,000. They will pay $499 if the page is live on Friday.
+
+The other buyer is the course creator who already has ClickFunnels and a 42-minute "VSL" that is a webinar with the chat cut out. They do not need another page builder. They need someone to force an 8–12 minute structure and a checkout that does not open a new tab. That is editorial work wearing a product costume. Charge $499 for the costume. Do the editorial.
+
+## The Solution
+
+A VSL sprint: script, edit, page, checkout. $499 one-time (the product title). The Ideabrowser ladder also has a $500 Starter, $1,000–$3,000/month retainers, $500–$2,000 analytics add-on, and a $10k–$20k VR/AR fantasy tier you should ignore in year one.
+
+**How it works:**
+
+1. **Offer quiz** — Offer, price, avatar, objections, proof assets. The quiz refuses to start the script until price and the one transformation exist.
+2. **Script + cut** — 8–12 minute structure (hook, problem, unique mechanism, proof, offer, FAQ, close). They record on Loom or upload. You cut, caption, and add pattern interrupts — not an avatar unless they ask.
+3. **Page + checkout** — One long page, VSL above the fold, checkout in-page. Stripe. Analytics events on play, 25%, 50%, 75%, offer click. Optional $500+/month to refresh the cut when the offer changes.
+
+## Market Research
+
+Sales-funnel software: $80.31 billion in 2024 to $142.96 billion by 2032 (10.1% CAGR) in the Ideabrowser pack. A narrower "digital marketing funnel" cut cites $2.5 billion by 2025 at 22% CAGR — two TAMs, do not mash them. Your SAM is founders who would have hired Gisteo and cannot.
+
+Campaign Refinery, WPFunnels, ClickFunnels' "DNA of a high-converting VSL," Gisteo, and Skyline Social are the citation set. They agree on structure more than on price. The hole is the $300–$2,000 band: DIY below, agencies above.
+
+Why the 3x claim persists: a watched sales argument beats a scanned landing page on complex offers. That is not magic. It is time-on-page plus a human face. If your $499 sprint ships a 4-minute slideshow with stock B-roll, you are InVideo with a higher invoice. The cut has to be their face, their proof, their price.
+
+## Competitive Landscape
+
+- **Gisteo** — $2,000–$8,000 per project. Real VSL shop. You are the cheaper sibling, not the clone.
+- **Skyline Social** — $1,500–$6,000 per funnel. Same band.
+- **ClickFunnels** — $97–$297/month. Page + template. The video is your problem.
+- **Synthesia** — SaaS avatars. Fine for compliance training. Cold for a $2,000 cohort.
+- **Fiverr / Upwork** — $50–$800 and a dice roll.
+- **InVideo / Canva / Animoto** — DIY motion. No offer logic, no checkout.
+
+**Your Opportunity**
+
+Free VSL quiz (score + email) → $499 Starter sprint (script + cut + page, one offer) → $1,000–$3,000/month if they launch quarterly → $500–$2,000 analytics only if they already have traffic. Position $499 as the missing band. Do not become a ClickFunnels theme shop. The video is the product; the page is the wrapper.
+
+Launch in one niche (B2B cohort coaches, or fitness challenges — pick one) so the script template is not generic. A verticalized $499 beats a horizontal "any VSL" every time. Gisteo can keep the $8,000 custom jobs.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| VSL quiz | Free | Score + email + sample script outline |
+| Starter sprint | $499 one-time | Script, cut, page, Stripe |
+| Retainer | $1,000–$3,000/month | New cut when the offer moves |
+| Analytics | $500–$2,000 | Play-through + offer-click rebuild |
+
+Unit economics:
+
+- Editor + captions: $150–$250 freelance or your Sunday
+- Hosting (Mux) + LLM script: under $10 per sprint
+- Gross on $499 is $200–$300 if you stay in the chair; $400 if they record clean
+- 10 sprints a month is $5k top line — the $10k-month goal needs retainers or a raise to $799 after the first 20 case studies
+
+Ignore the VR/AR $10k–$20k ladder rung until someone asks.
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe Checkout ($499) + Stripe Billing (retainer)
+- **Video:** Mux (player + quartile events)
+- **DB:** Supabase — `offers`, `scripts`, `funnels`, `events`
+- **Page:** a single funnel template, not a builder — you edit, they do not
+- **LLM:** Claude for the script from the quiz
+- **Edit:** CapCut / Descript in v1; do not build an NLE
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 VSL funnel shop.
+
+Set up:
+- Public quiz + Clerk for buyers
+- Stripe Checkout at $499 and a $1500/month retainer
+- Supabase: offers, scripts, funnels, events
+- Mux player with quartile beacons
+- One long-page template (VSL + bullets + FAQ + checkout)
+
+No drag-and-drop builder.
+```
+
+**2. Core Feature**
+
+```text
+Build the Offer Quiz → Script.
+
+Requirements:
+- Block generate until price and transformation exist
+- Emit an 8–12 minute VSL outline: hook, problem, mechanism, proof, offer, FAQ, close
+- Checklist for the Loom recording (framing, proof on screen, no 20-minute ramble)
+- Admin: paste the Mux playback ID and publish the page
+
+User flow: quiz → pay $499 → record → you publish.
+```
+
+**3. Quartile Analytics**
+
+```text
+Add play, 25%, 50%, 75%, and offer-click events. Show a one-screen drop-off. If 50% drop is ugly, flag the script section to rewrite. Do not sell this as a $2,000 add-on until 10 funnels have data.
+```
+
+## Sources
+
+- [Campaign Refinery — VSL funnel](https://www.campaignrefinery.com/blog/vsl-funnel)
+- [WPFunnels — what is a VSL](https://getwpfunnels.com/what-is-a-vsl/)
+- [ClickFunnels — DNA of a high-converting VSL](https://www.clickfunnels.com/blog/video-sales-letter)
+- [Gisteo — VSL funnel](https://gisteo.com/blog/vsl-funnel)
+- [Skyline Social — VSL funnel](https://skylinesocial.com/)
+- [ClickFunnels pricing](https://www.clickfunnels.com/pricing)
+- [Synthesia](https://www.synthesia.io/pricing)

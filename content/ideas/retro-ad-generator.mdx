@@ -1,0 +1,116 @@
+---
+slug: "retro-ad-generator"
+title: "AI-Powered Retro Ad Generator for Modern Brands"
+---
+
+## The Problem
+
+Every DTC brand wants a 1972 print ad and a 1986 VHS bumper and they want it Tuesday. The art director quotes two weeks. Jasper will write the headline. Runway will motion the product. Canva will drop a "vintage" filter on a packshot. None of them know what a 1964 Volkswagen ad actually did with negative space, or why a 1991 Nike print still reads as Nike.
+
+The result is AI slop with a grain overlay. The brand looks like it prompted "make it retro" and shipped. Historical reference is a craft. The tools treat it as a LUT.
+
+In-house teams feel this as a briefing tax. The CMO wants a Super Bowl-adjacent nostalgia beat for a $40 SKU. The designer opens Midjourney, burns 40 gens, and still has to redraw the wordmark because the model invented a serif that never existed on the bottle. Freelance "vintage specialists" on the usual marketplaces quote $800–$2,500 for a single print system and still start from a Pinterest board, not a locked decade corpus. The gap is not "more images." It is a system that will not let the model wander.
+
+## The Solution
+
+A generator that starts from a dated reference system — decade, print vs TV, region, brand codes — then renders a modern product into that system. $39 one-off / $199 month in the one-liner. The ladder that matches the MCP: free demo → $49 for three ads → $199/month → $29 social add-on → $25k+/year if an in-house studio wants seats and a custom yearbook.
+
+**How it works:**
+
+1. **Yearbook** — Brand picks a decade + medium (1960s magazine, 1970s billboard, 1980s TV still, 1990s catalog). The app shows 8 locked references (public-domain or licensed scans), not a moodboard scrape.
+2. **Product lock** — Upload the SKU, hex codes, and a one-line claim. The model is not allowed to invent a new logo or a fake celebrity.
+3. **Export pack** — 4:5, 1:1, 16:9, plus a print PDF with bleed. Optional $29 add-on writes three platform captions in the same voice as the ad.
+
+## Market Research
+
+AI image generators: $349.6 million in 2023 to $1.08 billion by 2030 (17.7% CAGR, Grand View). A Dimension Market Research cut puts the same category at $1.88 billion by 2033 (18.1%). AI marketing spend was cited at $27.83 billion in 2024 to $35.54 billion in 2025 in the Ideabrowser pack — treat that as directional, it ages fast.
+
+The category is crowded at "make an image." It is empty at "make this SKU look like a 1974 American print ad without hallucinating a wordmark." That constraint is the product.
+
+Why now: Firefly, Flux, and GPT-Image finally hold a product lock if you few-shot them hard. That was not true in 2023. The cultural timing is the same wave that made "heritage" and "archive drops" a default DTC brief — except most of those campaigns are a brown overlay. Brands that can show the yearbook (here are the eight 1974 refs we locked) win the legal and the taste argument. Brands that cannot will keep shipping grain.
+
+## Competitive Landscape
+
+- **Jasper** — from $49/month. Copy plus generic visuals. No historical system.
+- **Runway** — from $15/month. Video-first. Wrong medium for a print yearbook.
+- **Canva AI** — freemium. "Vintage" is a slider. 125 million users will never need you; the 200 brands that care about craft will.
+- **Adobe Firefly / Sensei** — inside Creative Cloud. The art director already has it. They still do not have a dated reference lock.
+- **DALL-E 3** — substitute. Same hallucination problem on logos and period type.
+
+**Your Opportunity**
+
+You are not an image model. You are a yearbook plus a product lock. Free demo (watermarked, one decade) → $49 starter (3 ads) → $199/month (unlimited drafts, 4 decades) → $29 social caption add-on → custom yearbooks for $25k+/year. Jasper keeps the blog posts. You keep the campaign that has to look researched.
+
+Distribution is art-director Twitter, the "print is not dead" newsletters, and one public yearbook (1970s grocery) that makes the constraint obvious. Do not run Performance Max on "AI image generator." That query belongs to Canva.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| Demo | Free | 1 watermarked ad |
+| Starter | $49 one-time | 3 ads, 1 decade |
+| Studio | $199/month | Unlimited drafts, 4 decades |
+| Captions | $29/month | 3 captions per export |
+| Enterprise | $25k+/year | Custom yearbook + seats |
+
+Unit economics:
+
+- Image API $0.04–$0.12 per render; $199/month only works if you cap idle gens or use a cheap first pass
+- Licensed reference scans are the real COGS — budget a lawyer afternoon and a public-domain-first v1
+- Do not train on living brand archives
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe
+- **DB:** Supabase — `brands`, `yearbooks`, `renders`, `exports`
+- **Models:** Flux or GPT-Image with a tight style adapter per decade; Claude for the claim line only
+- **Refs:** your own scanned public-domain corpus in R2 — not a random Pinterest scrape
+- **Export:** sharp for print PDF bleed
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 retro-ad generator.
+
+Set up:
+- Clerk + Stripe ($49 one-time, $199/month)
+- Supabase: brands, yearbooks, renders, exports
+- A yearbook picker (decade × medium) with 8 locked reference images per cell
+- Product upload with hex lock and "do not invent a logo" system prompt
+
+TypeScript, credit meter, watermark on free.
+```
+
+**2. Core Feature**
+
+```text
+Build the render pipeline.
+
+Requirements:
+- Inputs: SKU photo, hexes, one-line claim, decade, medium
+- Few-shot the model with the 8 locked refs
+- Refuse celebrity likeness and living brand wordmarks
+- Export 4:5, 1:1, 16:9, and a print PDF with 0.125in bleed
+
+User flow: pick yearbook → lock product → generate 4 → pick 1 → export.
+```
+
+**3. Caption Add-on**
+
+```text
+Add a $29/month caption writer that matches the ad's period voice for Meta, TikTok, and email subject. Store the voice as a decade pack, not a generic "witty DTC" prompt.
+```
+
+## Sources
+
+- [Grand View — AI image generator](https://www.grandviewresearch.com/industry-analysis/ai-image-generator-market-report)
+- [GlobeNewswire — Dimension Market Research AI image gen](https://www.globenewswire.com/)
+- [Jasper pricing](https://www.jasper.ai/pricing)
+- [Runway pricing](https://runwayml.com/pricing)
+- [Canva pricing](https://www.canva.com/pricing/)
+- [Adobe Firefly](https://www.adobe.com/products/firefly.html)

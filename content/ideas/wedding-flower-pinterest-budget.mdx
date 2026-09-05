@@ -1,0 +1,123 @@
+---
+slug: "wedding-flower-pinterest-budget"
+title: "Wedding Flower Calculator from Pinterest Boards"
+---
+
+## The Problem
+
+The florist already has software. The bride does not. She dumps a Pinterest board that looks like a $20,000 install into a $2,000 budget and waits for a PDF that kills the vibe. Florists write those proposals for free, then get ghosted. Some now charge a $200 non-refundable deposit just to quote. A Bay Area studio described 6–12 months of pre-work per wedding before a single stem is cut.
+
+The Knot says floral spend is up 20% in four years. Average wedding flowers ran about $463 in 1993 (roughly $1,030 in today's dollars) and about $2,800 in 2025 — almost 3x. Rio Roses' 2025 cut: brides budget $1,800–$3,500 while the Pinterest look costs $3,000–$7,000. That gap is the fight. Line-item wholesaler math does not close it. A reality check on the board does.
+
+Florist SaaS is solved. Curate, Details Flowers, Floranext, StemCounter, EveryStem, and a HoneyBook template already run the studio. Bride-side cost and budget queries pull 5,000+ searches a month. Florist "solution" keywords sit at zero. Build for the bride, sell the lead to the florist.
+
+## The Solution
+
+A Pinterest-in, budget-out calculator that tells the couple what the board actually costs in their metro, then routes the ones who still want it to a local studio. You are not replacing Poppy. You are the ugly honest number before Poppy's pretty checkout.
+
+**How it works:**
+
+1. **Pinterest Budget Reality Check** — Couple pastes a board URL (or uploads 8–12 images). The model IDs stems, vessel types, and labor shape, then prices the look against local wholesale + typical studio markup.
+2. **Swap-down path** — If the number blows the budget, the app offers three cheaper compositions that keep the color story. Email capture happens here, not on a "book a florist" wall.
+3. **Studio match** — In-market florists pay $75–$150 per inquiry, or $299/month for a lead plan. A $79/month white-label widget sits on the florist's own site so they stop quoting blind.
+
+## Market Research
+
+Pinterest's 2025 wedding numbers: 7 billion wedding searches, 16.7 billion saved wedding ideas, 80 billion-plus monthly searches across the platform. May 2025 shipped visual-search upgrades — the board is now a query, not a mood. That is why a photo-to-budget tool is timely and a CMS for florists is late.
+
+Poppy raised a $2.7 million Series A in November 2025 (about $9.88 million total). They run hundreds of florists across dozens of markets and thousands of weddings, with AOV in the $1,500–$3,000 band. Fiory.AI already turns a Pinterest photo into stems, wholesale, labor, markup, and retail — free. You are late to "AI reads the bouquet." You are not late to "here is what it costs *in your zip*, and here is a florist who will honor that number."
+
+The Knot + Rio Roses gap is the marketing. Lead with the $2,800 average versus the $3,000–$7,000 Pinterest install. Do not lead with "florist proposal software." Those keywords have no demand.
+
+Google Ads on florist-software keywords are a trap: zero volume on the solution terms, nasty CPCs on competitor brands. Distribution is Pinterest content (three-tier breakdowns of real boards) and r/weddingplanning. The florist panel is Instagram DMs and planner intros, not a Product Hunt launch.
+
+## Competitive Landscape
+
+- **Curate** — $100–$275/month, 217 reviews, 95%. Florist-founded studio OS. Not bride-facing.
+- **Details Flowers** — $25–$150/month or $1,500–$2,250/year, 223 reviews at 4.9. Same job: run the shop.
+- **Floranext Wedding Manager** — from $29.99/month. Legacy florist suite.
+- **StemCounter / EveryStem** — stem-count and recipe tools for designers already in the cooler.
+- **HoneyBook** — $89 A la Carte florist template. Proposals, not pricing a board.
+- **Poppy** — bride-facing incumbent. Marketplace + checkout. Funded. Do not out-pretty them.
+- **Fiory.AI** — free Pinterest-photo → stems / wholesale / labor / markup / retail. Closest product wedge. Weak on local studio routing and paid lead gen.
+
+**Your Opportunity**
+
+Pivot hard: the calculator is a lead engine, not a florist SaaS. Free Reality Check → florist match at $75–$150 per inquiry → Studio Lead Plan $299/month plus per-lead overage → white-label widget $79/month. One metro, 20 florists, then the next. Honest position: late to Poppy and Fiory on the vision model. Early on zip-priced leads with a swap-down path that keeps the couple in-funnel instead of ashamed.
+
+Napkin, not a forecast: 3,000 visitors × 35% complete × 25% email opt-in ≈ 260 inquiries. At $99 blended to the florist that is theoretical $25k. Month-three capture at 40% is about $10.3k. The constraint is florist density, not model quality.
+
+## Business Model
+
+| Tier | Price | Who pays |
+| --- | --- | --- |
+| Pinterest Budget Reality Check | Free | Couple (email) |
+| Inquiry match | $75–$150 | Florist, per qualified zip + date |
+| Studio Lead Plan | $299/month + overage | Florist |
+| White-label widget | $79/month | Florist site embed |
+
+Unit economics:
+
+- Vision + pricing call under $0.15 per board
+- Sales cost is one metro ride: 20 studios, not Google Ads for brides
+- Do not take a cut of the wedding. Poppy already owns "we book the flowers." You own "we told her the number."
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk for florists; Stripe per-lead invoices + $299 / $79 subs
+- **DB:** Supabase — `boards`, `estimates`, `couples`, `florists`, `inquiries`
+- **Vision:** OpenAI or Anthropic vision on board screenshots; fallback stem dictionary for the top 80 wedding flowers
+- **Pinterest:** oEmbed + unofficial board scrape behind a human "refresh" button (ToS-safe: user uploads screenshots in v1)
+- **Maps:** zip → metro for florist routing
+- **Email:** Resend for the reality-check PDF
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 wedding-flower budget app.
+
+Set up:
+- Public couple flow (no auth): paste Pinterest URL or upload 8–12 images
+- Clerk + Stripe for florist accounts ($79 widget, $299 lead plan, $75–$150 per inquiry)
+- Supabase: boards, estimates, couples, florists, inquiries
+- Metro/zip table for routing
+
+v1 accepts screenshot uploads only — no unofficial Pinterest scrape.
+```
+
+**2. Core Feature**
+
+```text
+Build the Pinterest Budget Reality Check.
+
+Requirements:
+- Vision model IDs stems, vessels, and labor shape
+- Price against a metro wholesale sheet + 3x–4x studio markup
+- If estimate exceeds couple budget, show 3 swap-down compositions that keep the palette
+- Email a one-page PDF. CTA is "share with a local florist," not "buy flowers"
+
+User flow: upload board → budget vs look → swap-downs → email → florist match.
+```
+
+**3. Florist Desk**
+
+```text
+Add the florist inbox: claimed metros, weekly inquiry cap, $75–$150 accept/decline, and a $79/month embeddable widget that runs the same calculator on their domain with their markup. No proposal editor. They already have Curate.
+```
+
+## Sources
+
+- [The Knot — average wedding flower cost](https://www.theknot.com/content/average-wedding-flower-cost)
+- [Pinterest newsroom](https://newsroom.pinterest.com/)
+- [Poppy Series A — FinSMEs](https://www.finsmes.com/2025/11/poppy-flowers-raises-2-7m-in-series-a-funding.html)
+- [Poppy — how couples find a florist](https://www.poppyflowers.com/help/articles/how-to-find-a-wedding-florist-complete-guide-for-couples)
+- [Curate florist software](https://curate.co/florist-software/)
+- [Details Flowers](https://www.detailsflowers.com/)
+- [Floranext](https://www.floranext.com/)
+- [Fiory.AI Lens](https://www.fiory.ai/lens)
+- [HoneyBook](https://www.honeybook.com/)

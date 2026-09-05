@@ -1,0 +1,118 @@
+---
+slug: "auto-repair-estimate-translator"
+title: "Repair Estimate Translator for Auto Shops"
+---
+
+## The Problem
+
+The customer does not distrust the shop because the labor rate is high. They distrust the estimate because it is a parts cannon in a language they do not speak. "R&R compressor, evac/recharge, orifice tube, dye test" is a $1,800 decision they will Google into a YouTube nightmare. r/MechanicAdvice (1.5 million), r/cars (3.3 million), and r/AutoRepair (182k) are that nightmare, live.
+
+Shops already paid for the diagnosis. Bosch, Autel, and Hitachi sell AI-assisted hardware in the thousands. AutoLeap, Shopmonkey, Tekmetric, Mitchell, ShopWare run the RO. RepairPal sits on the consumer side as a price benchmark — the thing a nervous customer opens while you are still under the hood. Nobody owns the five minutes after you hand them the tablet: plain language, annotated photos, "what happens if we wait."
+
+The positioning claim you will hear is "40–60% higher approval." Treat that as a sales line, not a published RCT. The real metric is time-to-yes and comeback rate on declined work.
+
+## The Solution
+
+A customer-facing explainer that sits on top of the estimate the shop already wrote. Paste the RO (or pull it from Shopmonkey / Tekmetric). Get a one-pager: what failed, why it failed, what we will do, what it costs in English, three annotated photos, and a "defer this / do this now" split. SMS the link. The advisor still talks. They stop translating.
+
+SaaS from $50/month in the Ideabrowser ladder; the street price that matches independent shops is $99–$299/month. Hardware vendors will not unbundle their tablet UI to do this.
+
+**How it works:**
+
+1. **Ingest the RO** — Advisor pastes line items or connects the shop OS. VIN + mileage + concern are required so the explainer is not generic.
+2. **Translate + evidence** — Model rewrites each line into cause / fix / risk-if-wait. Advisor drops 2–4 bay photos; the app labels the failed part on the image.
+3. **Send + decide** — Customer gets an SMS link. Approve / defer per line. Deferred work becomes a 60-day reminder, not a lost RO.
+
+## Market Research
+
+Auto repair and maintenance: $744.4 billion in 2025 to $1,056.6 billion by 2034 (3.97% CAGR, IMARC / Mordor-class cuts). AI automotive repair services: $684 million in 2023, $797.54 million in 2024 (16.75%), $2.72 billion by 2032 (SkyQuest). Broader automotive AI: $48.59 billion by 2034. Cox Automotive's 2026 "fragmented reality" note: 76% of dealerships are increasing AI budgets — and independents still run on paper and Shopmonkey.
+
+This is not a TAM for another scanner. The scanner market is a graveyard of bundles. The TAM is "shops that already pay $200–$600/month for an OS and still lose the approval conversation." Facebook's Auto Repair Professionals group (45k) is the channel.
+
+ADAS and EV work makes the English problem worse. "Calibrate forward camera after windshield" is a $400–$1,200 line the customer will defer because it sounds optional. The explainer that says "without this, the car may not brake" is the product. Do not claim a 40–60% approval lift on the landing page. Show one redacted before/after RO.
+
+## Competitive Landscape
+
+- **Bosch / Autel / Hitachi** — AI diagnostics inside hardware that costs thousands. Dealership-oriented. The customer never sees the output.
+- **AutoLeap AIR** — shop OS with AI features. Subscription unspecified in the Ideabrowser cut. They will add an explainer if this wedge prints. Integrate, do not pretend you replace the OS.
+- **Shopmonkey / Tekmetric / Mitchell / ShopWare** — the RO systems shops already pay. Integration targets. None of them made the customer-facing one-pager the product.
+- **RepairPal** — consumer price benchmark. The competitor in the customer's other tab. You will not beat their database. You can beat "here is *this* shop's photo of *this* compressor."
+
+**Your Opportunity**
+
+Wedge is trust, not diagnosis. Free 5-code / 5-line translator (shop email) → $50 Basic → $250 Pro (photos, SMS, defer reminders) → $100 add-ons (multi-location, Spanish) → $1,000+ enterprise for a 15-bay group. Do not sell to the 200-store platform in year one. Sell to the 4-bay independent who already lost a $2,400 job to "I need to think about it."
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| 5-line translator | Free | Email + watermarked page |
+| Basic | $50/month | Unlimited text explainers |
+| Pro | $99–$250/month | Photos, SMS, deferrals |
+| Add-ons | $100/month | Spanish, second location |
+| Group | $1,000+/month | 8+ bays, SSO, shop-OS sync |
+
+Unit economics:
+
+- LLM + SMS per estimate is under $0.20
+- $99/month at 40 estimates is about $2.50/RO — less than the advisor's five minutes
+- Churn is "we forgot to send the link," so the SMS step is mandatory on Pro
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 on Vercel
+- **Auth / billing:** Clerk + Stripe
+- **DB:** Supabase — `shops`, `estimates`, `line_items`, `photos`, `decisions`
+- **LLM:** Claude for the rewrite (parts language is messy; it handles "R&R" better than a small model)
+- **Images:** Upload to R2; SAM or a cheap vision call for the label box
+- **SMS:** Twilio
+- **Later:** Shopmonkey / Tekmetric API — v1 is paste
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 app that translates auto-repair estimates into customer English.
+
+Set up:
+- Clerk shop logins, Stripe $50 / $99 / $250
+- Supabase: shops, estimates, line_items, photos, decisions
+- Public customer page at /e/[token] with approve/defer per line
+- Twilio SMS to send the link
+
+No diagnostic hardware. Paste-only v1.
+```
+
+**2. Core Feature**
+
+```text
+Build the translator.
+
+Requirements:
+- Input: VIN, mileage, concern, raw RO lines
+- Output: cause / fix / risk-if-wait per line, plus a do-now vs defer split
+- Advisor uploads 2–4 photos; draw a label on the failed part
+- Customer can approve a subset; shop sees the decision on a bay tablet view
+
+User flow: paste RO → rewrite → photos → SMS → approve.
+```
+
+**3. Defer Follow-up**
+
+```text
+Add a 60-day reminder for deferred lines. If the customer returns, pre-fill the old photos and the original estimate with today's parts price note. Do not auto-charge. Log approval rate per advisor so the owner can see who skips the explainer.
+```
+
+## Sources
+
+- [SkyQuest — AI automotive repair](https://www.skyquestt.com/report/automotive-artificial-intelligence-market)
+- [IMARC — automotive repair market](https://www.imarcgroup.com/automotive-repair-maintenance-services-market)
+- [Mordor — repair and maintenance](https://www.mordorintelligence.com/industry-reports/automotive-repair-and-maintenance-services-market)
+- [AutoLeap — future of AI in shops](https://www.autoleap.com/blog/future-of-ai-in-auto-repair)
+- [Cox Automotive 2026 fragmented reality](https://www.coxautoinc.com/)
+- [RepairPal](https://repairpal.com/)
+- [Shopmonkey](https://www.shopmonkey.io/)
+- [r/MechanicAdvice](https://www.reddit.com/r/MechanicAdvice/)

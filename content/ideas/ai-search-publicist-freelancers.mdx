@@ -1,0 +1,128 @@
+---
+slug: "ai-search-publicist-freelancers"
+title: "AI Search Publicist for High-Ticket Freelancers"
+---
+
+## The Problem
+
+High-ticket freelancers still treat "getting found" as a Google SEO project. The buyer already left Google. A 2026 BrightLocal survey found AI recommendations jumped from 6% to 45% year over year as a way people discover local and professional services. ChatGPT crossed 400 million weekly users in February 2025 and 900 million a year later. Adobe's 2026 consumer-trends report says 25% of people now name AI as their top research tool, and 42% of those AI researchers always or frequently start there.
+
+That is a hiring channel your Upwork profile and your "best copywriter in Austin" blog post do not cover. When a founder types "who should I hire for a $15k brand sprint," the model answers with a name — or it answers with a generic category and three agencies that published enough third-party mentions to look like the default. Eight tools already score how visible a *brand* is inside ChatGPT. None of them exist to put a *named person* into that answer.
+
+Freelancers feel this as silence, not a dashboard. Referrals used to be the whole funnel. Referrals still close, but the shortlist is now assembled by a model that has never seen your case study PDF. Agencies will sell "GEO retainers" from $1,500 to $25,000 a month. Fiverr will sell a one-off "get listed on ChatGPT" gig for $30 to $3,000. Neither is built for a solo operator who needs three named placements, not an enterprise visibility score.
+
+## The Solution
+
+Ship a 21-day placement sprint that treats the freelancer as the product. The app inventories the three prompts their ideal client actually asks, finds the sources those models already cite, and manufactures the missing mentions — guest quotes, comparison pages, niche directories, podcast show notes — until the name appears in the answer.
+
+Do not build another Profound clone. Profound sells Fortune 500 dashboards. You sell a named person showing up when someone asks who to hire.
+
+**How it works:**
+
+1. **Prompt map** — The freelancer pastes their offer, niche, and three recent wins. The app expands that into the 10–15 buyer questions ChatGPT, Perplexity, and Gemini already answer in their category, then records the current cited sources.
+2. **Placement sprint** — Over 21 days the system drafts and places three assets on sites those models already trust: a comparison blurb, a quoted expert inset, a directory or podcast page. Each placement is tracked against the original prompts.
+3. **Named-in-ChatGPT retainer** — Weekly re-checks confirm the name still appears. When a placement drops, the queue writes the replacement instead of sending another "your visibility score is 34" email.
+
+## Market Research
+
+Google published an official AI / answer-engine optimization guide on May 15, 2026. "Answer engine optimization" already pulls about 2,400 US searches a month at $32.53 CPC. That is the category term. "Get listed on ChatGPT" is zero-volume founder-speak — do not put it in ads.
+
+ChatGPT search referral traffic was up 206% year over year in the Semrush 2026 search-insights cut. OpenAI and Reuters reporting put weekly active users at 400 million in February 2025 and 900 million in February 2026, with monthly actives crossing 1 billion by June 2026. Trends for "answer engine optimization" ran about 2.5x over the prior year and peaked in May 2026 when Google's guide shipped.
+
+The TAM is not "SEO software." It is high-ticket independents — consultants, designers, copywriters, fractional operators — whose pipeline used to be warm intro and is now a model shortlist. Forbes ran William Arruda in August 2026 on personal-brand visibility inside AI answers. That is the buyer education you ride, not a keyword you invent.
+
+BrightLocal's 2026 AI consumer-adoption numbers are the closest published proxy for "will a stranger trust a model to pick a pro." Combined with Adobe's 25% / 42% research-start figures, the demand side is already here. The supply side is enterprise GEO platforms and cheap Fiverr gigs. The $299–$499 freelancer band is empty.
+
+## Competitive Landscape
+
+- **Profound** — $99 Starter, custom Enterprise. $155 million raised. Built for Fortune 500 brand teams who want a visibility score across models. They will not staff a 21-day sprint for a $400/hour designer.
+- **Peec** — $80–$205 per month. Three thousand-plus brands. Closest incumbent on price. Still a brand dashboard, not a named-person placement engine.
+- **Semrush AI Toolkit** — $99 per month per domain, 25 prompts. Fine if you already live in Semrush. Useless if you do not have a domain worth monitoring and just need your name in three answers.
+- **Rankability** — $99–$399 per month. Content-ops overlay on GEO. Same problem: they optimize pages, not people.
+- **Ahrefs Brand Radar** — checker is free; the paid suite is an SEO platform. Good for the audit lead magnet. Bad as the product.
+- **GEO agencies** — $1,500–$25,000+ per month. Overkill for a solo freelancer. **Fiverr GEO gigs** — $30–$3,000 per project, typical tickets around $156–$291. Inconsistent, untracked, and they vanish after delivery.
+
+**Your Opportunity**
+
+Sell the placement, not the score. Free AI Visibility Audit (Ahrefs-style checker plus three prompt screenshots) → $299 Placement Sprint (21 days, three placements, money-back if the name never appears) → $149/month Named In ChatGPT retainer → $499/month Pro for operators who want prompt expansion and monthly new placements. Profound and Peec will keep the brand logos. You keep the people those brands hire.
+
+## Business Model
+
+| Tier | Price | What they get |
+| --- | --- | --- |
+| AI Visibility Audit | Free | 3 prompt screenshots + cited-source list + email capture |
+| Placement Sprint | $299 one-time | 21 days, 3 placements, money-back if name never appears |
+| Named In ChatGPT | $149/month | Weekly re-check, one replacement placement when a cite drops |
+| Pro | $499/month | Sprint + retainer + monthly new prompt cluster |
+
+Unit economics (month 6 napkin, not a forecast):
+
+- 30 public audits per month from LinkedIn + indie-hacker posts
+- 10% close to a sprint → 3 sprints → $897
+- Half of sprint buyers stay on the $149 retainer → about $2,600 blended monthly once the base compounds
+- LLM + scraping cost per audit is under $0.40; per placement draft under $1. The scarce cost is outreach, not tokens.
+
+Do not launch a $99/month dashboard. The audit is the wedge. The sprint is the cash. The retainer is the business.
+
+## Recommended Tech Stack
+
+- **App:** Next.js 15 + TypeScript on Vercel
+- **Auth / billing:** Clerk + Stripe Checkout (one-time sprint) + Stripe Billing (retainers)
+- **DB:** Convex or Supabase — `freelancers`, `prompt_clusters`, `placements`, `rechecks`
+- **Models:** OpenAI + Anthropic for draft placements; Perplexity / ChatGPT browsing via a thin scrape-and-diff job for the weekly re-check
+- **Outreach:** Instantly or a Gmail API queue for the three placement pitches
+- **Email:** Resend for audit delivery
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 15 + TypeScript app for an AI search publicist that helps high-ticket freelancers appear by name in ChatGPT answers.
+
+Set up:
+- Clerk auth and Stripe (one-time $299 sprint + $149/$499 retainers)
+- Convex schema: freelancers, promptClusters, placements, rechecks
+- Dashboard: audit results, sprint checklist, weekly re-check log
+- API routes to run a 3-prompt visibility audit and store cited sources
+
+Include env vars, typed errors, and a money-back flag on the sprint when zero placements resolve to a named mention.
+```
+
+**2. Core Feature**
+
+```text
+Build the Prompt Map + Placement Sprint.
+
+Requirements:
+- Input: offer, niche, 3 case-study URLs
+- Expand into 10–15 buyer questions and capture current ChatGPT/Perplexity citations
+- Queue 3 placement drafts (comparison blurb, expert quote, directory/podcast page)
+- Track each placement against the original prompts until the name appears
+
+User flow: paste offer → see prompt map → approve 3 targets → 21-day checklist → named-mention screenshot or refund.
+```
+
+**3. Weekly Recheck**
+
+```text
+Add a cron that re-asks the stored prompts every 7 days, diffs cited sources, and opens a replacement-placement task when the freelancer's name disappears. Email the diff via Resend. Never send a vanity "visibility score" — only named-mention present/absent plus the next action.
+```
+
+## Sources
+
+- [Cheers / BrightLocal — AI consumer adoption](https://www.cheers.tech/geo-academy/ai-consumer-adoption)
+- [Adobe Digital Trends consumer report](https://business.adobe.com/resources/digital-trends-consumer-report.html)
+- [Google AI optimization guide](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+- [Search Engine Journal — Google AEO/GEO guide](https://www.searchenginejournal.com/googles-new-ai-search-guide-calls-aeo-and-geo-still-seo/575026/)
+- [Semrush ChatGPT search insights](https://www.semrush.com/blog/chatgpt-search-insights/)
+- [Peec pricing](https://peec.ai/pricing)
+- [Profound](https://www.tryprofound.com)
+- [Semrush AI Toolkit pricing](https://www.semrush.com/pricing/ai/)
+- [Rankability pricing](https://www.rankability.com/pricing/)
+- [Ahrefs AI visibility checker](https://ahrefs.com/ai-visibility-checker)
+- [Fiverr GEO category](https://www.fiverr.com/categories/online-marketing/generative-engine-optimization)
+- [Forbes — William Arruda on AI personal brand](https://www.forbes.com/sites/williamarruda/2026/08/19/is-your-personal-brand-visible-to-ai-heres-how-to-find-out/)
+- [Omnibound — ChatGPT user statistics](https://www.omnibound.ai/blog/chatgpt-user-statistics)
