@@ -1,0 +1,171 @@
+---
+slug: "data-freelancer-bounty-board"
+title: "Data Freelancer Bounty Board"
+---
+
+## The Problem
+
+A growth lead needs a labeled competitor-pricing table by Friday. An ML engineer needs 8,000 images boxed before a fine-tune. A RevOps manager needs a CRM export deduped and GDPR-clean before the board meeting. None of those jobs is “hire a generalist.” They are data jobs: collect, clean, label, analyze. The buyer already knows the schema. What they cannot find is someone who hits it on the first delivery.
+
+Generic marketplaces treat this as another gig. Fiverr has data listings, but as the research puts it: “Fiverr has data gigs but no quality standards or schema enforcement.” You buy a $150 scrape, get unnamed columns and a ToS-risky method, then spend two internal days cleaning the cleaner. Upwork optimizes for profile volume, not row-level accuracy. Agencies take the work at enterprise rates. Internal analysts do not have bandwidth for a two-week sprint that will never become a headcount.
+
+Catalogs do not close the gap. AWS Data Exchange and Snowflake Marketplace sell inventory that already exists. If you need *your* competitors, geography, or label taxonomy, you are back on a gig board. Giant annotation platforms are not a $2,000 mid-market bounty with escrow and a schema template.
+
+This is not the [AI-verified freelancer marketplace](/ideas/ai-verified-freelancer-marketplace) (prove AI skill, then hire) or the [AI builder hiring marketplace](/ideas/ai-builder-hiring-marketplace) (wire automations for local services). Those match people who *build*. This board matches people who *ship data*. The landing-page line is already in the research: “The standardization layer makes this a marketplace, not a gig board.”
+
+Demand is live. r/datasets (284K) and r/dataengineering (168K) run recurring threads on usable data and which quality tools catch garbage. r/bigdata (200K+) and r/QualityAssurance (74.5K) echo it from ops. Facebook’s Data and Leads Marketplace (8.9K+) is this board without escrow or a schema. Buyers are already posting — in places that cannot hold funds or score accuracy.
+
+## The Solution
+
+ProofSet (working name) is a bounty board for data work. A company posts against a schema template — columns, types, allowed values, PII rules, sample rows — and a budget. Vetted data freelancers bid with a sample or claim a productized SKU. Funds sit in Stripe Connect escrow. Payout waits on a quality gate: schema validation, duplicate rate, null budget, spot-check rubric. Each closed bounty scores the freelancer and feeds matching. That loop is the product. Generic platforms cannot copy it without shrinking the junk inventory they live on.
+
+Do not become Upwork with a “data” tag. Four job types on day one:
+
+- **Collection** — niche lists, public filings, priced catalogs, research extracts, with a documented method (no “trust me” scrapes)
+- **Cleaning** — dedupe, type coercion, join keys, outlier flags, against a published schema
+- **Labeling / annotation** — images, text, audio, tabular classes; taxonomy locked before work starts
+- **Analysis** — a bounded notebook or dashboard against a provided extract, not an open-ended “insights” retainer
+
+Recruit 20–50 operators before opening the buyer side (Reddit data communities, LinkedIn, skilled people underpriced on Fiverr). Hand-match the first 30 bounties. Automate routing only after templates convert. Premium placement and a buyer sub sit on the take; they are not week one.
+
+**How it works:**
+
+1. **Post against a schema** — Buyer picks a template (tabular clean, image labels, text classes, analysis notebook), fills required fields, sample rows, deadline, and budget, then funds escrow.
+2. **Bid or claim** — Vetted freelancers filter by skill and score. Collection and analysis jobs take proposals with a sample. Productized labeling/cleaning SKUs can be claimed by one freelancer.
+3. **Deliver into the gate** — Upload hits automated checks (schema, nulls, dupes, label distribution) plus a sampled human/LLM rubric. Fail returns to the freelancer with a diff, not a vague “please fix.”
+4. **Release and score** — Buyer accepts or opens a dispute. Funds release on pass. Accuracy, rework rounds, and cycle time update the freelancer’s rank and the next match.
+
+## Market Research
+
+Catalogs proved people pay for datasets. They did not prove people can *commission* them with quality attached. That second market is still emerging: a few bounty experiments, a gig layer with no schema, and cloud shelves of inventory.
+
+- **Cloud catalogs = paid demand, not custom delivery.** AWS Data Exchange: 3,700-plus datasets since 2019. Snowflake Marketplace: 1,300-plus from 300 providers since 2020. Catalogs sell what is packaged. You sell the job that produces what is not.
+- **Search is commercial.** “Data marketplace” ~9,900 monthly searches, 3.7% growth (toward 11,000). Adjacent: “data quality tools” ~2,900; “tools for data profiling” ~1,600 at 27% growth. Buyers shop for trust infrastructure, not another profile grid.
+- **Annotation demand dwarfs the marketplace keyword.** Ideabrowser trend research on “data freelancer bounty marketplace labeling analysis” expanded to 15 keywords totaling ~1.76 million monthly searches (avg growth ~50%). Head terms: “data annotation” / “dataset annotation” at 550,000 each (low competition, CPC ~$0.92); “data annotation jobs” 60,500 (CPC ~$3.09); “sql data analytics” 33,100. People paying $3 a click for annotation jobs will pay a four-figure bounty if delivery is scored.
+- **Communities already match, unpaid.** r/datasets 284K, r/dataengineering 168K, r/bigdata 200K-plus, Facebook Data and Leads Marketplace 8.9K-plus. YouTube quality explainers (IBM Technology ~80K avg views) prove the education funnel. None hold escrow or a schema.
+- **Stage: emerging.** Direct bounty players in the low single digits (DataBounties live; DoltHub ran bounties then stopped; Replit Bounties is generalist software). Nobody owns schema-backed data bounties as a category.
+
+Why now: AI teams that cannot wait for a catalog SKU, privacy regimes (GDPR / CCPA, EU AI Act phases) that make “we scraped it somehow” a liability, and validators cheap enough for a weekend MVP. DoltHub already showed wallets open — a 2020 election-data cleaning bounty at $25,000, top payouts ~$11,000 — then shut the program because it was not the core product. Demand survived. The board did not.
+
+SAM: mid-market one-offs in the $2,000–$50,000 band plus a few-hundred-dollar labeling SKU. Twelve closed $5,000 bounties a month at 12% take is $7.2K before subscriptions — the $5K-month path without pretending you are Scale.
+
+## Competitive Landscape
+
+Three clusters: gigs with no schema, catalogs with no freelancers, bounty experiments that never productized quality.
+
+- **Fiverr** — Default scrape / “data cleaning” gig. Instant checkout, huge supply, **20% seller commission**. No schema, no method disclosure, no accuracy score that follows the freelancer. Fine for a logo. Expensive in cleanup hours for anything that has to land in a warehouse.
+- **DataBounties** — Closest analog: post a niche request, bid with samples, collaborate. Buyer-set budgets, implied platform fee, three-step flow. Speaks “bounty.” Ideabrowser’s teardown is explicit: schema templates and a hard quality gate are not the product. That gap is yours.
+- **DoltHub bounties (discontinued)** — Real money: **$25,000** election-data cleaning in 2020, top payouts ~**$11,000**. Then they pivoted off bounties. You are picking up a format they abandoned, not fighting a live board.
+- **Replit Bounties** — Fast, **$50-plus** fixed prices, five-hour transcript jobs. Proof bounties convert. It is a software-MVP board, not a data-quality board. Wrong specialist graph.
+- **AWS Data Exchange / Snowflake Marketplace** — **3,700-plus** and **1,300-plus** listings. Subscription or usage revenue, warehouse-native delivery. Zero freelancer matching. If the file exists, they win. If it must be made, they are not in the RFP.
+- **Bright Data (and catalog vendors)** — Pre-built web datasets. Substitute when “close enough” beats “exact.” They do not run your taxonomy.
+- **Soda / Great Expectations** — Quality tools, not marketplaces. Embed them in the gate. Do not position against them.
+
+**Your Opportunity**
+
+Own schema-backed data bounties in the band catalogs will not staff and Fiverr will not verify: cleaning, labeling, analysis, custom collection. Incumbents will not drop to a scored $2K–$15K SKU without cannibalizing gig volume or catalog GTM. DataBounties can add templates; they have not made the gate the product. Ship three things they will not copy in a quarter: (1) required schema templates per job type, (2) escrow that releases on automated quality, (3) a specialist graph scored on accuracy, recruited from data communities. Seed 20 operators, run 30 manual jobs, then open the board. If the deliverable is an app, send them elsewhere. If it is a dataset, this is the board.
+
+## Business Model
+
+Take rate on completed bounties, plus a thin SaaS layer for buyers who post monthly. Freelancers join free after a work-sample vet. Do not charge supply until demand exists.
+
+- **Post** ($0 to list, 12% take on completion; 10% as a launch wedge) — Primary revenue. Waive take on the first buyer job if the board is empty.
+- **Priority buyer** ($99/month, inside the $50–$200 research band) — Faster claims, saved templates, bulk posting. For teams that refresh extracts monthly.
+- **Placement bump** ($50–$200 per bounty) — Same-day visibility. Frontend cash without touching the take.
+- **Compliance pack** ($1,000–$5,000/year) — Method logs, retention, GDPR/CCPA checklist on collection jobs. Sell after the third closed bounty.
+- **White-label** ($25,000-plus/year) — Later. Not week one.
+
+Path to $5K/month: eight closed $5,000 bounties at 12% ($4,800) plus a few Priority seats, or cheap labeling SKUs mixed with two mid-market collection jobs. Path to $10K: ~15 × $5,000 at 12%, or fewer $15K–$50K bounties. Rules-based matching until job 50; LLM sampling only on labels.
+
+**Unit Economics**
+
+- **$600** — Take on a $5,000 bounty at 12%
+- **under $5** — Variable cost per closed job
+- **~85%** — Gross margin after processing
+- **$80–$150** — Target CAC per buyer (communities first)
+- **$1,200-plus** — 12-month LTV on a monthly-refresh Priority buyer
+
+## Recommended Tech Stack
+
+Two-sided board with escrow and a validation pipeline. Optimize for job state, Connect payouts, and a schema gate. Hand-match in a spreadsheet until job 30.
+
+- **Next.js + Vercel** — Buyer post, freelancer claim/bid, admin queue. Filterable list, not a feed.
+- **Convex or Supabase** — users, freelancer_profiles, bounties, bids, deliveries, quality_reports, disputes. RLS by role. Realtime claim locks if Convex.
+- **Stripe Connect** — Buyer funds on post; take on release; freelancer transfer on pass. Destination charges.
+- **JSON Schema + Great Expectations (or a thin clone)** — Tabular jobs validate before a human looks. Label jobs check taxonomy membership and class balance.
+- **Claude or GPT-4o for sampled review** — Spot-check N labels or flag PII-looking columns. Never the only gate.
+- **Clerk or Convex Auth** — Two roles. Magic link is enough.
+- **Inngest or Vercel Cron** — Deadline nags, auto-fail stale claims.
+
+Skip a messenger. Email plus a status page. Disputes: boolean plus admin note until volume hurts.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) marketplace called ProofSet: a bounty board for data jobs (cleaning, labeling, collection, analysis), not general freelance.
+
+Supabase (or Convex) schema:
+- users (id, role: buyer|freelancer|admin, email)
+- freelancer_profiles (user_id, skills TEXT[], sample_urls TEXT[], accuracy_score FLOAT, jobs_completed INT, status: pending_vet|active|suspended)
+- schema_templates (id, job_type: clean|label|collect|analyze, json_schema JSONB, sample_csv_url)
+- bounties (id, buyer_id, job_type, title, brief, json_schema, budget_cents, deadline, status: draft|funded|open|claimed|in_review|passed|failed|disputed, stripe_payment_intent)
+- bids (id, bounty_id, freelancer_id, note, sample_url, amount_cents, status)
+- deliveries (id, bounty_id, freelancer_id, file_url, checksum, submitted_at)
+- quality_reports (id, delivery_id, schema_pass BOOLEAN, dupe_rate FLOAT, null_rate FLOAT, rubric_score FLOAT, notes TEXT)
+
+Auth: Clerk (or Convex Auth), two dashboards. Stripe Connect destination charges. Env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, OPENAI_API_KEY or ANTHROPIC_API_KEY. RLS: buyers own their bounties; freelancers read open jobs + assigned rows only.
+```
+
+**2. Bounty Post + Escrow + Quality Gate**
+
+```text
+Build the core bounty lifecycle.
+
+POST /bounties: buyer selects job_type, fills schema_template (editable JSON Schema + 3 sample rows), budget, deadline. Create Stripe PaymentIntent for budget_cents; on webhook payment_succeeded set status=open.
+
+Freelancer flow: list open bounties filtered by skills. For job_type label|clean, one active claim locks the row. For collect|analyze, submit a bid with sample_url; buyer accepts one bid.
+
+Delivery: freelancer uploads file to storage. Run validators:
+1) JSON Schema / CSV header+type check
+2) duplicate rate and null rate vs template thresholds
+3) for label jobs, every class in the posted taxonomy; sample 50 rows to Claude with a frozen rubric, store rubric_score
+If schema_pass is false, status=failed and return a row-level error CSV. If pass, status=in_review for buyer accept.
+
+On accept: Stripe transfer to freelancer of budget minus 12% platform fee; bump accuracy_score with exponential moving average of rubric_score and rework_count. Implement a dispute state that only admins can resolve.
+```
+
+**3. Landing Page**
+
+```text
+Design a marketing page for ProofSet. Hero: “A bounty board for data work, not gigs.” Sub: “Post a schema. Vetted data freelancers clean, label, collect, or analyze. Payout waits on the quality gate.”
+
+Sections: problem (messy Fiverr CSVs vs catalogs that do not have your taxonomy), how it works (4 steps matching the product), job types (clean / label / collect / analyze) with one example bounty each, social proof placeholders (r/datasets-style quotes, not fake logos), pricing (12% take, $99/mo Priority, $50–$200 bump), FAQ (PII, prohibited scraping, how vetting works, why this is not Upwork). Dark page, aubergine accent, no stock photos of smiling analysts. Primary CTA: “Post a bounty” (buyer) and secondary “Apply to freelancer roster.”
+```
+
+**4. Freelancer Vetting Queue**
+
+```text
+Build an admin + applicant flow for the freelancer roster.
+
+Applicant submits: LinkedIn/GitHub, two sample datasets or Kaggle kernels, primary skills (clean, label, collect, SQL analysis), and a 30-minute paid trial: we give a dirty 500-row CSV and a schema; they return a passing file.
+
+Admin queue: pass/fail with notes. On pass, status=active and accuracy_score starts at 0.8. Show the trial rubric (schema pass, dupe_rate under 1%, types coerced, documented steps). Reject generalist “I do anything” profiles. Add a flag for collection jobs requiring a written method (source list + legal basis) before the applicant can see collect bounties.
+
+Do not open buyer posting until 20 active freelancers cover all four job types.
+```
+
+## Sources
+
+Market sizing, competitor pricing, and demand signals from Ideabrowser MCP idea #6953 (April 2026) plus topic trend research. Triangulate before citing.
+
+- [DataBounties — live dataset bounty marketplace](https://databounties.com)
+- [DoltHub — Data Bounties (2020; later discontinued)](https://www.dolthub.com/blog/2020-12-16-data-bounties/)
+- [Replit — Bounties case study](https://blog.replit.com/bounties-christian-ulstrup-case-study)
+- [Bright Data — pre-built datasets catalog](https://brightdata.com/products/datasets)
+- [SIGMOD Record — data marketplace survey](https://sigmodrecord.org/publications/sigmodRecord/2209/pdfs/04_Surveys_Azcoitia.pdf)
+- [Kaggle — Replit bounties dataset](https://www.kaggle.com/datasets/ibrahimonmars/replit-bounties-dataset)
+- Ideabrowser idea #6953 (opportunity 9, pain 9, timing 9, builder confidence 9): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend (~1.76M combined monthly searches across 15 keywords).

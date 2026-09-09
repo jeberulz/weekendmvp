@@ -1,0 +1,163 @@
+---
+slug: "hold-time-call-bot"
+title: "Hold-Time Call Bot"
+---
+
+## The Problem
+
+A consultant blocks forty minutes for “call the insurance carrier.” The actual conversation with a human lasts six. The other thirty-four is hold music, a looping IVR, a “your call is important to us” that nobody believes, and a speakerphone face-down on the desk while they pretend to work. Nobody invoices that gap. It never hits a timesheet. It is why the morning felt productive and the afternoon is gone.
+
+The wait is not rare. Ideabrowser’s brief puts average U.S. phone-tree-and-hold time at about ten hours a year. At $150/hr that is a four-figure leak with no QuickBooks line. For everyone else it is the lunch that dies on United, the DMV, the prior-auth desk. Adjacent Reddit already argues the job: r/CustomerSuccess (27.1K), r/automation (71.1K), r/ArtificialIntelligence (124K) — 222K people, plus 290+ comments on “best AI assistant” threads.
+
+Incumbent “solutions” miss the job. Pixel Call Screen will screen a spam inbound. A human VA on Upwork will sit on hold if you pay them to. A Twilio tutorial will dial a number and dump you into a conference. None of them will walk an airline tree, detect the hold-music bed, stay alive through a twenty-minute queue, and ping you the second a living agent says hello — then hand the live call to your cell without dropping it. Ideabrowser’s competitive writeup also flags that roughly seven in ten people walk after a bad service experience; hold time is how that experience starts. That last mile is the product. Everything else is a demo.
+
+## The Solution
+
+Hold-Time Call Bot is a Twilio voice agent that joins the queue so you do not. You paste a customer-service number (or a saved “United / IRS / Amex” preset), optional account digits and the buttons you always press, and tap Start. The bot dials out, speaks or DTMF-walks the IVR, recognizes hold music versus a human, and texts you a join link the moment a representative is on the line. You tap the link, Twilio conferences you in, the bot drops. You talk to a person. The thirty minutes of nothing never touched your afternoon.
+
+Weekend scope is ruthless: detect hold, survive the queue, notify, hand over. Do not negotiate. Do not file the claim. One outbound flow, one hold-state detector, one SMS, one conference join. The moat is the log — prompt text, DTMF path, time-to-human — so the next United call is a lookup. Phone-tree maps compound. General voice APIs do not.
+
+**How it works:**
+
+1. **Drop the number** — Paste a support line or pick a saved preset (carrier, airline, insurer). Optional extras: account PIN, the menu path you already know, the cell that should get the ping.
+2. **Bot dials and walks the tree** — Twilio Programmable Voice places the outbound call. A speech-to-text loop plus DTMF plays the IVR; the agent chooses “representative” when it hears it, or falls back to 0.
+3. **Sit the hold** — Hold-music and “please continue to hold” keep the session in waiting state. The dashboard shows elapsed wait. You close the laptop.
+4. **Human answers, you get pinged** — Voice-activity plus a barge-in classifier fires when a live agent speaks. SMS (and optional push) lands with a one-tap join link.
+5. **You take the call** — Twilio conferences your phone in; the bot whispers a one-line brief (“United, confirmation ABC, 22 min wait”) and leaves. Call recording stays off unless you explicitly enable it.
+
+## Market Research
+
+This is not “another chatbot.” It is a thin slice of a voice-agent boom that still has no dominant hold-skipper. Ideabrowser classifies the niche as emerging: lots of assistant hype, almost nobody productized as “wait on hold for me.”
+
+- **AI assistants are already a multi-billion category.** IMARC, MarketsandMarkets, and Grand View Research put 2025 in a $3.35B–$17.1B band, expanding toward $21.11B–$124.9B by 2030–2034 (CAGRs 18.8–44.5%). OG Analysis’s 2026 outlook: $3.35B in 2025 to $24.53B by 2034 at 24.8% CAGR. You are aiming existing assistant spend at a hold queue.
+- **Agentic voice is the accelerating slice.** Fortune Business Insights sizes agentic AI at $7.29B in 2025 heading for $139B by 2034 (40.5% CAGR) — budget for agents that *do* things on a PSTN line, not summarize a ticket after.
+- **Search already pays for the pain.** Ideabrowser’s keyword list: `customer service automation` at $28.63 CPC (low competition), `ai phone assistant` at $22.12 CPC, plus growth on `conversational ai assistant` (+2305%), `ai powered virtual assistant` (+4276%, 83,150 projected volume), `conversational assistants` (+11552%). `call waiting music` is a pain-point query — people search the annoyance.
+- **Distribution is already warm.** ElevenLabs demos in the multi-million-view range, Salesforce AI content around 1.8M views, NetworkChuck-class tutorials around 700K. Facebook’s Google Home / Gemini / Assistant group (25.5K) still cannot finish a phone tree.
+- **Why a weekend, not a lab.** Twilio + open speech + realtime APIs turned “build a call center” into webhooks. Competitive analysis: inference costs roughly halved, “pennies per call versus a dollar of human wait.” North America ~30–36% of assistant spend; Pixel Duplex is US-only.
+
+Stage: emerging, not empty. Duplex has screened calls since 2018; ElevenLabs sold the voice layer; M1 pitches SMB phone assistants. What still is not a $20 SKU is the hold-waiter with a clean human handoff. Timing on the parent idea is 9/10 — wait a cycle and this lands inside every Pixel-adjacent stack.
+
+## Competitive Landscape
+
+Three named players clear the “is this a real market” test. None of them is a hold-time product you can sell on a landing page this weekend.
+
+- **Google Duplex / Pixel Call Screen** — Inbound spam screen, some outbound reservation calls, Pixel / Assistant distribution (Android, NA ~36% assistant share). Weakness: hardware lock-in, US-centric, privacy pushback. Not “sit on United for 40 minutes and text me.” Pricing: free on Pixel. Beat them on one boring job, not on platform.
+- **ElevenLabs Voice AI** — Best-in-class TTS / conversational agents, multi-million-view demos, real dev funnel. Weakness: voice API, not a hold queue. Wrap it or a cheaper STT/TTS pair. Pricing: $5–$99/mo.
+- **M1 AI Phone Assistant** — Missed-call / call-handling for SMBs; YouTube review traction. Weakness: receptionist (inbound), not outbound hold on IRS/airline trees. Pricing: about $20–$50/mo (Ideabrowser inferred band).
+
+Indirect substitutes if you position as “AI assistant”: ChatGPT / Gemini, Siri / Alexa, Salesforce Einstein (1.8M-view tutorial cluster), Upwork VAs, DIY Twilio + n8n. Callback widgets only work when the *business* installed them. Your user does not control United’s stack.
+
+**Your Opportunity**
+
+Sell the job, not the model. Pixel is free and hardware-gated. ElevenLabs is infrastructure. M1 is a receptionist. The white space is outbound hold + IVR walk + human handoff at $19–$30/mo, starting with people who already live on the phone: consultants, insurance brokers, solo lawyers, anyone whose week includes a government or carrier queue. Log trees. Do not hallucinate a negotiation agent in v1 — Ideabrowser’s own competitive writeup flags nuance failure and legacy-tree breakage as the kill shots. Survive the wait. That is the wedge.
+
+## Business Model
+
+Subscription with a usage fuse — Twilio minutes are visible COGS. Ideabrowser’s ladder is already priced: free demo, $19.99/mo frontend, $29.99/mo pro, $5,000/year team, $20,000/year telco partnership. Mirror it. Do not ship $9 unlimited hold; one power user on three IRS lines erases the month.
+
+- **Demo** ($0) — One live hold, capped minutes, watermarked SMS. The YouTube / Reddit clip is the ad.
+- **Line** ($19.99/mo) — 120 wait-minutes included, SMS handoff, three saved numbers, hold-music detector, basic call log.
+- **Desk** ($29.99/mo) — 400 wait-minutes, custom DTMF macros, shared presets, priority TTS, CSV export of wait time (the timesheet proof).
+- **Floor** ($5,000/year) — Ten seats, SSO later, pooled minutes, tree-map sharing inside the firm. Matches Ideabrowser’s enterprise rung without pretending you are a CCaaS.
+
+Overage: wait-minutes in Ideabrowser’s $0.05–$0.20/min pay-as-you-go band — above Twilio wholesale, below a human VA. The $20K telco partnership is year two.
+
+**Unit Economics**
+
+- **under $0.40** — Target COGS per 20-minute hold (Twilio voice + STT + a cheap classifier). Stay there or the $20 plan dies.
+- **~75–85%** — Gross margin on Desk if a typical user burns 8–12 holds/month inside the bundle
+- **$40–$80** — Target CAC (Reddit + YouTube hold-rage clips, not Google Ads at $28 CPC for “customer service automation”)
+- **~$180–$250** — LTV if you keep a Desk user 8–10 months (wait-time log is the retention hook — they can finally show a client why the invoice includes “I did not sit on hold”)
+
+Path: 250 Line subs ≈ $5K MRR; add 80 Desk and you clear $7K. Floor is lumpy — ignore until consultancies ask. Retention is the tree library: once United is one-tap, churn is speakerphone.
+
+## Recommended Tech Stack
+
+This is a telephony state machine with an LLM in a side car, not a chatbot with a dialer glued on. Optimize for: answer Twilio webhooks fast, keep the media stream cheap, classify hold vs human without burning a frontier model every 200ms, and never drop the conference on join.
+
+- **Next.js 14 + Vercel** — Dashboard, saved numbers, Stripe customer portal. Edge route for Twilio status callbacks so you can return TwiML without a cold Node boot in the middle of a queue.
+- **Twilio Programmable Voice + Conference** — Outbound call, DTMF, pause-free hold via conference: bot leg stays in the room, user leg joins on ping. Media Streams (or recording-status callbacks if you must stay cheaper) feed audio to the classifier. Use a US long code / business profile; SHAKEN/STIR matters or carriers will treat you like a robocaller.
+- **OpenAI Realtime or gpt-4o-mini + Whisper** — Realtime only for IVR turns you must speak. Whisper + a tiny classifier for hold-music vs a live “hello, my name is—” so twenty minutes of Kenny G does not bill at realtime rates. Fallback TTS: ElevenLabs for pretty, Twilio TTS for margin.
+- **Convex or Supabase** — Tables: users, destinations (phone, dtmf_macro, nickname), calls (sid, state: dialing|ivr|hold|human|bridged|failed), tree_nodes (vendor, prompt_hash, digits, success_rate), messages (SMS log). State belongs in the DB, not in the LLM context.
+- **Stripe Billing** — Line / Desk products, metered wait-minutes for overage, customer portal. Hard-cap concurrent outbound calls per customer on day one.
+- **Inngest or Vercel Cron** — Reaper for zombie calls (Twilio says in-progress, your state says hold for 90+ minutes), plus a nightly job that aggregates tree_nodes into presets.
+
+Compliance: disclose the bot until handoff, default recording off, store almost no audio, read TCPA before the agent speaks a name. Two-party recording states are a weekend problem; EU AI Act logging is not.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 App Router + TypeScript + Tailwind app called “Hold-Time Call Bot.”
+
+Supabase (or Convex) schema:
+- users (id, email, phone, plan, stripe_customer_id, monthly_wait_seconds_used)
+- destinations (id, user_id, nickname, e164, dtmf_macro TEXT, language TEXT default 'en-US')
+- calls (id, user_id, destination_id, twilio_call_sid, twilio_conference_sid, state TEXT CHECK state IN ('dialing','ivr','hold','human','bridged','failed','canceled'), started_at, human_at, bridged_at, ended_at, wait_seconds, error_code)
+- tree_nodes (id, vendor_key, prompt_transcript, digits, outcome, sample_count)
+- messages (id, call_id, direction, body, twilio_sid)
+
+Env: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, OPENAI_API_KEY, STRIPE_SECRET_KEY.
+
+Twilio: Voice webhook POST /api/voice/outbound starts an outbound call into a named conference; status callback POST /api/voice/status updates calls.state. SMS ping via Messaging API when state flips to human.
+
+Stripe products: Demo $0 (1 call), Line $19.99/mo (120 wait-minutes), Desk $29.99/mo (400 wait-minutes), metered overage $0.12/wait-minute. Hard cap 2 concurrent calls per user.
+
+Do not store audio by default. RLS so user_id matches auth.uid().
+```
+
+**2. Hold Detector + Human Handoff**
+
+```text
+Build the weekend core: detect hold vs human, then bridge.
+
+Audio path: Twilio Media Stream WebSocket -> server. Every 1.5s, run a cheap classifier (prompt a small model on a Whisper transcript window, plus a simple music/speech energy heuristic):
+- labels: ivr_prompt | hold_music | please_wait_speech | live_agent | silence | unknown
+- live_agent if (not hold-music bed) AND (first-person greeting or name) AND (barge-in possible)
+
+IVR walker: while label is ivr_prompt, either send destination.dtmf_macro or ask gpt-4o-mini to pick one digit from the transcript ("press 0 for representative"). Never invent account numbers.
+
+On live_agent:
+1. PATCH calls.state = 'human', set human_at
+2. SMS the user a join URL /api/join/:callId (Twilio client or PSTN callback into the same conference)
+3. Play a short whisper to the agent only after the user is in: "Connecting the account holder now."
+4. Mute/drop the bot leg
+
+Watchdogs: if hold exceeds user.plan cap, SMS "still holding — tap to cancel"; if no speech for 45s after a ring, mark failed. Log tree_nodes on every successful digit so United becomes a preset.
+
+Return TwiML in under 1s; run Whisper/LLM in the background worker, not the webhook.
+```
+
+**3. Landing Page**
+
+```text
+Design a single marketing page for Hold-Time Call Bot.
+
+Hero: “Sit on hold without sitting on hold.”
+Sub: “A voice bot dials the airline, walks the tree, and texts you when a human picks up. You join for the part that matters.”
+
+Sections:
+- Problem: speakerphone on the desk, 30 minutes of Kenny G, six-minute conversation
+- Demo: fake phone UI showing SMS “Human on the line — tap to join (22 min wait)”
+- How it works: 5 steps matching the product (drop number, walk tree, hold, ping, join)
+- Not Duplex: Pixel Call Screen is free and hardware-locked; this is outbound hold for any number
+- Pricing: Demo / Line $19.99 / Desk $29.99, wait-minutes called out so COGS is honest
+- FAQ: recording default off, bot discloses until handoff, what happens if the agent hangs up, TCPA
+
+Visual: dark desk, lime accent, landline off the hook, no people, no fake screenshots with tiny unreadable UI type. CTA: “Run one free hold” -> signup with a destination number field.
+```
+
+## Sources
+
+Collated from Ideabrowser MCP idea #5689 (February 2026 snapshot). `research_trend` discover was quota-blocked; no verified-research report exists yet. Triangulate CAGRs before a deck.
+
+- [IMARC — Intelligent Virtual Assistant Market](https://www.imarcgroup.com/intelligent-virtual-assistant-market)
+- [MarketsandMarkets — AI Assistant Market](https://www.marketsandmarkets.com/Market-Reports/ai-assistant-market-40111511.html)
+- [Grand View Research — AI Assistant Market Report](https://www.grandviewresearch.com/industry-analysis/ai-assistant-market-report)
+- [OG Analysis — AI Assistant Outlook (2025–2034, 24.8% CAGR)](https://www.marketresearch.com/OG-Analysis-v3922/AI-Assistant-Outlook-Share-Growth-43707229/)
+- [Fortune Business Insights — Agentic AI Market](https://www.fortunebusinessinsights.com/agentic-ai-market-114233)
+- [Comscore — AI Assistants into 2026](https://www.comscore.com/Insights/Press-Releases/2026/1/AI-Assistants-Head-into-2026-on-a-High-Note)
+- [Visalytica — Community building for AI](https://www.visalytica.com/blog/community-building-for-ai)

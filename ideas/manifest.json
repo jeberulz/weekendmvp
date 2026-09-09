@@ -8640,7 +8640,7 @@
       "title": "AI Search Publicist for High-Ticket Freelancers",
       "publishedAt": "2026-09-05",
       "category": "saas",
-      "description": "Put high-ticket freelancers in ChatGPT answers with a 21-day placement sprint \u2014 not another enterprise GEO dashboard.",
+      "description": "Put high-ticket freelancers in ChatGPT answers with a 21-day placement sprint — not another enterprise GEO dashboard.",
       "buildTime": "12",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -8778,7 +8778,7 @@
       "title": "Reddit and Discord Listening Tool for Fractional Marketing Teams",
       "publishedAt": "2026-09-05",
       "category": "saas",
-      "description": "Reddit and Discord listening for fractional CMOs \u2014 a $150/brand Monday brief, not a Brandwatch contract.",
+      "description": "Reddit and Discord listening for fractional CMOs — a $150/brand Monday brief, not a Brandwatch contract.",
       "buildTime": "8",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -8958,7 +8958,7 @@
       "title": "Customized Lead Magnets",
       "publishedAt": "2026-09-05",
       "category": "saas",
-      "description": "Build lead magnets that change by visitor segment \u2014 hosted variants, not another static Canva PDF.",
+      "description": "Build lead magnets that change by visitor segment — hosted variants, not another static Canva PDF.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -9085,6 +9085,493 @@
         "pain": 8,
         "timing": 8,
         "builder_confidence": 7
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "photo-meal-workout-tracker",
+      "title": "Photo-Based Health Tracker",
+      "publishedAt": "2026-09-09",
+      "category": "health",
+      "description": "Snap a plated meal or gym selfie and AI logs calories, macros, and workouts into Apple Health. Built for people who quit calorie apps after week three.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:6012",
+      "og": {
+        "subject": "phone on a dark kitchen counter photographing a plated meal, mint rim light, shallow focus, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "get_verified_research",
+          "research_trend"
+        ],
+        "citations": 7,
+        "wordCount": 2385,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "phone-body-composition-scanner",
+      "title": "Phone Body Composition Scanner",
+      "publishedAt": "2026-09-09",
+      "category": "health",
+      "description": "ARKit/ARCore phone scan that tracks muscle vs fat at home — a DEXA-alternative for GLP-1 users who will not pay $150 per clinic visit.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:5850",
+      "og": {
+        "subject": "dark gym bag and phone on a gym floor, emerald accent light, no people, no faces, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "research_trend"
+        ],
+        "citations": 13,
+        "wordCount": 2139,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "saas-feature-usage-auditor",
+      "title": "SaaS Feature Usage Auditor",
+      "publishedAt": "2026-09-09",
+      "category": "developer-tools",
+      "description": "Upload Mixpanel or PostHog exports, score dead-weight SaaS features, and get a kill list so founders can sunset unused product surface with confidence.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:5076",
+      "og": {
+        "subject": "dark laptop with a product dashboard and a redacted feature flag toggle, lavender glow, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 2398,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "data-freelancer-bounty-board",
+      "title": "Data Freelancer Bounty Board",
+      "publishedAt": "2026-09-09",
+      "category": "marketplace",
+      "description": "Bounty board for data work—cleaning, labeling, analysis—not generic gigs. Post a schema, vetted freelancers deliver, payout waits on a quality gate.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "freelancers",
+        "solo-founders",
+        "small-business-owners",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:6953",
+      "og": {
+        "subject": "A dark desk with stacked hard drives and a stamped bounty envelope, aubergine glow, shallow focus, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "research_trend"
+        ],
+        "citations": 6,
+        "wordCount": 2400,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "adventure-date-night-app",
+      "title": "Adventure Date Night App",
+      "publishedAt": "2026-09-09",
+      "category": "marketplace",
+      "description": "One-city marketplace that books adventure date nights for couples — kayaks, studios, private chefs — with Stripe checkout and gift vouchers.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:5688",
+      "og": {
+        "subject": "two unused cinema tickets and a compass on a dark table, mint rim light, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "get_verified_research",
+          "research_trend"
+        ],
+        "citations": 23,
+        "wordCount": 2392,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "freelancer-tax-filing-bot",
+      "title": "Freelancer Tax Filing Bot",
+      "publishedAt": "2026-09-09",
+      "category": "fintech",
+      "description": "1099 tax software that keeps the books and e-files Schedule C from Stripe and Plaid — year-round ledger, licensed transmit, not just an estimate.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "side-hustlers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:2494",
+      "og": {
+        "subject": "A dark desk with stacked 1099 envelopes and a calculator, lime accent light, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "get_verified_research",
+          "research_trend"
+        ],
+        "citations": 9,
+        "wordCount": 2386,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "first-international-hire-assistant",
+      "title": "First International Hire Assistant",
+      "publishedAt": "2026-09-09",
+      "category": "b2b",
+      "description": "Guided first international hire for startups: country pack, contractor vs EOR path, Remote/Deel quotes. Not a full EOR.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "small-business-owners",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:4419",
+      "og": {
+        "subject": "A dark desk with a passport, a contract folder, and a globe paperweight, lavender glow, no people, no text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "get_verified_research",
+          "research_trend"
+        ],
+        "citations": 31,
+        "wordCount": 2396,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "landlord-tenant-risk-screener",
+      "title": "Landlord Tenant Risk Screener",
+      "publishedAt": "2026-09-09",
+      "category": "b2b",
+      "description": "Forensic tenant screening for small landlords: upload applications, flag fake docs and risk signals, get a plain-language score before you sign the lease.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders",
+        "weekend-builders",
+        "non-technical"
+      ],
+      "source": "ideabrowser:5026",
+      "og": {
+        "subject": "dark desk with a lease folder, house keys, and a stamped risk score card, aubergine glow, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "research_trend"
+        ],
+        "citations": 11,
+        "wordCount": 2397,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "researchLevel": "deep"
+    },
+    {
+      "slug": "hold-time-call-bot",
+      "title": "Hold-Time Call Bot",
+      "publishedAt": "2026-09-09",
+      "category": "productivity",
+      "description": "AI call assistant that waits on hold, walks phone trees, and texts you when a human answers. Twilio + voice agent weekend MVP.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "freelancers",
+        "solo-founders",
+        "weekend-builders",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:5689",
+      "og": {
+        "subject": "A dark desk with a landline handset off the hook and a small analog timer, lime glow from the side, no people, no text",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "market_stage_analysis",
+          "get_verified_research",
+          "research_trend"
+        ],
+        "citations": 7,
+        "wordCount": 2398,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T12:30:00.000Z"
+      },
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "researchLevel": "standard"
+    },
+    {
+      "slug": "s-corp-monthly-finance-desk",
+      "title": "Book closing service for businesses with no finance team",
+      "publishedAt": "2026-09-09",
+      "category": "fintech",
+      "description": "Monthly close and owner-pay brief for one-person S-Corps. AI sorts the books; a human ships a CPA-ready packet. Not tax advice, not a Gusto clone.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "small-business-owners",
+        "freelancers"
+      ],
+      "source": "ideabrowser:9054",
+      "og": {
+        "subject": "A closed leather ledger and a one-page brief on a dark walnut desk, aubergine rim light, late night, shallow focus, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 11,
+        "wordCount": 1952,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-09T13:40:00.000Z"
+      },
+      "scores": {
+        "opportunity": 8,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
       },
       "researchLevel": "deep"
     }

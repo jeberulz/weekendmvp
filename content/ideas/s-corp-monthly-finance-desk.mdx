@@ -1,0 +1,149 @@
+---
+slug: "s-corp-monthly-finance-desk"
+title: "Book closing service for businesses with no finance team"
+---
+
+## The Problem
+
+Electing S-Corp is the easy win. The hangover is monthly. A one-person consultancy at $80K–$250K now has officer payroll, a “reasonable salary,” shareholder distributions, estimated-tax reserves, and a CPA who only wants the packet in March. The owner still pays themselves whatever is left in the checking account. Receipts sit in a shoebox. April is a forensic rebuild billed by the hour.
+
+The supply side made it worse. The US accounting workforce shed more than 300,000 professionals between 2020 and 2023 — a 17% drop (BLS, cited in Ideabrowser verified research). US accounting degree completions fell to 55,152 in 2023–2024, a 20-year low (AICPA 2025 Trends). Firms drop the smallest clients first. That is the solo S-Corp: too little revenue per staff hour, too much paperwork.
+
+Budget tools do not close the loop. QuickBooks Solopreneur is about $20/month and still costs 3–5 hours a week. Merritt Bookkeeping is a flat $250/month for QBO reconciliation — no payroll, no tax, no salary math; “ask your CPA.” Pilot Core is $299/month with annual prepay and a startup-shaped floor; S-Corp tax filing starts at $2,000/year. Heard does the full stack at $129–$255/month and only for therapists. Bench’s Grow plan sat at $199/month until the December 2024 shutdown left clients mid-season with a D-minus BBB aftertaste. Local CPAs start around $500/month and are booked.
+
+This site already has a 1099 e-file wedge in [Freelancer Tax Filing Bot](/ideas/freelancer-tax-filing-bot) and a ledger wedge in [AI Bookkeeping for Freelancers](/ideas/ai-bookkeeping-for-freelancers). Neither answers the S-Corp operator’s monthly question: what can I safely pay myself, what do I reserve, what is broken. Reddit’s r/Bookkeeping (~82K), r/Accounting (~1.3M), and r/smallbusiness (threads with 300+ comments on bookkeeping cost) repeat it. Facebook’s Small Business Owners Who Need Bookkeepers (~56K) is a referral board, not a product.
+
+## The Solution
+
+Monthlii is a **human-reviewed monthly finance desk** for one-person S-Corps — not a CPA firm, not tax advice, not an LLM inventing your reasonable salary. AI sorts bank and card feed. A human (you, then contractors) reviews flags, runs a rules-based owner-pay and tax-reserve snapshot, and ships a one-page brief plus a CPA-ready packet. The CPA you already have stays the CPA. You are the ops layer they wish every client arrived with.
+
+Scope v1 like a weekend product that becomes a practice. One S-Corp, US, owner-only payroll, no employees, no multi-state nexus, no K-1s from other entities. ICP: consultant, realtor, coach, or small agency at $80K–$250K who elected S-Corp for the tax savings and then discovered payroll. If they need 1120-S signed, partner with an EA/CPA or refer — do not file without a credential (see Ideabrowser extra: PTIN / EA / CPA for paid 1120-S work).
+
+Trust is the product. Bank tokens stay in Plaid/Rutter. QBO is the ledger of record so the client is never locked into proprietary books (the Bench lesson). The model categorizes and explains; it does not invent tax positions. The brief is heuristics plus a flagged queue, not “you should take this salary” as legal advice.
+
+**How it works:**
+
+1. **Setup sprint** — Connect Plaid (or Rutter) and Gusto/Justworks-style payroll. Import or clean 3–6 months in QBO. Establish a starting balance sheet and a payroll baseline. One-time $497 so messy books are not a monthly objection.
+2. **Books run in the background** — Daily categorization. Weekly 30-minute human pass on outliers, transfers, and owner draws. Payroll confirmation against the posted salary.
+3. **Month-end brief** — One page: cash in, cash out, suggested owner pay vs distributions (rules-based), estimated-tax reserve, and one fix list. Packet exports the CPA can file from.
+4. **Stay current** — Quarterly reminder cadence. Optional annual 1120-S add-on only if a licensed partner signs. Churn risk is April; the brief that still shows up in June is the renewal.
+
+## Market Research
+
+The category is bookkeeping. The gap is **S-Corp monthly clarity without stealing the CPA relationship**.
+
+- **More than 5 million S-Corps operate in the US** — IRS tax-year 2021 showed 5.3 million individual returns reporting S-Corp income; the 2025 S-CAP Act record repeats the 5 million+ figure (verified research).
+- **Nonemployer firms: about 29.8–30.4 million in the US, $1.7–$1.8T in receipts** (OnePC / Census-class compilations in the competitive pack). Nonemployer growth ~2.7% annually 2012–2023, faster than employer firms.
+- **Solopreneur count ~29.8 million in 2026**, up from 26.5 million in 2024 (Crevio / Solo Business Hub compilations). New business applications ~440K/month, ~90% above pre-2020.
+- **Accountant pipeline is broken** — 300,000+ left 2020–2023; degree completions at a 20-year low. AICPA calls it a pipeline crisis through ~2029. Optimistic 12% enrollment uptick (AACSB spring 2025) does not refill firms this year.
+- **AI in small-business finance jumped from 37% (2023) to 85% (2025)** (Intuit QuickBooks Small Business Insights). Sorting is cheap; interpretation is not.
+- **Search is real but not the wedge.** “Monthly bookkeeping” and “outsourced bookkeeping” carry high commercial intent; “S-Corp bookkeeping service” is thin. r/smallbusiness has ~2.5 million members. First 100 clients come from comments, not SEM.
+- **Bench collapsed December 2024.** Competitor pricing jumped. Negative Bench-by-Mainstreet reviews were still landing on Capterra into 2026. That is a live outreach list.
+
+**Stage:** mature software, emerging “finance desk” sub-niche. Heard proved niche bookkeeping can raise $26M on therapists alone. You do not need that scale. You need one profession and 20 seats at ~$400 blended.
+
+## Competitive Landscape
+
+Name the money. Generic “we do books” loses to Merritt on price and to a CPA on trust.
+
+- **Merritt Bookkeeping** — Flat **$250/month**, QBO only, email support. Strength: cheap close. Weakness: no payroll, no tax, no S-Corp salary. Explicitly “talk to your CPA.”
+- **Pilot** — **$99/month** AI tier or **$299/month** Core (annual prepay, startup expense floor). S-Corp/partnership tax filing **starts at $2,000/year** (live pricing, August 2026; the $750 SKU is new single-member LLCs, not S-Corps). Strength: brand, startup ICP. Weakness: not a solo realtor’s product; annual lock-in.
+- **QuickBooks Live** — Assisted **$200–$400/month**, Full-Service **$500–$700/month**. Industry-agnostic. Strength: Intuit trust. Weakness: no S-Corp advisory.
+- **Heard** — Therapists only, **$129–$255/month**, S-Corp in Premium, $26M funded. Strength: niche depth. Weakness: if you are not a therapist, you are not a customer.
+- **Bench (historical)** — Grow **$199/month**, proprietary ledger, shutdown Dec 2024, D-minus BBB. Use as a cautionary tale, not a partner.
+- **Local CPA** — **$500/month+**, personalized, tax-season shaped, capacity constrained.
+- **DIY** — QBO Solopreneur **~$20/month** plus ChatGPT. 3–5 hours a week. Zero optimization.
+
+**Your Opportunity**
+
+No one sells a flat $300–$500 month to a one-person S-Corp outside Heard’s vertical: owner-pay snapshot, payroll confirmation, CPA-ready packet, month-to-month, existing CPA stays. Merritt stops at recs. Pilot wants startups and $2,000 tax add-ons. Heard will not take your realtor. Own “pay / reserve / fix” on one page. Price in the gap between $250 Merritt and $500 CPA. Do not compete with [Freelancer Tax Filing Bot](/ideas/freelancer-tax-filing-bot) on 1099 e-file — that is a different entity and a different last mile.
+
+## Business Model
+
+Service-shaped SaaS. Software is the factory; the SKU is the brief.
+
+- **Free** — 15-minute S-Corp health check + one-page gap report (current pay vs a defensible salary range). Reddit/Facebook wedge.
+- **Setup sprint** — **$497 one-time**. Clean 3–6 months, QBO migrate, payroll baseline, starting balance sheet.
+- **Monthly desk** — **$300/month** simple one-stream S-Corp; **$500/month** multiple accounts or messy income. Reconciliation, payroll confirm, quarterly reminders, one-page brief. Flat by complexity, not transaction count (Pilot’s volume model punishes growth).
+- **Continuity** — **$50–$150/month** extras (KPI, extra entities) later. **Annual 1120-S** **$750–$1,200** only with a licensed partner.
+- **Not v1:** enterprise $10K/year, white-label for CPA firms (that is the real scale path once the packet format is trusted).
+
+**Unit Economics (illustrative)**
+
+- **under two hours** — Target operator time per client per month or the $300 SKU dies
+- **about 20 seats** — ~$8K MRR at $400 blended; Ideabrowser napkin for ~$100K year-one with setups and tax add-ons
+- **about 40 seats** — Solo ceiling ~$16K/month bookkeeping before you hire
+- **$2K–$8K** — Capital to start (QBO, Plaid, insurance, a one-pager)
+- **30–60 days** — Time to first paid sprint if you already have a niche
+
+Path to about $5K MRR: ~13 desks at $400, or 10 at $500. This is a lifestyle practice with a real ceiling, not a venture-scale usage API. Say that on the landing page so you attract operators, not VCs.
+
+## Recommended Tech Stack
+
+QBO is the system of record. You are the review queue and the PDF.
+
+- **App:** Next.js + TypeScript on Vercel. Client portal: login, brief archive, task list, CPA share link.
+- **Ledger:** QuickBooks Online API (not a custom GL). Never trap the client in a Bench-shaped silo.
+- **Banking:** Plaid or Rutter for feeds if you need a second path; prefer QBO bank feeds when they already live there.
+- **Payroll:** Gusto (including Solo) or similar; confirm posted salary vs QBO wages. You do not become a payroll processor in v1.
+- **AI:** Claude or GPT for categorization suggestions and brief drafts. Human merge required. No advice language in generated copy.
+- **Ops:** Notion or Airtable for the first five clients; graduate to your portal when the packet template is stable.
+- **Auth / payments:** Clerk + Stripe. Engagement letter + ACH for monthly.
+- **Comms:** Resend for the month-end email; Slack/email for the review queue.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js + TypeScript app for an S-Corp monthly finance desk (Monthlii).
+
+Set up:
+- Clerk auth (owner vs operator vs CPA-read-only)
+- Postgres (or Convex) schema: clients, connections (qbo realm, plaid item, gusto company), months (status: open/review/sent), line_items (source, category, flag), briefs (markdown + pdf url), tasks
+- Stripe Billing for $300/$500 monthly + $497 setup one-time
+- Environment variables for QBO, Plaid, Gusto, OPENAI/ANTHROPIC, Stripe
+- No tax-filing API. No "reasonable salary legal opinion" field.
+
+Include error handling, audit log of who changed a category, and a hard banner: "Bookkeeping and records. Not tax, legal, or investment advice."
+```
+
+**2. Core Feature**
+
+```text
+Build the month-end pipeline:
+
+1. Pull QBO transactions and Gusto payroll for the period.
+2. Auto-categorize with an LLM; never auto-post without a rules table the operator can edit.
+3. Queue exceptions: transfers, owner draws, uncategorized over $N, payroll vs wage mismatch.
+4. Generate a one-page brief: cash in, cash out, suggested owner pay vs distributions (show the formula and inputs), estimated-tax reserve (safe-harbor style heuristic, labeled as heuristic), and a numbered fix list.
+5. Export a CPA packet: P&L, BS, payroll register, transaction CSV.
+
+User flow: operator reviews queue → marks month sent → client sees brief in portal → CPA gets a share link. Nothing in the brief should read as a tax position.
+```
+
+**3. Health Check Landing**
+
+```text
+Add a public S-Corp Health Check funnel:
+- Cal.com or a form: entity type, revenue band, current payroll, current bookkeeper, CPA name (optional)
+- One-page gap report template comparing "pay whatever is left" vs a documented salary + reserve split
+- Stripe checkout for the $497 setup sprint after the call
+- Copy must say this is not a CPA firm and will not file 1120-S without a licensed partner
+```
+
+## Sources
+
+- [Ideabrowser verified research — idea 9054](https://www.ideabrowser.com/hub/ideas/the-finance-desk-for-one-person-s-corps-f8074cb9)
+- [State of one-person companies 2026](https://onepc.org/stats/state-of-one-person-companies-2026)
+- [Solopreneur statistics (Crevio)](https://crevio.co/blog/solopreneur-statistics)
+- [SBA: choose a business structure](https://www.sba.gov/business-guide/launch-your-business/choose-business-structure)
+- [Gusto: when to start an S-Corp](https://gusto.com/resources/articles/start-business/when-start-s-corp)
+- [Thomson Reuters: S-Corp vs C-Corp vs LLC](https://tax.thomsonreuters.com/blog/s-corp-vs-c-corp-vs-llc-whats-the-difference-and-which-one-is-better-for-your-business/)
+- [InCorp: LLC vs S-Corp vs C-Corp](https://www.incorp.com/resources/knowledge-base/llc-vs-s-corp-vs-c-corp)
+- [Are one-person businesses still viable in 2026?](https://smallbusinessmagazine.org/are-one-person-businesses-still-viable-in-2026/)
+- [Gitnux solopreneur statistics](https://gitnux.org/solopreneur-statistics/)
+- [Solo business statistics](https://www.solobusinesshub.com/solo-business-statistics/)
+- [IIMA working paper on one-person companies](https://www.iima.ac.in/sites/default/files/2026-06/WP-2026-06-01.pdf)

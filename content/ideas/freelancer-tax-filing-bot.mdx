@@ -1,0 +1,149 @@
+---
+slug: "freelancer-tax-filing-bot"
+title: "Freelancer Tax Filing Bot"
+---
+
+## The Problem
+
+Tax season turns a working freelancer into an unpaid data-entry clerk. The designer who lived in Stripe all year now has forty-seven payouts, a Venmo side hustle, Cash App reimbursements that might be income, a PayPal 1099-K they did not expect, and Drive receipts named `scan004`. TurboTax wants a spreadsheet. Their “books” are a Notes app. Their CPA wants $1,200 and a shoebox. They spend a weekend reconstructing a year they already lived.
+
+The job is split across tools that refuse to finish it. DIY filing giants are April products: import, click, pay per return, leave. Cloud books keep a ledger and stop before e-file. Estimators spit a quarterly number and wish you luck at the IRS portal. This site already has both narrower wedges — [Quarterly Tax Estimator for Freelancers](/ideas/quarterly-tax-estimator-freelancers) owns “what do I pay June 15,” and [AI Bookkeeping for Freelancers](/ideas/ai-bookkeeping-for-freelancers) owns a clean P and L. Neither transmits a return. The freelancer still copy-pastes into someone else’s filing flow, which is where errors and missed deductions actually happen.
+
+The pain is seasonal and loud. r/personalfinance (14.1M), r/tax (383K+), and r/taxpros (82.7K+) spend January through April comparing TurboTax fees and begging for a simpler 1099 path. Facebook’s Self Employed Support Group (45K+) repeats it: too many platforms, too much manual entry, not enough trust in “AI that files” unless the books and the forms are the same system. A CPA is correct for K-1s, employees, and multi-state nexus. It is the wrong answer for a sole prop making $40K–$150K who needs Schedule C prepared from real payouts and a licensed transmitter on the other end.
+
+Willingness to pay is not the blocker. Incumbents already extract $69–$120+ per DIY return; AI tax SaaS lands at $39–$69/month. The blocker is the last mile: books that never become a filed return, or a return typed from stale CSVs.
+
+## The Solution
+
+MyTaxGuy is tax-prep software for 1099 sole props that keeps the books **and** assembles the return from those books, then transmits through a licensed e-file partner. It is not a CPA, not legal advice, and not an LLM inventing your income. The user connects Stripe, PayPal, and a bank via Plaid, drops receipts into Drive, and lets categorization run all year. In January the same ledger becomes a Schedule C draft, a 1040-ES worksheet, and 1099-NEC output if they paid contractors. The human reviews every figure, signs, and the transmitter pipes it to the IRS. You sell closed-loop prep, not a chatbot that “does taxes.”
+
+Scope v1 like a weekend product. One federal return, one state, Schedule C / sole-prop only. No K-1s, no employees, no rentals, no international. Complex filers stay with Block’s hybrid or a human. ICP: Upwork designer, Substack writer, Stripe consultant making $30K–$150K — too busy to reconcile, not rich enough for a year-round accountant. $49/month in filing season, $29/month if they keep the books alive.
+
+Trust is the engineering. Categorization can use a model. Tax math cannot. Totals come from posted transactions. Form fields map through a rules table you own. The model writes explanations (“this DoorDash cluster looks like meals — confirm”) and never writes a box on the return. E-file is a transmitter API (TaxBandits or equivalent), not a weekend founder becoming an IRS Authorized e-file Provider. Bank tokens stay server-side. MFA on paid plans. No training on customer ledgers.
+
+**How it works:**
+
+1. **Connect income** — Plaid Link for bank and cards; Stripe and PayPal for payouts; Google Drive for receipts. One onboarding, not a chart-of-accounts seminar.
+2. **Books run in the background** — Transactions auto-categorize against learned vendor rules. Monthly P and L, deduction flags, and a running self-employment profit the user can correct in a queue.
+3. **Review the assembled return** — Deterministic mapping fills Schedule C from the ledger. The UI shows source transaction to form line. The user confirms; nothing transmits on a guess.
+4. **E-file, then stay current** — A licensed transmitter sends the return and returns an acknowledgment. Year-round mode keeps books live and preps 1040-ES amounts so April is a review, not archaeology.
+
+Retention is the year-round ledger. If books die in June, you become TurboTax with extra steps. Always-on is the plan you actually want them on.
+
+## Market Research
+
+DIY tax software is mature. Freelancer-native **books-plus-file** is still a land grab. The money is in the category; the gap is the 1099 worker with five payout platforms and no staff accountant.
+
+- **Global tax management software is $25.09B in 2025, headed to $59.85B by 2034 at a 10.14% CAGR** (Precedence Research). That is the broad TAM. You are the freelancer slice.
+- **US tax preparation software nearly doubles from $6.4B in 2024 to $12.9B by 2032 at a 9.3% CAGR** (Global Risk Community compilation). South US leads value; West US leads growth.
+- **TurboTax still owns more than 60% of US consumer DIY e-file, 44M+ filings a year; H&R Block sits around 15–20% online** (IBISWorld-class share in the competitive pack). Incumbents won W-2 simplicity. They did not win multi-platform 1099 ops.
+- **Independent work is structural** — about 36% of the US workforce as of 2024 in the community analysis. These people file every year whether or not they bought QuickBooks.
+- **Firms are buying the thesis from the other side:** 47% of tax and accounting firms planned to increase AI spend in 2025 (Thomson Reuters). That does not mean a CPA shop will sell a $29 Schedule C product to Stripe solopreneurs.
+- **Search pays accounting prices.** Trend discovery on “freelancer tax filing automation bookkeeping 1099” returned 15 keywords and about 2.54 million combined monthly searches. Head terms are QuickBooks-shaped (1.83M on “quick book accounting package”; “online accounting” at 60.5K, $40.75 CPC). “1099 contractor” is 8.1K at $3–$6 CPC. Rank for Schedule C + e-file; do not outbid Intuit on QuickBooks. r/tax traffic spikes 30–60% January–April.
+
+**Stage:** competitive / early growth for freelancer-centric filing; mature for generic DIY. Twenty-plus AI-tax tools since 2022 and $200M+ cited into the vertical. No default pocket accountant that both books and files. That window closes when TurboTax ships a Stripe-native Schedule C that does not feel like a CSV import.
+
+## Competitive Landscape
+
+You will get compared to TurboTax. Say it in the first sales call: they file from data the user typed. You file from books you already kept.
+
+- **Intuit TurboTax** — Category leader. Free for simple W-2-shaped returns; Self-Employed / Full Service runs to about $120+ per return including state, plus support upsells. Strength: brand, 44M-file muscle. Weakness: April-shaped UX, weak multi-platform payout ingestion, surprise fees after import. Not a year-round 1099 ledger.
+- **H&R Block** — About 15–20% of DIY online plus the retail safety blanket. Pricing comparable to TurboTax, often a bit lower on base SKUs, paid add-ons for humans. Strength: hybrid “someone will look at this.” Weakness: same import-then-file model.
+- **ZenTax AI / TaxGenius AI and peer AI SaaS** — The actual comps. Automated prep, deduction discovery, Stripe/Plaid connectors, chat UI. Typically **$39–$69 per user per month** or per-filing. Strength: they already pitch freelancers. Weakness: brand trust and a tendency to be “AI filing” without a boring, correct ledger. Beat them on source-to-line traceability and a transmitter acknowledgment, not another chat bubble.
+- **Cash App Taxes** — Free federal and state, Square ecosystem. Strength: price. Weakness: thin for multi-platform freelancers who do not live in Cash App. Your $29–$49 is dead if their whole life is Cash App payouts. Irrelevant if they have Stripe + PayPal + a bank.
+- **Indirect: QuickBooks / Xero / FreshBooks and human CPAs.** Books without transmit, or transmit without a productized $29 ledger. CPAs win complexity. They lose on $40K Schedule C work that should not cost four figures.
+
+**Your Opportunity**
+
+Incumbents will not productize “our April import is why you miss deductions.” Bookkeeping tools will not become EROs. Estimators will not e-file. Own the closed loop: payout platforms in, categorized ledger, user-reviewed Schedule C, licensed transmit out. Price in the $29–$49 band the AI SaaS comps already normalized. Win on three things they will not chase at indie scale: (1) source transaction visible on every form line, (2) year-round books that make April a review, (3) a hard v1 cutoff (sole prop, one state) so you do not drown in edge cases.
+
+## Business Model
+
+Seasonal SaaS with a year-round pull. Free proves the ledger. File season captures the panicked. Always-on is the real business.
+
+- **Free** ($0) — One connected source, 90 days of categorization, read-only P and L, no e-file. Lead magnet for Reddit and YouTube.
+- **File season** ($49/month, typically January–April) — Full connections, deduction queue, Schedule C assembly, one federal + one state transmit. Matches the Ideabrowser frontend.
+- **Always-on** ($29/month or $399/year) — Year-round books, quarterly 1040-ES worksheets, included filing, accountant share link. Cheaper per month than File season because you want the twelve-month ledger. Annual at $399–$499 sits on the Ideabrowser middle offer.
+- **Later, not v1:** bookkeeping depth add-ons ($20–$100/month) and a white-label agency SKU ($25K/year in the ladder).
+
+**Unit Economics (illustrative)**
+
+- **a few dollars** — Transmitter pass-through per accepted return, plus Plaid and LLM cost; keep combined variable cost well under the $29 Always-on price
+- **about 75–85%** — Gross margin on Always-on
+- **$40–$80** — Target CAC via r/tax, YouTube walkthroughs, and Stripe/Plaid listings — not TurboTax SEM
+- **four spikes a year** — Quarterly deadlines reactivate File-season churners; Always-on should not need that crutch
+
+Path to about $5K MRR: roughly 170 Always-on seats, or a mix (example: 80 Always-on + 90 File-season in Q1). Churn risk is April 16. The product that still shows a live P and L in June is the one that renews.
+
+## Recommended Tech Stack
+
+Connectors, a correct form mapper, and a transmitter you do not have to become. Everything else is a dashboard.
+
+- **Next.js 14 (App Router) + Vercel** — Onboarding, review queue, return preview. Server Actions for categorization jobs; never ship bank tokens to the browser.
+- **Plaid + Stripe + PayPal APIs** — Income truth. Webhook signatures validated on an Edge route.
+- **Supabase (Postgres + Auth)** — users, connections, transactions, categories, rules, filings, transmitter_events. RLS per user. MFA on paid. Plaid tokens encrypted at rest.
+- **Deterministic form engine** — Your code maps categorized totals onto Schedule C lines and 1040-ES worksheets. Unit-test against IRS examples. The LLM does not add.
+- **Claude** — Vendor classification and “why this flag” copy only. Prompt-cache the user’s category list. Batch transactions.
+- **Licensed e-file transmitter** — TaxBandits-class API for 1040/Schedule C and 1099-NEC. Persist submission IDs and IRS acknowledgments. You prepare and send; the transmitter is the ERO pipe.
+- **Stripe Billing + Resend + Vercel Cron** — File season vs Always-on, January kickoff emails, quarterly worksheet reminders, Plaid re-pull so the ledger does not rot.
+
+Put “not tax advice” on every filing screen and require a human-review checkbox that actually blocks transmit. If you cannot say that in the UI, do not ship e-file.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 App Router + TypeScript + Tailwind app called MyTaxGuy (freelancer tax filing bot).
+
+Supabase tables: users (plan, filing_status, home_state); connections (provider plaid|stripe|paypal|drive); transactions (amount_cents, merchant, category, source_id, review_state); category_rules; filings (tax_year, status draft|user_reviewed|submitted|accepted|rejected, schedule_c_json, transmitter_submission_id); transmitter_events.
+
+Auth: email+Google, MFA on paid. RLS so user_id = auth.uid(). Encrypt Plaid tokens at rest.
+
+Stripe Billing: Free, File season $49/mo, Always-on $29/mo and $399/year.
+
+Routes: /onboarding (Plaid Link + Stripe OAuth), /books (transaction queue), /review/:taxYear (source-to-line Schedule C), /file (submit + ack).
+
+Copy on /review and /file: this is tax-prep software, not a CPA and not tax advice. Require an explicit “I reviewed these numbers” checkbox before transmit.
+```
+
+**2. Ledger + Form Mapper (core)**
+
+```text
+Build the books-to-forms path. Do not let the LLM write form math.
+
+1. Ingest Plaid, Stripe payouts, PayPal. Upsert by source_id. Amounts in cents.
+2. Categorize: merchant rule first. Else batch 50 txs to Claude with the user’s category set (income, ads, software, contractor, meals, travel, home_office, owner_draw, ignore). Auto-apply confidence >= 0.85; else needs_user. Corrections write category_rules.
+3. Monthly P and L from posted txs. Owner draws never hit expense. Meals flagged for confirm (do not auto-deduct 50%).
+4. Pure-function form mapper, unit-tested: gross receipts, Schedule C expenses by line, net profit, SE tax at 15.3% (constant you update annually), 1040-ES remaining. Return JSON with supporting transaction IDs per line.
+5. Claude may only write the explanation under each flagged line. If the model’s implied total disagrees with the mapper, show the mapper and ignore the model.
+```
+
+**3. Transmitter + Landing**
+
+```text
+Integrate a licensed e-file transmitter (TaxBandits-style) and a landing page.
+
+Transmit: POST schedule_c_json plus identity fields to sandbox; persist submission id and events; on reject show the error; never submit without user_reviewed = true and the disclaimer checkbox.
+
+Landing for MyTaxGuy:
+Hero: “Books that file.” Sub: “Connect Stripe and your bank. We keep the ledger all year and assemble Schedule C from those transactions. You review. A licensed transmitter e-files. Not a CPA. Not a chatbot guessing your income.”
+Sections: five payout apps / one panicked April; 4 how-it-works steps; contrast vs TurboTax (import vs live books) and vs bookkeeping-only apps (P and L vs transmit); pricing Free / $49 season / $29 always-on; FAQ (we will not file K-1s, employees, rentals).
+CTA: “Connect a test Stripe account.”
+```
+
+## Sources
+
+Collated from Ideabrowser MCP idea #2494 (October 2025 snapshot) plus a September 2026 topic-trend pull. Verify live pricing before a sales page. This is a build brief for software, not tax advice.
+
+- [Precedence Research — Tax Management Software Market ($25.09B in 2025 to $59.85B by 2034, 10.14% CAGR)](https://www.precedenceresearch.com/tax-management-software-market)
+- [US Tax Preparation Software Market to Double by 2032 ($6.4B to $12.9B, 9.3% CAGR)](https://globalriskcommunity.com/profiles/blogs/u-s-tax-preparation-software-market-to-double-by-2032-driven-by-a)
+- [IBISWorld — Tax Preparation Software Developers](https://www.ibisworld.com/united-states/industry/tax-preparation-software-developers/4549/)
+- [SuperAGI — Top 10 AI Tax Preparation Software for Businesses in 2025 ($39–$69/mo band)](https://superagi.com/top-10-ai-tax-preparation-software-for-businesses-in-2025-a-comprehensive-review-and-comparison-2/)
+- [SuperAGI — Future Trends in AI Tax Preparation](https://superagi.com/future-trends-in-ai-tax-preparation-how-businesses-can-stay-ahead-in-2025-and-beyond/)
+- [Thomson Reuters — GenAI report for tax professionals](https://tax.thomsonreuters.com/blog/genai-report-executive-summary-for-tax-professionals-tri/)
+- [Thomson Reuters — AI for tax professionals](https://tax.thomsonreuters.com/blog/ai-for-tax-professionals-a-guide/)
+- [AICPA — AI tax resource center](https://www.aicpa-cima.com/resources/landing/artificial-intelligence-ai-tax-resource-center)
+- [Wolters Kluwer — AI in tax and accounting](https://www.wolterskluwer.com/en/know/artificial-intelligence-tax-accounting)

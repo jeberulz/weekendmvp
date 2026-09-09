@@ -1,0 +1,158 @@
+---
+slug: "phone-body-composition-scanner"
+title: "Phone Body Composition Scanner"
+---
+
+## The Problem
+
+A Wegovy user steps on a $400 smart scale on a Wednesday. Down 3.2 pounds. Their coach asked them to protect lean mass. The scale cannot tell fat from muscle from water. Progress photos depend on bathroom lighting and whether they flexed. The Apple Watch body-fat estimate jumped two points overnight, which everyone in the group chat already knows is noise. The only number they would actually trust is a DEXA scan — $100 to $300, a clinic parking lot, and a 45-minute round trip they will not book every month.
+
+That is the measurement hole the GLP-1 wave made urgent. Millions of people are now losing weight fast enough that the composition of the loss matters more than the headline pounds. Clinic DEXA and gym InBody appointments were designed for athletes who schedule around them, not for someone titrating a weekly injection and watching their arms look softer while the scale celebrates. Hardware BIA scales ($50–$400) push current through two feet and call it a body scan. They are better than nothing and still wrong enough that Reddit threads treat them as entertainment.
+
+The complaint is already organized. r/loseit (about 2.3 million members) litigates InBody vs DEXA weekly. r/Fitness (10 million-plus), r/naturalbodybuilding (~300 thousand), and r/progresspics (2.4 million) fall back to tape measures and lighting tricks. Facebook Fitness Lovers threads argue whether a Tanita or Withings is “close enough.” Jeff Nippard (2.5 million subscribers) and InBody USA (about 1 million) prove people will watch science explainers to pick a tool. None of those videos end with “use the camera you already own.”
+
+The money leak is boring. Monthly DEXA is $50–$300. Gym InBody is another commute. A $400 scale still cannot separate a recomp from a dirty cut. People who pay $9.99 for MyFitnessPal will not drive across town for a number they needed yesterday.
+
+## The Solution
+
+A phone-native scanner: ARKit on iOS, ARCore on Android, optional LiDAR on Pro iPhones, and a guided 360 capture that estimates circumferences and a muscle-vs-fat trend — not a fake clinic report. Two minutes in a bedroom. Layer each scan against last week plus a locked-angle photo, then pull weight from Apple Health or Health Connect so the chart is composition plus mass.
+
+Honesty is the feature. Optical scans will not match DEXA bone-mineral precision. Ship trends with confidence bands: four weeks of direction matter, a single reading does not. First 50 design partners should already own a recent DEXA so you publish a correlation study instead of an adjective. If the lines hold across 50 bodies over 90 days, you have a product. If not, no influencer saves it.
+
+Stay wellness-grade. No “clinical-grade,” no diagnostic copy. Export a CSV a trainer can use, and a “lean mass hold” dashboard that flags accelerated muscle loss so the user talks to their clinician — the app does not become one.
+
+**How it works:**
+
+1. **Calibrate the room** — Stand on a marked floor spot, phone on a $15 tripod or a stack of books. The app checks lighting and distance, then asks for height, sex, and a recent scale weight (HealthKit / Health Connect if granted).
+2. **Walk the capture** — Slow 360 around the body, or a front / side / back still set if LiDAR is missing. On-device pose and silhouette models extract circumferences and a coarse volume proxy. Nothing medical leaves the device until the user hits save.
+3. **Read the trend, not the selfie** — Each session lands next to the last one: estimated fat vs lean change, confidence interval, and a locked-angle photo pair. A noisy day gets labeled noisy instead of plotted as gospel.
+4. **Share or keep private** — Export a week-over-week PDF for a coach, or keep scans local. Optional GLP-1 “preserve lean mass” alerts fire when the lean estimate drops faster than the user’s target band.
+
+## Market Research
+
+You are not inventing body composition. You are attacking the home-frequency gap inside a hardware market that already has analysts, incumbents, and a GLP-1 demand spike sitting on top.
+
+The global **body composition scanner / analyzer** category is about **$1.37 billion in 2024**, headed to **$2.44 billion by 2032** at an **8.7% CAGR**, per [Intel Market Research](https://www.intelmarketresearch.com/body-composition-scanner-market-23273) — clinic towers, portable BIA, and home scales, not AR apps. Fact.MR’s cut is **$714.2 million in 2024 toward $1.26 billion by 2033** ([Fact.MR](https://www.factmr.com/report/body-composition-analyzers-market)). Launch in the U.S.: body-fat measurement about **$279 million in 2022** ([Future Market Insights](https://www.futuremarketinsights.com/reports/united-states-body-fat-measurement-market)), North America analyzers near **$256 million in 2025** ([Market Data Forecast](https://www.marketdataforecast.com/market-reports/north-america-body-composition-analyzers-market)).
+
+Most of those dollars buy **bioimpedance**. Fortune Business Insights sizes BIA around **$700 million in 2026 toward $1.12 billion by 2034** ([Fortune Business Insights](https://www.fortunebusinessinsights.com/bioimpedance-analyzers-market-115282)). InBody and Tanita together hold **30–45%**; top five hardware names near **45%**. They sell devices. Ideabrowser’s market-stage pass found no scaled smartphone AR body-comp product — graveyard or a 12–18 month window before InBody ships a free camera mode.
+
+Search is real. An Ideabrowser topic discover on “body composition scanner app DEXA alternative GLP-1” returned **15 keywords and 851,200 combined monthly searches**. **GLP-1 weight loss** is about **90,500** volume (high competition, CPC north of $20). **Body fat percentage DEXA scan** is **49,500** at **low** competition and about **$2.40 CPC** — that is the SEO page, not another Ozempic listicle. Hardware queries still win shopping intent, which is why you sell the weekly companion, not the $400 object.
+
+Timing is the GLP-1 overlay. Ideabrowser puts **15 million-plus U.S. GLP-1 users by 2025**, with muscle loss as the talking point in NP obesity SIGs ([AANP](https://www.aanp.org/practice/clinical-resources-for-nps/clinical-resources-by-therapeutic-area/obesity-and-weight-management)). [JAMA Health Forum](https://jamanetwork.com/journals/jama-health-forum/fullarticle/2829222) is the spending backdrop; [glp1forum.com](https://glp1forum.com) and local meetups (Los Alamos Daily Post on muscle maintenance) are distribution. You need a camera flow they will repeat.
+
+Stage: **emerging for software, mature for hardware.** LiDAR, ARKit/ARCore, and on-device pose make a weekend MVP plausible. Accuracy is the kill switch. Treat 70–80 percent DEXA correlation as a hypothesis, not a homepage claim.
+
+## Competitive Landscape
+
+Four hardware brands own trust. Clinics own precision. Wearables own “free and wrong.” Nobody owns “good-enough composition trend from a phone, priced like an app.”
+
+- **InBody** — Gym/clinic BIA leader (970-class). Published DEXA correlation, mobile SDKs, sports teams. You will not beat a single reading. Pro towers **$5,000+**; home units near **$300**. Weakness: hardware and appointments.
+- **Tanita** — 70-plus-year BIA brand, retail everywhere. **$50–$200** consumer. Weakness: foot-to-foot impedance, no optical capture, no GLP-1 layer.
+- **Withings (Body Scan)** — Premium scale plus app, ECG extras, Apple Health. About **$400**; model-name searches grew triple digits in Ideabrowser’s keyword list. Weakness: still a scale. No AR walk-around.
+- **Omron Healthcare** — Handheld and scale BIA. **$50–$100**. Beginner-easy, thin segmentation, no video.
+- **DEXA clinics** — Gold standard. **$100–$300 per visit**. Accurate, useless as a weekly loop. That is the pain budget, not a clone target. Apple Watch / Fitbit / Renpho estimates are ingest sources, not the product.
+
+**Your Opportunity**
+
+Do not fight InBody on accuracy day one. Take the job they refuse: **zero new hardware, under $10/month, GLP-1 lean-mass tracking, weekly cadence, photo + scan on one timeline.** Incumbents make margin on $300–$5,000 devices. A $10 AR app is beneath them until it is not — by then you want r/loseit, a GLP-1 Discord, and a public correlation preprint. Position as “the trend between DEXAs.” YouTubers running n=1 vs a real scan are credibility; trainers screenshotting InBody printouts are referrals.
+
+## Business Model
+
+Consumer subscription, 30-day bait, then a trainer seat. Edge vision is the margin: a scan should cost under $0.01 in cloud if models stay on the phone. Cloud is accounts, trends, and the coach PDF.
+
+- **Free trial** ($0, 30 days) — Four scans, watermarked exports
+- **Plus** ($9.99/month or $79/year) — Unlimited scans, confidence bands, HealthKit, photo lock, CSV/PDF, GLP-1 lean-mass alerts
+- **Coach** ($29/month) — Up to 20 clients, capture links, branded PDFs
+- **Studio** ($5–$10 per employee per month) — De-identified gym/benefits trends after the consumer loop works. Clinic per-patient analytics ($10–$50) is a later ladder, not the MVP.
+
+**Unit Economics (illustrative)**
+
+- **under $0.01** — Cloud per on-device scan; budget about $0.05–$0.15 if you offload reconstruction
+- **about 85%** — Gross margin on Plus
+- **$25–$45** — Target CAC via DEXA-keyword SEO, not Meta GLP-1 bids at $20 CPC
+- **about $90** — 12-month LTV at $10/month with roughly 75% annual retention
+
+500 Plus users is about $5K MRR. 2,000 Plus plus 80 Coach seats is about $22K MRR. Raise after 50 paired DEXA comparisons, not TAM slides.
+
+## Recommended Tech Stack
+
+Hard parts: capture quality, on-device inference, honest UI. Dashboard is boring on purpose.
+
+- **Expo + native AR** — iOS first (ARKit + LiDAR). Android ARCore on pass two. Eject the camera view into a thin native module; WebXR is not good enough.
+- **MediaPipe Pose + Core ML / TFLite** — Landmarks plus silhouette width at chest / waist / hip / thigh through a published anthropometric model, on-device. NeRF is v2.
+- **Supabase** — profiles, scans, DEXA_benchmarks, coach_links. RLS on user id. Encrypted photo store.
+- **HealthKit + Health Connect** — Weight and workouts. Do not rebuild MyFitnessPal.
+- **Next.js + Stripe + TestFlight** — IAP for Plus on iOS; Stripe for Coach web seats ($79 annual). Marketing on Vercel. TestFlight until you have the correlation chart.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an Expo (React Native, TypeScript) app named LeanScan plus a Next.js 14 marketing/coach site.
+
+Mobile screens: onboarding, scan capture, history, trend chart, settings.
+Permissions: camera, photos, HealthKit (iOS) / Health Connect stub (Android).
+Native ARSession stub returns frames plus LiDAR depth when present.
+On-device: MediaPipe Pose; estimateCircumferences(landmarks, pixelToMeter, heightCm) returns chest/waist/hip/thigh_cm and a naive lean vs fat split from the latest scale weight.
+SQLite for last 20 scans; sync to Supabase when signed in.
+
+Supabase: profiles(id, user_id, height_cm, sex, units, glp1_mode), scans(id, user_id, captured_at, measurements jsonb, photo_paths, confidence, source), coach_clients(id, coach_id, client_user_id). RLS: own rows; coaches read linked clients.
+Stripe: Plus $9.99/mo, annual $79, Coach $29/mo.
+```
+
+**2. Capture Flow + Trend Engine**
+
+```text
+Build the LeanScan capture flow.
+
+1. Overlay a silhouette and lighting meter. Block capture if too dark or closer than 1.8m.
+2. Haptic “turn left” every 45 degrees, or front/left/back stills as fallback.
+3. Pose + silhouette on-device. Never upload video. Upload measurements and optional stills only after confirm.
+4. If landmark confidence is under 0.65, save the scan marked “unreliable — retake.”
+
+Trends: no fake-precise single-scan body-fat integer. Show a 4-week lean vs fat band. If glp1_mode, flag lean falling faster than weight. Lock crop and camera distance on the AR floor plane so week 1 and week 6 photos match.
+
+Unit-test estimateCircumferences with fixture landmarks. Copy: wellness estimates, not medical measurements.
+```
+
+**3. Landing Page + Coach PDF**
+
+```text
+Single-page site for LeanScan.
+
+Hero: “See fat vs muscle without a $150 DEXA appointment.”
+Sub: “Two-minute phone scan. Week-to-week trends. Built for GLP-1 users and anyone sick of lying scales.”
+
+Sections: problem (scale vs composition, DEXA cost, muscle loss); four how-it-works steps; accuracy honesty plus DEXA-benchmark waitlist; pricing (trial / $9.99 / $29 Coach); FAQ (LiDAR, Android, no diagnostic claims, on-device photos).
+
+Coach PDF via @react-pdf/renderer: alias, 8-week lean vs fat chart, circumferences, last four photos, medical-advice footer.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding sheet for LeanScan: wordmark plus a small icon of a phone casting a thin body-outline in emerald. Palette: near-black background, emerald #10b981 accent, warm off-white charts. Type: Geist for UI, a tabular sans for numbers. Voice rules: never say clinical-grade; always pair a number with a confidence cue; never shame a weigh-in. Provide three scan-complete copy variants under 80 characters for the in-app toast.
+```
+
+## Sources
+
+Sizing, prices, community counts, and keyword volumes from Ideabrowser MCP idea 5850 (February 2026 snapshot) plus the reports it cites. Re-check live pricing. Phone AR vs DEXA correlation is a study you still have to run.
+
+- [Intel Market Research — Body Composition Scanner Market ($1.37B 2024, $2.44B by 2032, 8.7% CAGR)](https://www.intelmarketresearch.com/body-composition-scanner-market-23273)
+- [Fact.MR — Body Composition Analyzers Market](https://www.factmr.com/report/body-composition-analyzers-market)
+- [Grand View Research — Body Composition Analyzers](https://www.grandviewresearch.com/industry-analysis/body-composition-analyzers-market-report)
+- [Fortune Business Insights — Bioimpedance Analyzers Market](https://www.fortunebusinessinsights.com/bioimpedance-analyzers-market-115282)
+- [Future Market Insights — United States Body Fat Measurement Market](https://www.futuremarketinsights.com/reports/united-states-body-fat-measurement-market)
+- [Market Data Forecast — North America Body Composition Analyzers](https://www.marketdataforecast.com/market-reports/north-america-body-composition-analyzers-market)
+- [360iResearch — Body Composition Analyzer intelligence](https://www.360iresearch.com/library/intelligence/body-composition-analyzer)
+- [Research Nester — Body Composition Analyzers](https://www.researchnester.com/reports/body-composition-analyzers-market/5034)
+- [JAMA Health Forum — GLP-1 utilization / spending context](https://jamanetwork.com/journals/jama-health-forum/fullarticle/2829222)
+- [AANP — Obesity and weight management clinical resources](https://www.aanp.org/practice/clinical-resources-for-nps/clinical-resources-by-therapeutic-area/obesity-and-weight-management)
+- [GLP-1 Forum](https://glp1forum.com)
+- [Los Alamos Daily Post — GLP-1 support group (muscle maintenance)](https://ladailypost.com/support-group-to-discuss-weight-loss-with-glp-1-drugs/)
+- [Forum Health — GLP-1 weight loss program](https://forumhealth.com/glp-1-weight-loss-program/)
+
+Page sourced via Ideabrowser MCP (idea_id 5850): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend. No verified research report existed for this id.

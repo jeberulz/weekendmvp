@@ -1,0 +1,149 @@
+---
+slug: "landlord-tenant-risk-screener"
+title: "Landlord Tenant Risk Screener"
+---
+
+## The Problem
+
+A first-time landlord calls the employer listed on the rental application. Friendly voice. Confirms title, start date, salary. He offers the lease that weekend. Eight months later, during the eviction, his lawyer traces the number. Burner phone. Same number on four other applications across two states. The pay stubs were a patched PDF: mismatched fonts, round-number net pay, metadata that said the file was authored the night before the showing. None of that was in the TransUnion packet he paid forty dollars for. The bureau told him the credit score. It did not tell him the story was fake.
+
+That is the job small landlords are actually doing, and they are terrible at it. Over two million owners entered the rental market in the last five years — inherited duplexes, house hacks, a spare unit that was supposed to be passive. Most have never heard "professional tenant" until they are Googling unlawful detainer at 2 a.m. A single eviction runs $10,000–$15,000 in legal fees, lost rent, and damage. The bureau report is a data dump. Reading it like a PM with twenty years of scars is the skill they do not have.
+
+The pain is loud in the rooms they already occupy. r/realestateinvesting (1.7M) and r/Landlord (331K) generate 20–40+ comments on almost every "what is your screening criteria" thread. r/PropertyManagement (132K) argues about outsourcing versus in-house. BiggerPockets screening videos average about 45K views; TurboTenant how-tos pull 5K–15K. Facebook groups built around a four-stage screening process and "Tenant Screening and Background Check Services" keep asking how to automate the part that still happens in someone's kitchen with a highlighter. YouTube's "red flags" cluster is about 20% of landlord screening content for a reason: people can buy a report and still not know what they are looking at.
+
+This is not the [Renter Deposit Documentation App](/ideas/renter-deposit-documentation-app). That product is tenant-side: time-stamped move-in photos, condition reports, demand letters after keys change hands. This page is the other chair. Landlord-side, pre-lease, application risk. One owner is trying to get a deposit back. The other is trying not to hand over the keys to a burner-phone employer.
+
+## The Solution
+
+A document-forensics and risk-explanation layer for landlords who already collect applications and often already buy a bureau report. They upload the packet — application, pay stubs, bank statements, employment letter, optional SmartMove or TurboTenant PDF. The model does not "approve" anyone. It flags seams: income that does not match stated employment, PDF fonts that jump mid-page, file metadata dated the night before the tour, an employer callback number that is a VoIP landline, five prior addresses in two years, a story that does not survive a public-records pass. Output is a plain-language risk card plus a side-by-side of the current applicants, written the way a tired PM would brief a rookie owner: here is what is solid, here is what is thin, here is what you should verify by hand before you sign.
+
+You are not becoming a consumer reporting agency on a weekend. FCRA-regulated credit, criminal, and eviction furnishing stays with TransUnion, Experian, and the TurboTenant-class pullers. The wedge is interpretation plus document integrity — the work bureaus do not do and the work first-time landlords cannot do. Every card carries the line: decision support, not an auto-deny. Fair housing is the trust problem in this category; Shelterforce and housing advocates have spent 2025 arguing that black-box scores automate discrimination. Explainable factors, human-in-the-loop, no silent reject button, is the product, not a disclaimer you paste on later.
+
+**How it works:**
+
+1. **Upload the packet** — Landlord drops application, pay stubs, bank statements, employment letter, and any bureau PDF they already purchased; files land in object storage with a server timestamp
+2. **Forensic pass** — Extract text and PDF metadata; flag font mismatches, round-number income, employer-phone patterns, and numbers that do not reconcile with the stated job
+3. **Cross-check** — Name, alias, and address history against public court and eviction sources the landlord could search themselves; never silently invent a bureau score
+4. **Score and compare** — Plain-language risk card with cited flags, side-by-side ranking of this week's applicants, and a verify-before-you-sign checklist; the human decides
+
+## Market Research
+
+Tenant screening is a real market with a real hole in the middle. Incumbents sell data. Small landlords need a briefing.
+
+- **The global tenant screening services market is valued at $1.85B in 2025, $1.94B in 2026, and $2.83B by 2034 at a 4.97% CAGR** (Business Research Insights). Alternate cuts: $3.28B in 2023 to $5.37B by 2030 at 7.3% CAGR (Verified Market Research); $1.5B in 2023 to $2.7B by 2031 at 9.3% CAGR (Precision Business Insights). Pick one series for decks; the direction is the same.
+- **Large agencies run about 60% of screened applications; small and mid operators are the other 40%**, the slice bureau products treat as an afterthought. About 48% of landlords already rely on digital platforms; **about 55% already use automated screening**. "We added AI" is not a wedge. Explainability is.
+- **Buildium's 2026 industry report: 75% of property managers say rental fraud is up.** Research on this idea cites about 42% of reports carrying errors that inflate cost by about 25%. Fake stubs and burner employers are the current attack, not an edge case.
+- **"Tenant screening services" sits around $13–$14 CPC.** Core commercial terms: tenant screening services, tenant application, tenant background check, tenant verification. A discover pass on "tenant screening software small landlords" returned 345K combined monthly searches; the clean slice includes AppFolio-brand queries at 135K volume and employment background check at 18.1K volume / $59 CPC.
+- **Stage: emerging, not empty.** Bureaus and PMS suites hold about 50% collective share and aim upmarket. TurboTenant plus SunScore-style income tools prove a novice lane exists. Window: the 40% small-portfolio slice before AppFolio ships a "rookie explanation" toggle. PMS itself is $26.6B in 2025 heading toward $52B by 2032 — consolidation in 2–3 years is the clock.
+
+## Competitive Landscape
+
+Credit bureaus sell accuracy at agency scale. PMS suites sell screening as a line item. Free tools sell a pull. Nobody sells "read this packet like a scarred PM" to the owner of one to eight doors.
+
+- **TransUnion SmartMove** — Category default for DIY landlords. Credit, criminal, eviction. Data access is the moat. The report is dense, the UX assumes you know what to do with it, and holistic explanation is not the product. About $40 per report, or a subscription. UVP: bureau-grade data.
+- **AppFolio** — PMS with screening bundled. Wins on workflow for managers who already live in the suite. Weak for the accidental landlord who does not want a per-unit operating system. About $1–$3 per unit per month as part of the PMS bill. UVP: all-in-one.
+- **TurboTenant** — The YouTube/Reddit on-ramp. Free tier plus premium upsell, credit and background reports, genuinely usable for first-timers. Analytics stay basic; it gets you a pull, not a forensic read of the stubs. Free / premium. UVP: no-fee start.
+- **Experian / First Advantage / VeriFirst** — Same leader cluster plus a small-agency specialist. Experian is tiered per check; First Advantage is subscription and compliance-heavy; VeriFirst is low per-report rental history. Strong data, weak document forensics, not priced or explained for a teacher with a duplex.
+- **Buildium / DoorLoop / spreadsheets** — PMS with a screening checkbox, or Google Forms plus a highlighter. Spreadsheet cost is $0 and one eviction.
+
+**Your Opportunity**
+
+Do not compete with SmartMove on data. Sit on top of the packet the landlord already has — including the $40 PDF they already bought — and sell the briefing. Win on three things incumbents will not chase: (1) document forensics on stubs and offer letters, (2) plain-language, cited flags, (3) $29–$79/mo for one-to-eight-door owners who will never pay PMS minimums. Human in the loop, or housing advocates will (correctly) torch you as another black box. Adjacent page [Renter Deposit Documentation App](/ideas/renter-deposit-documentation-app) owns post-move-out tenant evidence; you own pre-lease landlord risk.
+
+## Business Model
+
+Subscription SaaS with a free forensic sample that converts when the second applicant hits the inbox. Value ladder from the research: free red-flag guide (bait), limited free runs (frontend), Pro at $29/mo (middle), portfolio at $79/mo, webinars at $49, and $200–$500 consults for ugly files (backend). Path to $5K MRR is about 170 Pro landlords, or a mix of Pro plus a thin Portfolio layer. One avoided eviction is a decade of subscription in the customer's head; price against that, not against TurboTenant's free pull.
+
+- **Free** ($0) — 1 full packet per month, watermarked card, no applicant comparison — the lead-gen wedge
+- **Pro** ($29/mo) — Unlimited packets for up to 4 units, forensic + public-records flags, side-by-side ranking, PDF export, "paste your SmartMove report" interpreter
+- **Portfolio** ($79/mo) — Up to 20 units, saved applicant library, fair-housing checklist per state you support, priority review on flagged files
+- **Consult** ($200–$500) — Human review of a messy file; high LTV, low volume, credibility with BiggerPockets types
+
+**Unit Economics**
+
+- **Under $0.40** — Blended LLM + storage cost per packet (long-context PDF pass)
+- **~$35** — Blended ARPU across Pro / Portfolio
+- **~85%** — Gross margin before any optional bureau resale (do not resell bureau data in v1)
+- **$30–$80** — Target CAC via Reddit, Facebook landlord groups, and BiggerPockets-style content, not $59-CPC background-check ads
+- **~$10K–$15K** — Customer-side cost of the eviction you are priced against
+
+## Recommended Tech Stack
+
+Hard parts: PDF integrity, explainable output, not accidentally becoming a CRA. v1 stays on documents the landlord already has plus public records they could search. Bureau API is a later partner, not weekend scope.
+
+- **Next.js (App Router) + Vercel** — Landlord dashboard, upload UI, marketing site. Server Actions for the analysis job; stream the risk card so it feels instant.
+- **Convex** — Tables: landlords, properties, applicants, packets, findings, comparisons. RLS-style authz so a landlord never sees another owner's stubs. Durable job for the long PDF pass.
+- **Claude (Sonnet) with a vision/docs fallback** — Structured JSON: flags, evidence quotes, confidence, recommended human checks. Prompt-cache the scoring rubric. Never emit an approve/deny token.
+- **PDF parse + metadata** — `unpdf` / pdf.js for text; raw metadata for creator, dates, font sets. This is the fake-stub detector. Store original bytes in R2/S3; hash on ingest.
+- **Public records adapters** — Start with a thin county-court / eviction-index search the user can confirm; fail open with "could not verify" rather than a hallucinated clean record.
+- **Stripe Billing** — Free / Pro $29 / Portfolio $79; customer portal. No metered bureau passthrough in v1.
+- **Clerk or Convex Auth** — Email magic link is enough. These users are not installing a GitHub app.
+
+Label every card "not a consumer report" and "not legal advice." Lawyer before you sell. The MVP is still a document-analysis tool.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app called ProofCheck for small landlords. Convex backend.
+
+Schema:
+- landlords (id, user_id, plan: free|pro|portfolio, unit_count, stripe_customer_id)
+- properties (id, landlord_id, address, rent_cents)
+- applicants (id, property_id, full_name, email, claimed_income_cents, claimed_employer, status)
+- packets (id, applicant_id, storage_key, sha256, uploaded_at SERVER-SET, source: upload|pasted_report)
+- findings (id, packet_id, kind: metadata|income|employment|address|public_record|inconsistency, severity: info|warn|high, evidence_quote, explanation, confidence)
+- comparisons (id, property_id, applicant_ids[], summary)
+
+Auth: landlord can only read rows they own. Stripe products: Pro $29/mo (max 4 units), Portfolio $79/mo (max 20). Free: 1 packet/month.
+
+Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, R2 or S3 credentials.
+
+Product rule: never output approve/deny. Every generated card must include: "Decision support only. Not a consumer report. Not legal advice. The landlord must make the housing decision."
+```
+
+**2. Forensic Packet Analyzer**
+
+```text
+Build POST /api/packets/:id/analyze as a background Convex action.
+
+Steps:
+1. Load original bytes. Persist sha256. Extract PDF text and metadata (creator, creation/mod dates, font names, page count).
+2. Call Claude with a JSON schema:
+   { flags: [{ kind, severity, evidence_quote, explanation, human_check }], income_vs_rent: { rent_cents, stated_income_cents, ratio, note }, consistency: { employment_vs_stubs, dates_vs_metadata, phone_risk } }
+   Instructions: quote evidence. Do not invent credit scores, criminal records, or eviction hits. If a bureau PDF was uploaded, summarize what IT says and separately list what the stubs show. If they disagree, flag it.
+3. Optional public-records adapter: search name + recent cities; if the adapter fails, write finding kind=public_record severity=info explanation="Could not verify; search your county portal."
+4. Write findings rows. Render a risk card: 3–7 bullets, each tied to a finding id, plus a verify-before-lease checklist.
+5. If the property has 2+ applicants this week, generate a comparison that ranks by documented consistency, not protected class or a hidden composite. Never auto-reject. Log every model output for fair-housing review.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page site for ProofCheck. Hero: "Screen the story, not just the score." Sub: "Upload the application, the stubs, and the bureau PDF you already bought. We flag fake documents before you hand over the keys."
+
+Sections: burner-phone / patched-PDF / $10k–$15k eviction scene; contrast vs tenant deposit apps (this is landlord-side, pre-lease); 4 how-it-works steps; pricing Free / Pro $29 / Portfolio $79 vs SmartMove ~$40/report and AppFolio $1–$3/unit; trust (decision support, not a consumer report); FAQ on FCRA and no auto-deny.
+
+Visual: dark desk, lease folder, house keys, aubergine accent, no people, no UI text. CTA: "Score your next applicant."
+```
+
+## Sources
+
+Market sizing, competitor pricing, and demand signals collated from Ideabrowser MCP idea #5026 (January 2026 snapshot) plus a topic trend pass on tenant screening software for small landlords. Triangulate before you cite in investor materials. This page describes a document-analysis and decision-support tool, not a consumer reporting agency and not legal advice.
+
+- [Business Research Insights — Tenant Screening Services Market ($1.85B in 2025 to $2.83B by 2034, 4.97% CAGR)](https://www.businessresearchinsights.com/market-reports/tenant-screening-services-market-122847)
+- [Precision Business Insights — Tenant Screening Services Market](https://www.precisionbusinessinsights.com/market-reports/tenant-screening-services-market)
+- [Verified Market Research — Tenant Screening Services Market](https://www.verifiedmarketresearch.com/product/tenant-screening-services-market/)
+- [Grand View Research — Property Management Software Market](https://www.grandviewresearch.com/industry-analysis/property-management-software-market)
+- [Buildium — 2026 Property Management Industry Report (fraud / ops signals)](https://www.buildium.com/resource/2026-property-management-industry-report/)
+- [Shelterforce — Tenant screening: a billion-dollar industry with little oversight (June 2025)](https://shelterforce.org/2025/06/11/tenant-screening-a-billion-dollar-industry-with-little-oversight-whats-being-done-to-protect-renters/)
+- [TransUnion SmartMove](https://www.mysmartmove.com)
+- [AppFolio](https://www.appfolio.com)
+- [TurboTenant](https://www.turbotenant.com)
+- [r/Landlord](https://www.reddit.com/r/Landlord/)
+- [r/realestateinvesting](https://www.reddit.com/r/realestateinvesting/)
+
+Page sourced via Ideabrowser MCP (idea_id 5026): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend. No verified research report on file.
