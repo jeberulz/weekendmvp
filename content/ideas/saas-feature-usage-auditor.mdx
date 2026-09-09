@@ -1,0 +1,155 @@
+---
+slug: "saas-feature-usage-auditor"
+title: "SaaS Feature Usage Auditor"
+---
+
+## The Problem
+
+A three-year-old SaaS product has forty-plus features. Paying users touch maybe twelve. The rest is maintenance tax: tests, docs, onboarding screens, support macros, and Slack folklore that says “do not delete, Acme still uses the custom report.” Nobody can prove Acme still uses it. Nobody wants to be the person who killed the button a champion customer clicks twice a year. So the surface keeps growing, the walkthrough gets longer, and the next hire spends month one learning rooms in the product that do not matter.
+
+Product analytics did not fail. Amplitude, Mixpanel, and PostHog already store the events. What they will not do is sign the death certificate. Dashboards answer “what happened.” Founders need “what is dead weight, how concentrated is the remaining usage, and can we sunset this without lighting a cohort on fire.” That last question is political. PMs export CSVs, paste them into Sheets, argue in a Friday review, and ship another feature anyway because the spreadsheet cannot absorb the blame.
+
+The fear is rational. Low usage is not the same as low value. A billing-export job that fires once a month may be why a seven-figure account stays. A dashboard with three users is a different object if two of them sit at the same company. Without concentration math, decay curves, and a plain-English recommendation, “we should probably remove it” dies in the room. Reddit’s r/ProductManagement (210K) and r/analytics (248K) run the same loop: 100-plus-comment tool-complexity threads, Mixpanel-replacement posts, and a recurring complaint that the paid stacks measure everything except permission to cut. Facebook’s Product Analytics with devtodev group (4.3K) and the Power BI support group (77K) echo it from the operator side: unused features, bloated journeys, nobody owning the kill list.
+
+Dead features slow every release, every ticket, every GDPR/CCPA review. A 45-minute onboarding tour is a conversion leak. Founders do not need another event warehouse. They need a funeral report.
+
+## The Solution
+
+A weekend MVP that sits on top of the analytics you already pay for. No SDK. No six-week Segment project. The founder (or the one PM who still cares) exports events from Mixpanel or PostHog, drops the file into a web app, maps noisy event names onto a feature catalog, and gets a ranked sunset list. Each row is real engagement, not a vanity pageview: unique actors, last-seen date, 90-day decay, and a concentration flag when remaining usage collapses into one account. The AI layer writes the recommendation in English a CEO can forward: “Custom Report v2 has three users. Two are at the same company. Investigate with CS, then sunset.”
+
+This is not Amplitude. It is the decision layer Amplitude refuses to own, because deprecation fights the growth narrative those platforms sell. Win on speed: one afternoon audit, a PDF the product trio can argue with, live connectors later. The wedge is the export — every mid-market team already knows how to do that.
+
+**How it works:**
+
+1. **Ingest the export** — Upload a Mixpanel or PostHog CSV/JSON dump (event name, distinct_id, timestamp). Parser fingerprints columns, rejects truncated files, and stores a hashed copy so you can re-score without a second upload.
+2. **Map events to features** — Auto-cluster names such as `report_exported`, `Report.Export`, and `custom_report_v2` into a feature catalog. Founder confirms or splits clusters. Unmapped events stay in an orphan bucket so they cannot hide.
+3. **Score usage** — For each feature: unique users, events per active user, last-seen, 30/90-day decay, and account concentration (share of usage from the top one and top three workspaces). Flag power-user-only vs truly abandoned.
+4. **Recommend removals** — Claude writes a feature-funeral report: Keep, Investigate, or Sunset, with a one-paragraph rationale, suggested owner (PM, CS, eng), and a rollback note if a feature flag exists. Export PDF plus CSV for Linear/Jira.
+
+A sunset recommendation never ships as a silent delete. The report names remaining-user count (not emails in the MVP) and whether they cluster in one tenant — the slide that lets a founder say “CS confirmed; three people, one logo; we cut it on the 15th.”
+
+## Market Research
+
+The product-analytics category is loud. The deprecation category is almost silent — which is the opening.
+
+Ideabrowser keyword research on idea 5076 puts **product analytics platform** at **590 monthly searches with 182% recent growth**, projecting toward **860**. Broader **data analytics software** sits at **12,100 monthly searches**, **8.8% growth**, projecting to **13,450**, with CPC around **$9.02** and LOW competition. A September 2026 Ideabrowser quick-check on adjacent terms found **product analytics** at **2,400 monthly searches** (LOW competition, CPC **$13.91**), **mixpanel alternative** at **480** (MEDIUM, CPC **$20.19** — buyers with a wallet), and **PostHog** at **135,000** monthly searches. **Feature deprecation** itself is a **20-search** ghost. People hunt analytics platforms and Mixpanel replacements. Almost nobody has a productized query for “kill unused features.” You intercept teams already inside Mixpanel or PostHog who still paste CSVs into Sheets.
+
+Developer-productivity tooling in the same pack is cited at **23–31% CAGR** through 2025. Amplitude (2012, public) and Mixpanel (2009) are decade-plus incumbents; PostHog is the open-source gravity well. None sell a funeral. ProductBoard, Canny, and Featurebase decide what to **build**. The gap is what to **remove**, with a confidence score and a concentration check — zero direct “safe sunset” vendors in the Ideabrowser competitive set.
+
+Community heat matches the keyword skew: 100-comment threads on r/analytics (248K) and r/ProductManagement (210K), dashboard sprawl on r/PowerBI (188K), YouTube analytics tutorials at 100K-plus views with a hole around “how to sunset a feature without a war room.” GDPR/CCPA data-minimisation is a second tailwind: unused flows are processing surface legal will eventually ask you to justify.
+
+Stage: **emerging**. Exports and feature flags are mature; the decision product is not. Ideabrowser flags a **12–18 month** window before Amplitude or Mixpanel bolt on an “unused features” module. Ship the export-first auditor now.
+
+## Competitive Landscape
+
+Three named analytics incumbents already own the event stream. They will not price or position as a removal tool. That is the whole map.
+
+- **Amplitude** — Category leader: funnels, cohorts, deep integrations. Shows declining usage; will not recommend deletion, because deprecation copy fights the “more seats” story. Pricing starts around **$995/month** on enterprise plans.
+- **Mixpanel** — Event-based engagement analytics. Usage / event-volume pricing, so cost climbs with the bloat you want to kill. UVP is engagement metrics, not a kill list.
+- **PostHog** — Open-source analytics plus replay, flags, and A/B tests. Free tier plus paid. Self-host, privacy story, 135K monthly searches on the brand term. Closest adjacency — flags sit next to analytics — still no AI funeral report as the hero. Partner: ingest their export, later write back a flag.
+- **ProductBoard / Canny / Featurebase** — Prioritization, not deprecation. RICE and portal votes decide the next build, not the last funeral.
+- **LaunchDarkly (and flag platforms)** — Kill-switch infrastructure **after** the decision. They do not tell you which flag to turn off.
+- **Sheets + a Mixpanel CSV** — The actual default. Free, zero confidence score, zero concentration math. Hidden cost is the Friday argument that never resolves.
+
+**Your Opportunity**
+
+Price in the gap between PostHog’s free tier and Amplitude’s ~$995 enterprise floor. **$99/month** for continuous audits, a **$49** 14-day trial, a free heatmap bait, and a **$10K–$50K/year** backend for growth-stage companies sitting on years of creep. Win on three things incumbents will not chase: (1) export-first onboarding so a weekend founder can run an audit without a data-eng ticket, (2) concentration + decay scoring that treats “three users at one logo” as a different object than “three users across fifty logos,” and (3) copy that says sunset out loud. Amplitude adding a “low usage” widget in 6–12 months is the risk; being the named funeral brand before they do is the 12–18 month job.
+
+## Business Model
+
+Subscription SaaS with a free bait that converts on audit depth, not vanity charts. Ideabrowser’s value ladder on idea 5076 already prices the rungs: a free utilization heatmap, a **$49** 14-day Feature Trimmer trial, **$99/month** for the core subscription, a **$200/month** advanced-analytics add-on, and an **Enterprise Optimization Package** at **$10,000–$50,000/year**. Cheap enough for a Series A PM to expense; expensive enough at the top for a scoped cleanup.
+
+- **Free** ($0) — One export, 20-feature cap, heatmap only, “audited with” footer on the PDF
+- **Audit** ($49 / 14 days) — Full scoring, funeral copy, CSV export — the “prove it on our Mixpanel dump” wedge
+- **Studio** ($99/mo) — Unlimited re-runs, feature catalog memory, Linear/Jira CSV, quarterly reminder cron
+- **Growth** ($200/mo add-on) — Multi-product workspaces, tenant-level concentration, flag-ID mapping, SOC2 questionnaire pack
+- **Enterprise** ($10K–$50K/year) — Live Mixpanel/PostHog API, SSO, named analyst, custom kill-criteria, on-prem export handling
+
+Path to **$5K/month**: ~50 Studio subscribers, or 30 Studio plus one five-figure cleanup. Path to **$1M ARR**: ~600 blended Studio seats, or 400 Studio plus a handful of $20K packages. Variable cost is parse + LLM on aggregated feature rows — **under $0.20** per audit if you summarize before you prompt. Studio gross margin ~**87%**.
+
+**Unit Economics (illustrative)**
+
+- **Under $0.20** — LLM + parse cost per full audit
+- **~87%** — Gross margin Studio
+- **$80–$150** — Target CAC (Reddit AMAs, redacted-export content, PostHog community)
+- **~$900** — LTV at $99/mo and ~9 month average (first sunset quarter is the retention hook)
+
+Retention mechanic: the second audit. Teams that kill one feature come back next quarter. Annual prepay (10 months for 12) fits planning-cycle budgets.
+
+## Recommended Tech Stack
+
+Optimize for file-in, score-out, PDF the same afternoon. Do not build a warehouse. Hard parts: column fingerprinting, event-to-feature clustering, and a prompt that refuses to sunset a high-concentration feature without Investigate.
+
+- **Next.js 14 (App Router) + Vercel** — Upload UI, streaming parse, server actions. One repo.
+- **Papa Parse + size-gated upload** — Mixpanel/PostHog CSV or JSONL. Reject files missing event name, timestamp, or distinct id. Blob/S3 for the file; aggregates only in the DB.
+- **Postgres (Supabase or Neon)** — workspaces, exports, features, scores, reports. RLS per workspace. Hash distinct_ids at ingest.
+- **Claude (Sonnet) with JSON schema** — Prompt on the scored feature table, not the firehose. Return featureId, verdict, rationale, ownerHint, rollbackNote, confidence. Cache the catalog for delta re-runs.
+- **Stripe Billing** — Free / $49 trial / $99 Studio / $200 add-on. Trial keyed off export created_at.
+- **@react-pdf/renderer** — Funeral PDF: one-pager, full table, Investigate appendix. The forwarded artifact is the product.
+- **Optional week-two** — Mixpanel/PostHog API for last-90-days pull. Still no Segment.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 App Router (TypeScript, Tailwind) SaaS called “SaaS Feature Usage Auditor.”
+
+Postgres via Supabase: workspaces, memberships, exports (source mixpanel|posthog, column_map JSONB), features (event_names TEXT[]), scores (unique_users, decay_30, decay_90, top1_share, top3_share, band abandoned|concentrated|healthy), reports (verdicts JSONB, pdf_url). RLS by workspace_id. Magic-link auth.
+
+Routes: /upload, /map, /report/:id, /billing. Env: ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, BLOB token. Reject uploads over 80MB. Hash distinct_id at ingest; never persist raw emails.
+```
+
+**2. Scoring Engine + Funeral Copy**
+
+```text
+Build the scoring + recommendation pipeline.
+
+Parse Mixpanel CSV (event, distinct_id, time) and PostHog JSON/CSV. Fingerprint headers. Fail if distinct_id is missing. Aggregate to eventName, uniqueUsers, eventCount, lastSeen, dailyActiveSeries.
+
+Cluster event names with a conservative normalizer plus a Claude pass that proposes feature clusters as JSON. UI must allow split/merge before scoring.
+
+Score each feature: unique_users, events_per_user, decay_30 / decay_90 (handle divide-by-zero), top1_share / top3_share by account property or distinct_id. Bands: abandoned (near-zero users, last_seen older than 90 days), concentrated (top1_share above 0.6), healthy (else).
+
+Send ONLY the feature score table to Claude. Schema fields: featureId, verdict keep|investigate|sunset, rationale, ownerHint pm|cs|eng, rollbackNote, confidence.
+Hard rules: never sunset when top1_share is above 0.5 unless unique_users is under 5; never sunset last_seen within 14 days; Investigate when unique_users is under 10 but event_count is spiky. Rationale is one paragraph a CEO can paste into Slack. Persist verdicts and render a PDF.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for SaaS Feature Usage Auditor.
+
+Hero: “Find the features nobody uses. Sunset them with a straight face.”
+Sub: “Drop a Mixpanel or PostHog export. Get a funeral report: Keep, Investigate, or Sunset — with concentration math so you do not kill the one button a champion account still clicks.”
+
+Sections: problem (40 features, 12 used, 45-minute onboarding); how it works (ingest → map → score → report); sample report with one Sunset row (“3 users, 2 at the same company”); pricing Free / $49 trial / $99 Studio, anchored against Amplitude ~$995/mo and PostHog free; FAQ covering “is low usage the same as low value?” (no — that is why Investigate exists), hashed ids, 30-day file deletion on Free, no live API required.
+
+Visual: dark product-dashboard aesthetic, lavender accent, Geist, no stock people. Primary CTA: “Upload an export.” Secondary: “See a sample funeral.”
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for SaaS Feature Usage Auditor: wordmark plus a small mark that reads as a tombstone toggle (feature-flag switch with the unused side filled). Palette: near-black ground, lavender accent, one warning red for Sunset only, muted green for Keep. Type: Geist sans for UI, IBM Plex Mono for event names and scores. Voice: never celebrate deletion as cruelty; always pair a Sunset verdict with remaining-user count and concentration; never say “AI killed this feature.” Deliver a one-page brand sheet, three report-headline variants, and PDF cover layout notes.
+```
+
+## Sources
+
+Keyword volumes, community counts, and competitor packaging from Ideabrowser MCP idea #5076 (Jan 2026) plus a Sep 2026 keyword quick-check. Triangulate live pricing before a deck.
+
+- [Amplitude pricing (enterprise plans; ~$995/month cited in Ideabrowser competitive analysis)](https://amplitude.com/pricing)
+- [Mixpanel pricing (usage / event-volume)](https://mixpanel.com/pricing)
+- [PostHog pricing (free tier + paid)](https://posthog.com/pricing)
+- [ProductBoard — prioritization adjacent, not a sunset tool](https://www.productboard.com/)
+- [LaunchDarkly — feature-flag infrastructure for the rollback step](https://launchdarkly.com/)
+- [r/ProductManagement](https://www.reddit.com/r/ProductManagement/)
+- [r/analytics](https://www.reddit.com/r/analytics/)
+- [r/SaaS](https://www.reddit.com/r/SaaS/)
+- [GDPR Article 5 — data minimisation as a sunset tailwind](https://gdpr-info.eu/art-5-gdpr/)
+- Ideabrowser #5076 keywords: product analytics platform (590 searches, 182% growth); data analytics software (12,100, 8.8%, CPC $9.02)
+- Ideabrowser quick-check (Sep 2026): PostHog 135,000 vol; product analytics 2,400 / CPC $13.91; mixpanel alternative 480 / CPC $20.19; feature deprecation 20 vol
+
+Sourced via Ideabrowser MCP idea_id 5076: get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, market_stage_analysis, research_trend (discover quota hit; quick_check used). No verified report yet.
