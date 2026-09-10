@@ -1,0 +1,136 @@
+---
+slug: "contractor-ai-receptionist"
+title: "AI receptionist so solo contractors never ghost a customer"
+---
+
+## The Problem
+
+A one-truck plumber is wrist-deep in a P-trap when the phone rings in the cab. It dumps to voicemail. The homeowner does not leave a message and wait until tomorrow; they dial the next name on Google. That missed ring is not a scheduling inconvenience. It is a $400 to $2,800 job walking down the street. Directional vendor math that closes deals in this category puts an electrician job around $950, a plumber around $1,200, HVAC around $1,500, and a roof up to $2,800. The Ideabrowser catalog brief sizes the pool at 3.2 million solo home-service firms. DialCatch, which already ships a $29 solo plan, markets against 2.3 million U.S. tradespeople who lose thousands a year to unanswered calls. Either number is a TAM you do not need to invent.
+
+The buyer already knows this. A Connecticut homeowner surveying plumbers, tilers, and appliance techs wrote that a courtesy callback is now so rare she is shocked when one arrives. A HomeAdvisor reviewer contacted three contractors and reported that only one called back. On Mike Holt’s Business Management board — verified electricians, closed to outsiders — a Nebraska contractor says he leaves the phone in the truck for hours because impatient “when can you come?” threads stop him from finishing the current job. Another electrician rejects any tool that lets strangers browse his calendar: how busy he is, he wrote, is his business. That is the wall. Voicemail is the moment the buyer walks, and auto-booking is the feature that makes the owner uninstall you.
+
+They already pay to paper over it. “HVAC answering service” and “plumber answering service” each pull 480 searches a month at $195 and $331 CPC. HighLevel cites 62% of small-business calls going unanswered. PE-backed roll-ups now own more than 60% of the top 50 home-service companies and run 24/7 answering as default. YouTube resellers cold-pitch $399 and $500 AI receptionist packages every week. Hiring a receptionist is roughly $35K a year. An offshore VA is a stranger three time zones away learning the trade on the owner’s dime. The status-quo tool is a $20 to $100 missed-call text-back that fires after voicemail. It lowers the guilt. It does not answer, qualify, or protect the calendar.
+
+## The Solution
+
+Never Ghost is a solo AI front desk for the one-truck operator in HVAC, plumbing, electrical, roofing, landscaping, and remodeling. It answers the existing business number in a trade-tuned voice, sizes the job against the owner’s zip list and rates, then texts the owner **before** anything is booked. No calendar exposure. No location share. No stranger picking a Tuesday 2 p.m. slot while the truck is still on a roof. One flat plan: $79/mo, unlimited calls on fair-use, month-to-month, 14-day trial. Optional Booked Jobs Kicker: $15 per completed job the AI originated, capped at $300/mo, so the line item can look like a revenue share instead of another SaaS tax.
+
+The Ideabrowser verified report (idea 8816, August 2026) pivoted the wedge on purpose. The catalog brief led with “professional decline with referral.” Across Rosie, Goodcall, Smith.ai, ServiceTitan, Numa, ServiceAgent, Ring-Ready, and HighLevel, nobody ships that flow — and no contractor has been quoted asking for it either. What buyers name is trust and control. Lead with owner-in-the-loop text veto. Ship decline-with-referral as feature five, not the homepage.
+
+**How it works:**
+
+1. **Answer** — Twilio takes the inbound ring; OpenAI Realtime speaks a trade script (HVAC, plumbing, electrical, roofing, landscaping, or remodeling) at 600–750 ms turn latency so the caller does not hear a machine pause
+2. **Qualify** — Script asks zip, issue, urgency, and a price-band question the trade actually uses; out-of-area and wrong-trade jobs never reach the calendar
+3. **Veto** — Owner gets an SMS with job, band, and one-tap approve or hold; nothing books until that tap. Schedule stays private
+4. **Close** — Approved jobs post to Jobber or Housecall Pro via webhook; declined jobs can wait, or (later) hand to a named referral. Owner keeps the number if they cancel
+
+## Market Research
+
+Voice AI crossed a believability line and a cost floor in the same window, and contractors were already buying the human version at brutal CPCs. That is why this is a now product, not a 2024 science project.
+
+- **“AI receptionist” is 12,100 U.S. searches/mo at $33 CPC** (Google Ads, low competition). “AI answering service” is 2,400/mo at $52 CPC. Google Trends interest for the category more than doubled in a year (2.2x). Trade-plus-AI queries (“AI receptionist HVAC/plumber/contractor”) sit at zero volume — a naming finding, not a demand ceiling. Contractors search the product they already buy.
+- **Trade answering terms convert at agency-killer CPCs.** “HVAC answering service” 480/mo at $195 CPC; “plumber answering service” 480/mo at $331 CPC; “contractor answering service” 210/mo. Intent is “I will pay someone to pick up.” SEO on “AI receptionist for contractors” will not find the first 100 customers. Paid search and trade forums will.
+- **Compute for a four-minute intake is about $0.32.** OpenAI cut Realtime from $100/$200 per million audio tokens (Oct 2024 preview) to $32/$64 at gpt-realtime GA in August 2025. gpt-realtime-mini lands near $0.016 per conversation minute. The job on the other end is $400 to $2,800. Voice latency in production sits at 600–750 ms, inside the sub-800 ms “feels natural” window (Famulor / Retell 2026).
+- **The receptionist market is large and still growing.** Business Research Insights puts virtual receptionist services at $17.84B in 2026, heading to $55.51B by 2035 (12.02% CAGR). NextPhone’s narrower AI-receptionist cut is $3.85B in 2024 toward about $9B by 2033. Home services is still a thin slice of sampled AI-receptionist usage (NextPhone: about 3%), which is the underpenetration, not a warning.
+- **Labor shortage is pricing power if you capture inbound.** 46% of contractors cannot find skilled workers; Angi-era survey work found 66% of tradespeople said they could grow if they had capacity. Home Guild’s 2025 review names 2026 as the year the AI-adoption gap between mid-market shops and solos “becomes visible in business outcomes.”
+- **Communities already argue this.** r/HVAC (~167K), r/Plumbing (~156K), r/Electricians (~198K), r/smallbusiness (1.3M), r/AIReceptionists (4.4K, high engagement), HVAC Facebook owner groups, Mike Holt Business Management. Joey Seeman’s agency-reseller video on selling AI receptionists pulled 52K views; the contractor-facing version (“I called 20 plumbers on a Saturday, 14 did not answer”) is still open.
+
+Honest counter: the same cost curve lets Rosie, Goodcall, and ServiceAgent ship a trade-tuned, owner-veto tier next quarter. The window is real. It is a window, not a moat.
+
+## Competitive Landscape
+
+Six-plus AI receptionists already sell to SMBs. None own the one-truck trade at a solo price with the owner’s calendar locked.
+
+- **Rosie** — Category face. Professional $49/mo is a message pad (250 mins). Booking and live transfers gate at Scale $149/mo (1,000 mins). Growth $299/mo. 7-day trial, 2,000+ small-business customers, $1.5M pre-seed. You are not cheaper than $49. You are cheaper than the tier that actually books. [heyrosie.com/pricing]
+- **Goodcall** — $59 Starter / $99 Growth / $199 Scale per agent, unique-caller caps, $0.50 overage. Positions as “blue collar AI.” Lead collection, not owner-veto dispatch. [goodcall.com]
+- **Smith.ai** — Two products. AI: Free, Pro $150/mo, Enterprise $500/mo. Human hybrid from $292.50/mo. Native Housecall Pro and ServiceTitan hooks. G2: some callers hang up when they realize it is a bot. Trust is the product risk, not feature parity.
+- **ServiceTitan** — $245–$398 per tech per month, $5K–$50K implementation, 12-month contract. Told the BBB the platform is “not optimized for a company with 3 or fewer technicians.” That sentence is the entire ICP exclusion. Roll-ups pay it. Solos cannot.
+- **ServiceAgent** — Closest live clone: dedicated GPT models per trade (HVAC, roofing, plumbing, electrical, solar, garage door), Growth $95/mo, Jobber and Housecall Pro on the call, Stripe deposits. Optimizes for booked appointments. Does not advertise owner-veto or calendar privacy.
+- **DialCatch $29** · **OnCrew $49/mo for 100 calls** ($0.99 overage) · **Ring-Ready $39 flat** · **Upfirst $24.95** — Solo-priced floors. Thin scripts, thin reviews, or message-taking. They prove willingness to pay under $50. They do not prove a dispatcher the owner will trust from a roof.
+- **Missed-call text-back (HighLevel, Podium, Kenect, Numa)** — $20–$100/mo standalone. Texts after voicemail. Numa raised $12M and pivoted to dealerships. Status quo, not a receptionist.
+
+**Your Opportunity**
+
+Do not lead with “we decline jobs and send referrals.” Verified research says contractors buy trust and control, not a reputation primitive nobody asked for. Win the Mike Holt objection: text-before-book, no calendar browse, no location ping. Sit at $79 unlimited fair-use, month-to-month, under Rosie’s $149 booking gate and Smith.ai’s $150 Pro, above the $25–$49 toys. First 100 customers come from Missed Call Rescue audits (three test calls, 90-second Loom of the voicemail) and from the $195–$331 CPC terms they already type — not from ranking for a phrase they never search.
+
+## Business Model
+
+One core SKU. Everything else is a conversion device or an alignment kicker.
+
+- **Missed Call Rescue Audit** ($0) — Three test calls in one afternoon, Loom of what callers heard, text to the owner. This is the sales motion for 90 days.
+- **14-day trial** ($0) — Live on the existing number in under 30 minutes. One trade script, veto SMS on. Auto-flips to paid unless cancelled.
+- **Solo Front Desk** ($79/mo) — Unlimited fair-use voice + SMS, six trade scripts, Jobber/Housecall Pro webhooks, month-to-month, keep-your-number-on-leave.
+- **Booked Jobs Kicker** ($15 per completed job, cap $300/mo) — Optional. Turns the bill into “the thing that booked the water heater.”
+
+**Unit Economics**
+
+- **~$0.32** — OpenAI compute on a four-minute intake (gpt-realtime-mini ~$0.016/min); Twilio voice/SMS sits on top, still well under one lost job
+- **$79** — ARPU before kicker; blended climbs if half the book attach the $15 fee
+- **~80%+** — Gross margin target once scripts cache and you are not running flagship Realtime on every turn
+- **$30–$80** — Target CAC from forums and audits. Paid search at $250 blended CPC only works after the audit converts; do not buy $331 plumber clicks as day-one CAC
+- **~$900–$1,500** — 12-month LTV at $79 if churn is in the teens; kicker is upside, not the plan
+
+Napkin from the verified report (assumptions flagged): 5 founder audits/day plus a $2K/mo ad budget lands on the order of 8 new paid/mo, ~22 paying by month three, ~$3.4K blended MRR if the kicker attaches. Year one $75K–$150K ARR if conversion holds. Ceiling talk of tens of millions requires 1%+ of the solo pool and Rosie not copying the veto flow. Treat ceiling slides as fiction until month-six churn is real.
+
+## Recommended Tech Stack
+
+The hard part is not “an LLM that talks.” It is sub-second voice, idempotent call state, and an SMS veto that never books without the tap.
+
+- **Next.js (App Router) + Vercel** — Contractor dashboard, script editor, call log, Edge webhooks for Twilio and Stripe.
+- **Twilio** — Programmable Voice + Messaging on the owner’s existing number (call forward or hosting). Record with consent. SMS is the veto channel, not a second product.
+- **OpenAI Realtime (gpt-realtime / gpt-realtime-mini)** — Speech in, speech out. Mini for intake margin; flagship for angry or noisy calls. Prompt-cache the trade script.
+- **Jobber + Housecall Pro webhooks** — Write approved jobs only. Do not read the calendar back to the caller.
+- **Stripe Billing** — $79/mo + optional metered $15 kicker with a $300 cap. Customer portal. No annual lock.
+- **Postgres (Supabase or Convex)** — Tables: contractors, trade_scripts, calls, veto_messages, jobs, referrals. Store transcripts. Redact PII in logs.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router + TypeScript + Tailwind app named “Never Ghost.” Postgres tables: contractors (id, phone_e164 UNIQUE, trade, service_zips TEXT[], hourly_cents, plan, stripe_customer_id), trade_scripts (id, trade CHECK IN ('hvac','plumbing','electrical','roofing','landscaping','remodeling'), system_prompt, qualifying_questions JSONB), calls (id, contractor_id, twilio_sid, started_at, ended_at, transcript, outcome TEXT CHECK IN ('veto_pending','approved','held','out_of_scope','hangup')), veto_messages (id, call_id, sms_sid, job_summary, price_band, status TEXT CHECK IN ('pending','approved','held')), jobs (id, call_id, jobber_id, hcp_id, completed_at, kicker_cents). Stripe product Solo $79/mo plus metered kicker $15/completed job with a $300/mo cap. Env: TWILIO_*, OPENAI_API_KEY, JOBBER_*, HCP_*, STRIPE_*. No calendar OAuth scopes that expose free/busy to callers.
+```
+
+**2. Voice Intake + Owner Veto**
+
+```text
+Build POST /api/voice/inbound (Twilio) that starts an OpenAI Realtime session with the contractor’s trade script. Qualifying JSON after the call: { zip, issue, urgency, in_service_area, price_band, caller_name, callback }. If in_service_area is false, politely end without booking. If true, SMS the owner a one-tap approve/hold link; do not write Jobber/Housecall Pro until approve. Target 600-750ms voice turns. Use gpt-realtime-mini by default. Never read calendar busy-slots to the caller. Persist every turn. Reply to Twilio fast; do heavy CRM writes after the veto webhook.
+```
+
+**3. Landing Page**
+
+```text
+Single-page site for Never Ghost. Headline: “Your phone can stop ghosting jobs.” Sub: “AI answers in your trade’s voice. Texts you before it books. Calendar stays yours. $79/mo, month to month.” Sections: missed-call math ($950 electrician / $1,200 plumber / $1,500 HVAC / up to $2,800 roof), how it works (4 steps matching the product page), competitor table (Rosie booking at $149, Smith.ai Pro $150, ServiceTitan not for shops with 3 or fewer techs), FAQ on sounding human, number portability, and why you will not expose the calendar. CTA: “14-day trial” plus a secondary “audit my voicemail.” Geist, off-white, near-black, one amber accent. No purple gradient.
+```
+
+**4. Branding Package**
+
+```text
+Brand sheet for Never Ghost. Wordmark plus an icon of a work-glove holding a phone that is actually answered. Primary near-black, amber signal color, truck-cab gray. Type: Geist sans, IBM Plex Mono for call timestamps. Voice rules: talk like a dispatcher, never like a Silicon Valley receptionist; always show the veto SMS in screenshots; never promise “we book 100% of calls.” Six trade badge icons. Three SMS copy variants under 160 characters for approve / hold / out-of-area.
+```
+
+## Sources
+
+Market sizing, competitor pricing, and the owner-veto pivot collated from Ideabrowser verified research on idea 8816 (completed 2026-08-29) plus the public pages those findings cite. Triangulate before you put numbers in a deck.
+
+- [Ideabrowser verified research — idea 8816 (Never Ghost / contractor AI receptionist)](https://www.ideabrowser.com)
+- [OpenAI — introducing gpt-realtime (Aug 2025 GA pricing $32/$64 per million audio tokens)](https://openai.com/index/introducing-gpt-realtime/)
+- [Forasoft — OpenAI Realtime API pricing history and per-minute models](https://www.forasoft.com/blog/article/openai-realtime-api-pricing)
+- [Rosie — pricing ($49–$299/mo; booking gates at Scale $149)](https://heyrosie.com/pricing)
+- [Goodcall — answering service cost ($59–$199/mo)](https://www.goodcall.com/answering-services/cost)
+- [Smith.ai — AI receptionist pricing](https://smith.ai/pricing/ai-receptionist)
+- [G2 — Smith.ai AI receptionist (caller-rejects-bot trust signal)](https://www.g2.com/products/smith-ai-ai-receptionist/pricing)
+- [ServiceTitan pricing breakdown and BBB “3 or fewer technicians” exclusion](https://myquoteiq.com/servicetitan-pricing-per-month/)
+- [Roofing Software Guide — ServiceTitan BBB quote vs Jobber](https://roofingsoftwareguide.com/comparisons/servicetitan-vs-jobber/)
+- [OnCrew — $49/mo for 100 calls](https://oncrew.ai/pricing)
+- [ServiceAgent — trade-specific AI receptionist](https://serviceagent.ai/blogs/ai-receptionist-for-electricians/)
+- [HighLevel — 62% of small-business calls unanswered](https://www.gohighlevel.com/post/quick-easy-wins-with-highlevel-missed-call-text-back)
+- [Business Research Insights — virtual receptionist service market](https://www.businessresearchinsights.com/market-reports/virtual-receptionist-service-market-120275)
+- [Famulor — voice-agent latency benchmarks](https://www.famulor.io/blog/ai-voice-agent-latency-how-fast-your-phone-bot-must-reply)
+- [Patch (Manchester, CT) — homeowner callback complaint](https://patch.com/connecticut/manchester/is-it-too-much-to-ask-for-contractors-to-call-you-back-a2f8917d)
+- [Mike Holt Forum — Business Management / Estimating](https://forums.mikeholt.com/forums/business-management-estimating.20/)
+- [Home Guild — Service Economy 2025 year in review](https://www.homeguild.ai/learn/guides/service-economy-2025-year-in-review)
+
+Page sourced via Ideabrowser MCP (idea_id 8816): get_verified_research, get_idea_research, competitive_analysis, community_analysis, keyword demand in the verified findings.

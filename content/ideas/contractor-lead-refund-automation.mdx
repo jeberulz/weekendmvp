@@ -1,0 +1,137 @@
+---
+slug: "contractor-lead-refund-automation"
+title: "Automatic lead refunds for home service contractors"
+---
+
+## The Problem
+
+A roofing shop in Phoenix buys Angi, Thumbtack, HomeAdvisor, Bark, and Google Local Services Ads the way a restaurant buys produce: every week, on autopilot, because the trucks have to stay full. The bill lands between $2,000 and $10,000 a month. Then the phone rings for a water-heater swap when they only do roofs, a job 40 miles outside the service area, a disconnected number, a homeowner who already hired someone last Tuesday. Each of those leads still posts to the invoice. Filing a credit means a different portal, a different deadline, a different evidence packet, and a support queue that treats the dispute as a favor.
+
+The refunds that do land are usually not cash. Angi and HomeAdvisor issue platform credit that expires and can only buy more of the same leads. Thumbtack defaults to credit too; cash only if the pro asks within 10 business days of approval. Angi caps credits at about 5 per territory, so even a shop that documents every bad lead hits a ceiling. Google killed manual LSA disputes in mid-2024. An ML system now auto-credits roughly 20% of remaining bad leads, with no appeal, and explicitly withholds credits for the two mismatches a contractor can prove with a zip code and a service list: wrong job type, wrong geo. The original charge still sits on the invoice. Credits show up weeks later as a line item nobody reconciles against the bill.
+
+The dollars are not vibes. One Thumbtack pro added up denied refunds over two and a half years and hit about $27,000. HomeAdvisor drew 1,200-plus BBB complaints from contractors in three years. r/Contractor (72.1k) and the Thumbtack Community are a running log of hour-long support calls that still end in denial. LSA cost per lead climbed from $50.46 in 2023 to $60.50 in 2024, a 20% jump. LocaliQ’s 2025 study found 69% of home-service advertisers watched CPL climb again; SearchLight’s $14.9M dataset put HVAC/plumbing blended CPL at $104 in January 2026. Every denied refund costs more than it did 18 months ago, and the office manager still fights it by hand between dispatch and payroll.
+
+## The Solution
+
+Refundra is not another lead scorer. CallRail already classifies. LeadTruffle already books. Refundra takes the CallRail or Twilio transcript, decides whether the lead is refund-eligible under each platform’s own rules, and files the evidence-backed credit request inside the window — Angi, HomeAdvisor, Bark, plus LSA charge-versus-credit reconciliation. Thumbtack is the one platform with a dedicated filing tool already; do not start there.
+
+The frontend is a 48-hour Refund Audit. The contractor connects accounts. You scan 90 days of lead invoices and call recordings. You send back one number: dollars left on the table. No card. That number is the close. Then a $149–$399/mo subscription, priced under the recovery, keeps filing in the background while the crew stays on the truck. Optional backend: a done-for-you pass on the last 12 months of invoices — typically around $1,000 one-time, or 25% of dollars recovered, whichever the shop prefers.
+
+**How it works:**
+
+1. **Ingest** — Connect CallRail or Twilio; webhooks land recordings and lead metadata. Whisper transcribes at $0.006/min, so 500 calls a month cost under $10.
+2. **Classify** — Claude tags each lead against the platform’s refund categories: wrong service, out of area, disconnected, duplicate, already hired, no-contact window missed.
+3. **File** — Playwright drives the Angi, HomeAdvisor, and Bark portals with the evidence packet. LSA work is reconciliation, not a dispute form: match Google Ads charges to auto-credits. This browser layer is the fragile part.
+4. **Report** — Weekly recovery digest: filed, approved, denied, dollars credited. Stripe bills the plan only after the audit showed a number.
+
+You are selling recovered spend, not a dashboard. The contractor already has Jobber or ServiceTitan for the job. They need someone who will sit in the portal before the 30-day Angi window closes.
+
+## Market Research
+
+Home-services lead gen is a $3–5B fee layer sitting on a $600B-plus U.S. trades market. The refund-recovery niche is not a Gartner category; you infer it from denied-credit stories and rising CPL. If 5–10% of marketplace leads are dispute-eligible and unclaimed at $40–$60 a credit, the recoverable pool is hundreds of millions a year. Directional, not audited — still enough that a $249/mo tool pays for itself on a single good week.
+
+- **LSA CPL $50.46 (2023) → $60.50 (2024), +20%.** PipelineOn citing SearchLight and LocaliQ. Contractor LSA adoption ran from the high 20s toward about 70% in the same window.
+- **69% of home service advertisers saw CPL climb in 2025** (LocaliQ, 3,200-plus campaigns). HVAC/plumbing blended CPL hit $104 in January 2026 on SearchLight’s $14.9M dataset. A 15% bad-lead rate on a $5,000/mo book is $750/mo walking out the door.
+- **Angi homeowner-choice (January 2025) cut network leads 57% in Q1.** Fewer leads, higher spend pressure, every credit more expensive for the platform to grant.
+- **Search is category, not solution.** “angi leads refund” / “lsa lead dispute” return 0 U.S. searches/mo. Contractors search Angi Leads (5,400/mo), Thumbtack Pro (12,100/mo), Google LSA (27,100/mo). r/Contractor (72.1k) is where they complain. Outbound and audit screenshots, not SEO on “refund software.”
+
+Timing: Google is retiring the LSA dashboard into Performance Max pay-per-lead (phase 1 from August 2026 for plumbing, HVAC, electrical, roofing). Historical reports do not migrate. Combined with the mid-2024 dispute kill, Google is a reconciliation job. Angi, HomeAdvisor, Bark, and Thumbtack still run manual, evidence-weighted credits — that is the filing wedge. Whisper at $0.006/min is the cost unlock that did not exist when CallRail was the only way to read a call.
+
+## Competitive Landscape
+
+One company already automated refund drafting — on Thumbtack only. Everyone else classifies, books, or runs the job after the lead is won. Nobody files across Angi, HomeAdvisor, Bark, and LSA.
+
+- **Tack Tools Pro** — Fair Credit launched May 13, 2026. AI drafts Thumbtack refund requests in the six official categories in about 30 seconds. Built by a working Thumbtack pro. $99/mo Starter / $149/mo Pro. Thumbtack only. Copy-paste into the portal, not a five-platform robot. Direct competitor on one of five sources; ignore them on Thumbtack in month one.
+- **CallRail** — Incumbent call tracker in the trades. $50–$55/mo entry. Transcripts, AI Voice Assist, ServiceTitan hook, hundreds of millions of leads analyzed a year. Classifies lead quality. Does not file a single credit request. Your ingest partner, not your rival, until they ship a refund module.
+- **LeadTruffle** — $229–$629/mo. Qualifies and books from Thumbtack, Yelp, LSA, Facebook, and 8,000-plus Zapier apps. Same buyer, same trades. No refund filing. Price anchor: sit at or below their floor with a cash-recovery story instead of a booking story.
+- **Take the Leads (Atomic Software)** — $29–$49/mo. Aggregates Thumbtack, Angi, HomeAdvisor, LSA plus 30 sources with AI scoring. Inbox unification. No filing.
+- **The platforms** — Angi: about 5 credits/territory, credits not cash, sole discretion. Thumbtack: credit by default, cash only inside 10 business days. HomeAdvisor: expiring credits, 1,200-plus BBB complaints in three years. Google LSA: auto-credits, no appeal, no credits for job/geo mismatch. They are priced to protect float.
+- **Housecall Pro / ServiceTitan / Jobber** — Own post-win ops. Will not touch marketplace refunds. Integration surface, not a competitor.
+
+**Your Opportunity**
+
+Do not fight Tack Tools on Thumbtack. Win Angi + HomeAdvisor + Bark filing plus LSA reconciliation — the four seats they left open. Lead with a 48-hour dollar-number audit. Price $149–$399/mo under recovered spend so the subscription is a rounding error next to a $5k lead bill. If Tack Tools expands off Thumbtack in the next two quarters, the window closes. Right now the multi-platform incumbent is a spreadsheet.
+
+## Business Model
+
+SaaS priced under the recovery, sold by a free audit that returns a dollar figure. Tack Tools is $149 for one platform. LeadTruffle starts at $229 to qualify, not to file. A cross-platform recovery tool belongs in that band, tiered by monthly lead spend, with a one-time backend for the backlog.
+
+- **Refund Audit** ($0) — 90-day scan across Angi, HomeAdvisor, Bark, Thumbtack, LSA. One number in 48 hours. No card. The lead magnet.
+- **Starter** ($149/mo) — Up to $3k/mo lead spend, one filing platform (start Angi), monthly recovery report.
+- **Growth** ($249/mo) — Up to $6k/mo spend, all filing surfaces plus LSA reconciliation, call transcription included, weekly report.
+- **Scale** ($399/mo) — Up to $12k/mo spend, dedicated dispute queue, CallRail and ServiceTitan sync.
+
+Backend, not another seat: **Last-12-months Recovery** — done-for-you filing on historical invoices. Quote it as a ~$1,000 one-time for a typical $5k/mo shop, or 25% of dollars recovered (cap around $5k) if they want risk shared. Attach it the same week the audit closes. Kill the card if 90 days of live filing shows zero dollars; the offer is recovery, not software theater.
+
+**Unit Economics**
+
+- **under $10/mo** — Whisper on 500 three-minute calls
+- **~$210** — Blended ARPU (Starter/Growth mix)
+- **~$30–$80** — Target CAC on outbound + YouTube comments (no paid search on zero-volume queries)
+- **under the recovery** — Gross margin holds if you recover even one extra $60 credit a week
+- **~$100k–$180k** — Honest year-one blended (subs + one-time recovery)
+- **$3M–$6M ARR** — Ceiling on ~2,000 U.S. multi-platform shops, not a category-defining SaaS
+
+Path: 10 new paying pros a month at a $210 blend is $2,100 new MRR. 50 shops is about $126k ARR before recovery fees.
+
+## Recommended Tech Stack
+
+The model call is cheap. The hard/fragile part is Playwright against portals that change CSS, throttle logins, and reserve “sole discretion” on every credit. Ship Angi as a co-pilot the pro clicks through first; automate deeper only after a month of filings. This is not a public API product.
+
+- **Next.js (App Router) + Vercel** — Audit dashboard, recovery reports, webhook receivers. One repo.
+- **CallRail webhooks + Twilio recordings** — Source of truth for “did we actually talk to this lead.” Store call SID, duration, recording URL, platform lead id.
+- **Whisper** — $0.006/min cloud (or $0 self-hosted). Transcribe inbound, then drop the text into the classifier. Do not buy CallRail just for transcripts.
+- **Claude** — Structured classify against per-platform policy schemas (wrong service, geo, duplicate, disconnect, already hired). Keep a confidence floor; low-confidence leads go to a human queue.
+- **Playwright / browser automation** — Angi, HomeAdvisor, Bark filing. Honest: this breaks. Detect selectors, screenshot every submit, retry with a human-in-the-loop. LSA side uses Google Ads exports plus Local Services UI, not a dispute API.
+- **Stripe Billing** — Audit is free. Starter/Growth/Scale products. One-time Recovery as a separate Invoice or Checkout session. Customer portal for plan changes.
+- **Postgres (Supabase or similar)** — Tables: contractors, connected_accounts, leads, transcripts, classifications, filings, credits, invoices. Audit log of every portal action — you will need it when a platform asks who clicked.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named Refundra. Postgres tables: contractors (id, email, trade, monthly_lead_spend_cents, plan), connected_accounts (id, contractor_id, platform TEXT CHECK platform IN ('angi','homeadvisor','bark','thumbtack','lsa'), status), leads (id, contractor_id, platform, external_lead_id, charged_at, amount_cents, zip, service_type), transcripts (id, lead_id, source TEXT CHECK source IN ('callrail','twilio','upload'), duration_sec, text, whisper_cost_cents), classifications (id, lead_id, category, confidence, evidence_json, model), filings (id, lead_id, platform, submitted_at, status, credit_cents, screenshot_url), credits (id, contractor_id, platform, amount_cents, kind TEXT CHECK kind IN ('credit','cash','lsa_auto'), posted_at). Stripe products: Starter $149, Growth $249, Scale $399, plus a one-time Recovery SKU. Env: CALLRAIL_WEBHOOK_SECRET, TWILIO_AUTH_TOKEN, OPENAI_WHISPER_KEY, ANTHROPIC_API_KEY, STRIPE_SECRET_KEY. CallRail webhook at POST /api/webhooks/callrail. Do not automate Thumbtack in v1.
+```
+
+**2. Classifier + Filing Worker**
+
+```text
+Build a worker that: (1) transcribes audio with Whisper, (2) classifies with Claude against platform policy, (3) enqueues a Playwright job. Categories: wrong_service, out_of_area, disconnected, duplicate, already_hired, ineligible. Output JSON: category, confidence 0-1, quote spans from the transcript, recommended platform reason code. Filing: Playwright scripts per platform with screenshot-on-submit and a manual-confirm mode (contractor clicks Approve on a queue of 10). LSA path: ingest Google Ads invoice lines and Local Services credit lines, match by lead id and date, flag unmatched charges. Never claim a public dispute API for Angi or LSA. If a selector breaks, fail the job to the human queue instead of retrying blindly.
+```
+
+**3. Landing Page + 48h Audit**
+
+```text
+Design a marketing page for Refundra. Hero: “Your Angi and HomeAdvisor credits, filed before the window closes.” Sub: “48-hour Refund Audit. One dollar number. No card.” Sections: the $27k denied-refund story, platform scoreboard (Angi credit cap, HomeAdvisor BBB volume, LSA no-appeal auto-credits, Thumbtack 10-day cash rule), how it works (ingest, classify, file, report), pricing Starter $149 / Growth $249 / Scale $399 anchored under a $5k/mo lead bill, FAQ on portal automation risk and credits-not-cash. Primary CTA starts the audit (connect CallRail or upload 90 days of CSVs). Geist, off-white background, near-black type, one lime accent. Do not advertise Thumbtack as the wedge.
+```
+
+**4. Branding Package**
+
+```text
+Brand Refundra: wordmark plus a small mark that reads as a receipt stamp, not a phone. Near-black, one lime chip, two warm grays. Voice: talk like a shop owner, never like a growth hacker. Always show recovered dollars next to subscription price. Three sample audit emails that lead with a single number (“$1,840 unclaimed in 90 days”) and a 48-hour expiry. One-page brand sheet, hex, type, and three “do not say” rules (no “AI-powered,” no “set and forget,” no promising cash when the platform pays credit).
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #9266 and the public research it cites (September 2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Tack Tools Pro — Fair Credit (Thumbtack refund drafting, $99/$149)](https://tacktoolspro.com/fair-credit)
+- [Tack Tools Pro pricing](https://tacktoolspro.com/pricing)
+- [Access Newswire — Fair Credit launch, May 13, 2026](https://www.accessnewswire.com/newsroom/en/computers-technology-and-internet/tack-tools-pro-launches-the-first-thumbtack-lead-response-tool-wi-1166096)
+- [Angi — How to request a lead credit for an invalid lead](https://intercom.help/angi/en/articles/11403440-how-to-request-a-lead-credit-for-an-invalid-lead)
+- [Angi — Lead credit guidelines](https://intercom.help/angi/en/articles/6284562-lead-credit-guidelines)
+- [Yahoo Finance — Angi Q1 2025 (homeowner-choice, lead volume)](https://finance.yahoo.com/news/angi-inc-angi-q1-2025-071309111.html)
+- [Google — Local Services Ads help (credits / dashboard changes)](https://support.google.com/localservices/answer/15100654)
+- [AdSquire — How to dispute LSA leads (post-2024 auto-credit reality)](https://adsquire.com/how-to-dispute-lsa-leads/)
+- [PipelineOn — LSA CPL $50.46 → $60.50, LocaliQ/SearchLight CPL pressure](https://pipelineon.com/blog/contractor-pricing-strategy/)
+- [SAVU — HomeAdvisor pro reviews (BBB complaint volume, credits not cash)](https://savullc.com/homeadvisor-pro-reviews/)
+- [LeadTruffle pricing ($229–$629/mo)](https://www.leadtruffle.co/pricing/)
+- [CallRail](https://www.callrail.com/)
+- [Thumbtack Community — refund-policy threads](https://community.thumbtack.com/discussion/1344/non-transparent-refund-policy-unsupportive-support-frustrated-customer)
+- [OpenAI Whisper pricing context ($0.006/min)](https://tokenmix.ai/blog/whisper-api-pricing)
+- [r/Contractor — Angi lead threads](https://www.reddit.com/r/Contractor/comments/1g2fkig/angi_leads/)
+
+Page sourced via Ideabrowser MCP (idea_id 9266): get_idea_research, competitive_analysis, keyword_list, community_analysis, get_verified_research.
