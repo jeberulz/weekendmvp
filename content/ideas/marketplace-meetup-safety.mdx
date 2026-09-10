@@ -1,0 +1,131 @@
+---
+slug: "marketplace-meetup-safety"
+title: "Safe meetup tracker for marketplace sellers and their families"
+---
+
+## The Problem
+
+A seller agrees to meet a stranger in a parking lot for a $180 bike rack. The transaction takes five minutes. The person at home spends the whole afternoon refreshing a text thread that says “let me know when it’s done.” Parents sending a teenager out with a textbook live the same hour in worst-case imagination. Marketplace safety is still an afterthought bolted onto a listing form: meet in public, bring a friend, trust the parking-lot lighting. None of that is a workflow. It is folklore.
+
+The job is not “share my GPS with my family forever.” That is Life360, and it is the wrong shape. The job is a one-off stranger handoff: pick a place that is actually a SafeTrade lot or a well-lit retail pad, time-box the share so it dies when the meetup should have ended, and escalate if it does not. Google Maps will share a pin. WhatsApp will share a live location inside the chat you already used to negotiate price. Neither will tell you the police-station lot three miles away is the designated exchange zone, and neither will text Dad if you have not checked in after twenty minutes.
+
+Recommerce keeps making this worse by volume. The secondhand market is projected around $227 billion (Ideabrowser highlight on this idea). eBay is a small slice of U.S. e-commerce — about 3.5 percent versus Amazon at about 40 percent (Matrix BCG) — and it still had to ship Secure Local Pickup with QR confirmation because local handoffs are now a real checkout mode, not a Craigslist leftover. OfferUp and Facebook Marketplace still treat safety as a help-center paragraph. The people who feel the risk are often not even the seller: they are the partner or parent who never opened the listing.
+
+Search already pays for the generic half of the job. “Live location sharing” does about 14,800 monthly searches at +18.5 percent growth. “Google map live location sharing” sits at 3,600 volume with +132.4 percent growth. r/androidapps (1.5M) and r/privacy (1M) argue constantly about trackers that are too nosy or too flaky. Nobody in those threads is asking for another always-on family map. They are asking for a share that starts when the meetup starts and ends when it should have ended.
+
+## The Solution
+
+Lokkit ships SafeMeet: an event-based meetup tracker for marketplace sellers and the people waiting at home. You are not competing with Life360 on school-run geofences. You are the fifteen-minute safety object that should exist between “see you at 6” and “I’m in the car.”
+
+The directory is the wedge. SafeMeet maps verified SafeTrade spots — police-station lots, posted municipal exchange zones, well-lit retail pads that actually allow this — and ranks them by distance to both parties, lighting, and last-verified date. Informal “meet at Walmart” folklore is not a listing until someone has confirmed the lot still exists and still welcomes exchanges. Stale pins are worse than no pins.
+
+The session is the product. Seller (or buyer) creates a meetup: counterparty handle, marketplace, expected duration, trusted contact. SafeMeet shares live location with that contact only for the window. If the user has not tapped I’m done when the timeout fires, the contact gets an SMS and, on the $9.99 plan, an escalation path. One-tap emergency sits on the lock-screen-adjacent action, not buried in a hamburger. When the window closes, location history is not a family surveillance archive. It is a meetup log with a delete control.
+
+MVP is ruthless: map of verified spots in one metro, time-boxed share, timeout SMS, one emergency action. Do not build a social network of sellers. Do not moderate listings. Do not become a marketplace. Test with twenty high-frequency local sellers and their partners. If fewer than half actually share with a contact during a real handoff, the share flow is too heavy — simplify before you add cities.
+
+**How it works:**
+
+1. **Pick a SafeTrade spot** — Enter the meetup zip or drop a pin. SafeMeet returns ranked verified lots (police, posted municipal zones, confirmed retail) with last-verified date and walking notes. Both parties get the same deep link.
+2. **Start the window** — Seller sets expected duration and a trusted contact. Live location shares with that contact only. The share is event-scoped, not always-on.
+3. **Timeout watch** — If “I’m done” is not tapped when the window closes, Twilio SMS hits the contact with the last ping and the spot name. $9.99 adds a second contact and a louder escalation.
+4. **Emergency** — One-tap action calls the local emergency number and notifies the trusted contact with the live pin. No extra confirmation maze.
+5. **End and forget** — Session closes. Location sharing stops. History is the meetup card, not a month of breadcrumbs. User can delete the session.
+
+## Market Research
+
+There is no tidy “local pickup safety SaaS” TAM. You are at the intersection of recommerce handoffs, consumer live-location, and personal-safety apps. The behavior is mature. The specialist category is not.
+
+- **Recommerce is the volume engine.** Ideabrowser’s why-now on this idea flags the secondhand market on a path toward **$227 billion**. Not all of that is in-person, but bulky SKUs still force a parking-lot meeting.
+- **Live location is already a habit.** Keyword set on idea #7874: **live location sharing at 14,800 monthly volume, +18.5 percent growth**; **google map live location sharing at 3,600 volume, +132.4 percent**. People can share a pin. They do not have a meetup object around it.
+- **Marketplaces admitted the offline step is checkout.** eBay launched Secure Local Pickup with QR confirmation so the handoff is a first-class flow ([eBay Innovation](https://innovation.ebayinc.com/stories/ebay-launches-secure-local-pickup-to-simplify-the-shipping-experience/)). That validates the moment. It does not give a Facebook Marketplace seller a cross-platform safety layer.
+- **eBay is small next to Amazon and still huge in local.** Matrix BCG: eBay around **3.5 percent of U.S. e-commerce versus Amazon around 40 percent** ([Matrix BCG](https://matrixbcg.com/blogs/competitors/ebay)). Local pickup is how a non-Amazon marketplace competes on bulky goods.
+- **Communities argue the generic tools.** r/androidapps at **1.5 million** and r/privacy at **1 million**: trackers that are too nosy or too flaky. Positioning: event-based, auto-expiring. Always-on family apps lose those threads on principle.
+
+Stage: emerging specialist on mature rails. If Google or Meta wrap “safe meetup” into Maps next year, the consumer SKU gets squeezed. That is why the B2B license is the upside, not 50,000 people paying $4.99.
+
+## Competitive Landscape
+
+The competitors are generic tools that already cover 60 percent of the job for free. Win on the other 40 percent or do not bother.
+
+- **Google Maps live location** — Default map, default share. No SafeTrade directory, no meetup timeout, no trusted-contact escalation. Pricing: free
+- **WhatsApp / iMessage live location** — Already inside the negotiation chat. No verified spots, no duration alert, no second-channel SMS to the spouse. Pricing: free
+- **Life360** — Brand king of “is my kid okay.” Freemium plus paid family plans (Gold around $8/mo, Platinum around $15/mo). Always-on circles. Wrong object: a family membership, not a 20-minute stranger handoff. Pricing: free / ~$8–$15+ per month
+- **eBay Secure Local Pickup** — QR confirmation that the item changed hands, inside eBay’s fee model. Transaction integrity, not personal safety, not cross-platform. Pricing: marketplace selling fees (typical mid-teens percent by category); pickup is a fulfillment mode, not a $9.99 safety SKU ([eBay Innovation](https://innovation.ebayinc.com/stories/ebay-launches-secure-local-pickup-to-simplify-the-shipping-experience/))
+- **OfferUp / Facebook Marketplace** — Where the meetups happen. Free listings, safety tips in help centers. No verified-spot map, no timeout share. Pricing: free to list; promoted listings extra
+
+Indirect substitutes: “meet at the police station” Facebook comments, Apple Emergency SOS, a Find My share, shipping the item instead. Those work. They are also how you know the pain is real enough that people already hack a solution.
+
+**Your Opportunity**
+
+Own the event, not the family. Google will not curate police-lot freshness. Life360 will not deep-link from an OfferUp chat. eBay will not protect a Facebook handoff. Ship the narrow bundle — verified spot + time-boxed share + timeout SMS + one-tap emergency — and sell the same bundle as a white-label to marketplaces that want the liability theater without building a safety org. First-mover on the spot graph is the only moat; GPS is not a moat.
+
+## Business Model
+
+Consumer freemium is the demo. Marketplace licenses pay the rent.
+
+- **Starter** ($4.99/mo) — Verified-spot map in covered cities, limited live shares per month (enough for a casual seller), one trusted contact, timeout SMS
+- **Unlimited** ($9.99/mo) — Unlimited tracked meetups, two contacts, escalation, meetup history export, priority spot-verification reports
+- **Marketplace license** ($500–$5,000/mo) — SDK / deep-link: listing chat gets a “Meet at a SafeTrade spot” button, your map, their brand. Price on GMV of local pickup, not seats
+- **Enterprise** ($10k+/year) — Custom SLA, private spot sets (university police, retail chains), audit logs for trust-and-safety teams
+
+Year one is three metros, a few thousand Starter users to keep the graph fresh, and one marketplace pilot that covers the Twilio bill. Buy users with Facebook groups that swap marketplace horror stories and police co-branded SafeTrade pages, not generic location-sharing ads.
+
+**Unit Economics**
+
+- **$20–$30** — Target CAC (execution-plan band); only works if organic horror-story content does half the job
+- **~$7** — Blended ARPU if most people sit on Starter and a thin slice hits Unlimited
+- **Watch Twilio** — SMS on every timeout is the variable cost that kills a $4.99 plan if you are sloppy with retries
+- **B2B or bust** — A single $2,000/mo marketplace contract is worth hundreds of Starter subs and does not churn when someone sells their last dresser
+
+## Recommended Tech Stack
+
+Optimize for a live session that starts in under ten seconds and dies on time. Background location will be the App Store review war; design the permission copy for “this meetup only.”
+
+- **React Native (iOS + Android)** — One codebase. Foreground session is the default; background location only while a meetup is active. No always-on tracking in v1, full stop.
+- **Google Maps SDK** — Base map, directions to the spot, current ping. Places API for retail pads you then verify by hand; do not auto-list every Walmart as SafeTrade.
+- **Supabase (Auth + Postgres + Realtime)** — Tables: users, trusted_contacts, spots (lat, lng, kind, verified_at, source), meetups (starts_at, ends_at, status), pings. Realtime channel per meetup_id for the trusted contact’s map. Row-level security so a contact sees only the session they were invited to.
+- **Twilio SMS** — Timeout alerts and emergency pings to contacts who do not have the app. Short codes and quiet hours. Log every send.
+- **Stripe Billing** — Starter $4.99, Unlimited $9.99, plus a B2B invoice product for marketplace licenses. Customer portal. Annual Unlimited at a slight discount if you must.
+- **Spot ops** — Start with public municipal SafeTrade lists and police-department pages (cited, dated). A weekly human pass in the launch city. User reports can flag a pin; they cannot create an unverified pin that looks verified.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a React Native (Expo) TypeScript app named SafeMeet for company Lokkit. Supabase tables: users, trusted_contacts, spots (id, name, lat, lng, kind CHECK IN ('police_lot','municipal_safetrade','retail_verified'), verified_at, source_url), meetups (id, user_id, spot_id, starts_at, ends_at, status), pings (meetup_id, lat, lng, recorded_at). Enable realtime on pings. RLS: meetup owner and invited contacts only. Stripe products Starter $4.99/mo and Unlimited $9.99/mo. Env: GOOGLE_MAPS_KEY, TWILIO_*, SUPABASE_*, STRIPE_*. Location permission copy must say the share lasts only for the meetup window.
+```
+
+**2. Meetup Session + Timeout SMS**
+
+```text
+Build the meetup flow. User picks a verified spot, sets duration (default 20 minutes, max 90), picks one trusted contact. Starting the session writes meetups.status=live and opens a foreground location watcher that inserts pings every 8 seconds. The contact’s screen subscribes to that meetup channel. When ends_at hits and status is still live, call Twilio to SMS the contact: spot name, last ping age, deep link. Tapping I'm done sets status=closed and stops the watcher. Do not retain pings after 24 hours unless the user exported the meetup. Emergency button: tel:911 (or local emergency) plus SMS to the contact.
+```
+
+**3. Landing Page**
+
+```text
+Design a marketing site for SafeMeet. Hero: "The meetup is five minutes. The worry lasts all afternoon." Sub: "Verified SafeTrade spots. Live share with one person you trust. Auto-alert if it runs long. Not a family tracker." Sections: the parking-lot problem, how it works (five steps matching the product), map screenshot of police-lot pins, pricing Starter $4.99 vs Unlimited $9.99 vs Life360 always-on, FAQ on privacy (share dies with the session) and why Google Maps is not enough. Primary CTA: "Plan tonight’s pickup." Secondary: "For marketplaces" pointing at the $500-$5,000/mo license.
+```
+
+**4. Verified Spot Pipeline**
+
+```text
+Build an admin tool to ingest public SafeTrade sources: municipal police PDFs, city safe-exchange web pages, and user flags. Each candidate spot needs source_url, fetched_at, and a human verified_at before it is public. Never auto-publish a Google POI as verified. Weekly job that marks spots stale if verified_at is older than 180 days. Export a GeoJSON of public spots for the mobile map. Write the trust copy: last checked date visible on every pin.
+```
+
+## Sources
+
+Market sizing, keyword volumes, and competitive notes collated from Ideabrowser MCP idea #7874 (May 2026 snapshot) plus the two primary citations below. Triangulate before you cite in investor materials. Recommerce $227B is the Ideabrowser highlight, not a single-firm audited TAM.
+
+- [eBay Innovation — Secure Local Pickup (QR confirmation)](https://innovation.ebayinc.com/stories/ebay-launches-secure-local-pickup-to-simplify-the-shipping-experience/)
+- [Matrix BCG — eBay competitive landscape (~3.5% U.S. e-comm vs Amazon ~40%)](https://matrixbcg.com/blogs/competitors/ebay)
+- [Life360 pricing (family-plan tiers)](https://www.life360.com/plans/)
+- [Google Maps — Share location](https://support.google.com/maps/answer/7321941)
+- [WhatsApp Help — Live location](https://faq.whatsapp.com/414619548851527)
+- [SBA — Market research and competitive analysis](https://www.sba.gov/business-guide/plan-your-business/market-research-competitive-analysis)
+- [Whatnot — Free pickup best practices (adjacent local-handoff norms)](https://help.whatnot.com/hc/en-us/articles/26309645200397-Free-Pickup-best-practices)
+
+Page sourced via Ideabrowser MCP (idea_id 7874): get_idea_research (competitive_analysis, why_now, keyword_list, execution_plan, community_analysis).

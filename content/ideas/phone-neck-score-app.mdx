@@ -1,0 +1,159 @@
+---
+slug: "phone-neck-score-app"
+title: "Gamified posture tracking app for phone-addicted Gen Z"
+---
+
+## The Problem
+
+A 22-year-old finishes a three-hour lecture with the phone in her lap, then walks across campus hunched over a group chat, then lies in bed scrolling until the battery dies. Apple Health will happily report her steps, her sleep score, her screen time. Nothing on that phone will tell her that her cervical angle just spent five hours pointed at her sternum. She already knows the nickname — tech neck, text neck, phone neck — because TikTok and PT TikTok made it a joke. The joke still hurts when she tries to look left in the car.
+
+The existing tools treat this like an office-ergonomics problem for people who sit at desks. Reminder apps ping you to “sit up,” then you mute them. Stretch libraries dump 125 nameless chin-tucks into a scroll view and call it a program. Hardware like a posture puck wants fifty-plus dollars glued between your shoulder blades, which is a non-starter for a generation that will not add another object to the tote bag. Physical therapy is the honest answer and a terrible product: copays, waitlists, and a home-exercise printout that dies in a camera roll.
+
+The complaint is already organized, it is just not a product yet. Reddit’s r/Posture has about 456,000 members trading pillow hacks, chin-tuck form checks, and “is this forward head posture” photo threads. r/bodyweightfitness sits at roughly 1.3 million and constantly reroutes neck pain into mobility work. On YouTube, Yoga With Adriene holds 11.3 million subscribers; AskDoctorJo sits around 1.57 million with clinical-style drills. Viewers thank the video, then go back to the phone. The content is free. The behavior is not.
+
+Search already pays for the category. “Tech neck exercises” does about 5,400 monthly searches, with related queries for neck stretching exercises and neck posture exercises sitting in the same cluster. TikTok’s #TextNeck pile-on crossed 500 million views in Q1 2026; #TechNeck is smaller but still north of 2 million. Related posture apps have already cleared 500,000-plus downloads on the stores. Demand is not the question. The question is whether anyone will ship a score people will share — the same way they share a closing Ring, a Whoop recovery, a Duolingo streak — instead of another mute-able reminder.
+
+## The Solution
+
+Downcrane is a phone-native posture game, not a clinic. It reads on-device tilt from Core Motion on iOS and the equivalent accelerometer / gyroscope APIs on Android, estimates how long the handset sat in a downward “crane” angle, and turns that into a daily neck-age score. A 22-year-old can open the app after a lecture block and see a neck age of 34. That number is the hook. Friend leaderboards make it a group sport. Bad weeks fire licensed-PT stretch prompts. Good weeks mint a shareable score card for Stories. The free tier shows the score. Paid unlocks the social graph, trends, and the stretch library.
+
+Honesty is the feature, not a footnote. A phone in a pocket or on a table is not a cervical goniometer. You are scoring device angle as a proxy for likely neck flexion while the device is in use, plus optional “phone-up” calibration when the user holds it at eye height. Ship confidence language: noisy days get labeled noisy. Do not diagnose injury, do not claim to reverse disc herniation, do not compete with a PT’s hands. Export a week of scores a trainer can screenshot. Partner with one licensed PT (or a small clinic) for three to five filmed routines before you sell a stretch pack. If the invite rate in week one stays under 10 percent, the leaderboard is the bug — fix the social loop before you buy ads.
+
+Stay on the phone you already own. No puck, no AirPods requirement, no extra Bluetooth thing to lose. That is the whole point versus Upright GO and versus Posture Pal’s AirPods dependency. Battery budget matters more than model-architecture theater: sample motion in the background at a low duty cycle, aggregate on device, sync a daily rollup.
+
+**How it works:**
+
+1. **Calibrate the crane** — Onboarding asks for age, typical phone-hand, and a 20-second “hold at eye height” sample so the app learns a personal upright baseline. Motion permission is the only hard gate.
+2. **Score the day** — While the phone is unlocked and in hand, tilt samples accumulate. End of day (or on demand) you get a neck-age number, time-in-crane, and a one-line verdict. Pocket time does not count as neck time.
+3. **Compete with friends** — Invite codes drop people onto a weekly leaderboard. Lowest neck age wins the week. Streaks and share cards are the viral surface; private mode exists for people who will not play in public.
+4. **Stretch on a bad week** — Cross a threshold and the app queues a 4-to-7-minute PT routine (chin tucks, wall angels, thoracic openers). Packs add more programs; Premium stacks trends and monthly reports.
+
+## Market Research
+
+You are not inventing neck pain. You are attacking the measurement-and-habit gap inside a pain market that already has analysts, YouTube libraries, and a pile of reminder apps with no social loop.
+
+Grand View’s 2025 cut, as collated on Ideabrowser idea 7720, puts the global neck/back pain market at about **$12.5 billion in 2025**, running an **8.2% CAGR toward roughly $22 billion by 2030**. The posture-app slice is much smaller — about **$450 million with roughly 25% year-over-year growth** in that same research pass — which is the actual SAM. Adjacent Grand View work on posture-correction products (braces, trainers, related devices) points to a category heading toward about **$1.99 billion by 2030 at roughly 8.4% CAGR**. Treat $12.5B as the pain budget people already spend on PTs, pillows, and braces. Treat $450M as the software fight.
+
+Distribution is already in the pocket. Gyroscopes sit in the vast majority of smartphones shipping today (Counterpoint-style handset teardowns put this well above 90 percent). App Store and Play Store are the default. TikTok is the acquisition channel that does not require a Facebook health-app CAC. Reddit is the trust channel: r/Posture’s 456,000 members will roast a fake medical claim in a day and will also install something that looks like Strava for necks if the score is honest.
+
+Keyword intent is exercise-shaped, which is why stretch packs belong on the ladder. “Tech neck exercises” at **5,400 monthly searches** is a real SEO page; neck stretching exercises and neck posture exercises sit in the same cluster. Rank for the how-to queries, then convert on the score.
+
+Timing is screen-time plus gamified health. Daily screen time still sits near seven-plus hours. Duolingo and Strava already trained this cohort to share a streak; Calm and Headspace trained them to pay $5-ish a month. Nobody owns “neck age.” Stage: **growth for reminder/exercise apps, empty for social scoring.** Hardware (Upright) is mature. Camera-AI posture is arriving. A tilt-plus-leaderboard MVP can ship in a couple of weeks; accuracy-in-the-wild is the kill switch, not the React Native scaffold.
+
+## Competitive Landscape
+
+Four clusters, one missing product. Reminder apps watch tilt and nag. Exercise apps sell routines. AirPods apps need Apple hardware. Wearables sell a puck. Nobody ships a free neck-age score with a friend graph.
+
+- **SmartPosture** — Android tilt monitor for “text neck” in the background. Strength: no extra hardware, quiet monitoring. Weakness: no screenshot-able score, no social, reminder fatigue. Pricing: **free with ads**.
+- **Posture Correction - Text Neck / Tech Neck** — Cross-platform stretch library for forward-head posture. Store pages advertise on the order of **125 routines**; related listings sit at **500,000-plus downloads**. Strength: PT-flavored content, organic search. Weakness: no live sensors, no friends. Pricing: **freemium**.
+- **Posture Pal** — iOS app that uses **AirPods** motion sensors plus a giraffe-style avatar (Neura Health’s 2026 roundup). Strength: head-relative tracking. Weakness: Apple-plus-AirPods only; no social. Pricing: **about $4.99 per month inferred**.
+- **Upright GO** — Wearable leader. A spine sensor vibrates when you slouch. Strength: hardware precision. Weakness: **device at $50-plus plus an app subscription**. You will not beat a single reading. You will beat the install friction.
+- **Indirect** — F.H.P. Neck Exercises on Play Store, PostureScreen for clinicians, Yoga With Adriene and Dr. Rowe for free video, SitSense-style webcam AI, chin-tuck Facebook groups. These are substitutes, not the same SKU.
+
+**Your Opportunity**
+
+Do not fight Upright on sensor physics. Do not fight Posture Correction on routine count. Take the job they refuse: **zero extra hardware, a daily neck-age number, friend leaderboards, PT stretches behind $4.99, on-device tilt.** Reminder apps cannot add a social graph without becoming a different company. Wearable companies cannot drop the $50 puck without killing hardware margin. AirPods apps cannot follow Android. Win on three things: (1) the score as a shareable vanity metric, (2) a campus or creator cohort where the leaderboard is dense on day one, (3) a price that sits on the Calm/Headspace $5 rung instead of the wearable SKU. Launch inside one college or one fitness creator’s Discord. If week-one invites clear 10 percent and 30-day scores actually improve, the loop is real. If not, you have a reminder app with extra steps.
+
+## Business Model
+
+Freemium consumer SaaS with IAP packs and a later wellness-seat. The free score is bait. Social plus trends plus core stretches is the frontend. Packs and a Premium bundle thicken ARPU. Corporate is backend, after retention is boringly true.
+
+- **Daily Neck Score** ($0) — Neck age, today-only history, one share card with a watermark. The lead-gen wedge.
+- **Social + Trends** ($4.99/month) — Friend leaderboards, challenges, multi-week charts, the core PT stretch set.
+- **Stretch packs** ($0.99–$2.99 each) — Extra PT/chiro programs (desk, travel, lifter, “I sleep like a shrimp”).
+- **Premium Wellness Bundle** ($9.99/month) — Social + all packs + monthly posture report + advanced analytics.
+- **Campus / corp wellness** ($1–$2 per user per month) — De-identified team dashboards for a residence hall, a gym, or a benefits admin. Sell this after a consumer cohort exists, not as the MVP.
+
+**Unit Economics (illustrative)**
+
+- **under $0.01** — Cloud cost per daily rollup if inference stays on device
+- **about 80–85%** — Gross margin on the $4.99 tier (store fees are the real tax)
+- **$15–$35** — Target CAC via TikTok native and r/Posture, not Google “neck pain” bids
+- **about $45–$60** — 12-month LTV at $5/month with roughly 70% annual retention; Premium and packs pull that up
+
+Path math: 2,000 paid $4.99 seats is about $10K MRR. Mix in 300 Premium and a thin pack attach and you are in the mid-teens MRR without a corporate contract. Plan conversion at the bottom of the 5–15 percent wellness-freemium band until the leaderboard is dense.
+
+## Recommended Tech Stack
+
+Optimize for background motion, a daily number, and a leaderboard — not a computer-vision demo. Camera posture apps drain battery and trip privacy nerves. Tilt is enough for v1.
+
+- **Expo / React Native (TypeScript)** — One codebase, TestFlight plus Play internal track. Eject only if background motion needs a thin native module.
+- **Core Motion / Android sensors** — CMMotionManager and SensorManager. Sample on a duty cycle, classify crane vs upright vs pocket, write a local daily aggregate. No extra hardware.
+- **Firebase or Supabase** — Auth, friend graph, daily scores, challenges. Row-level security on user id. Keep raw IMU off the server unless the user opts into a research export.
+- **RevenueCat** — $4.99 / $9.99 / pack SKUs on both stores; entitlements in one place. Campus invoicing can sit on Stripe later.
+- **On-device only for scoring** — Optional later: a small TFLite head-pose model. Not required to ship a neck-age MVP.
+- **Next.js marketing site on Vercel** — Waitlist, campus FAQ, PT-partner page. App is the product.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create an Expo (React Native, TypeScript) app named Downcrane plus a Next.js 14 marketing site.
+
+Mobile screens: onboarding (age, hand, 20-second eye-height calibration), today (neck-age score, time-in-crane), history (14-day sparkline), friends (weekly leaderboard), stretch player, settings (private mode, motion permission, units).
+
+Use expo-sensors / a small native Core Motion + Android SensorManager module. Classify samples as crane | upright | pocket | unused. Aggregate on-device into a daily rollup: minutes_crane, minutes_upright, neck_age (heuristic from minutes_crane vs age), confidence.
+
+Supabase (or Firebase): profiles, daily_scores, friendships, challenges, stretch_completions. RLS so users read own scores; leaderboard reads only opted-in friends.
+
+RevenueCat: Free, Social $4.99/mo, Premium $9.99/mo, IAP stretch packs $0.99 and $2.99. Entitlement keys: social, premium, pack_desk, pack_travel.
+```
+
+**2. Scoring Engine + Leaderboard**
+
+```text
+Build Downcrane’s daily scoring and friends loop.
+
+Scoring rules:
+- Ignore samples when the screen is off or the device is likely in a pocket/bag (low |userAcceleration| plus face-down heuristics).
+- Neck-age is a display metric, not a medical age. Document the formula in code comments. Clamp output, never show one-decimal fake precision.
+- If daily confidence is under 0.6, show “noisy day — not ranked.”
+
+Leaderboard:
+- Invite via link + 6-char code.
+- Weekly window Monday 00:00 in the user’s timezone.
+- Rank by lowest neck-age among days with confidence at or above 0.6.
+- Private mode: score locally, hide from friends, still allow stretch prompts.
+
+Stretches: 4-minute PT routine player (video or timed steps). Unlock the library behind the social entitlement. Log completions.
+
+Unit-test the classifier with fixture IMU traces (crane, upright, pocket). Copy: wellness estimate, not a diagnosis.
+```
+
+**3. Landing Page**
+
+```text
+Design a single-page marketing site for Downcrane.
+
+Hero: “Your phone already knows your steps. It should know your neck age.”
+Sub: “Tilt sensors in, daily score out. Compete with friends. Stretch when the week goes crane-shaped. No extra hardware.”
+
+Sections: problem (tech neck, muted reminder apps, $50 pucks); live mock of a neck-age card (22-year-old, neck age 34); how it works (calibrate, score, compete, stretch); pricing (Free score / $4.99 social / $9.99 Premium / stretch packs); FAQ (not medical advice, Android + iOS, battery, AirPods not required).
+
+Primary CTA: “Get your neck age” (TestFlight / Play). Secondary: “Start a campus leaderboard.”
+Geist, off-white background, near-black type, one acid accent. No stock photos of models touching their necks in slow motion.
+```
+
+**4. Branding Package**
+
+```text
+Create a branding sheet for Downcrane: wordmark plus an icon of a phone as a crane silhouette, neck as the boom. Palette: near-black, bone off-white, one sharp lime accent. Type: Geist for UI, tabular numbers for scores. Voice rules: never diagnose; always pair neck age with “estimate”; never shame screen time; write share-card copy under 80 characters. Provide three share-card lines and three stretch-complete toasts.
+```
+
+## Sources
+
+Market sizing, competitor pricing, community counts, and keyword volumes collated from Ideabrowser MCP idea #7720 and the public listings it cites (May 2026 snapshot). Re-check live store prices and Grand View tables before investor materials. Neck-age is a product metric you still have to validate against PT goniometry if you want a correlation claim.
+
+- [Grand View Research — posture correction market heading toward $1.99B by 2030 (8.4% CAGR press release)](https://www.grandviewresearch.com/press-release/global-posture-correction-market)
+- [BackHeroUSA — Best posture apps roundup (SmartPosture, Upright, exercise apps)](https://backherousa.com/blogs/news/best-posture-apps)
+- [Google Play — F.H.P. Neck Exercises](https://play.google.com/store/apps/details?id=com.ysjworld.fhp)
+- [Google Play — Posture Correction / Text Neck](https://play.google.com/store/apps/details?id=forward.head.posture.text.neck&hl=en_US)
+- [App Store — Posture Correction Tech Neck](https://apps.apple.com/us/app/posture-correction-tech-neck/id1494771315)
+- [Neura Health — Posture reminder apps and devices (Posture Pal / AirPods, Upright context)](https://neura.health/insight/posture-reminder-apps-and-devices)
+- [SitSense — Best posture tracker apps roundup (camera-AI adjacency)](https://www.sitsense.app/blog/best-posture-tracker-apps)
+- [PostureScreen — clinician posture analysis (pro adjacency)](https://www.postureanalysis.com)
+
+Page sourced via Ideabrowser MCP (idea_id 7720): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, execution_plan.

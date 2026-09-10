@@ -1,0 +1,158 @@
+---
+slug: "timed-tool-access-contractors"
+title: "Timed tool access that clocks out when the contract does"
+---
+
+## The Problem
+
+A 14-person agency hires a freelance designer for a six-week brand sprint. Someone in ops DMs a Google invite, adds them to Slack, drops them into Notion, and shares a Trello board. Invoice clears in week seven. Nobody revokes anything. In October the designer still has admin on the client Slack and a lingering Drive folder with last year’s pitch deck. The CISO at a bank would call this standing privilege. The ops manager at the agency calls it Tuesday. There is no CISO.
+
+This is not a theoretical IAM whitepaper. Small shops run on fractional help: developers, bookkeepers, ads contractors, “the VA in another timezone.” Each contractor collects logins across the same four or five tools. Projects end. Logins do not. Three months later you are doing a SOC2 questionnaire or a client security appendix and you cannot answer “who still has access” without opening five admin consoles and a spreadsheet last updated in March. Enterprise PAM will happily solve this if you have a security team, a six-figure budget, and a six-month implementation. CyberArk is not a product an ops manager buys between standups.
+
+The complaint is already loud in the rooms that do not have a procurement cycle. Reddit’s r/sysadmin holds about 1.3 million members; forgotten contractor accounts are a standing genre. r/IdentityManagement is smaller (about 8,900) and more pointed: cheaper than Okta-plus-IGA theater, less DIY than a weekend of SCIM scripts. YouTube’s IAM corpus still teaches enterprise PAM and almost never shows “set an end date on a Notion guest.” The workaround is a calendar reminder, a Notion checkbox, and hope.
+
+Remote work and fractional hiring made contractor turnover a permanent operating condition, not a 2020 blip. The invoice is the contract. The access is immortal. That gap is the product.
+
+## The Solution
+
+Tempkey grants contractor access with an expiration date as a first-class field, from one dashboard, across the tools a lean team actually uses: Slack, Google Workspace, Notion, Trello. Onboarding is OAuth (and SCIM where the vendor supports it). Adding a contractor is one form: name, email, which tools, which role or group, project end date. When the timer hits, access revokes on schedule across connected apps. The dashboard is a single list: who is in, what they can touch, days left. A warning fires before expiry so the contractor can push files, not discover a locked Drive mid-handoff.
+
+This is not privileged access management. You are not proxying SSH or vaulting root. You are joiner-mover-leaver for people who will never implement SailPoint. The core four integrations should be native — a Zap-dependent revoke is a support ticket. Iterate on two things only: revocation actually fires, and the warning window is humane (48 hours default; 15 minutes is how you create enemies).
+
+Stay ops-shaped. The buyer is an operations manager, a founder, or a fractional IT person, not a CISO shopping PAM. Copy should say “clocks out when the contract does,” not “reduce standing privilege.” Expired-access logs that stay searchable turn a nicety into something an auditor can request. That log is how you upsell the $20 analytics add-on without pretending you are CyberArk.
+
+**How it works:**
+
+1. **Connect the stack** — Admin OAuth into Slack, Google Workspace, Notion, and Trello. Map Tempkey roles onto each vendor’s groups or guest types. A connection health check fails loud if a token dies.
+2. **Grant with an end date** — Name, email, tools, permission level, contract end date (or 30 / 60 / 90-day presets). Optional: auto-extend requires a click, it does not silently renew.
+3. **Warn, then revoke** — 48 hours out, Slack/email to the contractor and the owner. At expiry, Tempkey deprovisions across connected tools and writes an audit row. Failures retry; a stuck revoke pages the owner, it does not fail quiet.
+4. **See who is still in** — Dashboard plus CSV: active grants, days left, last revoke, who approved the last extension. Searchable history is the audit pack.
+
+## Market Research
+
+IAM as a category is huge and mostly not your customer. Analysts keep printing **about $41–$42 billion by 2030** for identity and access management as a whole. That number is Okta, Microsoft, CyberArk, and a thousand enterprise RFPs. You are a wedge inside it.
+
+The closer quantified adjacency is **access control**: MarketsandMarkets puts the market at **USD 10.62 billion in 2025, heading to USD 15.80 billion by 2030 at an 8.3% CAGR**. SkyQuest’s alternate cut is **USD 9.91 billion in 2024 toward USD 19.82 billion by 2033 at about 8% CAGR**. Those reports mix physical readers and digital access; do not quote them as “SMB contractor SaaS TAM.” Use them as proof that access spend is compounding while the SMB contractor workflow stays a spreadsheet.
+
+Even closer to the job-to-be-done: **contract management software**, which Grand View sizes at **USD 2.83 billion in 2024 toward USD 5.65 billion by 2030 at a 12.7% CAGR**. That category stores the end date. It does not pull the Slack guest. The contract has a date. The identity stack does not read it. That is the integration you sell.
+
+Community demand is sysadmin-shaped, not Gartner-shaped. r/sysadmin’s 1.3 million members will not buy a $29 tool from a banner ad, but they will upvote a “we auto-revoke Notion guests on the contract date” show-and-tell. r/IdentityManagement’s 8.9K is the specialist overlay. The YouTube gap around contractor auto-revocation is your SEO, not a coincidence.
+
+Stage: **emerging niche inside a mature category**. Cloud IAM APIs (OAuth, SCIM, Workspace Admin SDK, Slack SCIM) are boring enough to build on. Microsoft Entra, Google admin, and Okta will keep eating generic “deprovision this user.” They will not ship a contractor-first UX with a default end date for a 14-person agency. Timing is the freelance operating system, not a new crypto primitive. Remote and fractional hiring made the churn permanent; the subscription renews on that churn.
+
+## Competitive Landscape
+
+The real competition is not one vendor. It is enterprise PAM you cannot afford, cloud IAM that is a generalist, Microsoft and Google bundles that are “good enough,” and password managers that hold secrets but do not clock out a Trello board.
+
+- **CyberArk** — Category-defining privileged access management. Session control, vaulting, enterprise identity security. Strength: brand, auditors, depth. Weakness: high-touch custom contracts, implementation projects, a buyer who is a CISO. Pricing: **enterprise / custom**, typically high-touch and not an SMB sticker. You do not win a bake-off against them. You decline the bake-off.
+- **Okta** — Cloud identity, SSO, lifecycle, enormous app catalog. Strength: provisioning APIs, brand, path from PLG into enterprise. Weakness: generalist identity platform; contractor expiry is a workflow you assemble, not the homepage. Pricing: **per-user cloud IAM**, typically **higher than SMB point tools** (SSO seats historically start around $6 per user per month before MFA and lifecycle modules stack).
+- **Microsoft Entra ID** — Directory plus conditional access plus app provisioning, bundled into Microsoft 365 / Azure. Strength: default presence, admin familiarity, P1/P2 upsell. Weakness: contractor lifecycle is configuration discipline, not a product. Pricing: **bundled / tiered with M365**; Entra ID P1 commonly around **$6 per user per month**, P2 around **$9**, with a free tier that is “good enough” until it is not.
+- **Google Workspace admin** — Native users, groups, Drive sharing. Strength: already installed, near-zero incremental cost, low learning curve. Weakness: does not orchestrate Slack + Notion + Trello on one end date. Pricing: **bundled** with Workspace seats (Business Starter commonly around **$7 per user per month**, Standard around **$14**, Plus around **$22**). The UVP is “good enough” native admin.
+- **JumpCloud** — SMB directory / device / SSO that actually sells to the same lean-IT buyer. Strength: cloud directory without Microsoft. Weakness: still identity-platform-shaped, not contract-clock-shaped. Pricing: **per-user identity and device packages**, commonly in the **roughly $9 to $19 per user per month** band depending on modules.
+- **LastPass / 1Password** — Password managers with SSO and some provisioning on business plans. Strength: everyone already understands the category; 1Password Business lists around **$7.99 per user per month**; LastPass Business historically sits around **$4 to $6 per user per month**. Weakness: they hold credentials. They do not revoke a Notion guest and a Trello member on Tuesday at 17:00 because the SOW ended.
+
+Indirect substitutes: SailPoint / BeyondTrust, contract-lifecycle tools that email a reminder, helpdesk tickets, the spreadsheet. Native admin consoles are the silent killer — the problem feels solved until the fifth tool.
+
+**Your Opportunity**
+
+Do not sell PAM. Do not sell SSO. Sell **time-boxed auto-revoke for ops managers**. CyberArk will not move down to $29 per month. Okta and Entra can add an expiry field, but their motion is per-seat identity for employees. Google admin will not orchestrate Slack + Notion + Trello. Password managers will not grow a revoke graph. Win on (1) end date as the primary object, (2) the four SMB tools in one form, (3) a warning-then-revoke loop that does not require a sysadmin, (4) an audit CSV a questionnaire can attach. Distribute in r/sysadmin and founder ops communities, not RSA booth carpet. If Microsoft ships guest expiry across Office, you still own the four-tool package plus the habit of putting every contractor through one form.
+
+## Business Model
+
+Seat-agnostic shop subscription, not per-contractor metering on day one (metering is how SMBs feel punished for hiring help). Lite covers a small stack. Pro unlocks the full integration set and unlimited contractors. Analytics is the continuity SKU. Enterprise is custom connectors and a DPA.
+
+- **Access Management Guide** ($0) — PDF / email gate: how to run contractor access without PAM. SEO bait. Do not pay $300 CPC against “privileged access management.”
+- **Tempkey Lite** ($29/month) — Limited tools and limited concurrent contractors (enough for a 10-person shop and a couple of freelancers). Auto-revoke, 48-hour warning, 30-day log.
+- **Tempkey Pro** ($79/month) — Slack, Google Workspace, Notion, Trello, unlimited contractors, searchable logs, SSO for the admin team.
+- **Security and analytics add-on** ($20/month) — Longer retention, export packs, stale-access insights, scheduled “who is still in” digest.
+- **Enterprise** (custom) — Extra connectors, SCIM the other direction, MSA, uptime riders, dedicated support.
+
+**Unit Economics (illustrative)**
+
+- **under $0.05** — Incremental cloud cost per scheduled revoke (Inngest run + API calls); SCIM chatter is the real variable
+- **about 80%** — Gross margin on Lite/Pro after support
+- **under $80** — Target CAC via founder-led and communities, not Okta-keyword auctions
+- **about $350–$700** — 12-month LTV at $29–$79 blended if annual retention holds near 70 percent
+
+Path: 100 Lite customers is about $2.9K MRR. 80 Pro plus 40 analytics add-ons is about $7K MRR. A few MSP white-label seats matter more than a vanity enterprise logo. Founder-led first ten: instrument which revoke failures happen in the wild before you buy ads.
+
+## Recommended Tech Stack
+
+The hard parts are token hygiene, scheduled revoke correctness, and not failing silent. The dashboard is a table.
+
+- **Next.js (App Router, TypeScript) on Vercel** — Admin UI, connection flow, audit views. Server actions for grants; never put vendor tokens in the browser.
+- **Clerk or WorkOS** — Auth for the shop’s admins. WorkOS if you expect enterprise SSO on the backend tier sooner; Clerk if you want to ship this weekend.
+- **Slack and Google OAuth plus SCIM** — Workspace Admin SDK / Directory API for users and groups; Slack SCIM or admin APIs for guests and workspace roles. Notion and Trello via official OAuth. Store refresh tokens encrypted (KMS). Rotate on a schedule.
+- **Inngest** — Durable “warn at T-48h” and “revoke at T.” Retries, fan-out per tool, dead-letter to Slack. Vercel Cron is fine until the first missed revoke; do not wait for that story.
+- **Postgres (Supabase, Neon, or RDS)** — shops, connections, grants (starts_at, ends_at, status), audit_events. Indexes on shop_id plus ends_at. Do not put secrets in the grants row.
+- **Stripe Billing** — Lite $29, Pro $79, add-on $20, annual discount. Customer portal for self-serve. Meter later if you must.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js 14 (App Router, TypeScript, Tailwind) app named Tempkey.
+
+Auth: Clerk (or WorkOS). Tenancy: shop_id on every row.
+
+Postgres tables: shops, connections (shop_id, provider slack|google|notion|trello, encrypted_tokens, status), grants (shop_id, contractor_email, contractor_name, starts_at, ends_at, tools jsonb, role, status pending|active|warned|revoked|failed, created_by), audit_events (shop_id, grant_id, action, provider, payload, created_at). Indexes: grants by shop_id+ends_at, audit by shop_id+created_at.
+
+Stripe: Lite $29/mo, Pro $79/mo, Analytics $20/mo add-on. Gate Pro integrations behind entitlement.
+
+Env: SLACK_CLIENT_ID/SECRET, GOOGLE_CLIENT_ID/SECRET, NOTION_CLIENT_ID/SECRET, TRELLO_KEY/SECRET, INNGEST_EVENT_KEY, TOKEN_KMS_KEY.
+```
+
+**2. Grant Form + Scheduled Revoke**
+
+```text
+Build Tempkey’s contractor grant flow and Inngest revoke pipeline.
+
+Admin form: name, email, checkboxes for Slack / Google Workspace / Notion / Trello, role/group per tool, end date or 30/60/90 presets. On submit: invite or add the user in each connected provider, persist grant status=active, enqueue Inngest events: warning at ends_at minus 48h, revoke at ends_at.
+
+Warning job: email + Slack DM to owner and contractor. Mark status=warned.
+
+Revoke job: for each provider, deprovision (remove guest, suspend Workspace user or strip groups, remove Notion guest, remove Trello member). Write audit_events. On partial failure, status=failed, retry 3 times with backoff, then notify owner. Never fail silent.
+
+Dashboard: table of grants with days left, filter by status, CSV export of audit_events. Connection health: if a refresh token fails, banner plus Slack alert.
+
+Unit-test the scheduler with frozen clocks. Do not implement CyberArk-style session recording.
+```
+
+**3. Landing Page**
+
+```text
+Single-page marketing site for Tempkey.
+
+Hero: “Timed tool access that clocks out when the contract does.”
+Sub: “Name, email, permissions, end date. Slack, Google, Notion, Trello. Auto-revoke. A warning first, so nobody loses a file.”
+
+Sections: problem (lingering guests, five admin consoles, CyberArk is not an ops tool); how it works (connect, grant, warn, revoke); pricing (Lite $29 / Pro $79 / analytics $20 / enterprise custom) anchored against per-user Okta and “just use Google admin”; FAQ (not PAM, SCIM vs OAuth, what happens if a revoke API fails, data retention).
+
+Primary CTA: “Start a 14-day Pro trial.” Secondary: “See a sample audit CSV.”
+Geist, off-white, near-black, one steel-blue accent. Screenshot of the grant form, not a fortress illustration.
+```
+
+**4. Branding Package**
+
+```text
+Branding sheet for Tempkey: wordmark plus an icon of a key with a clock window. Palette: near-black, paper off-white, steel blue #2563eb. Type: Geist UI, IBM Plex Mono for grant IDs and timestamps. Voice rules: talk to ops managers not CISOs; always mention the warning before revoke; never claim to replace Okta or CyberArk. Provide three Slack-bot copy variants under 200 characters (grant created, warning, revoked).
+```
+
+## Sources
+
+Market sizing and competitor models collated from Ideabrowser MCP idea 8546 and the analyst pages it cites (June 2026 snapshot). Re-check live Okta / Entra / Workspace / 1Password prices before you put them on a pricing slide. Access-control TAM mixes physical and digital — do not paste it into a seed deck as “our TAM.”
+
+- [MarketsandMarkets — Access Control Market (USD 10.62B 2025 to 15.80B 2030, 8.3% CAGR)](https://www.marketsandmarkets.com/Market-Reports/access-control-market-164562182.html)
+- [SkyQuest — Access Control Market (USD 9.91B 2024 to 19.82B 2033, about 8% CAGR)](https://www.skyquestt.com/report/access-control-market)
+- [Grand View Research — Contract Management Software (USD 2.83B 2024 to 5.65B 2030, 12.7% CAGR)](https://www.grandviewresearch.com/industry-analysis/contract-management-software-market-report)
+- [Fortune Business Insights — Contract management adjacency](https://www.fortunebusinessinsights.com/contract-management-market-102965)
+- [GM Insights — Contract management software](https://www.gminsights.com/industry-analysis/contract-management-software-market)
+- [Okta — pricing (per-user cloud IAM reference)](https://www.okta.com/pricing/)
+- [Microsoft Entra ID — plans (bundled / P1 / P2)](https://www.microsoft.com/security/business/microsoft-entra-pricing)
+- [1Password — Business pricing reference](https://1password.com/pricing)
+- [Google Workspace — admin bundled with seat pricing](https://workspace.google.com/pricing)
+
+Page sourced via Ideabrowser MCP (idea_id 8546): get_idea_research, competitive_analysis, go_to_market, keyword_list, community_analysis, why_now_analysis, execution_plan.

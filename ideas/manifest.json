@@ -1,6 +1,471 @@
 {
   "ideas": [
     {
+      "slug": "phone-neck-score-app",
+      "title": "Gamified posture tracking app for phone-addicted Gen Z",
+      "category": "health",
+      "description": "Phone-tilt neck-age score with friend leaderboards and PT stretches for Gen Z tech neck — freemium wellness app, no extra hardware.",
+      "buildTime": "8",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "HealthApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "weekend-builders",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:7720",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "dark phone on a kitchen counter at a steep downward tilt, mint rim light, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2599,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 7720 health"
+      }
+    },
+    {
+      "slug": "timed-tool-access-contractors",
+      "title": "Timed tool access that clocks out when the contract does",
+      "category": "developer-tools",
+      "description": "SMB contractor access that auto-revokes Slack, Google, Notion, and Trello when the project end date hits — CyberArk without the enterprise tax.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8546",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "laptop with a glowing access keycard on a dark desk, lime edge light, timer visible as an object not text, no people",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 9,
+        "wordCount": 2614,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; swapped 8126 for 8546 after STOP on Chrome-builder pricing"
+      }
+    },
+    {
+      "slug": "contractor-ai-receptionist",
+      "title": "AI receptionist so solo contractors never ghost a customer",
+      "category": "automation",
+      "description": "Solo-priced AI front desk at $79/mo that texts the owner before it books — built for one-truck HVAC, plumbing, and electrical, not ServiceTitan shops.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:8816",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "work truck cab at night with a glowing phone on the passenger seat, emerald dash light, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 17,
+        "wordCount": 2543,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 8816 automation"
+      }
+    },
+    {
+      "slug": "ai-site-design-blueprints",
+      "title": "Site design blueprints for agencies building with AI",
+      "category": "ai-tools",
+      "description": "Keep/Kill/Push direction sheets agencies buy before opening Framer, Lovable, or Cursor — judgment per client, not another prompt pack.",
+      "buildTime": "8",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "v0"
+      ],
+      "audiences": [
+        "designers",
+        "freelancers"
+      ],
+      "source": "ideabrowser:8918",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "one printed call sheet on a dark studio table beside a closed laptop, lavender lamp, no people, no readable text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 20,
+        "wordCount": 2321,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 8918 ai-tools"
+      }
+    },
+    {
+      "slug": "ai-fashion-lookbook-studio",
+      "title": "AI lookbook studio for indie fashion brands",
+      "category": "ecommerce",
+      "description": "Reference-locked lookbooks from flat-lays for indie apparel under $5M — 60-page seasonal books without a $5K–$20K shoot.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "lovable"
+      ],
+      "audiences": [
+        "creators",
+        "small-business-owners"
+      ],
+      "source": "ideabrowser:7279",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "flat-lay bomber jacket on dark paper next to a closed lookbook, aubergine sidelight, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2472,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 7279 ecommerce"
+      }
+    },
+    {
+      "slug": "ai-top-three-task-widget",
+      "title": "Widget that picks your top 3 tasks each morning",
+      "category": "productivity",
+      "description": "Lock-screen widget that ranks your existing Todoist list into three explainable picks — not another to-do app.",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ProductivityApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "weekend-builders"
+      ],
+      "source": "ideabrowser:8061",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "phone lock screen widget as a dark glass card on a nightstand, lime glow, no people, no readable copy",
+        "accent": "lime",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 8,
+        "wordCount": 2299,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 8061 productivity"
+      }
+    },
+    {
+      "slug": "music-royalty-recovery-heirs",
+      "title": "Music royalty recovery platform for musicians' families",
+      "category": "fintech",
+      "description": "Estate-side royalty recovery for heirs of indie musicians — free name check, 15% contingency, $199/year monitoring. Not Songtrust for the living.",
+      "buildTime": "20",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "FinanceApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "solo-founders",
+        "non-technical"
+      ],
+      "source": "ideabrowser:9189",
+      "scores": {
+        "opportunity": 9,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 9
+      },
+      "og": {
+        "subject": "vinyl sleeve and a manila envelope on a dark piano bench, mint lamp, no people, no text",
+        "accent": "mint",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 14,
+        "wordCount": 2412,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 9189 fintech"
+      }
+    },
+    {
+      "slug": "marketplace-meetup-safety",
+      "title": "Safe meetup tracker for marketplace sellers and their families",
+      "category": "marketplace",
+      "description": "Verified SafeTrade spots plus time-boxed live share and timeout alerts for Facebook Marketplace and OfferUp pickups.",
+      "buildTime": "10",
+      "revenueGoal": "1k-month",
+      "applicationCategory": "ShoppingApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "non-technical",
+        "side-hustlers"
+      ],
+      "source": "ideabrowser:7874",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "empty police-station parking lot at dusk with a phone on a car hood, emerald sodium glow, no people, no text",
+        "accent": "emerald",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis"
+        ],
+        "citations": 7,
+        "wordCount": 2335,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 7874 marketplace"
+      }
+    },
+    {
+      "slug": "contractor-lead-refund-automation",
+      "title": "Automatic lead refunds for home service contractors",
+      "category": "b2b",
+      "description": "Auto-file Angi, HomeAdvisor, Bark, and LSA credits from call transcripts — Tack Tools owns Thumbtack; this owns the other four.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "small-business-owners",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:9266",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "stack of lead invoices and a phone with a call waveform, lavender desk lamp, no people, no readable text",
+        "accent": "lavender",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 15,
+        "wordCount": 2431,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 9266 b2b"
+      }
+    },
+    {
+      "slug": "course-translation-resale-network",
+      "title": "Global sales & translation network for online course creators",
+      "category": "education",
+      "description": "In-country partners who localize, sell, and support English courses — you keep most of the new revenue; Rask only dubs the words.",
+      "buildTime": "12",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "EducationalApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt"
+      ],
+      "audiences": [
+        "creators",
+        "solo-founders"
+      ],
+      "source": "ideabrowser:9334",
+      "scores": {
+        "opportunity": 9,
+        "pain": 9,
+        "timing": 9,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "closed course workbook and a passport on a dark desk, aubergine lamp, no people, no text",
+        "accent": "aubergine",
+        "status": "ready"
+      },
+      "publishedAt": "2026-09-10",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "get_idea_research",
+          "competitive_analysis",
+          "go_to_market",
+          "keyword_list",
+          "community_analysis",
+          "get_verified_research"
+        ],
+        "citations": 12,
+        "wordCount": 2373,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-10T17:30:00.000Z",
+        "publishNotes": "WP40 thin-category fill Mode A; idea 9334 education"
+      }
+    },
+    {
       "slug": "tattoo-dm-booking-agent",
       "title": "Tattoo DM Booking Agent",
       "category": "automation",

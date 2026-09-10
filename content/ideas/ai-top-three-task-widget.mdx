@@ -1,0 +1,131 @@
+---
+slug: "ai-top-three-task-widget"
+title: "Widget that picks your top 3 tasks each morning"
+---
+
+## The Problem
+
+A freelancer opens the laptop at 7:40 a.m. Todoist has 50 items. Things has 40 leftovers from last quarter. Apple Reminders has a ghost layer of “call dentist” and “Q3 taxes.” Slack already dumped four fires. Nothing on any list is wrong. That is the bug. Everything feels equally urgent, so the brain freezes, re-sorts, opens email, and spends the high-energy hour on whatever pinged last. Decision paralysis kills more days than distraction. The work that mattered was never in doubt at 5 p.m. It was unsigned at 8 a.m. because picking it required a second job.
+
+This is not a missing-feature problem. Todoist, Things, Asana, and Reminders already store the tasks. Motion will eat the calendar if you migrate. Sunsama will sit with you while you still pick. Reclaim will defend a habit block. None of them will, without ceremony, answer the only question that matters before coffee: which three, in this order, and why. r/productivity at 4.2M members does not ask for another AI todo app. It asks how to stop drowning in lists they already maintain. r/todoist threads that start “the app is great, I still don’t do the tasks” run 60-plus comments of peer coaching. r/projectmanagement (~300K) and r/ExecutiveAssistants (~80K) are the same conversation with better labels.
+
+The downstream cost is a day that looks busy and ships the wrong three things. People already pay $4–$20/mo for capture. They will not leave Todoist because a new app promised AI. They will pay for a layer that makes the current app honest every morning. Wrong twice in a week and they take the decision back. Right for two weeks and they stop making it. That lock-in is emotional, not schema.
+
+## The Solution
+
+TaskFocus is not a todo app. It is an iOS and Mac widget that sits on top of the list you already have — Todoist first — and uses a model to rank by deadline, calendar free/busy, dependencies, and completion history. Overnight it reads open tasks plus the day’s blocks. At 6 a.m. the lock screen and desktop widget show three tasks, in order, with a one-line reason: “due tomorrow + 90-minute gap at 2 p.m.” Tap to complete in the source app. Snooze or swap and you just labeled a preference. That label is the product’s only real dataset.
+
+You are selling the first decision of the day, not a work OS. Motion wants the whole schedule. Sunsama wants a planning ritual. You want 8 seconds and a trusted answer. Ship Todoist-only until people stop arguing with the ranking. Then Things, Reminders, and a second source. Pricing lives in the $8–$15/mo individual band and $30–$50/seat for teams that want a shared “top 3 per person” for standups. The ladder under that (free demo, $8 one-app, $25 multi-app, $10 insights add-on, $50/user enterprise) is how you capture tire-kickers without teaching the market that focus is a $4 feature.
+
+**How it works:**
+
+1. **Connect one list** — Todoist OAuth. Pull open tasks, due dates, priority, project, labels. Optional: Apple Calendar / Google Calendar free-busy. No new inbox.
+2. **Rank overnight** — Model scores deadline proximity, calendar conflicts, blocked-by dependencies, and whether this person actually completes this type of task. Hard cap: three.
+3. **Wake to the widget** — Lock screen + Mac desktop. Title, source project, one-line why. Tap completes or opens Todoist. No home-screen archaeology.
+4. **Explain and learn** — Each pick shows its factors. Override, snooze, or swap writes a labeled example. After ~20 mornings the ranking should feel like that user, not a generic Eisenhower poster.
+
+## Market Research
+
+Three nested markets, do not confuse them. **Productivity apps (Mordor): $11.96B in 2025 → $18.09B by 2030 at 8.63% CAGR** — mature, saturated, web/desktop still ~66.5% of revenue, mobile/widgets the faster slice (~10% CAGR). That is the ocean. **AI productivity tools: $8.8B in 2024 → $36.4B by 2033 at 15.9% CAGR (Grand View)** — the tide. **AI Task Manager apps (Future Market Insights): $137.1M in 2026 → $321.6M by 2036 at 8.9% CAGR** — the pond you actually fish. Small, early-growth, no default “daily top 3” brand. Incumbents are bolting AI onto lists. Nobody owns the morning widget.
+
+Why this is a now-shaped hole:
+
+- **Capture is solved. Ranking is not.** Todoist Premium is about $4/mo. Things is about $50 once. Users paid to *have* the list, not to *trust* a daily cut. That is why Motion can charge $19–$34/user/mo for a full auto-schedule and still leave people who only wanted three names.
+- **r/productivity at 4.2M already speaks overwhelm.** Adjacent: r/projectmanagement ~300K, r/todoist ~79K, r/ExecutiveAssistants ~80K, r/ProductivityApps ~30K. Language is “too many things in Todoist but can’t execute,” not “sell me another kanban.” YouTube comparison videos do tens to hundreds of thousands of views; almost none are “AI picks my top 3 from tools I already use.”
+- **Widget-first is under-served on purpose.** AI task tools are web apps with a widget as an afterthought. The 8 a.m. decision happens on the lock screen.
+- **The threat is OS-level AI and incumbent fast-follow**, not another bootstrap todo. Apple/Google/Microsoft will surface “next actions.” Todoist can ship a Today heuristic. Own cross-tool, explainable, widget-native ranking before that is a checkbox.
+
+Stage: emerging niche on a mature base. Perfect for a wedge. Fatal if you position as the last productivity app they will ever need.
+
+## Competitive Landscape
+
+Price the category as “decision engines vs lists vs rituals.” Your wedge is widget-first, cross-tool later, explainable top 3, no migration.
+
+- **Motion** — Auto-plans tasks into the calendar. Real for meeting-heavy founders. Requires migrating in. Complex, web-first, not a widget on Todoist. Typically $19–$34/user/mo. Steal the outcome (“I know what to do”) without the onboarding.
+- **Reclaim** — Habits, tasks, defended focus blocks. Free plus paid in the low-teens/user/mo. Excellent if you want the calendar rearranged. Not a daily top 3. People who refuse to let software move meetings are yours.
+- **Sunsama** — Daily planner across Asana/Jira/Trello/email. You still pick. About $16–$20/mo. Closest cousin on “today should be small.” You automate the pick; they coach it.
+- **Todoist Premium** — ~$4/mo. Best capture. Widgets that still show a *list*. They own the graph. Partner tone. If they ship a top-3 widget you need explainability plus multi-app or you are a rounding error.
+- **Things** — ~$50 one-time on Mac/iOS. Tasteful, local, weak API culture. Second integration, after Todoist.
+- **DIY: paste the list into ChatGPT** — Already happening. $0, no widget, no calendar, no memory. Your job is to make that workaround automatic and trustworthy.
+
+Indirect: Eisenhower templates, paper MIT notebooks, Asana focus views, Copilot. All still present a list. You present three.
+
+**Your Opportunity**
+
+Do not build a scheduler. Do not build a fourth todo. Own the 8 a.m. lock-screen answer: top 3, ranked, explained, from Todoist first, then the rest of the stack. Motion will not unbundle into a $8 widget. Todoist will not obsess over cross-tool ranking. Sunsama will not take the decision away from the user — that is their brand. Win on three things they will not chase: (1) widget-first, (2) stay in the customer’s existing apps, (3) show the math so trust can form. At 5,000 people on ~$10/mo you are at $600K ARR on a problem they feel before breakfast.
+
+## Business Model
+
+Subscription, usage-cheap, habit-hard. Inference for a daily rank over a few hundred tasks is pennies. Gross margin should look like consumer SaaS, not Motion’s GPU-and-support stack. Individual $8–$15/mo is the headline band; quote $8 to win the Reddit thread and $15 when calendar + history + explanations are on. Teams at $30–$50/seat are a different SKU (admin, shared themes, “top 3 for this exec”).
+
+- **Demo** ($0) — Paste or connect a sandbox list, see three picks once. No widget until they sign in. Bait.
+- **Starter** ($8/mo) — One app (Todoist). Daily top 3, widget, basic why-line. Frontend.
+- **Pro** ($25/mo) — Multi-app (Todoist + calendar + second source), personal scoring, override history, week review.
+- **Insights add-on** ($10/mo) — Continuity: which pick-types you complete, time-of-day accuracy, “you always snooze deep work before 10.”
+- **Enterprise** ($50/user/mo) — SSO, team packs, EA/exec views, retention/admin, support. Backend.
+
+Annual at ~10 months. Family/household later; do not confuse it with teams.
+
+**Unit Economics**
+
+- **$15–$40** — Target CAC (content + App Store; paid is optional early)
+- **~$12/mo** — Individual ARPU if Starter/Pro mix is honest
+- **~85%** — Gross margin (LLM rank once per night, cache embeddings)
+- **~$120** — LTV at ~10 months; the number that matters is morning-7 retention, not D1 installs
+
+Path: 1,000 Starter = $8K MRR. 3,000 mixed at $12 = $36K MRR. 5,000 at $10 blended = $50K MRR / $600K ARR — the MCP back-of-envelope is the right shape. Teams close the gap to $1M faster than consumer volume. Churn is a trust event: three bad mornings and they are gone. Instrument override rate like it is NPS.
+
+## Recommended Tech Stack
+
+The hard part is not the model. It is WidgetKit + reliable Todoist sync + a rank you can explain in one sentence + App Store billing that does not bounce.
+
+- **Swift / SwiftUI + WidgetKit** — iOS lock screen / home, Mac desktop. Timeline provider refreshes at a sane cadence. Deep links into Todoist. App Intents for complete/snooze without opening a 40-screen app.
+- **Next.js dashboard** — Connect accounts, inspect why a task won, week review, billing. Not the daily surface.
+- **Todoist REST API** — V1 integration. Tasks, projects, labels, due, priority, comments if you need dependency hints. Respect rate limits; snapshot overnight.
+- **Apple Calendar / EventKit (plus Google later)** — Free-busy only. You do not need event titles to know a 90-minute hole exists.
+- **Claude or GPT for rank + rationale** — Structured output: three ids, scores, reasons, rejected-with-cause. Keep a deterministic scorer (deadline, duration vs free-busy) and let the LLM break ties and write the why. Cheaper, less mystical, easier to debug.
+- **Stripe + RevenueCat** — Stripe for web Pro/Enterprise. RevenueCat for App Store / Mac. Same entitlements. Do not dual-charge.
+- **Postgres** — users, connections, daily_picks (task_ids, reasons, overrides), completion events. RLS. This table is the moat if you ever fine-tune.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create two packages in one repo: (1) a SwiftUI iOS+macOS app “TaskFocus” with a WidgetKit extension (lock screen rectangular + home medium + Mac desktop), and (2) a Next.js App Router dashboard. Postgres tables: users, todoist_tokens, calendar_tokens, daily_picks (user_id, date, picks jsonb, model, created_at), overrides (pick_id, action, replacement_task_id). Stripe products: Demo $0, Starter $8, Pro $25, Insights $10 add-on, Enterprise $50/seat. RevenueCat entitlements mirroring Starter/Pro. Env: TODOIST_CLIENT_ID, TODOIST_CLIENT_SECRET, OPENAI_API_KEY or ANTHROPIC_API_KEY, STRIPE_SECRET_KEY, REVENUECAT_SECRET. No local task store as source of truth — Todoist is.
+```
+
+**2. Ranker + Widget Timeline**
+
+```text
+Build a nightly job: fetch Todoist open tasks + next 24h calendar busy blocks. Score each task with a transparent rubric: due_in_hours, estimated_minutes vs longest_free_block, has_blocker, user_completion_rate for that project, explicit priority. Pass the top 15 candidates to Claude/GPT with a strict schema: three task ids, rank 1-3, reason_short under 90 chars, reasons_factors[]. Persist daily_picks. WidgetKit TimelineProvider reads the latest pick set; tapping a row opens Todoist or marks complete via App Intent. If the user overrides, store the event and downweight that factor tomorrow. Never show more than three. If fewer than three open tasks, show what exists and a “inbox zero” state. Target: rank job finishes before 6:00 local.
+```
+
+**3. Landing Page**
+
+```text
+Design a marketing page for TaskFocus. Hero: “Your list already exists. This morning, only three things on it matter.” Sub: “An iOS and Mac widget that reads Todoist, your calendar, and your history — and names the top 3, in order, with a reason.” Show a lock-screen widget mock with three real-looking tasks and why-lines. Sections: the 50-item list problem; ‘this is not another todo app’; how it works in four steps; pricing that leads with $8 Starter / $25 Pro and mentions $30–$50/seat teams; comparison vs Motion ($19–$34, migrate everything), Sunsama ($16–$20, you still pick), Todoist Premium (~$4, still a list). FAQ: explainability, what happens when the AI is wrong, privacy of task text. Geist, lots of air, one sharp accent. CTA: “See your top 3 from a demo list.”
+```
+
+**4. Branding Package**
+
+```text
+Create a branding package for TaskFocus: wordmark plus a mark that is three stacked ticks or three bars, not a checkered “todo” clipboard. Palette: near-black, paper, one focused amber or lime for the #1 task. Type: Geist or similar; tabular nums for “3.” Voice rules: never moralize about hustle; never say “crush your day”; always show a why-line next to a pick; write widget copy under 90 characters. Deliver hex, type, a 6-icon set (connect, rank, widget, why, snooze, complete), and three lock-screen copy variants.
+```
+
+## Sources
+
+Market sizing, competitive pricing, and demand signals collated from Ideabrowser MCP idea #8061 and the public research it cites (2026 snapshot). Triangulate before you cite in investor materials.
+
+- [Mordor Intelligence — Productivity Apps Market ($11.96B 2025 → $18.09B 2030, 8.63% CAGR)](https://www.mordorintelligence.com/industry-reports/productivity-apps-market)
+- [Grand View Research — AI Productivity Tools Market ($8.8B 2024 → $36.4B 2033, 15.9% CAGR)](https://www.grandviewresearch.com/industry-analysis/ai-productivity-tools-market-report)
+- [Future Market Insights — AI Task Manager App Market ($137.1M 2026 → $321.6M 2036, 8.9% CAGR)](https://www.futuremarketinsights.com/reports/ai-task-manager-app-market)
+- [Motion — product / pricing context ($19–$34/user/mo range in public reviews)](https://www.usemotion.com)
+- [Sunsama — pricing reference (~$16–$20/mo)](https://www.sunsama.com/pricing)
+- [Todoist — Premium pricing reference (~$4/mo)](https://www.todoist.com/pricing)
+- [Reclaim.ai — pricing reference (free + paid)](https://reclaim.ai/pricing)
+- [Cultured Code — Things (one-time Mac/iOS)](https://culturedcode.com/things/)
+
+Page sourced via Ideabrowser MCP (idea_id 8061): get_idea_research, competitive_analysis, go_to_market, community_analysis, why_now_analysis.
