@@ -36,3 +36,4 @@ Append-only progress log. Do not rely on chat history for project state.
 - `npm run seed:convex -- --deployment first-squirrel-244 --only ideas` → **live** inserted 10
 - `og:generate` Recraft for all 10; `og.status=ready`; PNGs under `public/image/og/idea/`
 - Pages are **not live** until this branch merges to `main` (same as WP39). Grid cards exist in production Convex; `/ideas/{slug}` 404 until Vercel build.
+- Commit `0b90c5a`, pushed `codex/wp40-underrepresented-ideas`, PR https://github.com/jeberulz/weekendmvp/pull/67
