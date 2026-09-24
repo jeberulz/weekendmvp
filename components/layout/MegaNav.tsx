@@ -395,13 +395,14 @@ export function MegaNav({
             href="/starter-kit"
             className={cn(
               // Phones keep the CTA (auth links live in the MobileNav sheet);
-              // md–lg drops it to make room for Login / Sign up.
-              "group relative inline-flex md:hidden lg:inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform active:scale-95",
+              // md–lg drops it to make room for Login / Sign up. Below 360px
+              // the pill cannot fit it on one line; the sheet still links it.
+              "group relative hidden min-[360px]:inline-flex md:hidden lg:inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform active:scale-95",
               t.ctaRing
             )}
           >
             <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,rgba(255,255,255,0.5)_50%,transparent_100%)]"></span>
-            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
+            <span className="inline-flex h-full w-full cursor-pointer items-center justify-center whitespace-nowrap rounded-full bg-neutral-950/80 px-5 py-2 text-xs font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-neutral-900/80">
               Get the Kit
             </span>
           </Link>

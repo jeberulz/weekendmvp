@@ -37,10 +37,14 @@ hint set for a live session, cleared when stale, absent for anonymous.
 ## Follow-up: mobile "Get the Kit"
 
 PR #72 hid the MegaNav CTA below `lg`, so phones lost it even though the
-auth pills only show from `md`. Now `inline-flex md:hidden lg:inline-flex`:
-visible on phones and from `lg`, hidden only at md–lg. Playwright check on
-`/newsletter` at 320–1280px: CTA visible <768 and ≥1024, no overflow past
-the pill, no horizontal scroll. Checks: typecheck, lint (0 errors), `npm test`.
+auth pills only show from `md`. Now
+`hidden min-[360px]:inline-flex md:hidden lg:inline-flex` plus
+`whitespace-nowrap`: visible from 360px to `md` and from `lg`. Below 360px the
+pill leaves ~70px for it, so the label wrapped to three lines (66px tall in a
+56px nav, flagged by Codex); the MobileNav sheet still links the kit there.
+Playwright on `/newsletter` at 320–1280px: CTA on one line wherever shown, no
+overflow past the pill, no horizontal scroll. Checks: typecheck, lint
+(0 errors), `npm test`.
 
 ## Docs
 
