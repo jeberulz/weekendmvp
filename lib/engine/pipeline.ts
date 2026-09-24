@@ -96,6 +96,8 @@ type SynthesisPack = {
   oneLiner: string;
   scores?: ResearchScores;
   editorial?: EditorialFields;
+  /** Rows dropped because their numbers are not in the research text. */
+  dropped: { stats: number; competitors: number };
 };
 
 /** Drop global SaaS/AI TAM rows — niche sizing only. */
@@ -492,6 +494,57 @@ export function isGroundedFigure(figure: string, haystack: string): boolean {
 /** Community quotes that must be found verbatim before a record is kept. */
 export const MIN_VERIFIED_SIGNALS = 2;
 
+/** Readable community pages needed before any keyword or synthesis spend. */
+export const MIN_READABLE_SOURCES = 2;
+/** Page text handed to synthesis so quotes are copied, not recalled. */
+const SOURCE_EXCERPT_CHARS = 10_000;
+const MAX_SOURCE_PAGES = 6;
+
+type PageRead = { text: string | null; error?: string };
+
+/**
+ * Fetch each cited community page once. Runs right after the community
+ * search, so a network that blocks the sources fails the run before
+ * DataForSEO or the synthesis model is billed.
+ */
+export async function readCommunityPages(
+  citations: Array<{ url: string }>,
+  sourceText: SourceTextProvider,
+): Promise<Map<string, PageRead>> {
+  const urls = [...new Set(citations.map((c) => c.url))];
+  const reads = await Promise.all(
+    urls.map(async (url): Promise<[string, PageRead]> => {
+      try {
+        const text = await sourceText.fetchText(url);
+        return [url, text.trim() ? { text } : { text: null, error: "empty page" }];
+      } catch (error) {
+        return [
+          url,
+          { text: null, error: error instanceof Error ? error.message : String(error) },
+        ];
+      }
+    }),
+  );
+  return new Map(reads);
+}
+
+/** Serve already-read pages from memory; fetch anything new. */
+function cachedSourceText(
+  pages: Map<string, PageRead>,
+  sourceText: SourceTextProvider,
+): SourceTextProvider {
+  return {
+    async fetchText(url: string): Promise<string> {
+      const hit = pages.get(url);
+      if (hit) {
+        if (hit.text === null) throw new Error(hit.error ?? "unreadable");
+        return hit.text;
+      }
+      return sourceText.fetchText(url);
+    },
+  };
+}
+
 /**
  * Fetch each cited page once and mark every quote verified or not. A page
  * that cannot be fetched leaves its quotes unverified — never assumed true.
@@ -523,6 +576,7 @@ function parseSynthesisPack(
   competitors: SearchPack,
   community: SearchPack,
   brief: NormalizedBrief,
+  extraHaystack: string[] = [],
 ): SynthesisPack {
   let parsed: Record<string, unknown>;
   try {
@@ -532,9 +586,10 @@ function parseSynthesisPack(
   }
 
   const index = citationIndex([market, competitors, community]);
-  const haystack = [market, competitors, community]
-    .map((p) => JSON.stringify(p))
+  const haystack = [market, competitors, community, ...extraHaystack]
+    .map((p) => (typeof p === "string" ? p : JSON.stringify(p)))
     .join("\n");
+  const dropped = { stats: 0, competitors: 0 };
 
   const statsFromModel = Array.isArray(parsed.stats) ? parsed.stats : [];
   const stats: MarketStat[] = [];
@@ -546,7 +601,10 @@ function parseSynthesisPack(
     const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
     if (claim && value && citation) {
       if (MEGA_TAM_STAT_RE.test(`${claim} ${value}`)) continue;
-      if (!isGroundedFigure(value, haystack)) continue;
+      if (!isGroundedFigure(value, haystack)) {
+        dropped.stats += 1;
+        continue;
+      }
       stats.push({ claim, value, citation });
     }
   }
@@ -562,7 +620,9 @@ function parseSynthesisPack(
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
     const citation = resolveCompetitorCitation(index, r.url, name);
-    if (name && pricing && citation && isGroundedFigure(pricing, haystack)) {
+    if (name && pricing && citation && !isGroundedFigure(pricing, haystack)) {
+      dropped.competitors += 1;
+    } else if (name && pricing && citation) {
       competitorRows.push({
         name,
         pricing,
@@ -641,6 +701,7 @@ function parseSynthesisPack(
       brief.oneLiner,
     scores,
     editorial: parseEditorial(parsed),
+    dropped,
   };
 }
 
@@ -716,9 +777,9 @@ const SYNTHESIS_INSTRUCTIONS =
   "Score this idea using only the supplied research. Reply with JSON only. " +
   "Preserve audience casing from the brief (SMB SaaS, not smb saas). " +
   "Required keys: marketSummary (niche-focused, 180-280 words; NEVER quote global SaaS/AI TAM like $375B+), " +
-  "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM), " +
-  "competitors[{name,pricing,url,notes}] (url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs; notes ≥25 words each, unique per competitor), " +
-  "communitySummary (≥100 words), signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
+  "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM; copy every number exactly as the research writes it — values whose numbers are not in the research are discarded), " +
+  "competitors[{name,pricing,url,notes}] (pricing copies the research's figures exactly — do not convert annual to monthly or round; url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs; notes ≥25 words each, unique per competitor), " +
+  "communitySummary (≥100 words), signals[{quote,citationUrl,citationTitle}] (3-6 quotes, each copied character-for-character from the 'Community source pages' text with citationUrl set to that page — quotes not found on the page are discarded; never paraphrase), " +
   "goToMarket{positioning (≥40 words),channels,pricingNotes (≥60 words)}, whyNow, " +
   "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'; each description ≥35 words), " +
   "oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} (1-10; timing=market timing, execution=build feasibility), " +
@@ -847,6 +908,32 @@ export async function runResearch(
     throw stepError("community_signals", "community search failed", error);
   }
 
+  // Read the cited community pages now (unpaid). If the sources are not
+  // reachable from this network, stop before keywords and synthesis bill.
+  let communityPages = new Map<string, PageRead>();
+  if (providers.sourceText) {
+    communityPages = await readCommunityPages(
+      community.citations,
+      providers.sourceText,
+    );
+    const readable = [...communityPages.values()].filter((p) => p.text !== null);
+    if (readable.length < MIN_READABLE_SOURCES) {
+      const reasons = [...communityPages]
+        .filter(([, p]) => p.text === null)
+        .map(([url, p]) => `${url} (${p.error})`)
+        .join("; ");
+      throw new PipelineError(
+        "community_signals",
+        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Unreadable: ${reasons}`,
+      );
+    }
+  }
+  const sourcePagesBlock = [...communityPages]
+    .filter(([, p]) => p.text !== null)
+    .slice(0, MAX_SOURCE_PAGES)
+    .map(([url, p]) => `### ${url}\n${p.text!.slice(0, SOURCE_EXCERPT_CHARS)}`)
+    .join("\n\n");
+
   // --- 4 keywords_demand (fail closed) ---
   const keywords = metricsToKeywordRows(
     await stepKeywords(providers, run, brief.seedKeywords),
@@ -859,6 +946,11 @@ export async function runResearch(
       `## Market stats\n${JSON.stringify(market)}`,
       `## Competitors\n${JSON.stringify(competitorsPack)}`,
       `## Community signals\n${JSON.stringify(community)}`,
+      ...(sourcePagesBlock
+        ? [
+            `## Community source pages (fetched text — copy every quote character-for-character from here, and cite that page's URL)\n${sourcePagesBlock}`,
+          ]
+        : []),
       `## Keywords (provider metrics only — do not invent volume/CPC)\n${JSON.stringify(keywords)}`,
     ].join("\n\n");
     const input = `${briefContext(brief)}\n\n${researchBlob}`;
@@ -882,17 +974,18 @@ export async function runResearch(
     competitorsPack,
     community,
     brief,
+    sourcePagesBlock ? [sourcePagesBlock] : [],
   );
 
   const shortfalls: string[] = [];
   if (synth.stats.length < MIN_MARKET_STATS) {
     shortfalls.push(
-      `need ≥${MIN_MARKET_STATS} market stats citing a search result (got ${synth.stats.length})`,
+      `need ≥${MIN_MARKET_STATS} market stats citing a search result (got ${synth.stats.length}; ${synth.dropped.stats} dropped because their numbers are not in the search results)`,
     );
   }
   if (synth.competitors.length < MIN_COMPETITORS) {
     shortfalls.push(
-      `need ≥${MIN_COMPETITORS} priced competitors citing a search result (got ${synth.competitors.length})`,
+      `need ≥${MIN_COMPETITORS} priced competitors citing a search result (got ${synth.competitors.length}; ${synth.dropped.competitors} dropped because their prices are not in the search results)`,
     );
   }
   if (synth.goToMarket.channels.length < MIN_CHANNELS) {
@@ -914,7 +1007,10 @@ export async function runResearch(
 
   // --- quote verification (unpaid, part of provenance_parse) ---
   const signals = providers.sourceText
-    ? await verifySignals(synth.signals, providers.sourceText)
+    ? await verifySignals(
+        synth.signals,
+        cachedSourceText(communityPages, providers.sourceText),
+      )
     : synth.signals;
   if (providers.sourceText) {
     const verified = signals.filter((s) => s.verified).length;

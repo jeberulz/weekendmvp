@@ -332,3 +332,95 @@ describe("engine audit on a compiled fixture", () => {
     }
   });
 });
+
+describe("community page reads", () => {
+  it("uses Reddit's OAuth API when app credentials are set", async () => {
+    const calls: string[] = [];
+    const listing = [
+      { data: { children: [{ data: { title: "RFPs", selftext: "" } }] } },
+      { data: { children: [{ data: { body: "It's the most tedious part of my job." } }] } },
+    ];
+    const provider = createSourceTextProvider({
+      redditClientId: "id",
+      redditClientSecret: "secret",
+      fetchImpl: async (url) => {
+        calls.push(url);
+        if (url.endsWith("/api/v1/access_token")) {
+          return new Response(JSON.stringify({ access_token: "tok" }), { status: 200 });
+        }
+        return new Response(JSON.stringify(listing), { status: 200 });
+      },
+    });
+    const text = await provider.fetchText(
+      "https://www.reddit.com/r/salesengineers/comments/17617vr/how_much/",
+    );
+    expect(quoteAppearsIn("It's the most tedious part of my job.", text)).toBe(true);
+    expect(calls).toEqual([
+      "https://www.reddit.com/api/v1/access_token",
+      "https://oauth.reddit.com/r/salesengineers/comments/17617vr/how_much?limit=500&raw_json=1",
+    ]);
+  });
+
+  it("names the fix when Reddit blocks the public endpoint", async () => {
+    const provider = createSourceTextProvider({
+      redditClientId: "",
+      redditClientSecret: "",
+      fetchImpl: async () => new Response("blocked", { status: 403 }),
+    });
+    await expect(
+      provider.fetchText("https://www.reddit.com/r/x/comments/abc/y/"),
+    ).rejects.toThrow(/REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET/);
+  });
+
+  it("stops before keyword and synthesis spend when sources are unreadable", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    providers.sourceText = fixtureSourceText({});
+    let keywordLookups = 0;
+    const realKeywords = providers.keywordData;
+    providers.keywordData = {
+      ...realKeywords,
+      lookup: (req) => {
+        keywordLookups += 1;
+        return realKeywords.lookup(req);
+      },
+    };
+    const realSynthesis = providers.synthesis;
+    let synthesisCalls = 0;
+    providers.synthesis = {
+      ...realSynthesis,
+      complete: (req) => {
+        synthesisCalls += 1;
+        return realSynthesis.complete(req);
+      },
+    };
+    const error = await runResearch({ brief: BRIEF, providers }).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(PipelineError);
+    expect((error as PipelineError).stepId).toBe("community_signals");
+    expect((error as PipelineError).message).toMatch(
+      /only 0\/2 cited community pages could be read.*Stopped before keyword and synthesis spend/,
+    );
+    expect(keywordLookups).toBe(0);
+    // Only the brief-normalization call ran; the paid synthesis never did.
+    expect(synthesisCalls).toBe(1);
+  });
+
+  it("hands the fetched page text to synthesis", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const inputs: string[] = [];
+    const realSynthesis = providers.synthesis;
+    providers.synthesis = {
+      ...realSynthesis,
+      complete: (req) => {
+        inputs.push(req.input);
+        return realSynthesis.complete(req);
+      },
+    };
+    await runResearch({ brief: BRIEF, providers });
+    const synthesisInput = inputs[inputs.length - 1]!;
+    expect(synthesisInput).toContain("## Community source pages");
+    expect(synthesisInput).toContain("### https://www.reddit.com/r/sales/");
+  });
+});

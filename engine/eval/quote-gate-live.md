@@ -95,3 +95,12 @@ npm run engine:compile -- --record engine/records/ai-rfp-response-assistant.json
 npm run audit:idea -- --slug engine-draft-ai-rfp-response-assistant --record engine/records/ai-rfp-response-assistant.json
 # repeat for code-reviewer + landing-page-generator-ecommerce
 ```
+
+## Follow-up fix (after this report)
+
+- **Reddit 403:** the source-text provider now uses Reddit's OAuth API when `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` are set (free "script" app at reddit.com/prefs/apps). Without them, a 403 error now names those variables.
+- **Wasted spend:** cited community pages are read right after the community search. Fewer than 2 readable pages stops the run at `community_signals`, before DataForSEO and synthesis bill. On this network that would have cost ~$0.08 (three Perplexity searches) instead of a full pack.
+- **Quote hit rate:** the fetched page text is passed to synthesis, which must copy quotes from it.
+- **Competitor shortfall (RFP attempt 2):** the shortfall message now reports how many stats/competitors were dropped for numbers not found in the search results, and synthesis is told to copy prices exactly (no annual→monthly conversion). Re-check that count on the next run.
+
+Re-run recipe is unchanged, plus `export REDDIT_CLIENT_ID=… REDDIT_CLIENT_SECRET=…`, after a DataForSEO top-up.

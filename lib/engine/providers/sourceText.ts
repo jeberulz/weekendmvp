@@ -3,7 +3,10 @@
  * community quote really appears there. Not a billed provider: no API key,
  * no cost record.
  *
- * - Reddit threads → the public `.json` listing (post + every comment).
+ * - Reddit threads → the official OAuth API (app-only token) when
+ *   REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET are set, else the public `.json`
+ *   listing. Reddit answers the public endpoint with 403 from most cloud
+ *   networks, so set the credentials anywhere but a home connection.
  * - Hacker News items → the Algolia items API (story + comment tree).
  * - Anything else → the HTML with scripts/styles/tags stripped.
  */
@@ -18,6 +21,9 @@ export type CreateSourceTextOptions = {
   fetchImpl?: FetchLike;
   timeoutMs?: number;
   userAgent?: string;
+  /** Reddit app credentials (script or web app, app-only OAuth). */
+  redditClientId?: string;
+  redditClientSecret?: string;
 };
 
 const DEFAULT_UA =
@@ -62,6 +68,18 @@ export function redditJsonUrl(url: string): string | null {
   }
 }
 
+/** Reddit thread path (`/r/x/comments/id/slug`) for the OAuth host, or null. */
+export function redditThreadPath(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)reddit\.com$/.test(u.hostname)) return null;
+    if (!/\/comments\//.test(u.pathname)) return null;
+    return u.pathname.replace(/\/+$/, "");
+  } catch {
+    return null;
+  }
+}
+
 /** Rewrite a Hacker News item URL to the Algolia items API, or null. */
 export function hnApiUrl(url: string): string | null {
   try {
@@ -82,6 +100,41 @@ export function createSourceTextProvider(
   const timeoutMs = options.timeoutMs ?? 15_000;
   const userAgent =
     options.userAgent ?? process.env.ENGINE_QUOTE_FETCH_UA ?? DEFAULT_UA;
+  const redditId = options.redditClientId ?? process.env.REDDIT_CLIENT_ID;
+  const redditSecret =
+    options.redditClientSecret ?? process.env.REDDIT_CLIENT_SECRET;
+  let redditToken: Promise<string> | null = null;
+
+  const redditBearer = (): Promise<string> => {
+    if (!redditToken) {
+      redditToken = (async () => {
+        const basic = Buffer.from(`${redditId}:${redditSecret}`).toString("base64");
+        const res = await fetchImpl("https://www.reddit.com/api/v1/access_token", {
+          method: "POST",
+          headers: {
+            authorization: `Basic ${basic}`,
+            "content-type": "application/x-www-form-urlencoded",
+            "user-agent": userAgent,
+          },
+          body: "grant_type=client_credentials",
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        if (!res.ok) {
+          throw new Error(`Reddit OAuth token request failed: HTTP ${res.status}`);
+        }
+        const json = (await res.json()) as { access_token?: unknown };
+        if (typeof json.access_token !== "string") {
+          throw new Error("Reddit OAuth token response had no access_token");
+        }
+        return json.access_token;
+      })();
+      // A failed token request should be retried by the next fetch.
+      redditToken.catch(() => {
+        redditToken = null;
+      });
+    }
+    return redditToken;
+  };
 
   const get = async (url: string): Promise<Response> => {
     const res = await fetchImpl(url, {
@@ -95,9 +148,33 @@ export function createSourceTextProvider(
 
   return {
     async fetchText(url: string): Promise<string> {
+      const threadPath = redditThreadPath(url);
+      if (threadPath && redditId && redditSecret) {
+        const token = await redditBearer();
+        const res = await fetchImpl(
+          `https://oauth.reddit.com${threadPath}?limit=500&raw_json=1`,
+          {
+            headers: { authorization: `bearer ${token}`, "user-agent": userAgent },
+            signal: AbortSignal.timeout(timeoutMs),
+          },
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status} for Reddit API ${threadPath}`);
+        const parts: string[] = [];
+        collectStrings(await res.json(), new Set(["title", "selftext", "body"]), parts);
+        return parts.join("\n");
+      }
       const reddit = redditJsonUrl(url);
       if (reddit) {
-        const json: unknown = await (await get(reddit)).json();
+        const res = await fetchImpl(reddit, {
+          headers: { "user-agent": userAgent, accept: "application/json" },
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        if (!res.ok) {
+          throw new Error(
+            `HTTP ${res.status} for ${reddit}${res.status === 403 ? " (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)" : ""}`,
+          );
+        }
+        const json: unknown = await res.json();
         const parts: string[] = [];
         collectStrings(json, new Set(["title", "selftext", "body"]), parts);
         return parts.join("\n");

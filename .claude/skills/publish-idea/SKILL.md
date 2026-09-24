@@ -120,7 +120,9 @@ The pipeline **fails closed** on thin research. That replaces the old chat-only 
 - Fewer than 2 niche market stats or 3 priced competitors → fail.
 - Any stat or competitor price whose numbers do not appear in the search results is **dropped** as model-invented (and can push the run under those minimums).
 - Keyword volume / CPC come only from DataForSEO.
-- **Quote verification:** the pipeline fetches every cited Reddit thread (`.json`), HN item (Algolia API), or page and keeps a quote only if its wording appears there. Fewer than 2 verified quotes → `[provenance_parse] quote verification: …` and the run fails. If Reddit blocks the fetch from your network, set `ENGINE_QUOTE_FETCH_UA` to a descriptive user agent and retry; never hand-mark quotes as verified.
+- **Quote verification:** right after the community search (before any DataForSEO or synthesis spend) the pipeline reads every cited page: Reddit threads, HN items (Algolia API), or plain pages. Fewer than 2 readable pages → `[community_signals] only N/M cited community pages could be read …` and the run stops cheaply. The page text goes to synthesis, which must copy quotes from it; afterwards each quote is checked against its page, and fewer than 2 found → `[provenance_parse] quote verification: …`. Never hand-mark quotes as verified.
+- **Reddit needs app credentials on most networks.** Reddit answers the public `.json` endpoint with HTTP 403 from cloud machines (seen on the Cursor agent). Create a free "script" app at reddit.com/prefs/apps and set `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET`; the engine then uses Reddit's OAuth API. `ENGINE_QUOTE_FETCH_UA` alone does not get past the block.
+- **DataForSEO balance:** a negative balance fails `keywords_demand` with `40200 Payment Required`. Top up before a batch.
 
 ### Step 3 — Compile
 
