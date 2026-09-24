@@ -582,7 +582,12 @@ describe("source fetch safety", () => {
     for (const ip of ["127.0.0.1", "10.1.2.3", "172.20.0.1", "192.168.1.1", "169.254.169.254", "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1"]) {
       expect(isBlockedAddress(ip), ip).toBe(true);
     }
-    for (const ip of ["93.184.215.14", "151.101.1.140", "2606:4700::6810:84e5"]) {
+    // IPv4-mapped / compatible / NAT64 forms, dotted and hex (Node's URL
+    // parser turns [::ffff:127.0.0.1] into [::ffff:7f00:1]).
+    for (const ip of ["::ffff:7f00:1", "::ffff:c0a8:101", "::ffff:a9fe:a9fe", "::7f00:1", "0:0:0:0:0:ffff:127.0.0.1", "64:ff9b::a00:1"]) {
+      expect(isBlockedAddress(ip), ip).toBe(true);
+    }
+    for (const ip of ["93.184.215.14", "151.101.1.140", "2606:4700::6810:84e5", "::ffff:5db8:d70e", "64:ff9b::5db8:d70e"]) {
       expect(isBlockedAddress(ip), ip).toBe(false);
     }
   });
@@ -598,6 +603,9 @@ describe("source fetch safety", () => {
     });
     await expect(provider.fetchText("https://intranet.example/page")).rejects.toThrow(/non-public/);
     await expect(provider.fetchText("http://169.254.169.254/latest/meta-data/")).rejects.toThrow(/non-public/);
+    // Both spellings of an IPv4-mapped loopback literal, after URL normalization.
+    await expect(provider.fetchText("http://[::ffff:127.0.0.1]/")).rejects.toThrow(/non-public/);
+    await expect(provider.fetchText("http://[::ffff:7f00:1]/")).rejects.toThrow(/non-public/);
     expect(fetched).toBe(0);
   });
 

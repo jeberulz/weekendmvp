@@ -133,20 +133,48 @@ function ipv4Blocked(ip: string): boolean {
   );
 }
 
+/** Expand an IPv6 address (any notation) to its eight 16-bit groups. */
+function ipv6Groups(ip: string): number[] | null {
+  let text = ip.toLowerCase().replace(/%.*$/, "");
+  // A trailing dotted IPv4 part becomes two hex groups.
+  const dotted = text.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted[2]!.split(".").map(Number) as [number, number, number, number];
+    text = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const halves = text.split("::");
+  if (halves.length > 2) return null;
+  const head = halves[0] ? halves[0].split(":") : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
+  const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
+  const parts = [...head, ...Array<string>(Math.max(fill, 0)).fill("0"), ...tail];
+  if (parts.length !== 8) return null;
+  const groups = parts.map((g) => parseInt(g, 16));
+  return groups.every((g) => Number.isInteger(g) && g >= 0 && g <= 0xffff) ? groups : null;
+}
+
 /** True for loopback, private, link-local, metadata and other non-public IPs. */
 export function isBlockedAddress(ip: string): boolean {
   const version = isIP(ip);
   if (version === 4) return ipv4Blocked(ip);
   if (version !== 6) return true;
-  const v6 = ip.toLowerCase();
-  const mapped = v6.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) return ipv4Blocked(mapped[1]!);
+  const g = ipv6Groups(ip);
+  if (!g) return true;
+  const embedded = () => `${g[6]! >> 8}.${g[6]! & 0xff}.${g[7]! >> 8}.${g[7]! & 0xff}`;
+  const zeroTo = (n: number) => g.slice(0, n).every((x) => x === 0);
+  // ::a.b.c.d (IPv4-compatible, also covers :: and ::1) and ::ffff:a.b.c.d (mapped),
+  // in dotted or hex form.
+  if (zeroTo(6) || (zeroTo(5) && g[5] === 0xffff)) {
+    return zeroTo(7) ? true : ipv4Blocked(embedded());
+  }
+  // 64:ff9b::/96 NAT64 carries an IPv4 address in its last 32 bits.
+  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => x === 0)) {
+    return ipv4Blocked(embedded());
+  }
   return (
-    v6 === "::" ||
-    v6 === "::1" ||
-    /^f[cd]/.test(v6) || // unique local fc00::/7
-    /^fe[89ab]/.test(v6) || // link-local fe80::/10
-    /^ff/.test(v6) // multicast
+    (g[0]! & 0xfe00) === 0xfc00 || // unique local fc00::/7
+    (g[0]! & 0xffc0) === 0xfe80 || // link-local fe80::/10
+    (g[0]! & 0xff00) === 0xff00 // multicast
   );
 }
 
