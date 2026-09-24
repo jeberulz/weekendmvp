@@ -11,5 +11,18 @@
       "command": "bash .cursor/start-web.sh"
     }
   ],
-  "ports": [3000, 3210, 3211]
+  "ports": [
+    {
+      "name": "web",
+      "port": 3000
+    },
+    {
+      "name": "convex",
+      "port": 3210
+    },
+    {
+      "name": "convex-dashboard",
+      "port": 3211
+    }
+  ]
 }
