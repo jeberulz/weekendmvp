@@ -70,6 +70,14 @@ describe("free auth UI contract", () => {
     expect(authCardSource).not.toMatch(/Sign in with Password/i);
   });
 
+  test("login and signup pages use the shared auth shell with MegaNav", () => {
+    expect(loginPageSource).toContain("<AuthPageShell>");
+    expect(signupPageSource).toContain("<AuthPageShell>");
+    expect(authCardSource).toContain("Welcome back!");
+    expect(authCardSource).toContain("<Logo");
+    expect(authCardSource).not.toMatch(/Sign in with Password/i);
+  });
+
   test("login and signup pages stash claimPreview with the server normalizer", () => {
     for (const source of [loginPageSource, signupPageSource]) {
       expect(source).toContain("normalizeCapabilityToken(");
@@ -88,6 +96,7 @@ describe("free auth UI contract", () => {
     expect(navAuthSource).toContain('href="/login"');
     expect(navAuthSource).toContain('href="/signup"');
     expect(navAuthSource).toContain("Sign up");
+    expect(navAuthSource).toMatch(/\bLogin\b/);
     expect(navAuthSource).toContain('href="/dashboard"');
   });
 });

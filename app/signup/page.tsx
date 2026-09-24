@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { PreviewClaimStash } from "@/components/preview/PreviewClaimHandoff";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { safePlatformReturn } from "@/lib/auth-return";
@@ -31,9 +32,9 @@ export default async function SignupPage({
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 py-16">
+    <AuthPageShell>
       {claimPreview !== null && <PreviewClaimStash token={claimPreview} />}
       <AuthCard mode="signup" returnTo={returnTo} />
-    </main>
+    </AuthPageShell>
   );
 }

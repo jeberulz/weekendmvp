@@ -49,7 +49,7 @@ export function NavAuthLinks({
           onClick={onNavigate}
           className="block px-4 py-3 rounded-lg text-center font-medium text-neutral-200 border border-white/20 hover:border-white/40 hover:bg-white/5 transition-colors"
         >
-          Log in
+          Login
         </Link>
         <Link
           href="/signup"
@@ -89,7 +89,7 @@ export function NavAuthLinks({
   return (
     <div className="hidden md:flex items-center gap-2">
       <Link href="/login" className={loginClass}>
-        Log in
+        Login
       </Link>
       <Link href="/signup" className={primaryClass}>
         Sign up

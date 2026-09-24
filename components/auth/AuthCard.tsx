@@ -4,6 +4,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Mail } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
+import { Logo } from "@/components/primitives/Logo";
 import { newsreader } from "@/lib/fonts";
 import { authCallbackTarget, safePlatformReturn } from "@/lib/auth-return";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ const COPY: Record<
   login: {
     title: "Welcome back!",
     subtitle:
-      "Enter your email and we'll send a one-time code to sign you in — no password needed.",
+      "Sign in with your email — we'll send a one-time code (magic link). No password needed.",
     emailCta: "Send One-Time Code",
     emailSent:
       "Check your inbox. The link expires in one hour and will ask you to confirm before signing in.",
@@ -38,13 +39,13 @@ const COPY: Record<
   signup: {
     title: "Create your free account",
     subtitle:
-      "Enter your email and we'll send a one-time code to get you started — no password needed.",
+      "Enter your email — we'll send a one-time code (magic link) to get you started. No password needed.",
     emailCta: "Send One-Time Code",
     emailSent:
       "Check your inbox. The link expires in one hour and will ask you to confirm before creating your account.",
     emailFailed: "We could not send a one-time code. Please try again.",
     crossPrompt: "Already have an account?",
-    crossLabel: "Log in",
+    crossLabel: "Login",
     crossHref: "/login",
   },
 };
@@ -195,9 +196,9 @@ export function AuthCard({
         </p>
       </div>
 
-      <p className="mt-6 text-center text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-        Weekend MVP
-      </p>
+      <div className="mt-8 flex justify-center">
+        <Logo className="h-4 w-28 text-zinc-500" />
+      </div>
     </div>
   );
 }

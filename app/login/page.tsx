@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthPageShell } from "@/components/auth/AuthPageShell";
 import { PreviewClaimStash } from "@/components/preview/PreviewClaimHandoff";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { safePlatformReturn } from "@/lib/auth-return";
 
 export const metadata: Metadata = {
-  title: "Log in",
+  title: "Login",
   robots: { index: false, follow: false },
 };
 
@@ -33,9 +34,9 @@ export default async function LoginPage({
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 py-16">
+    <AuthPageShell>
       {claimPreview !== null && <PreviewClaimStash token={claimPreview} />}
       <AuthCard mode="login" returnTo={returnTo} />
-    </main>
+    </AuthPageShell>
   );
 }
