@@ -61,10 +61,13 @@ describe("free auth UI contract", () => {
   test("auth card exposes Google + one-time email path without passwords", () => {
     expect(authCardSource).toContain("Continue with Google");
     expect(authCardSource).toContain("Send One-Time Code");
+    expect(authCardSource).toContain("Welcome back!");
     expect(authCardSource).toContain('signIn("google"');
     expect(authCardSource).toContain('signIn("email"');
+    expect(authCardSource).toContain("Enter your email");
     expect(authCardSource).not.toMatch(/type=["']password["']/);
     expect(authCardSource).not.toMatch(/signIn\(["']credentials["']/);
+    expect(authCardSource).not.toMatch(/Sign in with Password/i);
   });
 
   test("login and signup pages stash claimPreview with the server normalizer", () => {

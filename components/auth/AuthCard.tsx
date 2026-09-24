@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
 import { newsreader } from "@/lib/fonts";
@@ -24,7 +25,8 @@ const COPY: Record<
 > = {
   login: {
     title: "Welcome back!",
-    subtitle: "Sign in to reach your free dashboard and keep your work.",
+    subtitle:
+      "Enter your email and we'll send a one-time code to sign you in — no password needed.",
     emailCta: "Send One-Time Code",
     emailSent:
       "Check your inbox. The link expires in one hour and will ask you to confirm before signing in.",
@@ -36,7 +38,7 @@ const COPY: Record<
   signup: {
     title: "Create your free account",
     subtitle:
-      "Start validating ideas in a weekend. No password — Google or email is enough.",
+      "Enter your email and we'll send a one-time code to get you started — no password needed.",
     emailCta: "Send One-Time Code",
     emailSent:
       "Check your inbox. The link expires in one hour and will ask you to confirm before creating your account.",
@@ -97,99 +99,104 @@ export function AuthCard({
   const busy = googlePending || emailState === "pending";
 
   return (
-    <div
-      className={cn(
-        newsreader.variable,
-        "w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-8 text-zinc-100 shadow-2xl shadow-black/30",
-      )}
-    >
-      <p className="text-xs font-medium uppercase tracking-[0.24em] text-amber-300">
-        Weekend MVP
-      </p>
-      <h1
-        className="mt-4 text-3xl font-normal tracking-tight text-zinc-50"
-        style={{
-          fontFamily: "var(--font-newsreader), Georgia, 'Times New Roman', serif",
-        }}
-      >
-        {copy.title}
-      </h1>
-      <p className="mt-3 text-sm leading-6 text-zinc-400">{copy.subtitle}</p>
-
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        disabled={busy}
-        className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
-      >
-        <GoogleGlyph />
-        {googlePending ? "Opening Google…" : "Continue with Google"}
-      </button>
-
-      {googleFailed ? (
-        <p role="alert" className="mt-4 text-sm text-red-300">
-          We could not start sign-in. Please try again.
-        </p>
-      ) : null}
-
-      <div className="my-6 flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-white/10" />
-        <span className="text-xs uppercase tracking-[0.18em] text-zinc-600">
-          Or
-        </span>
-        <span className="h-px flex-1 bg-white/10" />
-      </div>
-
-      <form onSubmit={requestEmailLink}>
-        <label htmlFor={emailFieldId} className="text-sm font-medium">
-          Email address
-        </label>
-        <input
-          id={emailFieldId}
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(event) => {
-            setEmail(event.target.value);
-            if (emailState !== "pending") setEmailState("idle");
+    <div className={cn(newsreader.variable, "w-full max-w-md")}>
+      <div className="rounded-2xl border border-white/10 bg-zinc-950 p-8 text-zinc-100 shadow-2xl shadow-black/30 sm:p-10">
+        <h1
+          className="text-center text-4xl font-normal tracking-tight text-zinc-50 sm:text-[2.75rem]"
+          style={{
+            fontFamily:
+              "var(--font-newsreader), Georgia, 'Times New Roman', serif",
           }}
-          disabled={busy}
-          aria-describedby={statusId}
-          className="mt-2 min-h-11 w-full rounded-lg border border-white/15 bg-black px-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-300 disabled:cursor-wait disabled:opacity-60"
-          placeholder="you@example.com"
-        />
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg border border-white/15 px-4 text-sm font-semibold text-zinc-100 transition hover:border-white/30 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
         >
-          {emailState === "pending" ? "Sending…" : copy.emailCta}
-        </button>
-      </form>
+          {copy.title}
+        </h1>
+        <p className="mt-3 text-center text-sm leading-6 text-zinc-400">
+          {copy.subtitle}
+        </p>
 
-      <div id={statusId} aria-live="polite">
-        {emailState === "sent" ? (
-          <p className="mt-4 text-sm leading-6 text-emerald-300">
-            {copy.emailSent}
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          disabled={busy}
+          className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-transparent px-4 text-sm font-semibold text-zinc-100 transition hover:border-white/35 hover:bg-white/5 disabled:cursor-wait disabled:opacity-60"
+        >
+          <GoogleGlyph />
+          {googlePending ? "Opening Google…" : "Continue with Google"}
+        </button>
+
+        {googleFailed ? (
+          <p role="alert" className="mt-4 text-center text-sm text-red-300">
+            We could not start sign-in. Please try again.
           </p>
         ) : null}
-        {emailState === "failed" ? (
-          <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
-            {copy.emailFailed}
-          </p>
-        ) : null}
+
+        <div className="my-6 flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-zinc-500">Or</span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <form onSubmit={requestEmailLink}>
+          <label htmlFor={emailFieldId} className="sr-only">
+            Email address
+          </label>
+          <div className="relative">
+            <Mail
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
+            />
+            <input
+              id={emailFieldId}
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (emailState !== "pending") setEmailState("idle");
+              }}
+              disabled={busy}
+              aria-describedby={statusId}
+              className="min-h-11 w-full rounded-lg border border-white/15 bg-black py-2 pr-3 pl-10 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-amber-300 disabled:cursor-wait disabled:opacity-60"
+              placeholder="Enter your email"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={busy}
+            className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-wait disabled:opacity-60"
+          >
+            {emailState === "pending" ? "Sending…" : copy.emailCta}
+          </button>
+        </form>
+
+        <div id={statusId} aria-live="polite" className="text-center">
+          {emailState === "sent" ? (
+            <p className="mt-4 text-sm leading-6 text-emerald-300">
+              {copy.emailSent}
+            </p>
+          ) : null}
+          {emailState === "failed" ? (
+            <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
+              {copy.emailFailed}
+            </p>
+          ) : null}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-zinc-400">
+          {copy.crossPrompt}{" "}
+          <Link
+            href={withReturnTo(copy.crossHref, returnTo)}
+            className="font-semibold text-zinc-100 underline-offset-4 hover:underline"
+          >
+            {copy.crossLabel}
+          </Link>
+        </p>
       </div>
 
-      <p className="mt-8 text-center text-sm text-zinc-400">
-        {copy.crossPrompt}{" "}
-        <Link
-          href={withReturnTo(copy.crossHref, returnTo)}
-          className="font-semibold text-zinc-100 underline-offset-4 hover:underline"
-        >
-          {copy.crossLabel}
-        </Link>
+      <p className="mt-6 text-center text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+        Weekend MVP
       </p>
     </div>
   );

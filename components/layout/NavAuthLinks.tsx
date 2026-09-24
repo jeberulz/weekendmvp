@@ -35,7 +35,7 @@ export function NavAuthLinks({
         <Link
           href="/dashboard"
           onClick={onNavigate}
-          className="block px-4 py-3 rounded-lg text-white bg-white/10 hover:bg-white/15 transition-colors font-medium"
+          className="block px-4 py-3 rounded-lg text-center font-semibold text-zinc-950 bg-zinc-100 hover:bg-white transition-colors"
         >
           Dashboard
         </Link>
@@ -47,7 +47,7 @@ export function NavAuthLinks({
         <Link
           href="/login"
           onClick={onNavigate}
-          className="block px-4 py-3 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+          className="block px-4 py-3 rounded-lg text-center font-medium text-neutral-200 border border-white/20 hover:border-white/40 hover:bg-white/5 transition-colors"
         >
           Log in
         </Link>
@@ -62,10 +62,13 @@ export function NavAuthLinks({
     );
   }
 
-  const loginClass =
+  const loginClass = cn(
+    "inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2",
     theme === "cream"
-      ? "px-3 py-2 text-xs font-medium text-neutral-500 transition-colors hover:text-black focus:outline-none focus-visible:text-black"
-      : "px-3 py-2 text-xs font-medium text-neutral-400 transition-colors hover:text-white focus:outline-none focus-visible:text-white";
+      ? "border-neutral-300 text-neutral-700 hover:border-neutral-500 hover:text-black"
+      : "border-white/25 text-neutral-200 hover:border-white/45 hover:text-white",
+    ctaRing,
+  );
 
   const primaryClass = cn(
     "inline-flex items-center justify-center rounded-full px-4 py-2 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2",
