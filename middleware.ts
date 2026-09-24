@@ -13,6 +13,7 @@ import {
   isAuthEntryPath,
   isAuthManagedPath,
   isSensitiveAuthPath,
+  shouldExchangeAuthCode,
 } from "./lib/auth-return";
 import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
@@ -146,6 +147,18 @@ export function applySensitiveAuthResponseHeaders(
 /** Convex Auth's session JWT cookie; unprefixed on localhost only. */
 const CONVEX_AUTH_JWT_COOKIES = ["__Host-__convexAuthJWT", "__convexAuthJWT"];
 
+/** Convex Auth's OAuth verifier cookie; present only mid sign-in. */
+const CONVEX_AUTH_VERIFIER_COOKIES = [
+  "__Host-__convexAuthOAuthVerifier",
+  "__convexAuthOAuthVerifier",
+];
+
+function oauthSignInPending(request: NextRequest) {
+  return CONVEX_AUTH_VERIFIER_COOKIES.some((name) =>
+    Boolean(request.cookies.get(name)?.value),
+  );
+}
+
 /**
  * Convex Auth sets its session JWT `httpOnly`, so the marketing nav cannot
  * see it. Mirror its presence into a readable, non-secret hint so the nav can
@@ -202,10 +215,14 @@ const platformAuthMiddleware = convexAuthNextjsMiddleware(
     return NextResponse.next();
   },
   {
-    // OAuth codes are consumed only on the dedicated callback seam. Public
-    // pages may use `code` query parameters for unrelated integrations.
+    // OAuth codes are consumed on the callback seam, or on a dashboard path
+    // while a Google sign-in is in flight. Public pages may use `code` query
+    // parameters for unrelated integrations. See `shouldExchangeAuthCode`.
     shouldHandleCode: (request) =>
-      request.nextUrl.pathname === "/auth/callback",
+      shouldExchangeAuthCode(
+        request.nextUrl.pathname,
+        oauthSignInPending(request),
+      ),
     // Session cookies stay host-only; Convex Auth does not set a Domain value.
     cookieConfig: { maxAge: null },
   },

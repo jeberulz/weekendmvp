@@ -9,6 +9,7 @@ Status: checks green; draft PR open
 |-------|--------|-------|
 | WP41-S1 | done | Shared AuthCard, `/login`, `/signup`, middleware `/signin`→`/login` 308 |
 | WP41-S2 | done | MegaNav + MobileNav auth CTAs; session cookie → Dashboard |
+| WP41-S3 | done | Google code exchanged on `/dashboard` while sign-in is in flight |
 
 ## Checks
 
@@ -34,6 +35,26 @@ Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test`, and
 `npm run build` pass. `next start` smoke: `/signup` sends `no-referrer`;
 hint set for a live session, cleared when stale, absent for anonymous.
 
+## WP41-S3 - Google sign-in bounced to `/login`
+
+Evidence: Vercel prod logs for the #75 deploy show `GET /dashboard 307` at
+15:39 UTC on 2026-09-24 and no `/auth/callback` hit. So Convex prod still
+rewrote the Google redirect to `/dashboard`: #75's `convex/auth.ts` change was
+not deployed to Convex. Middleware only exchanged codes on `/auth/callback`,
+so the code sat unused and the visitor bounced to `/login`.
+
+Fix: `shouldExchangeAuthCode` also accepts `/dashboard/*` while the Convex
+Auth OAuth verifier cookie is present. The verifier is set when Google
+sign-in starts and cleared on exchange, so a stray `?code=` is untouched.
+
+Owner action: run `npx convex deploy` so #75 goes live. Google then lands on
+`/auth/callback` again and deep-link `returnTo` values survive sign-in.
+
+Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test`,
+`npm run build` pass. New `tests/auth/oauth-code-handoff.test.ts` fails on
+the old middleware and passes with the fix.
+
 ## Docs
 
 - Stories/progress for WP41. Env checklist in PR body (from `.env.example`).
+- WP41-S3 recorded above. No UI change, so no a11y pass needed.

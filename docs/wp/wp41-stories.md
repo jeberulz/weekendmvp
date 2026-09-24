@@ -29,6 +29,18 @@ Definition of done: Dedicated `/login` + `/signup` pages (IB-inspired layout, We
     - Source/contract tests for nav links
     - Manual screenshot of desktop + mobile nav
 
+- [x] `WP41-S3` - Google sign-in lands on `/dashboard` (follow-up, branch `claude/nice-carson-s0g4cy`)
+  - Problem: after Google consent, prod bounced to `/login?returnTo=%2Fdashboard%3Fcode%3D…`. Convex prod still ran the pre-#75 `safeAuthRedirect`, so Google's code landed on `/dashboard`, where middleware never exchanged it. #75 fixed `convex/auth.ts`, but Convex functions ship only on `npx convex deploy`, not on a Vercel build.
+  - Scope: `lib/auth-return.ts`, `middleware.ts`, `tests/auth/*`
+  - Acceptance criteria:
+    - Middleware exchanges the code on `/auth/callback` (as before) and on `/dashboard/*` while a Google sign-in is in flight (OAuth verifier cookie present)
+    - A stray `?code=` on `/dashboard` with no sign-in in flight is left alone
+    - Public pages never exchange a code
+    - Works with Convex prod before or after the #75 deploy
+  - Verification:
+    - `tests/auth/oauth-code-handoff.test.ts` runs the real middleware on `/dashboard?code=…` (fails on the old middleware, passes now)
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
+
 ## Out Of Scope
 
 - Paid features, Stripe, claim-pay

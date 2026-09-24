@@ -44,6 +44,30 @@ export function authCallbackTarget(returnTo: unknown) {
   return `/auth/callback?returnTo=${encodeURIComponent(safeReturnTo)}`;
 }
 
+/**
+ * Where middleware may swap an auth `?code=` for session cookies.
+ *
+ * `/auth/callback` is the dedicated seam, and AuthCard asks Google to land
+ * there. But the Convex `redirect` callback has the final say, and a Convex
+ * deployment older than the callback allowlist sends the code straight to
+ * `/dashboard`. Left unconsumed, that code bounces the visitor to `/login`.
+ *
+ * So a dashboard path also qualifies, but only while a Google sign-in is in
+ * flight: Convex Auth sets the OAuth verifier cookie when the flow starts and
+ * clears it on exchange. Public pages never qualify, because they may carry
+ * `code` parameters for unrelated integrations.
+ */
+export function shouldExchangeAuthCode(
+  pathname: string,
+  oauthPending: boolean,
+) {
+  if (pathname === "/auth/callback") return true;
+  return (
+    oauthPending &&
+    (pathname === "/dashboard" || pathname.startsWith("/dashboard/"))
+  );
+}
+
 export function isAuthManagedPath(pathname: string) {
   return (
     AUTH_ENTRY_PATHS.has(pathname) ||

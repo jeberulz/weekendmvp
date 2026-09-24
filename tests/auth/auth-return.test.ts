@@ -6,6 +6,7 @@ import {
   isAuthManagedPath,
   isSensitiveAuthPath,
   safePlatformReturn,
+  shouldExchangeAuthCode,
 } from "../../lib/auth-return";
 
 describe("auth redirect allowlist", () => {
@@ -56,6 +57,31 @@ describe("sensitive auth route analytics policy", () => {
       expect(isSensitiveAuthPath(pathname)).toBe(false);
     },
   );
+});
+
+describe("auth code exchange paths", () => {
+  test.each([
+    ["/auth/callback", false],
+    ["/auth/callback", true],
+    ["/dashboard", true],
+    ["/dashboard/projects/one", true],
+  ])("exchanges a code on %s when oauthPending=%s", (pathname, pending) => {
+    expect(shouldExchangeAuthCode(pathname, pending)).toBe(true);
+  });
+
+  test.each([
+    // No Google sign-in in flight: a stray `code` must not touch the session.
+    ["/dashboard", false],
+    ["/dashboard/projects/one", false],
+    // Public and sibling paths never qualify, even mid sign-in.
+    ["/", true],
+    ["/ideas/example", true],
+    ["/login", true],
+    ["/dashboardish", true],
+    ["/auth/callback/extra", true],
+  ])("leaves a code alone on %s when oauthPending=%s", (pathname, pending) => {
+    expect(shouldExchangeAuthCode(pathname, pending)).toBe(false);
+  });
 });
 
 describe("auth managed paths", () => {
