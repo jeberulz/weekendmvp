@@ -58,7 +58,7 @@ export const SYNTHESIS_BRIEF_FIXTURE = {
 export const SYNTHESIS_SCORE_FIXTURE = {
   output_text: JSON.stringify({
     marketSummary:
-      "Proposal automation demand is rising as mid-market SaaS vendors face enterprise security reviews without dedicated proposal ops. Spreadsheet workflows do not scale; enterprise suites price out the SMB wedge.",
+      "Proposal automation demand is rising as mid-market SaaS vendors face enterprise security reviews without dedicated proposal ops. Spreadsheet workflows do not scale; enterprise suites price out the SMB wedge. The addressable category is RFP/security-questionnaire software for teams under ~50 sellers — not the global SaaS TAM.",
     stats: [
       {
         claim: "RFP software market CAGR",
@@ -95,7 +95,7 @@ export const SYNTHESIS_SCORE_FIXTURE = {
       },
     ],
     communitySummary:
-      "Sales engineers complain about spreadsheet DDQs and ChatGPT hallucinations on security questionnaires.",
+      "Sales engineers complain about spreadsheet DDQs and ChatGPT hallucinations on security questionnaires. They want citations from their own win library, not a blank chat box.",
     signals: [
       {
         quote: "We burn weekends answering the same SOC2 questionnaire.",
@@ -120,10 +120,10 @@ export const SYNTHESIS_SCORE_FIXTURE = {
         "Seat-based SaaS: Team $79/mo, Growth $199/mo, Scale $399/mo — undercut enterprise floors by 10x.",
     },
     howItWorks: [
-      "Upload past RFPs, security questionnaires, and the win library",
-      "Paste or import a new RFP and let the assistant retrieve matching evidence",
-      "Review cited draft answers, with low-confidence answers flagged for a human",
-      "Export the finished response to Word with a compliance checklist",
+      "Ingest — Upload past RFPs, security questionnaires, and the win library",
+      "Retrieve — Paste or import a new RFP and match evidence from approved sources",
+      "Review — Edit cited draft answers; low-confidence rows flagged for a human",
+      "Export — Ship Word/PDF with a compliance checklist",
     ],
     whyNow:
       "Enterprise security reviews are formalizing across mid-market SaaS while ChatGPT-only answers get blocked by legal. Retrieval-grounded assistants are newly practical on weekend stacks.",
@@ -135,6 +135,41 @@ export const SYNTHESIS_SCORE_FIXTURE = {
       timing: 8,
       builderConfidence: 8,
       execution: 7,
+    },
+    editorial: {
+      productName: "CiteDraft",
+      dontBuildYet:
+        "Do not build a full enterprise content library, SSO portal farm, or multi-product CRM sync before ten paying teams finish one questionnaire end-to-end.",
+      problemNarrative:
+        "A five-person SaaS sales team gets a 90-question security packet on Friday. The SE copies answers from three Google Docs, Slack threads, and last year's SOC2 exhibit. ChatGPT invents controls that do not exist. Legal rejects the draft on Monday. Loopio wants a five-figure ACV and a proposal ops hire they do not have. Responsive and Qvidian assume a content team. The leftover work is not typing — it is retrieving approved language with citations under a deadline, with a human still signing the final send. Weekend builders keep shipping chat UIs. Buyers keep paying for weekends of copy-paste. The wedge is a seat-priced assistant that only answers from the win library the team already trusts, flags low-confidence rows, and exports a review trail. If that job is not worth $79–$399/mo to the SE who owns the questionnaire, do not invent a broader platform. SMB SaaS sellers feel this every quarter when a late-stage deal stalls on a security review. The pain is not writing prose; it is proving each claim against approved exhibits without inventing controls. Founders who tried generic copilots burned a weekend and still owed legal a redline. CiteDraft exists because that loop is broken for teams that cannot staff proposal ops.",
+      solutionNarrative:
+        "CiteDraft is a seat-priced assistant that drafts from the team's own win library with inline citations. Upload once, answer repeatedly, export with a review trail. It is not a chatbot and not an enterprise response platform. The product name stays on the page: CiteDraft, not an AI tool. Ship ingest → retrieve → review → export. Defer SSO sprawl and CRM sync until ten teams finish one questionnaire without opening a side spreadsheet. Every draft row points at a source paragraph the buyer already approved. Low-confidence answers stay blocked until a human confirms. Pricing mirrors Starter, Team, and Scale so the Stripe catalog and the marketing page never disagree. The wedge stays narrow: security questionnaires and RFP sections that already live in the win library, not a new CMS for the whole company.",
+      competitiveNarrative:
+        "Loopio and Responsive win large proposal-ops budgets; CiteDraft wins SMB SaaS teams that need cited drafts without a five-figure ACV. Qvidian assumes a content team CiteDraft customers do not have. Generic chat tools invent answers; CiteDraft refuses to send without a source. The opportunity is the seat-priced middle: cheaper than enterprise suites, stricter than ChatGPT, scoped to the questionnaire job.",
+      pricingTiers: [
+        {
+          name: "Starter",
+          price: "$79/mo",
+          includes: "3 seats, 1 workspace library, cited drafts",
+        },
+        {
+          name: "Team",
+          price: "$199/mo",
+          includes: "10 seats, review workflow, export packs",
+        },
+        {
+          name: "Scale",
+          price: "$399/mo",
+          includes: "Unlimited seats under fair-use, SSO later",
+        },
+      ],
+      unitEconomics: [
+        { label: "CiteDraft LLM cost per questionnaire", value: "$0.40–1.20" },
+        { label: "CiteDraft target gross margin Team", value: "~75%" },
+        { label: "CiteDraft CAC payback", value: "under 2 months at $199" },
+      ],
+      stackNotes:
+        "CiteDraft runs Next.js + Postgres + embeddings over the win library. Stripe seats for Starter/Team/Scale. No custom deploy plane. Meter tokens per workspace from week one so Team margins stay visible.",
     },
   }),
   usage: {

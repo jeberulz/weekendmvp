@@ -10039,6 +10039,153 @@
         "builder_confidence": 8
       },
       "researchLevel": "deep"
+    },
+    {
+      "slug": "engine-draft-ai-rfp-response-assistant",
+      "title": "AI RFP Response Assistant",
+      "category": "saas",
+      "description": "RallyRFP helps lean SaaS teams complete RFPs and security questionnaires with approved answers, source evidence, and coordinated review.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "bolt",
+        "windsurf"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "side-hustlers",
+        "small-business-owners"
+      ],
+      "source": "engine:engine-draft-ai-rfp-response-assistant",
+      "scores": {
+        "opportunity": 8,
+        "pain": 9,
+        "timing": 8,
+        "builder_confidence": 7
+      },
+      "og": {
+        "subject": "RallyRFP product still life, no people, no text",
+        "accent": "lime",
+        "status": "pending"
+      },
+      "publishedAt": "2026-09-24",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:synthesis:gpt-5.6-sol",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "dataforseo:keywordData:google_ads/search_volume/live",
+          "openai:synthesis:gpt-5.6-sol"
+        ],
+        "citations": 8,
+        "wordCount": 3125,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-24T09:22:18.351Z",
+        "publishNotes": "engine compile; product=RallyRFP; costUsd=0.3063; no filler pad; tagging left for operator"
+      }
+    },
+    {
+      "slug": "engine-draft-ai-code-reviewer",
+      "title": "AI Code Reviewer",
+      "category": "developer-tools",
+      "description": "A low-noise, repository-aware AI pull-request reviewer built and priced for GitHub teams under 10.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "DeveloperApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf",
+        "replit"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders"
+      ],
+      "source": "engine:engine-draft-ai-code-reviewer",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 9,
+        "builder_confidence": 7
+      },
+      "og": {
+        "subject": "AI Code Reviewer product still life, no people, no text",
+        "accent": "mint",
+        "status": "pending"
+      },
+      "publishedAt": "2026-09-24",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:synthesis:gpt-5.6-sol",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "dataforseo:keywordData:google_ads/search_volume/live",
+          "openai:synthesis:gpt-5.6-sol"
+        ],
+        "citations": 13,
+        "wordCount": 2086,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-24T08:36:30.534Z",
+        "publishNotes": "engine compile; costUsd=0.2592; tagging left for operator; operator tagged for live spot-check; auditPassed after audit:idea"
+      }
+    },
+    {
+      "slug": "engine-draft-ai-landing-page-generator-ecommerce",
+      "title": "AI Landing Page Generator for E-commerce",
+      "category": "ai-tools",
+      "description": "Turn every Shopify ad into a fast, conversion-focused landing page matched to its creative, audience, and offer.",
+      "buildTime": "10",
+      "revenueGoal": "5k-month",
+      "applicationCategory": "BusinessApplication",
+      "tools": [
+        "cursor",
+        "claude",
+        "windsurf",
+        "v0"
+      ],
+      "audiences": [
+        "developers",
+        "solo-founders",
+        "marketers"
+      ],
+      "source": "engine:engine-draft-ai-landing-page-generator-ecommerce",
+      "scores": {
+        "opportunity": 8,
+        "pain": 8,
+        "timing": 8,
+        "builder_confidence": 8
+      },
+      "og": {
+        "subject": "AI Landing Page Generator for E-commerce product still life, no people, no text",
+        "accent": "lavender",
+        "status": "pending"
+      },
+      "publishedAt": "2026-09-24",
+      "researchLevel": "deep",
+      "provenance": {
+        "researchCalls": [
+          "openai:synthesis:gpt-5.6-sol",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "perplexity:search:sonar-pro",
+          "dataforseo:keywordData:google_ads/search_volume/live",
+          "openai:synthesis:gpt-5.6-sol"
+        ],
+        "citations": 14,
+        "wordCount": 2217,
+        "auditPassed": true,
+        "auditRunAt": "2026-09-24T08:36:30.534Z",
+        "publishNotes": "engine compile; costUsd=0.2658; tagging left for operator; operator tagged for live spot-check; auditPassed after audit:idea"
+      }
     }
   ],
   "categories": [

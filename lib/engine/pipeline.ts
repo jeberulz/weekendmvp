@@ -84,7 +84,21 @@ type SynthesisPack = {
   howItWorks: string[];
   oneLiner: string;
   scores?: ResearchScores;
+  editorial?: {
+    productName?: string;
+    dontBuildYet?: string;
+    problemNarrative?: string;
+    solutionNarrative?: string;
+    competitiveNarrative?: string;
+    pricingTiers?: Array<{ name: string; price: string; includes: string }>;
+    unitEconomics?: Array<{ label: string; value: string }>;
+    stackNotes?: string;
+  };
 };
+
+/** Drop global SaaS/AI TAM rows — niche sizing only. */
+const MEGA_TAM_STAT_RE =
+  /global saas|worldwide saas|saas market.{0,40}\$\s?\d{2,4}|global ai (software|tools|market).{0,40}\$/i;
 
 const LOCATION_CODE = 2840;
 const LANGUAGE_CODE = "en";
@@ -274,10 +288,9 @@ async function stepBriefNormalization(
     typeof parsed.title === "string" && parsed.title.trim()
       ? parsed.title.trim()
       : seed.title;
-  const audience =
-    typeof parsed.audience === "string" && parsed.audience.trim()
-      ? parsed.audience.trim()
-      : seed.audience;
+  // Prefer brief seed casing — models often lowercase "SMB SaaS".
+  const audience = seed.audience.trim() ||
+    (typeof parsed.audience === "string" ? parsed.audience.trim() : "");
   const model =
     typeof parsed.model === "string" && parsed.model.trim()
       ? parsed.model.trim()
@@ -393,6 +406,55 @@ function resolveCitation(
   return { url: href, title: modelTitle || known.title?.trim() || href };
 }
 
+/**
+ * Competitor URLs: exact citation match first, then any indexed citation
+ * whose hostname looks like the competitor's own site (so a /pricing page
+ * the model slightly mistyped still binds to a real search result).
+ */
+function resolveCompetitorCitation(
+  index: Map<string, Citation>,
+  url: unknown,
+  name: string,
+): { url: string; title: string } | null {
+  const roundup =
+    /comparison|\/best-|\/top-|roundup|alternatives|vs-|\/blog-posts\//i;
+
+  const usable = (href: string) => !roundup.test(href);
+
+  const direct = resolveCitation(index, url, name);
+  if (direct && usable(direct.url)) return direct;
+
+  const needle = name
+    .toLowerCase()
+    .replace(/\.(ai|io|com|hq)$/i, "")
+    .replace(/[^a-z0-9]/g, "");
+  if (needle.length < 3) return null;
+
+  for (const cite of index.values()) {
+    if (!usable(cite.url)) continue;
+    try {
+      const host = new URL(cite.url).hostname.toLowerCase().replace(/^www\./, "");
+      const hostKey = host.replace(/[^a-z0-9]/g, "");
+      if (
+        hostKey.includes(needle) ||
+        needle.includes(hostKey.replace(/(ai|io|com|app|hq)$/, ""))
+      ) {
+        if (
+          /(g2\.com|capterra|softwareadvice|selecthub|techradar|forbes|medium\.com|linkedin\.com)/i.test(
+            host,
+          )
+        ) {
+          continue;
+        }
+        return { url: cite.url, title: name };
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
 function nonEmptyStrings(value: unknown): string[] {
   return Array.isArray(value)
     ? value
@@ -427,6 +489,7 @@ function parseSynthesisPack(
     const value = typeof r.value === "string" ? r.value.trim() : "";
     const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
     if (claim && value && citation) {
+      if (MEGA_TAM_STAT_RE.test(`${claim} ${value}`)) continue;
       stats.push({ claim, value, citation });
     }
   }
@@ -441,7 +504,7 @@ function parseSynthesisPack(
     const name = typeof r.name === "string" ? r.name.trim() : "";
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
-    const citation = resolveCitation(index, r.url, name);
+    const citation = resolveCompetitorCitation(index, r.url, name);
     if (name && pricing && citation) {
       competitorRows.push({
         name,
@@ -520,7 +583,53 @@ function parseSynthesisPack(
       (typeof parsed.oneLiner === "string" && parsed.oneLiner.trim()) ||
       brief.oneLiner,
     scores,
+    editorial: parseEditorial(parsed),
   };
+}
+
+function parseEditorial(
+  parsed: Record<string, unknown>,
+): SynthesisPack["editorial"] {
+  const raw =
+    typeof parsed.editorial === "object" && parsed.editorial !== null
+      ? (parsed.editorial as Record<string, unknown>)
+      : parsed;
+  const out: NonNullable<SynthesisPack["editorial"]> = {};
+  for (const key of [
+    "productName",
+    "dontBuildYet",
+    "problemNarrative",
+    "solutionNarrative",
+    "competitiveNarrative",
+    "stackNotes",
+  ] as const) {
+    const v = raw[key];
+    if (typeof v === "string" && v.trim()) out[key] = v.trim();
+  }
+  if (Array.isArray(raw.pricingTiers)) {
+    const tiers: Array<{ name: string; price: string; includes: string }> = [];
+    for (const row of raw.pricingTiers) {
+      if (typeof row !== "object" || row === null) continue;
+      const r = row as Record<string, unknown>;
+      const name = typeof r.name === "string" ? r.name.trim() : "";
+      const price = typeof r.price === "string" ? r.price.trim() : "";
+      const includes = typeof r.includes === "string" ? r.includes.trim() : "";
+      if (name && price && includes) tiers.push({ name, price, includes });
+    }
+    if (tiers.length > 0) out.pricingTiers = tiers;
+  }
+  if (Array.isArray(raw.unitEconomics)) {
+    const rows: Array<{ label: string; value: string }> = [];
+    for (const row of raw.unitEconomics) {
+      if (typeof row !== "object" || row === null) continue;
+      const r = row as Record<string, unknown>;
+      const label = typeof r.label === "string" ? r.label.trim() : "";
+      const value = typeof r.value === "string" ? r.value.trim() : "";
+      if (label && value) rows.push({ label, value });
+    }
+    if (rows.length > 0) out.unitEconomics = rows;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
@@ -534,17 +643,24 @@ function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
 }
 
 const SYNTHESIS_INSTRUCTIONS =
-  "Score this idea using only the supplied research. Reply with " +
-  "JSON only containing marketSummary, stats[{claim,value,citationUrl,citationTitle}], " +
-  "competitors[{name,pricing,url,notes}], communitySummary, " +
-  "signals[{quote,citationUrl,citationTitle}], goToMarket{positioning,channels,pricingNotes}, " +
-  "whyNow, howItWorks, oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} " +
-  "(each 1-10; timing is market timing, execution is build feasibility). " +
-  "goToMarket.channels are customer-acquisition channels. howItWorks is 3-5 short " +
-  "steps describing how a user moves through the product. Every citationUrl and " +
-  "competitor url must be copied exactly from a supplied citation; rows with any " +
-  "other URL are discarded. Quotes must come from the supplied community research. " +
-  "NEVER invent keyword volume or CPC.";
+  "Score this idea using only the supplied research. Reply with JSON only. " +
+  "Preserve audience casing from the brief (SMB SaaS, not smb saas). " +
+  "Required keys: marketSummary (niche-focused, 180-280 words; NEVER quote global SaaS/AI TAM like $375B+), " +
+  "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM), " +
+  "competitors[{name,pricing,url,notes}] (url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs; notes ≥25 words each, unique per competitor), " +
+  "communitySummary (≥100 words), signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
+  "goToMarket{positioning (≥40 words),channels,pricingNotes (≥60 words)}, whyNow, " +
+  "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'; each description ≥35 words), " +
+  "oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} (1-10; timing=market timing, execution=build feasibility), " +
+  "editorial{productName (short brand name unique to THIS idea, not a reused brand from another idea, not 'an AI tool'), dontBuildYet (one sentence: what NOT to build yet), " +
+  "problemNarrative (300-420 words, named buyers with proper casing, specific pain, no operator/meta notes), " +
+  "solutionNarrative (220-320 words, named product + wedge), " +
+  "competitiveNarrative (120-180 words, how THIS product differs from named competitors), " +
+  "pricingTiers[{name,price,includes}] (exactly three tiers named Starter, Team, Scale — same names used everywhere), " +
+  "unitEconomics[{label,value}] (≥3 concrete rows naming the product), stackNotes (≥60 words, product-specific)}. " +
+  "goToMarket.channels are customer-acquisition channels. Every citationUrl and competitor url must be copied exactly from a supplied citation; other URLs are discarded. " +
+  "NEVER invent keyword volume or CPC. NEVER emit operator notes like 're-check before publish' or 'never model-invented'. " +
+  "Do not reuse cross-idea padding phrases (no 'Success looks like a user finishing this step without opening a side doc', no 'passport stamp', no 'agency-scale SaaS year', no 'weekly questionnaire load').";
 
 export type RunResearchOptions = {
   brief: BriefInput;
@@ -625,7 +741,7 @@ export async function runResearch(
       providers,
       run,
       1,
-      `${briefContext(brief)}\n\nFind at least two market statistics with sources, including market size and CAGR. Cite every figure.`,
+      `${briefContext(brief)}\n\nFind at least two NICHE market statistics with sources for this specific category (size, CAGR, or buyer spend in the segment). Do NOT cite global SaaS market, worldwide SaaS revenue, or generic AI software TAM ($100B+). Cite every figure.`,
     );
   } catch (error) {
     throw stepError("market_stats", "market search failed", error);
@@ -638,7 +754,7 @@ export async function runResearch(
       providers,
       run,
       2,
-      `${briefContext(brief)}\n\nIdentify at least three direct competitors with their current pricing and positioning gaps. Cite each.`,
+      `${briefContext(brief)}\n\nIdentify at least three direct competitors with current plan prices. Prefer each vendor's own pricing or product page URL in your citations (company.com/pricing or product homepage). Avoid roundup/best-of blogs as the primary URL, but still return ≥3 named competitors with prices. Cite each.`,
     );
   } catch (error) {
     throw stepError("competitors", "competitors search failed", error);
@@ -651,7 +767,7 @@ export async function runResearch(
       providers,
       run,
       3,
-      `${briefContext(brief)}\n\nFind pain evidence discussed by real users on Reddit, Hacker News, and YouTube. Quote briefly and link each source.`,
+      `${briefContext(brief)}\n\nFind pain evidence from real users on Reddit, Hacker News, and YouTube. Copy short VERBATIM quotes (do not rewrite) and link each source.`,
     );
   } catch (error) {
     throw stepError("community_signals", "community search failed", error);
@@ -744,6 +860,7 @@ export async function runResearch(
     whyNow: synth.whyNow,
     howItWorks: synth.howItWorks,
     ...(synth.scores ? { scores: synth.scores } : {}),
+    ...(synth.editorial ? { editorial: synth.editorial } : {}),
     provenance: {
       providerCalls,
       costUsd: fromMicroUsd(spentMicroUsd),

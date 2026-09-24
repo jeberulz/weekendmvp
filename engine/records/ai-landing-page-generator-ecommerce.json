@@ -1,0 +1,231 @@
+{
+  "contractVersion": 1,
+  "brief": {
+    "title": "AI Landing Page Generator for E-commerce",
+    "slug": "ai-landing-page-generator-ecommerce",
+    "oneLiner": "ClickWeave turns paid ads into message-matched Shopify landing pages built to carry each campaign promise through to purchase.",
+    "targetCustomer": "E-commerce marketers and Shopify operators running paid ads"
+  },
+  "market": {
+    "summary": "AI landing-page generation for e-commerce occupies a focused intersection of landing-page software, Shopify merchandising, and paid-ad conversion optimization. The closest direct category proxy was valued at $1.044 billion in 2024 and is projected to reach $2.093 billion by 2031, a 10.6% CAGR. Research also estimates that retail and e-commerce organizations represented 26.8% of landing-page-builder demand in 2025, with that segment projected to grow at 13.2% annually through 2034. A separate estimate values the e-commerce application segment at approximately $1.25 billion in 2024 and forecasts $3.2 billion by 2035. These estimates overlap and should not be added together, but they consistently indicate growing demand for tools that create and optimize commerce landing experiences.\n\nThe practical opportunity is narrower than building another general-purpose page editor. E-commerce marketers and Shopify operators need campaign-specific pages that preserve the promise, imagery, audience language, and offer presented in an advertisement. Existing product pages are commonly designed for catalog browsing rather than cold paid traffic, while manually producing and testing multiple landing-page variants consumes design, copywriting, and development time. A differentiated product can connect ad creative directly to page generation, produce controlled variants, publish into Shopify, and report performance by campaign angle. Competition is substantial, with entry plans commonly priced between $19 and $39 per month and advanced plans reaching $199–$299. The opportunity therefore depends on superior ad-to-page continuity and experimentation rather than generic AI generation alone.",
+    "stats": [
+      {
+        "claim": "Landing-page builder software market size and forecast",
+        "value": "$1.044 billion in 2024, projected to reach $2.093 billion by 2031 at a 10.6% CAGR",
+        "citation": {
+          "url": "https://reports.valuates.com/market-reports/QYRE-Auto-14U7538/global-landing-page-builder-software",
+          "title": "Landing Page Builder Software Market size, share and insights 2025-2031, North America, APAC - Valuates Reports"
+        }
+      },
+      {
+        "claim": "Retail and e-commerce share of landing-page-builder demand",
+        "value": "26.8% in 2025, with the segment projected to grow at a 13.2% CAGR through 2034",
+        "citation": {
+          "url": "https://marketintelo.com/report/landing-page-builder-software-market",
+          "title": "Landing Page Builder Software Market Research Report 2033"
+        }
+      },
+      {
+        "claim": "E-commerce application segment within landing-page builders",
+        "value": "Approximately $1.25 billion in 2024, forecast to reach $3.2 billion by 2035",
+        "citation": {
+          "url": "https://www.wiseguyreports.com/reports/landing-page-builder-market",
+          "title": "Landing Page Builder Market Size, Share, Trends, Report 2035"
+        }
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "name": "PageFly AI Page Builder",
+      "pricing": "Free; Builder $24/month; upper tiers identified at $99/month and $299/month",
+      "url": "https://apps.shopify.com/pagefly",
+      "notes": "PageFly is an established Shopify page builder offering AI credits, more than 320 templates, extensive third-party integrations, and published-page limits. Its breadth and low entry price make it a strong incumbent, although its proposition is broader than paid-ad message matching."
+    },
+    {
+      "name": "Instant AI Page Builder",
+      "pricing": "Free for development stores; Starter $39/month; Pro $99/month; Business $249/month",
+      "url": "https://apps.shopify.com/instant-builder",
+      "notes": "Instant combines AI-assisted page building with Shopify publishing and progressively larger store-building allowances. It establishes a clear pricing benchmark for professional teams, but the supplied research does not indicate a dedicated workflow that converts individual ad creatives into tightly matched campaign pages."
+    },
+    {
+      "name": "Frontend AI",
+      "pricing": "Starter $19/month; Plus $99/month; Pro $249/month",
+      "url": "https://apps.shopify.com/ai-page-builder",
+      "notes": "Frontend AI generates landing pages, product pages, and other Shopify experiences through a conversational interface. Higher plans expand message and published-page limits, making it a direct AI-generation competitor but also exposing a usage model centered on creation volume rather than campaign outcomes."
+    },
+    {
+      "name": "Omnise AI Page Builder",
+      "pricing": "Free; Start $19.99/month; Pro $39.99/month; Max $79.99/month",
+      "url": "https://apps.shopify.com/omnise",
+      "notes": "Omnise positions its generated Shopify pages around conversion performance and competes aggressively on price. Its free plan includes a watermarked published slot and draft pages, while paid tiers raise AI usage capacity, creating pressure on any product differentiated only by page generation."
+    },
+    {
+      "name": "Foxify AI Store Builder",
+      "pricing": "Free; Starter $19/month; Growth $39/month; Enterprise $99/month",
+      "url": "https://apps.shopify.com/foxify-builder",
+      "notes": "Foxify combines AI page generation, templates, Shopify publishing, and conversion-oriented extensions. Its inexpensive tiers make it accessible to smaller merchants, so a new entrant must deliver measurable ad-to-page continuity and experimentation rather than competing primarily on templates or credits."
+    },
+    {
+      "name": "PagePilot",
+      "pricing": "Free; Lite $39/month; Scaler $59/month",
+      "url": "https://apps.shopify.com/pagepilotai",
+      "notes": "PagePilot is especially relevant because it generates product pages alongside Facebook and Google ad copy. That puts it closer to paid acquisition workflows, although ClickWeave would reverse the workflow by ingesting an existing advertisement and preserving its promise on the destination page."
+    }
+  ],
+  "community": {
+    "summary": "Community discussions repeatedly connect poor Shopify conversion performance to the transition between an advertisement and its destination page. Operators describe generic homepages and conventional product-detail pages as weak destinations for cold traffic because those pages support catalog browsing rather than a single campaign promise. The most consistent recommendation is to preserve continuity across the ad, above-the-fold message, offer, visual treatment, and purchase action. Contributors also emphasize that acceptable click-through rates or cost per click do not prove that a campaign works; the failure may appear after the click through unclear positioning, slow loading, weak offers, or excessive effort. Testing is another recurring pain. Marketers recognize the need to compare headlines, creative treatments, direct product links, and pre-landing pages, but doing so requires sustained time and effort. These signals favor a product that generates pages from actual ad inputs, keeps one conversion action prominent, flags message mismatch, and makes controlled campaign-level experiments easier to publish and evaluate.",
+    "signals": [
+      {
+        "quote": "About 9 times out of 10, a landing page will outperform your product detail page (traditional product page).",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/v53wdd/ads_arent_dead_nothing_is_dead/",
+          "title": "Ads aren’t dead, nothing is dead."
+        }
+      },
+      {
+        "quote": "Conversion studies have always shown that the highest conversion happens when the ad and what it links to are nearly identically similar in content and messaging",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/13ia42c/products_page_vs_landing_page_which_one_is_good/",
+          "title": "Products page vs Landing page. Which one is good for paid ads?"
+        }
+      },
+      {
+        "quote": "Zero conversions despite that many clicks typically indicate the landing moment fails to align with the ad’s promise.",
+        "citation": {
+          "url": "https://www.reddit.com/r/reviewmyshopify/comments/1pe8c49/tried_to_run_x_ads_on_my_shop_got_0_conversions/",
+          "title": "Tried to run X ads on my shop, got 0 conversions."
+        }
+      },
+      {
+        "quote": "Having 2,000 sessions but just 2 add-to-carts indicates that the problem lies with the landing page offer rather than bot traffic.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/1n2jsoc/meta_ad_landing_page_poor_conversion_rate/",
+          "title": "Meta Ad Landing Page Poor Conversion rate"
+        }
+      },
+      {
+        "quote": "However, if the landing page experience is unclear, slow to load, or requires too much effort from the visitor to understand, the traffic could still falter.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/1s59n0n/my_shopify_sites_conversion/",
+          "title": "My Shopify site’s conversion"
+        }
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "ai landing page builder",
+      "volume": 480,
+      "competition": 70,
+      "cpc": 27.29,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "Position ClickWeave as the ad-to-landing-page system for Shopify performance teams, not as another general page builder. The central promise is that every paid campaign can receive a fast, shoppable destination that continues the advertisement’s exact angle, imagery, offer, and audience language while supporting controlled variants and campaign-level measurement.",
+    "pricingNotes": "Use Starter at $29 per month to sit within the established $19–$39 entry range while allowing enough published pages for a small advertiser. Price Team at $89 per month for collaboration, substantially more active pages, and structured experiments. Set Scale at $249 per month to match upper-market Shopify builder benchmarks while adding multiple stores, permissions, and higher generation capacity. Avoid charging primarily by AI messages because customers buy campaign throughput and conversion learning, not conversations with a model. Limits should center on active pages, stores, monthly generations, and experiment traffic, with clear overages rather than abrupt publishing lockouts.",
+    "channels": [
+      "Shopify App Store acquisition focused on merchants already searching for landing-page and conversion tools",
+      "Educational content showing ad-to-page teardowns, message-mismatch audits, and conversion-focused page rebuilds",
+      "Partnerships with Shopify-focused paid-media agencies and freelance media buyers",
+      "Lifecycle referrals from agencies managing multiple merchant stores",
+      "Communities and webinars for Meta and Google Ads practitioners serving Shopify brands",
+      "Template-led acquisition built around common campaign angles, product launches, bundles, and seasonal promotions"
+    ]
+  },
+  "whyNow": "Landing-page software is growing, AI-assisted Shopify builders have normalized machine-generated layouts, and paid acquisition teams face continuing pressure to extract more revenue from each click. The remaining wedge is workflow-specific: turn existing advertisements into fast, campaign-matched shopping experiences and make iterative testing practical without requiring a designer, copywriter, and developer for every variation.",
+  "provenance": {
+    "costUsd": 0.343866,
+    "ranAt": "2026-09-24T09:42:27.328Z",
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.00245
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.02156
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.024092000000000002
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.033553
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.17221
+      }
+    ]
+  },
+  "howItWorks": [
+    "Creative Intake — The marketer imports an advertisement or supplies its image, copy, target audience, offer, destination product, and campaign context. ClickWeave identifies the central promise, visual cues, objections, and conversion action that the resulting Shopify page must continue rather than contradict.",
+    "Campaign Blueprint — ClickWeave combines the advertisement with Shopify product information, pricing, variants, reviews, shipping details, and brand styles. It proposes a conversion-focused page structure that prioritizes message continuity, a clear above-the-fold offer, trust elements, and a direct path to purchase.",
+    "Variant Studio — The system generates controlled alternatives for headlines, hero treatments, proof sections, offers, and calls to action. Each variant documents what changed and which campaign hypothesis it tests, helping marketers avoid comparing pages with too many simultaneous differences.",
+    "Shopify Launch — Approved pages publish into Shopify with responsive sections, product selection, cart behavior, tracking parameters, and performance-conscious assets. Teams can map advertisements to specific page variants without replacing the store’s theme or routing every visitor through a generic product page.",
+    "Learning Loop — ClickWeave groups results by campaign, creative angle, destination variant, and conversion action. It surfaces potential message mismatch and weak page sections, then recommends the next controlled variant based on observed behavior rather than continuously rewriting the whole experience."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 8,
+    "builderConfidence": 7,
+    "execution": 7
+  },
+  "editorial": {
+    "productName": "ClickWeave",
+    "dontBuildYet": "Do not build a general-purpose Shopify theme editor or full autonomous media-buying platform before validating ad-to-page generation and campaign-level experimentation.",
+    "problemNarrative": "A Shopify Performance Marketing Manager can spend days developing advertisements around distinct customer problems, product benefits, seasonal offers, and creative hooks. Yet when a shopper clicks, that carefully constructed message often ends at the store boundary. The visitor lands on a standard product-detail page or homepage designed to serve many audiences, not the specific promise that earned the click. The advertisement may emphasize portability, while the page leads with materials; the ad may feature a bundle, while the destination initially shows a single item; the creative may address a skeptical first-time buyer, while the page assumes product familiarity.\n\nThat discontinuity creates an expensive diagnostic problem. A Paid Social Manager may see acceptable engagement and click-through performance but weak add-to-cart and purchase rates. It becomes unclear whether the failure came from traffic quality, the offer, page speed, message mismatch, weak proof, or an ambiguous call to action. Community accounts repeatedly advise operators to examine the landing moment instead of assuming that good click metrics mean the campaign works.\n\nProducing dedicated pages for every angle is possible, but the operating burden grows quickly. The E-commerce Marketing Manager must brief a copywriter, locate suitable assets, coordinate a designer, wait for Shopify development, check mobile layouts, validate purchase behavior, and confirm tracking. By the time the page ships, the campaign may have changed. Smaller Shopify operators perform these tasks themselves using templates and page builders, then struggle to keep advertisements, offers, and destination pages synchronized.\n\nExperimentation adds another layer. Teams know they should test headlines, hero imagery, proof, bundles, and calls to action, but manual page duplication produces inconsistent variants and unclear learning. When several elements change together, the marketer cannot identify which hypothesis mattered. Existing builders reduce layout work, yet many still begin with a blank canvas, a template, or a text prompt. They do not necessarily understand the advertisement that generated the visit or enforce continuity between its promise and the buying experience. The resulting gap is not simply page creation; it is the lack of a repeatable system connecting paid creative, Shopify commerce data, controlled page variants, and campaign outcomes.",
+    "solutionNarrative": "ClickWeave is an ad-to-landing-page platform for E-commerce marketers and Shopify operators running paid campaigns. Its initial wedge is deliberately narrow: ingest an existing advertisement, identify the promise that earned the click, and generate a shoppable Shopify landing page that continues that same conversation.\n\nThe marketer supplies ad imagery and copy, selects the relevant Shopify product, and confirms the audience and offer. ClickWeave extracts the creative angle, key claims, visual language, expected objections, and intended action. It then combines those inputs with product data, pricing, variants, reviews, shipping details, and brand styles to produce a responsive page blueprint. The generated page prioritizes a message-matched hero, concise value proposition, relevant proof, offer clarity, and a direct purchase path.\n\nUnlike unrestricted generation, ClickWeave structures experimentation. A marketer can request alternatives for one defined element, such as the headline, proof sequence, hero treatment, or bundle framing. Every alternative is labeled with its hypothesis and preserves the rest of the page, creating cleaner comparisons. Pages publish into Shopify without requiring teams to replace the main theme, and campaign mappings keep each advertisement connected to the intended destination.\n\nThe product also provides a practical learning loop. Performance is organized by campaign angle and page variant rather than being reduced to a list of unrelated URLs. ClickWeave highlights likely message mismatch, weak above-the-fold clarity, and conversion drop-off, then proposes the next controlled test. This wedge gives teams a concrete reason to adopt the product even if they already have a page builder: ClickWeave starts with the paid creative and manages continuity through the landing experience.",
+    "competitiveNarrative": "PageFly, Instant, Frontend AI, Omnise, and Foxify provide broad Shopify page-building capabilities, templates, AI generation, and publishing. PagePilot moves closer to paid acquisition by combining product-page creation with generated advertising copy. These products validate merchant demand but make generic page creation a crowded feature category.\n\nClickWeave differentiates itself by treating the advertisement as the source specification. Instead of asking users to begin with a template or open-ended prompt, it extracts the campaign promise, audience language, offer, and visual cues, then checks whether the destination preserves them. Its variant system focuses on controlled campaign hypotheses rather than generating unrelated designs, while reporting groups outcomes by creative angle and destination variant.\n\nThis makes ClickWeave complementary enough to attract teams dissatisfied with general builders but focused enough to avoid competing on hundreds of layout controls. Its defensibility would come from ad-to-page mappings, accumulated experiment structure, Shopify commerce context, and recommendations grounded in campaign continuity—not from AI copy or drag-and-drop editing alone.",
+    "stackNotes": "ClickWeave should be implemented as an embedded Shopify application using Shopify authentication, product and variant data, theme app extensions, and approved storefront publishing mechanisms. Store generated page definitions as structured sections rather than raw model-produced HTML so layouts remain responsive, editable, and safe. Use a multimodal model to interpret ad imagery and copy, with constrained generation for claims, sections, and variant hypotheses. A rendering service should produce previews and optimize assets before publication. Event collection must preserve campaign parameters and connect page views, add-to-cart actions, and purchases to page variants. Add automated checks for mobile rendering, missing product data, unsupported claims, page weight, broken purchase actions, and accidental differences between controlled variants.",
+    "pricingTiers": [
+      {
+        "name": "Starter",
+        "price": "$29/month",
+        "includes": "One Shopify store, 10 active landing pages, 50 monthly AI generations, core ad-to-page creation, responsive publishing, basic analytics, and standard campaign templates."
+      },
+      {
+        "name": "Team",
+        "price": "$89/month",
+        "includes": "One Shopify store, 50 active landing pages, 250 monthly AI generations, five team seats, controlled variants, campaign mappings, collaboration, advanced analytics, and priority support."
+      },
+      {
+        "name": "Scale",
+        "price": "$249/month",
+        "includes": "Up to five Shopify stores, 200 active landing pages, 1,000 monthly AI generations, 20 team seats, permissions, higher experiment capacity, reusable brand systems, agency workflows, and priority onboarding."
+      }
+    ],
+    "unitEconomics": [
+      {
+        "label": "ClickWeave Starter target gross margin",
+        "value": "At least 80% on $29 monthly revenue, implying hosting, generation, and support costs of no more than $5.80 per account per month"
+      },
+      {
+        "label": "ClickWeave Team target gross margin",
+        "value": "At least 82% on $89 monthly revenue, implying direct service costs of no more than $16.02 per account per month"
+      },
+      {
+        "label": "ClickWeave Scale target gross margin",
+        "value": "At least 85% on $249 monthly revenue, implying direct service costs of no more than $37.35 per account per month"
+      },
+      {
+        "label": "ClickWeave blended acquisition payback target",
+        "value": "Under six months of gross profit, with agency referrals and Shopify App Store discovery reducing dependence on paid acquisition"
+      }
+    ]
+  }
+}
