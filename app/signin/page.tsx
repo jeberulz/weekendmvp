@@ -1,17 +1,19 @@
-import type { Metadata } from "next";
-import { SignInPanel } from "./SignInPanel";
-import { safePlatformReturn } from "@/lib/auth-return";
+import { redirect } from "next/navigation";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
-import { PreviewClaimStash } from "@/components/preview/PreviewClaimHandoff";
+import { safePlatformReturn } from "@/lib/auth-return";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Sign in",
   robots: { index: false, follow: false },
 };
 
 export const instant = false;
 
-export default async function SignInPage({
+/**
+ * Back-compat alias for `/login`. Preview claim stash and `returnTo` query
+ * params are forwarded so existing `/signin?claimPreview=` links keep working.
+ */
+export default async function SignInRedirectPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -20,25 +22,24 @@ export default async function SignInPage({
   }>;
 }) {
   const params = await searchParams;
+  const qs = new URLSearchParams();
+
   const returnTo = safePlatformReturn(
     Array.isArray(params.returnTo) ? params.returnTo[0] : params.returnTo,
   );
+  if (returnTo !== "/dashboard") {
+    qs.set("returnTo", returnTo);
+  }
 
-  // WP27-S5. `/preview/{token}` sends its capability here so signing up keeps
-  // the preview. Shape-checked with the same normalizer the server uses, so
-  // an arbitrary query string can never reach client storage; anything else
-  // is dropped silently rather than surfaced, because a malformed value is
-  // indistinguishable from an unknown one everywhere else in this package.
   const claimPreview = normalizeCapabilityToken(
     Array.isArray(params.claimPreview)
       ? params.claimPreview[0]
       : params.claimPreview,
   );
+  if (claimPreview !== null) {
+    qs.set("claimPreview", claimPreview);
+  }
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-black px-6 py-16">
-      {claimPreview !== null && <PreviewClaimStash token={claimPreview} />}
-      <SignInPanel returnTo={returnTo} />
-    </main>
-  );
+  const query = qs.toString();
+  redirect(query ? `/login?${query}` : "/login");
 }

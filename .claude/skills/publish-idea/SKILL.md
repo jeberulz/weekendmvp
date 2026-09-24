@@ -171,6 +171,31 @@ Compile leaves `category: "uncategorized"` and empty `tools` / `audiences`. Edit
 | `og.subject` / `og.accent` | Concrete still-life director's note; accent one of `lime`, `mint`, `lavender`, `emerald`, `aubergine` |
 | `applicationCategory` | Schema.org SoftwareApplication category |
 
+**Homepage `highlights` block (required for new ideas).** The homepage features one idea a week in "Inside every idea" and reads this block before falling back to parsing the MDX (WP42 ruling, 2026-09-24). Write it from the compiled MDX: every figure must already be in the body and its `## Sources`, the quote comes from `## The Problem`, and competitors and prices come from `## Competitive Landscape`. Never invent a number.
+
+```json
+"highlights": {
+  "problemQuote": "Freelancers rarely lose money because they forgot to send an invoice. They lose money because the work quietly changed three Slack threads ago.",
+  "stats": [
+    { "value": "20M", "label": "skilled knowledge freelancers in the US", "source": "Upwork 2025" },
+    { "value": "50%+", "label": "of projects face scope creep", "source": "Harvest" },
+    { "value": "$5,968", "label": "average unpaid income per freelancer", "source": "Freelancers Union" }
+  ],
+  "competitors": [
+    { "name": "Bonsai", "price": "$15–$59/mo" },
+    { "name": "Harvest", "price": "from $0" },
+    { "name": "Dubsado", "price": "$335/yr" }
+  ]
+}
+```
+
+Field rules (checked by `npm run validate:idea-tags`):
+- `problemQuote`: one or two sentences from `## The Problem`, ≤ 190 characters. It renders inside quote marks, so write it as a quote.
+- `stats`: 1–3 entries. `value` ≤ 12 characters (`20M`, `$15.8B`, `27%`); `label` ≤ 90 characters and reads after the value; `source` (optional) ≤ 48 characters, the publisher's short name.
+- `competitors`: optional, 3–5 entries. `name` ≤ 32 characters; `price` ≤ 16 characters (`$15–$59/mo`, `from $0`, `$335/yr`).
+
+The validator treats `highlights` as optional for older ideas, so also confirm by eye that a new entry has one.
+
 Then:
 
 ```bash
@@ -332,6 +357,7 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run engine:research -- --brief … --live --out engine/records/{slug}.json`
 - [ ] `npm run engine:compile -- --record engine/records/{slug}.json`
 - [ ] Manifest tagging filled (category, ≥2 tools, ≥2 audiences, revenueGoal, buildTime, og)
+- [ ] Homepage `highlights` block written from the MDX (quote, 1–3 stats, 3–5 competitors), no invented numbers
 - [ ] Idea gate passed (paying buyer, public pain, wedge) and no existing idea covers it
 - [ ] `npm run audit:idea -- --slug {slug}` PASS on the deep bar (≥2,200 words, verified quotes, Year-One Math, idea-specific schema, no broken links)
 - [ ] `npm run validate:idea-tags -- --slug {slug}` PASS

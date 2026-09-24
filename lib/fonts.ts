@@ -7,9 +7,23 @@ import { Newsreader } from "next/font/google";
  */
 export const newsreader = Newsreader({
   subsets: ["latin"],
-  style: "italic",
+  style: ["normal", "italic"],
   weight: "variable",
   axes: ["opsz"],
   variable: "--font-newsreader",
+  display: "swap",
+});
+
+/**
+ * Newsreader roman + italic — the editorial serif for the WP42 homepage
+ * headings. Separate from `newsreader` (italic only) so the workshop pages
+ * keep their smaller font payload.
+ */
+export const newsreaderEditorial = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: "variable",
+  axes: ["opsz"],
+  variable: "--font-editorial-serif",
   display: "swap",
 });

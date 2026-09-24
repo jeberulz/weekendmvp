@@ -287,8 +287,45 @@ describe("server redirect contract", () => {
     ["https://evil.example/dashboard", "/dashboard"],
     ["//evil.example/dashboard", "/dashboard"],
     ["/signin", "/dashboard"],
+    // Google OAuth handoff: middleware consumes `code` only on /auth/callback.
+    [
+      "/auth/callback?returnTo=%2Fdashboard",
+      "/auth/callback?returnTo=%2Fdashboard",
+    ],
+    [
+      "/auth/callback?returnTo=%2Fdashboard%2Fproject%3Ftab%3Dbuild",
+      "/auth/callback?returnTo=%2Fdashboard%2Fproject%3Ftab%3Dbuild",
+    ],
+    // Nested returnTo must still be dashboard-bounded.
+    [
+      "/auth/callback?returnTo=https%3A%2F%2Fevil.example%2Fsteal",
+      "/auth/callback?returnTo=%2Fdashboard",
+    ],
+    [
+      "/auth/callback?returnTo=%2Flogin",
+      "/auth/callback?returnTo=%2Fdashboard",
+    ],
+    // Extra query keys are stripped; only sanitized returnTo survives.
+    [
+      "/auth/callback?returnTo=%2Fdashboard&next=https%3A%2F%2Fevil.example",
+      "/auth/callback?returnTo=%2Fdashboard",
+    ],
+    // Sibling callback paths are not the middleware code seam.
+    ["/auth/callback/extra", "/dashboard"],
+    ["/auth/callbackish", "/dashboard"],
   ])("allowlists %s", (target, expected) => {
     expect(safeAuthRedirect(target)).toBe(expected);
+  });
+
+  test("keeps the OAuth callback absolute so middleware can set session cookies", () => {
+    expect(
+      absoluteAuthRedirect(
+        "/auth/callback?returnTo=%2Fdashboard",
+        "https://www.weekendmvp.app",
+      ),
+    ).toBe(
+      "https://www.weekendmvp.app/auth/callback?returnTo=%2Fdashboard",
+    );
   });
 
   test("adapts the bounded target to the configured same-origin site", () => {
