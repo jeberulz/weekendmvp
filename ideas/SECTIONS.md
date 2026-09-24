@@ -1,42 +1,69 @@
-# Idea page section contract
+# Idea page section contract (MDX)
 
-Every `ideas/<slug>.html` page published from the `publish-idea` skill must render all seven required H2 sections **in this order** and meet the depth targets below. The auditor at `scripts/audit-ideas.js` enforces the structural checks; the human (or the skill) is responsible for content depth.
+Every idea published via the `publish-idea` skill must ship as
+`content/ideas/{slug}.mdx` with **all seven required `##` sections in this
+order**, plus a required `## Sources` section. Depth targets below are
+editorial; the mechanical gate is `npm run audit:idea`.
 
-Reference implementations: `ideas/brakes-maintenance-tracker-app.html`, `ideas/ai-rfp-response-assistant.html`, `ideas/ai-landing-page-generator-ecommerce.html`.
+Reference implementations: `content/ideas/ai-rfp-response-assistant.mdx`,
+`content/ideas/ai-code-reviewer.mdx`,
+`content/ideas/ai-landing-page-generator-ecommerce.mdx`.
 
 ## The seven required sections
 
-| # | H2 title (exact or near-match) | Auditor regex key | Minimum depth |
-|---|--------------------------------|-------------------|---------------|
-| 1 | The Problem | `problem` | 250+ words, at least one concrete user pain quote or data point |
-| 2 | The Solution | `solution` | 250+ words, describes the MVP feature set in specifics |
-| 3 | Market Research | `market` | 200+ words, TAM/SAM figures, market size trend, 2+ external citations |
-| 4 | Competitive Landscape | `competitive` | 3+ named competitors with pricing and positioning |
-| 5 | Business Model | `business` | Pricing tiers, unit economics, target MRR path |
-| 6 | Recommended Tech Stack | `stack` | Named stack (framework, database, hosting), not vague |
-| 7 | AI Prompts to Build This | `prompts` | 3+ reusable prompts scoped to a weekend build |
+| # | H2 title (exact) | Minimum depth |
+|---|------------------|---------------|
+| 1 | The Problem | 250+ words, at least one concrete user pain quote or data point |
+| 2 | The Solution | 250+ words, MVP feature set in specifics; must include `**How it works:**` + a numbered list (feeds HowTo JSON-LD) |
+| 3 | Market Research | 200+ words, TAM/SAM or market-size trend, 2+ external citations |
+| 4 | Competitive Landscape | 3+ named competitors with pricing and positioning |
+| 5 | Business Model | Pricing tiers, unit economics, target MRR path |
+| 6 | Recommended Tech Stack | Named stack (framework, database, hosting) |
+| 7 | AI Prompts to Build This | 3+ reusable prompts scoped to a weekend build |
 
-Optional but recommended: **Sources** (citation list), **Explore More** (cross-links to related ideas), **Want me to build this for you?** (CTA block).
+Required trailer: **`## Sources`** — markdown links to the citations used above
+(≥2 links). Optional extras (`## Explore More`, CTA blocks) are allowed only
+*after* Sources and are not scored by the auditor.
 
 ## Minimum bar (the auditor)
 
-A page is considered `PASS` (`node scripts/audit-ideas.js --strict`) when:
+A page passes `npm run audit:idea -- --slug {slug}` when:
 
-- File size ≥ 15,000 bytes
-- Rendered body word count ≥ 800 words
-- All seven required H2s present (matched by regex on `<h2>` text)
-- No unreplaced placeholders (no `{{VAR}}`, `IDEA_TITLE`, `IDEA_SLUG`, `IDEA_DESCRIPTION`)
-- `<meta name="description">` set
-- Email gate pattern: `#email-gate` starts hidden, `#gated-content` visible by default (crawler safety per CLAUDE.md SEO rules)
+- All seven required `##` headings appear **in order**, followed by `## Sources`
+- `## The Solution` contains `**How it works:**` plus a numbered list (≥2 steps)
+- `## Sources` has ≥2 markdown links (`[label](https://…)`)
+- Body word count ≥ 800
+- Slug matches `^[a-z0-9-]+$`
+- No `{{` placeholders
+- No bare `<` or `{` outside code fences (MDX would parse them as JSX — escape as `\<` / `\{`)
 
-Pages that miss one or more of the first four structural checks are classified `THIN`. Pages under 5 KB or with zero H2s are `STUB`.
+```bash
+npm run audit:idea -- --slug ai-rfp-response-assistant
+npm run audit:idea -- --all
+```
+
+Gold-corpus regression (counts generated from the auditor):
+
+```bash
+npm run engine:eval
+```
+
+Tagging is a separate gate: `npm run validate:idea-tags` (wired in CI).
 
 ## Enforcement
 
-- `node scripts/audit-ideas.js` — reports every page with status + reasons
-- `node scripts/audit-ideas.js --apply` — trims STUB pages out of `manifest.json` into `manifest.draft.json`
-- `node scripts/audit-ideas.js --strict` — exits non-zero if any idea linked from `manifest.json` fails the full bar. Wire into pre-publish hooks inside the `publish-idea` skill; do not commit a new idea if this fails.
+- `npm run audit:idea` — structural MDX contract (this doc)
+- `npm run validate:idea-tags` — WP19 tagging allowlists
+- `npm run engine:eval` — gold slug metrics must not regress
 
-## Phase 4 backfill queue
+Wire `audit:idea` into the publish skill's pre-seed checklist. Do not commit a
+new idea that fails this gate.
 
-Pages classified `THIN` in `ideas/_audit.json` have `_needsBackfill: true` in `manifest.json`. Re-publish them via `/publish-idea <idea_id>` (Mode A, Ideabrowser MCP) to bring them up to the bar. Track progress by rerunning the auditor — when THIN count hits zero, tighten `QUARANTINE_STATUSES` in `audit-ideas.js` to `['STUB', 'THIN']`.
+`ideas/_audit.json` is a 2026-06-09 HTML-era fossil and is not consulted by
+these scripts. Leave it alone.
+
+## Shared section spec
+
+Canonical titles and HTML fuzzy matchers live in
+`scripts/lib/idea-sections.mjs`, imported by both `scripts/audit-idea-mdx.mjs`
+and `scripts/extract-idea-bodies.mjs` so the contracts cannot drift.
