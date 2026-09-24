@@ -25,3 +25,15 @@ Compiler input is `ResearchRecord`. Output is `{ mdx, manifestEntry }`. Manifest
 Static: `npx vitest run lib/engine/compile.test.ts`, `npm run typecheck`, `npm run lint`.
 
 Runtime: compile the fixture record to a throwaway slug, `npm run audit:idea -- --slug {throwaway}`, `npm run validate:idea-tags -- --slug {throwaway}` once tags are filled. Load `/ideas/{throwaway}` with `control-ui` on `npm run dev`. Confirm seven headings and HowTo steps. Delete the throwaway before merge, or keep it under a `_` prefix so `lib/mdx.tsx` ignores it.
+
+## As built (PR #69 review fixes)
+
+- `ResearchRecord` gained optional `howItWorks: string[]`. The compiler takes How-it-works steps from it and refuses a record without it. GTM channels stay in Business Model only.
+- Filler used to reach the auditor word floor is idea-neutral builder guidance. It states no market facts.
+- Links go through `mdLink` (escaped text, percent-encoded URL). Sources are MDX-escaped. Frontmatter strings are JSON-quoted. Code fences are not escaped.
+- Slugs must match `^_?[a-z0-9-]+$`, and the MDX path must resolve inside `ideasDir`.
+- All refusal checks (existing MDX, existing manifest row) run before any file is written.
+- Scores: `ResearchScores` gained `timing` (market timing). The manifest publishes `{opportunity, pain, timing, builder_confidence}` only when all four exist, because `convex/schema.ts` requires them. `execution` is never published as `timing`.
+- The compiler refuses records with fewer than 2 distinct source URLs (the auditor's `MIN_SOURCE_LINKS`).
+- A forced overwrite restores the previous MDX if the manifest write then fails.
+- `npm test` runs the engine suite (`test:engine`). `engine:research --live` loads `.env.local`, then `.env`. Shell values win.

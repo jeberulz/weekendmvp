@@ -26,3 +26,11 @@ Do not write MDX. Do not call the skill.
 Static: `npx vitest run lib/engine/pipeline.test.ts`, `npm run typecheck`, `npm run lint`.
 
 Runtime: `npm run engine:research -- --fixture rfp-assistant --out /tmp/record.json` writes a file that `parseResearchRecord` accepts. No browser. Live spend waits until phase 6 has a compiler to judge.
+
+## As built (PR #69 review fixes)
+
+- Stats, competitors, and community signals must cite a URL a search step returned. No rows are back-filled from search titles or snippets. A short synthesis throws at `provenance_parse`.
+- Synthesis must return ≥2 `goToMarket.channels`, ≥2 `howItWorks` steps, and a `whyNow`. No canned fallbacks.
+- The retry reserves against the cap again. Billed failures (`ProviderCallError.cost`) are settled and logged as `…:failed` provider calls.
+- Search calls send the step's `maxOutputTokens`. Inputs over a step's `maxInputTokens` (UTF-8 bytes as the upper bound) throw before the call. Keywords are capped at the step's `maxItems`.
+- Brief slugs must match `^[a-z0-9-]+$`.
