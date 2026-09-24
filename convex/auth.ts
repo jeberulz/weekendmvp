@@ -9,20 +9,71 @@ import {
 } from "./resendMagicLink";
 import { validatedSiteOrigin } from "./siteUrl";
 
+const AUTH_REDIRECT_ORIGIN = "https://auth.weekendmvp.invalid";
+const DEFAULT_AUTH_REDIRECT = "/dashboard";
+
+/** Bound a same-origin path to the private dashboard namespace. */
+function safeDashboardTarget(pathname: string, search: string, hash: string) {
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
+    return `${pathname}${search}${hash}`;
+  }
+  return null;
+}
+
+/**
+ * Nested `returnTo` on the OAuth callback must stay inside `/dashboard`.
+ * Anything else collapses to the bounded default.
+ */
+function safeCallbackReturnTo(value: string | null) {
+  if (value === null || value === "") return DEFAULT_AUTH_REDIRECT;
+  try {
+    const nested = new URL(value, AUTH_REDIRECT_ORIGIN);
+    if (nested.origin === AUTH_REDIRECT_ORIGIN) {
+      return (
+        safeDashboardTarget(nested.pathname, nested.search, nested.hash) ??
+        DEFAULT_AUTH_REDIRECT
+      );
+    }
+  } catch {
+    // Use the bounded default below.
+  }
+  return DEFAULT_AUTH_REDIRECT;
+}
+
+/**
+ * Post-auth redirects are limited to:
+ * - `/dashboard` (and subpaths) — email magic-link landing
+ * - `/auth/callback?returnTo=…` — Google OAuth handoff so Next middleware can
+ *   consume the `code` on the only path `shouldHandleCode` allows
+ *
+ * External, protocol-relative, and sibling-path targets collapse to
+ * `/dashboard`. Callback `returnTo` is re-validated independently so a
+ * crafted callback URL cannot smuggle an open redirect.
+ */
 export function safeAuthRedirect(redirectTo: string) {
   try {
-    const target = new URL(redirectTo, "https://auth.weekendmvp.invalid");
-    if (
-      target.origin === "https://auth.weekendmvp.invalid" &&
-      (target.pathname === "/dashboard" ||
-        target.pathname.startsWith("/dashboard/"))
-    ) {
-      return `${target.pathname}${target.search}${target.hash}`;
+    const target = new URL(redirectTo, AUTH_REDIRECT_ORIGIN);
+    if (target.origin !== AUTH_REDIRECT_ORIGIN) {
+      return DEFAULT_AUTH_REDIRECT;
     }
+
+    // Google OAuth: AuthCard sets redirectTo=/auth/callback?returnTo=…
+    // Middleware only exchanges the OAuth code on that exact path. Dropping
+    // the callback (as the old dashboard-only allowlist did) sent the browser
+    // straight to /dashboard with an unconsumed code → anonymous bounce.
+    if (target.pathname === "/auth/callback") {
+      const returnTo = safeCallbackReturnTo(target.searchParams.get("returnTo"));
+      return `/auth/callback?returnTo=${encodeURIComponent(returnTo)}`;
+    }
+
+    return (
+      safeDashboardTarget(target.pathname, target.search, target.hash) ??
+      DEFAULT_AUTH_REDIRECT
+    );
   } catch {
     // Fall through to the only currently approved private destination.
   }
-  return "/dashboard";
+  return DEFAULT_AUTH_REDIRECT;
 }
 
 export function absoluteAuthRedirect(redirectTo: string, siteUrl: string) {
