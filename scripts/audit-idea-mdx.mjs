@@ -131,14 +131,8 @@ export function auditIdeaFile(filePath, slugHint) {
       );
     }
   }
-  if (titles.length > expected.length) {
-    errors.push(
-      `extra headings after Sources: ${titles
-        .slice(expected.length)
-        .map((t) => `## ${t}`)
-        .join(", ")}`,
-    );
-  }
+  // Optional extras (## Explore More, CTA blocks) may follow Sources and are
+  // not scored — see ideas/SECTIONS.md.
 
   const solution = sections.find((s) => s.title === "The Solution");
   let howToStepCount = 0;
