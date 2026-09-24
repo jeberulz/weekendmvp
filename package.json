@@ -32,6 +32,8 @@
     "validate:idea-tags": "node scripts/validate-idea-tags.mjs",
     "audit:idea": "node scripts/audit-idea-mdx.mjs",
     "engine:eval": "node scripts/engine-eval.mjs",
+    "engine:research": "node --experimental-strip-types scripts/engine-research.mjs",
+    "engine:compile": "node --experimental-strip-types scripts/engine-compile.mjs",
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",
     "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs",

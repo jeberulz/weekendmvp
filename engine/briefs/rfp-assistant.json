@@ -1,0 +1,12 @@
+{
+  "title": "AI RFP Response Assistant",
+  "audience": "SMB SaaS sales and solutions engineers",
+  "revenueModel": "Seat-based SaaS with usage caps",
+  "seedKeywords": [
+    "rfp response software",
+    "security questionnaire automation",
+    "proposal management software"
+  ],
+  "slug": "ai-rfp-response-assistant",
+  "oneLiner": "Grounded RFP drafts with citations for SMB sales teams."
+}
