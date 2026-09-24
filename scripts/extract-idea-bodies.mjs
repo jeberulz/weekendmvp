@@ -30,6 +30,10 @@ import {
   isSkipped,
   renderBlocks,
 } from './lib/html-to-md.mjs';
+import {
+  OPTIONAL_SECTIONS,
+  REQUIRED_SECTIONS,
+} from './lib/idea-sections.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ideasDir = path.join(root, 'ideas');
@@ -39,20 +43,6 @@ const reportPath = path.join(outDir, '_extraction-report.json');
 
 const slugFlagIdx = process.argv.indexOf('--slug');
 const onlySlug = slugFlagIdx !== -1 ? process.argv[slugFlagIdx + 1] : null;
-
-// Mirrors REQUIRED_SECTIONS in scripts/audit-ideas.js (same keys + regexes).
-const REQUIRED_SECTIONS = [
-  { key: 'problem',     match: /\bproblem\b/i },
-  { key: 'solution',    match: /\bsolution\b/i },
-  { key: 'market',      match: /market\s*(research|insight|size|opportunity)/i },
-  { key: 'competitive', match: /competit(or|ive|ors)/i },
-  { key: 'business',    match: /(business\s*model|monetization|pricing|revenue)/i },
-  { key: 'stack',       match: /(tech\s*stack|recommended\s*stack|technology\s*stack)/i },
-  { key: 'prompts',     match: /(ai\s*prompts|prompts\s*to\s*build)/i },
-];
-
-// Optional extra section worth keeping (citation list on researched pages).
-const OPTIONAL_SECTIONS = [{ key: 'sources', match: /^\s*sources\s*$/i }];
 
 /**
  * Find the wrapper element + heading text for each contract section.
