@@ -76,3 +76,6 @@ tsconfig.tsbuildinfo
 
 # Agentic workflow worktrees
 .worktrees/
+
+# WP41 content evals: machine output is regenerated; report.md is the committed baseline
+evals/results/latest.json

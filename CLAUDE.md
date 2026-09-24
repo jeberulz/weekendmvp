@@ -35,6 +35,13 @@ New ideas/articles are MDX in `content/` + an entry in `ideas/manifest.json`
 (OG cards). Use `/publish-idea`, `/publish-article`, and
 `/publish-programmatic` rather than doing these steps manually.
 
+**Quality gate (WP41):** `npm run evals:run -- --slug {slug}` must not FAIL
+before an idea ships. CI runs `npm run evals:changed` and blocks any new or
+edited idea page that fails (structure, AI-slop phrases, placeholders, source
+hygiene, copied text). Existing pages are report-only: the ranked backlog is
+`evals/results/report.md`. Thresholds: `evals/config.json`,
+`evals/slop-lexicon.json`.
+
 ## Accessibility
 
 Every page and component must pass WCAG 2.1 AA — run the **`a11y-check`

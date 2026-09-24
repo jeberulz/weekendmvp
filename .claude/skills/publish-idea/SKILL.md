@@ -519,7 +519,16 @@ Use today's date for `publishedAt`.
 
 ### Step 7: Manual section gate + tagging gate
 
-There is **no audit script** for body prose anymore. Manually verify the MDX body against `ideas/SECTIONS.md` before seeding:
+**Quality gate (mechanical — required, and enforced in CI):**
+
+```bash
+npm run evals:run -- --slug {slug}
+# expect: PASS or WARN, exit 0. Any FAIL blocks the PR in CI.
+```
+
+This runs the structural auditor (`scripts/audit-idea-mdx.mjs`) plus the WP41 Layer 0 checks: banned AI-slop phrases, slop density, verbosity, unsourced or guessed numbers, source hygiene (≥2 distinct domains, no placeholder or duplicate URLs), leftover placeholders, leaked model chatter, and near-duplication with other pages. Fix every `x` line. Read every `!` line: warnings do not block, but an unsourced number is the first thing a reader will doubt, so link it or name its source in the same paragraph. Thresholds live in `evals/config.json`; banned phrases in `evals/slop-lexicon.json`.
+
+Then verify the rest of the MDX body against `ideas/SECTIONS.md` by hand before seeding:
 
 - [ ] All 7 required `##` sections present, in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This (plus `## Sources`).
 - [ ] `## The Solution` contains the `**How it works:**` line + a numbered list (1./2./3.) — confirm it's there or the HowTo schema breaks.
@@ -548,7 +557,7 @@ wc -w content/ideas/{slug}.mdx                  # expect ~800+ words
 awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/ideas/{slug}.mdx
 ```
 
-If any check fails, fix the MDX (or tags) before continuing. Do not set `provenance.auditPassed: true` until both the section gate and the tagging gate pass. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
+If any check fails, fix the MDX (or tags) before continuing. Do not set `provenance.auditPassed: true` until the quality gate, the section gate and the tagging gate pass. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
 
 ### Step 8: Seed Convex — DEV **and** PROD (required for grid/hub visibility)
 

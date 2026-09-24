@@ -1,0 +1,35 @@
+{
+  "$comment": "Layer 0 thresholds for scripts/evals-run.mjs. Set from corpus percentiles on 2026-09-24 (see docs/wp/wp41-progress.md). 'warn' flags a page for review. 'fail' blocks a new or edited page in CI. Change a threshold only with a progress-log note explaining why.",
+  "factualSections": ["The Problem", "Market Research", "Competitive Landscape"],
+  "excludeFromProseSections": ["AI Prompts to Build This", "Sources"],
+  "slop": {
+    "watchPer1kWarn": 1.5,
+    "watchPer1kFail": 4
+  },
+  "verbosity": {
+    "avgSentenceWordsWarn": 25,
+    "avgSentenceWordsFail": 32,
+    "longSentenceWords": 35,
+    "longSentenceShareWarn": 0.2,
+    "longSentenceShareFail": 0.35,
+    "fillerPer1kWarn": 4,
+    "repeatedSentencesWarn": 2,
+    "wordCountWarn": 3500
+  },
+  "numbers": {
+    "unsourcedWarn": 15,
+    "unsourcedShareWarn": 0.6,
+    "hedgedWarn": 3
+  },
+  "sources": {
+    "minDistinctDomains": 2,
+    "homepageOnlyShareWarn": 0.5,
+    "ideabrowserShareWarn": 0.5,
+    "placeholderHosts": ["example.com", "example.org", "example.net", "localhost", "127.0.0.1", "yourdomain.com", "your-domain.com", "domain.com", "website.com", "url.com"]
+  },
+  "duplication": {
+    "shingleWords": 8,
+    "pairShareWarn": 0.05,
+    "pairShareFail": 0.2
+  }
+}

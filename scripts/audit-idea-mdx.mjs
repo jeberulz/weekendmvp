@@ -97,26 +97,33 @@ export function countCompetitorMentions(competitiveContent) {
  * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
  */
 export function auditIdeaFile(filePath, slugHint) {
-  const errors = [];
-  const warnings = [];
   const slug =
     slugHint || path.basename(filePath, path.extname(filePath));
-
-  if (!SLUG_PATTERN.test(slug)) {
-    errors.push(`slug '${slug}' must match ${SLUG_PATTERN}`);
-  }
 
   if (!fs.existsSync(filePath)) {
     return {
       ok: false,
       slug,
       errors: [`file not found: ${filePath}`],
-      warnings,
+      warnings: [],
       metrics: null,
     };
   }
 
-  const raw = fs.readFileSync(filePath, "utf8");
+  return auditIdeaSource(fs.readFileSync(filePath, "utf8"), slug);
+}
+
+/**
+ * Audit raw MDX text for one idea. Same result shape as auditIdeaFile.
+ */
+export function auditIdeaSource(raw, slug) {
+  const errors = [];
+  const warnings = [];
+
+  if (!SLUG_PATTERN.test(slug)) {
+    errors.push(`slug '${slug}' must match ${SLUG_PATTERN}`);
+  }
+
   const { body } = splitFrontmatter(raw);
   const sections = splitSections(body);
   const titles = sections.map((s) => s.title);

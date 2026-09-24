@@ -15,7 +15,12 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # Depth 2 so HEAD^1 exists: the PR base tip on pull_request (merge
+      # commit), the previous main commit on push. The idea quality gate
+      # diffs against it.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       # Node 22, not 20: `test:redirects`, `test:sitemap`, and `test:security`
       # run `node --experimental-strip-types`, which was added in 22.6 and does
@@ -42,6 +47,12 @@ jobs:
 
       - name: Validate idea tags
         run: npm run validate:idea-tags
+
+      # Blocks new or edited idea pages that fail Layer 0 (structure, slop,
+      # placeholders, source hygiene, duplication). Existing pages are
+      # report-only: see evals/results/report.md.
+      - name: Idea content quality gate (changed pages)
+        run: npm run evals:changed -- --base HEAD^1
 
       - name: Build
         run: npm run build

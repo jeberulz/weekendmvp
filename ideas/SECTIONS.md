@@ -53,11 +53,16 @@ Tagging is a separate gate: `npm run validate:idea-tags` (wired in CI).
 ## Enforcement
 
 - `npm run audit:idea` — structural MDX contract (this doc)
+- `npm run evals:run -- --slug {slug}` — WP41 content quality gate: the
+  structural contract plus Layer 0 quality checks (slop phrases, verbosity,
+  unsourced numbers, source hygiene, placeholders, duplication). Wired in CI
+  as `npm run evals:changed`, which blocks any new or edited idea page that
+  fails. Existing pages are report-only; the ranked backlog is
+  `evals/results/report.md` (`npm run evals:run -- --all --report`).
 - `npm run validate:idea-tags` — WP19 tagging allowlists
 - `npm run engine:eval` — gold slug metrics must not regress
 
-Wire `audit:idea` into the publish skill's pre-seed checklist. Do not commit a
-new idea that fails this gate.
+Do not commit a new idea that fails these gates.
 
 `ideas/_audit.json` is a 2026-06-09 HTML-era fossil and is not consulted by
 these scripts. Leave it alone.
