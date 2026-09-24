@@ -1,19 +1,17 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { PreviewClaimStash } from "@/components/preview/PreviewClaimHandoff";
 import { normalizeCapabilityToken } from "@/convex/platform/preview/capabilities";
 import { safePlatformReturn } from "@/lib/auth-return";
 
-export const metadata = {
-  title: "Sign in",
+export const metadata: Metadata = {
+  title: "Log in",
   robots: { index: false, follow: false },
 };
 
 export const instant = false;
 
-/**
- * Back-compat alias for `/login`. Preview claim stash and `returnTo` query
- * params are forwarded so existing `/signin?claimPreview=` links keep working.
- */
-export default async function SignInRedirectPage({
+export default async function LoginPage({
   searchParams,
 }: {
   searchParams: Promise<{
@@ -22,24 +20,22 @@ export default async function SignInRedirectPage({
   }>;
 }) {
   const params = await searchParams;
-  const qs = new URLSearchParams();
-
   const returnTo = safePlatformReturn(
     Array.isArray(params.returnTo) ? params.returnTo[0] : params.returnTo,
   );
-  if (returnTo !== "/dashboard") {
-    qs.set("returnTo", returnTo);
-  }
 
+  // WP27-S5. Shape-check before any client stash — same normalizer as the
+  // server claim path. Malformed values are dropped silently.
   const claimPreview = normalizeCapabilityToken(
     Array.isArray(params.claimPreview)
       ? params.claimPreview[0]
       : params.claimPreview,
   );
-  if (claimPreview !== null) {
-    qs.set("claimPreview", claimPreview);
-  }
 
-  const query = qs.toString();
-  redirect(query ? `/login?${query}` : "/login");
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-black px-6 py-16">
+      {claimPreview !== null && <PreviewClaimStash token={claimPreview} />}
+      <AuthCard mode="login" returnTo={returnTo} />
+    </main>
+  );
 }

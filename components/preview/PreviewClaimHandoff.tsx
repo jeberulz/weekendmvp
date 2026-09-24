@@ -31,8 +31,8 @@ import { trackEvent } from "@/lib/track";
 const STASH_KEY = "wp27:claimPreview";
 
 /**
- * Rendered on `/signin`. Records the capability so the post-authentication
- * landing can claim it. Renders nothing.
+ * Rendered on `/login` and `/signup`. Records the capability so the
+ * post-authentication landing can claim it. Renders nothing.
  */
 export function PreviewClaimStash({ token }: { token: string }) {
   useEffect(() => {

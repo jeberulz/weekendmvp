@@ -1,5 +1,7 @@
 export const DEFAULT_AUTH_RETURN = "/dashboard";
 
+const AUTH_ENTRY_PATHS = new Set(["/login", "/signup", "/signin"]);
+
 /** Restrict post-auth navigation to the private platform namespace. */
 export function safePlatformReturn(value: unknown) {
   if (typeof value !== "string" || value.includes("\\")) {
@@ -29,7 +31,7 @@ export function authCallbackTarget(returnTo: unknown) {
 
 export function isAuthManagedPath(pathname: string) {
   return (
-    pathname === "/signin" ||
+    AUTH_ENTRY_PATHS.has(pathname) ||
     pathname === "/auth/callback" ||
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/")
@@ -57,14 +59,11 @@ export function authRouteDecision(
     const returnTo = safePlatformReturn(`${url.pathname}${url.search}`);
     return {
       kind: "redirect",
-      target: `/signin?returnTo=${encodeURIComponent(returnTo)}`,
+      target: `/login?returnTo=${encodeURIComponent(returnTo)}`,
     };
   }
 
-  if (
-    authenticated &&
-    (url.pathname === "/signin" || url.pathname === "/auth/callback")
-  ) {
+  if (authenticated && (AUTH_ENTRY_PATHS.has(url.pathname) || url.pathname === "/auth/callback")) {
     return {
       kind: "redirect",
       target: safePlatformReturn(url.searchParams.get("returnTo")),

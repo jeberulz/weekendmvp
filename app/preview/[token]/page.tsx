@@ -129,11 +129,10 @@ export default async function PreviewPage({
 /**
  * The signup path that converts this preview into an owned project.
  *
- * The token travels as a query parameter to `/signin`, which is the same
- * secret the visitor already has in their address bar and is same-origin, so
- * this adds no exposure — and `Referrer-Policy: no-referrer` on this route
- * keeps it out of any cross-origin referer. WP27-S5 owns consuming
- * `claimPreview`; until it lands, sign-in simply ignores the parameter.
+ * The token travels as a query parameter to `/signup` (same origin as the
+ * preview). It is never folded into `returnTo`. `Referrer-Policy: no-referrer`
+ * on this route keeps it out of any cross-origin referer. WP27-S5 owns
+ * consuming `claimPreview`.
  */
 function PreviewClaimBar({ token }: { token: string }) {
   return (
@@ -151,7 +150,7 @@ function PreviewClaimBar({ token }: { token: string }) {
           This preview expires in 7 days. Create a free account to keep it.
         </p>
         <Link
-          href={`/signin?claimPreview=${encodeURIComponent(token)}`}
+          href={`/signup?claimPreview=${encodeURIComponent(token)}`}
           className="inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-700 px-5 font-medium text-white transition-colors hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           Keep this site

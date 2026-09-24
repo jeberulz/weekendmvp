@@ -14,7 +14,7 @@ export function SignOutButton() {
     try {
       await signOut();
     } finally {
-      router.replace("/signin");
+      router.replace("/login");
       router.refresh();
     }
   }

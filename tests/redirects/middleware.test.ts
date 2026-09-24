@@ -108,6 +108,8 @@ describe("WP28-S2 host isolation", () => {
     "/dashboard",
     "/dashboard/explore",
     "/signin",
+    "/login",
+    "/signup",
     "/auth/callback",
     "/email-signin",
     "/build/ai-collectible-verification-platform",

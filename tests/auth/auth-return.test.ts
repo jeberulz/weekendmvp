@@ -3,6 +3,7 @@ import {
   authRouteDecision,
   authCallbackTarget,
   DEFAULT_AUTH_RETURN,
+  isAuthManagedPath,
   isSensitiveAuthPath,
   safePlatformReturn,
 } from "../../lib/auth-return";
@@ -14,6 +15,7 @@ describe("auth redirect allowlist", () => {
     "https://evil.example/dashboard",
     "//evil.example/dashboard",
     "/signin",
+    "/login",
     "/dashboard\\@evil.example",
     "/dashboardish",
   ])("maps an unsafe target to the bounded default: %s", (target) => {
@@ -48,7 +50,7 @@ describe("sensitive auth route analytics policy", () => {
     expect(isSensitiveAuthPath(pathname)).toBe(true);
   });
 
-  test.each(["/signin", "/dashboard", "/auth/callbackish"])(
+  test.each(["/signin", "/login", "/signup", "/dashboard", "/auth/callbackish"])(
     "does not classify %s as a token-bearing auth route",
     (pathname) => {
       expect(isSensitiveAuthPath(pathname)).toBe(false);
@@ -56,19 +58,30 @@ describe("sensitive auth route analytics policy", () => {
   );
 });
 
+describe("auth managed paths", () => {
+  test.each(["/login", "/signup", "/signin", "/auth/callback", "/dashboard"])(
+    "manages %s",
+    (pathname) => {
+      expect(isAuthManagedPath(pathname)).toBe(true);
+    },
+  );
+});
+
 describe("auth middleware route matrix", () => {
   test.each([
-    ["https://www.weekendmvp.app/dashboard", false, "/signin?returnTo=%2Fdashboard"],
+    ["https://www.weekendmvp.app/dashboard", false, "/login?returnTo=%2Fdashboard"],
     [
       "https://www.weekendmvp.app/dashboard/project?tab=build",
       false,
-      "/signin?returnTo=%2Fdashboard%2Fproject%3Ftab%3Dbuild",
+      "/login?returnTo=%2Fdashboard%2Fproject%3Ftab%3Dbuild",
     ],
     [
       "https://www.weekendmvp.app/dashboard/report.js",
       false,
-      "/signin?returnTo=%2Fdashboard%2Freport.js",
+      "/login?returnTo=%2Fdashboard%2Freport.js",
     ],
+    ["https://www.weekendmvp.app/login", true, "/dashboard"],
+    ["https://www.weekendmvp.app/signup", true, "/dashboard"],
     ["https://www.weekendmvp.app/signin", true, "/dashboard"],
     [
       "https://www.weekendmvp.app/auth/callback?returnTo=%2Fdashboard%2Fproject",
@@ -84,6 +97,8 @@ describe("auth middleware route matrix", () => {
 
   test.each([
     ["https://www.weekendmvp.app/ideas/example", false],
+    ["https://www.weekendmvp.app/login", false],
+    ["https://www.weekendmvp.app/signup", false],
     ["https://www.weekendmvp.app/signin", false],
     ["https://www.weekendmvp.app/dashboard", true],
   ])("passes %s when authenticated=%s", (url, authenticated) => {
