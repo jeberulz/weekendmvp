@@ -5,10 +5,11 @@ import { MegaNav } from "@/components/layout/MegaNav";
 
 /**
  * Light-themed pages whose legacy nav used the cream shell
- * (bg-[#fcfaf7]/85 + black logo): the workshop landing pages and the
- * starter-kit guide (its legacy nav-starter-kit.html header was cream).
+ * (bg-[#fcfaf7]/85 + black logo): the workshop landing pages, the
+ * starter-kit guide (its legacy nav-starter-kit.html header was cream), and
+ * the light ideas-first homepage (WP42).
  */
-const CREAM_PATHS = new Set(["/shipable", "/dare", "/starter-kit"]);
+const CREAM_PATHS = new Set(["/", "/shipable", "/dare", "/starter-kit"]);
 
 /** Picks the MegaNav variant per route for the (marketing) layout. */
 export function MarketingNav() {

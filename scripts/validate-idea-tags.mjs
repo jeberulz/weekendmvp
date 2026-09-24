@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Validate idea tagging against the live hub allowlists.
+ * Validate idea tagging against the live hub allowlists, plus the optional
+ * homepage `highlights` block (WP42).
  *
  * Allowlists mirror:
  *   ideas/manifest.json → categories / tools / audiences / revenueGoals
@@ -68,6 +69,68 @@ export const ALLOWED_BUILDTIMES = new Set([
 const MIN_TOOLS = 2;
 const MIN_AUDIENCES = 2;
 
+/**
+ * Optional `highlights` block read by the homepage (WP42). Required for new
+ * `/publish-idea` runs; optional here until existing ideas are backfilled.
+ */
+export const HIGHLIGHT_LIMITS = {
+  problemQuote: 190,
+  statValue: 12,
+  statLabel: 90,
+  statSource: 48,
+  maxStats: 3,
+  competitorName: 32,
+  competitorPrice: 16,
+  maxCompetitors: 5,
+};
+
+const isText = (v) => typeof v === "string" && v.trim().length > 0;
+
+export function validateHighlights(highlights) {
+  const L = HIGHLIGHT_LIMITS;
+  const errors = [];
+  if (highlights === undefined) return errors;
+  if (!highlights || typeof highlights !== "object" || Array.isArray(highlights)) {
+    return ["highlights must be an object"];
+  }
+  const { problemQuote, stats, competitors } = highlights;
+  if (!isText(problemQuote)) {
+    errors.push("highlights.problemQuote is required");
+  } else if (problemQuote.length > L.problemQuote) {
+    errors.push(`highlights.problemQuote is ${problemQuote.length} chars (max ${L.problemQuote})`);
+  }
+  if (!Array.isArray(stats) || stats.length < 1 || stats.length > L.maxStats) {
+    errors.push(`highlights.stats needs 1–${L.maxStats} entries`);
+  } else {
+    stats.forEach((s, i) => {
+      if (!s || !isText(s.value) || s.value.length > L.statValue) {
+        errors.push(`highlights.stats[${i}].value must be 1–${L.statValue} chars`);
+      }
+      if (!s || !isText(s.label) || s.label.length > L.statLabel) {
+        errors.push(`highlights.stats[${i}].label must be 1–${L.statLabel} chars`);
+      }
+      if (s && s.source !== undefined && (!isText(s.source) || s.source.length > L.statSource)) {
+        errors.push(`highlights.stats[${i}].source must be 1–${L.statSource} chars`);
+      }
+    });
+  }
+  if (competitors !== undefined) {
+    if (!Array.isArray(competitors) || competitors.length < 3 || competitors.length > L.maxCompetitors) {
+      errors.push(`highlights.competitors needs 3–${L.maxCompetitors} entries when present`);
+    } else {
+      competitors.forEach((c, i) => {
+        if (!c || !isText(c.name) || c.name.length > L.competitorName) {
+          errors.push(`highlights.competitors[${i}].name must be 1–${L.competitorName} chars`);
+        }
+        if (!c || !isText(c.price) || c.price.length > L.competitorPrice) {
+          errors.push(`highlights.competitors[${i}].price must be 1–${L.competitorPrice} chars`);
+        }
+      });
+    }
+  }
+  return errors;
+}
+
 const argv = process.argv.slice(2);
 const slugIdx = argv.indexOf("--slug");
 const onlySlug = slugIdx !== -1 ? argv[slugIdx + 1] : null;
@@ -103,6 +166,7 @@ export function validateIdea(idea) {
       errors.push(`audience '${a}' not in allowlist`);
     }
   }
+  errors.push(...validateHighlights(idea.highlights));
   return errors;
 }
 

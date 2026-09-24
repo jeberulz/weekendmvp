@@ -62,6 +62,8 @@ type BeehiivSubscribeFormProps = {
   className?: string;
   inputClassName?: string;
   buttonClassName?: string;
+  /** Classes for the email label. Defaults to visually hidden. */
+  emailLabelClassName?: string;
 };
 
 export function BeehiivSubscribeForm({
@@ -74,6 +76,7 @@ export function BeehiivSubscribeForm({
   className,
   inputClassName,
   buttonClassName,
+  emailLabelClassName = "sr-only",
 }: BeehiivSubscribeFormProps) {
   const emailId = useId();
   const nameId = useId();
@@ -148,7 +151,7 @@ export function BeehiivSubscribeForm({
         </div>
       )}
       <div>
-        <label htmlFor={emailId} className="sr-only">
+        <label htmlFor={emailId} className={emailLabelClassName}>
           Email address
         </label>
         <input
