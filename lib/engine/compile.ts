@@ -1,16 +1,9 @@
 /**
  * ResearchRecord → MDX + manifest stub (Mode A2 phase 6).
  *
- * Writes the two files /publish-idea already writes. Does not seed Convex,
- * generate OG, push git, or overwrite existing MDX without force.
- *
  * Manifest source is always `engine:{slug}` — never `ideabrowser:`.
- * Section titles must match scripts/lib/idea-sections.mjs exactly.
- *
- * Writing bar (IB deep pages, e.g. course-translation-resale-network):
- * named product, zero stock filler, named How-it-works steps, priced tiers
- * with unit math, four AI prompts incl. Branding, niche sizing only.
- * Never pad with repeated boilerplate to hit a word floor.
+ * Writing bar: IB deep pages (course-translation-resale-network). Assemble from
+ * the research record only — never inject cross-idea padding templates.
  */
 
 import type {
@@ -32,20 +25,16 @@ const CANONICAL_SECTION_TITLES = [
 ] as const;
 
 const SOURCES_TITLE = "Sources";
-/** Keep in sync with MIN_SOURCE_LINKS in scripts/lib/idea-sections.mjs */
 const MIN_SOURCE_LINKS = 2;
 const HOW_IT_WORKS_LABEL = "**How it works:**";
 
-/**
- * Auditor slug shape (scripts/lib/idea-sections.mjs), plus an optional
- * leading `_` for throwaway drafts the site ignores. Anything else — `/`,
- * `.`, `..` — could write outside content/ideas.
- */
 export const COMPILE_SLUG_PATTERN = /^_?[a-z0-9-]+$/;
 
-/** Mega-TAM patterns — dropped from Market Research (niche sizing only). */
 const MEGA_TAM_RE =
   /global saas|worldwide saas|saas market.{0,40}\$\s?\d{2,4}|global ai (software|tools|market).{0,40}\$/i;
+
+const ROUNDUP_URL_RE =
+  /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i;
 
 export type ManifestEntry = {
   slug: string;
@@ -89,9 +78,7 @@ export type CompileResult = {
 
 export type CompileOptions = {
   record: ResearchRecord;
-  /** Override slug (throwaway compiles). */
   slug?: string;
-  /** Tagging left for the operator — stubs only. */
   category?: string;
   tools?: string[];
   audiences?: string[];
@@ -101,12 +88,10 @@ export type CompileOptions = {
   publishedAt?: string;
 };
 
-/** Escape bare `<` / `{` that would break MDX as JSX. */
 export function escapeMdxProse(text: string): string {
   return text.replace(/</g, "\\<").replace(/\{/g, "\\{");
 }
 
-/** Escape prose but leave fenced code blocks verbatim (MDX does not parse them). */
 function escapeOutsideFences(text: string): string {
   return text
     .split(/(```[\s\S]*?```)/g)
@@ -114,12 +99,6 @@ function escapeOutsideFences(text: string): string {
     .join("");
 }
 
-/**
- * Markdown link safe for MDX: brackets in the text are escaped so they
- * cannot close the link early. Characters in the URL that could end the
- * link or open JSX are percent-encoded, so the later escapeMdxProse pass
- * never has to touch a URL. `<` and `{` in the text are left for that pass.
- */
 export function mdLink(text: string, url: string): string {
   const safeText = text.replace(/[\\[\]]/g, (ch) => `\\${ch}`);
   const safeUrl = url.replace(
@@ -134,7 +113,9 @@ function countWords(text: string): number {
   return words ? words.length : 0;
 }
 
-function uniqueCitations(record: ResearchRecord): Array<{ url: string; title: string }> {
+function uniqueCitations(
+  record: ResearchRecord,
+): Array<{ url: string; title: string }> {
   const seen = new Set<string>();
   const out: Array<{ url: string; title: string }> = [];
   const push = (url: string, title: string) => {
@@ -144,10 +125,7 @@ function uniqueCitations(record: ResearchRecord): Array<{ url: string; title: st
   };
   for (const s of record.market.stats) push(s.citation.url, s.citation.title);
   for (const c of record.competitors) {
-    // Roundup URLs are research breadcrumbs — do not publish them as Sources.
-    if (/comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i.test(c.url)) {
-      continue;
-    }
+    if (ROUNDUP_URL_RE.test(c.url)) continue;
     push(c.url, c.name);
   }
   for (const s of record.community.signals) {
@@ -156,7 +134,6 @@ function uniqueCitations(record: ResearchRecord): Array<{ url: string; title: st
   return out;
 }
 
-/** Split `Title — description` (em/en dash or hyphen) into parts. */
 export function splitNamedStep(step: string): { title: string; body: string } {
   const m = step.match(/^(.+?)\s+[—–-]\s+(.+)$/);
   if (m) {
@@ -166,15 +143,10 @@ export function splitNamedStep(step: string): { title: string; body: string } {
       return { title, body };
     }
   }
-  // Derive a short title from the first 4–6 words when synthesis forgot the dash.
   const words = step.trim().split(/\s+/);
   const titleWords = words.slice(0, Math.min(4, Math.max(2, words.length - 2)));
-  let title = titleWords.join(" ");
-  title = title.replace(/[^A-Za-z0-9]+$/g, "");
-  if (/^step\s*\d+$/i.test(title) || title.length < 2) {
-    title = "Workflow";
-  }
-  // Title-case lightly for display
+  let title = titleWords.join(" ").replace(/[^A-Za-z0-9]+$/g, "");
+  if (/^step\s*\d+$/i.test(title) || title.length < 2) title = "Workflow";
   title = title
     .split(/\s+/)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -182,8 +154,9 @@ export function splitNamedStep(step: string): { title: string; body: string } {
   return { title, body: step.trim() };
 }
 
-/** Steps come from research only; a record without them cannot compile. */
-function howItWorksSteps(record: ResearchRecord): Array<{ title: string; body: string }> {
+function howItWorksSteps(
+  record: ResearchRecord,
+): Array<{ title: string; body: string }> {
   const steps = (record.howItWorks ?? []).filter((s) => s.trim().length > 0);
   if (steps.length < 2) {
     throw new Error(
@@ -196,12 +169,14 @@ function howItWorksSteps(record: ResearchRecord): Array<{ title: string; body: s
 function productName(record: ResearchRecord): string {
   const ed = record.editorial?.productName?.trim();
   if (ed) return ed;
-  // Strip trailing "for …" audience clauses from the brief title.
-  return record.brief.title.replace(/\s+for\s+.+$/i, "").trim() || record.brief.title;
+  return (
+    record.brief.title.replace(/\s+for\s+.+$/i, "").trim() || record.brief.title
+  );
 }
 
-function audienceLower(record: ResearchRecord): string {
-  return record.brief.targetCustomer.trim().replace(/\s+/g, " ").toLowerCase();
+/** Preserve research casing; only normalize whitespace. */
+function audienceLabel(record: ResearchRecord): string {
+  return record.brief.targetCustomer.trim().replace(/\s+/g, " ");
 }
 
 function nicheStats(record: ResearchRecord) {
@@ -213,34 +188,55 @@ function nicheStats(record: ResearchRecord) {
 function defaultTiers(record: ResearchRecord): PricingTier[] {
   const fromEd = record.editorial?.pricingTiers;
   if (fromEd && fromEd.length >= 2) return fromEd;
-  // Parse crude "$X/mo" fragments from pricingNotes when synthesis omitted tiers.
   const notes = record.goToMarket.pricingNotes;
+  const audience = audienceLabel(record);
+  const name = productName(record);
   return [
     {
       name: "Starter",
       price: "priced under the enterprise floor in research",
-      includes: `Core workflow for ${audienceLower(record)}; limited seats`,
-    },
-    {
-      name: "Pro",
-      price: notes.slice(0, 120) || "seat or usage tier from research",
-      includes: "Full workflow, citations/exports, team review",
+      includes: `${name} core workflow for ${audience}; limited seats`,
     },
     {
       name: "Team",
-      price: "higher seat / workspace tier",
-      includes: "Shared library, admin controls, priority support",
+      price: notes.slice(0, 120) || `${name} mid tier from research`,
+      includes: `${name} full workflow, team review, higher limits for ${audience}`,
+    },
+    {
+      name: "Scale",
+      price: `${name} top published tier from research`,
+      includes: `${name} org controls, higher seats, priority support`,
     },
   ];
+}
+
+/** SQL/env-safe slug from tier name — must match Business Model tiers. */
+export function tierKey(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
 }
 
 function defaultUnitEcon(record: ResearchRecord): UnitEconRow[] {
   const fromEd = record.editorial?.unitEconomics;
   if (fromEd && fromEd.length >= 2) return fromEd;
+  const mid = record.editorial?.pricingTiers?.[1]?.name ?? "Team";
+  const name = productName(record);
   return [
-    { label: "COGS per active workspace", value: "LLM + storage — meter from day one" },
-    { label: "Target gross margin", value: "≥70% on Pro after prompt caching" },
-    { label: "Payback", value: "under 3 months of seat revenue at target CAC" },
+    {
+      label: `${name} COGS per active workspace`,
+      value: `${name} LLM + storage — meter from day one`,
+    },
+    {
+      label: `${name} target gross margin on ${mid}`,
+      value: `≥70% after ${name} prompt caching`,
+    },
+    {
+      label: `${name} payback`,
+      value: `under 3 months of ${name} seat revenue at target CAC`,
+    },
   ];
 }
 
@@ -248,6 +244,10 @@ function joinBlocks(parts: Array<string | false | null | undefined>): string {
   return parts
     .filter((p): p is string => typeof p === "string" && p.trim().length > 0)
     .join("\n\n");
+}
+
+function trimDot(s: string): string {
+  return s.trim().replace(/\.+$/, "");
 }
 
 /**
@@ -267,27 +267,24 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   }
   const steps = howItWorksSteps(record);
   const name = productName(record);
-  const audience = audienceLower(record);
+  const audience = audienceLabel(record);
   const ed: EditorialFields = record.editorial ?? {};
   const stats = nicheStats(record);
   const tiers = defaultTiers(record);
   const unitEcon = defaultUnitEcon(record);
+  const tierKeys = tiers.map((t) => tierKey(t.name));
 
   const competitorLines = record.competitors
     .map((c) => {
-      const notes = (c.notes?.trim() || "Positioning gap vs the wedge above.").replace(
-        /\.+$/,
-        "",
+      const notes = trimDot(
+        c.notes?.trim() ||
+          `${c.name} competes with ${name} on the neighboring job for ${audience}`,
       );
-      const pricing = c.pricing.trim().replace(/\.+$/, "");
-      const roundup =
-        /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i.test(
-          c.url,
-        );
-      const link = roundup
-        ? "_First-party pricing URL missing in research — re-check before publish._"
-        : mdLink(`${c.name} (vendor page)`, c.url);
-      return `- **${c.name}** — ${notes}. Pricing: ${pricing}. ${link}`;
+      const pricing = trimDot(c.pricing);
+      if (ROUNDUP_URL_RE.test(c.url)) {
+        return `- **${c.name}** — ${notes}. Published pricing: ${pricing}.`;
+      }
+      return `- **${c.name}** — ${notes}. Published pricing: ${pricing}. ${mdLink(`${c.name} (vendor page)`, c.url)}`;
     })
     .join("\n");
 
@@ -317,61 +314,46 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     .map((u) => `- **${u.value}** — ${u.label}`)
     .join("\n");
 
-  const keywordDetail = record.keywords
-    .map((k) => {
-      return `- **${k.term}** — ${k.volume}/mo searches, competition ${k.competition}, CPC $${k.cpc.toFixed(2)} (DataForSEO/provider). High CPC with modest volume usually means commercial intent in a small niche — outbound and communities matter as much as SEO.`;
-    })
+  const keywordLines = record.keywords
+    .map(
+      (k) =>
+        `- **${k.term}** — ${k.volume}/mo, competition ${k.competition}, CPC $${k.cpc.toFixed(2)} (provider)`,
+    )
     .join("\n");
 
-  const channelDetail = record.goToMarket.channels
-    .map(
-      (c, i) =>
-        `- **Channel ${i + 1}: ${c}** — Run this alone for two weeks before adding another. Measure reply/demo rate, not vanity followers.`,
-    )
+  const channelLines = record.goToMarket.channels
+    .map((c) => `- ${c}`)
     .join("\n");
 
   const dontBuild =
     ed.dontBuildYet?.trim() ||
-    `Do not build a generic chat box, a full enterprise content library, or integrations nobody asked for. Ship ${name}'s core workflow end-to-end first; if early buyers will not pay for that wedge, stop.`;
+    `Ship ${name}'s core workflow end-to-end before expanding scope. If early buyers will not pay for that wedge, stop.`;
+
+  const stepTitles = steps.map((s) => s.title).join(", ");
+  const tierSummary = tiers.map((t) => `${t.name} at ${t.price}`).join("; ");
+  const planCheck = tierKeys.map((k) => `'${k}'`).join(",");
+  const priceEnv = tierKeys
+    .map((k) => `STRIPE_PRICE_${k.toUpperCase()}`)
+    .join(", ");
 
   const problemNarrative =
     ed.problemNarrative?.trim() ||
     joinBlocks([
-      `${record.brief.oneLiner} That is the job ${name} owns for ${audience} — not "AI for documents" in the abstract.`,
+      `${record.brief.oneLiner} That is the job ${name} owns for ${audience}.`,
       record.community.summary,
-      `Why now: ${record.whyNow}`,
-      `The buyer already tried spreadsheets, shared drives, and raw ChatGPT. What fails is retrieval of approved language under a deadline, with a human still accountable for the final send.`,
+      `Why ${name} now for ${audience}: ${record.whyNow}`,
     ]);
 
   const solutionNarrative =
     ed.solutionNarrative?.trim() ||
     joinBlocks([
       `${name} is not another undifferentiated AI tool. ${record.goToMarket.positioning}`,
-      `The wedge is specific: ${audience} need cited drafts from their own approved knowledge without buying an enterprise suite.`,
-      `Scope is the How-it-works path below — one primary workflow, measurable completion, pricing that undercuts enterprise floors without pretending to be free forever.`,
+      `${name} is built for ${audience}, not a generic seat count.`,
     ]);
-
-  const stepPlaybook = steps
-    .map(
-      (s, i) =>
-        `For step ${i + 1} (**${s.title}**): ${s.body} Success looks like a user finishing this step without opening a side doc. Instrument drop-off here before you add settings screens.`,
-    )
-    .join("\n\n");
-
-  const competitorContrast = record.competitors
-    .slice(0, 4)
-    .map((c) => {
-      const price = c.pricing.trim().replace(/\.+$/, "");
-      return `${c.name} (${price}) solves a neighboring job. ${name} wins only if the buyer who bounced off that price or complexity still completes the ${steps[0]?.title ?? "first"} step in under an hour.`;
-    })
-    .join(" ");
 
   const problemBody = joinBlocks([
     problemNarrative,
-    "Community evidence (verbatim):",
     signalBlocks,
-    `Interview five people in ${audience} before you widen scope past the wedge. Ask what they shipped last quarter, what they copy-pasted, and what they refused to buy.`,
-    competitorContrast,
   ]);
 
   const solutionBody = joinBlocks([
@@ -380,117 +362,85 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     "",
     howItWorksList,
     "",
-    stepPlaybook,
-    "",
     dontBuild,
   ]);
 
+  const whyLine = `Timing for ${name}: ${record.whyNow}`;
   const marketBody = joinBlocks([
     record.market.summary,
+    problemNarrative.includes(trimDot(record.whyNow)) ? null : whyLine,
     stats.length > 0
-      ? "Niche signals (global SaaS/AI mega-TAM figures omitted on purpose):\n\n" +
-        statLines
-      : "Niche sizing was thin in the research pack — treat keyword CPC and competitor price floors as demand proof until you have category-specific TAM.",
-    "Keyword demand (provider metrics only — never model-invented):\n\n" +
-      (keywordDetail || "- _(no keyword rows)_"),
-    `Stage read for ${name}: if CPC is high and volume is low, you win with outbound and communities, not a content farm. If volume is healthy and competitors are expensive, price the wedge and ship.`,
+      ? `Cited niche signals for ${audience}:\n\n${statLines}`
+      : null,
+    keywordLines
+      ? `Keyword demand for ${name} (provider metrics):\n\n${keywordLines}`
+      : null,
   ]);
 
   const competitiveBody = joinBlocks([
-    `Everyone ${name} gets compared to sells a neighboring job. Name the gap in one sentence, then price under their floor or above their complexity tax.`,
+    ed.competitiveNarrative?.trim() ||
+      `${name} wins for ${audience} by staying narrower than the platforms below.`,
     competitorLines,
     "**Your Opportunity**",
-    record.goToMarket.positioning,
-    `Re-check each competitor on their own pricing or product page before you publish numbers. Roundup blogs are research breadcrumbs — not the link on your page.`,
-  ]);
-
-  const tierEssay = tiers
-    .map(
-      (t) =>
-        `**${t.name}** at ${t.price}: ${t.includes}. Sell this tier when the buyer already feels the pain in the quotes above and can name a weekly questionnaire load. Do not invent a free forever plan that trains people to never upgrade.`,
-    )
-    .join("\n\n");
-
-  const yearOneMath = joinBlocks([
-    `Honest year-one math for ${name} (assumptions you are allowed to miss):`,
-    `- 200 named accounts in ${audience} from the channels above`,
-    `- 40 product demos / trials`,
-    `- 10 paying ${tiers[1]?.name ?? "Pro"} workspaces at ${tiers[1]?.price ?? "the mid tier"}`,
-    `- If close-rate halves, you still have a real agency-scale SaaS year — not a vanity launch`,
-    `Miss the questionnaire-completion metric and none of the revenue math matters. Instrument ${steps.map((s) => s.title).join(" → ")} before you buy ads.`,
+    `${name} opportunity for ${audience}: ${record.goToMarket.positioning}`,
   ]);
 
   const businessBody = joinBlocks([
-    `${name} monetizes the wedge with explicit tiers — not vague freemium. Research pricing notes (stated once here, not recopied into Solution or prompts as a second essay): ${record.goToMarket.pricingNotes}`,
+    `${name} pricing for ${audience}: ${record.goToMarket.pricingNotes}`,
     tierLines,
-    tierEssay,
     "**Unit Economics**",
     unitLines,
-    yearOneMath,
-    "Acquisition channels (pick one to start):\n\n" + channelDetail,
+    channelLines
+      ? `${name} channels:\n\n${channelLines}`
+      : null,
   ]);
 
   const stackBody = joinBlocks([
     ed.stackNotes?.trim() ||
-      `${name} should ship on a weekend stack: App Router UI, one Postgres, one auth provider, Stripe for seats, and the smallest retrieval/LLM path that keeps citations honest. Hard parts are grounding and review UX — not a custom deployment plane.`,
+      `${name} for ${audience}: Next.js + TypeScript, Postgres, auth, Stripe for the ${tiers.map((t) => t.name).join(" / ")} tiers, Vercel hosting. Add LLM/embeddings only where a How-it-works step needs them (${stepTitles}).`,
     [
-      "- **Next.js + TypeScript** — app UI, API routes, server actions",
-      "- **Postgres (Supabase or Neon)** — workspaces, docs, citations, usage meters",
-      "- **Auth (Clerk or Supabase Auth)** — seats and team roles",
-      "- **Stripe Billing** — tiered subscriptions matching the Business Model table",
-      "- **Vercel** — hosting and previews",
-      "- **LLM + embeddings** — only where a How-it-works step needs generation or retrieval; meter tokens per workspace",
+      `- **Next.js + TypeScript** — ${name} UI, API routes, and screens for ${audience}`,
+      `- **Postgres (Supabase or Neon)** — ${name} workspaces, documents, usage meters`,
+      `- **Auth (Clerk or Supabase Auth)** — ${name} seats and roles for ${audience}`,
+      `- **Stripe Billing** — ${name} subscriptions matching ${tiers.map((t) => t.name).join(" / ")}`,
+      `- **Vercel** — host ${name} previews and production`,
     ].join("\n"),
-    `Operational note: log cost per completed workflow from week one so ${name}'s unit economics stay honest when you raise limits.`,
   ]);
 
-  const stepTitles = steps.map((s) => s.title).join(", ");
-  const tierSummary = tiers
-    .map((t) => `${t.name} at ${t.price}`)
-    .join("; ");
+  const brandMarkHint =
+    ed.stackNotes?.trim()?.slice(0, 80) ||
+    `a mark that fits ${name}'s job for ${audience}`;
 
   const promptsBody = [
-    "Copy and paste these into Claude, Cursor, or your favorite AI tool.",
+    `Copy these ${name} build prompts into Claude, Cursor, or your AI coding tool.`,
     "",
     "**1. Project Setup**",
     "",
     "```text",
     `Create a Next.js App Router (TypeScript, Tailwind) app named ${name} for ${audience}.`,
-    `Postgres tables with constraints:`,
-    `- workspaces(id uuid pk, name text, plan text check plan in ('starter','pro','team'), created_at timestamptz)`,
-    `- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))`,
-    `- documents(id, workspace_id fk, title, body, source, embedding vector null)`,
-    `- jobs(id, workspace_id fk, status, input jsonb, output jsonb)`,
-    `- answers(id, job_id fk, question, draft, confidence numeric)`,
-    `- citations(id, answer_id fk, document_id fk, span text)`,
-    `- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)`,
-    `Stripe Catalog: ${tierSummary}. Webhook enforces seat caps and plan changes. Meter usage_events before allowing another job.`,
-    `Env vars: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_STARTER, STRIPE_PRICE_PRO, STRIPE_PRICE_TEAM, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
-    `Explicit non-goals: ${dontBuild}`,
+    `Postgres: workspaces(id, name, plan text check plan in (${planCheck})), members(id, workspace_id, user_id, role), documents(id, workspace_id, title, body, source), jobs(id, workspace_id, status, input jsonb, output jsonb), usage_events(id, workspace_id, tokens, usd_micros).`,
+    `Stripe catalog must match Business Model tiers exactly: ${tierSummary}. Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ${priceEnv}, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
+    `Non-goals for ${name}: ${dontBuild}`,
     "```",
     "",
     "**2. Core Feature**",
     "",
     "```text",
-    `Implement ${name}'s core workflow as separate routes/screens: ${stepTitles}.`,
-    `Persist job state between steps. Show citations inline beside each draft answer. Flag confidence < 0.6 for human review before export.`,
-    `Acceptance: a new workspace can finish ${steps.map((s) => s.title).join(" → ")} on sample data without leaving the app.`,
+    `Implement ${name}'s workflow as separate screens: ${stepTitles}.`,
+    `Persist ${name} job state between steps. Acceptance: a new workspace finishes ${steps.map((s) => s.title).join(" → ")} on sample data for ${audience}.`,
     "```",
     "",
     "**3. Landing Page**",
     "",
     "```text",
-    `One-pager for ${name}. Hero (named product): "${record.brief.oneLiner}".`,
-    `Sections: problem for ${audience}; how it works (${stepTitles}); competitor strip naming ${record.competitors.map((c) => c.name).join(", ")} with their prices; pricing table (${tierSummary}); single CTA into the core workflow.`,
-    `Typography: Geist, near-black on off-white, one accent. Ban phrases: "an AI tool", "leveraging AI", global SaaS TAM.`,
+    `One-pager for ${name}. Hero: "${record.brief.oneLiner}".`,
+    `Sections: problem for ${audience}; how ${name} works (${stepTitles}); competitor strip (${record.competitors.map((c) => c.name).join(", ")}); pricing (${tierSummary}); CTA into the ${name} core workflow.`,
     "```",
     "",
     "**4. Branding Package**",
     "",
     "```text",
-    `Brand ${name}: wordmark + small mark that signals trust/citations (passport stamp / check-slash), not a chatbot bubble or sparkle.`,
-    `Voice: operator-to-operator, specific buyers (${audience}), specific money. Three rules: (1) say ${name} every time — never "our AI platform"; (2) show keep-vs-enterprise price contrast using research floors; (3) never promise a feature grid you have not built.`,
-    `Deliverables: one-page brand sheet (hex, type, logo clearspace), three CTA lines, two audit/onboarding email variants that open with the buyer's actual workload.`,
+    `Brand ${name}: wordmark plus ${brandMarkHint}. Voice: specific buyers (${audience}), specific money. Always say ${name} — never "our AI platform". One-page ${name} brand sheet (hex, type, three CTA lines).`,
     "```",
   ].join("\n");
 
@@ -518,12 +468,10 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ...CANONICAL_SECTION_TITLES.map(
       (title) => `## ${title}\n\n${escapeOutsideFences(sections[title]!)}\n`,
     ),
-    `## ${SOURCES_TITLE}\n\nResearch citations used above (engine compile).\n\n${escapeMdxProse(sourceLinks)}\n`,
+    `## ${SOURCES_TITLE}\n\n${escapeMdxProse(sourceLinks)}\n`,
   ]
     .join("\n")
-    // Collapse accidental double periods from field joins (keep ellipses).
     .replace(/(?<!\.)\.\.(?!\.)/g, ".");
-
 
   const mdx = [
     "---",
@@ -580,7 +528,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       wordCount,
       auditPassed: false,
       auditRunAt: record.provenance.ranAt,
-      publishNotes: `engine compile; product=${name}; costUsd=${record.provenance.costUsd.toFixed(4)}; no filler pad; tagging left for operator`,
+      publishNotes: `engine compile; product=${name}; costUsd=${record.provenance.costUsd.toFixed(4)}; tagging left for operator`,
     },
   };
 

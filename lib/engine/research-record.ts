@@ -70,14 +70,16 @@ export type UnitEconRow = {
  * Older records omit them; the compiler derives sensible fallbacks.
  */
 export type EditorialFields = {
-  /** Short product name (e.g. "Revoice"), not "an AI tool". */
+  /** Short product name (e.g. "CiteDraft"), not "an AI tool". */
   productName?: string;
   /** Explicit deferral: what NOT to build yet. */
   dontBuildYet?: string;
-  /** Dense problem prose (≥120 words preferred). */
+  /** Dense problem prose (≥280 words preferred). */
   problemNarrative?: string;
-  /** Dense solution prose (≥80 words preferred). */
+  /** Dense solution prose (≥200 words preferred). */
   solutionNarrative?: string;
+  /** Competitive contrast prose (≥100 words preferred). */
+  competitiveNarrative?: string;
   pricingTiers?: PricingTier[];
   unitEconomics?: UnitEconRow[];
   /** Stack guidance specific to this idea. */
@@ -447,6 +449,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         "dontBuildYet",
         "problemNarrative",
         "solutionNarrative",
+        "competitiveNarrative",
         "stackNotes",
       ] as const) {
         const v = input.editorial[key];

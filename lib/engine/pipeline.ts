@@ -89,6 +89,7 @@ type SynthesisPack = {
     dontBuildYet?: string;
     problemNarrative?: string;
     solutionNarrative?: string;
+    competitiveNarrative?: string;
     pricingTiers?: Array<{ name: string; price: string; includes: string }>;
     unitEconomics?: Array<{ label: string; value: string }>;
     stackNotes?: string;
@@ -287,10 +288,9 @@ async function stepBriefNormalization(
     typeof parsed.title === "string" && parsed.title.trim()
       ? parsed.title.trim()
       : seed.title;
-  const audience =
-    typeof parsed.audience === "string" && parsed.audience.trim()
-      ? parsed.audience.trim()
-      : seed.audience;
+  // Prefer brief seed casing — models often lowercase "SMB SaaS".
+  const audience = seed.audience.trim() ||
+    (typeof parsed.audience === "string" ? parsed.audience.trim() : "");
   const model =
     typeof parsed.model === "string" && parsed.model.trim()
       ? parsed.model.trim()
@@ -600,6 +600,7 @@ function parseEditorial(
     "dontBuildYet",
     "problemNarrative",
     "solutionNarrative",
+    "competitiveNarrative",
     "stackNotes",
   ] as const) {
     const v = raw[key];
@@ -643,18 +644,23 @@ function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
 
 const SYNTHESIS_INSTRUCTIONS =
   "Score this idea using only the supplied research. Reply with JSON only. " +
-  "Required keys: marketSummary (niche-focused, 120-200 words; NEVER quote global SaaS/AI TAM like $375B+), " +
+  "Preserve audience casing from the brief (SMB SaaS, not smb saas). " +
+  "Required keys: marketSummary (niche-focused, 180-280 words; NEVER quote global SaaS/AI TAM like $375B+), " +
   "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM), " +
-  "competitors[{name,pricing,url,notes}] (url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs), " +
-  "communitySummary, signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
-  "goToMarket{positioning,channels,pricingNotes}, whyNow, " +
-  "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'), " +
+  "competitors[{name,pricing,url,notes}] (url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs; notes ≥25 words each, unique per competitor), " +
+  "communitySummary (≥100 words), signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
+  "goToMarket{positioning (≥40 words),channels,pricingNotes (≥60 words)}, whyNow, " +
+  "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'; each description ≥35 words), " +
   "oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} (1-10; timing=market timing, execution=build feasibility), " +
-  "editorial{productName (short brand name, not 'an AI tool'), dontBuildYet (one sentence: what NOT to build yet), " +
-  "problemNarrative (150-250 words, named buyers, specific pain), solutionNarrative (100-180 words, named product + wedge), " +
-  "pricingTiers[{name,price,includes}] (≥2 explicit priced tiers), unitEconomics[{label,value}] (≥2 concrete rows), stackNotes}. " +
+  "editorial{productName (short brand name unique to THIS idea, not a reused brand from another idea, not 'an AI tool'), dontBuildYet (one sentence: what NOT to build yet), " +
+  "problemNarrative (300-420 words, named buyers with proper casing, specific pain, no operator/meta notes), " +
+  "solutionNarrative (220-320 words, named product + wedge), " +
+  "competitiveNarrative (120-180 words, how THIS product differs from named competitors), " +
+  "pricingTiers[{name,price,includes}] (exactly three tiers named Starter, Team, Scale — same names used everywhere), " +
+  "unitEconomics[{label,value}] (≥3 concrete rows naming the product), stackNotes (≥60 words, product-specific)}. " +
   "goToMarket.channels are customer-acquisition channels. Every citationUrl and competitor url must be copied exactly from a supplied citation; other URLs are discarded. " +
-  "NEVER invent keyword volume or CPC.";
+  "NEVER invent keyword volume or CPC. NEVER emit operator notes like 're-check before publish' or 'never model-invented'. " +
+  "Do not reuse cross-idea padding phrases (no 'Success looks like a user finishing this step without opening a side doc', no 'passport stamp', no 'agency-scale SaaS year', no 'weekly questionnaire load').";
 
 export type RunResearchOptions = {
   brief: BriefInput;

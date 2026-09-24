@@ -27,10 +27,13 @@ import {
   auditHowItWorksNaming,
   extractBlockquotes,
   extractCompetitorLinks,
+  findCrossIdeaSentenceDupes,
+  findDuplicateSentencesInPage,
   findFillerHits,
   findHygieneIssues,
   findMegaTamHits,
   findNearDuplicateParagraphs,
+  findTierMismatches,
   isCompetitorRoundupUrl,
   isDeepDraftSlug,
   MIN_DEEP_BODY_WORDS,
@@ -224,11 +227,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   if (deep) {
     if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
       errors.push(
-        `body word count ${wordCount} < ${MIN_DEEP_BODY_WORDS_HARD} (deep draft hard floor)`,
-      );
-    } else if (wordCount < MIN_DEEP_BODY_WORDS) {
-      warnings.push(
-        `body word count ${wordCount} under IB deep target ${MIN_DEEP_BODY_WORDS} (hard floor ${MIN_DEEP_BODY_WORDS_HARD} cleared)`,
+        `body word count ${wordCount} < ${MIN_DEEP_BODY_WORDS_HARD} (deep draft hard floor; unique non-padded content)`,
       );
     }
   } else if (wordCount < MIN_BODY_WORDS) {
@@ -247,6 +246,38 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     errors.push(
       `near-duplicate paragraphs (${dups.length} pair(s); e.g. #${dups[0].i}+#${dups[0].j} sim=${dups[0].similarity})`,
     );
+  }
+
+  // Round 3: sentence-level in-page dedupe (8+ words)
+  const sentenceDups = findDuplicateSentencesInPage(body);
+  for (const d of sentenceDups.slice(0, 8)) {
+    errors.push(
+      `duplicate sentence (≥8 words) on this page: "${d.sentence.slice(0, 100)}${d.sentence.length > 100 ? "…" : ""}"`,
+    );
+  }
+
+  // Round 3: cross-idea sentence dedupe among sibling engine-draft-* in same dir
+  let crossIdeaHits = [];
+  if (deep) {
+    const dir = path.dirname(filePath);
+    const otherBodies = {};
+    try {
+      for (const f of fs.readdirSync(dir)) {
+        if (!f.startsWith("engine-draft-") || !f.endsWith(".mdx")) continue;
+        const otherSlug = f.replace(/\.mdx$/, "");
+        if (otherSlug === slug) continue;
+        const rawOther = fs.readFileSync(path.join(dir, f), "utf8");
+        otherBodies[otherSlug] = splitFrontmatter(rawOther).body;
+      }
+    } catch {
+      // temp dirs / missing siblings — skip
+    }
+    crossIdeaHits = findCrossIdeaSentenceDupes(slug, body, otherBodies);
+    for (const h of crossIdeaHits.slice(0, 8)) {
+      errors.push(
+        `cross-idea duplicate sentence (≥8 words) also in ${h.otherSlug}: "${h.sentence.slice(0, 100)}${h.sentence.length > 100 ? "…" : ""}"`,
+      );
+    }
   }
 
   if (solution) {
@@ -289,8 +320,9 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       }
     }
 
-    // Four AI prompts (incl. branding)
+    // Four AI prompts (incl. branding) + tier consistency vs Business Model
     const prompts = sections.find((s) => s.title === "AI Prompts to Build This");
+    const business = sections.find((s) => s.title === "Business Model");
     if (prompts) {
       const promptHeads = [
         ...prompts.content.matchAll(/\*\*\d+\.\s+([^*]+)\*\*/g),
@@ -312,6 +344,11 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
           errors.push(
             `Project Setup prompt too thin (${setupWords} words; need schema/pricing/env ≥60)`,
           );
+        }
+      }
+      if (business) {
+        for (const e of findTierMismatches(business.content, prompts.content)) {
+          errors.push(e);
         }
       }
     }
@@ -357,6 +394,8 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     wordHardFloor: deep ? MIN_DEEP_BODY_WORDS_HARD : MIN_BODY_WORDS,
     fillerHits: fillerHits.length,
     nearDuplicatePairs: dups.length,
+    duplicateSentences: sentenceDups.length,
+    crossIdeaSentenceDupes: crossIdeaHits.length,
   };
 
   return {
@@ -424,10 +463,11 @@ function main() {
   node scripts/audit-idea-mdx.mjs --all
   node scripts/audit-idea-mdx.mjs --slug <slug> --json
 
-Deep drafts (engine-draft-*) enforce ≥${MIN_DEEP_BODY_WORDS_HARD} words hard
-(target ${MIN_DEEP_BODY_WORDS}), no stock filler, named How-it-works steps, niche
-sizing, first-party competitor URLs, four AI prompts incl. Branding, and quote
-fidelity vs engine/records/.`);
+Deep drafts (engine-draft-*) enforce ≥${MIN_DEEP_BODY_WORDS_HARD} unique words,
+no stock filler / Round-3 padding templates, no duplicate ≥8-word sentences
+(in-page or across engine-draft-* siblings), named How-it-works steps, niche
+sizing, first-party competitor URLs, matching Business Model ↔ Setup tiers,
+four AI prompts incl. Branding, and quote fidelity vs engine/records/.`);
     process.exit(args.help ? 0 : 2);
   }
 
