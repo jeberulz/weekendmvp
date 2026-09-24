@@ -394,7 +394,9 @@ export function MegaNav({
           <Link
             href="/starter-kit"
             className={cn(
-              "group relative hidden lg:inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform active:scale-95",
+              // Phones keep the CTA (auth links live in the MobileNav sheet);
+              // md–lg drops it to make room for Login / Sign up.
+              "group relative inline-flex md:hidden lg:inline-flex overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform active:scale-95",
               t.ctaRing
             )}
           >
