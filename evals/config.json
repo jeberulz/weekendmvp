@@ -31,5 +31,10 @@
     "shingleWords": 8,
     "pairShareWarn": 0.05,
     "pairShareFail": 0.2
+  },
+  "llm": {
+    "$comment": "WP41-S2. LLM layers (claim extraction, verification, judges) call OpenRouter through lib/evals/llm.ts under a hard cap: EVALS_MAX_USD, default and maximum $10. Prices are read live from OpenRouter, never hard-coded. Pin exact model IDs (never openrouter/auto) in judges; check them with npm run evals:ping -- --live.",
+    "requestTimeoutMs": 120000,
+    "judges": []
   }
 }

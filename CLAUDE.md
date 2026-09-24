@@ -40,7 +40,10 @@ before an idea ships. CI runs `npm run evals:changed` and blocks any new or
 edited idea page that fails (structure, AI-slop phrases, placeholders, source
 hygiene, copied text). Existing pages are report-only: the ranked backlog is
 `evals/results/report.md`. Thresholds: `evals/config.json`,
-`evals/slop-lexicon.json`.
+`evals/slop-lexicon.json`. The LLM layers (WIP) call OpenRouter only through
+`lib/evals/llm.ts`, which enforces a hard cap (`EVALS_MAX_USD`, max $10) and
+reads prices live. Check wiring with `npm run evals:ping -- --fixture`
+(no key) or `-- --live` (`OPENROUTER_API_KEY`).
 
 ## Accessibility
 

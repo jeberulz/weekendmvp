@@ -53,3 +53,23 @@ Takeaways: the corpus is light on stock AI phrasing and has no copied pages. The
   - `--changed` diffs the working tree, so uncommitted and untracked pages count locally. In CI the tree equals HEAD.
   - On a push to `main` with several commits, only the last commit's pages are checked. PRs are the real gate.
 - Next: `WP41-S2` OpenRouter provider, fixture mode, `EVALS_MAX_USD` cap. Needs `OPENROUTER_API_KEY`.
+
+## 2026-09-24 - WP41-S2 OpenRouter provider, fixture mode, hard cost cap
+
+- Actions taken:
+  - `lib/evals/errors.ts`: `EvalConfigError`, `EvalCallError` (with `billing`: none / billed / unknown), `BudgetExceededError`. Separate from the engine's frozen provider-role types.
+  - `lib/evals/budget.ts`: micro-dollar budget. Reserve worst case before a call, refuse if spent + open reservations would cross the cap, settle to the actual charge, release unbilled calls. `readCapUsd`: `EVALS_MAX_USD` may lower the cap, never raise it past the $10 ruling.
+  - `lib/evals/providers/openrouter.ts`: raw-`fetch` adapter, key read at call time, `temperature` 0 by default, JSON mode with `provider.require_parameters`, 120 s timeout, status mapping (401/402/400/404 not retryable; 408/429/5xx retryable), empty reply fails closed. Prices come from the live `GET /models` list; variable-priced routers are rejected.
+  - `lib/evals/providers/fixtures.ts`: fetch-shaped fixture for `/models` and `/chat/completions`.
+  - `lib/evals/llm.ts`: the only path Layers 1-3 will use. Price lookup (once per run) → reserve → call → settle → ledger entry, including for failures. JSON replies are parsed, and a non-JSON reply fails after being charged.
+  - `scripts/evals-ping.mjs` (`npm run evals:ping`): `--fixture`, `--live [--models]`, `--live --list [filter]`.
+  - `evals/config.json` `llm` section (`judges: []` until S4), `.env.example`, `CLAUDE.md`, `test:evals` now also runs `vitest run lib/evals`.
+- Decisions made:
+  - No hard-coded rate card. The engine pins prices in `pricing.ts`, but the judges are not chosen yet and OpenRouter prices move. Reading `/models` at run time means a stale price can never under-reserve.
+  - A call with an unknown outcome (network error, timeout, unreadable 200) is charged at worst case. A call rejected with an error status is charged $0. OpenRouter's reported `usage.cost` wins over the token estimate.
+  - Worst-case input tokens use 3 characters per token plus 16 per message, which over-reserves. If a provider still reports more than the reservation, the real figure is recorded and the next reservation sees it.
+- Checks run: `npm run typecheck` pass; `npm run lint` 0 errors; `npm test` pass (34 new vitest cases); `npm run build` pass; `git diff --check` clean. `npm run evals:ping -- --fixture` → 3 OK, $0.000048. `--live` with no pinned judges exits 2 with guidance. `EVALS_MAX_USD=50` refused.
+- Gotchas:
+  - This cloud container's network policy denies `openrouter.ai` (proxy 403), so live mode could not be exercised here. It failed closed as designed: "OpenRouter model list returned 403", $0 spent. Live verification needs `openrouter.ai` allowed and `OPENROUTER_API_KEY` set.
+  - Judge model IDs are not pinned. Pick them with `npm run evals:ping -- --live --list <filter>` and record a RULINGS row at S4.
+- Next: `WP41-S3` claim extraction + source verification.
