@@ -4,9 +4,11 @@
  *
  * Usage:
  *   npm run engine:research -- --fixture rfp-assistant --out /tmp/record.json
- *   npm run engine:research -- --brief engine/briefs/rfp-assistant.json --out path
+ *   npm run engine:research -- --brief path/to/brief.json --live --out path
  *
- * Default / --fixture mode needs no API keys. --live spends against providers.
+ * --fixture needs no API keys and returns canned RFP-assistant data, so it
+ * only runs named fixture briefs. Any other brief needs --live, which spends
+ * against providers. There is no implicit mode.
  */
 
 import fs from "node:fs";
@@ -18,12 +20,14 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 function usage(exit = 1) {
   console.error(`Usage:
   node --experimental-strip-types scripts/engine-research.mjs --fixture <name> [--out path]
-  node --experimental-strip-types scripts/engine-research.mjs --brief path.json [--fixture|--live] [--out path]
+  node --experimental-strip-types scripts/engine-research.mjs --brief path.json --live [--out path]
 
 Flags:
-  --fixture [name]  Fixture providers (no API keys). Name loads engine/briefs/{name}.json
-                    when --brief is omitted (e.g. rfp-assistant).
-  --brief path      Brief JSON: { title, audience, revenueModel, seedKeywords[] }
+  --fixture name    Fixture providers (no API keys, canned RFP-assistant data).
+                    Loads engine/briefs/{name}.json (e.g. rfp-assistant).
+                    Cannot be combined with --brief or --live.
+  --brief path      Brief JSON: { title, audience, revenueModel, seedKeywords[] }.
+                    Requires --live.
   --out path        Output ResearchRecord JSON (default: engine/records/{slug}.json)
   --live            Live providers. Reads OPENAI_API_KEY, PERPLEXITY_API_KEY,
                     DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD from the shell, then
@@ -78,23 +82,35 @@ function loadLocalEnv() {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!args.briefPath && !args.fixtureName) usage(1);
 
-  let briefPath = args.briefPath;
-  if (!briefPath && args.fixtureName) {
-    briefPath = path.join(root, "engine", "briefs", `${args.fixtureName}.json`);
+  // Fixture providers return canned RFP-assistant payloads for any brief.
+  // Mode is always explicit, and fixture mode only runs named fixture briefs,
+  // so canned data is never written under another idea's slug.
+  if (args.live && args.fixture) {
+    console.error("--live and --fixture are mutually exclusive");
+    process.exit(1);
   }
+  if (args.fixture && (args.briefPath || !args.fixtureName)) {
+    console.error(
+      "--fixture takes a fixture name (engine/briefs/{name}.json) and cannot be combined with --brief",
+    );
+    process.exit(1);
+  }
+  if (!args.fixture && !(args.briefPath && args.live)) {
+    console.error("pass --fixture <name>, or --brief <path> --live");
+    usage(1);
+  }
+  const resolvedMode = args.live ? "live" : "fixture";
+
+  const briefPath =
+    args.briefPath ??
+    path.join(root, "engine", "briefs", `${args.fixtureName}.json`);
   if (!briefPath || !fs.existsSync(briefPath)) {
     console.error(`brief not found: ${briefPath}`);
     process.exit(1);
   }
 
   const brief = JSON.parse(fs.readFileSync(briefPath, "utf8"));
-  // Fixture is the default; --live only when not also --fixture.
-  const mode = args.live && !args.fixture ? "live" : "fixture";
-  // Bare --brief without --live still uses fixture (offline-safe default).
-  const resolvedMode =
-    args.live && !args.fixtureName && !args.fixture ? "live" : mode;
 
   if (resolvedMode === "live") loadLocalEnv();
 

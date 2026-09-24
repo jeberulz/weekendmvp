@@ -25,6 +25,25 @@ export type WriteCompileResult = CompileResult & {
   manifestWritten: boolean;
 };
 
+/**
+ * Write via a temp file in the target's directory, then rename. A rename in
+ * one directory is atomic, so a failed or interrupted write leaves the old
+ * file intact instead of a truncated manifest holding every idea row.
+ */
+function writeFileAtomic(target: string, data: string): void {
+  const tmp = path.join(
+    path.dirname(target),
+    `.${path.basename(target)}.${process.pid}.${Date.now()}.tmp`,
+  );
+  try {
+    fs.writeFileSync(tmp, data);
+    fs.renameSync(tmp, target);
+  } catch (error) {
+    fs.rmSync(tmp, { force: true });
+    throw error;
+  }
+}
+
 export function writeCompiledIdea(
   options: WriteCompileOptions,
 ): WriteCompileResult {
@@ -80,20 +99,20 @@ export function writeCompiledIdea(
   }
 
   fs.mkdirSync(ideasDir, { recursive: true });
-  fs.writeFileSync(mdxPath, compiled.mdx);
+  writeFileAtomic(mdxPath, compiled.mdx);
 
   let manifestWritten = false;
   if (manifest && options.manifestPath) {
     try {
       fs.mkdirSync(path.dirname(options.manifestPath), { recursive: true });
-      fs.writeFileSync(
+      writeFileAtomic(
         options.manifestPath,
         `${JSON.stringify(manifest, null, 2)}\n`,
       );
     } catch (error) {
       // Keep the pair consistent: put back the MDX that was there before
       // (a --force overwrite), or drop the one this call created.
-      if (previousMdx !== null) fs.writeFileSync(mdxPath, previousMdx);
+      if (previousMdx !== null) writeFileAtomic(mdxPath, previousMdx);
       else fs.rmSync(mdxPath, { force: true });
       throw error;
     }

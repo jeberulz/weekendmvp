@@ -42,6 +42,8 @@ type DataForSeoItem = {
 type DataForSeoPayload = {
   status_code?: number;
   status_message?: string;
+  /** Amount DataForSEO actually charged for the request, in USD. */
+  cost?: unknown;
   tasks?: Array<{
     status_code?: number;
     result?: DataForSeoItem[] | null;
@@ -173,12 +175,17 @@ export function createKeywordDataProvider(
         }
       }
 
+      // Prefer the charge DataForSEO reports; fall back to the rate card.
+      const reportedUsd = readNumber(payload.cost);
       const cost: ProviderCost = {
         role: "keywordData",
         provider: KEYWORD_PROVIDER,
         billedAs: "google_ads/search_volume/live",
-        usd: estimateKeywordUsd({ tasks: tasks.length, items }),
-        estimated: true,
+        usd:
+          reportedUsd !== null && reportedUsd >= 0
+            ? reportedUsd
+            : estimateKeywordUsd({ tasks: tasks.length, items }),
+        estimated: reportedUsd === null || reportedUsd < 0,
         units: { tasks: tasks.length, items },
       };
 

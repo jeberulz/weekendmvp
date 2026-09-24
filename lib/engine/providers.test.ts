@@ -276,6 +276,33 @@ describe("keyword adapter (never estimates)", () => {
     );
   });
 
+  it("records the charge DataForSEO reports instead of the rate-card estimate", async () => {
+    const provider = createKeywordDataProvider({
+      fetchImpl: fixtureKeywordFetch({
+        payload: { ...KEYWORD_FIXTURE, cost: 0.075 },
+      }),
+    });
+    const result = await provider.lookup({
+      keywords: ["collectible authentication"],
+      locationCode: 2840,
+      languageCode: "en",
+    });
+    expect(result.cost.usd).toBe(0.075);
+    expect(result.cost.estimated).toBe(false);
+  });
+
+  it("falls back to the rate card when no charge is reported", async () => {
+    const provider = createKeywordDataProvider({
+      fetchImpl: fixtureKeywordFetch(),
+    });
+    const result = await provider.lookup({
+      keywords: ["collectible authentication"],
+      locationCode: 2840,
+      languageCode: "en",
+    });
+    expect(result.cost.estimated).toBe(true);
+  });
+
   it("drops a keyword with a missing metric rather than defaulting it to zero", async () => {
     const provider = createKeywordDataProvider({
       fetchImpl: fixtureKeywordFetch({
