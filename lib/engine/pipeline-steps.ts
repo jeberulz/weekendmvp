@@ -104,7 +104,7 @@ export const PIPELINE: readonly PipelineStep[] = [
     budget: {
       role: "synthesis",
       maxInputTokens: 60_000,
-      maxOutputTokens: 4_000,
+      maxOutputTokens: 8_000,
     },
   },
   {

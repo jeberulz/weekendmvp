@@ -84,7 +84,20 @@ type SynthesisPack = {
   howItWorks: string[];
   oneLiner: string;
   scores?: ResearchScores;
+  editorial?: {
+    productName?: string;
+    dontBuildYet?: string;
+    problemNarrative?: string;
+    solutionNarrative?: string;
+    pricingTiers?: Array<{ name: string; price: string; includes: string }>;
+    unitEconomics?: Array<{ label: string; value: string }>;
+    stackNotes?: string;
+  };
 };
+
+/** Drop global SaaS/AI TAM rows — niche sizing only. */
+const MEGA_TAM_STAT_RE =
+  /global saas|worldwide saas|saas market.{0,40}\$\s?\d{2,4}|global ai (software|tools|market).{0,40}\$/i;
 
 const LOCATION_CODE = 2840;
 const LANGUAGE_CODE = "en";
@@ -427,6 +440,7 @@ function parseSynthesisPack(
     const value = typeof r.value === "string" ? r.value.trim() : "";
     const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
     if (claim && value && citation) {
+      if (MEGA_TAM_STAT_RE.test(`${claim} ${value}`)) continue;
       stats.push({ claim, value, citation });
     }
   }
@@ -520,7 +534,52 @@ function parseSynthesisPack(
       (typeof parsed.oneLiner === "string" && parsed.oneLiner.trim()) ||
       brief.oneLiner,
     scores,
+    editorial: parseEditorial(parsed),
   };
+}
+
+function parseEditorial(
+  parsed: Record<string, unknown>,
+): SynthesisPack["editorial"] {
+  const raw =
+    typeof parsed.editorial === "object" && parsed.editorial !== null
+      ? (parsed.editorial as Record<string, unknown>)
+      : parsed;
+  const out: NonNullable<SynthesisPack["editorial"]> = {};
+  for (const key of [
+    "productName",
+    "dontBuildYet",
+    "problemNarrative",
+    "solutionNarrative",
+    "stackNotes",
+  ] as const) {
+    const v = raw[key];
+    if (typeof v === "string" && v.trim()) out[key] = v.trim();
+  }
+  if (Array.isArray(raw.pricingTiers)) {
+    const tiers: Array<{ name: string; price: string; includes: string }> = [];
+    for (const row of raw.pricingTiers) {
+      if (typeof row !== "object" || row === null) continue;
+      const r = row as Record<string, unknown>;
+      const name = typeof r.name === "string" ? r.name.trim() : "";
+      const price = typeof r.price === "string" ? r.price.trim() : "";
+      const includes = typeof r.includes === "string" ? r.includes.trim() : "";
+      if (name && price && includes) tiers.push({ name, price, includes });
+    }
+    if (tiers.length > 0) out.pricingTiers = tiers;
+  }
+  if (Array.isArray(raw.unitEconomics)) {
+    const rows: Array<{ label: string; value: string }> = [];
+    for (const row of raw.unitEconomics) {
+      if (typeof row !== "object" || row === null) continue;
+      const r = row as Record<string, unknown>;
+      const label = typeof r.label === "string" ? r.label.trim() : "";
+      const value = typeof r.value === "string" ? r.value.trim() : "";
+      if (label && value) rows.push({ label, value });
+    }
+    if (rows.length > 0) out.unitEconomics = rows;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
@@ -534,16 +593,18 @@ function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
 }
 
 const SYNTHESIS_INSTRUCTIONS =
-  "Score this idea using only the supplied research. Reply with " +
-  "JSON only containing marketSummary, stats[{claim,value,citationUrl,citationTitle}], " +
-  "competitors[{name,pricing,url,notes}], communitySummary, " +
-  "signals[{quote,citationUrl,citationTitle}], goToMarket{positioning,channels,pricingNotes}, " +
-  "whyNow, howItWorks, oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} " +
-  "(each 1-10; timing is market timing, execution is build feasibility). " +
-  "goToMarket.channels are customer-acquisition channels. howItWorks is 3-5 short " +
-  "steps describing how a user moves through the product. Every citationUrl and " +
-  "competitor url must be copied exactly from a supplied citation; rows with any " +
-  "other URL are discarded. Quotes must come from the supplied community research. " +
+  "Score this idea using only the supplied research. Reply with JSON only. " +
+  "Required keys: marketSummary (niche-focused, 120-200 words; NEVER quote global SaaS/AI TAM like $375B+), " +
+  "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM), " +
+  "competitors[{name,pricing,url,notes}] (url MUST be that company's own pricing or product page from the supplied citations — never a roundup/best-of blog), " +
+  "communitySummary, signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
+  "goToMarket{positioning,channels,pricingNotes}, whyNow, " +
+  "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'), " +
+  "oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} (1-10; timing=market timing, execution=build feasibility), " +
+  "editorial{productName (short brand name, not 'an AI tool'), dontBuildYet (one sentence: what NOT to build yet), " +
+  "problemNarrative (150-250 words, named buyers, specific pain), solutionNarrative (100-180 words, named product + wedge), " +
+  "pricingTiers[{name,price,includes}] (≥2 explicit priced tiers), unitEconomics[{label,value}] (≥2 concrete rows), stackNotes}. " +
+  "goToMarket.channels are customer-acquisition channels. Every citationUrl and competitor url must be copied exactly from a supplied citation; other URLs are discarded. " +
   "NEVER invent keyword volume or CPC.";
 
 export type RunResearchOptions = {
@@ -625,7 +686,7 @@ export async function runResearch(
       providers,
       run,
       1,
-      `${briefContext(brief)}\n\nFind at least two market statistics with sources, including market size and CAGR. Cite every figure.`,
+      `${briefContext(brief)}\n\nFind at least two NICHE market statistics with sources for this specific category (size, CAGR, or buyer spend in the segment). Do NOT cite global SaaS market, worldwide SaaS revenue, or generic AI software TAM ($100B+). Cite every figure.`,
     );
   } catch (error) {
     throw stepError("market_stats", "market search failed", error);
@@ -638,7 +699,7 @@ export async function runResearch(
       providers,
       run,
       2,
-      `${briefContext(brief)}\n\nIdentify at least three direct competitors with their current pricing and positioning gaps. Cite each.`,
+      `${briefContext(brief)}\n\nIdentify at least three direct competitors. For each, find their OFFICIAL pricing page URL (company.com/pricing or product page) and current plan prices. Do NOT use roundup/best-of/comparison blog posts as the competitor URL. Cite each.`,
     );
   } catch (error) {
     throw stepError("competitors", "competitors search failed", error);
@@ -651,7 +712,7 @@ export async function runResearch(
       providers,
       run,
       3,
-      `${briefContext(brief)}\n\nFind pain evidence discussed by real users on Reddit, Hacker News, and YouTube. Quote briefly and link each source.`,
+      `${briefContext(brief)}\n\nFind pain evidence from real users on Reddit, Hacker News, and YouTube. Copy short VERBATIM quotes (do not rewrite) and link each source.`,
     );
   } catch (error) {
     throw stepError("community_signals", "community search failed", error);
@@ -744,6 +805,7 @@ export async function runResearch(
     whyNow: synth.whyNow,
     howItWorks: synth.howItWorks,
     ...(synth.scores ? { scores: synth.scores } : {}),
+    ...(synth.editorial ? { editorial: synth.editorial } : {}),
     provenance: {
       providerCalls,
       costUsd: fromMicroUsd(spentMicroUsd),

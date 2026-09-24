@@ -230,11 +230,15 @@ describe("compile safety", () => {
     expect(() => compileResearchRecord({ record })).toThrow(/howItWorks/);
   });
 
-  it("uses the record's steps and no RFP-specific copy", async () => {
+  it("uses the record's named steps and no RFP-specific copy", async () => {
     const record = await fixtureRecord();
-    record.howItWorks = ["Snap a photo of the card", "Get an authenticity score"];
+    record.howItWorks = [
+      "Capture — Snap a photo of the card",
+      "Score — Get an authenticity score",
+    ];
     const { mdx } = compileResearchRecord({ record, slug: "card-check" });
-    expect(mdx).toContain("1. **Step 1** — Snap a photo of the card");
+    expect(mdx).toContain("1. **Capture** — Snap a photo of the card");
+    expect(mdx).not.toMatch(/\*\*Step 1\*\*/);
     for (const rfpOnly of [
       "proposal ops platforms",
       "legal will not sign off",
@@ -243,6 +247,19 @@ describe("compile safety", () => {
       "Retrieve supporting evidence",
     ]) {
       expect(mdx).not.toContain(rfpOnly);
+    }
+  });
+
+  it("never pads with stock filler phrases", async () => {
+    const record = await fixtureRecord();
+    const { mdx } = compileResearchRecord({ record, slug: "no-filler" });
+    for (const phrase of [
+      "Before you build, confirm the pain",
+      "Add AI APIs, queues, or search only when a step",
+      "This idea is for ",
+      "Build a focused product for ",
+    ]) {
+      expect(mdx.toLowerCase()).not.toContain(phrase.toLowerCase());
     }
   });
 });

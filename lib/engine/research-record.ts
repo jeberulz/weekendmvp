@@ -54,6 +54,36 @@ export type GoToMarket = {
   pricingNotes: string;
 };
 
+export type PricingTier = {
+  name: string;
+  price: string;
+  includes: string;
+};
+
+export type UnitEconRow = {
+  label: string;
+  value: string;
+};
+
+/**
+ * Optional editorial fields produced by synthesis for the MDX compiler.
+ * Older records omit them; the compiler derives sensible fallbacks.
+ */
+export type EditorialFields = {
+  /** Short product name (e.g. "Revoice"), not "an AI tool". */
+  productName?: string;
+  /** Explicit deferral: what NOT to build yet. */
+  dontBuildYet?: string;
+  /** Dense problem prose (≥120 words preferred). */
+  problemNarrative?: string;
+  /** Dense solution prose (≥80 words preferred). */
+  solutionNarrative?: string;
+  pricingTiers?: PricingTier[];
+  unitEconomics?: UnitEconRow[];
+  /** Stack guidance specific to this idea. */
+  stackNotes?: string;
+};
+
 export type ResearchScores = {
   opportunity?: number;
   pain?: number;
@@ -92,11 +122,13 @@ export type ResearchRecord = {
   whyNow: string;
   /**
    * Product workflow steps for the page's "How it works" list (HowTo schema).
+   * Prefer `Title — description` so the compiler can emit named steps.
    * Optional for older records; the compiler refuses a record without it
    * rather than guessing steps.
    */
   howItWorks?: string[];
   scores?: ResearchScores;
+  editorial?: EditorialFields;
   provenance: ResearchProvenance;
 };
 
@@ -403,6 +435,81 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     }
   }
 
+  // --- optional editorial ---
+  let editorial: EditorialFields | undefined;
+  if (input.editorial !== undefined) {
+    if (!isPlainObject(input.editorial)) {
+      issues.push("editorial: must be an object when present");
+    } else {
+      const ed: EditorialFields = {};
+      for (const key of [
+        "productName",
+        "dontBuildYet",
+        "problemNarrative",
+        "solutionNarrative",
+        "stackNotes",
+      ] as const) {
+        const v = input.editorial[key];
+        if (v !== undefined) {
+          if (!isNonEmptyString(v)) {
+            issues.push(`editorial.${key}: must be non-empty string when present`);
+          } else {
+            ed[key] = v.trim();
+          }
+        }
+      }
+      if (input.editorial.pricingTiers !== undefined) {
+        if (!Array.isArray(input.editorial.pricingTiers)) {
+          issues.push("editorial.pricingTiers: must be an array when present");
+        } else {
+          const tiers: PricingTier[] = [];
+          input.editorial.pricingTiers.forEach((row, i) => {
+            const path = `editorial.pricingTiers[${i}]`;
+            if (!isPlainObject(row)) {
+              issues.push(`${path}: expected object`);
+              return;
+            }
+            if (
+              !isNonEmptyString(row.name) ||
+              !isNonEmptyString(row.price) ||
+              !isNonEmptyString(row.includes)
+            ) {
+              issues.push(`${path}: need name, price, includes strings`);
+              return;
+            }
+            tiers.push({
+              name: row.name.trim(),
+              price: row.price.trim(),
+              includes: row.includes.trim(),
+            });
+          });
+          if (tiers.length > 0) ed.pricingTiers = tiers;
+        }
+      }
+      if (input.editorial.unitEconomics !== undefined) {
+        if (!Array.isArray(input.editorial.unitEconomics)) {
+          issues.push("editorial.unitEconomics: must be an array when present");
+        } else {
+          const rows: UnitEconRow[] = [];
+          input.editorial.unitEconomics.forEach((row, i) => {
+            const path = `editorial.unitEconomics[${i}]`;
+            if (!isPlainObject(row)) {
+              issues.push(`${path}: expected object`);
+              return;
+            }
+            if (!isNonEmptyString(row.label) || !isNonEmptyString(row.value)) {
+              issues.push(`${path}: need label and value strings`);
+              return;
+            }
+            rows.push({ label: row.label.trim(), value: row.value.trim() });
+          });
+          if (rows.length > 0) ed.unitEconomics = rows;
+        }
+      }
+      if (Object.keys(ed).length > 0) editorial = ed;
+    }
+  }
+
   // --- optional scores ---
   let scores: ResearchScores | undefined;
   if (input.scores !== undefined) {
@@ -521,6 +628,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
 
   if (howItWorks) record.howItWorks = howItWorks;
   if (scores) record.scores = scores;
+  if (editorial) record.editorial = editorial;
 
   return record;
 }

@@ -23,9 +23,25 @@ import {
   SLUG_PATTERN,
   SOURCES_TITLE,
 } from "./lib/idea-sections.mjs";
+import {
+  auditHowItWorksNaming,
+  extractBlockquotes,
+  extractCompetitorLinks,
+  findFillerHits,
+  findHygieneIssues,
+  findMegaTamHits,
+  findNearDuplicateParagraphs,
+  isCompetitorRoundupUrl,
+  isDeepDraftSlug,
+  MIN_DEEP_BODY_WORDS,
+  MIN_DEEP_BODY_WORDS_HARD,
+  normalizeQuote,
+  proseParagraphs,
+} from "./lib/idea-quality.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ideasDir = path.join(root, "content", "ideas");
+const recordsDir = path.join(root, "engine", "records");
 
 const MD_LINK_RE = /\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g;
 const H2_RE = /^##[ \t]+(.+?)\s*$/gm;
@@ -94,9 +110,27 @@ export function countCompetitorMentions(competitiveContent) {
 }
 
 /**
- * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
+ * Resolve a ResearchRecord JSON for quote-fidelity checks.
+ * Prefer explicit recordPath; else engine/records/{goldSlug}.json when
+ * auditing engine-draft-{goldSlug}.
  */
-export function auditIdeaFile(filePath, slugHint) {
+export function resolveRecordPath(slug, recordPath) {
+  if (recordPath) return recordPath;
+  if (isDeepDraftSlug(slug)) {
+    const gold = slug.replace(/^engine-draft-/, "");
+    const candidate = path.join(recordsDir, `${gold}.json`);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+/**
+ * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
+ * @param {string} filePath
+ * @param {string} [slugHint]
+ * @param {{ recordPath?: string }} [options]
+ */
+export function auditIdeaFile(filePath, slugHint, options = {}) {
   const errors = [];
   const warnings = [];
   const slug =
@@ -186,8 +220,130 @@ export function auditIdeaFile(filePath, slugHint) {
   }
 
   const wordCount = countWords(body);
-  if (wordCount < MIN_BODY_WORDS) {
+  const deep = isDeepDraftSlug(slug);
+  if (deep) {
+    if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
+      errors.push(
+        `body word count ${wordCount} < ${MIN_DEEP_BODY_WORDS_HARD} (deep draft hard floor)`,
+      );
+    } else if (wordCount < MIN_DEEP_BODY_WORDS) {
+      warnings.push(
+        `body word count ${wordCount} under IB deep target ${MIN_DEEP_BODY_WORDS} (hard floor ${MIN_DEEP_BODY_WORDS_HARD} cleared)`,
+      );
+    }
+  } else if (wordCount < MIN_BODY_WORDS) {
     errors.push(`body word count ${wordCount} < ${MIN_BODY_WORDS}`);
+  }
+
+  // --- writing quality (fail-closed) ---
+  const fillerHits = findFillerHits(prose.toLowerCase());
+  for (const hit of fillerHits) {
+    errors.push(`stock filler phrase: "${hit}"`);
+  }
+
+  const paragraphs = proseParagraphs(body);
+  const dups = findNearDuplicateParagraphs(paragraphs);
+  if (dups.length > 0) {
+    errors.push(
+      `near-duplicate paragraphs (${dups.length} pair(s); e.g. #${dups[0].i}+#${dups[0].j} sim=${dups[0].similarity})`,
+    );
+  }
+
+  if (solution) {
+    for (const e of auditHowItWorksNaming(solution.content)) {
+      errors.push(e);
+    }
+  }
+
+  for (const issue of findHygieneIssues(prose)) {
+    errors.push(issue);
+  }
+
+  // Deep drafts: niche sizing, first-party competitor URLs, quote fidelity.
+  if (deep) {
+    const megaHits = findMegaTamHits(prose);
+    for (const hit of megaHits) {
+      errors.push(`mega-TAM claim (niche sizing only): "${hit}"`);
+    }
+
+    if (competitive) {
+      const links = extractCompetitorLinks(competitive.content);
+      const seen = new Map();
+      for (const url of links) {
+        if (isCompetitorRoundupUrl(url)) {
+          errors.push(`competitor link looks like a roundup, not pricing page: ${url}`);
+        }
+        seen.set(url, (seen.get(url) || 0) + 1);
+      }
+      for (const [url, n] of seen) {
+        if (n > 1) {
+          errors.push(
+            `competitor link reused ${n}× (each competitor needs its own pricing URL): ${url}`,
+          );
+        }
+      }
+      if (links.length < 3) {
+        warnings.push(
+          `competitive landscape has ${links.length} competitor link(s); prefer ≥3 first-party pricing URLs`,
+        );
+      }
+    }
+
+    // Four AI prompts (incl. branding)
+    const prompts = sections.find((s) => s.title === "AI Prompts to Build This");
+    if (prompts) {
+      const promptHeads = [
+        ...prompts.content.matchAll(/\*\*\d+\.\s+([^*]+)\*\*/g),
+      ].map((m) => m[1].trim().toLowerCase());
+      if (promptHeads.length < 4) {
+        errors.push(
+          `AI Prompts needs ≥4 prompts including Branding (got ${promptHeads.length})`,
+        );
+      } else if (!promptHeads.some((h) => /brand/i.test(h))) {
+        errors.push("AI Prompts must include a Branding Package prompt");
+      }
+      // Project Setup must not be a stub
+      const setupBlock = prompts.content.match(
+        /\*\*1\.\s*Project Setup\*\*[\s\S]*?```text\n([\s\S]*?)```/,
+      );
+      if (setupBlock) {
+        const setupWords = countWords(setupBlock[1]);
+        if (setupWords < 60) {
+          errors.push(
+            `Project Setup prompt too thin (${setupWords} words; need schema/pricing/env ≥60)`,
+          );
+        }
+      }
+    }
+
+    const recordPath = resolveRecordPath(slug, options.recordPath);
+    if (recordPath && fs.existsSync(recordPath)) {
+      try {
+        const record = JSON.parse(fs.readFileSync(recordPath, "utf8"));
+        const signals = record?.community?.signals || [];
+        const mdxQuotes = extractBlockquotes(body).map(normalizeQuote);
+        for (const signal of signals) {
+          const q = normalizeQuote(signal.quote || "");
+          if (!q) continue;
+          const found = mdxQuotes.some(
+            (mq) => mq.includes(q) || q.includes(mq),
+          );
+          if (!found) {
+            errors.push(
+              `quote fidelity: research quote missing or rewritten in MDX: "${(signal.quote || "").slice(0, 80)}"`,
+            );
+          }
+        }
+      } catch (err) {
+        warnings.push(
+          `could not load record for quote check: ${recordPath} (${err instanceof Error ? err.message : err})`,
+        );
+      }
+    } else if (deep) {
+      warnings.push(
+        "no research record found for quote-fidelity check (pass --record path)",
+      );
+    }
   }
 
   const metrics = {
@@ -196,6 +352,11 @@ export function auditIdeaFile(filePath, slugHint) {
     competitorMentions,
     sourceLinkCount,
     howToStepCount,
+    deep,
+    wordFloor: deep ? MIN_DEEP_BODY_WORDS : MIN_BODY_WORDS,
+    wordHardFloor: deep ? MIN_DEEP_BODY_WORDS_HARD : MIN_BODY_WORDS,
+    fillerHits: fillerHits.length,
+    nearDuplicatePairs: dups.length,
   };
 
   return {
@@ -233,12 +394,19 @@ function printResult(result, { json }) {
 }
 
 function parseArgs(argv) {
-  const args = { slug: null, all: false, json: false, help: false };
+  const args = {
+    slug: null,
+    all: false,
+    json: false,
+    help: false,
+    recordPath: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--slug") args.slug = argv[++i];
     else if (a === "--all") args.all = true;
     else if (a === "--json") args.json = true;
+    else if (a === "--record") args.recordPath = argv[++i];
     else if (a === "--help" || a === "-h") args.help = true;
     else {
       console.error(`unknown arg: ${a}`);
@@ -252,9 +420,14 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || (!args.slug && !args.all)) {
     console.log(`Usage:
-  node scripts/audit-idea-mdx.mjs --slug <slug>
+  node scripts/audit-idea-mdx.mjs --slug <slug> [--record path.json]
   node scripts/audit-idea-mdx.mjs --all
-  node scripts/audit-idea-mdx.mjs --slug <slug> --json`);
+  node scripts/audit-idea-mdx.mjs --slug <slug> --json
+
+Deep drafts (engine-draft-*) enforce ≥${MIN_DEEP_BODY_WORDS_HARD} words hard
+(target ${MIN_DEEP_BODY_WORDS}), no stock filler, named How-it-works steps, niche
+sizing, first-party competitor URLs, four AI prompts incl. Branding, and quote
+fidelity vs engine/records/.`);
     process.exit(args.help ? 0 : 2);
   }
 
@@ -262,7 +435,9 @@ function main() {
   let failed = 0;
   for (const slug of slugs) {
     const filePath = path.join(ideasDir, `${slug}.mdx`);
-    const result = auditIdeaFile(filePath, slug);
+    const result = auditIdeaFile(filePath, slug, {
+      recordPath: args.recordPath || undefined,
+    });
     printResult(result, { json: args.json });
     if (!result.ok) failed += 1;
   }
