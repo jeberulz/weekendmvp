@@ -1,0 +1,197 @@
+{
+  "contractVersion": 1,
+  "brief": {
+    "title": "AI RFP Response Assistant",
+    "slug": "ai-rfp-response-assistant",
+    "oneLiner": "An SMB-friendly AI assistant that drafts cited RFP and security-questionnaire answers from your approved company knowledge.",
+    "targetCustomer": "SMB SaaS sales and solutions engineers"
+  },
+  "market": {
+    "summary": "The opportunity sits at the intersection of a rapidly growing SaaS market, expanding B2B software spend, and a specific operational pain: SMB SaaS teams must repeatedly complete RFPs, security questionnaires, and compliance documentation using fragmented sources. Competition validates demand, but many established products are priced or structured for mid-market and enterprise teams. The strongest opening is a focused, fast-to-onboard assistant for SMB sales and solutions engineers, although the supplied research does not establish the size of the RFP-response software market itself.",
+    "stats": [
+      {
+        "claim": "The global SaaS market is estimated at USD 435.41 billion in 2026 and projected to grow at a 17.55% CAGR through 2031.",
+        "value": "$435.41B in 2026; 17.55% CAGR",
+        "citation": {
+          "url": "https://www.mordorintelligence.com/industry-reports/software-as-a-service-market",
+          "title": "Software As A Service Market Size, Share Analysis"
+        }
+      },
+      {
+        "claim": "A second estimate projects the global SaaS market to grow from USD 375.57 billion in 2026 to USD 1,482.44 billion by 2034.",
+        "value": "$375.57B in 2026; $1,482.44B by 2034; 18.7% CAGR",
+        "citation": {
+          "url": "https://www.fortunebusinessinsights.com/software-as-a-service-saas-market-102222",
+          "title": "Software as a Service [SaaS] Market Size, Global Report, 2034"
+        }
+      },
+      {
+        "claim": "Worldwide SaaS revenue is forecast to reach USD 488.5 billion in 2026, with 21.9% year-over-year growth.",
+        "value": "$488.5B in 2026; 21.9% YoY growth",
+        "citation": {
+          "url": "https://www.bettercloud.com/monitor/saas-statistics/",
+          "title": "The big list of SaaS statistics that you should know"
+        }
+      },
+      {
+        "claim": "Search-provider data indicates especially high commercial intent around security questionnaire automation.",
+        "value": "90 monthly searches; $108.76 CPC; competition 17",
+        "citation": {
+          "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+          "title": "15 Best RFP Software in 2026: Features, Prices and Reviews"
+        }
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "name": "AutoRFP.ai",
+      "pricing": "Scale $899/month; Accelerate $1,299/month; Enterprise custom",
+      "url": "https://thalamushq.ai/blogs/best-ai-rfp-software",
+      "notes": "AI-native RFP response software positioned toward mid-market presales and solutions teams. Unlimited-user packaging creates room for a lighter seat-based SMB offer."
+    },
+    {
+      "name": "Inventive AI",
+      "pricing": "$830/month billed annually in the supplied research; other writeups cite plans starting around $250/month",
+      "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+      "notes": "AI-first drafting from connected sources. It is broader RFP automation rather than a narrowly scoped assistant for SMB SaaS sales and solutions engineers."
+    },
+    {
+      "name": "1up",
+      "pricing": "From $300/month",
+      "url": "https://www.inventive.ai/blog-posts/best-rfp-software",
+      "notes": "Targets sales and presales questionnaire teams with delivery through Slack, Teams, Salesforce, and browser. Its lightweight knowledge-automation positioning may leave room for deeper proposal collaboration and governance."
+    },
+    {
+      "name": "DeepRFP",
+      "pricing": "$89 or $149 per user/month",
+      "url": "https://deeprfp.com/blog/best-rfp-tools-comparison/",
+      "notes": "Explicitly relevant to small businesses, consultants, and lean teams. This is a close pricing and audience benchmark for a seat-based SMB product."
+    },
+    {
+      "name": "Loopio",
+      "pricing": "Custom pricing; cited around $20,000/year and above",
+      "url": "https://www.linkedin.com/pulse/rfp-software-saas-teams-5-platforms-built-different-response-workflows-rj3tc",
+      "notes": "Better suited to established proposal teams with structured content libraries, leaving a simplicity and affordability gap for smaller SaaS teams."
+    }
+  ],
+  "community": {
+    "summary": "Community evidence supports adjacent pains rather than directly proving demand for a new RFP product. SMB SaaS teams report difficulty gathering audit evidence, maintaining policies, handling security and privacy questionnaires, and working across overlapping tools. They also express sensitivity to enterprise pricing. These signals support a product centered on approved-source retrieval, fast drafting, citations, and lightweight review, but customer interviews should verify RFP frequency and willingness to pay.",
+    "signals": [
+      {
+        "quote": "The main challenges we face include the pursuit of audit evidence and the need to keep our policies updated.",
+        "citation": {
+          "url": "https://www.reddit.com/r/SaaS/comments/1manerl/discussion_for_saas_or_smbs_owner_what_are_the/",
+          "title": "discussion for SaaS or SMB's owner, what are the pain points hidden for new-owners"
+        }
+      },
+      {
+        "quote": "without the enterprise price tag",
+        "citation": {
+          "url": "https://www.micronichebrowser.com/blog/reddit-pain-points-reveal-saas-opportunities-2026",
+          "title": "What 1,830 Reddit Pain Points Reveal About the Next Wave of ..."
+        }
+      },
+      {
+        "quote": "Many (most, I imagine) users would prefer to hire an assistant to operate that UI for them, since UI is not the actual value",
+        "citation": {
+          "url": "https://news.ycombinator.com/item?id=46268452",
+          "title": "AI agents are starting to eat SaaS | Hacker News"
+        }
+      },
+      {
+        "quote": "paying for seven different tools that do overlapping things",
+        "citation": {
+          "url": "https://www.reddit.com/r/SaaS/comments/1r9ohzs/i_analyzed_12k_posts_across_rsaas_rstartups/",
+          "title": "I analyzed ~12K posts across r/SaaS, r/startups, r/entrepreneur and these were the top 10 pain points. Do they ring true for you?"
+        }
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "rfp response software",
+      "volume": 90,
+      "competition": 34,
+      "cpc": 45.6,
+      "source": "provider"
+    },
+    {
+      "term": "security questionnaire automation",
+      "volume": 90,
+      "competition": 17,
+      "cpc": 108.76,
+      "source": "provider"
+    },
+    {
+      "term": "proposal management software",
+      "volume": 320,
+      "competition": 23,
+      "cpc": 62.79,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "The SMB-native AI response workspace for SaaS sales and solutions engineers: turn approved product, security, and compliance knowledge into cited RFP and questionnaire answers without buying an enterprise proposal suite.",
+    "pricingNotes": "Use transparent per-seat tiers with pooled response or document caps. Price below AutoRFP.ai's $899/month entry point while acknowledging that DeepRFP already anchors the small-team market at $89-$149 per user/month and 1up starts at $300/month. A low-friction team plan, overage pricing, and a short real-document trial would fit the stated SMB positioning. Caps should be predictable because community research indicates users notice fragile limits and declining value.",
+    "channels": [
+      "Founder-led outbound to heads of sales engineering, solutions consulting, revenue operations, and security at SMB SaaS companies",
+      "SEO and paid search around rfp response software, security questionnaire automation, and proposal management software",
+      "Partnerships with SOC 2 consultants, virtual CISOs, compliance platforms, and SaaS sales consultancies",
+      "LinkedIn demonstrations showing an uploaded questionnaire transformed into cited draft answers",
+      "Product-led trials using a real RFP or security questionnaire as the activation event",
+      "Integrations and marketplace listings for Slack, Microsoft Teams, Google Drive, Salesforce, and common knowledge repositories"
+    ]
+  },
+  "whyNow": "SaaS and B2B software markets continue to expand while SMB vendors face increasing security, privacy, audit, and documentation demands during sales cycles. Modern AI can retrieve from internal sources and draft answers, and competitors already validate paid demand. However, existing options frequently start at several hundred dollars per month or target established proposal teams, creating an opening for simpler SMB packaging.",
+  "provenance": {
+    "costUsd": 0.247808,
+    "ranAt": "2026-09-24T08:33:43.805Z",
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.002035
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.017906
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.02429
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.023782
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.089795
+      }
+    ]
+  },
+  "howItWorks": [
+    "Connect approved documents, policies, prior responses, and knowledge repositories.",
+    "Upload an RFP or security questionnaire and automatically extract its questions.",
+    "Generate cited draft answers with confidence indicators and flag unsupported claims.",
+    "Review, assign, and approve responses with sales, solutions, security, or legal stakeholders.",
+    "Export the completed document and save approved answers for future reuse."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 8,
+    "builderConfidence": 7,
+    "execution": 7
+  }
+}

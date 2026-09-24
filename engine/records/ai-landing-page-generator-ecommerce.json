@@ -1,0 +1,189 @@
+{
+  "contractVersion": 1,
+  "brief": {
+    "title": "AI Landing Page Generator for E-commerce",
+    "slug": "ai-landing-page-generator-ecommerce",
+    "oneLiner": "Turn every Shopify ad into a fast, conversion-focused landing page matched to its creative, audience, and offer.",
+    "targetCustomer": "E-commerce marketers and Shopify operators running paid ads"
+  },
+  "market": {
+    "summary": "A promising but competitive SaaS opportunity at the intersection of landing-page software, e-commerce software, and AI marketing. The clearest wedge is not generic page generation, but Shopify-native, ad-to-page message matching with campaign variants, conversion tracking, and accessible A/B testing. Adjacent markets are large and growing, while community evidence shows acute post-click conversion pain among paid-traffic operators.",
+    "stats": [
+      {
+        "claim": "The global landing-page software market was valued at $3.8 billion in 2025 and is projected to reach $9.6 billion by 2034 at a 10.8% CAGR.",
+        "value": "$3.8B in 2025; $9.6B by 2034; 10.8% CAGR",
+        "citation": {
+          "url": "https://dataintelo.com/report/global-landing-page-software-market",
+          "title": "Landing Page Software Market Research Report 2034 - Dataintelo"
+        }
+      },
+      {
+        "claim": "The global e-commerce software market was valued at $9.4 billion in 2025 and is projected to reach $34.2 billion by 2033.",
+        "value": "$9.4B in 2025; $34.2B by 2033; 18.5% CAGR",
+        "citation": {
+          "url": "https://www.grandviewresearch.com/industry-analysis/e-commerce-software-market",
+          "title": "E-commerce Software Market Size | Industry Report, 2033"
+        }
+      },
+      {
+        "claim": "The global AI marketing market was valued at $18.7 billion in 2025 and is projected to reach $96.4 billion by 2034.",
+        "value": "$18.7B in 2025; $96.4B by 2034; 18.3% CAGR",
+        "citation": {
+          "url": "https://marketintelo.com/report/ai-marketing-market",
+          "title": "AI Marketing Market Research Report 2034"
+        }
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "name": "PagePilot",
+      "pricing": "Free plan; Lite $39/month; Scaler $59/month",
+      "url": "https://apps.shopify.com/pagepilotai",
+      "notes": "Shopify-focused AI product-page generation with images and ad copy. Its emphasis on product pages leaves room for campaign-specific landing pages, ad-message matching, experimentation, and post-click analytics."
+    },
+    {
+      "name": "Instant AI Page Builder",
+      "pricing": "Free; Starter $39/month; Pro $99/month; Business $249/month",
+      "url": "https://apps.shopify.com/instant-builder",
+      "notes": "A broad Shopify-native page builder. Differentiation is possible through a workflow built specifically around paid campaigns, audience variants, tracking conventions, and conversion feedback."
+    },
+    {
+      "name": "Swipe Pages",
+      "pricing": "Startup from $39/month or about $29/month annually; A/B testing from $89/month; Agency $199/month or $149/month annually",
+      "url": "https://swipepages.com/",
+      "notes": "The closest paid-ad-focused competitor, but it is a general landing-page platform rather than a Shopify-native system with catalog synchronization, merchandising components, and Shopify checkout context."
+    },
+    {
+      "name": "AI Page Builder / Personalize user journey and Optimise ad",
+      "pricing": "Starter $120/month; Pro $300/month; Business $999/month; Enterprise $4,999/month",
+      "url": "https://apps.shopify.com/ai-page-generator",
+      "notes": "Highly relevant AI landing-page and ad-optimization capabilities, but at pricing that leaves an opening among small and midsize Shopify advertisers."
+    },
+    {
+      "name": "Frontend AI",
+      "pricing": "Starter $19/month; Plus $99/month",
+      "url": "https://apps.shopify.com/ai-page-builder",
+      "notes": "Low-cost AI generation for landing pages and product pages. A paid-ad-specific product would need stronger ad ingestion, automatic message matching, testing, and revenue attribution to stand apart."
+    }
+  ],
+  "community": {
+    "summary": "Shopify operators repeatedly report paying for traffic that reaches slow, generic, unclear, or mismatched pages and fails to convert. The evidence highlights message mismatch, product pages poorly suited to cold traffic, missing trust and shipping information, mobile performance, in-app browser friction, and discrepancies between ad clicks and Shopify landing-page views. The strongest product promise is therefore improved post-click performance rather than simply faster page design.",
+    "signals": [
+      {
+        "quote": "Zero conversions despite that many clicks typically indicate the landing moment fails to align with the ad’s promise.",
+        "citation": {
+          "url": "https://www.reddit.com/r/reviewmyshopify/comments/1pe8c49/tried_to_run_x_ads_on_my_shop_got_0_conversions/",
+          "title": "Tried to run X ads on my shop, got 0 conversions."
+        }
+      },
+      {
+        "quote": "We've seen roughly 2,000 sessions lasting over three seconds each, yet only two items have been added to carts, and there have been zero completed purchases.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/1n2jsoc/meta_ad_landing_page_poor_conversion_rate/",
+          "title": "Meta Ad Landing Page Poor Conversion rate"
+        }
+      },
+      {
+        "quote": "If your CPC and CTR metrics appear satisfactory, the problem likely lies with the website rather than the advertisements themselves.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/1s59n0n/my_shopify_sites_conversion/",
+          "title": "My Shopify site’s conversion"
+        }
+      },
+      {
+        "quote": "Conversion studies have always shown that the highest conversion happens when the ad and what it links to are nearly identically similar in content and messaging, with the least amounts of clicks + scrolls + user-typing to complete checkout.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopify/comments/13ia42c/products_page_vs_landing_page_which_one_is_good/",
+          "title": "Products page vs Landing page. Which one is good for paid ads?"
+        }
+      },
+      {
+        "quote": "Root cause: Shopify product pages are meant for catalog browsing, not for cold paid traffic.",
+        "citation": {
+          "url": "https://www.reddit.com/r/shopifyDev/comments/1rv3lno/shopify_stores_losing_conversions_from_meta_ads/",
+          "title": "Shopify stores losing conversions from Meta ads because of in-app browsers. How are you handling this for clients?"
+        }
+      },
+      {
+        "quote": "The discrepancy is usually not only the Shopify theme; it often stems from mobile load speed, low‑intent clicks, or differences in tracking between Meta and Shopify.",
+        "citation": {
+          "url": "https://www.reddit.com/r/eCommerceSEO/comments/1qyqrvw/huge_gap_between_meta_ads_link_clicks_and_landing/",
+          "title": "Huge gap between Meta Ads link clicks and landing page views on Shopify"
+        }
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "ai landing page builder",
+      "volume": 480,
+      "competition": 70,
+      "cpc": 27.29,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "The Shopify-native post-click optimization platform that turns each paid ad, audience, and offer into a fast, message-matched landing page with built-in testing and revenue attribution.",
+    "pricingNotes": "A viable ladder is Starter around $29-$39 per month, Pro around $79-$99 per month, and Agency around $199-$249 per month. Starter should cover basic generation and Shopify sync; Pro should include multiple campaign variants, analytics, and A/B testing; Agency should add multiple stores, client workspaces, permissions, and higher usage. Keeping testing in Pro would undercut competitors that reserve it for more expensive plans.",
+    "channels": [
+      "Shopify App Store distribution and optimization",
+      "Paid search targeting high-intent landing-page builder queries",
+      "Partnerships with Shopify agencies, media buyers, and freelance performance marketers",
+      "Educational SEO and comparison content focused on improving Meta and Google Ads conversion rates",
+      "Shopify, e-commerce, and paid-media communities using conversion teardown content",
+      "Agency referrals and multi-store reseller programs"
+    ]
+  },
+  "whyNow": "AI marketing and e-commerce software are both growing quickly, Shopify advertisers face persistent pressure to improve returns from paid traffic, and current tools split between generic low-cost builders and expensive optimization platforms. Generative AI now makes it feasible to produce audience- and creative-specific variants rapidly, while Shopify integration can supply the product, offer, inventory, and checkout context generic builders lack.",
+  "provenance": {
+    "costUsd": 0.265844,
+    "ranAt": "2026-09-24T08:36:07.522Z",
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.00245
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.022012999999999998
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.028127
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.024409
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.098845
+      }
+    ]
+  },
+  "howItWorks": [
+    "Connect a Shopify store and import products, offers, reviews, and brand assets.",
+    "Paste or import an ad creative, headline, audience, and campaign destination.",
+    "Generate a mobile-first, message-matched page with product data, trust sections, FAQs, and a focused CTA.",
+    "Publish campaign variants with tracking and Shopify-compatible purchase flows.",
+    "Measure conversion and revenue performance, then promote winners or generate new variants."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 8,
+    "builderConfidence": 8,
+    "execution": 7
+  }
+}

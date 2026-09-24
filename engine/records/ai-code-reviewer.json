@@ -1,0 +1,192 @@
+{
+  "contractVersion": 1,
+  "brief": {
+    "title": "AI Code Reviewer",
+    "slug": "ai-code-reviewer",
+    "oneLiner": "A low-noise, repository-aware AI pull-request reviewer built and priced for GitHub teams under 10.",
+    "targetCustomer": "Indie developers and engineering teams with fewer than 10 members maintaining GitHub repositories"
+  },
+  "market": {
+    "summary": "AI code review is a fast-growing but increasingly competitive market. Narrow category estimates place the 2025 market between $1.4 billion and $2.12 billion, with projected annual growth around 28.5% to 32.9%. The strongest opportunity is a GitHub-native reviewer for teams of fewer than 10 developers that prioritizes repository context, low-noise findings, fast setup, and predictable per-developer pricing.",
+    "stats": [
+      {
+        "claim": "Global AI code review market size",
+        "value": "$1.4 billion in 2025, projected to reach $10.8 billion by 2034 at a 28.5% CAGR",
+        "citation": {
+          "url": "https://marketintelo.com/report/ai-code-review-market",
+          "title": "AI Code Review Market Research Report 2034"
+        }
+      },
+      {
+        "claim": "Generative code review market growth",
+        "value": "$2.12 billion in 2025, growing to $2.82 billion in 2026 at a 32.9% CAGR",
+        "citation": {
+          "url": "https://www.researchandmarkets.com/reports/6215603/generative-code-review-market-report",
+          "title": "Generative Code Review Market Report 2026 - Research and Markets"
+        }
+      },
+      {
+        "claim": "AI code tools market size",
+        "value": "$7.65 billion in 2025, projected to reach $22.06 billion by 2030 at a 23.6% CAGR",
+        "citation": {
+          "url": "https://www.thebusinessresearchcompany.com/report/artificial-intelligence-ai-code-tools-global-market-report",
+          "title": "AI Code Tools Market Trends Analysis Report 2026-2030"
+        }
+      },
+      {
+        "claim": "AI developer tools market size",
+        "value": "$3.48 billion in 2025, projected to reach $7.05 billion by 2032 at a 10.57% CAGR",
+        "citation": {
+          "url": "https://www.360iresearch.com/library/intelligence/ai-developer-tools",
+          "title": "AI Developer Tools Market Size & Share 2025-2032"
+        }
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "name": "CodeRabbit",
+      "pricing": "Essentials: $24 per developer per month annually or $30 monthly; Team: $48 annually or $60 monthly; Advanced: $72 annually or $90 monthly. Open-source repositories are free.",
+      "url": "https://www.coderabbit.ai/faq",
+      "notes": "The strongest direct competitor, with PR reviews, summaries, security reviews, and agentic workflows. Its private-repository pricing can become expensive for teams under 10, leaving room for a simpler and more affordable small-team plan."
+    },
+    {
+      "name": "Qodo",
+      "pricing": "Pro Team starts at $30 per month for 2,500 pooled credits, with larger packs and overages available. Includes a 14-day trial.",
+      "url": "https://qodex.ai/blog/qodo-alternatives",
+      "notes": "Offers context-aware review, repository rules, prioritization, and broad Git-platform support. Credit-based billing is less predictable than straightforward per-developer pricing."
+    },
+    {
+      "name": "Bito AI Code Review Agent",
+      "pricing": "Paid pricing is cited at $15 per user per month, with a 14-day free trial.",
+      "url": "https://bito.ai/blog/best-ai-code-review-tools/",
+      "notes": "Supports review across Git providers, IDEs, and CLI workflows. Its broader scope and usage metering create an opening for a focused GitHub PR product with predictable billing."
+    },
+    {
+      "name": "GitHub Copilot Code Review",
+      "pricing": "Approximately $20 per user per month for Copilot Individual and $40 per user per month for Copilot Business; enterprise pricing is custom.",
+      "url": "https://www.qodo.ai/blog/ai-code-review-tools/",
+      "notes": "Benefits from native GitHub distribution but is part of a general-purpose coding assistant. A specialist can differentiate through confidence-ranked findings, repository policies, test suggestions, and stronger noise suppression."
+    }
+  ],
+  "community": {
+    "summary": "Developers consistently report that review capacity is failing to keep up with AI-generated code volume. Existing AI reviewers often behave like noisy linters, miss business and repository context, and produce false positives that teams learn to ignore. Small teams still value automated detection of straightforward defects, but they want prioritized findings that support rather than replace human review. Pricing predictability and avoiding enterprise-level costs are also important for this audience.",
+    "signals": [
+      {
+        "quote": "Most AI code review tools resemble linters but with additional steps involved.",
+        "citation": {
+          "url": "https://www.reddit.com/r/codereview/comments/1n3tvlq/biggest_pain_in_ai_code_reviews_is_context_how/",
+          "title": "Biggest pain in AI code reviews is context. How are you all ..."
+        }
+      },
+      {
+        "quote": "One of the annoying things engineers have to deal with is stopping whatever they're doing and doing a review.",
+        "citation": {
+          "url": "https://news.ycombinator.com/item?id=46315055",
+          "title": ">It's even worse than that: non-junior devs are doing it as ..."
+        }
+      },
+      {
+        "quote": "They often lack the ability to grasp context or the underlying business logic.",
+        "citation": {
+          "url": "https://www.reddit.com/r/ExperiencedDevs/comments/1rkjg9z/can_ai_code_review_tools_actually_catch/",
+          "title": "Can ai code review tools actually catch meaningful logic errors or just pattern match"
+        }
+      },
+      {
+        "quote": "In most of the repos I work with, it tends to make a large number of false positive or inappropriate suggestions that are just plain wrong.",
+        "citation": {
+          "url": "https://news.ycombinator.com/item?id=46348957",
+          "title": "I still dont get the idea about AI code reviews. ..."
+        }
+      },
+      {
+        "quote": "The code review load for software engineers will gradually increase as fewer and fewer of them are expected to supervise an ever-growing number of coding agents.",
+        "citation": {
+          "url": "https://news.ycombinator.com/item?id=47545748",
+          "title": "Some uncomfortable truths about AI coding agents"
+        }
+      }
+    ]
+  },
+  "keywords": [
+    {
+      "term": "ai code review",
+      "volume": 1300,
+      "competition": 60,
+      "cpc": 55.73,
+      "source": "provider"
+    },
+    {
+      "term": "github pr review bot",
+      "volume": 10,
+      "competition": 59,
+      "cpc": 18.42,
+      "source": "provider"
+    }
+  ],
+  "goToMarket": {
+    "positioning": "The high-signal GitHub code reviewer built for indie developers and engineering teams under 10. Emphasize repository-aware reviews, aggressive false-positive suppression, concise risk summaries, two-minute installation, and predictable pricing rather than broad enterprise governance.",
+    "pricingNotes": "Keep public open-source repositories free. Offer a permanent private-repository free tier with clear limits, followed by a predictable plan priced below CodeRabbit and Copilot. Avoid credits and reviewed-line overages where possible. A simple starting point is one free private repository, then roughly $10–$15 per active developer per month with team-wide usage safeguards.",
+    "channels": [
+      "GitHub Marketplace distribution and optimization",
+      "Free adoption by open-source maintainers with visible bot attribution on pull requests",
+      "Technical SEO targeting AI code review and GitHub PR review workflows",
+      "Launches and demos in Indie Hackers, Hacker News, Reddit developer communities, and Product Hunt",
+      "Partnerships with developer newsletters, GitHub educators, and small-team engineering creators",
+      "Direct outreach to GitHub organizations with 2–10 active contributors and frequent pull requests",
+      "Referral incentives that grant additional private-repository capacity"
+    ]
+  },
+  "whyNow": "AI coding agents are rapidly increasing the amount and size of code submitted for review while experienced developers remain the review bottleneck. Market estimates show strong category growth, and community discussions reveal dissatisfaction with noisy, context-poor tools. Small teams need automation most because they have limited reviewer capacity, yet current products are frequently priced or designed around larger organizations.",
+  "provenance": {
+    "costUsd": 0.259176,
+    "ranAt": "2026-09-24T08:34:53.614Z",
+    "providerCalls": [
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.00252
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.01943
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.027899
+      },
+      {
+        "provider": "perplexity",
+        "operation": "search:sonar-pro",
+        "costUsd": 0.026986000000000003
+      },
+      {
+        "provider": "dataforseo",
+        "operation": "keywordData:google_ads/search_volume/live",
+        "costUsd": 0.09
+      },
+      {
+        "provider": "openai",
+        "operation": "synthesis:gpt-5.6-sol",
+        "costUsd": 0.09233999999999999
+      }
+    ]
+  },
+  "howItWorks": [
+    "Install the GitHub App and select repositories.",
+    "The product learns repository conventions, dependencies, and review rules.",
+    "Each pull request receives a risk summary and prioritized findings.",
+    "Developers inspect concise inline comments and apply suggested fixes or tests.",
+    "Feedback on accepted or dismissed findings improves future reviews."
+  ],
+  "scores": {
+    "opportunity": 8,
+    "pain": 8,
+    "timing": 9,
+    "builderConfidence": 7,
+    "execution": 8
+  }
+}
