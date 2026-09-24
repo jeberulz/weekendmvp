@@ -67,7 +67,7 @@ Secondary: even if Reddit had returned 200, this worker lacked `OPENAI_API_KEY` 
 
 ## Re-run 2 (post DataForSEO top-up, Cloud Agent) — historical
 
-John topped up DataForSEO and said READY. Re-ran live N=3 on tip `1c98c9e`.
+The operator topped up DataForSEO and said READY. Re-ran live N=3 on tip `1c98c9e`.
 
 ### Secret gate
 
