@@ -1,9 +1,13 @@
 # Quote-gate live N=3 — PR #71 merge gate
 
-Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `418d5aa` (+ this report).
+Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `1c98c9e`.
 **Do not merge from this gate.** Skill flip / phases 8–9 / mcp.json untouched.
 
-## Secret gate
+## Re-run 2 (post DataForSEO top-up) — this verdict
+
+John topped up DataForSEO and said READY. Re-ran live N=3 on tip `1c98c9e`.
+
+### Secret gate
 
 | Secret | Status |
 |---|---|
@@ -11,96 +15,66 @@ Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `418d5aa` 
 | `PERPLEXITY_API_KEY` | present |
 | `DATAFORSEO_LOGIN` | present |
 | `DATAFORSEO_PASSWORD` | present |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` | **missing** (needed for OAuth quote fetch on this network; documented in `.env.example` after `817d5af`) |
 
-## Verdict
+### DataForSEO probe
 
-**Clear to merge from gate side? NO.**
+| Check | Result |
+|---|---|
+| Balance before | **$49.92** (`total` top-up $51) |
+| Keyword live probe | task `20000 Ok.`, cost $0.09 |
+| Balance after N=3 attempts | **$49.83** (early-stop avoided keyword/synthesis spend) |
 
-Live research did not produce new records/drafts. Quote verification path was exercised once (RFP, default UA) and failed closed on Reddit 403s. UA retry did not unblock Reddit. Mid-session DataForSEO balance went negative → subsequent packs died at `keywords_demand` with task status `40200 Payment Required`.
+### Verdict
 
-## Pass/fail per brief
+**Clear to merge from quote-gate side? NO.**
 
-| Brief | Research | Compile | Audit | Notes |
+Blocker: **Reddit HTTP 403** on public `.json` from this Cloud Agent network. Soft-retry with `ENGINE_QUOTE_FETCH_UA` did not fix it. `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` are not in the environment, so the OAuth path added in `817d5af` was not used. All three briefs stopped at `community_signals` (need ≥2 readable cited pages) before compile/audit. ≥2 verified-quotes rule was **not** weakened.
+
+### Pass/fail per brief (re-run 2)
+
+| Brief | Research | Compile | Audit | Detail |
 |---|---|---|---|---|
-| `rfp-assistant` (BidRelay) | **FAIL** | skipped | skipped | Attempt 1: quote verification `0/5` (all Reddit). Attempt 2 (UA): competitor shortfall (≥3 priced). Attempt 3 (UA): DataForSEO 402. |
-| `code-reviewer` (DiffBeacon) | **FAIL** | skipped | skipped | UA run: `keywords_demand` provider 402. |
-| `landing-page-generator-ecommerce` (ClickWeave) | **FAIL** | skipped | skipped | UA run: `keywords_demand` provider 402. |
+| `rfp-assistant` (BidRelay) | **FAIL** | skipped | skipped | Attempt 1 (default UA): `0/8` readable, all Reddit 403. Attempt 2 (custom UA): `0/8` readable, all Reddit 403. |
+| `code-reviewer` (DiffBeacon) | **FAIL** | skipped | skipped | Custom UA: `1/8` readable (need ≥2); 7× Reddit 403. |
+| `landing-page-generator-ecommerce` (ClickWeave) | **FAIL** | skipped | skipped | Custom UA: `0/8` readable, all Reddit 403. |
 
-Drafts under `engine/drafts/` and Round-3 `engine/records/*` were **not** overwritten (research never wrote a new record).
+`engine/records/*` and `engine/drafts/*` **not** overwritten (still Round-3 / prior compile timestamps).
 
-## Quote-check failures
-
-### Attempt 1 — RFP, default UA (`weekendmvp-idea-engine/1.0 …`)
-
-`quote verification: 0/5 … need ≥2`. All misses were Reddit:
-
-| Quote (truncated) | URL | Host |
-|---|---|---|
-| "It's frustrating that all 800 questions…" | `…/r/salesengineers/comments/149fnfy/…` | Reddit |
-| "At least in my industry, it's pretty common…" | `…/r/salesengineers/comments/suy7ae/…` | Reddit |
-| "Often these are submitted in painful formats…" | `…/r/salesengineers/comments/suy7ae/…` | Reddit |
-| "It could range from 10 to hundreds…" | `…/r/salesengineers/comments/y4zre1/…` | Reddit |
-| "It comes with a deadline to submit…" | `…/r/salesengineers/comments/y4zre1/…` | Reddit |
-
-No HN citations in that synthesis pack → no Algolia verify path exercised on this pack.
-
-### `ENGINE_QUOTE_FETCH_UA` retry
+### Quote-check / UA retry (re-run 2)
 
 | Item | Result |
 |---|---|
-| Needed? | **Yes** — first failure was Reddit fetch / 0 verified quotes |
-| Value used | `WeekendMVP-IdeaEngine/1.0 (+https://weekendmvp.app; research-bot)` |
-| Fixed Reddit? | **No** — `www.reddit.com` / `api.reddit.com` / `old.reddit.com` still **HTTP 403** (bot/IP block; Cursor egress is unrestricted) |
-| HN fetch? | **OK** — Algolia `hn.algolia.com/api/v1/items/8863` returns 200; `createSourceTextProvider().fetchText` reads ~25k chars |
+| Failure mode | Early-stop at `community_signals`: `only N/M cited community pages could be read; need ≥2` — error text names Reddit 403 and asks for `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` |
+| `ENGINE_QUOTE_FETCH_UA` soft-retry | **Yes** — RFP retried with `WeekendMVP-IdeaEngine/1.0 (+https://weekendmvp.app; research-bot)`; CR + landing also run with that UA |
+| UA fixed Reddit? | **No** |
+| HN path | Not exercised on these packs (citations were Reddit-dominated; CR had 1 non-403 page but still below the ≥2 readable bar) |
+| Invented workarounds? | **No** — did not weaken ≥2 verified quotes; did not invent Reddit credentials |
 
-## Costs
+### Costs (re-run 2)
 
-Exact per-pack `costUsd` was **not written** (pipeline throws before `parseResearchRecord` / `--out`). Do not invent precise totals.
+No pack wrote `costUsd` (failed before keywords/synthesis). Spend ≈ three Perplexity community searches × 3 briefs (+ market/competitors for each before community), plus the $0.09 DFS keyword probe. DFS balance drop $49.92 → $49.83 matches the probe only (early-stop working as designed).
 
-| Signal | Value |
-|---|---|
-| Prior Round-3 pack cost (reference) | ~$0.33–$0.35 / pack |
-| DataForSEO account after this session | `balance: -0.08`, `total: 1` (top-up) |
-| Live keyword probe | task `40200 Payment Required` (cost 0 — refused) |
-| Budget bar ≤$4/pack | Not violated by completed packs (none completed); account is now empty |
-
-Rough burn: ≥2 near-complete RFP synthesis runs (OpenAI + Perplexity + DataForSEO) before keywords went 402, plus shorter CR/landing runs that paid search then failed at keywords. **Top up DataForSEO before re-running.**
-
-## Artifacts / logs
+### Artifacts (re-run 2)
 
 | Path | What |
 |---|---|
-| `/opt/cursor/artifacts/quote-gate-live/rfp-research.log` | Attempt 1 — Reddit quote fail |
-| `/opt/cursor/artifacts/quote-gate-live/rfp-research-ua.log` | Attempt 2 — competitor shortfall |
-| `/opt/cursor/artifacts/quote-gate-live/rfp-research-ua2.log` | Attempt 3 — DFS 402 |
-| `/opt/cursor/artifacts/quote-gate-live/code-reviewer-research-ua.log` | DFS 402 |
-| `/opt/cursor/artifacts/quote-gate-live/landing-research-ua.log` | DFS 402 |
-| `/opt/cursor/artifacts/quote-gate-live/reddit-probe.log` | curl 403 matrix |
-| `/opt/cursor/artifacts/quote-gate-live/hn-quote-probe.log` | live HN OK + Reddit FAIL w/ UA |
-| `/opt/cursor/artifacts/quote-gate-live/failure-matrix.txt` | condensed exits |
-| `artifacts/quote-gate-live-verification.md` | coordinator copy |
+| `/opt/cursor/artifacts/quote-gate-live/rerun2-rfp-research-1.log` | RFP no-UA — 0/8 Reddit 403 |
+| `/opt/cursor/artifacts/quote-gate-live/rerun2-rfp-research-ua.log` | RFP UA retry — 0/8 |
+| `/opt/cursor/artifacts/quote-gate-live/rerun2-code-reviewer-research.log` | CR — 1/8 |
+| `/opt/cursor/artifacts/quote-gate-live/rerun2-landing-research.log` | Landing — 0/8 |
+| `/opt/cursor/artifacts/quote-gate-live/rerun2-matrix.txt` | condensed exits |
+| `/opt/cursor/artifacts/quote-gate-live/failure-matrix.txt` | copy of matrix |
+| `artifacts/quote-gate-live-verification.md` | coordinator summary |
 
-## Why not clear to merge
+### Unblock for YES
 
-1. **N=3 live re-run did not complete** — no new records, no compile, no deep-audit pass on quote/`yearOne`/`dataModel` fields.
-2. **Reddit quote verification is blocked from this Cloud Agent network** even with `ENGINE_QUOTE_FETCH_UA`; fail-closed behavior is correct, but the live Reddit half of the gate cannot pass here.
-3. **DataForSEO credits exhausted** mid-gate (`402 Payment Required`) — cannot finish keywords for the remaining packs without a top-up.
+1. Set Cloud Agent secrets `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` (free script app at reddit.com/prefs/apps), **or** re-run from a network that can read Reddit public `.json`.
+2. Re-run the three `engine:research --live` → compile `engine-draft-*` → `audit:idea` with ≥2 live-verified quotes each.
+3. Then update this file with YES only if all three clear research + compile + audit.
 
-## Re-run recipe (after DFS top-up; ideally from a network Reddit allows)
+---
 
-```bash
-export ENGINE_QUOTE_FETCH_UA='WeekendMVP-IdeaEngine/1.0 (+https://weekendmvp.app; research-bot)'
-npm run engine:research -- --brief engine/briefs/rfp-assistant.json --live
-npm run engine:compile -- --record engine/records/ai-rfp-response-assistant.json --slug engine-draft-ai-rfp-response-assistant --force
-npm run audit:idea -- --slug engine-draft-ai-rfp-response-assistant --record engine/records/ai-rfp-response-assistant.json
-# repeat for code-reviewer + landing-page-generator-ecommerce
-```
+## Prior run (re-run 1, pre DFS top-up) — historical
 
-## Follow-up fix (after this report)
-
-- **Reddit 403:** the source-text provider now uses Reddit's OAuth API when `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` are set (free "script" app at reddit.com/prefs/apps). Without them, a 403 error now names those variables.
-- **Wasted spend:** cited community pages are read right after the community search. Fewer than 2 readable pages stops the run at `community_signals`, before DataForSEO and synthesis bill. On this network that would have cost ~$0.08 (three Perplexity searches) instead of a full pack.
-- **Quote hit rate:** the fetched page text is passed to synthesis, which must copy quotes from it.
-- **Competitor shortfall (RFP attempt 2):** the shortfall message now reports how many stats/competitors were dropped for numbers not found in the search results, and synthesis is told to copy prices exactly (no annual→monthly conversion). Re-check that count on the next run.
-
-Re-run recipe is unchanged, plus `export REDDIT_CLIENT_ID=… REDDIT_CLIENT_SECRET=…`, after a DataForSEO top-up.
+**Clear to merge? NO** (then). Secrets present; Reddit 403 (UA no help); then DataForSEO balance −$0.08 → keywords 402. See git history of this file at `26f4f48` for full tables. Follow-up code since then: OAuth Reddit fetch + early-stop before paid steps (`817d5af`), figure grounding / yearOne fixes (`70f914e`, `1c98c9e`).
