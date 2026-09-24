@@ -6,6 +6,9 @@
  * How-it-works numbered list under The Solution, source links, word count,
  * slug shape, and MDX JSX traps. Exit 0 on pass, 1 on any failure.
  *
+ * Engine pages (manifest source engine:* or engine-draft-* in engine/drafts/)
+ * also get the deep writing bar — see the --help text.
+ *
  * Usage:
  *   node scripts/audit-idea-mdx.mjs --slug ai-rfp-response-assistant
  *   node scripts/audit-idea-mdx.mjs --all
@@ -25,7 +28,12 @@ import {
 } from "./lib/idea-sections.mjs";
 import {
   auditHowItWorksNaming,
+  countPhrase,
   extractBlockquotes,
+  findBrokenLinkLines,
+  GENERIC_SETUP_TABLES,
+  promptBlocks,
+  setupTableNames,
   extractCompetitorLinks,
   findCrossIdeaSentenceDupes,
   findDuplicateSentencesInPage,
@@ -35,7 +43,7 @@ import {
   findNearDuplicateParagraphs,
   findTierMismatches,
   isCompetitorRoundupUrl,
-  isDeepDraftSlug,
+  isEngineDraftSlug,
   MIN_DEEP_BODY_WORDS,
   MIN_DEEP_BODY_WORDS_HARD,
   normalizeQuote,
@@ -44,7 +52,82 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ideasDir = path.join(root, "content", "ideas");
+const draftsDir = path.join(root, "engine", "drafts");
 const recordsDir = path.join(root, "engine", "records");
+const manifestPaths = [
+  path.join(root, "ideas", "manifest.json"),
+  path.join(draftsDir, "manifest.json"),
+];
+
+/** Minimum words per engine build prompt (inside the ```text fence). */
+const MIN_PROMPT_WORDS = {
+  "project setup": 60,
+  "core feature": 70,
+  "landing page": 40,
+  "branding package": 70,
+};
+/** Engine pages must quote at least this many verified community voices. */
+const MIN_VERIFIED_QUOTES = 2;
+/** The full brief audience may appear this many times; use audienceShort after. */
+const MAX_FULL_AUDIENCE_MENTIONS = 2;
+
+let manifestRowsCache = null;
+function manifestRows() {
+  if (manifestRowsCache) return manifestRowsCache;
+  manifestRowsCache = new Map();
+  for (const p of manifestPaths) {
+    if (!fs.existsSync(p)) continue;
+    try {
+      for (const row of JSON.parse(fs.readFileSync(p, "utf8")).ideas || []) {
+        if (row && typeof row.slug === "string") manifestRowsCache.set(row.slug, row);
+      }
+    } catch {
+      // A broken manifest is validate-idea-tags' job to report.
+    }
+  }
+  return manifestRowsCache;
+}
+
+/**
+ * Engine pages get the full deep bar: engine-draft-* spot checks and every
+ * published page whose manifest source is `engine:*`. Legacy hand-written
+ * and Ideabrowser pages keep the base contract.
+ */
+export function isEnginePage(slug) {
+  if (isEngineDraftSlug(slug)) return true;
+  const row = manifestRows().get(slug);
+  return typeof row?.source === "string" && row.source.startsWith("engine:");
+}
+
+/** content/ideas/{slug}.mdx, else engine/drafts/{slug}.mdx. */
+export function resolveIdeaFile(slug) {
+  const published = path.join(ideasDir, `${slug}.mdx`);
+  if (fs.existsSync(published)) return published;
+  const draft = path.join(draftsDir, `${slug}.mdx`);
+  if (fs.existsSync(draft)) return draft;
+  return published;
+}
+
+/** Other engine page bodies (drafts + published engine pages) for cross-idea checks. */
+function otherEngineBodies(slug) {
+  const slugs = new Set();
+  if (fs.existsSync(draftsDir)) {
+    for (const f of fs.readdirSync(draftsDir)) {
+      if (f.endsWith(".mdx")) slugs.add(f.replace(/\.mdx$/, ""));
+    }
+  }
+  for (const [s, row] of manifestRows()) {
+    if (typeof row.source === "string" && row.source.startsWith("engine:")) slugs.add(s);
+  }
+  slugs.delete(slug);
+  const bodies = {};
+  for (const s of slugs) {
+    const file = resolveIdeaFile(s);
+    if (!fs.existsSync(file)) continue;
+    bodies[s] = splitFrontmatter(fs.readFileSync(file, "utf8")).body;
+  }
+  return bodies;
+}
 
 const MD_LINK_RE = /\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g;
 const H2_RE = /^##[ \t]+(.+?)\s*$/gm;
@@ -113,13 +196,15 @@ export function countCompetitorMentions(competitiveContent) {
 }
 
 /**
- * Resolve a ResearchRecord JSON for quote-fidelity checks.
- * Prefer explicit recordPath; else engine/records/{goldSlug}.json when
- * auditing engine-draft-{goldSlug}.
+ * Resolve the ResearchRecord behind an engine page: explicit --record, else
+ * engine/records/{slug}.json, else engine/records/{gold}.json for
+ * engine-draft-{gold}.
  */
 export function resolveRecordPath(slug, recordPath) {
   if (recordPath) return recordPath;
-  if (isDeepDraftSlug(slug)) {
+  const own = path.join(recordsDir, `${slug}.json`);
+  if (fs.existsSync(own)) return own;
+  if (isEngineDraftSlug(slug)) {
     const gold = slug.replace(/^engine-draft-/, "");
     const candidate = path.join(recordsDir, `${gold}.json`);
     if (fs.existsSync(candidate)) return candidate;
@@ -131,7 +216,10 @@ export function resolveRecordPath(slug, recordPath) {
  * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
  * @param {string} filePath
  * @param {string} [slugHint]
- * @param {{ recordPath?: string }} [options]
+ * @param {{ recordPath?: string, engine?: boolean, otherBodies?: Record<string, string> }} [options]
+ *   engine: force (true) or skip (false) the deep bar instead of looking the
+ *   slug up in the manifests; otherBodies: sibling bodies for the cross-idea
+ *   check (defaults to every other engine page on disk).
  */
 export function auditIdeaFile(filePath, slugHint, options = {}) {
   const errors = [];
@@ -223,7 +311,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   }
 
   const wordCount = countWords(body);
-  const deep = isDeepDraftSlug(slug);
+  const deep = options.engine ?? isEnginePage(slug);
   if (deep) {
     if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
       errors.push(
@@ -256,22 +344,11 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     );
   }
 
-  // Round 3: cross-idea sentence dedupe among sibling engine-draft-* in same dir
+  // Cross-idea sentence dedupe against every other engine page (drafts and
+  // published engine:* pages), so compiler templates cannot creep back in.
   let crossIdeaHits = [];
   if (deep) {
-    const dir = path.dirname(filePath);
-    const otherBodies = {};
-    try {
-      for (const f of fs.readdirSync(dir)) {
-        if (!f.startsWith("engine-draft-") || !f.endsWith(".mdx")) continue;
-        const otherSlug = f.replace(/\.mdx$/, "");
-        if (otherSlug === slug) continue;
-        const rawOther = fs.readFileSync(path.join(dir, f), "utf8");
-        otherBodies[otherSlug] = splitFrontmatter(rawOther).body;
-      }
-    } catch {
-      // temp dirs / missing siblings — skip
-    }
+    const otherBodies = options.otherBodies ?? otherEngineBodies(slug);
     crossIdeaHits = findCrossIdeaSentenceDupes(slug, body, otherBodies);
     for (const h of crossIdeaHits.slice(0, 8)) {
       errors.push(
@@ -288,6 +365,10 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
 
   for (const issue of findHygieneIssues(prose)) {
     errors.push(issue);
+  }
+
+  for (const hit of findBrokenLinkLines(body).slice(0, 8)) {
+    errors.push(`broken markdown link near line ${hit.line}: "${hit.text.slice(0, 90)}"`);
   }
 
   // Deep drafts: niche sizing, first-party competitor URLs, quote fidelity.
@@ -320,29 +401,32 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       }
     }
 
-    // Four AI prompts (incl. branding) + tier consistency vs Business Model
+    // Four AI prompts (incl. branding), each with real content.
     const prompts = sections.find((s) => s.title === "AI Prompts to Build This");
     const business = sections.find((s) => s.title === "Business Model");
     if (prompts) {
-      const promptHeads = [
-        ...prompts.content.matchAll(/\*\*\d+\.\s+([^*]+)\*\*/g),
-      ].map((m) => m[1].trim().toLowerCase());
-      if (promptHeads.length < 4) {
+      const blocks = promptBlocks(prompts.content, countWords);
+      if (blocks.length < 4) {
         errors.push(
-          `AI Prompts needs ≥4 prompts including Branding (got ${promptHeads.length})`,
+          `AI Prompts needs ≥4 prompts including Branding (got ${blocks.length})`,
         );
-      } else if (!promptHeads.some((h) => /brand/i.test(h))) {
+      } else if (!blocks.some((b) => /brand/i.test(b.title))) {
         errors.push("AI Prompts must include a Branding Package prompt");
       }
-      // Project Setup must not be a stub
-      const setupBlock = prompts.content.match(
-        /\*\*1\.\s*Project Setup\*\*[\s\S]*?```text\n([\s\S]*?)```/,
-      );
-      if (setupBlock) {
-        const setupWords = countWords(setupBlock[1]);
-        if (setupWords < 60) {
+      for (const b of blocks) {
+        const min = MIN_PROMPT_WORDS[b.title.toLowerCase()];
+        if (min && b.words < min) {
+          errors.push(`${b.title} prompt too thin (${b.words} words; need ≥${min})`);
+        }
+      }
+      const setup = blocks.find((b) => /project setup/i.test(b.title));
+      if (setup) {
+        const ideaTables = setupTableNames(setup.text).filter(
+          (t) => !GENERIC_SETUP_TABLES.has(t),
+        );
+        if (ideaTables.length < 3) {
           errors.push(
-            `Project Setup prompt too thin (${setupWords} words; need schema/pricing/env ≥60)`,
+            `Project Setup schema is generic (${ideaTables.length} idea-specific table(s); need ≥3 from the research dataModel)`,
           );
         }
       }
@@ -353,33 +437,107 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       }
     }
 
-    const recordPath = resolveRecordPath(slug, options.recordPath);
-    if (recordPath && fs.existsSync(recordPath)) {
-      try {
-        const record = JSON.parse(fs.readFileSync(recordPath, "utf8"));
-        const signals = record?.community?.signals || [];
-        const mdxQuotes = extractBlockquotes(body).map(normalizeQuote);
-        for (const signal of signals) {
-          const q = normalizeQuote(signal.quote || "");
-          if (!q) continue;
-          const found = mdxQuotes.some(
-            (mq) => mq.includes(q) || q.includes(mq),
-          );
-          if (!found) {
+    if (business) {
+      const tierNames = [
+        ...business.content.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(/gm),
+      ].map((m) => m[1].trim());
+
+      // Unit economics bullets lead with the number: `- **$2.40/dev/mo** — label`.
+      const unit = business.content.match(
+        /\*\*Unit Economics\*\*\s*\n([\s\S]*?)(?:\n\*\*[^*\n]+\*\*\s*\n|$)/,
+      );
+      if (!unit) {
+        errors.push("Business Model needs a **Unit Economics** list");
+      } else {
+        for (const m of unit[1].matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*/gm)) {
+          const lead = m[1].trim();
+          if (!/\d/.test(lead) || countWords(lead) > 10) {
             errors.push(
-              `quote fidelity: research quote missing or rewritten in MDX: "${(signal.quote || "").slice(0, 80)}"`,
+              `Unit Economics bullet must lead with a short figure, not a sentence: "${lead.slice(0, 70)}"`,
             );
           }
         }
+      }
+
+      // Year-one math with a computed ARR line on a real tier.
+      if (!business.content.includes("**Year-One Math**")) {
+        errors.push("Business Model needs **Year-One Math** (funnel → paying accounts → ARR, plus downside)");
+      } else {
+        const arr = business.content.match(
+          /\*\*[\d,]+ × \$[\d,.]+\/mo = \$[\d,]+ ARR\*\* — (.+?) accounts paying/,
+        );
+        if (!arr) {
+          errors.push("Year-One Math is missing its computed ARR line");
+        } else if (tierNames.length > 0 && !tierNames.includes(arr[1].trim())) {
+          errors.push(
+            `Year-One Math lands on tier "${arr[1].trim()}", which is not a pricing tier (${tierNames.join(", ")})`,
+          );
+        }
+        if (!/downside if the close rate halves/.test(business.content)) {
+          errors.push("Year-One Math is missing its downside case");
+        }
+      }
+    }
+
+    // Every engine page is compiled from a research record; audit against it.
+    const recordPath = resolveRecordPath(slug, options.recordPath);
+    if (!recordPath || !fs.existsSync(recordPath)) {
+      errors.push(
+        `no research record for ${slug} (expected engine/records/${slug}.json or --record path)`,
+      );
+    } else {
+      let record = null;
+      try {
+        record = JSON.parse(fs.readFileSync(recordPath, "utf8"));
       } catch (err) {
-        warnings.push(
-          `could not load record for quote check: ${recordPath} (${err instanceof Error ? err.message : err})`,
+        errors.push(
+          `could not read research record ${recordPath} (${err instanceof Error ? err.message : err})`,
         );
       }
-    } else if (deep) {
-      warnings.push(
-        "no research record found for quote-fidelity check (pass --record path)",
-      );
+      if (record) {
+        const signals = record?.community?.signals || [];
+        const mdxQuotes = extractBlockquotes(body);
+        let verifiedOnPage = 0;
+        for (const quote of mdxQuotes) {
+          const q = normalizeQuote(quote);
+          const match = signals.find((sig) => {
+            const rq = normalizeQuote(sig.quote || "");
+            return rq && (rq.includes(q) || q.includes(rq));
+          });
+          if (!match) {
+            errors.push(`quote not in the research record: "${quote.slice(0, 80)}"`);
+          } else if (match.verified !== true) {
+            errors.push(
+              `quote not verified against its cited page (re-run engine:research): "${quote.slice(0, 80)}"`,
+            );
+          } else {
+            verifiedOnPage += 1;
+          }
+        }
+        if (verifiedOnPage < MIN_VERIFIED_QUOTES) {
+          errors.push(
+            `needs ≥${MIN_VERIFIED_QUOTES} verified community quotes (got ${verifiedOnPage})`,
+          );
+        }
+        // Verified quotes the compiler dropped would mean a lossy compile.
+        for (const sig of signals) {
+          if (sig.verified !== true) continue;
+          const q = normalizeQuote(sig.quote || "");
+          if (q && !mdxQuotes.some((mq) => normalizeQuote(mq).includes(q) || q.includes(normalizeQuote(mq)))) {
+            errors.push(
+              `quote fidelity: verified research quote missing or rewritten in MDX: "${(sig.quote || "").slice(0, 80)}"`,
+            );
+          }
+        }
+
+        const fullAudience = record?.brief?.targetCustomer;
+        const mentions = countPhrase(prose, fullAudience);
+        if (mentions > MAX_FULL_AUDIENCE_MENTIONS) {
+          errors.push(
+            `full audience label "${fullAudience}" appears ${mentions}× (max ${MAX_FULL_AUDIENCE_MENTIONS}; use editorial.audienceShort)`,
+          );
+        }
+      }
     }
   }
 
@@ -463,18 +621,21 @@ function main() {
   node scripts/audit-idea-mdx.mjs --all
   node scripts/audit-idea-mdx.mjs --slug <slug> --json
 
-Deep drafts (engine-draft-*) enforce ≥${MIN_DEEP_BODY_WORDS_HARD} unique words,
-no stock filler / Round-3 padding templates, no duplicate ≥8-word sentences
-(in-page or across engine-draft-* siblings), named How-it-works steps, niche
-sizing, first-party competitor URLs, matching Business Model ↔ Setup tiers,
-four AI prompts incl. Branding, and quote fidelity vs engine/records/.`);
+Engine pages (manifest source engine:* and engine-draft-* drafts in
+engine/drafts/) get the deep bar: ≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock filler,
+no duplicate ≥8-word sentences (in-page or across engine pages), named
+How-it-works steps, niche sizing, first-party competitor URLs, four prompts
+with real content and an idea-specific schema, number-first unit economics,
+Year-One Math with computed ARR and downside, the full audience label at most
+twice, and ≥2 community quotes verified on their cited pages
+(engine/records/{slug}.json or --record).`);
     process.exit(args.help ? 0 : 2);
   }
 
   const slugs = args.all ? listIdeaSlugs() : [args.slug];
   let failed = 0;
   for (const slug of slugs) {
-    const filePath = path.join(ideasDir, `${slug}.mdx`);
+    const filePath = resolveIdeaFile(slug);
     const result = auditIdeaFile(filePath, slug, {
       recordPath: args.recordPath || undefined,
     });

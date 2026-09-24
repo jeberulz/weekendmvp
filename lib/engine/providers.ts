@@ -8,8 +8,10 @@
 import { createSynthesisProvider } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
 import { createKeywordDataProvider } from "./providers/keywordData.ts";
+import { createSourceTextProvider } from "./providers/sourceText.ts";
 import {
   fixtureKeywordFetch,
+  fixtureSourceText,
   fixtureSearchFetch,
   fixtureSynthesisFetch,
   KEYWORD_RFP_FIXTURE,
@@ -52,6 +54,7 @@ export function createProviders(
         login: "fixture-mode",
         password: "fixture-mode",
       }),
+      sourceText: fixtureSourceText(),
     };
   }
 
@@ -59,5 +62,6 @@ export function createProviders(
     synthesis: createSynthesisProvider(),
     search: createSearchProvider(),
     keywordData: createKeywordDataProvider(),
+    sourceText: createSourceTextProvider(),
   };
 }
