@@ -8,8 +8,14 @@
  *   listing. Reddit answers the public endpoint with 403 from most cloud
  *   networks, so set the credentials anywhere but a home connection.
  * - Hacker News items → the Algolia items API (story + comment tree).
- * - Anything else → the HTML with scripts/styles/tags stripped.
+ * - Anything else → the HTML with scripts/styles/tags stripped. Citation
+ *   URLs come from search results, so every hop (the first request and each
+ *   redirect) must resolve to a public address: loopback, private, link-local
+ *   and metadata-service targets are refused.
  */
+
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 
 export type SourceTextProvider = {
   fetchText(url: string): Promise<string>;
@@ -24,7 +30,11 @@ export type CreateSourceTextOptions = {
   /** Reddit app credentials (script or web app, app-only OAuth). */
   redditClientId?: string;
   redditClientSecret?: string;
+  /** Resolve a hostname to its IP addresses (defaults to DNS). */
+  resolveHost?: (hostname: string) => Promise<string[]>;
 };
+
+const MAX_REDIRECTS = 5;
 
 const DEFAULT_UA =
   "weekendmvp-idea-engine/1.0 (quote verification; +https://www.weekendmvp.app)";
@@ -42,14 +52,19 @@ function collectStrings(value: unknown, keys: Set<string>, out: string[]): void 
   }
 }
 
+/** The character for a numeric entity, or the raw entity when out of range. */
+function codePointOr(n: number, raw: string): string {
+  return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : raw;
+}
+
 export function htmlToText(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     // Numeric entities (HN's Algolia text encodes "/" as &#x2F;, "'" as &#x27;).
-    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
-    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
+    .replace(/&#x([0-9a-f]+);/gi, (m: string, h: string) => codePointOr(parseInt(h, 16), m))
+    .replace(/&#(\d+);/g, (m: string, d: string) => codePointOr(Number(d), m))
     .replace(/&quot;/g, '"')
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -93,6 +108,63 @@ export function hnApiUrl(url: string): string | null {
     return `https://hn.algolia.com/api/v1/items/${id}`;
   } catch {
     return null;
+  }
+}
+
+function ipv4Blocked(ip: string): boolean {
+  const [a = 0, b = 0, c = 0] = ip.split(".").map(Number);
+  return (
+    a === 0 || // "this" network
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) || // carrier-grade NAT
+    (a === 169 && b === 254) || // link-local, cloud metadata
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 198 && (b === 18 || b === 19)) || // benchmarking
+    a >= 224 // multicast and reserved
+  );
+}
+
+/** True for loopback, private, link-local, metadata and other non-public IPs. */
+export function isBlockedAddress(ip: string): boolean {
+  const version = isIP(ip);
+  if (version === 4) return ipv4Blocked(ip);
+  if (version !== 6) return true;
+  const v6 = ip.toLowerCase();
+  const mapped = v6.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (mapped) return ipv4Blocked(mapped[1]!);
+  return (
+    v6 === "::" ||
+    v6 === "::1" ||
+    /^f[cd]/.test(v6) || // unique local fc00::/7
+    /^fe[89ab]/.test(v6) || // link-local fe80::/10
+    /^ff/.test(v6) // multicast
+  );
+}
+
+async function defaultResolveHost(hostname: string): Promise<string[]> {
+  const found = await lookup(hostname, { all: true, verbatim: true });
+  return found.map((a) => a.address);
+}
+
+/** Throw unless the URL is http(s) and its host resolves only to public IPs. */
+export async function assertPublicUrl(
+  url: string,
+  resolveHost: (hostname: string) => Promise<string[]> = defaultResolveHost,
+): Promise<void> {
+  const u = new URL(url);
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error(`Refusing non-http source URL: ${url}`);
+  }
+  const host = u.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw new Error(`Refusing non-public source URL: ${url}`);
+  }
+  const addresses = isIP(host) ? [host] : await resolveHost(host);
+  if (addresses.length === 0 || addresses.some(isBlockedAddress)) {
+    throw new Error(`Refusing non-public source URL: ${url}`);
   }
 }
 
@@ -142,11 +214,33 @@ export function createSourceTextProvider(
     return redditToken;
   };
 
+  const resolveHost = options.resolveHost ?? defaultResolveHost;
+
+  /** GET that checks the destination of the request and of every redirect. */
+  const getPublic = async (url: string): Promise<Response> => {
+    let current = url;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+      await assertPublicUrl(current, resolveHost);
+      const res = await fetchImpl(current, {
+        headers: { "user-agent": userAgent, accept: "application/json,text/html" },
+        signal: AbortSignal.timeout(timeoutMs),
+        redirect: "manual",
+      });
+      const location = res.headers.get("location");
+      if (res.status >= 300 && res.status < 400 && location) {
+        current = new URL(location, current).toString();
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${current}`);
+      return res;
+    }
+    throw new Error(`Too many redirects for ${url}`);
+  };
+
   const get = async (url: string): Promise<Response> => {
     const res = await fetchImpl(url, {
       headers: { "user-agent": userAgent, accept: "application/json,text/html" },
       signal: AbortSignal.timeout(timeoutMs),
-      redirect: "follow",
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
     return res;
@@ -192,7 +286,7 @@ export function createSourceTextProvider(
         collectStrings(json, new Set(["title", "text"]), parts);
         return htmlToText(parts.join("\n"));
       }
-      return htmlToText(await (await get(url)).text());
+      return htmlToText(await (await getPublic(url)).text());
     },
   };
 }
@@ -217,17 +311,19 @@ export function normalizeForMatch(text: string): string {
  * marks an elision, so each fragment must appear, in order.
  */
 export function quoteAppearsIn(quote: string, pageText: string): boolean {
-  const page = normalizeForMatch(pageText);
+  // Pad with spaces so fragments match whole words only ("cat" ≠ "concat").
+  const page = ` ${normalizeForMatch(pageText)} `;
   const fragments = quote
     .split(/\.\.\.|…/)
     .map(normalizeForMatch)
-    .filter((f) => f.split(" ").length >= 3);
-  if (fragments.length === 0) return false;
+    .filter((f) => f.length > 0);
+  // At least one fragment must be long enough to be a real quote.
+  if (!fragments.some((f) => f.split(" ").length >= 3)) return false;
   let from = 0;
   for (const fragment of fragments) {
-    const at = page.indexOf(fragment, from);
+    const at = page.indexOf(` ${fragment} `, from);
     if (at === -1) return false;
-    from = at + fragment.length;
+    from = at + fragment.length + 1;
   }
   return true;
 }

@@ -233,7 +233,9 @@ Success → `og.status: "ready"`. Both providers fail → `"failed"`, exit 0, pu
 Commit + push MDX + OG PNG **only if the operator explicitly asks**. Do not push to `main` on your own.
 
 ```bash
-git add content/ideas/{slug}.mdx ideas/manifest.json public/image/og/idea/{slug}.png
+git add content/ideas/{slug}.mdx ideas/manifest.json
+# The OG card is non-blocking (Step 6): stage it only if it was generated.
+[ -f public/image/og/idea/{slug}.png ] && git add public/image/og/idea/{slug}.png
 git commit -m "content(idea): {title}"
 git push   # only when asked; triggers Vercel
 ```

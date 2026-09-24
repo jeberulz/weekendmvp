@@ -29,6 +29,7 @@ import {
   createSourceTextProvider,
   hnApiUrl,
   htmlToText,
+  isBlockedAddress,
   quoteAppearsIn,
   redditJsonUrl,
 } from "./providers/sourceText.ts";
@@ -445,6 +446,30 @@ describe("figure grounding per citation", () => {
     expect(isGroundedFigure("$1.22 billion", evidence.get("https://b.example/secure")!)).toBe(true);
   });
 
+  it("ignores an untagged answer that cites several sources", () => {
+    const evidence = citationEvidence([
+      {
+        text: "Market A was $1.8 billion; market B was $1.22 billion.",
+        citations: [
+          { url: "https://a.example/one", title: "A", snippet: "AI code review tools" },
+          { url: "https://b.example/two", title: "B" },
+        ],
+      },
+    ]);
+    expect(isGroundedFigure("$1.22 billion", evidence.get("https://a.example/one")!)).toBe(false);
+    expect(isGroundedFigure("$1.8 billion", evidence.get("https://b.example/two")!)).toBe(false);
+  });
+
+  it("uses an untagged answer when it cites one source", () => {
+    const evidence = citationEvidence([
+      {
+        text: "Market A was $1.8 billion.",
+        citations: [{ url: "https://a.example/one", title: "A" }],
+      },
+    ]);
+    expect(isGroundedFigure("$1.8 billion", evidence.get("https://a.example/one")!)).toBe(true);
+  });
+
   it("never treats URL or marker digits as evidence", () => {
     const evidence = citationEvidence([pack]);
     expect(isGroundedFigure("by 2031", evidence.get("https://a.example/report-2031")!)).toBe(false);
@@ -508,6 +533,7 @@ describe("CodeRabbit regressions", () => {
     const seen: string[] = [];
     const provider = createSourceTextProvider({
       userAgent: "   ",
+      resolveHost: async () => ["93.184.215.14"],
       fetchImpl: async (_url, init) => {
         seen.push(new Headers(init?.headers).get("user-agent") ?? "");
         return new Response("<p>hi</p>", { status: 200 });
@@ -528,5 +554,70 @@ describe("CodeRabbit regressions", () => {
       monthlyRevenuePerAccount: 24.99,
     });
     expect(out).toContain("10 × $24.99/mo = $2,999 ARR");
+  });
+});
+
+describe("source fetch safety", () => {
+  it("keeps out-of-range numeric entities as text", () => {
+    expect(htmlToText("a &#99999999; b &#x110000; c")).toBe("a &#99999999; b &#x110000; c");
+  });
+
+  it("matches quote fragments on whole words only", () => {
+    const page = "We concatenate the results before review every single week.";
+    expect(quoteAppearsIn("cat the results before review", page)).toBe(false);
+    expect(quoteAppearsIn("the results before review", page)).toBe(true);
+    // Short fragments must match too, not just the long one.
+    expect(quoteAppearsIn("the results before review … monthly", page)).toBe(false);
+    expect(quoteAppearsIn("the results before review … week", page)).toBe(true);
+  });
+
+  it("flags loopback, private, link-local and metadata addresses", () => {
+    for (const ip of ["127.0.0.1", "10.1.2.3", "172.20.0.1", "192.168.1.1", "169.254.169.254", "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1"]) {
+      expect(isBlockedAddress(ip), ip).toBe(true);
+    }
+    for (const ip of ["93.184.215.14", "151.101.1.140", "2606:4700::6810:84e5"]) {
+      expect(isBlockedAddress(ip), ip).toBe(false);
+    }
+  });
+
+  it("refuses a citation that resolves to a private address", async () => {
+    let fetched = 0;
+    const provider = createSourceTextProvider({
+      resolveHost: async () => ["10.0.0.5"],
+      fetchImpl: async () => {
+        fetched += 1;
+        return new Response("secret", { status: 200 });
+      },
+    });
+    await expect(provider.fetchText("https://intranet.example/page")).rejects.toThrow(/non-public/);
+    await expect(provider.fetchText("http://169.254.169.254/latest/meta-data/")).rejects.toThrow(/non-public/);
+    expect(fetched).toBe(0);
+  });
+
+  it("refuses a redirect to a private address", async () => {
+    const calls: string[] = [];
+    const provider = createSourceTextProvider({
+      resolveHost: async () => ["93.184.215.14"],
+      fetchImpl: async (url) => {
+        calls.push(url);
+        return new Response(null, {
+          status: 302,
+          headers: { location: "http://127.0.0.1:8080/admin" },
+        });
+      },
+    });
+    await expect(provider.fetchText("https://example.com/post")).rejects.toThrow(/non-public/);
+    expect(calls).toEqual(["https://example.com/post"]);
+  });
+
+  it("follows a redirect to another public page", async () => {
+    const provider = createSourceTextProvider({
+      resolveHost: async () => ["93.184.215.14"],
+      fetchImpl: async (url) =>
+        url.endsWith("/old")
+          ? new Response(null, { status: 301, headers: { location: "/new" } })
+          : new Response("<p>moved here</p>", { status: 200 }),
+    });
+    expect((await provider.fetchText("https://example.com/old")).trim()).toBe("moved here");
   });
 });

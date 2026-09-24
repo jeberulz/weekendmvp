@@ -1,6 +1,6 @@
 quote-gate live N=3 — Mac private worker re-run 3
-host: MacBook-Pro-4.local (John's Mac private worker)
-egress_ip: 80.252.122.75
+host: [redacted] (home Mac worker)
+egress_ip: [redacted home IP]
 branch: cursor/phase-7-skill-flip-d6b7
 tip_at_start: a24495f
 date_utc: 2026-09-24T11:43:00Z
@@ -25,7 +25,7 @@ LIVE N=3
 
 VERDICT
   Clear to merge from quote-gate side? NO
-  Primary blocker: Reddit public .json HTTP 403 from home egress 80.252.122.75
+  Primary blocker: Reddit public .json HTTP 403 from home egress [redacted home IP]
     (same failure class as Cloud Agent; home path does not unblock).
   Secondary: live provider secrets not available on this private worker
     (cannot run N=3 even if Reddit were reachable without injecting secrets).

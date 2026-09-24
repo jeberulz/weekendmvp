@@ -640,8 +640,8 @@ export async function verifySignals(
  * of the search answer tagged with that result's `[n]` marker. A figure is
  * checked against the source it is attributed to, not against every search
  * result (or URLs and titles) at once. When an answer carries no markers at
- * all, attribution is impossible, so that one answer's text (never the
- * other searches) is added to each of its sources' snippets.
+ * all, it counts as evidence only if it cites one unique source; with
+ * several sources, attribution is impossible and only snippets remain.
  */
 export function citationEvidence(packs: SearchPack[]): Map<string, string> {
   const evidence = new Map<string, string[]>();
@@ -656,7 +656,8 @@ export function citationEvidence(packs: SearchPack[]): Map<string, string> {
     });
     const tagged = /\[\d+\]/.test(pack.text);
     if (!tagged) {
-      for (const href of hrefs) add(href, clean(pack.text));
+      const unique = new Set(hrefs);
+      if (unique.size === 1) add(hrefs[0]!, clean(pack.text));
       continue;
     }
     for (const sentence of pack.text.split(/(?<=[.!?])\s+|\n+/)) {

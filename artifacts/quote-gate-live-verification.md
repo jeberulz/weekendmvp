@@ -6,7 +6,7 @@
 
 ## One-liner
 
-Home-egress Mac private worker still gets **Reddit public `.json` HTTP 403** (egress `80.252.122.75`). HN Algolia 200. Live N=3 skipped (early stop). Research secrets also absent on this worker. Same blocker class as Cloud Agent re-runs; home path does not unblock Reddit.
+Home-egress Mac private worker still gets **Reddit public `.json` HTTP 403**. HN Algolia 200. Live N=3 skipped (early stop). Research secrets also absent on this worker. Same blocker class as Cloud Agent re-runs; home path does not unblock Reddit.
 
 ## Probe
 
@@ -27,7 +27,7 @@ Home-egress Mac private worker still gets **Reddit public `.json` HTTP 403** (eg
 
 ## Remaining blocker
 
-**Reddit 403 from home IP `80.252.122.75`** without working public JSON. Set `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` on a runner that also has OpenAI/Perplexity/DataForSEO, then re-run all three packs through research + compile + deep audit with ≥2 verified quotes. Do not merge on quote-gate grounds until then.
+**Reddit 403 from the home network** without working public JSON. Set `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` on a runner that also has OpenAI/Perplexity/DataForSEO, then re-run all three packs through research + compile + deep audit with ≥2 verified quotes. Do not merge on quote-gate grounds until then.
 
 ## Logs
 

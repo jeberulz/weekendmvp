@@ -273,7 +273,7 @@ export const SEARCH_MARKET_FIXTURE = {
     {
       message: {
         content:
-          "RFP software market shows high-teens CAGR through the mid-2030s. AI-augmented response automation is sized in the low single-digit billions USD for 2024 with double-digit growth.",
+          "RFP software market shows high-teens CAGR through the mid-2030s [1]. AI-augmented response automation is sized in the low single-digit billions USD for 2024 with double-digit growth [2].",
       },
     },
   ],
@@ -297,7 +297,7 @@ export const SEARCH_COMPETITORS_FIXTURE = {
     {
       message: {
         content:
-          "Loopio Foundations from ~$20,000/year. Responsive is quote-based enterprise. Qvidian (Upland) runs 5-figure annual contracts.",
+          "Loopio Foundations from ~$20,000/year [1]. Responsive is quote-based enterprise [2]. Qvidian (Upland) runs 5-figure annual contracts [3].",
       },
     },
   ],
@@ -326,7 +326,7 @@ export const SEARCH_COMMUNITY_FIXTURE = {
     {
       message: {
         content:
-          "Sales engineers report burning weekends on SOC2 questionnaires. Teams say Loopio only works if you already have a proposal ops hire.",
+          "Sales engineers report burning weekends on SOC2 questionnaires [1]. Teams say Loopio only works if you already have a proposal ops hire [2].",
       },
     },
   ],
