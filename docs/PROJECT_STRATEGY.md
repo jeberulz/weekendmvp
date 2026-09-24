@@ -24,6 +24,7 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP16 | Bolt and Windsurf hub enrichment | Work Package | `cursor/wp16-bolt-windsurf-enrichment` | Complete | Both hubs have improved search copy and featured idea rails. |
 | WP17 | Sitemap indexing signals | Work Package | `cursor/wp17-sitemap-indexing` | Complete — merged (#42) | Stable idea lastmod, apex system-file redirects, and indexing runbook/check script are present. |
 | WP18 | Five research-backed startup ideas | Work Package | `feat/publish-five-ideas` | Complete — merged (#44) | Five pages pass research/section gates, are seeded, and have OG assets live on `main`. |
+| WP43 | Ideas-first dashboard (free and paid) | Work Package | `claude/wizardly-rubin-a6m2th` (PRD and plan) | PRD drafted — owner rulings R1–R8 pending | `/dashboard` is the light ideas-first home in `docs/wp/wp43-dashboard-prd.md`; free Home, Ideas, Saved and one weekend plan ship; Builder UI and entitlements sit behind a flag; standard checks and WCAG 2.1 AA pass. |
 
 ## Build Platform Program
 
