@@ -1,0 +1,12 @@
+{
+  "title": "AI Code Reviewer",
+  "audience": "Indie developers and sub-10 engineering teams maintaining GitHub repos",
+  "revenueModel": "Per-developer SaaS with generous OSS free tier",
+  "seedKeywords": [
+    "ai code review",
+    "github pr review bot",
+    "automated pull request review"
+  ],
+  "slug": "ai-code-reviewer",
+  "oneLiner": "GitHub App that auto-reviews PRs so humans focus on architecture."
+}
