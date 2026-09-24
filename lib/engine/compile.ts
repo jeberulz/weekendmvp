@@ -143,7 +143,13 @@ function uniqueCitations(record: ResearchRecord): Array<{ url: string; title: st
     out.push({ url, title });
   };
   for (const s of record.market.stats) push(s.citation.url, s.citation.title);
-  for (const c of record.competitors) push(c.url, c.name);
+  for (const c of record.competitors) {
+    // Roundup URLs are research breadcrumbs — do not publish them as Sources.
+    if (/comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i.test(c.url)) {
+      continue;
+    }
+    push(c.url, c.name);
+  }
   for (const s of record.community.signals) {
     push(s.citation.url, s.citation.title);
   }
@@ -269,8 +275,19 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
 
   const competitorLines = record.competitors
     .map((c) => {
-      const notes = c.notes?.trim() || "Positioning gap vs the wedge above.";
-      return `- **${c.name}** — ${notes} Pricing: ${c.pricing}. ${mdLink(`${c.name} (vendor page)`, c.url)}.`;
+      const notes = (c.notes?.trim() || "Positioning gap vs the wedge above.").replace(
+        /\.+$/,
+        "",
+      );
+      const pricing = c.pricing.trim().replace(/\.+$/, "");
+      const roundup =
+        /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i.test(
+          c.url,
+        );
+      const link = roundup
+        ? "_First-party pricing URL missing in research — re-check before publish._"
+        : mdLink(`${c.name} (vendor page)`, c.url);
+      return `- **${c.name}** — ${notes}. Pricing: ${pricing}. ${link}`;
     })
     .join("\n");
 
@@ -502,7 +519,11 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       (title) => `## ${title}\n\n${escapeOutsideFences(sections[title]!)}\n`,
     ),
     `## ${SOURCES_TITLE}\n\nResearch citations used above (engine compile).\n\n${escapeMdxProse(sourceLinks)}\n`,
-  ].join("\n");
+  ]
+    .join("\n")
+    // Collapse accidental double periods from field joins (keep ellipses).
+    .replace(/(?<!\.)\.\.(?!\.)/g, ".");
+
 
   const mdx = [
     "---",

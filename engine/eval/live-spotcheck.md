@@ -1,81 +1,75 @@
-# Mode A2 live spot-check — 3 gold briefs
+# Mode A2 live spot-check — writing-quality pass
 
-Ran: 2026-09-24 (UTC). Branch: `cursor/mode-a2-live-spotcheck-1826`.
-Pipeline: `engine:research --live` → `engine:compile --slug engine-draft-*`.
-Providers: OpenAI `gpt-5.6-sol`, Perplexity `sonar-pro`, DataForSEO keyword volume (live).
-Cost cap: ≤$4.00/pack. Retries: none observed (each pack = 6 provider calls, all succeeded).
+Updated: 2026-09-24 (UTC). Branch: `cursor/mode-a2-live-spotcheck-1826` (PR #70).
+**Skill flip HELD** — do not change `/publish-idea` Mode A MCP.
 
-## Secret gate
+## Benchmark correction
 
-All four required secrets present at boot (values never logged):
-`OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`.
-DataForSEO returned keyword rows (no HTTP 401).
+Eval bar is **not** the three short Mode B gold pages (~1,080–1,385 words).
 
-## Per-pack cost (provenance.costUsd)
+Bar = IB deep page in-repo: `content/ideas/course-translation-resale-network.mdx`
+(~2,373 words, named product **Revoice**, zero stock filler). Criteria documented in
+`engine/eval/deep-benchmark.md`.
 
-| Brief | Record | Cost USD | Under $4? | Retries |
-|---|---|---:|:---:|---|
-| `ai-rfp-response-assistant` | `engine/records/ai-rfp-response-assistant.json` | **0.2478** | yes | none |
-| `ai-code-reviewer` | `engine/records/ai-code-reviewer.json` | **0.2592** | yes | none |
-| `ai-landing-page-generator-ecommerce` | `engine/records/ai-landing-page-generator-ecommerce.json` | **0.2658** | yes | none |
+| Gate | Hard / soft |
+|---|---|
+| Word count | Hard ≥1,800; soft target ≥2,200 (warn under target) |
+| Stock filler denylist | Hard fail |
+| Near-duplicate paragraphs | Hard fail |
+| Named How-it-works (not Step N) | Hard fail |
+| 4 AI prompts incl. Branding | Hard fail (deep drafts) |
+| Niche sizing (no mega SaaS/AI TAM) | Hard fail (deep drafts) |
+| Competitor first-party URLs | Hard fail on roundup links; warn if &lt;3 good links |
+| Quote fidelity vs research record | Hard fail when `--record` / auto-resolved |
 
-Total spend ≈ **$0.77**. Reference budget in pricing.ts is ~$0.52/clean run; these live packs landed ~half of that.
+## Secret gate (N=1)
 
-## Draft outputs (gold MDX untouched)
+All four present: `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`.
+No DataForSEO 401.
 
-| Gold slug | Draft MDX | Manifest source |
+## N=1 live re-run — `ai-rfp-response-assistant`
+
+| | |
+|---|---|
+| Brief | `engine/briefs/rfp-assistant.json` |
+| Record | `engine/records/ai-rfp-response-assistant.json` |
+| Draft | `content/ideas/engine-draft-ai-rfp-response-assistant.mdx` |
+| Attempts | 1–2 failed provenance (`got 2` competitors after pricing-URL filter); attempt 3 succeeded after hostname fallback + roundup skip |
+| **Cost (successful pack)** | **$0.3063** |
+| Failed attempts | ~$0.25–0.30 each est. (billed before provenance_parse) — under $4/pack still |
+| Product name | **RallyRFP** |
+| Words | **3,128** (clears 2,200 target) |
+| How-it-works | Knowledge Vault / Document Intake / Evidence Drafting / Review Routing / Native Export |
+| Tiers | Starter $199 · Team $499 · Scale $999 with unit rows |
+| `audit:idea` | **PASS** (warn: 2 first-party competitor links; QorusDocs lacked pricing URL) |
+| `validate:idea-tags` | **PASS** (operator-tagged) |
+| Gold MDX | Untouched |
+
+### Side-by-side vs IB deep bar (course-translation)
+
+| Criterion | Revoice (IB deep) | RallyRFP draft (N=1) |
 |---|---|---|
-| `ai-rfp-response-assistant` | `content/ideas/engine-draft-ai-rfp-response-assistant.mdx` | `engine:engine-draft-ai-rfp-response-assistant` |
-| `ai-code-reviewer` | `content/ideas/engine-draft-ai-code-reviewer.mdx` | `engine:engine-draft-ai-code-reviewer` |
-| `ai-landing-page-generator-ecommerce` | `content/ideas/engine-draft-ai-landing-page-generator-ecommerce.mdx` | `engine:engine-draft-ai-landing-page-generator-ecommerce` |
+| Words | ~2,373 | **3,128** |
+| Named product | Revoice | RallyRFP |
+| Don't-build | Explicit | Explicit (no broad suite / autonomous agent first) |
+| Named steps | Audit/Pilot/Sell/Split | Knowledge Vault…Native Export |
+| Tier math | $2,500 + % takes | $199/$499/$999 + unit econ |
+| 4 prompts + Branding | Yes | Yes (schema/env in Project Setup) |
+| Niche market | LATAM e-learning etc. | Proposal/RFP software $3.26B→$9.19B (not global SaaS $375B+) |
+| Competitor URLs | First-party style | Responsive + Loopio `/pricing`; QorusDocs roundup dropped from link |
+| Filler | None | None (padParagraphs removed) |
+| Quotes | Specific | Verbatim from record (fidelity check PASS) |
 
-`audit:idea` PASS on all three drafts. `validate:idea-tags` PASS after operator tagging (compiler still leaves category/tools/audiences empty by design — see compile `publishNotes`).
+### Remaining gaps (honest)
 
-## Side-by-side: structure
+1. **Third first-party competitor pricing URL** still weak (QorusDocs came through a comparison page — link suppressed; warn remains).
+2. **N=3** (code-reviewer + LP generator) should wait until John likes N=1 voice — old drafts still on disk from prior spot-check and will fail new gates until regenerated.
+3. Compiler still operator-tags `category`/`tools`/`audiences` after compile.
+4. Skill flip / phases 7–9 still **HELD**.
 
-Gold metrics from `engine/eval/gold.json`. Draft metrics from `audit:idea`.
+## Code changes in this pass
 
-| Metric | RFP gold | RFP draft | Code gold | Code draft | LP gold | LP draft |
-|---|---:|---:|---:|---:|---:|---:|
-| Word count | 1324 | 2092 | 1080 | 2086 | 1385 | 2217 |
-| Competitor mentions (auditor) | 4 | 5 | 4 | 4 | 4 | 5 |
-| Source links | 4 | 10 | 4 | 13 | 5 | 14 |
-| HowTo steps | 4 | 5 | 3 | 5 | 4 | 5 |
-| Canonical 8 `##` sections | yes | yes | yes | yes | yes | yes |
-
-Notes:
-- Drafts are longer and citation-heavier than gold (Perplexity-backed Sources). That is expected for a live research pack vs. curated gold pages.
-- Section order matches `ideas/SECTIONS.md` / skill contract on all three drafts.
-- Compiler default `og.accent: "blue"` is not a brand accent; drafts were patched to `lime` / `mint` / `lavender` for this spot-check. Worth a follow-up so compile emits an allowlisted accent.
-
-## Side-by-side: competitors (named)
-
-| Pack | Gold competitors (published) | Live record competitors |
-|---|---|---|
-| RFP | Loopio, Responsive (ex-RFPIO), Qvidian, DIY stack | AutoRFP.ai, Inventive AI, 1up, DeepRFP, Loopio |
-| Code review | CodeRabbit, Greptile, Copilot Code Review, Sourcery/Codium | CodeRabbit, Qodo, Bito, Copilot Code Review |
-| LP / ecommerce | HubSpot, Unbounce, SiteKick, GetResponse | PagePilot, Instant AI Page Builder, Swipe Pages, AI Page Builder…, Frontend AI |
-
-Overlap exists (Loopio, CodeRabbit, Copilot) but live packs often surface newer/niche tools than the gold pages. Pricing strings are present on every live competitor row (pipeline gate). Quality judgment for “right” competitor set is deferred to John — this note only records what live mode returned.
-
-## Keyword honesty (fail-closed path)
-
-All keyword rows in the three records carry `source: "provider"`. Volumes used in draft MDX match DataForSEO rows (spot-checked term + volume string present in MDX). No invented CPC/volume when the provider answered.
-
-| Pack | Seed keywords | Provider rows returned | Sample (term → volume / CPC) |
-|---|---|---:|---|
-| RFP | 3 | 3 | `rfp response software` → 90 / $45.60; `proposal management software` → 320 / $62.79 |
-| Code review | 3 | 2 | `ai code review` → 1300 / $55.73; `github pr review bot` → 10 / $18.42 (third seed dropped by provider — not invented) |
-| LP | 3 | 1 | `ai landing page builder` → 480 / $27.29 (other seeds returned no usable row — not invented) |
-
-## Gates held (explicit)
-
-- `/publish-idea` still Mode A MCP — **not flipped** (phase 7 held).
-- Newsletter MCP (phase 8) / MCP retire (phase 9) — **not touched**.
-- Gold files `content/ideas/ai-{rfp-response-assistant,code-reviewer,landing-page-generator-ecommerce}.mdx` — **not overwritten**.
-
-## Operator follow-ups (not blocking this PR)
-
-1. Compiler should accept/emit allowlisted `category` / `tools[]` / `audiences[]` / `og.accent` so spot-check drafts do not need a manual manifest patch for tagging green.
-2. Live competitor sets diverge from gold — decide whether gold should stay as editorial targets or be refreshed from engine packs after sign-off.
-3. Phase 7 skill flip waits on John sign-off after reviewing this spot-check.
+- `lib/engine/compile.ts` — kill `padParagraphs`; named product/steps/tiers; 4 prompts; roundup URL hygiene; double-period collapse.
+- `lib/engine/pipeline.ts` — niche market search; verbatim quotes; editorial JSON; competitor hostname fallback; reject roundup binds.
+- `scripts/lib/idea-quality.mjs` + `scripts/audit-idea-mdx.mjs` — fail-closed writing gates.
+- `engine/eval/deep-benchmark.md` — IB deep criteria.

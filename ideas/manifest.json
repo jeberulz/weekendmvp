@@ -10044,7 +10044,7 @@
       "slug": "engine-draft-ai-rfp-response-assistant",
       "title": "AI RFP Response Assistant",
       "category": "saas",
-      "description": "An SMB-friendly AI assistant that drafts cited RFP and security-questionnaire answers from your approved company knowledge.",
+      "description": "RallyRFP helps lean SaaS teams complete RFPs and security questionnaires with approved answers, source evidence, and coordinated review.",
       "buildTime": "10",
       "revenueGoal": "5k-month",
       "applicationCategory": "BusinessApplication",
@@ -10063,12 +10063,12 @@
       "source": "engine:engine-draft-ai-rfp-response-assistant",
       "scores": {
         "opportunity": 8,
-        "pain": 8,
+        "pain": 9,
         "timing": 8,
         "builder_confidence": 7
       },
       "og": {
-        "subject": "AI RFP Response Assistant product still life, no people, no text",
+        "subject": "RallyRFP product still life, no people, no text",
         "accent": "lime",
         "status": "pending"
       },
@@ -10083,11 +10083,11 @@
           "dataforseo:keywordData:google_ads/search_volume/live",
           "openai:synthesis:gpt-5.6-sol"
         ],
-        "citations": 11,
-        "wordCount": 2092,
+        "citations": 8,
+        "wordCount": 3128,
         "auditPassed": true,
-        "auditRunAt": "2026-09-24T08:36:30.534Z",
-        "publishNotes": "engine compile; costUsd=0.2478; tagging left for operator; operator tagged for live spot-check; auditPassed after audit:idea"
+        "auditRunAt": "2026-09-24T09:23:30.007Z",
+        "publishNotes": "engine compile; product=RallyRFP; costUsd=0.3063; no filler pad; tagging left for operator"
       }
     },
     {

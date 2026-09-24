@@ -406,6 +406,55 @@ function resolveCitation(
   return { url: href, title: modelTitle || known.title?.trim() || href };
 }
 
+/**
+ * Competitor URLs: exact citation match first, then any indexed citation
+ * whose hostname looks like the competitor's own site (so a /pricing page
+ * the model slightly mistyped still binds to a real search result).
+ */
+function resolveCompetitorCitation(
+  index: Map<string, Citation>,
+  url: unknown,
+  name: string,
+): { url: string; title: string } | null {
+  const roundup =
+    /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i;
+
+  const usable = (href: string) => !roundup.test(href);
+
+  const direct = resolveCitation(index, url, name);
+  if (direct && usable(direct.url)) return direct;
+
+  const needle = name
+    .toLowerCase()
+    .replace(/\.(ai|io|com|hq)$/i, "")
+    .replace(/[^a-z0-9]/g, "");
+  if (needle.length < 3) return null;
+
+  for (const cite of index.values()) {
+    if (!usable(cite.url)) continue;
+    try {
+      const host = new URL(cite.url).hostname.toLowerCase().replace(/^www\./, "");
+      const hostKey = host.replace(/[^a-z0-9]/g, "");
+      if (
+        hostKey.includes(needle) ||
+        needle.includes(hostKey.replace(/(ai|io|com|app|hq)$/, ""))
+      ) {
+        if (
+          /(g2\.com|capterra|softwareadvice|selecthub|techradar|forbes|medium\.com|linkedin\.com)/i.test(
+            host,
+          )
+        ) {
+          continue;
+        }
+        return { url: cite.url, title: name };
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
 function nonEmptyStrings(value: unknown): string[] {
   return Array.isArray(value)
     ? value
@@ -455,7 +504,7 @@ function parseSynthesisPack(
     const name = typeof r.name === "string" ? r.name.trim() : "";
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
-    const citation = resolveCitation(index, r.url, name);
+    const citation = resolveCompetitorCitation(index, r.url, name);
     if (name && pricing && citation) {
       competitorRows.push({
         name,
@@ -596,7 +645,7 @@ const SYNTHESIS_INSTRUCTIONS =
   "Score this idea using only the supplied research. Reply with JSON only. " +
   "Required keys: marketSummary (niche-focused, 120-200 words; NEVER quote global SaaS/AI TAM like $375B+), " +
   "stats[{claim,value,citationUrl,citationTitle}] (niche category stats only; drop mega TAM), " +
-  "competitors[{name,pricing,url,notes}] (url MUST be that company's own pricing or product page from the supplied citations — never a roundup/best-of blog), " +
+  "competitors[{name,pricing,url,notes}] (url SHOULD be that company's own pricing or product page from the supplied citations — never invent a URL; prefer first-party over roundup blogs), " +
   "communitySummary, signals[{quote,citationUrl,citationTitle}] (quote MUST be verbatim from the community research text — do not paraphrase Reddit/HN), " +
   "goToMarket{positioning,channels,pricingNotes}, whyNow, " +
   "howItWorks (3-5 strings each exactly 'Title — description' with a named Title, never 'Step 1'), " +
@@ -699,7 +748,7 @@ export async function runResearch(
       providers,
       run,
       2,
-      `${briefContext(brief)}\n\nIdentify at least three direct competitors. For each, find their OFFICIAL pricing page URL (company.com/pricing or product page) and current plan prices. Do NOT use roundup/best-of/comparison blog posts as the competitor URL. Cite each.`,
+      `${briefContext(brief)}\n\nIdentify at least three direct competitors with current plan prices. Prefer each vendor's own pricing or product page URL in your citations (company.com/pricing or product homepage). Avoid roundup/best-of blogs as the primary URL, but still return ≥3 named competitors with prices. Cite each.`,
     );
   } catch (error) {
     throw stepError("competitors", "competitors search failed", error);
