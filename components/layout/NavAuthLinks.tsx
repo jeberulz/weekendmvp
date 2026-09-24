@@ -65,8 +65,8 @@ export function NavAuthLinks({
   const loginClass = cn(
     "inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2",
     theme === "cream"
-      ? "border-neutral-300 text-neutral-700 hover:border-neutral-500 hover:text-black"
-      : "border-white/25 text-neutral-200 hover:border-white/45 hover:text-white",
+      ? "border-neutral-400 text-neutral-800 hover:border-neutral-600 hover:text-black"
+      : "border-white/40 text-neutral-100 hover:border-white/70 hover:text-white",
     ctaRing,
   );
 
