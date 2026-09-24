@@ -8,11 +8,11 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { createProviders } from "./providers";
-import { createSynthesisProvider } from "./providers/openai";
-import { createSearchProvider } from "./providers/perplexity";
-import { createKeywordDataProvider } from "./providers/keywordData";
-import { ProviderCallError, ProviderConfigError, requireSecret } from "./providers/types";
+import { createProviders } from "./providers.ts";
+import { createSynthesisProvider } from "./providers/openai.ts";
+import { createSearchProvider } from "./providers/perplexity.ts";
+import { createKeywordDataProvider } from "./providers/keywordData.ts";
+import { ProviderCallError, ProviderConfigError, requireSecret } from "./providers/types.ts";
 import {
   estimateKeywordUsd,
   estimateSearchUsd,
@@ -21,14 +21,14 @@ import {
   REPORT_COST_CAP_USD,
   SYNTHESIS_LONG_CONTEXT_THRESHOLD_TOKENS,
   SYNTHESIS_MODEL,
-} from "./providers/pricing";
+} from "./providers/pricing.ts";
 import {
   fixtureKeywordFetch,
   fixtureSearchFetch,
   fixtureSynthesisFetch,
   KEYWORD_FIXTURE,
   unreachableFetch,
-} from "./providers/fixtures";
+} from "./providers/fixtures.ts";
 
 const KEYS = {
   OPENAI_API_KEY: "sk-test-not-a-real-key",

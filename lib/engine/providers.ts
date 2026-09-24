@@ -5,16 +5,16 @@
  * in fixture mode — that file is left behind on purpose.
  */
 
-import { createSynthesisProvider } from "./providers/openai";
-import { createSearchProvider } from "./providers/perplexity";
-import { createKeywordDataProvider } from "./providers/keywordData";
+import { createSynthesisProvider } from "./providers/openai.ts";
+import { createSearchProvider } from "./providers/perplexity.ts";
+import { createKeywordDataProvider } from "./providers/keywordData.ts";
 import {
   fixtureKeywordFetch,
   fixtureSearchFetch,
   fixtureSynthesisFetch,
   KEYWORD_RFP_FIXTURE,
-} from "./providers/fixtures";
-import type { EngineProviders } from "./providers/types";
+} from "./providers/fixtures.ts";
+import type { EngineProviders } from "./providers/types.ts";
 
 export type ProviderMode = "fixture" | "live";
 

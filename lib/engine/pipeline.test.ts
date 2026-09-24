@@ -4,20 +4,20 @@
 
 import { describe, expect, it } from "vitest";
 
-import { CostCapExceededError } from "./cost";
-import { createProviders } from "./providers";
-import { createKeywordDataProvider } from "./providers/keywordData";
-import { fixtureKeywordFetch } from "./providers/fixtures";
+import { CostCapExceededError } from "./cost.ts";
+import { createProviders } from "./providers.ts";
+import { createKeywordDataProvider } from "./providers/keywordData.ts";
+import { fixtureKeywordFetch } from "./providers/fixtures.ts";
 import {
   PipelineError,
   runResearch,
   type BriefInput,
-} from "./pipeline";
+} from "./pipeline.ts";
 import {
   MIN_COMPETITORS,
   MIN_MARKET_STATS,
   parseResearchRecord,
-} from "./research-record";
+} from "./research-record.ts";
 
 const RFP_BRIEF: BriefInput = {
   title: "AI RFP Response Assistant",

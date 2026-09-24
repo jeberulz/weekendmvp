@@ -13,8 +13,8 @@ import {
   fromMicroUsd,
   toMicroUsd,
   worstCaseMicroUsd,
-} from "./cost";
-import { PIPELINE, stepAt } from "./pipeline-steps";
+} from "./cost.ts";
+import { PIPELINE, stepAt } from "./pipeline-steps.ts";
 import {
   MIN_COMPETITORS,
   MIN_MARKET_STATS,
@@ -26,7 +26,7 @@ import {
   type ProviderCall,
   type ResearchRecord,
   type ResearchScores,
-} from "./research-record";
+} from "./research-record.ts";
 import {
   ProviderCallError,
   ProviderConfigError,
@@ -34,7 +34,7 @@ import {
   type EngineProviders,
   type ProviderCost,
   type KeywordMetric,
-} from "./providers/types";
+} from "./providers/types.ts";
 
 export type BriefInput = {
   title: string;

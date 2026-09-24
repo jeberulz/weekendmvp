@@ -9,8 +9,8 @@ import {
   compileResearchRecord,
   type CompileOptions,
   type CompileResult,
-} from "./compile";
-import type { ResearchRecord } from "./research-record";
+} from "./compile.ts";
+import type { ResearchRecord } from "./research-record.ts";
 
 export type WriteCompileOptions = CompileOptions & {
   ideasDir: string;

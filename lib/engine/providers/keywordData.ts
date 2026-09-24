@@ -6,9 +6,9 @@ import {
   type KeywordRequest,
   type KeywordResponse,
   type ProviderResult,
-} from "./types";
-import { estimateKeywordUsd, KEYWORD_PROVIDER } from "./pricing";
-import type { Fetcher } from "./openai";
+} from "./types.ts";
+import { estimateKeywordUsd, KEYWORD_PROVIDER } from "./pricing.ts";
+import type { Fetcher } from "./openai.ts";
 
 /**
  * WP26-S2. Keyword/demand adapter (DataForSEO).

@@ -11,7 +11,7 @@
  * captured from live traffic.
  */
 
-import type { Fetcher } from "./openai";
+import type { Fetcher } from "./openai.ts";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

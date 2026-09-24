@@ -5,7 +5,7 @@
  * Position 6 is provenance + parse (not a Convex documents insert).
  */
 
-import type { ProviderRole } from "./providers/types";
+import type { ProviderRole } from "./providers/types.ts";
 
 export const PIPELINE_VERSION = 1;
 

@@ -4,7 +4,7 @@ import {
   ResearchRecordParseError,
   RESEARCH_RECORD_CONTRACT_VERSION,
   type ResearchRecord,
-} from "./research-record";
+} from "./research-record.ts";
 
 function goldFixture(
   overrides: Record<string, unknown> = {},

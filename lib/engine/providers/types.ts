@@ -57,7 +57,7 @@ export type ProviderResult<T> = {
  */
 export class ProviderConfigError extends Error {
   readonly role: ProviderRole;
-  readonly retryable = false as const;
+  readonly retryable = false;
 
   constructor(role: ProviderRole, message: string) {
     super(message);

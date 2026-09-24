@@ -5,8 +5,8 @@ import {
   type SynthesisProvider,
   type SynthesisRequest,
   type SynthesisResponse,
-} from "./types";
-import { estimateSynthesisUsd, SYNTHESIS_MODEL } from "./pricing";
+} from "./types.ts";
+import { estimateSynthesisUsd, SYNTHESIS_MODEL } from "./pricing.ts";
 
 /**
  * WP26-S2. Synthesis adapter (OpenAI).

@@ -6,13 +6,13 @@
  * (writes Convex audit_events) or VALIDATION_REPORT_CREDITS.
  */
 
-import type { StepBudget } from "./pipeline-steps";
+import type { StepBudget } from "./pipeline-steps.ts";
 import {
   estimateKeywordUsd,
   estimateSearchUsd,
   estimateSynthesisUsd,
   REPORT_COST_CAP_USD,
-} from "./providers/pricing";
+} from "./providers/pricing.ts";
 
 /** Cap in whole millionths of a dollar. Floats are never compared to the cap. */
 export const CAP_MICRO_USD = Math.round(REPORT_COST_CAP_USD * 1_000_000);
@@ -61,16 +61,17 @@ export function worstCaseMicroUsd(budget: StepBudget): number {
 }
 
 export class CostCapExceededError extends Error {
-  readonly code = "COST_CAP_EXCEEDED" as const;
+  readonly code = "COST_CAP_EXCEEDED";
+  readonly spentMicroUsd: number;
+  readonly stepWorstCaseMicroUsd: number;
 
-  constructor(
-    readonly spentMicroUsd: number,
-    readonly stepWorstCaseMicroUsd: number,
-  ) {
+  constructor(spentMicroUsd: number, stepWorstCaseMicroUsd: number) {
     super(
       `reservation of ${stepWorstCaseMicroUsd}µ$ on top of ${spentMicroUsd}µ$ spent would exceed the ${CAP_MICRO_USD}µ$ cap`,
     );
     this.name = "CostCapExceededError";
+    this.spentMicroUsd = spentMicroUsd;
+    this.stepWorstCaseMicroUsd = stepWorstCaseMicroUsd;
   }
 }
 

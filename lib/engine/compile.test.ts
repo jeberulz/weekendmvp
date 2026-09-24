@@ -9,11 +9,11 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { compileResearchRecord, escapeMdxProse } from "./compile";
-import { writeCompiledIdea } from "./compile-write";
-import { createProviders } from "./providers";
-import { runResearch } from "./pipeline";
-import { parseResearchRecord } from "./research-record";
+import { compileResearchRecord, escapeMdxProse } from "./compile.ts";
+import { writeCompiledIdea } from "./compile-write.ts";
+import { createProviders } from "./providers.ts";
+import { runResearch } from "./pipeline.ts";
+import { parseResearchRecord } from "./research-record.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

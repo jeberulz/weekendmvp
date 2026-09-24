@@ -6,9 +6,9 @@ import {
   type SearchProvider,
   type SearchRequest,
   type SearchResponse,
-} from "./types";
-import { estimateSearchUsd, SEARCH_MODEL } from "./pricing";
-import type { Fetcher } from "./openai";
+} from "./types.ts";
+import { estimateSearchUsd, SEARCH_MODEL } from "./pricing.ts";
+import type { Fetcher } from "./openai.ts";
 
 /**
  * WP26-S2. Search adapter (Perplexity Sonar Pro), citation-only.

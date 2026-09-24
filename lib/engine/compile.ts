@@ -8,7 +8,7 @@
  * Section titles must match scripts/lib/idea-sections.mjs exactly.
  */
 
-import type { ResearchRecord } from "./research-record";
+import type { ResearchRecord } from "./research-record.ts";
 
 /** Keep in sync with scripts/lib/idea-sections.mjs */
 const CANONICAL_SECTION_TITLES = [
