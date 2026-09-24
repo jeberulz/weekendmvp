@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { isEngineDraftSlug } from "./engine-drafts.ts";
 
 /**
  * Sitemap lastmod helpers.
@@ -34,7 +35,8 @@ export async function listMdxFrontmatter(
   try {
     const files = await fs.readdir(root);
     const mdx = files.filter(
-      (f) => f.endsWith(".mdx") && !f.startsWith("_"),
+      (f) =>
+        f.endsWith(".mdx") && !f.startsWith("_") && !isEngineDraftSlug(f),
     );
     const rows = await Promise.all(
       mdx.map(async (filename) => {

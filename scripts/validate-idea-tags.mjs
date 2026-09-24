@@ -108,7 +108,16 @@ export function validateIdea(idea) {
 
 function main() {
   let ideas = manifest.ideas || [];
-  if (onlySlug) ideas = ideas.filter((i) => i.slug === onlySlug);
+  if (onlySlug) {
+    ideas = ideas.filter((i) => i.slug === onlySlug);
+    // Engine spot-check drafts keep their rows in engine/drafts/manifest.json.
+    const draftsManifest = path.join(root, "engine/drafts/manifest.json");
+    if (ideas.length === 0 && fs.existsSync(draftsManifest)) {
+      ideas = (
+        JSON.parse(fs.readFileSync(draftsManifest, "utf8")).ideas || []
+      ).filter((i) => i.slug === onlySlug);
+    }
+  }
   if (onlySlug && ideas.length === 0) {
     console.error(`No idea with slug '${onlySlug}'`);
     process.exit(1);
