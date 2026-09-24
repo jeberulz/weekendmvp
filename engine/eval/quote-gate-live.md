@@ -5,7 +5,7 @@ Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `a24495f` 
 
 ## Re-run 3 (Mac private worker / home egress) — this verdict
 
-Ran on John’s Mac private worker (home network) against tip `a24495f`, expecting home IP to allow Reddit public `.json` where Cloud Agent could not.
+Ran on a home Mac worker against tip `a24495f`, expecting home IP to allow Reddit public `.json` where Cloud Agent could not.
 
 ### Secret gate
 
