@@ -135,16 +135,17 @@ function parseCitation(
     issues.push(`${path}: citation must be an object`);
     return null;
   }
-  let ok = true;
   if (!isNonEmptyString(value.url) || !isHttpUrl(value.url)) {
     issues.push(`${path}.url: required http(s) URL`);
-    ok = false;
+    if (!isNonEmptyString(value.title)) {
+      issues.push(`${path}.title: required non-empty string`);
+    }
+    return null;
   }
   if (!isNonEmptyString(value.title)) {
     issues.push(`${path}.title: required non-empty string`);
-    ok = false;
+    return null;
   }
-  if (!ok) return null;
   return { url: value.url.trim(), title: value.title.trim() };
 }
 
