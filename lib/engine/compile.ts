@@ -360,10 +360,10 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
 
   const competitorContrast = record.competitors
     .slice(0, 4)
-    .map(
-      (c) =>
-        `${c.name} at ${c.pricing} solves a neighboring job. ${name} wins only if the buyer who bounced off that price or complexity still completes the ${steps[0]?.title ?? "first"} step in under an hour.`,
-    )
+    .map((c) => {
+      const price = c.pricing.trim().replace(/\.+$/, "");
+      return `${c.name} (${price}) solves a neighboring job. ${name} wins only if the buyer who bounced off that price or complexity still completes the ${steps[0]?.title ?? "first"} step in under an hour.`;
+    })
     .join(" ");
 
   const problemBody = joinBlocks([

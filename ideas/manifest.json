@@ -10084,9 +10084,9 @@
           "openai:synthesis:gpt-5.6-sol"
         ],
         "citations": 8,
-        "wordCount": 3128,
+        "wordCount": 3125,
         "auditPassed": true,
-        "auditRunAt": "2026-09-24T09:23:30.007Z",
+        "auditRunAt": "2026-09-24T09:22:18.351Z",
         "publishNotes": "engine compile; product=RallyRFP; costUsd=0.3063; no filler pad; tagging left for operator"
       }
     },
