@@ -5,7 +5,7 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import type { HeroIdea } from "@/lib/home/types";
 import { cn } from "@/lib/utils";
 import { TOOL_NAME, ToolLogo, type ToolKey } from "../tool-logos";
-import { CategoryTag, WeekendMeter } from "../ui";
+import { CategoryTag, WeekendMeter, introDelay } from "../ui";
 import { CopyButton } from "./CopyButton";
 
 const TOOLS: ToolKey[] = ["cursor", "claudecode", "claude", "lovable", "v0", "replit", "windsurf"];
@@ -13,9 +13,11 @@ const TOOLS: ToolKey[] = ["cursor", "claudecode", "claude", "lovable", "v0", "re
 /**
  * The hero's "prompt to product" window: pick a tool, see the idea brief and
  * its first prompt, copy it. The prompt is the same for every tool; the tabs
- * show that it pastes into any of them.
+ * show that it pastes into any of them. On first paint the prompt lines paste
+ * in one by one from `pasteFrom` seconds (CSS, `.home-paste`); switching tabs
+ * keeps the same lines, so it never replays.
  */
-export function HeroBuildWindow({ idea, total }: { idea: HeroIdea; total: number }) {
+export function HeroBuildWindow({ idea, total, pasteFrom = 0 }: { idea: HeroIdea; total: number; pasteFrom?: number }) {
   const [active, setActive] = useState<ToolKey>("cursor");
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -124,7 +126,7 @@ export function HeroBuildWindow({ idea, total }: { idea: HeroIdea; total: number
           </div>
           <div className="relative h-[170px] overflow-hidden px-3.5 py-3.5 font-mono text-xs leading-[1.7] text-[#ede6da] lg:h-auto lg:flex-1 lg:px-5 lg:py-5 lg:text-sm lg:leading-[1.8]">
             {idea.firstPrompt.slice(0, 13).map((line, i) => (
-              <div key={i} className="flex gap-3 lg:gap-[18px]">
+              <div key={i} className="home-paste flex gap-3 lg:gap-[18px]" style={introDelay(pasteFrom + i * 0.04)}>
                 <span aria-hidden className="w-3.5 shrink-0 text-right text-home-d3 lg:w-5">
                   {i + 1}
                 </span>

@@ -96,6 +96,9 @@ read the response as text before parsing JSON.
   `ideas/manifest.json` and idea MDX, caches for an hour, and rotates "Idea of
   the week" every Monday 00:00 UTC. Excerpts prefer a manifest `highlights`
   block (written by `/publish-idea`, checked by `npm run validate:idea-tags`)
+- `components/home/motion/*` — homepage motion (WP43). The hero intro is CSS in
+  `app/globals.css`; sections 02–10 load GSAP after idle and read `data-scene` /
+  `data-m` markers. Keep new homepage content visible without it
 
 <!-- convex-ai-start -->
 
