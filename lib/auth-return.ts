@@ -2,6 +2,21 @@ export const DEFAULT_AUTH_RETURN = "/dashboard";
 
 const AUTH_ENTRY_PATHS = new Set(["/login", "/signup", "/signin"]);
 
+/** The sign-in and sign-up pages, which can carry `?claimPreview=`. */
+export function isAuthEntryPath(pathname: string) {
+  return AUTH_ENTRY_PATHS.has(pathname);
+}
+
+/**
+ * WP27-S5. Same shape as `normalizeCapabilityToken`
+ * (`convex/platform/preview/capabilities.ts`). Kept local because client
+ * components import this module and must not pull in the Convex package.
+ */
+function carriesClaimPreview(url: URL) {
+  const raw = url.searchParams.get("claimPreview");
+  return raw !== null && /^[0-9a-f]{64}$/.test(raw.trim().toLowerCase());
+}
+
 /** Restrict post-auth navigation to the private platform namespace. */
 export function safePlatformReturn(value: unknown) {
   if (typeof value !== "string" || value.includes("\\")) {
@@ -64,6 +79,13 @@ export function authRouteDecision(
   }
 
   if (authenticated && (AUTH_ENTRY_PATHS.has(url.pathname) || url.pathname === "/auth/callback")) {
+    // A signed-in visitor who follows "Keep this site" still needs the page to
+    // render once so `PreviewClaimStash` can record the capability. The page
+    // then continues to the dashboard, where the claim runs. Redirecting here
+    // would drop the capability before anything could store it.
+    if (AUTH_ENTRY_PATHS.has(url.pathname) && carriesClaimPreview(url)) {
+      return { kind: "next" };
+    }
     return {
       kind: "redirect",
       target: safePlatformReturn(url.searchParams.get("returnTo")),

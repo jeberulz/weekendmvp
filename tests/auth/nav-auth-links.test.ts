@@ -1,14 +1,24 @@
 import { describe, expect, test } from "vitest";
-import { hasConvexAuthSessionCookie } from "../../lib/auth-session-cookie";
+import {
+  hasSessionHintCookie,
+  SESSION_HINT_COOKIE,
+} from "../../lib/auth-session-cookie";
 
-describe("nav auth session cookie heuristic", () => {
+describe("nav auth session hint", () => {
   test.each([
-    ["__convexAuthJWT=abc", true],
-    ["foo=1; __Host-__convexAuthJWT=abc; bar=2", true],
-    ["__convexAuthRefreshToken=only-refresh", false],
+    [`${SESSION_HINT_COOKIE}=1`, true],
+    [`foo=1; ${SESSION_HINT_COOKIE}=1; bar=2`, true],
+    [`${SESSION_HINT_COOKIE}=0`, false],
+    [`x${SESSION_HINT_COOKIE}=1`, false],
     ["", false],
     ["unrelated=1", false],
-  ])("detects session from %s", (cookie, expected) => {
-    expect(hasConvexAuthSessionCookie(cookie)).toBe(expected);
+  ])("detects a session from %s", (cookie, expected) => {
+    expect(hasSessionHintCookie(cookie)).toBe(expected);
+  });
+
+  test("never depends on the httpOnly Convex Auth cookie", () => {
+    // `document.cookie` cannot contain `__convexAuthJWT`: Convex Auth sets it
+    // httpOnly. Only the middleware-written hint is visible to page scripts.
+    expect(hasSessionHintCookie("__Host-__convexAuthJWT=abc")).toBe(false);
   });
 });

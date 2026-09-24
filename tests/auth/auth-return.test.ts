@@ -95,6 +95,26 @@ describe("auth middleware route matrix", () => {
     });
   });
 
+  const token = "a".repeat(64);
+
+  test.each([
+    [`https://www.weekendmvp.app/signup?claimPreview=${token}`],
+    [`https://www.weekendmvp.app/login?claimPreview=${token}&returnTo=%2Fdashboard`],
+  ])("lets a signed-in visitor stash a claim on %s", (url) => {
+    expect(authRouteDecision(new URL(url), true)).toEqual({ kind: "next" });
+  });
+
+  test.each([
+    "https://www.weekendmvp.app/signup?claimPreview=not-a-token",
+    `https://www.weekendmvp.app/signup?claimPreview=${"a".repeat(63)}`,
+    `https://www.weekendmvp.app/auth/callback?claimPreview=${"a".repeat(64)}`,
+  ])("still redirects a signed-in visitor from %s", (url) => {
+    expect(authRouteDecision(new URL(url), true)).toEqual({
+      kind: "redirect",
+      target: "/dashboard",
+    });
+  });
+
   test.each([
     ["https://www.weekendmvp.app/ideas/example", false],
     ["https://www.weekendmvp.app/login", false],

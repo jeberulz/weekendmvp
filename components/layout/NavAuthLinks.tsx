@@ -1,11 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { hasConvexAuthSessionCookie } from "@/lib/auth-session-cookie";
+import { useSyncExternalStore } from "react";
+import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
 import { cn } from "@/lib/utils";
 
-export { hasConvexAuthSessionCookie } from "@/lib/auth-session-cookie";
+// `document.cookie` has no change event. The hint is re-read on each render,
+// and the server snapshot keeps hydration on the anonymous markup.
+function subscribeToNothing() {
+  return () => {};
+}
+
+function readSessionHint() {
+  return hasSessionHintCookie(document.cookie);
+}
+
+function readServerSessionHint() {
+  return false;
+}
 
 type NavAuthLinksProps = {
   /** Desktop MegaNav trailing CTAs vs mobile sheet stack. */
@@ -23,11 +35,11 @@ export function NavAuthLinks({
   ctaRing,
   onNavigate,
 }: NavAuthLinksProps) {
-  const [signedIn, setSignedIn] = useState(false);
-
-  useEffect(() => {
-    setSignedIn(hasConvexAuthSessionCookie(document.cookie));
-  }, []);
+  const signedIn = useSyncExternalStore(
+    subscribeToNothing,
+    readSessionHint,
+    readServerSessionHint,
+  );
 
   if (variant === "mobile") {
     if (signedIn) {
@@ -80,9 +92,11 @@ export function NavAuthLinks({
 
   if (signedIn) {
     return (
-      <Link href="/dashboard" className={primaryClass}>
-        Dashboard
-      </Link>
+      <div className="hidden md:flex items-center gap-2">
+        <Link href="/dashboard" className={primaryClass}>
+          Dashboard
+        </Link>
+      </div>
     );
   }
 

@@ -82,7 +82,7 @@ describe("free auth UI contract", () => {
     for (const source of [loginPageSource, signupPageSource]) {
       expect(source).toContain("normalizeCapabilityToken(");
       expect(source).toContain(
-        "claimPreview !== null && <PreviewClaimStash token={claimPreview} />",
+        "claimPreview !== null && <PreviewClaimStash token={claimPreview} continueTo={continueTo} />",
       );
       expect(source).not.toMatch(
         /returnTo[^\n]*claimPreview|claimPreview[^\n]*returnTo/,
