@@ -24,6 +24,13 @@ const CANONICAL_SECTION_TITLES = [
 const SOURCES_TITLE = "Sources";
 const HOW_IT_WORKS_LABEL = "**How it works:**";
 
+/**
+ * Auditor slug shape (scripts/lib/idea-sections.mjs), plus an optional
+ * leading `_` for throwaway drafts the site ignores. Anything else — `/`,
+ * `.`, `..` — could write outside content/ideas.
+ */
+export const COMPILE_SLUG_PATTERN = /^_?[a-z0-9-]+$/;
+
 export type ManifestEntry = {
   slug: string;
   title: string;
@@ -83,6 +90,29 @@ export function escapeMdxProse(text: string): string {
   return text.replace(/</g, "\\<").replace(/\{/g, "\\{");
 }
 
+/** Escape prose but leave fenced code blocks verbatim (MDX does not parse them). */
+function escapeOutsideFences(text: string): string {
+  return text
+    .split(/(```[\s\S]*?```)/g)
+    .map((part) => (part.startsWith("```") ? part : escapeMdxProse(part)))
+    .join("");
+}
+
+/**
+ * Markdown link safe for MDX: brackets in the text are escaped so they
+ * cannot close the link early. Characters in the URL that could end the
+ * link or open JSX are percent-encoded, so the later escapeMdxProse pass
+ * never has to touch a URL. `<` and `{` in the text are left for that pass.
+ */
+export function mdLink(text: string, url: string): string {
+  const safeText = text.replace(/[\\[\]]/g, (ch) => `\\${ch}`);
+  const safeUrl = url.replace(
+    /[()\s<>{}]/g,
+    (ch) => `%${ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
+  );
+  return `[${safeText}](${safeUrl})`;
+}
+
 function countWords(text: string): number {
   const words = text.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g);
   return words ? words.length : 0;
@@ -104,15 +134,15 @@ function uniqueCitations(record: ResearchRecord): Array<{ url: string; title: st
   return out;
 }
 
+/** Steps come from research only; a record without them cannot compile. */
 function howItWorksSteps(record: ResearchRecord): string[] {
-  const channels = record.goToMarket.channels.filter((c) => c.trim().length > 0);
-  if (channels.length >= 2) return channels;
-  return [
-    "Ingest the customer's documents and context",
-    "Retrieve supporting evidence with citations",
-    "Draft answers with explicit human-review flags",
-    "Export into the customer's existing workflow",
-  ];
+  const steps = (record.howItWorks ?? []).filter((s) => s.trim().length > 0);
+  if (steps.length < 2) {
+    throw new Error(
+      "record has no howItWorks steps (≥2 required); re-run engine:research",
+    );
+  }
+  return steps;
 }
 
 function padParagraphs(seed: string, minWords: number, fillerBlocks: string[]): string {
@@ -131,7 +161,10 @@ function padParagraphs(seed: string, minWords: number, fillerBlocks: string[]): 
  */
 export function compileResearchRecord(options: CompileOptions): CompileResult {
   const record = options.record;
-  const slug = (options.slug ?? record.brief.slug).toLowerCase();
+  const slug = (options.slug ?? record.brief.slug).trim().toLowerCase();
+  if (!COMPILE_SLUG_PATTERN.test(slug)) {
+    throw new Error(`slug '${slug}' must match ${COMPILE_SLUG_PATTERN}`);
+  }
   const citations = uniqueCitations(record);
   const steps = howItWorksSteps(record);
 
@@ -145,34 +178,38 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const competitorLines = record.competitors
     .map((c) => {
       const notes = c.notes ? ` ${c.notes}.` : "";
-      return `- **${c.name}** —${notes} Pricing: ${c.pricing}. Source: [${c.name}](${c.url})`;
+      return `- **${c.name}** —${notes} Pricing: ${c.pricing}. Source: ${mdLink(c.name, c.url)}`;
     })
     .join("\n");
 
   const statLines = record.market.stats
     .map(
       (s) =>
-        `- **${s.claim}**: ${s.value} ([${s.citation.title}](${s.citation.url}))`,
+        `- **${s.claim}**: ${s.value} (${mdLink(s.citation.title, s.citation.url)})`,
     )
     .join("\n");
 
   const signalLines = record.community.signals
-    .map((s) => `> "${s.quote}" — [${s.citation.title}](${s.citation.url})`)
+    .map((s) => `> "${s.quote}" — ${mdLink(s.citation.title, s.citation.url)}`)
     .join("\n\n");
 
+  // Filler below is idea-neutral builder guidance used only to reach the
+  // auditor's word floor. It must never state market facts: those come from
+  // the record, with citations.
   const problemBody = padParagraphs(
     [
-      `${record.brief.targetCustomer} face a painful, recurring workflow that generic chat tools cannot close with auditability.`,
+      `This idea is for ${record.brief.targetCustomer}. ${record.brief.oneLiner}`,
       record.community.summary,
       signalLines,
-      `Incumbent suites price out the wedge; spreadsheets do not scale. The one-liner for this idea: ${record.brief.oneLiner}.`,
-      `Why this hurts now: ${record.whyNow}`,
-    ].join("\n\n"),
+      `Why now: ${record.whyNow}`,
+    ]
+      .filter((part) => part.trim().length > 0)
+      .join("\n\n"),
     250,
     [
-      "Operators burn evenings reconciling stale docs, Slack threads, and prior answers. Miss a deadline and the deal stalls; invent a policy and legal will not sign off.",
-      "The buyer already tried DIY stacks. They need retrieval over their own corpus, explicit citations, and a human-in-the-loop path — not another ungrounded chatbot.",
-      "A weekend MVP can prove the wedge with a narrow ingest → retrieve → draft → export loop before expanding into enterprise SSO theater.",
+      "Before you build, confirm the pain in the buyer's own words. Talk to five people who match the audience above and ask how they handle this today, what it costs them, and what they have already tried.",
+      "The quotes above are a starting point, not proof. Look for repeated complaints, workarounds people pay for, and tasks they put off. Those are the signals that a small, focused product can win.",
+      "Write down the one moment where the current approach breaks. Your MVP should fix that moment and nothing else.",
     ],
   );
 
@@ -183,13 +220,13 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       "",
       ...steps.map((s, i) => `${i + 1}. **Step ${i + 1}** — ${s}`),
       "",
-      `MVP scope stays tight: one primary workflow, citations on every draft, and export that fits the customer's tools. Pricing notes from research: ${record.goToMarket.pricingNotes}`,
+      `Keep the MVP scope tight: one primary workflow, done well. Pricing notes from research: ${record.goToMarket.pricingNotes}`,
     ].join("\n"),
     250,
     [
-      "Keep the first release single-tenant-friendly and deployable on a weekend stack. Defer SSO, custom data residencies, and multi-workspace admin until a paid pilot asks for them.",
-      "Every generated answer must surface evidence spans the reviewer can open. If similarity drops, flag needs-human instead of inventing policy text.",
-      "Instrument token spend and retrieval hit rates from day one so unit economics stay visible while you iterate prompts.",
+      "Ship the smallest version that completes the workflow above from start to finish. Defer settings, admin screens, and integrations until a paying user asks for them.",
+      "Watch the first users go through each step. Where they stall or drop off is your next week of work.",
+      "Track usage and costs from day one so you know what each active user costs you while you iterate.",
     ],
   );
 
@@ -207,8 +244,8 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
     200,
     [
-      "Treat third-party TAM figures as directional. Triangulate before investor materials. The mid-market wedge is the near-term beachhead.",
-      "Cloud-first buyers validate a multi-tenant SaaS delivery model you can host without shipping on-prem appliances.",
+      "Treat third-party market-size figures as directional. Check the cited sources before you repeat a number in a pitch.",
+      "Keyword volume shows how many people search for the problem today. Low volume does not rule an idea out, but it means you will lean on outreach and communities more than search.",
     ],
   );
 
@@ -224,7 +261,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
     150,
     [
-      "Undercut enterprise floors with transparent seat pricing and a citation-first workflow. Win on time-to-first-draft, not feature parity with proposal ops platforms.",
+      "Read each competitor's pricing page and reviews before you set your own price. Look for the customers they ignore: too small, too niche, or too price-sensitive for their sales model.",
     ],
   );
 
@@ -238,13 +275,13 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       "",
       "**Unit Economics (directional)**",
       "",
-      "- Target CAC under one month of ARPA for self-serve seats",
-      "- Gross margin protected by retrieval caching and output caps",
-      "- Expansion via seats and overage tokens after the core loop sticks",
+      "- Keep acquisition cost under a few months of revenue per customer",
+      "- Know your per-user running costs (hosting, APIs) before you set prices",
+      "- Grow revenue per account through usage or seats once the core workflow sticks",
     ].join("\n"),
     150,
     [
-      "Anchor price against DIY tool spend while staying an order of magnitude under enterprise suites. Keep COGS predictable with hard monthly token budgets.",
+      "Start with one channel from the list above and one price. Change one of them at a time so you can tell what moved the numbers.",
     ],
   );
 
@@ -252,15 +289,15 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     [
       "Recommended weekend stack for this idea:",
       "",
-      "- **Next.js + TypeScript** — App Router workspace UI and server actions",
-      "- **OpenAI embeddings + chat** — retrieval and structured drafting (never invent keyword metrics)",
-      "- **Postgres + pgvector (Supabase)** — documents, chunks, embeddings, RLS",
-      "- **Clerk + Stripe** — orgs, seats, metered overages",
-      "- **Vercel + background jobs** — ingest, re-index, export pipelines",
+      "- **Next.js + TypeScript** — app UI, API routes, and server actions",
+      "- **Postgres (Supabase or Neon)** — app data with row-level security",
+      "- **Auth provider (Clerk or Supabase Auth)** — sign-up, sessions, teams",
+      "- **Stripe** — subscriptions and billing",
+      "- **Vercel** — hosting, previews, and scheduled jobs",
     ].join("\n"),
     120,
     [
-      "Prefer one Postgres for app data and vectors. Stream drafts to the browser. Log every citation id alongside the generation run for auditability.",
+      "Add AI APIs, queues, or search only when a step in the workflow above needs them. One database and one deploy target keep a weekend build manageable.",
     ],
   );
 
@@ -270,24 +307,24 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     "**1. Project Setup**",
     "",
     "```text",
-    `Create a Next.js TypeScript app for "${record.brief.title}" aimed at ${record.brief.targetCustomer}. Include auth, Postgres + pgvector, file upload, and a draft workspace with citation side panel. Do not invent search volume or CPC — those come from a keyword provider later.`,
+    `Create a Next.js TypeScript app for "${record.brief.title}" aimed at ${record.brief.targetCustomer}. Include auth, a Postgres database, Stripe billing, and a dashboard for the core workflow.`,
     "```",
     "",
     "**2. Core Feature**",
     "",
     "```text",
-    `Implement the core loop: ${steps.join(" → ")}. Each draft must return citations to source chunks and a needs-human flag when confidence is low.`,
+    `Implement the core workflow: ${steps.join(" → ")}. Keep each step on one screen and save progress between steps.`,
     "```",
     "",
     "**3. Landing Page**",
     "",
     "```text",
-    `Marketing site for ${record.brief.title}. Hero one-liner: "${record.brief.oneLiner}". Include problem, solution diagram, competitor undercut story, and pricing notes: ${record.goToMarket.pricingNotes}`,
+    `Marketing site for ${record.brief.title}. Hero one-liner: "${record.brief.oneLiner}". Include the problem, how it works, how it compares to alternatives, and pricing notes: ${record.goToMarket.pricingNotes}`,
     "```",
   ].join("\n");
 
   const sourceLinks = citations
-    .map((c) => `- [${c.title}](${c.url})`)
+    .map((c) => `- ${mdLink(c.title, c.url)}`)
     .join("\n");
 
   const sections: Record<string, string> = {
@@ -309,15 +346,17 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
 
   const body = [
     ...CANONICAL_SECTION_TITLES.map(
-      (title) => `## ${title}\n\n${escapeMdxProse(sections[title]!)}\n`,
+      (title) => `## ${title}\n\n${escapeOutsideFences(sections[title]!)}\n`,
     ),
-    `## ${SOURCES_TITLE}\n\nResearch citations used above (engine compile).\n\n${sourceLinks}\n`,
+    `## ${SOURCES_TITLE}\n\nResearch citations used above (engine compile).\n\n${escapeMdxProse(sourceLinks)}\n`,
   ].join("\n");
 
   const mdx = [
     "---",
-    `slug: "${slug}"`,
-    `title: "${record.brief.title.replace(/"/g, '\\"')}"`,
+    // JSON strings are valid YAML double-quoted scalars: quotes, backslashes,
+    // and newlines in a title cannot break the frontmatter.
+    `slug: ${JSON.stringify(slug)}`,
+    `title: ${JSON.stringify(record.brief.title)}`,
     "---",
     "",
     body,

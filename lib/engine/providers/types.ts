@@ -66,22 +66,31 @@ export class ProviderConfigError extends Error {
   }
 }
 
-/** Raised when a provider was reachable but the call did not succeed. */
+/**
+ * Raised when a provider was reachable but the call did not succeed.
+ *
+ * `cost` is set when the provider billed the failed call — a 200 response
+ * the adapter then rejected (no citations, no text, no usable metrics). The
+ * pipeline must count it against the cap, or recorded spend understates
+ * real spend.
+ */
 export class ProviderCallError extends Error {
   readonly role: ProviderRole;
   readonly retryable: boolean;
   readonly status?: number;
+  readonly cost?: ProviderCost;
 
   constructor(
     role: ProviderRole,
     message: string,
-    options: { retryable: boolean; status?: number },
+    options: { retryable: boolean; status?: number; cost?: ProviderCost },
   ) {
     super(message);
     this.name = "ProviderCallError";
     this.role = role;
     this.retryable = options.retryable;
     this.status = options.status;
+    this.cost = options.cost;
   }
 }
 
@@ -133,6 +142,8 @@ export type SearchRequest = {
   query: string;
   /** Larger contexts cost materially more — see `pricing.ts`. */
   searchContextSize: "low" | "medium" | "high";
+  /** Hard ceiling sent to the provider so real cost stays under the step budget. */
+  maxOutputTokens: number;
 };
 
 export type SearchResponse = {

@@ -2,6 +2,7 @@ import {
   ProviderCallError,
   requireSecret,
   type Citation,
+  type ProviderCost,
   type ProviderResult,
   type SearchProvider,
   type SearchRequest,
@@ -113,6 +114,7 @@ export function createSearchProvider(
           body: JSON.stringify({
             model: SEARCH_MODEL,
             messages: [{ role: "user", content: request.query }],
+            max_tokens: request.maxOutputTokens,
             web_search_options: {
               search_context_size: request.searchContextSize,
             },
@@ -145,33 +147,36 @@ export function createSearchProvider(
       const text = payload.choices?.[0]?.message?.content ?? "";
       const citations = readCitations(payload);
 
+      const inputTokens = payload.usage?.prompt_tokens ?? 0;
+      const outputTokens = payload.usage?.completion_tokens ?? 0;
+      const cost: ProviderCost = {
+        role: "search",
+        provider: "perplexity",
+        billedAs: SEARCH_MODEL,
+        usd: estimateSearchUsd({
+          inputTokens,
+          outputTokens,
+          requests: 1,
+          searchContextSize: request.searchContextSize,
+        }),
+        estimated: true,
+        units: { inputTokens, outputTokens, requests: 1 },
+      };
+
       // A search result with no usable citation cannot support a cited claim,
       // and the report contract fails closed on uncited scored sections. Fail
       // here instead, where S3 can retry, rather than deeper in the compiler.
+      // The request was still billed, so the error carries its cost.
       if (citations.length === 0) {
         throw new ProviderCallError("search", "no usable citations returned", {
           retryable: true,
+          cost,
         });
       }
 
-      const inputTokens = payload.usage?.prompt_tokens ?? 0;
-      const outputTokens = payload.usage?.completion_tokens ?? 0;
-
       return {
         value: { text, citations, inputTokens, outputTokens, requests: 1 },
-        cost: {
-          role: "search",
-          provider: "perplexity",
-          billedAs: SEARCH_MODEL,
-          usd: estimateSearchUsd({
-            inputTokens,
-            outputTokens,
-            requests: 1,
-            searchContextSize: request.searchContextSize,
-          }),
-          estimated: true,
-          units: { inputTokens, outputTokens, requests: 1 },
-        },
+        cost,
       };
     },
   };

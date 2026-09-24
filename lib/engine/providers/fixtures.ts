@@ -112,14 +112,19 @@ export const SYNTHESIS_SCORE_FIXTURE = {
       positioning:
         "Credible first drafts with citations for SaaS teams that outgrew DIY but will never buy Loopio.",
       channels: [
-        "Ingest RFP and win-library documents",
-        "Retrieve evidence spans with vector search",
-        "Draft cited answers with needs-human flags",
-        "Export to Word with compliance checklist",
+        "Founder-led outreach to SaaS sales engineers on LinkedIn",
+        "SEO pages targeting security questionnaire automation searches",
+        "Templates shared in RevOps and sales-engineering communities",
       ],
       pricingNotes:
         "Seat-based SaaS: Team $79/mo, Growth $199/mo, Scale $399/mo — undercut enterprise floors by 10x.",
     },
+    howItWorks: [
+      "Upload past RFPs, security questionnaires, and the win library",
+      "Paste or import a new RFP and let the assistant retrieve matching evidence",
+      "Review cited draft answers, with low-confidence answers flagged for a human",
+      "Export the finished response to Word with a compliance checklist",
+    ],
     whyNow:
       "Enterprise security reviews are formalizing across mid-market SaaS while ChatGPT-only answers get blocked by legal. Retrieval-grounded assistants are newly practical on weekend stacks.",
     oneLiner:

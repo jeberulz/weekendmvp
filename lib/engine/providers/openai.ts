@@ -1,6 +1,7 @@
 import {
   ProviderCallError,
   requireSecret,
+  type ProviderCost,
   type ProviderResult,
   type SynthesisProvider,
   type SynthesisRequest,
@@ -38,7 +39,7 @@ type ResponsesPayload = {
  * had nothing to add, and would produce a report with silently missing
  * sections.
  */
-function readText(payload: ResponsesPayload): string {
+function readText(payload: ResponsesPayload, cost: ProviderCost): string {
   if (typeof payload.output_text === "string" && payload.output_text.length > 0) {
     return payload.output_text;
   }
@@ -48,8 +49,10 @@ function readText(payload: ResponsesPayload): string {
     .join("")
     .trim();
   if (joined.length === 0) {
+    // Tokens were still billed, so the error carries the cost.
     throw new ProviderCallError("synthesis", "model returned no text", {
       retryable: true,
+      cost,
     });
   }
   return joined;
@@ -119,26 +122,27 @@ export function createSynthesisProvider(
         });
       }
 
-      const text = readText(payload);
       const inputTokens = payload.usage?.input_tokens ?? 0;
       const outputTokens = payload.usage?.output_tokens ?? 0;
       const cachedInputTokens =
         payload.usage?.input_tokens_details?.cached_tokens ?? 0;
+      const cost: ProviderCost = {
+        role: "synthesis",
+        provider: "openai",
+        billedAs: SYNTHESIS_MODEL,
+        usd: estimateSynthesisUsd({
+          inputTokens,
+          cachedInputTokens,
+          outputTokens,
+        }),
+        estimated: true,
+        units: { inputTokens, cachedInputTokens, outputTokens },
+      };
+      const text = readText(payload, cost);
 
       return {
         value: { text, inputTokens, outputTokens, cachedInputTokens },
-        cost: {
-          role: "synthesis",
-          provider: "openai",
-          billedAs: SYNTHESIS_MODEL,
-          usd: estimateSynthesisUsd({
-            inputTokens,
-            cachedInputTokens,
-            outputTokens,
-          }),
-          estimated: true,
-          units: { inputTokens, cachedInputTokens, outputTokens },
-        },
+        cost,
       };
     },
   };

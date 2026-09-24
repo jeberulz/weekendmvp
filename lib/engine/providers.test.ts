@@ -78,6 +78,7 @@ describe("createProviders fixture mode", () => {
     const search = await providers.search.search({
       query: "Find market statistics with CAGR",
       searchContextSize: "high",
+      maxOutputTokens: 2_000,
     });
     expect(search.value.citations.length).toBeGreaterThan(0);
     expect(search.cost.usd).toBeGreaterThan(0);
@@ -118,7 +119,7 @@ describe("configuration (live mode)", () => {
       fetchImpl: fixtureSearchFetch(),
     });
     await expect(
-      provider.search({ query: "q", searchContextSize: "low" }),
+      provider.search({ query: "q", searchContextSize: "low", maxOutputTokens: 2_000 }),
     ).rejects.toThrow(ProviderConfigError);
   });
 
@@ -236,6 +237,7 @@ describe("search adapter (citation-only)", () => {
     const result = await provider.search({
       query: "generic collectibles query",
       searchContextSize: "medium",
+      maxOutputTokens: 2_000,
     });
     // Default SEARCH_FIXTURE when no override — but smart router may still
     // pick SEARCH_FIXTURE for unmatched queries.
@@ -249,7 +251,7 @@ describe("search adapter (citation-only)", () => {
       }),
     });
     await expect(
-      provider.search({ query: "q", searchContextSize: "low" }),
+      provider.search({ query: "q", searchContextSize: "low", maxOutputTokens: 2_000 }),
     ).rejects.toThrow(/citation/i);
   });
 });

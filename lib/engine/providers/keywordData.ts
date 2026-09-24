@@ -5,6 +5,7 @@ import {
   type KeywordMetric,
   type KeywordRequest,
   type KeywordResponse,
+  type ProviderCost,
   type ProviderResult,
 } from "./types.ts";
 import { estimateKeywordUsd, KEYWORD_PROVIDER } from "./pricing.ts";
@@ -172,26 +173,29 @@ export function createKeywordDataProvider(
         }
       }
 
+      const cost: ProviderCost = {
+        role: "keywordData",
+        provider: KEYWORD_PROVIDER,
+        billedAs: "google_ads/search_volume/live",
+        usd: estimateKeywordUsd({ tasks: tasks.length, items }),
+        estimated: true,
+        units: { tasks: tasks.length, items },
+      };
+
       // Empty is a failure, not a finding. Returning `[]` here would be read
-      // downstream as "this idea has no search demand".
+      // downstream as "this idea has no search demand". The tasks ran and were
+      // billed, so the error carries their cost.
       if (metrics.length === 0) {
         throw new ProviderCallError(
           "keywordData",
           "provider returned no usable keyword metrics",
-          { retryable: true },
+          { retryable: true, cost },
         );
       }
 
       return {
         value: { metrics, tasks: tasks.length, items },
-        cost: {
-          role: "keywordData",
-          provider: KEYWORD_PROVIDER,
-          billedAs: "google_ads/search_volume/live",
-          usd: estimateKeywordUsd({ tasks: tasks.length, items }),
-          estimated: true,
-          units: { tasks: tasks.length, items },
-        },
+        cost,
       };
     },
   };

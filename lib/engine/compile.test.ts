@@ -13,7 +13,10 @@ import { compileResearchRecord, escapeMdxProse } from "./compile.ts";
 import { writeCompiledIdea } from "./compile-write.ts";
 import { createProviders } from "./providers.ts";
 import { runResearch } from "./pipeline.ts";
-import { parseResearchRecord } from "./research-record.ts";
+import {
+  parseResearchRecord,
+  type ResearchRecord,
+} from "./research-record.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -133,5 +136,113 @@ describe("compileResearchRecord", () => {
         writeManifest: false,
       }),
     ).toThrow(/refusing to overwrite/);
+  });
+});
+
+async function fixtureRecord(): Promise<ResearchRecord> {
+  return runResearch({
+    brief: {
+      title: "AI RFP Response Assistant",
+      audience: "SMB SaaS sales",
+      revenueModel: "Seat SaaS",
+      seedKeywords: ["rfp response software"],
+      slug: "ai-rfp-response-assistant",
+    },
+    providers: createProviders({ mode: "fixture" }),
+    ranAt: "2026-09-24T00:00:00.000Z",
+  });
+}
+
+function tempDir(): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "engine-compile-"));
+  tempDirs.push(dir);
+  return dir;
+}
+
+describe("compile safety", () => {
+  it("leaves no MDX behind when the manifest check refuses", async () => {
+    const record = await fixtureRecord();
+    const dir = tempDir();
+    const manifestPath = path.join(dir, "manifest.json");
+    fs.writeFileSync(
+      manifestPath,
+      JSON.stringify({ ideas: [{ slug: "already-listed" }] }),
+    );
+    expect(() =>
+      writeCompiledIdea({
+        record,
+        slug: "already-listed",
+        ideasDir: path.join(dir, "ideas"),
+        manifestPath,
+      }),
+    ).toThrow(/manifest entry/);
+    expect(fs.existsSync(path.join(dir, "ideas", "already-listed.mdx"))).toBe(
+      false,
+    );
+  });
+
+  it("rejects slugs that would write outside the ideas dir", async () => {
+    const record = await fixtureRecord();
+    for (const slug of ["../escape", "a/b", "..", "UPPER case"]) {
+      expect(() =>
+        writeCompiledIdea({
+          record,
+          slug,
+          ideasDir: tempDir(),
+          writeManifest: false,
+        }),
+      ).toThrow(/must match/);
+    }
+  });
+
+  it("escapes MDX traps in Sources, links, and frontmatter", async () => {
+    const record = await fixtureRecord();
+    record.brief.title = 'Tricky "quoted" <Title> {x}\nnext: line';
+    record.market.stats[0]!.citation.title = "Report <2026> {draft] edition";
+    record.market.stats[0]!.citation.url =
+      "https://www.industryresearch.biz/report_(v2)?q={x}";
+
+    const dir = tempDir();
+    const slug = "engine-escape-test";
+    const written = writeCompiledIdea({
+      record,
+      slug,
+      ideasDir: dir,
+      writeManifest: false,
+    });
+
+    const { auditIdeaFile } = await loadAuditor();
+    const audit = auditIdeaFile(written.mdxPath, slug);
+    expect(audit.ok, audit.errors.join("; ")).toBe(true);
+
+    const frontTitle = written.mdx.split("\n")[2]!;
+    expect(JSON.parse(frontTitle.replace(/^title: /, ""))).toBe(
+      record.brief.title,
+    );
+    expect(written.mdx).toContain(
+      "(https://www.industryresearch.biz/report_%28v2%29?q=%7Bx%7D)",
+    );
+  });
+
+  it("refuses a record without howItWorks steps", async () => {
+    const record = await fixtureRecord();
+    delete record.howItWorks;
+    expect(() => compileResearchRecord({ record })).toThrow(/howItWorks/);
+  });
+
+  it("uses the record's steps and no RFP-specific copy", async () => {
+    const record = await fixtureRecord();
+    record.howItWorks = ["Snap a photo of the card", "Get an authenticity score"];
+    const { mdx } = compileResearchRecord({ record, slug: "card-check" });
+    expect(mdx).toContain("1. **Step 1** — Snap a photo of the card");
+    for (const rfpOnly of [
+      "proposal ops platforms",
+      "legal will not sign off",
+      "pgvector",
+      "citation side panel",
+      "Retrieve supporting evidence",
+    ]) {
+      expect(mdx).not.toContain(rfpOnly);
+    }
   });
 });

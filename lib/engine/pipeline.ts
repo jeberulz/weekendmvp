@@ -3,13 +3,20 @@
  *
  * Seven steps matching v1.1 order. Retry once on retryable provider errors,
  * then fail. Keyword step fails closed (no guessed CPC/volume). Cost over
- * $4.00 throws before another provider call.
+ * $4.00 throws before another provider call — including the retry, and
+ * counting billed failures.
+ *
+ * Every stat, competitor, and community signal must cite a URL the search
+ * step actually returned. Nothing is back-filled from search results or
+ * canned copy: a short synthesis fails the run instead of publishing
+ * invented rows.
  *
  * Does not write MDX. Does not touch Convex workflow/credits/ownerId.
  */
 
 import {
   assertWithinCap,
+  CostCapExceededError,
   fromMicroUsd,
   toMicroUsd,
   worstCaseMicroUsd,
@@ -17,6 +24,7 @@ import {
 import { PIPELINE, stepAt } from "./pipeline-steps.ts";
 import {
   MIN_COMPETITORS,
+  MIN_HOW_IT_WORKS_STEPS,
   MIN_MARKET_STATS,
   parseResearchRecord,
   RESEARCH_RECORD_CONTRACT_VERSION,
@@ -33,6 +41,7 @@ import {
   type Citation,
   type EngineProviders,
   type ProviderCost,
+  type ProviderResult,
   type KeywordMetric,
 } from "./providers/types.ts";
 
@@ -72,12 +81,36 @@ type SynthesisPack = {
     pricingNotes: string;
   };
   whyNow: string;
+  howItWorks: string[];
   oneLiner: string;
   scores?: ResearchScores;
 };
 
 const LOCATION_CODE = 2840;
 const LANGUAGE_CODE = "en";
+
+/** Same shape the MDX auditor enforces (scripts/lib/idea-sections.mjs). */
+export const SLUG_PATTERN = /^[a-z0-9-]+$/;
+
+/** Minimum GTM channels the synthesis must supply; no canned fallback. */
+export const MIN_CHANNELS = 2;
+
+/**
+ * Bounds on what one search step hands to synthesis. Together they keep the
+ * synthesis input under its declared `maxInputTokens`, so the cap
+ * reservation is a true worst case.
+ */
+const MAX_CITATIONS_PER_SEARCH = 8;
+const MAX_SEARCH_TEXT_CHARS = 6_000;
+
+/** Headroom for provider-side message framing tokens. */
+const INPUT_FRAMING_TOKENS = 200;
+
+/** Runs one billable provider call inside the cap (see runResearch). */
+type Runner = <T>(
+  position: number,
+  fn: () => Promise<ProviderResult<T>>,
+) => Promise<ProviderResult<T>>;
 
 export class PipelineError extends Error {
   readonly stepId: string;
@@ -114,21 +147,53 @@ function isRetryable(error: unknown): boolean {
   return false;
 }
 
-async function withRetryOnce<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch (error) {
-    if (!isRetryable(error)) throw error;
-    return await fn();
+/** Cap and pipeline errors pass through; anything else is tagged with the step. */
+function stepError(stepId: string, fallback: string, error: unknown): Error {
+  if (error instanceof CostCapExceededError) return error;
+  if (error instanceof PipelineError) return error;
+  return new PipelineError(
+    stepId,
+    error instanceof Error ? error.message : fallback,
+    error,
+  );
+}
+
+function costToCall(cost: ProviderCost, failed = false): ProviderCall {
+  return {
+    provider: cost.provider,
+    operation: `${cost.role}:${cost.billedAs}${failed ? ":failed" : ""}`,
+    costUsd: cost.usd,
+  };
+}
+
+/**
+ * Upper bound on input tokens: a token is never shorter than one UTF-8 byte.
+ * Throws before the call when the input could exceed the step budget.
+ */
+function assertInputFits(position: number, ...parts: string[]): void {
+  const step = stepAt(position);
+  if (step.budget.role !== "synthesis" && step.budget.role !== "search") return;
+  const bytes = parts.reduce(
+    (sum, part) => sum + new TextEncoder().encode(part).length,
+    0,
+  );
+  const limit = step.budget.maxInputTokens - INPUT_FRAMING_TOKENS;
+  if (bytes > limit) {
+    throw new PipelineError(
+      step.id,
+      `input of ${bytes} bytes exceeds the ${limit}-token budget for this step`,
+    );
   }
 }
 
-function costToCall(cost: ProviderCost): ProviderCall {
-  return {
-    provider: cost.provider,
-    operation: `${cost.role}:${cost.billedAs}`,
-    costUsd: cost.usd,
-  };
+function normalizeUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
 }
 
 function parseJsonObject(text: string): Record<string, unknown> {
@@ -146,34 +211,46 @@ function parseJsonObject(text: string): Record<string, unknown> {
 function normalizeBriefFromInput(input: BriefInput): NormalizedBrief {
   const title = input.title.trim();
   if (!title) throw new PipelineError("brief_normalization", "title required");
+  const slug = (input.slug?.trim() || slugify(title)).toLowerCase();
+  if (!SLUG_PATTERN.test(slug)) {
+    throw new PipelineError(
+      "brief_normalization",
+      `slug '${slug}' must match ${SLUG_PATTERN}`,
+    );
+  }
   return {
     title,
     audience: input.audience.trim(),
     model: input.revenueModel.trim(),
     seedKeywords: input.seedKeywords.map((k) => k.trim()).filter(Boolean),
-    slug: (input.slug?.trim() || slugify(title)).toLowerCase(),
+    slug,
     oneLiner: input.oneLiner?.trim() || title,
   };
 }
 
+const BRIEF_INSTRUCTIONS =
+  "Normalize a startup idea into a brief. Reply with JSON only: " +
+  '{"title","audience","model","seedKeywords":[]}. Do not invent ' +
+  "market data, competitors, or metrics — later steps source those.";
+
 async function stepBriefNormalization(
   providers: EngineProviders,
+  run: Runner,
   input: BriefInput,
-): Promise<{ brief: NormalizedBrief; cost: ProviderCost }> {
+): Promise<NormalizedBrief> {
   const seed = normalizeBriefFromInput(input);
-  const result = await withRetryOnce(() =>
+  const briefInput = [
+    `Title: ${seed.title}`,
+    `Audience: ${seed.audience}`,
+    `Revenue model: ${seed.model}`,
+    `Seed keywords: ${seed.seedKeywords.join(", ")}`,
+  ].join("\n");
+  assertInputFits(0, BRIEF_INSTRUCTIONS, briefInput);
+  const result = await run(0, () =>
     providers.synthesis.complete({
-      instructions:
-        "Normalize a startup idea into a brief. Reply with JSON only: " +
-        '{"title","audience","model","seedKeywords":[]}. Do not invent ' +
-        "market data, competitors, or metrics — later steps source those.",
-      input: [
-        `Title: ${seed.title}`,
-        `Audience: ${seed.audience}`,
-        `Revenue model: ${seed.model}`,
-        `Seed keywords: ${seed.seedKeywords.join(", ")}`,
-      ].join("\n"),
-      maxOutputTokens: 800,
+      instructions: BRIEF_INSTRUCTIONS,
+      input: briefInput,
+      maxOutputTokens: synthesisOutputCap(0),
     }),
   );
 
@@ -182,7 +259,7 @@ async function stepBriefNormalization(
     parsed = parseJsonObject(result.value.text);
   } catch {
     // Fixture/live may return non-JSON on unexpected path; keep seeded brief.
-    return { brief: seed, cost: result.cost };
+    return seed;
   }
 
   const title =
@@ -198,67 +275,123 @@ async function stepBriefNormalization(
       ? parsed.model.trim()
       : seed.model;
   const seedKeywords = Array.isArray(parsed.seedKeywords)
-    ? parsed.seedKeywords.filter((k): k is string => typeof k === "string")
+    ? parsed.seedKeywords
+        .filter((k): k is string => typeof k === "string")
+        .map((k) => k.trim())
+        .filter(Boolean)
     : seed.seedKeywords;
 
   return {
-    brief: {
-      title,
-      audience,
-      model,
-      seedKeywords: seedKeywords.length > 0 ? seedKeywords : seed.seedKeywords,
-      slug: seed.slug,
-      oneLiner: seed.oneLiner,
-    },
-    cost: result.cost,
+    title,
+    audience,
+    model,
+    seedKeywords: seedKeywords.length > 0 ? seedKeywords : seed.seedKeywords,
+    slug: seed.slug,
+    oneLiner: seed.oneLiner,
   };
+}
+
+function synthesisOutputCap(position: number): number {
+  const budget = stepAt(position).budget;
+  if (budget.role !== "synthesis") {
+    throw new Error(`step ${position} is not a synthesis step`);
+  }
+  return budget.maxOutputTokens;
 }
 
 async function stepSearch(
   providers: EngineProviders,
+  run: Runner,
+  position: number,
   query: string,
-  searchContextSize: "low" | "medium" | "high",
-): Promise<{ pack: SearchPack; cost: ProviderCost }> {
-  const result = await withRetryOnce(() =>
-    providers.search.search({ query, searchContextSize }),
+): Promise<SearchPack> {
+  const budget = stepAt(position).budget;
+  if (budget.role !== "search") {
+    throw new Error(`step ${position} is not a search step`);
+  }
+  assertInputFits(position, query);
+  const result = await run(position, () =>
+    providers.search.search({
+      query,
+      searchContextSize: budget.searchContextSize,
+      maxOutputTokens: budget.maxOutputTokens,
+    }),
   );
   return {
-    pack: { text: result.value.text, citations: result.value.citations },
-    cost: result.cost,
+    text: result.value.text.slice(0, MAX_SEARCH_TEXT_CHARS),
+    citations: result.value.citations.slice(0, MAX_CITATIONS_PER_SEARCH),
   };
 }
 
 async function stepKeywords(
   providers: EngineProviders,
+  run: Runner,
   seedKeywords: string[],
-): Promise<{ metrics: KeywordMetric[]; cost: ProviderCost }> {
-  if (seedKeywords.length === 0) {
+): Promise<KeywordMetric[]> {
+  const budget = stepAt(4).budget;
+  if (budget.role !== "keywordData") {
+    throw new Error("step 4 is not the keyword step");
+  }
+  // Never send more keywords than the reservation assumed.
+  const keywords = [...new Set(seedKeywords)].slice(0, budget.maxItems);
+  if (keywords.length === 0) {
     throw new PipelineError(
       "keywords_demand",
       "brief produced no seed keywords",
     );
   }
   try {
-    const result = await withRetryOnce(() =>
+    const result = await run(4, () =>
       providers.keywordData.lookup({
-        keywords: seedKeywords,
+        keywords,
         locationCode: LOCATION_CODE,
         languageCode: LANGUAGE_CODE,
       }),
     );
-    return { metrics: result.value.metrics, cost: result.cost };
+    return result.value.metrics;
   } catch (error) {
     // Fail closed — never invent volume/CPC.
-    throw new PipelineError(
-      "keywords_demand",
-      error instanceof Error ? error.message : "keyword provider failed",
-      error,
-    );
+    throw stepError("keywords_demand", "keyword provider failed", error);
   }
 }
 
-function citationTitle(c: Citation): string {
-  return c.title?.trim() || c.url;
+/** Every URL a search step returned, keyed by normalized href. */
+function citationIndex(packs: SearchPack[]): Map<string, Citation> {
+  const index = new Map<string, Citation>();
+  for (const pack of packs) {
+    for (const c of pack.citations) {
+      const href = normalizeUrl(c.url);
+      if (href && !index.has(href)) index.set(href, { ...c, url: href });
+    }
+  }
+  return index;
+}
+
+/**
+ * Resolves a model-supplied URL to a citation the search steps returned.
+ * Returns null for any URL the model did not get from search.
+ */
+function resolveCitation(
+  index: Map<string, Citation>,
+  url: unknown,
+  title: unknown,
+): { url: string; title: string } | null {
+  if (typeof url !== "string") return null;
+  const href = normalizeUrl(url.trim());
+  if (!href) return null;
+  const known = index.get(href);
+  if (!known) return null;
+  const modelTitle = typeof title === "string" ? title.trim() : "";
+  return { url: href, title: modelTitle || known.title?.trim() || href };
+}
+
+function nonEmptyStrings(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value
+        .filter((v): v is string => typeof v === "string")
+        .map((v) => v.trim())
+        .filter(Boolean)
+    : [];
 }
 
 function parseSynthesisPack(
@@ -275,6 +408,8 @@ function parseSynthesisPack(
     parsed = {};
   }
 
+  const index = citationIndex([market, competitors, community]);
+
   const statsFromModel = Array.isArray(parsed.stats) ? parsed.stats : [];
   const stats: MarketStat[] = [];
   for (const row of statsFromModel) {
@@ -282,29 +417,9 @@ function parseSynthesisPack(
     const r = row as Record<string, unknown>;
     const claim = typeof r.claim === "string" ? r.claim.trim() : "";
     const value = typeof r.value === "string" ? r.value.trim() : "";
-    const citationUrl =
-      typeof r.citationUrl === "string" ? r.citationUrl.trim() : "";
-    const citationTitleText =
-      typeof r.citationTitle === "string"
-        ? r.citationTitle.trim()
-        : citationUrl;
-    if (claim && value && citationUrl) {
-      stats.push({
-        claim,
-        value,
-        citation: { url: citationUrl, title: citationTitleText || citationUrl },
-      });
-    }
-  }
-  // Fall back to search citations if synthesis omitted structured stats.
-  if (stats.length < MIN_MARKET_STATS) {
-    for (const c of market.citations) {
-      if (stats.length >= MIN_MARKET_STATS) break;
-      stats.push({
-        claim: citationTitle(c),
-        value: c.snippet?.trim() || "See source",
-        citation: { url: c.url, title: citationTitle(c) },
-      });
+    const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
+    if (claim && value && citation) {
+      stats.push({ claim, value, citation });
     }
   }
 
@@ -317,25 +432,14 @@ function parseSynthesisPack(
     const r = row as Record<string, unknown>;
     const name = typeof r.name === "string" ? r.name.trim() : "";
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
-    const url = typeof r.url === "string" ? r.url.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
-    if (name && pricing && url) {
+    const citation = resolveCitation(index, r.url, name);
+    if (name && pricing && citation) {
       competitorRows.push({
         name,
         pricing,
-        url,
+        url: citation.url,
         ...(notes ? { notes } : {}),
-      });
-    }
-  }
-  if (competitorRows.length < MIN_COMPETITORS) {
-    for (const c of competitors.citations) {
-      if (competitorRows.length >= MIN_COMPETITORS) break;
-      competitorRows.push({
-        name: citationTitle(c),
-        pricing: c.snippet?.trim() || "See vendor pricing page",
-        url: c.url,
-        notes: c.snippet,
       });
     }
   }
@@ -346,25 +450,9 @@ function parseSynthesisPack(
     if (typeof row !== "object" || row === null) continue;
     const r = row as Record<string, unknown>;
     const quote = typeof r.quote === "string" ? r.quote.trim() : "";
-    const citationUrl =
-      typeof r.citationUrl === "string" ? r.citationUrl.trim() : "";
-    const citationTitleText =
-      typeof r.citationTitle === "string"
-        ? r.citationTitle.trim()
-        : citationUrl;
-    if (quote && citationUrl) {
-      signals.push({
-        quote,
-        citation: { url: citationUrl, title: citationTitleText || citationUrl },
-      });
-    }
-  }
-  if (signals.length === 0) {
-    for (const c of community.citations) {
-      signals.push({
-        quote: c.snippet?.trim() || citationTitle(c),
-        citation: { url: c.url, title: citationTitle(c) },
-      });
+    const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
+    if (quote && citation) {
+      signals.push({ quote, citation });
     }
   }
 
@@ -372,9 +460,6 @@ function parseSynthesisPack(
     typeof parsed.goToMarket === "object" && parsed.goToMarket !== null
       ? (parsed.goToMarket as Record<string, unknown>)
       : {};
-  const channels = Array.isArray(gtm.channels)
-    ? gtm.channels.filter((c): c is string => typeof c === "string")
-    : [];
 
   let scores: ResearchScores | undefined;
   if (typeof parsed.scores === "object" && parsed.scores !== null) {
@@ -410,22 +495,13 @@ function parseSynthesisPack(
       positioning:
         (typeof gtm.positioning === "string" && gtm.positioning.trim()) ||
         brief.oneLiner,
-      channels:
-        channels.length >= 2
-          ? channels
-          : [
-              "Ingest customer documents and context",
-              "Retrieve evidence with citations",
-              "Draft answers with human review flags",
-              "Export and ship to the customer workflow",
-            ],
+      channels: nonEmptyStrings(gtm.channels),
       pricingNotes:
         (typeof gtm.pricingNotes === "string" && gtm.pricingNotes.trim()) ||
         brief.model,
     },
-    whyNow:
-      (typeof parsed.whyNow === "string" && parsed.whyNow.trim()) ||
-      "Timing favors a focused weekend MVP before incumbents close the mid-market gap.",
+    whyNow: (typeof parsed.whyNow === "string" && parsed.whyNow.trim()) || "",
+    howItWorks: nonEmptyStrings(parsed.howItWorks),
     oneLiner:
       (typeof parsed.oneLiner === "string" && parsed.oneLiner.trim()) ||
       brief.oneLiner,
@@ -442,6 +518,18 @@ function metricsToKeywordRows(metrics: KeywordMetric[]): KeywordRow[] {
     source: "provider" as const,
   }));
 }
+
+const SYNTHESIS_INSTRUCTIONS =
+  "Score this idea using only the supplied research. Reply with " +
+  "JSON only containing marketSummary, stats[{claim,value,citationUrl,citationTitle}], " +
+  "competitors[{name,pricing,url,notes}], communitySummary, " +
+  "signals[{quote,citationUrl,citationTitle}], goToMarket{positioning,channels,pricingNotes}, " +
+  "whyNow, howItWorks, oneLiner, scores{opportunity,pain,builderConfidence,execution}. " +
+  "goToMarket.channels are customer-acquisition channels. howItWorks is 3-5 short " +
+  "steps describing how a user moves through the product. Every citationUrl and " +
+  "competitor url must be copied exactly from a supplied citation; rows with any " +
+  "other URL are discarded. Quotes must come from the supplied community research. " +
+  "NEVER invent keyword volume or CPC.";
 
 export type RunResearchOptions = {
   brief: BriefInput;
@@ -474,91 +562,92 @@ export async function runResearch(
     });
   };
 
-  const settle = (cost: ProviderCost) => {
-    providerCalls.push(costToCall(cost));
+  const settle = (cost: ProviderCost, failed = false) => {
+    providerCalls.push(costToCall(cost, failed));
     spentMicroUsd += toMicroUsd(cost.usd);
   };
 
+  const settleFailure = (error: unknown) => {
+    if (error instanceof ProviderCallError && error.cost) {
+      settle(error.cost, true);
+    }
+  };
+
+  // Reserve before every attempt (the retry is a second billable call) and
+  // count billed failures, so the cap sees real spend.
+  const run: Runner = async (position, fn) => {
+    reserve(position);
+    let result;
+    try {
+      result = await fn();
+    } catch (error) {
+      settleFailure(error);
+      if (!isRetryable(error)) throw error;
+      reserve(position);
+      try {
+        result = await fn();
+      } catch (retryError) {
+        settleFailure(retryError);
+        throw retryError;
+      }
+    }
+    settle(result.cost);
+    return result;
+  };
+
   // --- 0 brief_normalization ---
-  reserve(0);
-  let briefResult: Awaited<ReturnType<typeof stepBriefNormalization>>;
+  let brief: NormalizedBrief;
   try {
-    briefResult = await stepBriefNormalization(providers, options.brief);
+    brief = await stepBriefNormalization(providers, run, options.brief);
   } catch (error) {
-    throw new PipelineError(
-      "brief_normalization",
-      error instanceof Error ? error.message : "brief normalization failed",
-      error,
-    );
+    throw stepError("brief_normalization", "brief normalization failed", error);
   }
-  settle(briefResult.cost);
-  const brief = briefResult.brief;
 
   // --- 1 market_stats ---
-  reserve(1);
   let market: SearchPack;
   try {
-    const r = await stepSearch(
+    market = await stepSearch(
       providers,
+      run,
+      1,
       `${briefContext(brief)}\n\nFind at least two market statistics with sources, including market size and CAGR. Cite every figure.`,
-      "high",
     );
-    market = r.pack;
-    settle(r.cost);
   } catch (error) {
-    throw new PipelineError(
-      "market_stats",
-      error instanceof Error ? error.message : "market search failed",
-      error,
-    );
+    throw stepError("market_stats", "market search failed", error);
   }
 
   // --- 2 competitors ---
-  reserve(2);
   let competitorsPack: SearchPack;
   try {
-    const r = await stepSearch(
+    competitorsPack = await stepSearch(
       providers,
+      run,
+      2,
       `${briefContext(brief)}\n\nIdentify at least three direct competitors with their current pricing and positioning gaps. Cite each.`,
-      "high",
     );
-    competitorsPack = r.pack;
-    settle(r.cost);
   } catch (error) {
-    throw new PipelineError(
-      "competitors",
-      error instanceof Error ? error.message : "competitors search failed",
-      error,
-    );
+    throw stepError("competitors", "competitors search failed", error);
   }
 
   // --- 3 community_signals ---
-  reserve(3);
   let community: SearchPack;
   try {
-    const r = await stepSearch(
+    community = await stepSearch(
       providers,
+      run,
+      3,
       `${briefContext(brief)}\n\nFind pain evidence discussed by real users on Reddit, Hacker News, and YouTube. Quote briefly and link each source.`,
-      "medium",
     );
-    community = r.pack;
-    settle(r.cost);
   } catch (error) {
-    throw new PipelineError(
-      "community_signals",
-      error instanceof Error ? error.message : "community search failed",
-      error,
-    );
+    throw stepError("community_signals", "community search failed", error);
   }
 
   // --- 4 keywords_demand (fail closed) ---
-  reserve(4);
-  const keywordResult = await stepKeywords(providers, brief.seedKeywords);
-  settle(keywordResult.cost);
-  const keywords = metricsToKeywordRows(keywordResult.metrics);
+  const keywords = metricsToKeywordRows(
+    await stepKeywords(providers, run, brief.seedKeywords),
+  );
 
   // --- 5 synthesis_scoring ---
-  reserve(5);
   let synthesisText: string;
   try {
     const researchBlob = [
@@ -567,27 +656,18 @@ export async function runResearch(
       `## Community signals\n${JSON.stringify(community)}`,
       `## Keywords (provider metrics only — do not invent volume/CPC)\n${JSON.stringify(keywords)}`,
     ].join("\n\n");
-    const result = await withRetryOnce(() =>
+    const input = `${briefContext(brief)}\n\n${researchBlob}`;
+    assertInputFits(5, SYNTHESIS_INSTRUCTIONS, input);
+    const result = await run(5, () =>
       providers.synthesis.complete({
-        instructions:
-          "Score this idea using only the supplied research. Reply with " +
-          "JSON only containing marketSummary, stats[{claim,value,citationUrl,citationTitle}], " +
-          "competitors[{name,pricing,url,notes}], communitySummary, " +
-          "signals[{quote,citationUrl,citationTitle}], goToMarket{positioning,channels,pricingNotes}, " +
-          "whyNow, oneLiner, scores{opportunity,pain,builderConfidence,execution}. " +
-          "Every claim must trace to a supplied citation. NEVER invent keyword volume or CPC.",
-        input: `${briefContext(brief)}\n\n${researchBlob}`,
-        maxOutputTokens: 4_000,
+        instructions: SYNTHESIS_INSTRUCTIONS,
+        input,
+        maxOutputTokens: synthesisOutputCap(5),
       }),
     );
     synthesisText = result.value.text;
-    settle(result.cost);
   } catch (error) {
-    throw new PipelineError(
-      "synthesis_scoring",
-      error instanceof Error ? error.message : "synthesis failed",
-      error,
-    );
+    throw stepError("synthesis_scoring", "synthesis failed", error);
   }
 
   // --- 6 provenance_parse (unpaid) ---
@@ -599,17 +679,32 @@ export async function runResearch(
     brief,
   );
 
+  const shortfalls: string[] = [];
   if (synth.stats.length < MIN_MARKET_STATS) {
-    throw new PipelineError(
-      "provenance_parse",
-      `need ≥${MIN_MARKET_STATS} cited market stats (got ${synth.stats.length})`,
+    shortfalls.push(
+      `need ≥${MIN_MARKET_STATS} market stats citing a search result (got ${synth.stats.length})`,
     );
   }
   if (synth.competitors.length < MIN_COMPETITORS) {
-    throw new PipelineError(
-      "provenance_parse",
-      `need ≥${MIN_COMPETITORS} priced competitors (got ${synth.competitors.length})`,
+    shortfalls.push(
+      `need ≥${MIN_COMPETITORS} priced competitors citing a search result (got ${synth.competitors.length})`,
     );
+  }
+  if (synth.goToMarket.channels.length < MIN_CHANNELS) {
+    shortfalls.push(
+      `need ≥${MIN_CHANNELS} go-to-market channels (got ${synth.goToMarket.channels.length})`,
+    );
+  }
+  if (synth.howItWorks.length < MIN_HOW_IT_WORKS_STEPS) {
+    shortfalls.push(
+      `need ≥${MIN_HOW_IT_WORKS_STEPS} howItWorks steps (got ${synth.howItWorks.length})`,
+    );
+  }
+  if (!synth.whyNow) {
+    shortfalls.push("synthesis returned no whyNow");
+  }
+  if (shortfalls.length > 0) {
+    throw new PipelineError("provenance_parse", shortfalls.join("; "));
   }
 
   const draft = {
@@ -632,6 +727,7 @@ export async function runResearch(
     keywords,
     goToMarket: synth.goToMarket,
     whyNow: synth.whyNow,
+    howItWorks: synth.howItWorks,
     ...(synth.scores ? { scores: synth.scores } : {}),
     provenance: {
       providerCalls,
@@ -643,11 +739,7 @@ export async function runResearch(
   try {
     return parseResearchRecord(draft);
   } catch (error) {
-    throw new PipelineError(
-      "provenance_parse",
-      error instanceof Error ? error.message : "ResearchRecord parse failed",
-      error,
-    );
+    throw stepError("provenance_parse", "ResearchRecord parse failed", error);
   }
 }
 

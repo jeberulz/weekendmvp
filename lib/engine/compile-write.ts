@@ -29,23 +29,28 @@ export function writeCompiledIdea(
   options: WriteCompileOptions,
 ): WriteCompileResult {
   const compiled = compileResearchRecord(options);
-  const mdxPath = path.join(options.ideasDir, `${compiled.slug}.mdx`);
+  const ideasDir = path.resolve(options.ideasDir);
+  const mdxPath = path.resolve(ideasDir, `${compiled.slug}.mdx`);
 
-  if (fs.existsSync(mdxPath) && !options.force) {
+  // compile.ts already rejects unsafe slugs; this is the backstop.
+  if (path.dirname(mdxPath) !== ideasDir) {
+    throw new Error(`refusing to write outside ${ideasDir}: ${mdxPath}`);
+  }
+
+  // Run every refusal check before writing anything, so a refused compile
+  // never leaves a stray MDX file that the sitemap would pick up.
+  const mdxExisted = fs.existsSync(mdxPath);
+  if (mdxExisted && !options.force) {
     throw new Error(
       `refusing to overwrite existing MDX at ${mdxPath} (pass force / --force)`,
     );
   }
 
-  fs.mkdirSync(options.ideasDir, { recursive: true });
-  fs.writeFileSync(mdxPath, compiled.mdx);
-
-  let manifestWritten = false;
   const shouldWriteManifest =
     options.writeManifest !== false && Boolean(options.manifestPath);
+  let manifest: { ideas: unknown[] } | null = null;
   if (shouldWriteManifest && options.manifestPath) {
     const manifestPath = options.manifestPath;
-    let manifest: { ideas: unknown[] };
     if (fs.existsSync(manifestPath)) {
       manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as {
         ideas: unknown[];
@@ -70,9 +75,24 @@ export function writeCompiledIdea(
     }
     if (idx >= 0) manifest.ideas[idx] = compiled.manifestEntry;
     else manifest.ideas.push(compiled.manifestEntry);
+  }
 
-    fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
-    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  fs.mkdirSync(ideasDir, { recursive: true });
+  fs.writeFileSync(mdxPath, compiled.mdx);
+
+  let manifestWritten = false;
+  if (manifest && options.manifestPath) {
+    try {
+      fs.mkdirSync(path.dirname(options.manifestPath), { recursive: true });
+      fs.writeFileSync(
+        options.manifestPath,
+        `${JSON.stringify(manifest, null, 2)}\n`,
+      );
+    } catch (error) {
+      // Keep the pair consistent: drop an MDX this call created.
+      if (!mdxExisted) fs.rmSync(mdxPath, { force: true });
+      throw error;
+    }
     manifestWritten = true;
   }
 

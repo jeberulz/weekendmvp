@@ -88,9 +88,17 @@ export type ResearchRecord = {
   keywords: KeywordRow[];
   goToMarket: GoToMarket;
   whyNow: string;
+  /**
+   * Product workflow steps for the page's "How it works" list (HowTo schema).
+   * Optional for older records; the compiler refuses a record without it
+   * rather than guessing steps.
+   */
+  howItWorks?: string[];
   scores?: ResearchScores;
   provenance: ResearchProvenance;
 };
+
+export const MIN_HOW_IT_WORKS_STEPS = 2;
 
 export const MIN_MARKET_STATS = 2;
 export const MIN_COMPETITORS = 3;
@@ -376,6 +384,23 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     issues.push("whyNow: required non-empty string");
   }
 
+  // --- optional howItWorks ---
+  let howItWorks: string[] | undefined;
+  if (input.howItWorks !== undefined) {
+    if (
+      !Array.isArray(input.howItWorks) ||
+      !input.howItWorks.every(isNonEmptyString)
+    ) {
+      issues.push("howItWorks: must be string[] when present");
+    } else if (input.howItWorks.length < MIN_HOW_IT_WORKS_STEPS) {
+      issues.push(
+        `howItWorks: need ≥${MIN_HOW_IT_WORKS_STEPS} steps when present (got ${input.howItWorks.length})`,
+      );
+    } else {
+      howItWorks = input.howItWorks.map((step) => (step as string).trim());
+    }
+  }
+
   // --- optional scores ---
   let scores: ResearchScores | undefined;
   if (input.scores !== undefined) {
@@ -491,6 +516,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     provenance: provenance!,
   };
 
+  if (howItWorks) record.howItWorks = howItWorks;
   if (scores) record.scores = scores;
 
   return record;
