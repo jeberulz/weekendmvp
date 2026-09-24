@@ -16,7 +16,7 @@ export default function AuthCallbackPage() {
           The link may be invalid or expired. No account changes were made.
         </p>
         <Link
-          href="/signin"
+          href="/login"
           className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-zinc-100 px-4 text-sm font-semibold text-zinc-950"
         >
           Return to sign in

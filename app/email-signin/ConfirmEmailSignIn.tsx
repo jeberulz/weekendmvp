@@ -59,7 +59,7 @@ export function ConfirmEmailSignIn() {
       ) : (
         <p role="alert" className="mt-4 text-sm leading-6 text-red-300">
           This sign-in link is incomplete or invalid. Request a new link from
-          the sign-in page.
+          the login page.
         </p>
       )}
       {failed ? (

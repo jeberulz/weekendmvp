@@ -63,14 +63,28 @@ test("the token never reaches an analytics payload", async () => {
   assert.match(source, /if \(graph\.created\) \{\s*trackEvent\("project_created"/);
 });
 
-test("sign-in shape-checks the token with the server's own normalizer", async () => {
-  const source = await readCode("app/signin/page.tsx");
+test("login shape-checks the token with the server's own normalizer", async () => {
+  const source = await readCode("app/login/page.tsx");
   assert.match(source, /normalizeCapabilityToken\(/);
   assert.match(source, /claimPreview !== null && <PreviewClaimStash/);
   // The capability must not be folded into `returnTo`: that value is echoed
   // into the auth callback URL and, for the email provider, into a link that
   // leaves our origin.
   assert.doesNotMatch(source, /returnTo[^\n]*claimPreview|claimPreview[^\n]*returnTo/);
+});
+
+test("signup also shape-checks claimPreview before stashing", async () => {
+  const source = await readCode("app/signup/page.tsx");
+  assert.match(source, /normalizeCapabilityToken\(/);
+  assert.match(source, /claimPreview !== null && <PreviewClaimStash/);
+  assert.doesNotMatch(source, /returnTo[^\n]*claimPreview|claimPreview[^\n]*returnTo/);
+});
+
+test("/signin forwards claimPreview to /login without folding it into returnTo", async () => {
+  const source = await readCode("app/signin/page.tsx");
+  assert.match(source, /normalizeCapabilityToken\(/);
+  assert.match(source, /qs\.set\("claimPreview", claimPreview\)/);
+  assert.match(source, /redirect\(query \? `\/login\?\$\{query\}` : "\/login"\)/);
 });
 
 test("the claim derives identity server-side and takes no owner argument", async () => {

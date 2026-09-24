@@ -250,6 +250,8 @@ test("the redaction covers both channels the token travels in", async () => {
 
   assert.equal(urlCarriesCapability(`/preview/${token}`, ""), true);
   assert.equal(urlCarriesCapability("/signin", `?claimPreview=${token}`), true);
+  assert.equal(urlCarriesCapability("/signup", `?claimPreview=${token}`), true);
+  assert.equal(urlCarriesCapability("/login", `?claimPreview=${token}`), true);
   assert.equal(urlCarriesCapability("/signin", "?returnTo=%2Fdashboard"), false);
   assert.equal(urlCarriesCapability("/starter-kit", ""), false);
 });

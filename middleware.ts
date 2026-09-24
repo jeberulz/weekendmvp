@@ -10,9 +10,11 @@ import {
 } from "./lib/canonical-path";
 import {
   authRouteDecision,
+  isAuthEntryPath,
   isAuthManagedPath,
   isSensitiveAuthPath,
 } from "./lib/auth-return";
+import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
 import { checkTenantSitePublished } from "./lib/tenant-publish-check";
 
@@ -130,6 +132,56 @@ export function applySensitiveAuthResponseHeaders(
   if (isSensitiveAuthPath(pathname)) {
     response.headers.set("Referrer-Policy", "no-referrer");
     response.headers.set("Cache-Control", "no-store");
+  } else if (isAuthEntryPath(pathname)) {
+    // `/login` and `/signup` can carry a preview capability in
+    // `?claimPreview=` and link to the rest of the site. A same-origin
+    // navigation sends the full URL as its referrer by default, which
+    // consented analytics would collect as `page_referrer` (GA4) and `rl`
+    // (Meta).
+    response.headers.set("Referrer-Policy", "no-referrer");
+  }
+  return response;
+}
+
+/** Convex Auth's session JWT cookie; unprefixed on localhost only. */
+const CONVEX_AUTH_JWT_COOKIES = ["__Host-__convexAuthJWT", "__convexAuthJWT"];
+
+/**
+ * Convex Auth sets its session JWT `httpOnly`, so the marketing nav cannot
+ * see it. Mirror its presence into a readable, non-secret hint so the nav can
+ * show "Dashboard" without mounting the auth provider on public pages.
+ *
+ * A response that writes the JWT (sign-in, refresh, sign-out) wins over the
+ * request. The hint is written only when it is out of date, so an anonymous
+ * visitor never receives a `Set-Cookie`. Not an authorization check.
+ */
+export function syncSessionHintCookie(
+  request: NextRequest,
+  response: Response,
+) {
+  if (!(response instanceof NextResponse)) {
+    return response;
+  }
+
+  let signedIn = CONVEX_AUTH_JWT_COOKIES.some((name) =>
+    Boolean(request.cookies.get(name)?.value),
+  );
+  for (const name of CONVEX_AUTH_JWT_COOKIES) {
+    const written = response.cookies.get(name);
+    if (written !== undefined) {
+      signedIn = written.value !== "";
+    }
+  }
+
+  const hinted = request.cookies.get(SESSION_HINT_COOKIE)?.value === "1";
+  if (signedIn && !hinted) {
+    response.cookies.set(SESSION_HINT_COOKIE, "1", {
+      path: "/",
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+    });
+  } else if (!signedIn && hinted) {
+    response.cookies.set(SESSION_HINT_COOKIE, "", { path: "/", maxAge: 0 });
   }
   return response;
 }
@@ -238,10 +290,19 @@ export async function middleware(
       canonical,
     );
   }
+
+  // Hard alias: `/signin` → `/login` (Cache Components soft-redirects page
+  // `redirect()` as 200). Preserve returnTo / claimPreview for preview claim.
+  if (request.nextUrl.pathname === "/signin") {
+    const target = new URL("/login", request.url);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target, 308);
+  }
+
   const response = await platformAuthMiddleware(request, event);
   return applySensitiveAuthResponseHeaders(
     request.nextUrl.pathname,
-    response ?? NextResponse.next(),
+    syncSessionHintCookie(request, response ?? NextResponse.next()),
   );
 }
 

@@ -7,7 +7,7 @@ import { Newsreader } from "next/font/google";
  */
 export const newsreader = Newsreader({
   subsets: ["latin"],
-  style: "italic",
+  style: ["normal", "italic"],
   weight: "variable",
   axes: ["opsz"],
   variable: "--font-newsreader",

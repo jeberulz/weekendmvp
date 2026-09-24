@@ -19,7 +19,8 @@ import { trackEvent } from "@/lib/track";
  * 2. It degrades safely. If the magic link opens in a different browser the
  *    stash is simply absent, nothing is claimed, and the capability stays
  *    valid for its remaining lifetime — the visitor can reopen the preview
- *    link while signed in and claim from there. Losing a claim is a
+ *    link while signed in and claim from there (`authRouteDecision` lets a
+ *    signed-in visitor through to the stash). Losing a claim is a
  *    recoverable inconvenience; leaking a capability is not.
  *
  * Neither component here is the authorization boundary. `platform.preview.
@@ -31,10 +32,22 @@ import { trackEvent } from "@/lib/track";
 const STASH_KEY = "wp27:claimPreview";
 
 /**
- * Rendered on `/signin`. Records the capability so the post-authentication
- * landing can claim it. Renders nothing.
+ * Rendered on `/login` and `/signup`. Records the capability so the
+ * post-authentication landing can claim it. Renders nothing.
+ *
+ * `continueTo` is set only for a visitor who is already signed in. Middleware
+ * lets them reach the auth page solely so this stash can run, so there is
+ * nothing for them to fill in: they move straight on to the claim.
  */
-export function PreviewClaimStash({ token }: { token: string }) {
+export function PreviewClaimStash({
+  token,
+  continueTo,
+}: {
+  token: string;
+  continueTo?: string;
+}) {
+  const router = useRouter();
+
   useEffect(() => {
     try {
       window.sessionStorage.setItem(STASH_KEY, token);
@@ -42,7 +55,10 @@ export function PreviewClaimStash({ token }: { token: string }) {
       // Private-mode or storage-disabled browsers: the claim simply does not
       // happen automatically. Never a hard failure on the sign-in path.
     }
-  }, [token]);
+    if (continueTo !== undefined) {
+      router.replace(continueTo);
+    }
+  }, [token, continueTo, router]);
 
   return null;
 }

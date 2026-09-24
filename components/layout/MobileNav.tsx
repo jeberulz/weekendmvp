@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { IconButton } from "@/components/primitives/IconButton";
 import { Logo } from "@/components/primitives/Logo";
+import { NavAuthLinks } from "@/components/layout/NavAuthLinks";
 
 type MobileLink = { label: string; href: string; emphasis?: boolean };
 type MobileGroup = { heading?: string; links: MobileLink[] };
@@ -249,6 +250,10 @@ export function MobileNav({
               {link.label}
             </Link>
           ))}
+
+          <div className="pt-4 mt-2 border-t border-white/10 space-y-1">
+            <NavAuthLinks variant="mobile" onNavigate={closeMenu} />
+          </div>
         </nav>
       </SheetContent>
     </Sheet>

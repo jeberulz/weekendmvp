@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { NextFetchEvent } from "next/server";
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import {
@@ -8,7 +8,9 @@ import {
   config,
   hostRoutingDecision,
   middleware,
+  syncSessionHintCookie,
 } from "../../middleware";
+import { SESSION_HINT_COOKIE } from "../../lib/auth-session-cookie";
 
 function request(url: string, host?: string) {
   return new NextRequest(url, {
@@ -108,6 +110,8 @@ describe("WP28-S2 host isolation", () => {
     "/dashboard",
     "/dashboard/explore",
     "/signin",
+    "/login",
+    "/signup",
     "/auth/callback",
     "/email-signin",
     "/build/ai-collectible-verification-platform",
@@ -314,6 +318,20 @@ describe("middleware matcher contract", () => {
 });
 
 describe("sensitive auth response headers", () => {
+  it("hard-aliases /signin to /login preserving claimPreview and returnTo", async () => {
+    const response = await runMiddleware(
+      request(
+        "https://www.weekendmvp.app/signin?claimPreview=token&returnTo=%2Fdashboard",
+        "www.weekendmvp.app",
+      ),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/login?claimPreview=token&returnTo=%2Fdashboard",
+    );
+  });
+
   it.each([
     "https://preview-123.vercel.app/email-signin/?token=secret-reference",
     "https://www.weekendmvp.app/auth/callback/?code=secret-reference",
@@ -337,6 +355,20 @@ describe("sensitive auth response headers", () => {
     },
   );
 
+  it.each(["/login", "/signup"])(
+    "keeps a claimPreview capability out of the referrer on %s",
+    (pathname) => {
+      const response = applySensitiveAuthResponseHeaders(
+        pathname,
+        new Response(null),
+      );
+
+      expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
+      // Unlike the token-bearing routes, analytics and caching stay as-is.
+      expect(response.headers.get("Cache-Control")).toBeNull();
+    },
+  );
+
   it("does not override public-route cache policy", () => {
     const response = applySensitiveAuthResponseHeaders(
       "/startup-ideas",
@@ -345,5 +377,75 @@ describe("sensitive auth response headers", () => {
 
     expect(response.headers.get("Referrer-Policy")).toBeNull();
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=60");
+  });
+});
+
+describe("session hint cookie", () => {
+  function withCookies(cookie: string) {
+    return new NextRequest("https://www.weekendmvp.app/ideas/example", {
+      headers: { host: "www.weekendmvp.app", cookie },
+    });
+  }
+
+  function hintSetCookie(response: Response) {
+    return response.headers
+      .getSetCookie()
+      .find((line) => line.startsWith(`${SESSION_HINT_COOKIE}=`));
+  }
+
+  it("writes a script-readable hint when the httpOnly JWT is present", () => {
+    const response = syncSessionHintCookie(
+      withCookies("__Host-__convexAuthJWT=abc"),
+      NextResponse.next(),
+    );
+
+    const line = hintSetCookie(response);
+    expect(line).toMatch(new RegExp(`^${SESSION_HINT_COOKIE}=1;`));
+    expect(line).not.toMatch(/HttpOnly/i);
+    expect(line).toMatch(/Path=\//);
+  });
+
+  it("clears a stale hint once the JWT is gone", () => {
+    const response = syncSessionHintCookie(
+      withCookies(`${SESSION_HINT_COOKIE}=1`),
+      NextResponse.next(),
+    );
+
+    expect(hintSetCookie(response)).toMatch(/Max-Age=0/);
+  });
+
+  it.each([
+    ["", "an anonymous visitor"],
+    [`__Host-__convexAuthJWT=abc; ${SESSION_HINT_COOKIE}=1`, "a hinted session"],
+  ])("sends no Set-Cookie for %s (%s)", (cookie) => {
+    const response = syncSessionHintCookie(
+      withCookies(cookie),
+      NextResponse.next(),
+    );
+
+    expect(response.headers.getSetCookie()).toEqual([]);
+  });
+
+  it("follows a response that signs the visitor out", () => {
+    const signOut = NextResponse.next();
+    signOut.cookies.set("__Host-__convexAuthJWT", "", { expires: 0 });
+
+    const response = syncSessionHintCookie(
+      withCookies(`__Host-__convexAuthJWT=abc; ${SESSION_HINT_COOKIE}=1`),
+      signOut,
+    );
+
+    expect(hintSetCookie(response)).toMatch(/Max-Age=0/);
+  });
+
+  it("follows a response that signs the visitor in", () => {
+    const signIn = NextResponse.next();
+    signIn.cookies.set("__Host-__convexAuthJWT", "fresh");
+
+    const response = syncSessionHintCookie(withCookies(""), signIn);
+
+    expect(hintSetCookie(response)).toMatch(
+      new RegExp(`^${SESSION_HINT_COOKIE}=1;`),
+    );
   });
 });
