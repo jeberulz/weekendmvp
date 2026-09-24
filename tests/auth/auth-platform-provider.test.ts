@@ -93,6 +93,8 @@ describe("free auth UI contract", () => {
   test("mega and mobile nav expose Login + Sign Up for anonymous visitors", () => {
     expect(megaNavSource).toContain("<NavAuthLinks");
     expect(mobileNavSource).toContain("<NavAuthLinks");
+    expect(megaNavSource).not.toContain("Get the Kit");
+    expect(megaNavSource).not.toMatch(/href=["']\/starter-kit["']/);
     expect(navAuthSource).toContain('href="/login"');
     expect(navAuthSource).toContain('href="/signup"');
     expect(navAuthSource).toContain("Sign up");
