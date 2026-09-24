@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { FAQS } from "@/components/home/content";
+import { HomeMotion } from "@/components/home/motion/HomeMotion";
 import { BuildWithAI } from "@/components/home/sections/BuildWithAI";
 import { FinalCall } from "@/components/home/sections/FinalCall";
 import { FounderNote } from "@/components/home/sections/FounderNote";
@@ -90,6 +91,7 @@ export default async function HomePage() {
       <StarterKit />
       <FounderNote />
       <FinalCall total={data.totals.ideas} strip={data.strip} />
+      <HomeMotion />
     </main>
   );
 }

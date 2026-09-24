@@ -16,7 +16,8 @@ const INK_ON_HOT = "lg:group-hover:text-home-ink lg:group-focus-visible:text-hom
 
 /**
  * The newest ideas as an index. On wide screens a hovered or focused row
- * turns orange and that idea's art floats beside it (decorative only).
+ * turns orange and that idea's art floats beside it (decorative only),
+ * easing from row to row instead of jumping.
  */
 export function IndexList({ rows, mobileCount = 6 }: { rows: IndexRow[]; mobileCount?: number }) {
   const [preview, setPreview] = useState<{ art: string; top: number } | null>(null);
@@ -29,8 +30,8 @@ export function IndexList({ rows, mobileCount = 6 }: { rows: IndexRow[]; mobileC
   }
 
   return (
-    <div className="relative" onMouseLeave={() => setPreview(null)}>
-      <div aria-hidden className={cn("hidden px-5 pb-3 font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:grid", COLS)}>
+    <div data-m="index" className="relative" onMouseLeave={() => setPreview(null)}>
+      <div aria-hidden data-m="thead" className={cn("hidden px-5 pb-3 font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:grid", COLS)}>
         <span>NO.</span>
         <span>IDEA</span>
         <span>CATEGORY</span>
@@ -40,7 +41,7 @@ export function IndexList({ rows, mobileCount = 6 }: { rows: IndexRow[]; mobileC
       </div>
       <ol className="border-b border-home-dr lg:border-b-0">
         {rows.map((row, i) => (
-          <li key={row.slug} className={cn(i >= mobileCount && "max-lg:hidden")}>
+          <li key={row.slug} data-m="row" className={cn(i >= mobileCount && "max-lg:hidden")}>
             <Link
               href={`/ideas/${row.slug}`}
               aria-label={`${row.title}. ${row.categoryName}, ${row.buildTime} hours, ${GOAL_LABEL[row.revenueGoal] ?? ""} goal`}
@@ -89,8 +90,8 @@ export function IndexList({ rows, mobileCount = 6 }: { rows: IndexRow[]; mobileC
       {preview && (
         <div
           aria-hidden
-          className="pointer-events-none absolute right-[250px] z-10 hidden w-[260px] -rotate-[4deg] overflow-hidden rounded-[14px] border-4 border-home-d1 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)] lg:block"
-          style={{ top: preview.top }}
+          className="home-pop pointer-events-none absolute right-[250px] top-0 z-10 hidden w-[260px] -rotate-[4deg] overflow-hidden rounded-[14px] border-4 border-home-d1 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)] transition-[translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none lg:block"
+          style={{ translate: `0 ${preview.top}px` }}
         >
           <IdeaArt src={preview.art} sizes="720px" className="h-[160px] w-full" />
         </div>

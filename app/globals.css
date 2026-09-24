@@ -407,3 +407,73 @@ body {
   background-image: radial-gradient(var(--color-home-rule) 1px, transparent 1px);
   background-size: 24px 24px;
 }
+
+/* ===== WP43 homepage motion =====
+   The hero intro is plain CSS so it plays on first paint without waiting for
+   JavaScript. Sections 02–10 are animated by components/home/motion (GSAP).
+   Only opacity and the individual transform properties move, and only when
+   the visitor has not asked for reduced motion. `--d` is each element's delay. */
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    translate: 0 var(--home-rise, 18px);
+  }
+}
+
+@keyframes home-paste {
+  from {
+    opacity: 0;
+    translate: -6px 0;
+  }
+}
+
+@keyframes home-pop {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@keyframes home-press {
+  0% {
+    opacity: 0;
+    scale: 1.4;
+    rotate: 16deg;
+  }
+  55% {
+    opacity: 1;
+    scale: 0.94;
+    rotate: -2deg;
+  }
+}
+
+/* Hero headline words are inline blocks so they can move; wrapping is unchanged. */
+.home-word {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-intro,
+  .home-word {
+    animation: home-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both;
+  }
+  .home-word {
+    --home-rise: 0.42em;
+  }
+  .home-paste {
+    animation: home-paste 0.35s ease-out var(--d, 0s) both;
+  }
+  .home-press {
+    animation: home-press 0.75s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both;
+  }
+  .home-pop {
+    animation: home-pop 0.25s ease-out both;
+  }
+}
+
+/* SplitText line masks (scenes.ts): room for descenders on tight leading. */
+.home-line-mask {
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
