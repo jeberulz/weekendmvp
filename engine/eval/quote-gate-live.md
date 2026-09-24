@@ -1,9 +1,71 @@
 # Quote-gate live N=3 — PR #71 merge gate
 
-Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `1c98c9e`.
+Updated: 2026-09-24 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7` @ `a24495f` + re-run 3 note.
 **Do not merge from this gate.** Skill flip / phases 8–9 / mcp.json untouched.
 
-## Re-run 2 (post DataForSEO top-up) — this verdict
+## Re-run 3 (Mac private worker / home egress) — this verdict
+
+Ran on John’s Mac private worker (`MacBook-Pro-4.local`, egress `80.252.122.75`) against tip `a24495f`, expecting home IP to allow Reddit public `.json` where Cloud Agent could not.
+
+### Secret gate
+
+| Secret | Status |
+|---|---|
+| `OPENAI_API_KEY` | **missing** in shell; `.env.local` has empty line |
+| `PERPLEXITY_API_KEY` | **missing** (shell + `.env.local`) |
+| `DATAFORSEO_LOGIN` | **missing** (shell + `.env.local`) |
+| `DATAFORSEO_PASSWORD` | **missing** (shell + `.env.local`) |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` | **missing** (acceptable *if* public `.json` worked) |
+
+Cloud Agent research secrets were **not** injected into this private-worker shell. Only unrelated keys (`IDEABROWSER_API_KEY`, `NEON_API_KEY`) were present.
+
+### Probe (this host)
+
+| Check | Result |
+|---|---|
+| Reddit `www` thread `.json` / `.json` | **HTTP 403** (~190KB theme-beta HTML block page) |
+| Reddit listing `hot.json` | **HTTP 403** |
+| `old.reddit.com` `.json` | **HTTP 302** → login interstitial (no JSON body) |
+| Soft-retry `ENGINE_QUOTE_FETCH_UA=WeekendMVP-IdeaEngine/1.0 (+https://weekendmvp.app; research-bot)` | **HTTP 403** unchanged |
+| HN Algolia item | **HTTP 200** OK |
+
+### Verdict
+
+**Clear to merge from quote-gate side? NO.**
+
+Blocker: **Reddit public `.json` is still HTTP 403 from this home egress IP.** The home-network alternate does **not** unblock Reddit. Same failure class as Cloud Agent re-runs 1–2. Live N=3 research/compile/audit was **not** started (early stop per gate instructions — do not burn N=3 when Reddit probe fails). ≥2 verified-quotes rule was **not** weakened. Phases 8–9 / mcp.json / claim-preview secret / UI / skill rewrite untouched.
+
+Secondary: even if Reddit had returned 200, this worker lacked `OPENAI_API_KEY` / `PERPLEXITY_API_KEY` / `DATAFORSEO_*` so a full live pack could not have completed without secret injection.
+
+### Pass/fail per brief (re-run 3)
+
+| Brief | Research | Compile | Audit | Detail |
+|---|---|---|---|---|
+| `rfp-assistant` (BidRelay) | **SKIPPED** | skipped | skipped | Reddit probe 403 → early stop |
+| `code-reviewer` (DiffBeacon) | **SKIPPED** | skipped | skipped | Reddit probe 403 → early stop |
+| `landing-page-generator-ecommerce` (ClickWeave) | **SKIPPED** | skipped | skipped | Reddit probe 403 → early stop |
+
+### Artifacts (re-run 3)
+
+| Path | What |
+|---|---|
+| agent-store `quote-gate-live-mac-rerun3/probe.log` | Reddit/HN probe statuses |
+| agent-store `quote-gate-live-mac-rerun3/probe-detail.log` | multi-UA / old.reddit variants |
+| agent-store `quote-gate-live-mac-rerun3/secret-gate.txt` | boolean secret presence |
+| agent-store `quote-gate-live-mac-rerun3/failure-matrix.txt` | condensed NO + blockers |
+| agent-store `quote-gate-live-mac-rerun3/verification-summary.txt` | same summary for coordinator |
+| `artifacts/quote-gate-live-mac-rerun3/*` | repo-local copy of the same |
+
+### Unblock for YES
+
+1. Set `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET` (script app) on the runner that has the other live secrets, **or** find a network/IP that actually receives Reddit public JSON 200 (this home IP is not it).
+2. Ensure `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` are available on that same runner.
+3. Re-run the three `engine:research --live` → compile into `engine/drafts/` → deep `audit:idea` with ≥2 live-verified quotes each.
+4. Update this file with YES only if all three clear research + compile + audit.
+
+---
+
+## Re-run 2 (post DataForSEO top-up, Cloud Agent) — historical
 
 John topped up DataForSEO and said READY. Re-ran live N=3 on tip `1c98c9e`.
 
