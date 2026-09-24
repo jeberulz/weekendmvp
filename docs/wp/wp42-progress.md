@@ -40,3 +40,10 @@ Append-only progress log. Do not rely on chat history for project state.
 - Updated: `docs/wp/RULINGS.md`, `.claude/skills/publish-idea/SKILL.md` (Step 6b), `CLAUDE.md` (key paths), WP42 stories/progress
 - Footer: the owner asked to keep the production footer as the last section. The homepage already renders the shared `SiteFooter` through the `(marketing)` layout, unchanged; the design canvas now shows it as section 11 (desktop and mobile)
 - Open for the owner: the founder letter is draft copy for John to rewrite
+
+## 2026-09-24 - Review fix: stable weekly picks (#76, Codex P2)
+
+- Finding: `weekIndex % pool.length` re-picks midweek whenever the pool size changes. Verified: any publish, retirement or OG-art flip changed both picks on the next hourly regeneration
+- Fix (`lib/home/rotation.ts`): per-week hash ranking over ideas published before that Monday, top two picked, last week's picks skipped by replaying four weeks. Ruling row added
+- Tests (`tests/home/rotation.test.ts`): picks hold Monday to Sunday and change on Monday; a midweek publish never enters the running week; removing any non-winner leaves the picks unchanged; a newly qualifying older idea either wins outright or changes nothing; no back-to-back repeats over 80 weeks; 03 never equals 06
+- This week's picks under the new rule: `non-toxic-appliance-verification-platform` (03/05) and `youth-sports-team-messaging-hub` (06). The design canvas examples (SlackToDoc, Workflow Audit App) show the template, not the live pick

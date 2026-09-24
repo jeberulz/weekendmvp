@@ -91,12 +91,13 @@ export async function getHomeData(): Promise<HomeData> {
   );
   const bySlug = new Map(loaded.map((l) => [l.idea.slug, l]));
 
-  const pool = publishOrder(loaded.filter((l) => isFeatureReady(l.idea, l.extract, l.art)).map((l) => l.idea)).map(
-    (idea) => bySlug.get(idea.slug)!,
-  );
-  const picks = pickWeekly(pool, now);
-  if (!picks) throw new Error("Homepage: no idea is complete enough to feature this week");
+  const pool = loaded
+    .filter((l) => isFeatureReady(l.idea, l.extract, l.art))
+    .map((l) => ({ slug: l.idea.slug, publishedAt: l.idea.publishedAt, loaded: l }));
+  const weekly = pickWeekly(pool, now);
+  if (!weekly) throw new Error("Homepage: no idea is complete enough to feature this week");
 
+  const picks = { spotlight: weekly.spotlight.loaded, inside: weekly.inside.loaded };
   const heroSource = bySlug.get(HERO_SLUG) ?? picks.spotlight;
   const libraryNo = publishOrder(ideas).findIndex((idea) => idea.slug === heroSource.idea.slug) + 1;
   const heroCategory = normalizeCategorySlug(heroSource.idea.category);
