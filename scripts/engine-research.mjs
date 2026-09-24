@@ -25,7 +25,9 @@ Flags:
                     when --brief is omitted (e.g. rfp-assistant).
   --brief path      Brief JSON: { title, audience, revenueModel, seedKeywords[] }
   --out path        Output ResearchRecord JSON (default: engine/records/{slug}.json)
-  --live            Live providers (requires keys in .env)
+  --live            Live providers. Reads OPENAI_API_KEY, PERPLEXITY_API_KEY,
+                    DATAFORSEO_LOGIN, DATAFORSEO_PASSWORD from the shell, then
+                    .env.local, then .env (shell values win).
 `);
   process.exit(exit);
 }
@@ -62,6 +64,18 @@ function parseArgs(argv) {
   return out;
 }
 
+/**
+ * Standalone Node does not read env files. Load .env.local then .env so live
+ * keys work the same way they do for `next dev`. loadEnvFile never overrides
+ * a variable already set, so the shell wins, then .env.local, then .env.
+ */
+function loadLocalEnv() {
+  for (const name of [".env.local", ".env"]) {
+    const envPath = path.join(root, name);
+    if (fs.existsSync(envPath)) process.loadEnvFile(envPath);
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.briefPath && !args.fixtureName) usage(1);
@@ -81,6 +95,8 @@ async function main() {
   // Bare --brief without --live still uses fixture (offline-safe default).
   const resolvedMode =
     args.live && !args.fixtureName && !args.fixture ? "live" : mode;
+
+  if (resolvedMode === "live") loadLocalEnv();
 
   const [{ runResearch }, { createProviders }, { parseResearchRecord }] =
     await Promise.all([

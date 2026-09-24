@@ -246,3 +246,62 @@ describe("compile safety", () => {
     }
   });
 });
+
+describe("compile review fixes (Codex)", () => {
+  it("restores the previous MDX when a forced manifest write fails", async () => {
+    const record = await fixtureRecord();
+    const dir = tempDir();
+    const ideasDir = path.join(dir, "ideas");
+    fs.mkdirSync(ideasDir);
+    const mdxPath = path.join(ideasDir, "keep-me.mdx");
+    fs.writeFileSync(mdxPath, "ORIGINAL");
+    // Parent of the manifest path is a file, so the manifest write throws.
+    const blocker = path.join(dir, "not-a-dir");
+    fs.writeFileSync(blocker, "");
+
+    expect(() =>
+      writeCompiledIdea({
+        record,
+        slug: "keep-me",
+        ideasDir,
+        manifestPath: path.join(blocker, "manifest.json"),
+        force: true,
+      }),
+    ).toThrow();
+    expect(fs.readFileSync(mdxPath, "utf8")).toBe("ORIGINAL");
+  });
+
+  it("refuses a record with fewer than two distinct sources", async () => {
+    const record = await fixtureRecord();
+    const only = "https://example.com/only-source";
+    for (const s of record.market.stats) s.citation.url = only;
+    for (const c of record.competitors) c.url = only;
+    for (const s of record.community.signals) s.citation.url = only;
+    expect(() => compileResearchRecord({ record })).toThrow(/distinct source/);
+  });
+
+  it("publishes timing from the timing score, never from execution", async () => {
+    const record = await fixtureRecord();
+    record.scores = {
+      opportunity: 8,
+      pain: 7,
+      timing: 6,
+      builderConfidence: 5,
+      execution: 2,
+    };
+    const { manifestEntry } = compileResearchRecord({ record });
+    expect(manifestEntry.scores).toEqual({
+      opportunity: 8,
+      pain: 7,
+      timing: 6,
+      builder_confidence: 5,
+    });
+  });
+
+  it("omits scores entirely when the set is incomplete", async () => {
+    const record = await fixtureRecord();
+    record.scores = { opportunity: 8, pain: 7, execution: 6, builderConfidence: 5 };
+    const { manifestEntry } = compileResearchRecord({ record });
+    expect(manifestEntry.scores).toBeUndefined();
+  });
+});

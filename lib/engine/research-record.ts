@@ -57,6 +57,8 @@ export type GoToMarket = {
 export type ResearchScores = {
   opportunity?: number;
   pain?: number;
+  /** Market timing. Distinct from execution feasibility. */
+  timing?: number;
   builderConfidence?: number;
   execution?: number;
 };
@@ -411,6 +413,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
       for (const key of [
         "opportunity",
         "pain",
+        "timing",
         "builderConfidence",
         "execution",
       ] as const) {

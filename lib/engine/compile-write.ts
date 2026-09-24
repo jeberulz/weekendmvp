@@ -39,8 +39,10 @@ export function writeCompiledIdea(
 
   // Run every refusal check before writing anything, so a refused compile
   // never leaves a stray MDX file that the sitemap would pick up.
-  const mdxExisted = fs.existsSync(mdxPath);
-  if (mdxExisted && !options.force) {
+  const previousMdx = fs.existsSync(mdxPath)
+    ? fs.readFileSync(mdxPath, "utf8")
+    : null;
+  if (previousMdx !== null && !options.force) {
     throw new Error(
       `refusing to overwrite existing MDX at ${mdxPath} (pass force / --force)`,
     );
@@ -89,8 +91,10 @@ export function writeCompiledIdea(
         `${JSON.stringify(manifest, null, 2)}\n`,
       );
     } catch (error) {
-      // Keep the pair consistent: drop an MDX this call created.
-      if (!mdxExisted) fs.rmSync(mdxPath, { force: true });
+      // Keep the pair consistent: put back the MDX that was there before
+      // (a --force overwrite), or drop the one this call created.
+      if (previousMdx !== null) fs.writeFileSync(mdxPath, previousMdx);
+      else fs.rmSync(mdxPath, { force: true });
       throw error;
     }
     manifestWritten = true;

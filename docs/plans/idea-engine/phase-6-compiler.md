@@ -33,3 +33,7 @@ Runtime: compile the fixture record to a throwaway slug, `npm run audit:idea -- 
 - Links go through `mdLink` (escaped text, percent-encoded URL). Sources are MDX-escaped. Frontmatter strings are JSON-quoted. Code fences are not escaped.
 - Slugs must match `^_?[a-z0-9-]+$`, and the MDX path must resolve inside `ideasDir`.
 - All refusal checks (existing MDX, existing manifest row) run before any file is written.
+- Scores: `ResearchScores` gained `timing` (market timing). The manifest publishes `{opportunity, pain, timing, builder_confidence}` only when all four exist, because `convex/schema.ts` requires them. `execution` is never published as `timing`.
+- The compiler refuses records with fewer than 2 distinct source URLs (the auditor's `MIN_SOURCE_LINKS`).
+- A forced overwrite restores the previous MDX if the manifest write then fails.
+- `npm test` runs the engine suite (`test:engine`). `engine:research --live` loads `.env.local`, then `.env`. Shell values win.

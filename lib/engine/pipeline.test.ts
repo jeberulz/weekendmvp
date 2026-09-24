@@ -295,3 +295,23 @@ describe("runResearch cost accounting", () => {
     );
   });
 });
+
+describe("runResearch scores", () => {
+  it("drops a partial score set so the Convex seed never sees one", async () => {
+    const record = await runResearch({
+      brief: RFP_BRIEF,
+      providers: providersWithScore({
+        scores: { opportunity: 8, pain: 9, execution: 7 },
+      }),
+    });
+    expect(record.scores).toBeUndefined();
+  });
+
+  it("keeps a complete score set with a real timing score", async () => {
+    const record = await runResearch({
+      brief: RFP_BRIEF,
+      providers: createProviders({ mode: "fixture" }),
+    });
+    expect(record.scores?.timing).toBe(8);
+  });
+});

@@ -101,6 +101,14 @@ export const MIN_CHANNELS = 2;
  * reservation is a true worst case.
  */
 const MAX_CITATIONS_PER_SEARCH = 8;
+
+/** Scores the manifest publishes (convex/schema.ts requires all four). */
+const PUBLISHED_SCORE_KEYS = [
+  "opportunity",
+  "pain",
+  "timing",
+  "builderConfidence",
+] as const;
 const MAX_SEARCH_TEXT_CHARS = 6_000;
 
 /** Headroom for provider-side message framing tokens. */
@@ -468,6 +476,7 @@ function parseSynthesisPack(
     for (const key of [
       "opportunity",
       "pain",
+      "timing",
       "builderConfidence",
       "execution",
     ] as const) {
@@ -475,7 +484,12 @@ function parseSynthesisPack(
         scores[key] = s[key];
       }
     }
-    if (Object.keys(scores).length === 0) scores = undefined;
+    // The site's score contract needs all four published fields; a partial
+    // set fails the Convex seed, so keep all or none.
+    const complete = PUBLISHED_SCORE_KEYS.every(
+      (key) => scores![key] !== undefined,
+    );
+    if (!complete) scores = undefined;
   }
 
   return {
@@ -524,7 +538,8 @@ const SYNTHESIS_INSTRUCTIONS =
   "JSON only containing marketSummary, stats[{claim,value,citationUrl,citationTitle}], " +
   "competitors[{name,pricing,url,notes}], communitySummary, " +
   "signals[{quote,citationUrl,citationTitle}], goToMarket{positioning,channels,pricingNotes}, " +
-  "whyNow, howItWorks, oneLiner, scores{opportunity,pain,builderConfidence,execution}. " +
+  "whyNow, howItWorks, oneLiner, scores{opportunity,pain,timing,builderConfidence,execution} " +
+  "(each 1-10; timing is market timing, execution is build feasibility). " +
   "goToMarket.channels are customer-acquisition channels. howItWorks is 3-5 short " +
   "steps describing how a user moves through the product. Every citationUrl and " +
   "competitor url must be copied exactly from a supplied citation; rows with any " +

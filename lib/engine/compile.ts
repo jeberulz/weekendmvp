@@ -22,6 +22,8 @@ const CANONICAL_SECTION_TITLES = [
 ] as const;
 
 const SOURCES_TITLE = "Sources";
+/** Keep in sync with MIN_SOURCE_LINKS in scripts/lib/idea-sections.mjs */
+const MIN_SOURCE_LINKS = 2;
 const HOW_IT_WORKS_LABEL = "**How it works:**";
 
 /**
@@ -43,10 +45,10 @@ export type ManifestEntry = {
   audiences: string[];
   source: string;
   scores?: {
-    opportunity?: number;
-    pain?: number;
-    timing?: number;
-    builder_confidence?: number;
+    opportunity: number;
+    pain: number;
+    timing: number;
+    builder_confidence: number;
   };
   og: {
     subject: string;
@@ -166,6 +168,11 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     throw new Error(`slug '${slug}' must match ${COMPILE_SLUG_PATTERN}`);
   }
   const citations = uniqueCitations(record);
+  if (citations.length < MIN_SOURCE_LINKS) {
+    throw new Error(
+      `record cites ${citations.length} distinct source(s); the auditor needs ≥${MIN_SOURCE_LINKS}`,
+    );
+  }
   const steps = howItWorksSteps(record);
 
   const keywordLines = record.keywords
@@ -366,21 +373,20 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const publishedAt =
     options.publishedAt ?? new Date().toISOString().slice(0, 10);
 
+  // convex/schema.ts requires all four fields, and the page labels `timing`
+  // as market timing. Publish a complete, correctly mapped set or none.
+  const s = record.scores;
   const scores =
-    record.scores && Object.keys(record.scores).length > 0
+    s &&
+    s.opportunity !== undefined &&
+    s.pain !== undefined &&
+    s.timing !== undefined &&
+    s.builderConfidence !== undefined
       ? {
-          ...(record.scores.opportunity !== undefined
-            ? { opportunity: record.scores.opportunity }
-            : {}),
-          ...(record.scores.pain !== undefined
-            ? { pain: record.scores.pain }
-            : {}),
-          ...(record.scores.execution !== undefined
-            ? { timing: record.scores.execution }
-            : {}),
-          ...(record.scores.builderConfidence !== undefined
-            ? { builder_confidence: record.scores.builderConfidence }
-            : {}),
+          opportunity: s.opportunity,
+          pain: s.pain,
+          timing: s.timing,
+          builder_confidence: s.builderConfidence,
         }
       : undefined;
 
@@ -395,7 +401,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     tools: options.tools ?? [],
     audiences: options.audiences ?? [],
     source: `engine:${slug}`,
-    ...(scores && Object.keys(scores).length > 0 ? { scores } : {}),
+    ...(scores ? { scores } : {}),
     og: {
       subject: `${record.brief.title} product still life, no people, no text`,
       accent: "blue",

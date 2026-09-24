@@ -132,6 +132,7 @@ export const SYNTHESIS_SCORE_FIXTURE = {
     scores: {
       opportunity: 8,
       pain: 9,
+      timing: 8,
       builderConfidence: 8,
       execution: 7,
     },
