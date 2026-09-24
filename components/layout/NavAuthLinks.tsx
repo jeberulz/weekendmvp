@@ -2,17 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { hasConvexAuthSessionCookie } from "@/lib/auth-session-cookie";
 import { cn } from "@/lib/utils";
 
-/**
- * Heuristic session presence for marketing nav CTAs.
- * Full Convex Auth is scoped to platform routes; reading the host-only JWT
- * cookie name avoids mounting the auth provider on every public page.
- * Not an authorization check — `/dashboard` middleware still gates access.
- */
-export function hasConvexAuthSessionCookie(cookieSource = document.cookie) {
-  return /(?:^|;\s)(?:__Host-)?__convexAuthJWT=/.test(cookieSource);
-}
+export { hasConvexAuthSessionCookie } from "@/lib/auth-session-cookie";
 
 type NavAuthLinksProps = {
   /** Desktop MegaNav trailing CTAs vs mobile sheet stack. */
@@ -33,7 +26,7 @@ export function NavAuthLinks({
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    setSignedIn(hasConvexAuthSessionCookie());
+    setSignedIn(hasConvexAuthSessionCookie(document.cookie));
   }, []);
 
   if (variant === "mobile") {

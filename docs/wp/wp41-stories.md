@@ -7,19 +7,19 @@ Definition of done: Dedicated `/login` + `/signup` pages (IB-inspired layout, We
 
 ## Stories
 
-- [ ] `WP41-S1` - Shared auth card + `/login` + `/signup` (+ `/signin` alias)
-  - Scope: `components/auth/*`, `app/login/*`, `app/signup/*`, `app/signin/*`, `lib/auth-return.ts`
+- [x] `WP41-S1` - Shared auth card + `/login` + `/signup` (+ `/signin` alias)
+  - Scope: `components/auth/*`, `app/login/*`, `app/signup/*`, `app/signin/*`, `lib/auth-return.ts`, `middleware.ts`
   - Acceptance criteria:
     - Login: “Welcome back!” + Continue with Google + Or + email “Send One-Time Code”
     - Signup: welcoming headline + same methods + cross-link to Login
-    - `/signin` redirects to `/login` preserving `returnTo` / `claimPreview`
+    - `/signin` hard-redirects (308) to `/login` preserving `returnTo` / `claimPreview`
     - Preview claim stash still works on login/signup
     - No password inventing; no Stripe/paywall
   - Verification:
     - `npm run test:auth`
     - `npm run typecheck`
 
-- [ ] `WP41-S2` - Nav Login / Sign Up CTAs
+- [x] `WP41-S2` - Nav Login / Sign Up CTAs
   - Scope: `components/layout/MegaNav.tsx`, `components/layout/MobileNav.tsx`, `components/layout/NavAuthLinks.tsx`
   - Acceptance criteria:
     - Anonymous: Sign Up primary, Login secondary; keep Get the Kit when space allows

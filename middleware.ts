@@ -238,6 +238,15 @@ export async function middleware(
       canonical,
     );
   }
+
+  // Hard alias: `/signin` → `/login` (Cache Components soft-redirects page
+  // `redirect()` as 200). Preserve returnTo / claimPreview for preview claim.
+  if (request.nextUrl.pathname === "/signin") {
+    const target = new URL("/login", request.url);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target, 308);
+  }
+
   const response = await platformAuthMiddleware(request, event);
   return applySensitiveAuthResponseHeaders(
     request.nextUrl.pathname,

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { hasConvexAuthSessionCookie } from "../../components/layout/NavAuthLinks";
+import { hasConvexAuthSessionCookie } from "../../lib/auth-session-cookie";
 
 describe("nav auth session cookie heuristic", () => {
   test.each([

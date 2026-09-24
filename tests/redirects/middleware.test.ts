@@ -316,6 +316,20 @@ describe("middleware matcher contract", () => {
 });
 
 describe("sensitive auth response headers", () => {
+  it("hard-aliases /signin to /login preserving claimPreview and returnTo", async () => {
+    const response = await runMiddleware(
+      request(
+        "https://www.weekendmvp.app/signin?claimPreview=token&returnTo=%2Fdashboard",
+        "www.weekendmvp.app",
+      ),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/login?claimPreview=token&returnTo=%2Fdashboard",
+    );
+  });
+
   it.each([
     "https://preview-123.vercel.app/email-signin/?token=secret-reference",
     "https://www.weekendmvp.app/auth/callback/?code=secret-reference",
