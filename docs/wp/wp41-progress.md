@@ -34,6 +34,18 @@ Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test`, and
 `npm run build` pass. `next start` smoke: `/signup` sends `no-referrer`;
 hint set for a live session, cleared when stale, absent for anonymous.
 
+## Follow-up: mobile "Get the Kit"
+
+PR #72 hid the MegaNav CTA below `lg`, so phones lost it even though the
+auth pills only show from `md`. Now
+`hidden min-[360px]:inline-flex md:hidden lg:inline-flex` plus
+`whitespace-nowrap`: visible from 360px to `md` and from `lg`. Below 360px the
+pill leaves ~70px for it, so the label wrapped to three lines (66px tall in a
+56px nav, flagged by Codex); the MobileNav sheet still links the kit there.
+Playwright on `/newsletter` at 320–1280px: CTA on one line wherever shown, no
+overflow past the pill, no horizontal scroll. Checks: typecheck, lint
+(0 errors), `npm test`.
+
 ## Docs
 
 - Stories/progress for WP41. Env checklist in PR body (from `.env.example`).
