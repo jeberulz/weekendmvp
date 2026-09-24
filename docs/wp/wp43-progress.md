@@ -47,3 +47,9 @@ Append-only progress log. Do not rely on chat history for project state.
 ## Docs
 
 - Updated: `docs/wp/RULINGS.md` (one WP43 row), `CLAUDE.md` (key paths), WP43 stories/progress
+
+## 2026-09-24 - Review fix: focus and revert safety (#77, Codex P2 x2)
+
+- Finding 1: a beat left the `waiting` map when it started playing, so focus landing in a section mid-animation could not finish it. Verified: focusing the Starter Kit email 120ms into its beat left the stub at opacity 0. Fix: a beat stays finishable until its timeline completes
+- Finding 2: crossing `lg` mid-count reverted the timeline without the counter cleanup. Verified: the 226 read "2260" (real text transparent, overlay stuck at 0). Same class, found while fixing: split headings kept their pinned width after a revert (up to 1202px on an 800px viewport). Fix: every DOM change GSAP does not track registers an undo on its timeline; the beat returns them as its context cleanup
+- Re-verified on a production build: both repros fixed; no pinned widths, overlays or transparent counters remain after scrolling, with or without a 1440→800 resize; CLS 0, axe 0 violations, line breaks match at 8 widths, `test:home` 30/30

@@ -10,8 +10,8 @@
  *   runs. Anything the visitor has already seen stays as rendered.
  * - Only opacity and transforms change (plus clip-path on two decorative
  *   reveals), so nothing reflows. Counters count in an overlay.
- * - Focus moving into a section, or printing, finishes its beats at once, so
- *   nothing is ever left hidden.
+ * - Focus moving into a section, or printing, finishes its beats at once,
+ *   including one that is still playing, so nothing is ever left hidden.
  * - Beats are armed one idle slice at a time, so a slow phone never gets one
  *   long task, and each beat checks the fold when it is armed.
  * - Wide screens get the scroll-linked drift. Phones get no drifting images.
@@ -48,6 +48,13 @@ const one = (root: ParentNode | null, role: string) => root?.querySelector<HTMLE
 const shown = (els: HTMLElement[]) => els.filter((el) => el.getClientRects().length > 0);
 const kids = (el: Element | null) => (el ? shown(Array.from(el.children) as HTMLElement[]) : []);
 
+/**
+ * DOM changes GSAP does not track (a pinned width, a counter overlay) register
+ * their undo on the beat's timeline. It runs if the motion context reverts
+ * mid-way, e.g. when the viewport crosses the lg breakpoint.
+ */
+const onRevert = (tl: Timeline, undo: () => void) => (tl.data as (() => void)[]).push(undo);
+
 /** Fade up from a little below. */
 function rise(tl: Timeline, targets: HTMLElement[], at: gsap.Position, vars: gsap.TweenVars = {}) {
   if (targets.length) tl.from(targets, { opacity: 0, y: "+=22", stagger: 0.07, ...vars }, at);
@@ -69,6 +76,7 @@ function lines(tl: Timeline, el: HTMLElement | null, at: gsap.Position, vars: gs
     split.revert();
     Object.assign(el.style, saved);
   };
+  onRevert(tl, () => Object.assign(el.style, saved));
   // 130%: the mask has room for descenders, so tall letters would peek in from below at 110%.
   tl.from(split.lines, { yPercent: 130, duration: 0.9, stagger: 0.09, ...vars, onComplete: done }, at);
 }
@@ -94,6 +102,12 @@ function count(tl: Timeline, el: HTMLElement | null, at: number, duration = 1.2)
   const state = { value: 0 };
   const saved = { position: el.style.position, color: el.style.color };
   let ghost: HTMLSpanElement | null = null;
+  const restore = () => {
+    ghost?.remove();
+    ghost = null;
+    Object.assign(el.style, saved);
+  };
+  onRevert(tl, restore);
   tl.from(el, { opacity: 0, duration: 0.4 }, at);
   tl.to(
     state,
@@ -113,11 +127,7 @@ function count(tl: Timeline, el: HTMLElement | null, at: number, duration = 1.2)
       onUpdate: () => {
         if (ghost) ghost.textContent = formatCount(parts, state.value);
       },
-      onComplete: () => {
-        ghost?.remove();
-        ghost = null;
-        Object.assign(el.style, saved);
-      },
+      onComplete: restore,
     },
     at,
   );
@@ -377,7 +387,7 @@ const SCENES: Record<string, (section: HTMLElement, kit: Kit) => void> = {
 };
 
 export function startHomeMotion(): () => void {
-  /** Armed beats that have not played yet, with the section each belongs to. */
+  /** Armed beats that have not finished yet, with the section each belongs to. */
   const waiting = new Map<Timeline, Element>();
   const finish = (inside?: Node) => {
     waiting.forEach((section, tl) => {
@@ -400,8 +410,9 @@ export function startHomeMotion(): () => void {
     const unseen = (el: Element) => el.getBoundingClientRect().top >= window.innerHeight;
 
     // Scenes only queue their beats; the queue is armed in idle slices of about 10ms.
+    // A job may return a cleanup, which the context runs when it reverts.
     const jobs: (() => void)[] = [];
-    const queue = (job: () => void) => jobs.push(() => context.add(job));
+    const queue = (job: () => void | (() => void)) => jobs.push(() => context.add(job));
     let handle = 0;
     const pump = () => {
       const until = performance.now() + 10;
@@ -417,18 +428,13 @@ export function startHomeMotion(): () => void {
         beat(trigger, build, start = "top 80%") {
           queue(() => {
             if (!trigger || !unseen(trigger)) return;
-            const tl = gsap.timeline({ paused: true, defaults: { ease: EASE, duration: 0.7 } });
+            const undo: (() => void)[] = [];
+            const tl = gsap.timeline({ paused: true, data: undo, defaults: { ease: EASE, duration: 0.7 } });
+            tl.eventCallback("onComplete", () => waiting.delete(tl));
             build(tl);
             waiting.set(tl, section);
-            ScrollTrigger.create({
-              trigger,
-              start,
-              once: true,
-              onEnter: () => {
-                waiting.delete(tl);
-                tl.play();
-              },
-            });
+            ScrollTrigger.create({ trigger, start, once: true, onEnter: () => tl.play() });
+            return () => undo.forEach((fn) => fn());
           });
         },
         drift(target, trigger, from, to) {
