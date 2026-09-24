@@ -570,13 +570,46 @@ export async function verifySignals(
   );
 }
 
+/**
+ * Evidence text per cited URL: the result's own snippet plus every sentence
+ * of the search answer tagged with that result's `[n]` marker. A figure is
+ * checked against the source it is attributed to, not against every search
+ * result (or URLs and titles) at once. When an answer carries no markers at
+ * all, attribution is impossible, so that one answer's text (never the
+ * other searches) is added to each of its sources' snippets.
+ */
+export function citationEvidence(packs: SearchPack[]): Map<string, string> {
+  const evidence = new Map<string, string[]>();
+  const add = (href: string, text: string) =>
+    evidence.set(href, [...(evidence.get(href) ?? []), text]);
+  for (const pack of packs) {
+    const clean = (t: string) => t.replace(/\[\d+\]/g, " ");
+    const hrefs = pack.citations.map((c) => normalizeUrl(c.url) ?? c.url);
+    pack.citations.forEach((c, i) => {
+      if (c.snippet) add(hrefs[i]!, c.snippet);
+      else if (!evidence.has(hrefs[i]!)) evidence.set(hrefs[i]!, []);
+    });
+    const tagged = /\[\d+\]/.test(pack.text);
+    if (!tagged) {
+      for (const href of hrefs) add(href, clean(pack.text));
+      continue;
+    }
+    for (const sentence of pack.text.split(/(?<=[.!?])\s+|\n+/)) {
+      for (const m of sentence.matchAll(/\[(\d+)\]/g)) {
+        const href = hrefs[Number(m[1]) - 1];
+        if (href) add(href, clean(sentence));
+      }
+    }
+  }
+  return new Map([...evidence].map(([href, parts]) => [href, parts.join("\n")]));
+}
+
 function parseSynthesisPack(
   text: string,
   market: SearchPack,
   competitors: SearchPack,
   community: SearchPack,
   brief: NormalizedBrief,
-  extraHaystack: string[] = [],
 ): SynthesisPack {
   let parsed: Record<string, unknown>;
   try {
@@ -586,9 +619,9 @@ function parseSynthesisPack(
   }
 
   const index = citationIndex([market, competitors, community]);
-  const haystack = [market, competitors, community, ...extraHaystack]
-    .map((p) => (typeof p === "string" ? p : JSON.stringify(p)))
-    .join("\n");
+  const evidence = citationEvidence([market, competitors, community]);
+  const groundedIn = (figure: string, url: string) =>
+    isGroundedFigure(figure, evidence.get(url) ?? "");
   const dropped = { stats: 0, competitors: 0 };
 
   const statsFromModel = Array.isArray(parsed.stats) ? parsed.stats : [];
@@ -601,7 +634,7 @@ function parseSynthesisPack(
     const citation = resolveCitation(index, r.citationUrl, r.citationTitle);
     if (claim && value && citation) {
       if (MEGA_TAM_STAT_RE.test(`${claim} ${value}`)) continue;
-      if (!isGroundedFigure(value, haystack)) {
+      if (!groundedIn(`${claim} ${value}`, citation.url)) {
         dropped.stats += 1;
         continue;
       }
@@ -620,7 +653,7 @@ function parseSynthesisPack(
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
     const citation = resolveCompetitorCitation(index, r.url, name);
-    if (name && pricing && citation && !isGroundedFigure(pricing, haystack)) {
+    if (name && pricing && citation && !groundedIn(pricing, citation.url)) {
       dropped.competitors += 1;
     } else if (name && pricing && citation) {
       competitorRows.push({
@@ -974,7 +1007,6 @@ export async function runResearch(
     competitorsPack,
     community,
     brief,
-    sourcePagesBlock ? [sourcePagesBlock] : [],
   );
 
   const shortfalls: string[] = [];

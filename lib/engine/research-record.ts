@@ -208,6 +208,7 @@ export function parseYearOne(
   issues: string[],
 ): YearOnePlan | undefined {
   const path = "editorial.yearOne";
+  const issuesBefore = issues.length;
   if (!isPlainObject(value)) {
     issues.push(`${path}: expected object`);
     return undefined;
@@ -249,7 +250,11 @@ export function parseYearOne(
   ) {
     issues.push(`${path}.payingAccounts: exceeds the last funnel stage`);
   }
+  // Any issue (a growing funnel, more payers than the last stage) means the
+  // plan is dropped, never half-kept: callers that swallow issues must not
+  // pass an invalid plan on to the final record parse.
   if (
+    issues.length > issuesBefore ||
     funnel.length < 2 ||
     !isNonEmptyString(value.tier) ||
     !isPositiveNum(value.payingAccounts) ||

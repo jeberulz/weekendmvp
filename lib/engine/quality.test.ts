@@ -13,6 +13,7 @@ import {
   yearOneLines,
 } from "./compile.ts";
 import {
+  citationEvidence,
   figureTokens,
   isGroundedFigure,
   MIN_VERIFIED_SIGNALS,
@@ -422,5 +423,46 @@ describe("community page reads", () => {
     const synthesisInput = inputs[inputs.length - 1]!;
     expect(synthesisInput).toContain("## Community source pages");
     expect(synthesisInput).toContain("### https://www.reddit.com/r/sales/");
+  });
+});
+
+describe("figure grounding per citation", () => {
+  const pack = {
+    text: "The AI code review market was $1.8 billion in 2025 [1]. Secure code review hit $1.22 billion [2].",
+    citations: [
+      { url: "https://a.example/report-2031", title: "A", snippet: "AI code review tools" },
+      { url: "https://b.example/secure", title: "B" },
+    ],
+  };
+
+  it("checks a figure against the source it cites, not every result", () => {
+    const evidence = citationEvidence([pack]);
+    expect(isGroundedFigure("$1.8 billion in 2025", evidence.get("https://a.example/report-2031")!)).toBe(true);
+    // $1.22B appears only in source B's sentence, so citing A fails.
+    expect(isGroundedFigure("$1.22 billion", evidence.get("https://a.example/report-2031")!)).toBe(false);
+    expect(isGroundedFigure("$1.22 billion", evidence.get("https://b.example/secure")!)).toBe(true);
+  });
+
+  it("never treats URL or marker digits as evidence", () => {
+    const evidence = citationEvidence([pack]);
+    expect(isGroundedFigure("by 2031", evidence.get("https://a.example/report-2031")!)).toBe(false);
+  });
+
+  it("drops a malformed year-one plan instead of failing the whole run", () => {
+    const issues: string[] = [];
+    const plan = parseYearOne(
+      {
+        funnel: [
+          { stage: "leads", count: 10 },
+          { stage: "trials", count: 20 },
+        ],
+        tier: "Team",
+        payingAccounts: 5,
+        monthlyRevenuePerAccount: 99,
+      },
+      issues,
+    );
+    expect(plan).toBeUndefined();
+    expect(issues.join(" ")).toMatch(/must not grow/);
   });
 });
