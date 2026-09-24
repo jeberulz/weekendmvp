@@ -1,75 +1,65 @@
-# Mode A2 live spot-check — writing-quality pass
+# Mode A2 live spot-check — Round 3
 
 Updated: 2026-09-24 (UTC). Branch: `cursor/mode-a2-live-spotcheck-1826` (PR #70).
-**Skill flip HELD** — do not change `/publish-idea` Mode A MCP.
+**Skill flip HELD** — do not change `/publish-idea` Mode A MCP. Phase 7–9 HELD.
 
-## Benchmark correction
+## Benchmark
 
-Eval bar is **not** the three short Mode B gold pages (~1,080–1,385 words).
+Bar = IB deep page: `content/ideas/course-translation-resale-network.mdx` (~2,373 words).
+Eval criteria: `engine/eval/deep-benchmark.md` + Round 3 gates below.
 
-Bar = IB deep page in-repo: `content/ideas/course-translation-resale-network.mdx`
-(~2,373 words, named product **Revoice**, zero stock filler). Criteria documented in
-`engine/eval/deep-benchmark.md`.
-
-| Gate | Hard / soft |
+| Gate | Round 3 |
 |---|---|
-| Word count | Hard ≥1,800; soft target ≥2,200 (warn under target) |
-| Stock filler denylist | Hard fail |
+| Word count | **Hard ≥2,200** (no soft gap) |
+| Stock filler + Round-3 padding denylist | Hard fail |
 | Near-duplicate paragraphs | Hard fail |
+| **Duplicate ≥8-word sentences (in-page)** | **Hard fail** |
+| **Same ≥8-word sentence across engine-draft-\*** | **Hard fail** |
 | Named How-it-works (not Step N) | Hard fail |
-| 4 AI prompts incl. Branding | Hard fail (deep drafts) |
-| Niche sizing (no mega SaaS/AI TAM) | Hard fail (deep drafts) |
-| Competitor first-party URLs | Hard fail on roundup links; warn if &lt;3 good links |
-| Quote fidelity vs research record | Hard fail when `--record` / auto-resolved |
+| 4 AI prompts incl. Branding | Hard fail |
+| Business Model tiers ↔ Project Setup | Hard fail (one canonical set) |
+| Niche sizing (no mega SaaS/AI TAM) | Hard fail |
+| Competitor first-party URLs | Hard fail on roundups; warn if &lt;3 links |
+| Quote fidelity vs research record | Hard fail when record present |
+| Operator/meta prose in MDX | Hard fail |
+| Lowercased audience (`smb saas`) | Hard fail — use SMB SaaS |
 
-## Secret gate (N=1)
+## Secret gate (Round 3)
 
-All four present: `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`.
-No DataForSEO 401.
+All four **PRESENT**: `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`.
 
-## N=1 live re-run — `ai-rfp-response-assistant`
+## N=3 live re-run (Round 3 compiler)
 
-| | |
-|---|---|
-| Brief | `engine/briefs/rfp-assistant.json` |
-| Record | `engine/records/ai-rfp-response-assistant.json` |
-| Draft | `content/ideas/engine-draft-ai-rfp-response-assistant.mdx` |
-| Attempts | 1–2 failed provenance (`got 2` competitors after pricing-URL filter); attempt 3 succeeded after hostname fallback + roundup skip |
-| **Cost (successful pack)** | **$0.3063** |
-| Failed attempts | ~$0.25–0.30 each est. (billed before provenance_parse) — under $4/pack still |
-| Product name | **RallyRFP** |
-| Words | **3,128** (clears 2,200 target) |
-| How-it-works | Knowledge Vault / Document Intake / Evidence Drafting / Review Routing / Native Export |
-| Tiers | Starter $199 · Team $499 · Scale $999 with unit rows |
-| `audit:idea` | **PASS** (warn: 2 first-party competitor links; QorusDocs lacked pricing URL) |
-| `validate:idea-tags` | **PASS** (operator-tagged) |
-| Gold MDX | Untouched |
+| Pack | Draft | Product | Words | Cost USD | Audit |
+|---|---|---|---|---|---|
+| RFP | `engine-draft-ai-rfp-response-assistant` | **BidRelay** | 2905 | **$0.3473** | PASS (warn: 2/3 first-party competitor links) |
+| Code reviewer | `engine-draft-ai-code-reviewer` | **DiffBeacon** | 3010 | **$0.3341** | PASS |
+| Landing (ecom) | `engine-draft-ai-landing-page-generator-ecommerce` | **ClickWeave** | 3240 | **$0.3439** | PASS |
 
-### Side-by-side vs IB deep bar (course-translation)
+All packs **≤$4**. Tiers: **Starter / Team / Scale** on every page (Business Model + Setup prompts). Cross-idea 8+ word sentence dups: **0**.
 
-| Criterion | Revoice (IB deep) | RallyRFP draft (N=1) |
+### vs deep bar (N=3)
+
+| | Deep bar (Revoice / course-translation) | Round 3 N=3 |
 |---|---|---|
-| Words | ~2,373 | **3,128** |
-| Named product | Revoice | RallyRFP |
-| Don't-build | Explicit | Explicit (no broad suite / autonomous agent first) |
-| Named steps | Audit/Pilot/Sell/Split | Knowledge Vault…Native Export |
-| Tier math | $2,500 + % takes | $199/$499/$999 + unit econ |
-| 4 prompts + Branding | Yes | Yes (schema/env in Project Setup) |
-| Niche market | LATAM e-learning etc. | Proposal/RFP software $3.26B→$9.19B (not global SaaS $375B+) |
-| Competitor URLs | First-party style | Responsive + Loopio `/pricing`; QorusDocs roundup dropped from link |
-| Filler | None | None (padParagraphs removed) |
-| Quotes | Specific | Verbatim from record (fidelity check PASS) |
+| Words | ~2,373 | 2,905–3,240 |
+| Named product | Revoice | BidRelay / DiffBeacon / ClickWeave (idea-specific) |
+| Stock filler | none | none (padding templates removed from `compile.ts`) |
+| Sentence dedupe | n/a historically | in-page + cross-idea enforced |
+| Competitor pricing URLs | strong first-party | soft gap on RFP (2 linked; 1 roundup suppressed) |
 
-### Remaining gaps (honest)
+## Compiler / auditor changes (Round 3)
 
-1. **Third first-party competitor pricing URL** still weak (QorusDocs came through a comparison page — link suppressed; warn remains).
-2. **N=3** (code-reviewer + LP generator) should wait until John likes N=1 voice — old drafts still on disk from prior spot-check and will fail new gates until regenerated.
-3. Compiler still operator-tags `category`/`tools`/`audiences` after compile.
-4. Skill flip / phases 7–9 still **HELD**.
+- `lib/engine/compile.ts` — kill hardcoded cross-idea padding; idea-specific stack/prompts/tiers; collapse in-page duplicate sentences; suppress `/blog-posts/` + `/top-` roundups; preserve audience casing.
+- `lib/engine/pipeline.ts` — richer editorial (300–420w problem, competitiveNarrative, Starter/Team/Scale); prefer seed audience casing; broader roundup URL filter.
+- `scripts/lib/idea-quality.mjs` + `scripts/audit-idea-mdx.mjs` — hard 2200; sentence + cross-idea dedupe; tier match; Round-3 denylist; operator-note denylist; lowercase-audience hygiene.
 
-## Code changes in this pass
+## Remaining gaps (do not block Round 3 PASS)
 
-- `lib/engine/compile.ts` — kill `padParagraphs`; named product/steps/tiers; 4 prompts; roundup URL hygiene; double-period collapse.
-- `lib/engine/pipeline.ts` — niche market search; verbatim quotes; editorial JSON; competitor hostname fallback; reject roundup binds.
-- `scripts/lib/idea-quality.mjs` + `scripts/audit-idea-mdx.mjs` — fail-closed writing gates.
-- `engine/eval/deep-benchmark.md` — IB deep criteria.
+1. RFP competitor strip: Proposify came back on a roundup URL → link suppressed (2 first-party links). Prefer vendor pricing pages when research supplies them.
+2. N=3 clears the writing bar mechanically; still not a human editorial polish pass vs Revoice prose density.
+3. **Skill flip HELD** until owner says otherwise.
+
+## Overwrite policy
+
+Only `content/ideas/engine-draft-*.mdx` + `engine/records/*.json`. Published gold MDX untouched.

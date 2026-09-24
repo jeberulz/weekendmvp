@@ -73,7 +73,7 @@ export const MEGA_TAM_DENYLIST = [
  * pricing pages.
  */
 export const COMPETITOR_ROUNDUP_URL_RE =
-  /(?:^|\/)(?:best-|top-\d|alternatives?)(?:\/|-)|(?:vs-|versus-)|comparison|roundup|\/blog-posts\/best/i;
+  /(?:^|\/)(?:best-|top-\d|top-|alternatives?)(?:\/|-)|(?:vs-|versus-)|comparison|roundup|\/blog-posts\//i;
 
 export const COMPETITOR_ROUNDUP_HOST_PATH_RE =
   /\/(best|top)-[\w-]*(rfp|ai|software|tools|page|builder)/i;
@@ -300,7 +300,7 @@ export function auditHowItWorksNaming(solutionContent) {
 export function findTierMismatches(businessContent, promptsContent) {
   const errors = [];
   const tierNames = [
-    ...businessContent.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*/gm),
+    ...businessContent.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(([^)]+)\)/gm),
   ].map((m) => m[1].trim());
   if (tierNames.length < 2) return errors;
 

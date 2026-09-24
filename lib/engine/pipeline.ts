@@ -417,7 +417,7 @@ function resolveCompetitorCitation(
   name: string,
 ): { url: string; title: string } | null {
   const roundup =
-    /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i;
+    /comparison|\/best-|\/top-|roundup|alternatives|vs-|\/blog-posts\//i;
 
   const usable = (href: string) => !roundup.test(href);
 

@@ -34,7 +34,7 @@ const MEGA_TAM_RE =
   /global saas|worldwide saas|saas market.{0,40}\$\s?\d{2,4}|global ai (software|tools|market).{0,40}\$/i;
 
 const ROUNDUP_URL_RE =
-  /comparison|\/best-|roundup|alternatives|vs-|\/blog-posts\/best/i;
+  /comparison|\/best-|\/top-|roundup|alternatives|vs-|\/blog-posts\//i;
 
 export type ManifestEntry = {
   slug: string;
@@ -251,6 +251,30 @@ function trimDot(s: string): string {
 }
 
 /**
+ * Drop later copies of any ≥8-word sentence (research sometimes restates
+ * the same line in problem + market). Preserves code fences untouched.
+ */
+function collapseDuplicateSentences(text: string): string {
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  const seen = new Set<string>();
+  return parts
+    .map((part) => {
+      if (part.startsWith("```")) return part;
+      return part.replace(/[^.!?\n]+[.!?]+/g, (sentence) => {
+        const words = sentence.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) || [];
+        if (words.length < 8) return sentence;
+        const key = words.join(" ").toLowerCase();
+        if (seen.has(key)) return "";
+        seen.add(key);
+        return sentence;
+      });
+    })
+    .join("")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
+/**
  * Compile a ResearchRecord into MDX body + manifest stub.
  */
 export function compileResearchRecord(options: CompileOptions): CompileResult {
@@ -291,7 +315,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const statLines = stats
     .map(
       (s) =>
-        `- **${s.claim}**: ${s.value}. Source: ${mdLink(s.citation.title, s.citation.url)}.`,
+        `- **${s.claim}**: ${s.value} (${mdLink(s.citation.title, s.citation.url)}).`,
     )
     .join("\n");
 
@@ -407,9 +431,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
   ]);
 
-  const brandMarkHint =
-    ed.stackNotes?.trim()?.slice(0, 80) ||
-    `a mark that fits ${name}'s job for ${audience}`;
+  const brandMarkHint = `a simple mark that fits ${name}'s job for ${audience}`;
 
   const promptsBody = [
     `Copy these ${name} build prompts into Claude, Cursor, or your AI coding tool.`,
@@ -464,14 +486,16 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     }
   }
 
-  const body = [
-    ...CANONICAL_SECTION_TITLES.map(
-      (title) => `## ${title}\n\n${escapeOutsideFences(sections[title]!)}\n`,
-    ),
-    `## ${SOURCES_TITLE}\n\n${escapeMdxProse(sourceLinks)}\n`,
-  ]
-    .join("\n")
-    .replace(/(?<!\.)\.\.(?!\.)/g, ".");
+  const body = collapseDuplicateSentences(
+    [
+      ...CANONICAL_SECTION_TITLES.map(
+        (title) => `## ${title}\n\n${escapeOutsideFences(sections[title]!)}\n`,
+      ),
+      `## ${SOURCES_TITLE}\n\n${escapeMdxProse(sourceLinks)}\n`,
+    ]
+      .join("\n")
+      .replace(/(?<!\.)\.\.(?!\.)/g, "."),
+  );
 
   const mdx = [
     "---",
