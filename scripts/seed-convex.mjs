@@ -190,18 +190,20 @@ function buildIdeas() {
   const manifest = readJson('ideas/manifest.json');
   // Idea-engine spot-check drafts must never reach the live grid, even if a
   // row lands in the public manifest by mistake. They live in engine/drafts/.
-  const publicIdeas = manifest.ideas.filter((i) => {
+  const notEngineDraft = (i) => {
     if (!String(i.slug).startsWith(ENGINE_DRAFT_PREFIX)) return true;
     console.warn(`  skip: ${i.slug} is an engine draft (engine/drafts/), not seeded`);
     return false;
-  });
-  const items = publicIdeas.map((i) => buildIdea(i, { draft: false }));
+  };
+  const items = manifest.ideas
+    .filter(notEngineDraft)
+    .map((i) => buildIdea(i, { draft: false }));
   if (includeDrafts) {
     const draftPath = path.join(root, 'ideas/manifest.draft.json');
     if (fs.existsSync(draftPath)) {
-      const drafts = JSON.parse(fs.readFileSync(draftPath, 'utf8')).ideas.filter(
-        (d) => !manifest.ideas.some((i) => i.slug === d.slug),
-      );
+      const drafts = JSON.parse(fs.readFileSync(draftPath, 'utf8'))
+        .ideas.filter(notEngineDraft)
+        .filter((d) => !manifest.ideas.some((i) => i.slug === d.slug));
       items.push(...drafts.map((d) => buildIdea(d, { draft: true })));
     }
   }

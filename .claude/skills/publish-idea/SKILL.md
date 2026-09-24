@@ -60,7 +60,7 @@ Examples:
 3. **Runs** `npm run engine:compile -- --record engine/records/{slug}.json` → MDX + manifest stub (`source: "engine:{slug}"`).
 4. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og).
 5. **Gates:** `npm run audit:idea -- --slug {slug}` then `npm run validate:idea-tags -- --slug {slug}`.
-6. **Seeds Convex** (dev + `--prod` when publishing live).
+6. **Seeds Convex** (dev now; `--prod` only after the operator-authorized deploy returns 200).
 7. **Generates the OG card** (`npm run og:generate -- --slug {slug} --surface idea --non-blocking`).
 8. **Commits / pushes only when the operator explicitly asks** — never auto-push to `main`.
 9. **Reports** slug, record path, audit metrics, seed/OG status, preview URL.
@@ -183,18 +183,17 @@ Set `provenance.auditPassed: true` and `provenance.auditRunAt` only after both p
 
 Optional voice polish: read `content/ideas/course-translation-resale-network.mdx` (the benchmark in `engine/eval/deep-benchmark.md`), then edit the compiled MDX to match its depth — **re-run `audit:idea` after any prose edit**. Never edit a quote's wording; the auditor fails a quote that no longer matches its verified record entry.
 
-### Step 4.1 — Human spot check (before any `--prod` seed)
+### Step 4.1 — Human spot check (before any commit or `--prod` seed)
 
 Open two of the cited community threads in a browser and confirm the quoted words are there. Open two competitor pricing links and confirm the prices. The pipeline checks these automatically; this catches a thread that was deleted or edited since the run. If anything is off, re-run research — do not patch the MDX by hand.
 
-### Step 5 — Seed Convex (dev + prod for live grid)
+### Step 5 — Seed Convex (dev now; prod only after deploy)
 
 ```bash
-npm run seed:convex              # dev
-npm run seed:convex -- --prod    # production — REQUIRED for live /startup-ideas + hubs
+npm run seed:convex              # dev — staged work
 ```
 
-Skipping `--prod` is the #1 "I can't see my idea" cause.
+Do **not** seed production yet. The seed marks the idea as MDX-backed because the file exists locally, but the live route cannot read it until Vercel has built it; seeding prod first puts a card on the live grid that links to a 404. Production seeding happens in Step 7, after the deploy is live.
 
 ### Step 6 — OG card (best-effort, never blocks publish)
 
@@ -214,7 +213,15 @@ git commit -m "content(idea): {title}"
 git push   # only when asked; triggers Vercel
 ```
 
-Confirm live: `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/ideas/{slug}` → **200**.
+Confirm the page is live: `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/ideas/{slug}` → **200**.
+
+Only then seed production so the grid and hubs list it:
+
+```bash
+npm run seed:convex -- --prod    # after the 200 above; REQUIRED for live /startup-ideas + hubs
+```
+
+Skipping `--prod` after deploy is the #1 "I can't see my idea" cause. No deploy authorization → no prod seed; report **staged (dev seed only)**.
 
 ### Step 8 — Output report
 
@@ -330,7 +337,8 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run validate:idea-tags -- --slug {slug}` PASS
 - [ ] `provenance.auditPassed` set true only after both gates
 - [ ] Human spot check: 2 cited threads + 2 competitor prices confirmed in a browser
-- [ ] `npm run seed:convex` (+ `--prod` when publishing live)
+- [ ] `npm run seed:convex` (dev)
+- [ ] `npm run seed:convex -- --prod` only after the authorized deploy returns 200
 - [ ] `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Commit/push **only if operator asked**
 - [ ] Preview at `http://localhost:3000/ideas/{slug}` (all 8 sections)

@@ -12,6 +12,7 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { isEngineDraftSlug } from "@/lib/engine-drafts";
 import {
   SITE,
   articleSchema,
@@ -172,6 +173,8 @@ async function ideaOgImage(slug: string): Promise<string> {
 
 async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
   "use cache";
+  // Engine spot-check drafts never render, even if a Convex row exists.
+  if (isEngineDraftSlug(slug)) return null;
   cacheTag(`idea:${slug}`, "ideas");
   cacheLife("hours");
 

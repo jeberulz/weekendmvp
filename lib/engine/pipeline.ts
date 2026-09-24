@@ -528,6 +528,71 @@ export async function readCommunityPages(
   return new Map(reads);
 }
 
+function utf8Bytes(text: string): number {
+  return new TextEncoder().encode(text).length;
+}
+
+/** Byte budget assertInputFits enforces for a step's whole input. */
+function synthesisInputBudgetBytes(position: number): number {
+  const budget = stepAt(position).budget;
+  return budget.role === "synthesis"
+    ? budget.maxInputTokens - INPUT_FRAMING_TOKENS
+    : 0;
+}
+
+/** Cut text to at most `maxBytes` UTF-8 bytes without splitting a character. */
+function sliceToBytes(text: string, maxBytes: number): string {
+  if (utf8Bytes(text) <= maxBytes) return text;
+  let out = "";
+  let used = 0;
+  for (const ch of text) {
+    const n = utf8Bytes(ch);
+    if (used + n > maxBytes) break;
+    out += ch;
+    used += n;
+  }
+  return out;
+}
+
+/** Below this, a page excerpt is too short to hold a quotable passage. */
+const MIN_PAGE_EXCERPT_BYTES = 800;
+
+/**
+ * The "Community source pages" section, sized to the bytes left in the
+ * synthesis budget. Headers, URLs and separators count; the remaining room
+ * is split evenly across readable pages (each capped at
+ * SOURCE_EXCERPT_CHARS), and pages that would get too little are dropped.
+ */
+export function buildSourcePagesSection(
+  pages: Map<string, { text: string | null }>,
+  availableBytes: number,
+): string {
+  const header =
+    "## Community source pages (fetched text — copy every quote character-for-character from here, and cite that page's URL)\n";
+  const separator = "\n\n";
+  let readable = [...pages]
+    .filter(([, p]) => p.text !== null)
+    .slice(0, MAX_SOURCE_PAGES);
+  // Leading "\n\n" joins the section to the rest of the input.
+  const room = availableBytes - utf8Bytes(separator) - utf8Bytes(header);
+  while (readable.length > 0) {
+    const overhead = readable.reduce(
+      (sum, [url]) => sum + utf8Bytes(`### ${url}\n`),
+      utf8Bytes(separator) * (readable.length - 1),
+    );
+    const perPage = Math.floor((room - overhead) / readable.length);
+    if (perPage >= MIN_PAGE_EXCERPT_BYTES) {
+      const blocks = readable.map(
+        ([url, p]) =>
+          `### ${url}\n${sliceToBytes(p.text!.slice(0, SOURCE_EXCERPT_CHARS), perPage)}`,
+      );
+      return `${header}${blocks.join(separator)}`;
+    }
+    readable = readable.slice(0, -1);
+  }
+  return "";
+}
+
 /** Serve already-read pages from memory; fetch anything new. */
 function cachedSourceText(
   pages: Map<string, PageRead>,
@@ -961,11 +1026,6 @@ export async function runResearch(
       );
     }
   }
-  const sourcePagesBlock = [...communityPages]
-    .filter(([, p]) => p.text !== null)
-    .slice(0, MAX_SOURCE_PAGES)
-    .map(([url, p]) => `### ${url}\n${p.text!.slice(0, SOURCE_EXCERPT_CHARS)}`)
-    .join("\n\n");
 
   // --- 4 keywords_demand (fail closed) ---
   const keywords = metricsToKeywordRows(
@@ -975,18 +1035,20 @@ export async function runResearch(
   // --- 5 synthesis_scoring ---
   let synthesisText: string;
   try {
-    const researchBlob = [
+    const baseSections = [
       `## Market stats\n${JSON.stringify(market)}`,
       `## Competitors\n${JSON.stringify(competitorsPack)}`,
       `## Community signals\n${JSON.stringify(community)}`,
-      ...(sourcePagesBlock
-        ? [
-            `## Community source pages (fetched text — copy every quote character-for-character from here, and cite that page's URL)\n${sourcePagesBlock}`,
-          ]
-        : []),
       `## Keywords (provider metrics only — do not invent volume/CPC)\n${JSON.stringify(keywords)}`,
-    ].join("\n\n");
-    const input = `${briefContext(brief)}\n\n${researchBlob}`;
+    ];
+    const baseInput = `${briefContext(brief)}\n\n${baseSections.join("\n\n")}`;
+    const pagesSection = buildSourcePagesSection(
+      communityPages,
+      synthesisInputBudgetBytes(5) -
+        utf8Bytes(SYNTHESIS_INSTRUCTIONS) -
+        utf8Bytes(baseInput),
+    );
+    const input = pagesSection ? `${baseInput}\n\n${pagesSection}` : baseInput;
     assertInputFits(5, SYNTHESIS_INSTRUCTIONS, input);
     const result = await run(5, () =>
       providers.synthesis.complete({

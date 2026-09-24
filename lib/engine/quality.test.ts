@@ -13,6 +13,7 @@ import {
   yearOneLines,
 } from "./compile.ts";
 import {
+  buildSourcePagesSection,
   citationEvidence,
   figureTokens,
   isGroundedFigure,
@@ -27,6 +28,7 @@ import { fixtureSourceText } from "./providers/fixtures.ts";
 import {
   createSourceTextProvider,
   hnApiUrl,
+  htmlToText,
   quoteAppearsIn,
   redditJsonUrl,
 } from "./providers/sourceText.ts";
@@ -464,5 +466,67 @@ describe("figure grounding per citation", () => {
     );
     expect(plan).toBeUndefined();
     expect(issues.join(" ")).toMatch(/must not grow/);
+  });
+});
+
+describe("CodeRabbit regressions", () => {
+  it("fits six long community pages into the synthesis byte budget", () => {
+    const pages = new Map(
+      Array.from({ length: 6 }, (_, i) => [
+        `https://www.reddit.com/r/x/comments/${i}/thread/`,
+        { text: "é".repeat(50_000) },
+      ]),
+    );
+    const available = 30_000;
+    const section = buildSourcePagesSection(pages, available);
+    const bytes = new TextEncoder().encode(`\n\n${section}`).length;
+    expect(bytes).toBeLessThanOrEqual(available);
+    expect(section.match(/^### /gm)?.length).toBe(6);
+    // No room at all → no section, never an oversized one.
+    expect(buildSourcePagesSection(pages, 500)).toBe("");
+  });
+
+  it("runs synthesis without exceeding its budget when pages are huge", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const huge = "We burn weekends answering the same SOC2 questionnaire. " + "x ".repeat(80_000);
+    providers.sourceText = fixtureSourceText({
+      "https://www.reddit.com/r/sales/": huge,
+      "https://news.ycombinator.com/":
+        "Loopio is great if you have a proposal team; we do not. " + "y ".repeat(80_000),
+    });
+    const record = await runResearch({ brief: BRIEF, providers });
+    expect(record.community.signals.filter((s) => s.verified).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("decodes numeric HTML entities before matching quotes", () => {
+    const text = htmlToText("<p>Our CI&#x2F;CD pipeline doesn&#39;t catch it &amp; we ship</p>");
+    expect(quoteAppearsIn("Our CI/CD pipeline doesn't catch it & we ship", text)).toBe(true);
+    expect(htmlToText("&amp;lt;")).toBe("&lt;");
+  });
+
+  it("falls back to the default user agent when the env value is empty", async () => {
+    const seen: string[] = [];
+    const provider = createSourceTextProvider({
+      userAgent: "   ",
+      fetchImpl: async (_url, init) => {
+        seen.push(new Headers(init?.headers).get("user-agent") ?? "");
+        return new Response("<p>hi</p>", { status: 200 });
+      },
+    });
+    await provider.fetchText("https://example.com/page");
+    expect(seen[0]).toMatch(/^weekendmvp-idea-engine\//);
+  });
+
+  it("shows cents when the monthly price has them", () => {
+    const out = yearOneLines({
+      funnel: [
+        { stage: "leads", count: 100 },
+        { stage: "trials", count: 20 },
+      ],
+      tier: "Team",
+      payingAccounts: 10,
+      monthlyRevenuePerAccount: 24.99,
+    });
+    expect(out).toContain("10 × $24.99/mo = $2,999 ARR");
   });
 });

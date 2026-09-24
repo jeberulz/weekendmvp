@@ -215,7 +215,13 @@ export function yearOneLines(plan: YearOnePlan): string {
   const arr = plan.payingAccounts * plan.monthlyRevenuePerAccount * 12;
   const downsideAccounts = Math.max(1, Math.floor(plan.payingAccounts / 2));
   const downsideArr = downsideAccounts * plan.monthlyRevenuePerAccount * 12;
-  const monthly = usd.format(plan.monthlyRevenuePerAccount);
+  // Show cents when the price has them, so "10 × $24.99/mo" matches the ARR.
+  const monthly = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: Number.isInteger(plan.monthlyRevenuePerAccount) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(plan.monthlyRevenuePerAccount);
   const lines = [
     ...plan.funnel.map((f) => `- **${count.format(f.count)}** — ${f.stage}`),
     `- **${count.format(plan.payingAccounts)} × ${monthly}/mo = ${usd.format(arr)} ARR** — ${plan.tier} accounts paying by month 12`,

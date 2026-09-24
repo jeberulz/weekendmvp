@@ -98,9 +98,14 @@ async function main() {
     (isDraft
       ? path.join(draftsDir, "manifest.json")
       : path.join(root, "ideas", "manifest.json"));
-  if (isDraft && path.resolve(ideasDir) === publicIdeasDir) {
+  const publicManifest = path.join(root, "ideas", "manifest.json");
+  if (
+    isDraft &&
+    (path.resolve(ideasDir) === publicIdeasDir ||
+      (!args.noManifest && path.resolve(manifestPath) === publicManifest))
+  ) {
     console.error(
-      `refusing to write draft ${slug} into content/ideas/ (drafts live in engine/drafts/)`,
+      `refusing to write draft ${slug} into content/ideas/ or ideas/manifest.json (drafts live in engine/drafts/)`,
     );
     process.exit(1);
   }

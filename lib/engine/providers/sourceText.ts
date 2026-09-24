@@ -47,12 +47,15 @@ export function htmlToText(html: string): string {
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&#x27;|&#39;/g, "'")
+    // Numeric entities (HN's Algolia text encodes "/" as &#x2F;, "'" as &#x27;).
+    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
     .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&nbsp;/g, " ")
+    // Last, so "&amp;lt;" becomes "&lt;" text rather than "<".
+    .replace(/&amp;/g, "&");
 }
 
 /** Rewrite a Reddit thread URL to its JSON listing, or null. */
@@ -98,8 +101,11 @@ export function createSourceTextProvider(
 ): SourceTextProvider {
   const fetchImpl: FetchLike = options.fetchImpl ?? ((i, init) => fetch(i, init));
   const timeoutMs = options.timeoutMs ?? 15_000;
+  // An empty value (e.g. copied from .env.example) means "unset".
   const userAgent =
-    options.userAgent ?? process.env.ENGINE_QUOTE_FETCH_UA ?? DEFAULT_UA;
+    options.userAgent?.trim() ||
+    process.env.ENGINE_QUOTE_FETCH_UA?.trim() ||
+    DEFAULT_UA;
   const redditId = options.redditClientId ?? process.env.REDDIT_CLIENT_ID;
   const redditSecret =
     options.redditClientSecret ?? process.env.REDDIT_CLIENT_SECRET;
