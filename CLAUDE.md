@@ -92,6 +92,10 @@ read the response as text before parsing JSON.
 - `app/{solve,build-with,ideas-for}/` — programmatic hubs (hardcoded TS
   config objects, see `/publish-programmatic`)
 - `lib/mdx.tsx` (MDX loader), `lib/seo.ts` (JSON-LD), `scripts/` (seed + OG)
+- `lib/home/*` + `components/home/*` — the ideas-first homepage (WP42). It reads
+  `ideas/manifest.json` and idea MDX, caches for an hour, and rotates "Idea of
+  the week" every Monday 00:00 UTC. Excerpts prefer a manifest `highlights`
+  block (written by `/publish-idea`, checked by `npm run validate:idea-tags`)
 
 <!-- convex-ai-start -->
 

@@ -517,6 +517,31 @@ Field rules:
 
 Use today's date for `publishedAt`.
 
+### Step 6b: Add the homepage `highlights` block (required for new ideas)
+
+The homepage features one idea a week in "Inside every idea" and reads this block before falling back to parsing the MDX (WP42 ruling, 2026-09-24). Write it from the MDX you just finished; never invent a number that is not in the body and its `## Sources`.
+
+```json
+"highlights": {
+  "problemQuote": "Freelancers rarely lose money because they forgot to send an invoice. They lose money because the work quietly changed three Slack threads ago.",
+  "stats": [
+    { "value": "20M", "label": "skilled knowledge freelancers in the US", "source": "Upwork 2025" },
+    { "value": "50%+", "label": "of projects face scope creep", "source": "Harvest" },
+    { "value": "$5,968", "label": "average unpaid income per freelancer", "source": "Freelancers Union" }
+  ],
+  "competitors": [
+    { "name": "Bonsai", "price": "$15–$59/mo" },
+    { "name": "Harvest", "price": "from $0" },
+    { "name": "Dubsado", "price": "$335/yr" }
+  ]
+}
+```
+
+Field rules (checked by `npm run validate:idea-tags`):
+- `problemQuote` — one or two sentences from `## The Problem`, ≤ 190 characters. It renders inside quote marks, so write it as a quote.
+- `stats` — 1–3 entries. `value` ≤ 12 characters (`20M`, `$15.8B`, `27%`); `label` ≤ 90 characters and reads after the value; `source` (optional) ≤ 48 characters, the publisher's short name.
+- `competitors` — optional, 3–5 entries from `## Competitive Landscape`. `name` ≤ 32 characters; `price` ≤ 16 characters (`$15–$59/mo`, `from $0`, `$335/yr`).
+
 ### Step 7: Manual section gate + tagging gate
 
 There is **no audit script** for body prose anymore. Manually verify the MDX body against `ideas/SECTIONS.md` before seeding:
@@ -536,7 +561,7 @@ npm run validate:idea-tags -- --slug {slug}
 # expect: 1/1 ideas pass tagging contract (0 fail)
 ```
 
-This fails if `category` / `tools[]` / `audiences[]` / `revenueGoal` / `buildTime` are missing, under-tagged (<2 tools or <2 audiences), or outside the allowlists. Fix the manifest entry before seeding. To re-check the whole corpus: `npm run validate:idea-tags`.
+This fails if `category` / `tools[]` / `audiences[]` / `revenueGoal` / `buildTime` are missing, under-tagged (<2 tools or <2 audiences), or outside the allowlists, or if the `highlights` block from Step 6b breaks its shape or length rules. The validator treats `highlights` as optional for older ideas, so also confirm by eye that a new entry has one. Fix the manifest entry before seeding. To re-check the whole corpus: `npm run validate:idea-tags`.
 
 Quick body checks you can run:
 

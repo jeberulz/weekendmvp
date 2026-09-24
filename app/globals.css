@@ -20,6 +20,42 @@
   --color-accent-orange-glow: rgb(204 85 0 / 0.5);
 }
 
+/* WP42 homepage "research desk" palette. Small text uses home-orange-ink
+   (#A84A00, 5.2:1 on paper); home-orange (#CC5500) is for 24px+ type and
+   graphics only. home-d* are text colours on the ink surfaces. */
+@theme {
+  --color-home-paper: #f7f3ec;
+  --color-home-card: #fffdf9;
+  --color-home-sunk: #efe8dc;
+  --color-home-ink: #1a1814;
+  --color-home-ink-2: #4a453c;
+  --color-home-ink-3: #6b6457;
+  --color-home-rule: #ddd4c4;
+  --color-home-orange: #cc5500;
+  --color-home-orange-ink: #a84a00;
+  --color-home-orange-light: #f08a3e;
+  --color-home-d1: #fffdf9;
+  --color-home-d2: #cfc6b6;
+  --color-home-d3: #9c9384;
+  --color-home-dr: #34302a;
+  --color-home-panel: #24211c;
+  --color-home-panel-rule: #3a362f;
+  --color-home-note: #f7e7a1;
+  --color-home-note-peach: #f4c9a8;
+  --color-home-sage: #dce6d5;
+  --color-home-sage-ink: #3a5530;
+  --color-home-ochre: #f2e1b8;
+  --color-home-ochre-ink: #6e5010;
+  --color-home-sky: #d8e3ee;
+  --color-home-sky-ink: #2c4a68;
+  --color-home-clay: #f1d9d2;
+  --color-home-clay-ink: #83382a;
+}
+
+@theme inline {
+  --font-editorial: var(--font-editorial-serif), Georgia, serif;
+}
+
 /* shadcn/ui tokens — site is dark-first (#050505), so :root carries the dark
    palette. Light-themed surfaces (idea pages) override via .theme-cream. */
 :root {
@@ -363,4 +399,11 @@ body {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ===== WP42 homepage ===== */
+
+@utility home-dots {
+  background-image: radial-gradient(var(--color-home-rule) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
