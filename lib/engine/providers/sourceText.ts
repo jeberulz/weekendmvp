@@ -8,13 +8,19 @@
  *   listing. Reddit answers the public endpoint with 403 from most cloud
  *   networks, so set the credentials anywhere but a home connection.
  * - Hacker News items → the Algolia items API (story + comment tree).
- * - Anything else → the HTML with scripts/styles/tags stripped. Citation
- *   URLs come from search results, so every hop (the first request and each
- *   redirect) must resolve to a public address: loopback, private, link-local
- *   and metadata-service targets are refused.
+ * - Anything else → the HTML with scripts/styles/tags stripped.
+ *
+ * Citation URLs come from search results, so every request on every path
+ * (the first hop and each redirect) must resolve to a public address, and the
+ * default transport re-checks the address the socket actually connects to:
+ * loopback, private, link-local and metadata-service targets are refused.
  */
 
+import { lookup as dnsLookup } from "node:dns";
 import { lookup } from "node:dns/promises";
+import http from "node:http";
+import https from "node:https";
+import type { LookupFunction } from "node:net";
 import { isIP } from "node:net";
 
 export type SourceTextProvider = {
@@ -168,10 +174,74 @@ export async function assertPublicUrl(
   }
 }
 
+/**
+ * DNS lookup for the socket itself: refuses the connection when any resolved
+ * address is non-public. Because the check runs at connect time, a host that
+ * re-resolves to a private address after `assertPublicUrl` is still refused.
+ */
+const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
+  dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) return callback(err, "", 0);
+    const list = addresses as { address: string; family: number }[];
+    if (list.length === 0 || list.some((a) => isBlockedAddress(a.address))) {
+      return callback(
+        Object.assign(new Error(`Refusing non-public address for ${hostname}`), {
+          code: "ENONPUBLIC",
+        }),
+        "",
+        0,
+      );
+    }
+    if (options.all) return callback(null, list as never);
+    callback(null, list[0]!.address, list[0]!.family);
+  });
+};
+
+/**
+ * Minimal fetch over node:http(s) with `publicOnlyLookup`. It never follows
+ * redirects itself; the caller checks each hop.
+ */
+export const publicOnlyFetch: FetchLike = (input, init = {}) =>
+  new Promise<Response>((resolve, reject) => {
+    const u = new URL(input);
+    const client = u.protocol === "https:" ? https : http;
+    const headers: Record<string, string> = {};
+    new Headers(init.headers).forEach((v, k) => {
+      headers[k] = v;
+    });
+    const req = client.request(
+      u,
+      {
+        method: init.method ?? "GET",
+        headers,
+        lookup: publicOnlyLookup,
+        signal: init.signal ?? undefined,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (c: Buffer) => chunks.push(c));
+        res.on("error", reject);
+        res.on("end", () => {
+          const status = res.statusCode ?? 0;
+          const outHeaders = new Headers();
+          for (const [k, v] of Object.entries(res.headers)) {
+            if (typeof v === "string") outHeaders.set(k, v);
+            else if (Array.isArray(v)) for (const item of v) outHeaders.append(k, item);
+          }
+          const empty = status === 204 || status === 304 || init.method === "HEAD";
+          resolve(new Response(empty ? null : Buffer.concat(chunks), { status, headers: outHeaders }));
+        });
+      },
+    );
+    req.on("error", reject);
+    if (typeof init.body === "string") req.write(init.body);
+    req.end();
+  });
+
 export function createSourceTextProvider(
   options: CreateSourceTextOptions = {},
 ): SourceTextProvider {
-  const fetchImpl: FetchLike = options.fetchImpl ?? ((i, init) => fetch(i, init));
+  const fetchImpl: FetchLike = options.fetchImpl ?? publicOnlyFetch;
   const timeoutMs = options.timeoutMs ?? 15_000;
   // An empty value (e.g. copied from .env.example) means "unset".
   const userAgent =
@@ -181,13 +251,37 @@ export function createSourceTextProvider(
   const redditId = options.redditClientId ?? process.env.REDDIT_CLIENT_ID;
   const redditSecret =
     options.redditClientSecret ?? process.env.REDDIT_CLIENT_SECRET;
+  const resolveHost = options.resolveHost ?? defaultResolveHost;
   let redditToken: Promise<string> | null = null;
+
+  /**
+   * Every request goes through here: the destination of the request and of
+   * each redirect must be public. Only GETs follow redirects.
+   */
+  const send = async (url: string, init: RequestInit): Promise<Response> => {
+    let current = url;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+      await assertPublicUrl(current, resolveHost);
+      const res = await fetchImpl(current, {
+        ...init,
+        signal: AbortSignal.timeout(timeoutMs),
+        redirect: "manual",
+      });
+      const location = res.headers.get("location");
+      if (res.status < 300 || res.status >= 400 || !location) return res;
+      if ((init.method ?? "GET") !== "GET") {
+        throw new Error(`Unexpected redirect for ${init.method} ${current}`);
+      }
+      current = new URL(location, current).toString();
+    }
+    throw new Error(`Too many redirects for ${url}`);
+  };
 
   const redditBearer = (): Promise<string> => {
     if (!redditToken) {
       redditToken = (async () => {
         const basic = Buffer.from(`${redditId}:${redditSecret}`).toString("base64");
-        const res = await fetchImpl("https://www.reddit.com/api/v1/access_token", {
+        const res = await send("https://www.reddit.com/api/v1/access_token", {
           method: "POST",
           headers: {
             authorization: `Basic ${basic}`,
@@ -195,7 +289,6 @@ export function createSourceTextProvider(
             "user-agent": userAgent,
           },
           body: "grant_type=client_credentials",
-          signal: AbortSignal.timeout(timeoutMs),
         });
         if (!res.ok) {
           throw new Error(`Reddit OAuth token request failed: HTTP ${res.status}`);
@@ -214,33 +307,9 @@ export function createSourceTextProvider(
     return redditToken;
   };
 
-  const resolveHost = options.resolveHost ?? defaultResolveHost;
-
-  /** GET that checks the destination of the request and of every redirect. */
-  const getPublic = async (url: string): Promise<Response> => {
-    let current = url;
-    for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
-      await assertPublicUrl(current, resolveHost);
-      const res = await fetchImpl(current, {
-        headers: { "user-agent": userAgent, accept: "application/json,text/html" },
-        signal: AbortSignal.timeout(timeoutMs),
-        redirect: "manual",
-      });
-      const location = res.headers.get("location");
-      if (res.status >= 300 && res.status < 400 && location) {
-        current = new URL(location, current).toString();
-        continue;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status} for ${current}`);
-      return res;
-    }
-    throw new Error(`Too many redirects for ${url}`);
-  };
-
   const get = async (url: string): Promise<Response> => {
-    const res = await fetchImpl(url, {
+    const res = await send(url, {
       headers: { "user-agent": userAgent, accept: "application/json,text/html" },
-      signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
     return res;
@@ -251,12 +320,9 @@ export function createSourceTextProvider(
       const threadPath = redditThreadPath(url);
       if (threadPath && redditId && redditSecret) {
         const token = await redditBearer();
-        const res = await fetchImpl(
+        const res = await send(
           `https://oauth.reddit.com${threadPath}?limit=500&raw_json=1`,
-          {
-            headers: { authorization: `bearer ${token}`, "user-agent": userAgent },
-            signal: AbortSignal.timeout(timeoutMs),
-          },
+          { headers: { authorization: `bearer ${token}`, "user-agent": userAgent } },
         );
         if (!res.ok) throw new Error(`HTTP ${res.status} for Reddit API ${threadPath}`);
         const parts: string[] = [];
@@ -265,9 +331,8 @@ export function createSourceTextProvider(
       }
       const reddit = redditJsonUrl(url);
       if (reddit) {
-        const res = await fetchImpl(reddit, {
+        const res = await send(reddit, {
           headers: { "user-agent": userAgent, accept: "application/json" },
-          signal: AbortSignal.timeout(timeoutMs),
         });
         if (!res.ok) {
           throw new Error(
@@ -286,7 +351,7 @@ export function createSourceTextProvider(
         collectStrings(json, new Set(["title", "text"]), parts);
         return htmlToText(parts.join("\n"));
       }
-      return htmlToText(await (await getPublic(url)).text());
+      return htmlToText(await (await get(url)).text());
     },
   };
 }

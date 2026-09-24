@@ -30,10 +30,14 @@ import {
   hnApiUrl,
   htmlToText,
   isBlockedAddress,
+  publicOnlyFetch,
   quoteAppearsIn,
   redditJsonUrl,
 } from "./providers/sourceText.ts";
 import { parseResearchRecord, parseYearOne } from "./research-record.ts";
+
+/** Stub resolver: every host is public (keeps tests off the network). */
+const PUBLIC_DNS = async () => ["93.184.215.14"];
 
 const BRIEF: BriefInput = {
   title: "AI RFP Response Assistant",
@@ -103,6 +107,7 @@ describe("quote matching", () => {
       },
     ];
     const provider = createSourceTextProvider({
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async () => new Response(JSON.stringify(listing), { status: 200 }),
     });
     const text = await provider.fetchText(
@@ -347,6 +352,7 @@ describe("community page reads", () => {
     const provider = createSourceTextProvider({
       redditClientId: "id",
       redditClientSecret: "secret",
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async (url) => {
         calls.push(url);
         if (url.endsWith("/api/v1/access_token")) {
@@ -369,6 +375,7 @@ describe("community page reads", () => {
     const provider = createSourceTextProvider({
       redditClientId: "",
       redditClientSecret: "",
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async () => new Response("blocked", { status: 403 }),
     });
     await expect(
@@ -533,7 +540,7 @@ describe("CodeRabbit regressions", () => {
     const seen: string[] = [];
     const provider = createSourceTextProvider({
       userAgent: "   ",
-      resolveHost: async () => ["93.184.215.14"],
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async (_url, init) => {
         seen.push(new Headers(init?.headers).get("user-agent") ?? "");
         return new Response("<p>hi</p>", { status: 200 });
@@ -597,7 +604,7 @@ describe("source fetch safety", () => {
   it("refuses a redirect to a private address", async () => {
     const calls: string[] = [];
     const provider = createSourceTextProvider({
-      resolveHost: async () => ["93.184.215.14"],
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async (url) => {
         calls.push(url);
         return new Response(null, {
@@ -612,12 +619,45 @@ describe("source fetch safety", () => {
 
   it("follows a redirect to another public page", async () => {
     const provider = createSourceTextProvider({
-      resolveHost: async () => ["93.184.215.14"],
+      resolveHost: PUBLIC_DNS,
       fetchImpl: async (url) =>
         url.endsWith("/old")
           ? new Response(null, { status: 301, headers: { location: "/new" } })
           : new Response("<p>moved here</p>", { status: 200 }),
     });
     expect((await provider.fetchText("https://example.com/old")).trim()).toBe("moved here");
+  });
+
+  it("checks redirects on the Reddit path too", async () => {
+    const calls: string[] = [];
+    const provider = createSourceTextProvider({
+      redditClientId: "",
+      redditClientSecret: "",
+      resolveHost: async (host) => (host === "evil.example" ? ["10.0.0.9"] : ["151.101.1.140"]),
+      fetchImpl: async (url) => {
+        calls.push(url);
+        return new Response(null, {
+          status: 301,
+          headers: { location: "https://evil.example/steal" },
+        });
+      },
+    });
+    await expect(
+      provider.fetchText("https://www.reddit.com/r/x/comments/abc/y/"),
+    ).rejects.toThrow(/non-public/);
+    expect(calls).toHaveLength(1);
+  });
+
+  it("refuses to connect when the host resolves to a private address", async () => {
+    const { createServer } = await import("node:http");
+    const server = createServer((_req, res) => res.end("internal"));
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    const { port } = server.address() as { port: number };
+    try {
+      // "localhost" resolves to loopback at connect time, as a rebinding host would.
+      await expect(publicOnlyFetch(`http://localhost:${port}/`)).rejects.toThrow(/non-public/);
+    } finally {
+      server.close();
+    }
   });
 });
