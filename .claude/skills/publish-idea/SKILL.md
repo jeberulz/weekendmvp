@@ -49,7 +49,7 @@ Examples:
 | User points at `ideas/drafts/` without the flag | Ask whether to run `--from-draft {folder}` |
 | Engine research/compile fails the auditor | **STOP** — surface the failure. Do not invent thin WebSearch filler to paper over it. Do not call Ideabrowser MCP. |
 
-If `engine:eval` plus one live compile cannot clear the auditor on this machine, stop the phase-7 flip, leave MCP config in place, and report — do not start phase 9.
+`npm run engine:eval` only re-audits the three hand-written gold pages (auditor regressions). Engine output is covered by `npm run test:engine`, which compiles a fixture record and runs the full engine audit on it. If a live compile cannot clear the auditor on this machine, stop and report — do not start phase 9.
 
 ---
 
@@ -86,7 +86,14 @@ Write `engine/briefs/{slug-or-temp}.json` (or a temp path). Shape:
 }
 ```
 
-**From a title only:** invent a tight audience, revenue model, and 3–5 seed keywords from the title. Confirm the slug is free in `ideas/manifest.json` and `content/ideas/`.
+**Idea gate (before spending on research).** Ideabrowser used to pre-validate ideas; now you do. Refuse the title and say why unless all three hold:
+1. A **named buyer who pays today** for a worse workaround (a tool, a contractor, or hours they can price).
+2. **Evidence the pain is public**: at least one Reddit / HN / forum thread you can link, or a seed keyword you expect to carry search volume.
+3. A **wedge the incumbents skip** (too small, too niche, too price-sensitive), stated in one sentence.
+
+Also refuse if an existing idea already covers the same buyer + job (search `ideas/manifest.json` titles and descriptions, not just slugs).
+
+**From a title only:** write a tight audience, revenue model, and 3–5 seed keywords from the title. Confirm the slug is free in `ideas/manifest.json` and `content/ideas/`.
 
 **From `--from-draft {folder}`:**
 - Require `ideas/drafts/{folder}/raw.md`.
@@ -108,7 +115,12 @@ Fixture-only (no keys, canned data — **not** for publishing new ideas):
 npm run engine:research -- --fixture rfp-assistant --out /tmp/record.json
 ```
 
-The pipeline **fails closed** on thin research (missing competitors, thin market stats, invented keyword volumes). That replaces the old chat-only STOP rule.
+The pipeline **fails closed** on thin research. That replaces the old chat-only STOP rule:
+
+- Fewer than 2 niche market stats or 3 priced competitors → fail.
+- Any stat or competitor price whose numbers do not appear in the search results is **dropped** as model-invented (and can push the run under those minimums).
+- Keyword volume / CPC come only from DataForSEO.
+- **Quote verification:** the pipeline fetches every cited Reddit thread (`.json`), HN item (Algolia API), or page and keeps a quote only if its wording appears there. Fewer than 2 verified quotes → `[provenance_parse] quote verification: …` and the run fails. If Reddit blocks the fetch from your network, set `ENGINE_QUOTE_FETCH_UA` to a descriptive user agent and retry; never hand-mark quotes as verified.
 
 ### Step 3 — Compile
 
@@ -123,16 +135,22 @@ Writes:
 
 Compiler does **not** seed Convex, generate OG, or push git.
 
+Spot-check drafts use the `engine-draft-{slug}` slug. They compile to `engine/drafts/` (MDX + `engine/drafts/manifest.json`), are refused in `content/ideas/`, and are blocked from the page route, sitemap, and Convex seed. Never publish an `engine-draft-*` slug.
+
 ### Step 3.1 — Quality bar (auditor failures, not chat rules)
 
-`npm run audit:idea` must pass. The bar includes (see `ideas/SECTIONS.md` + `scripts/audit-idea-mdx.mjs`):
+`npm run audit:idea -- --slug {slug}` must pass. It finds the record at `engine/records/{slug}.json` automatically (or pass `--record path`). Every page whose manifest `source` starts with `engine:` gets the **deep bar**, not just drafts. The bar includes (see `ideas/SECTIONS.md` + `scripts/audit-idea-mdx.mjs`):
 
 - All **8** headings in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This → **Sources**
 - `**How it works:**` numbered list (≥2 steps) under The Solution
 - **≥2** markdown citation links in Sources (cited market stats live here)
 - Competitive Landscape names **≥3 competitors with pricing** (pipeline + deep-draft gates enforce this; treat missing competitors as a failed publish)
-- Body ≥ ~800 words (deep `engine-draft-*` slugs: ≥2200 unique words, no stock filler)
-- No placeholders, no bare `<` / `{` in prose (MDX JSX traps → 500)
+- Body **≥2,200 words**, no stock filler, no ≥8-word sentence repeated on the page or shared with another engine page
+- No broken markdown links; no placeholders; no bare `<` / `{` in prose (MDX JSX traps → 500)
+- Named How-it-works steps (never `Step 1`), niche market sizing only, first-party competitor pricing links
+- **Business Model**: number-first Unit Economics bullets, and **Year-One Math** (funnel → paying accounts → compiler-computed ARR + half-close-rate downside) landing on a real tier
+- **AI Prompts**: four prompts (Setup ≥60 words with ≥3 idea-specific tables, Core Feature ≥70, Landing ≥40, Branding ≥70); Setup tiers match Business Model tiers
+- **≥2 community quotes verified on their cited pages**, every on-page quote present in the record, and the full audience label used at most twice
 
 If audit fails: **STOP**. Fix the record (re-research) or refuse the idea. Do not fall back to Ideabrowser MCP.
 
@@ -161,7 +179,11 @@ npm run validate:idea-tags -- --slug {slug}
 
 Set `provenance.auditPassed: true` and `provenance.auditRunAt` only after both pass.
 
-Optional voice polish: read `content/ideas/sms-time-tracker.mdx` and `content/ideas/ai-nutrition-planner-trainers.mdx`, then edit the compiled MDX to match depth — **re-run `audit:idea` after any prose edit**.
+Optional voice polish: read `content/ideas/course-translation-resale-network.mdx` (the benchmark in `engine/eval/deep-benchmark.md`), then edit the compiled MDX to match its depth — **re-run `audit:idea` after any prose edit**. Never edit a quote's wording; the auditor fails a quote that no longer matches its verified record entry.
+
+### Step 4.1 — Human spot check (before any `--prod` seed)
+
+Open two of the cited community threads in a browser and confirm the quoted words are there. Open two competitor pricing links and confirm the prices. The pipeline checks these automatically; this catches a thread that was deleted or edited since the run. If anything is off, re-run research — do not patch the MDX by hand.
 
 ### Step 5 — Seed Convex (dev + prod for live grid)
 
@@ -301,9 +323,11 @@ Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList,
 - [ ] `npm run engine:research -- --brief … --live --out engine/records/{slug}.json`
 - [ ] `npm run engine:compile -- --record engine/records/{slug}.json`
 - [ ] Manifest tagging filled (category, ≥2 tools, ≥2 audiences, revenueGoal, buildTime, og)
-- [ ] `npm run audit:idea -- --slug {slug}` PASS (8 headings, How-it-works, ≥2 Sources links, ≥3 competitors with pricing in landscape, word floor, no JSX traps)
+- [ ] Idea gate passed (paying buyer, public pain, wedge) and no existing idea covers it
+- [ ] `npm run audit:idea -- --slug {slug}` PASS on the deep bar (≥2,200 words, verified quotes, Year-One Math, idea-specific schema, no broken links)
 - [ ] `npm run validate:idea-tags -- --slug {slug}` PASS
 - [ ] `provenance.auditPassed` set true only after both gates
+- [ ] Human spot check: 2 cited threads + 2 competitor prices confirmed in a browser
 - [ ] `npm run seed:convex` (+ `--prod` when publishing live)
 - [ ] `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
 - [ ] Commit/push **only if operator asked**

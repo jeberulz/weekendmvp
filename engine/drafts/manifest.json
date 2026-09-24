@@ -44,10 +44,10 @@
           "openai:synthesis:gpt-5.6-sol"
         ],
         "citations": 8,
-        "wordCount": 3125,
-        "auditPassed": true,
-        "auditRunAt": "2026-09-24T09:22:18.351Z",
-        "publishNotes": "engine compile; product=RallyRFP; costUsd=0.3063; no filler pad; tagging left for operator"
+        "wordCount": 3138,
+        "auditPassed": false,
+        "auditRunAt": "2026-09-24T09:38:08.411Z",
+        "publishNotes": "engine compile; product=BidRelay; costUsd=0.3473; tagging left for operator"
       }
     },
     {
@@ -91,11 +91,11 @@
           "dataforseo:keywordData:google_ads/search_volume/live",
           "openai:synthesis:gpt-5.6-sol"
         ],
-        "citations": 13,
-        "wordCount": 2086,
-        "auditPassed": true,
-        "auditRunAt": "2026-09-24T08:36:30.534Z",
-        "publishNotes": "engine compile; costUsd=0.2592; tagging left for operator; operator tagged for live spot-check; auditPassed after audit:idea"
+        "citations": 11,
+        "wordCount": 3268,
+        "auditPassed": false,
+        "auditRunAt": "2026-09-24T09:40:18.431Z",
+        "publishNotes": "engine compile; product=DiffBeacon; costUsd=0.3341; tagging left for operator"
       }
     },
     {
@@ -122,7 +122,7 @@
         "opportunity": 8,
         "pain": 8,
         "timing": 8,
-        "builder_confidence": 8
+        "builder_confidence": 7
       },
       "og": {
         "subject": "AI Landing Page Generator for E-commerce product still life, no people, no text",
@@ -141,10 +141,10 @@
           "openai:synthesis:gpt-5.6-sol"
         ],
         "citations": 14,
-        "wordCount": 2217,
-        "auditPassed": true,
-        "auditRunAt": "2026-09-24T08:36:30.534Z",
-        "publishNotes": "engine compile; costUsd=0.2658; tagging left for operator; operator tagged for live spot-check; auditPassed after audit:idea"
+        "wordCount": 3447,
+        "auditPassed": false,
+        "auditRunAt": "2026-09-24T09:42:27.328Z",
+        "publishNotes": "engine compile; product=ClickWeave; costUsd=0.3439; tagging left for operator"
       }
     }
   ]
