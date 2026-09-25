@@ -2,10 +2,10 @@ import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import {
-  cleanPath,
+  canonicalPath,
   isProdApexHost,
   isProdWwwHost,
-  pathNeedsCleaning,
+  pathNeedsRedirect,
   PROD_WWW_HOST,
 } from "./lib/canonical-path";
 import {
@@ -15,6 +15,7 @@ import {
   isSensitiveAuthPath,
 } from "./lib/auth-return";
 import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
+import { isKnownIdeaSlug } from "./lib/idea-slugs.generated";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
 import { checkTenantSitePublished } from "./lib/tenant-publish-check";
 
@@ -37,29 +38,42 @@ export function canonicalRedirect(request: NextRequest) {
   const search = raw.search;
   const host = request.headers.get("host")?.split(":")[0] ?? "";
 
-  const cleaned = cleanPath(pathname);
-  const dirtyPath = pathNeedsCleaning(pathname);
+  // Clean slash/.html and apply path aliases (e.g. /ideas → /startup-ideas)
+  // in one hop so apex+dirty+rename never chains.
+  const destination = canonicalPath(pathname);
+  const pathChanged = pathNeedsRedirect(pathname);
   const apex = isProdApexHost(host);
   const www = isProdWwwHost(host);
 
   if (apex) {
-    const dest = new URL(`https://${PROD_WWW_HOST}${cleaned}${search}`);
+    const dest = new URL(`https://${PROD_WWW_HOST}${destination}${search}`);
     return NextResponse.redirect(dest, 308);
   }
 
-  if (dirtyPath && www) {
-    const dest = new URL(`https://${PROD_WWW_HOST}${cleaned}${search}`);
+  if (pathChanged && www) {
+    const dest = new URL(`https://${PROD_WWW_HOST}${destination}${search}`);
     return NextResponse.redirect(dest, 308);
   }
 
-  // Preview / localhost / other hosts: clean path in place when needed.
+  // Preview / localhost / other hosts: clean/alias in place when needed.
   // Build a plain URL so NextURL cannot re-introduce slash normalization.
-  if (dirtyPath) {
-    const dest = new URL(`${raw.protocol}//${raw.host}${cleaned}${search}`);
+  if (pathChanged) {
+    const dest = new URL(
+      `${raw.protocol}//${raw.host}${destination}${search}`,
+    );
     return NextResponse.redirect(dest, 308);
   }
 
   return null;
+}
+
+/**
+ * `/build/{slug}` slug segment, or null when the path is not a build URL.
+ * Path must already be canonical (no trailing slash / .html).
+ */
+export function buildIdeaSlug(pathname: string): string | null {
+  const match = /^\/build\/([^/]+)$/.exec(pathname);
+  return match?.[1] ?? null;
 }
 
 /**
@@ -297,6 +311,15 @@ export async function middleware(
     const target = new URL("/login", request.url);
     target.search = request.nextUrl.search;
     return NextResponse.redirect(target, 308);
+  }
+
+  // Genuine 404 for unknown `/build/{slug}`. Route-level `notFound()` is a
+  // soft 404 under cacheComponents (PPR flushes 200 before it runs) — proven
+  // on WP27. Middleware can set a real status. Known slugs come from the
+  // manifest-derived set so this does not depend on Convex availability.
+  const buildSlug = buildIdeaSlug(request.nextUrl.pathname);
+  if (buildSlug !== null && !isKnownIdeaSlug(buildSlug)) {
+    return hostRejectedResponse();
   }
 
   const response = await platformAuthMiddleware(request, event);
