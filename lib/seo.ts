@@ -57,7 +57,7 @@ export function organizationSchema() {
     "@type": "Organization",
     "@id": ORG_ID,
     name: "Weekend MVP",
-    url: SITE,
+    url: `${SITE}/`,
     logo: `${SITE}/image/weekendmvp-logo.svg`,
     founder: { "@id": PERSON_ID },
     sameAs: [...ORG_SAME_AS],
@@ -175,9 +175,12 @@ export function collectionPageSchema(input: CollectionPageInput) {
 
 export function itemListSchema(
   items: Array<{ slug: string; title: string; pathPrefix?: string }>,
+  opts?: { id?: string; name?: string },
 ) {
   return {
     "@type": "ItemList",
+    ...(opts?.id ? { "@id": opts.id } : {}),
+    ...(opts?.name ? { name: opts.name } : {}),
     numberOfItems: items.length,
     itemListElement: items.map((item, i) => ({
       "@type": "ListItem",
@@ -224,6 +227,7 @@ export function softwareApplicationSchema(input: {
   applicationCategory: string;
   operatingSystem?: string;
   url?: string;
+  id?: string;
   offers?: { price?: string; priceCurrency?: string };
 }) {
   const schema: Record<string, unknown> = {
@@ -233,6 +237,7 @@ export function softwareApplicationSchema(input: {
     applicationCategory: input.applicationCategory,
     operatingSystem: input.operatingSystem ?? "Web",
   };
+  if (input.id) schema["@id"] = input.id;
   if (input.url) schema.url = input.url;
   if (input.offers) {
     schema.offers = {
@@ -250,9 +255,10 @@ export function softwareApplicationSchema(input: {
 
 export type FaqEntry = { question: string; answer: string };
 
-export function faqPageSchema(items: FaqEntry[]) {
+export function faqPageSchema(items: FaqEntry[], opts?: { id?: string }) {
   return {
     "@type": "FAQPage",
+    ...(opts?.id ? { "@id": opts.id } : {}),
     mainEntity: items.map((item) => ({
       "@type": "Question",
       name: item.question,
@@ -262,6 +268,36 @@ export function faqPageSchema(items: FaqEntry[]) {
       },
     })),
   } as const;
+}
+
+// ---------- WebPage (+ speakable) ----------
+
+export function webPageSchema(input: {
+  name: string;
+  description: string;
+  url: string;
+  id?: string;
+  /** CSS selectors for SpeakableSpecification (AEO). */
+  speakableCssSelectors?: string[];
+}) {
+  const url = input.url.startsWith("http") ? input.url : `${SITE}${input.url}`;
+  const schema: Record<string, unknown> = {
+    "@type": "WebPage",
+    "@id": input.id ?? url,
+    name: input.name,
+    description: input.description,
+    url,
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": ORG_ID },
+    author: { "@id": PERSON_ID },
+  };
+  if (input.speakableCssSelectors && input.speakableCssSelectors.length > 0) {
+    schema.speakable = {
+      "@type": "SpeakableSpecification",
+      cssSelector: input.speakableCssSelectors,
+    };
+  }
+  return schema;
 }
 
 // ---------- Event (workshops) ----------

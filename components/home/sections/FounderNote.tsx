@@ -29,10 +29,10 @@ export function FounderNote() {
         </h2>
         <div data-m="letter" className="flex w-full max-w-[680px] flex-col gap-[18px] text-[17px] leading-[1.65] text-home-ink-2 lg:gap-[22px] lg:text-[19px] lg:leading-[1.7]">
           <p>
-            <span aria-hidden data-m="cap" className="float-left pr-2.5 pt-1.5 font-editorial text-[66px] leading-[0.8] text-home-orange lg:pr-3 lg:pt-2 lg:text-[84px]">
+            {/* Drop cap is the real first letter — no aria-hidden/sr-only duplicate (crawlers were reading "I I started"). */}
+            <span data-m="cap" className="float-left pr-2.5 pt-1.5 font-editorial text-[66px] leading-[0.8] text-home-orange lg:pr-3 lg:pt-2 lg:text-[84px]">
               {first.charAt(0)}
             </span>
-            <span className="sr-only">{first.charAt(0)}</span>
             {first.slice(1)}
           </p>
           {rest.map((p) => (

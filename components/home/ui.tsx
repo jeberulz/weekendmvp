@@ -31,15 +31,12 @@ export function Eyebrow({ children, dark = false, className }: { children: React
 /** Delay for a hero intro element (`.home-intro`, `.home-word`, `.home-paste`, `.home-press` in globals.css). */
 export const introDelay = (seconds: number) => ({ "--d": `${seconds.toFixed(3)}s` }) as CSSProperties;
 
-/**
- * Hero headline words that rise in turn. The words are hidden from assistive
- * tech, so the heading must carry the full sentence as its `aria-label`.
- */
+/** Hero headline words that rise in turn. Text stays in the accessibility tree. */
 export function IntroWords({ text, start, step = 0.045 }: { text: string; start: number; step?: number }) {
   return text.split(" ").map((word, i) => (
     <Fragment key={i}>
       {i > 0 && " "}
-      <span aria-hidden className="home-word" style={introDelay(start + i * step)}>
+      <span className="home-word" style={introDelay(start + i * step)}>
         {word}
       </span>
     </Fragment>
