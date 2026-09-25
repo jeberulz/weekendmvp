@@ -32,14 +32,16 @@ function ToolTile({ tile, hot }: { tile: Tile; hot: boolean }) {
     >
       <span className="flex items-start justify-between">
         {tile.key === "no-code" ? (
-          <Icon name="wand" size={34} strokeWidth={1.25} className="lg:size-16" />
+          <span data-m="logo" className="flex">
+            <Icon name="wand" size={34} strokeWidth={1.25} className="lg:size-16" />
+          </span>
         ) : (
-          <span className="lg:hidden">
+          <span data-m="logo" className="lg:hidden">
             <ToolLogo tool={tile.key} size={34} idSuffix={`wall-m-${tile.key}`} />
           </span>
         )}
         {tile.key !== "no-code" && (
-          <span className="hidden lg:block">
+          <span data-m="logo" className="hidden lg:block">
             <ToolLogo tool={tile.key} size={64} idSuffix={`wall-${tile.key}`} />
           </span>
         )}
@@ -57,7 +59,7 @@ function ToolTile({ tile, hot }: { tile: Tile; hot: boolean }) {
 
 function PeekCard({ tool, n, title, className }: { tool: ToolKey; n: number; title: string; className: string }) {
   return (
-    <div className={cn("absolute flex items-start gap-2 rounded-[14px] border border-home-panel-rule bg-home-panel px-3.5 py-[11px] lg:rounded-2xl lg:px-4 lg:py-3", className)}>
+    <div data-m="deal" className={cn("absolute flex items-start gap-2 rounded-[14px] border border-home-panel-rule bg-home-panel px-3.5 py-[11px] lg:rounded-2xl lg:px-4 lg:py-3", className)}>
       <ToolLogo tool={tool} size={15} idSuffix={`peek-${n}`} />
       <p className="truncate font-mono text-[10px] tracking-[0.08em] text-home-d2 lg:text-[11px]">
         PROMPT {n} · {title.toUpperCase()}
@@ -76,11 +78,11 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
   }));
   const [first, second, third] = idea.prompts;
   return (
-    <section aria-labelledby="home-ai-title" className="bg-home-paper py-14 lg:py-24">
+    <section aria-labelledby="home-ai-title" data-scene="ai" className="bg-home-paper py-14 lg:py-24">
       <Container className="flex flex-col gap-7 lg:gap-12">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div data-m="head" className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <Eyebrow className="lg:hidden">Build with AI</Eyebrow>
-          <h2 id="home-ai-title" className="max-w-[900px] font-editorial text-[48px] font-normal leading-[0.95] tracking-[-0.035em] text-home-ink lg:order-1 lg:text-[120px] lg:leading-[0.92] lg:tracking-[-0.04em]">
+          <h2 id="home-ai-title" data-m="lines" className="max-w-[900px] font-editorial text-[48px] font-normal leading-[0.95] tracking-[-0.035em] text-home-ink lg:order-1 lg:text-[120px] lg:leading-[0.92] lg:tracking-[-0.04em]">
             Works with the AI <Em>you already use.</Em>
           </h2>
           <div className="flex flex-col gap-4 lg:order-2 lg:w-[300px] lg:gap-[18px] lg:pb-2.5">
@@ -90,19 +92,19 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
             </p>
           </div>
         </div>
-        <ul className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-5">
+        <ul data-m="tiles" className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-5">
           {tiles.map((tile, i) => (
-            <li key={tile.key}>
+            <li key={tile.key} data-m="tile">
               <ToolTile tile={tile} hot={i === 0} />
             </li>
           ))}
         </ul>
 
         {first && (
-          <div className="mt-2 flex flex-col gap-5 rounded-3xl bg-home-ink px-5 pb-6 pt-8 lg:relative lg:mt-4 lg:block lg:h-[620px] lg:overflow-hidden lg:rounded-[32px] lg:p-0">
-            <div className="flex flex-col gap-5 lg:absolute lg:left-16 lg:top-[72px] lg:w-[400px] lg:gap-6">
+          <div data-m="panel" className="mt-2 flex flex-col gap-5 rounded-3xl bg-home-ink px-5 pb-6 pt-8 lg:relative lg:mt-4 lg:block lg:h-[620px] lg:overflow-hidden lg:rounded-[32px] lg:p-0">
+            <div data-m="copy" className="flex flex-col gap-5 lg:absolute lg:left-16 lg:top-[72px] lg:w-[400px] lg:gap-6">
               <Eyebrow dark>This week&rsquo;s prompts</Eyebrow>
-              <h3 className="font-editorial text-[60px] font-normal leading-[0.92] tracking-[-0.04em] text-home-d1 lg:text-[92px]">
+              <h3 data-m="lines" className="font-editorial text-[60px] font-normal leading-[0.92] tracking-[-0.04em] text-home-d1 lg:text-[92px]">
                 Paste.
                 <br />
                 Run.
@@ -120,7 +122,7 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
             <div className="relative -mx-1.5 h-[340px] lg:absolute lg:inset-y-0 lg:left-[520px] lg:right-0 lg:mx-0 lg:h-auto">
               {third && <PeekCard tool="claude" n={3} title={third.title} className="inset-x-3.5 top-0 h-20 rotate-[3deg] lg:inset-x-auto lg:left-[130px] lg:top-[52px] lg:h-24 lg:w-[540px] lg:rotate-[5deg]" />}
               {second && <PeekCard tool="claudecode" n={2} title={second.title} className="inset-x-3.5 top-[34px] h-20 rotate-[1.5deg] lg:inset-x-auto lg:left-[76px] lg:top-[112px] lg:h-24 lg:w-[540px] lg:rotate-[2.5deg]" />}
-              <div className="absolute inset-x-0 top-[70px] -rotate-1 overflow-hidden rounded-[14px] border border-home-panel-rule bg-home-panel shadow-[0_30px_50px_-24px_rgba(0,0,0,0.8)] lg:left-5 lg:right-auto lg:top-[180px] lg:w-[540px] lg:-rotate-[1.5deg] lg:rounded-2xl">
+              <div data-m="front" className="absolute inset-x-0 top-[70px] -rotate-1 overflow-hidden rounded-[14px] border border-home-panel-rule bg-home-panel shadow-[0_30px_50px_-24px_rgba(0,0,0,0.8)] lg:left-5 lg:right-auto lg:top-[180px] lg:w-[540px] lg:-rotate-[1.5deg] lg:rounded-2xl">
                 <div className="flex items-center gap-2 border-b border-home-panel-rule px-3.5 py-2.5 lg:px-4 lg:py-3">
                   <ToolLogo tool="cursor" size={15} color="var(--color-home-d1)" />
                   <p className="min-w-0 truncate font-mono text-[10px] tracking-[0.08em] text-home-d2 lg:text-[11px]">PROMPT 1 · {first.title.toUpperCase()}</p>
@@ -133,7 +135,7 @@ export function BuildWithAI({ toolCounts, idea }: { toolCounts: Record<string, n
                 </div>
                 <div className="relative h-[210px] overflow-hidden px-3.5 pt-3 font-mono text-xs leading-[1.65] text-[#ede6da] lg:h-[300px] lg:px-[18px] lg:pt-4 lg:text-[13px] lg:leading-[1.7]">
                   {first.lines.slice(0, 14).map((line, i) => (
-                    <div key={i} className="flex gap-2.5 lg:gap-3">
+                    <div key={i} data-m="code" className="flex gap-2.5 lg:gap-3">
                       <span aria-hidden className="w-3.5 shrink-0 text-right text-home-d3 lg:w-4">
                         {i + 1}
                       </span>
