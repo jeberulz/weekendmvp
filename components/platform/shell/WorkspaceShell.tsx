@@ -1,20 +1,19 @@
 "use client";
 
 import {
+  BookOpen,
   Bookmark,
   Compass,
   CreditCard,
-  FolderKanban,
-  Home,
-  Lightbulb,
-  Menu,
-  Plus,
-  Search,
-  Sparkles,
+  House,
+  PanelLeftClose,
+  PanelLeftOpen,
+  UserRound,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/primitives/Logo";
 import {
   Sheet,
@@ -27,159 +26,145 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
+import { AccountMenu } from "./AccountMenu";
+import { LegacyDarkSurface } from "./LegacyDarkSurface";
+import { useSidebarCollapsed } from "./sidebar-state";
 import {
-  isWorkspaceLinkCurrent,
-  type WorkspaceCurrentTarget,
+  BILLING_NAV,
+  PRIMARY_NAV,
+  STARTER_KIT_HREF,
+  isWorkspaceNavCurrent,
+  type WorkspaceNavId,
 } from "./workspace-current";
+import { WorkspaceSearch } from "./WorkspaceSearch";
 
-type WorkspaceLink = WorkspaceCurrentTarget & {
-  label: string;
-  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
+  home: House,
+  ideas: Compass,
+  saved: Bookmark,
+  billing: CreditCard,
 };
 
-const primaryLinks: WorkspaceLink[] = [
-  { href: "/dashboard", label: "Dashboard", icon: Home, match: "exact" },
-  {
-    href: "/dashboard/explore",
-    label: "Explore ideas",
-    icon: Compass,
-    match: "prefix",
-  },
-  { href: "/dashboard/new", label: "New idea", icon: Plus, match: "prefix" },
-];
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-const workspaceLinks: WorkspaceLink[] = [
-  ...primaryLinks,
-  {
-    href: "/dashboard/explore?view=saved",
-    label: "Saved",
-    icon: Bookmark,
-    queryView: "saved",
-  },
-  {
-    href: "/dashboard/explore?view=interested",
-    label: "Interested",
-    icon: Sparkles,
-    queryView: "interested",
-  },
-  {
-    href: "/dashboard/billing",
-    label: "Billing",
-    icon: CreditCard,
-    match: "prefix",
-  },
-];
+/** Compact brand mark for the collapsed rail and the phone header. */
+function BrandMark() {
+  return (
+    <span
+      aria-hidden
+      className="flex size-8 items-center justify-center rounded-lg bg-home-ink font-editorial text-lg italic leading-none text-home-card"
+    >
+      W
+    </span>
+  );
+}
 
-function RailLink({
-  item,
-  pathname,
-  activeView,
+function SidebarLink({
+  href,
+  label,
+  icon: Icon,
+  current,
+  collapsed,
 }: {
-  item: WorkspaceLink;
-  pathname: string;
-  activeView: string | null;
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  current: boolean;
+  collapsed: boolean;
 }) {
-  const Icon = item.icon;
-  const current = isWorkspaceLinkCurrent(pathname, activeView, item);
-
   return (
     <Link
-      href={item.href}
-      aria-label={item.label}
+      href={href}
       aria-current={current ? "page" : undefined}
-      title={item.label}
+      title={collapsed ? label : undefined}
       className={cn(
-        "flex size-11 items-center justify-center rounded-lg text-zinc-400 transition-colors duration-200 hover:bg-white/6 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808]",
-        current && "bg-white/8 text-orange-300",
+        "flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors duration-150",
+        focusRing,
+        current
+          ? "bg-home-card font-medium text-home-ink shadow-[inset_0_0_0_1px_var(--color-home-rule)]"
+          : "text-home-ink-2 hover:bg-home-card/70 hover:text-home-ink",
+        collapsed && "justify-center px-0",
       )}
     >
-      <Icon className="size-[18px]" aria-hidden />
+      <Icon className="size-[18px] shrink-0" aria-hidden />
+      <span className={cn(collapsed && "sr-only")}>{label}</span>
     </Link>
   );
 }
 
-function ContextLink({
-  item,
-  pathname,
-  activeView,
-  compact = false,
-  closeOnSelect = false,
+function MobileTab({
+  href,
+  label,
+  icon: Icon,
+  current,
 }: {
-  item: WorkspaceLink;
-  pathname: string;
-  activeView: string | null;
-  compact?: boolean;
-  closeOnSelect?: boolean;
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  current: boolean;
 }) {
-  const Icon = item.icon;
-  const current = isWorkspaceLinkCurrent(pathname, activeView, item);
-
-  const link = (
+  return (
     <Link
-      href={item.href}
+      href={href}
       aria-current={current ? "page" : undefined}
       className={cn(
-        "flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm text-zinc-400 transition-colors duration-200 hover:bg-white/6 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
-        current && "bg-white/8 font-medium text-zinc-100",
-        compact && "min-h-12 min-w-12 flex-col justify-center gap-1 px-2 text-[11px]",
+        "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px]",
+        focusRing,
+        current ? "font-semibold text-home-ink" : "text-home-ink-3",
       )}
     >
-      <Icon className="size-4 shrink-0" aria-hidden />
-      <span>{item.label}</span>
+      <Icon className="size-5" aria-hidden />
+      <span>{label}</span>
     </Link>
   );
-
-  return closeOnSelect ? <SheetClose asChild>{link}</SheetClose> : link;
 }
 
-function MobileMenu({
-  pathname,
-  activeView,
-}: {
-  pathname: string;
-  activeView: string | null;
-}) {
+function AccountSheet() {
+  const sheetLink =
+    "flex min-h-12 items-center gap-3 rounded-lg px-3 text-sm text-home-ink hover:bg-home-sunk";
+
   return (
     <Sheet>
       <SheetTrigger asChild>
         <button
           type="button"
-          className="flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] text-zinc-400 hover:bg-white/6 hover:text-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+          className={cn(
+            "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px] text-home-ink-3",
+            focusRing,
+          )}
         >
-          <Menu className="size-[18px]" aria-hidden />
-          <span>More</span>
+          <UserRound className="size-5" aria-hidden />
+          <span>Account</span>
         </button>
       </SheetTrigger>
       <SheetContent
-        side="left"
+        side="bottom"
         overlayClassName="motion-reduce:animate-none"
-        className="w-[min(88vw,22rem)] border-white/10 bg-[#0b0b0b] text-zinc-100 shadow-none motion-reduce:animate-none motion-reduce:transition-none"
+        className="rounded-t-2xl border-home-rule bg-home-card pb-[max(1rem,env(safe-area-inset-bottom))] text-home-ink shadow-none motion-reduce:animate-none motion-reduce:transition-none"
       >
-        <SheetHeader className="border-b border-white/10 px-5 py-5 text-left">
-          <SheetTitle className="text-base text-zinc-100">Workspace</SheetTitle>
-          <SheetDescription className="text-zinc-400">
-            Move between your ideas, projects, and account.
+        <SheetHeader className="border-b border-home-rule px-5 pb-4 pt-5 text-left">
+          <SheetTitle className="text-base text-home-ink">Account</SheetTitle>
+          <SheetDescription className="text-home-ink-2">
+            Your plan, resources and sign out.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-1 px-3 py-4">
-          {workspaceLinks.map((item) => (
-            <ContextLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              activeView={activeView}
-              closeOnSelect
-            />
-          ))}
-          <div className="mt-3 border-t border-white/10 px-3 pt-4">
-            <div className="flex items-center gap-2 text-xs leading-5 text-zinc-400">
-              <FolderKanban className="size-4" aria-hidden />
-              Project cockpit arrives after a project is created.
-            </div>
-          </div>
-          <div className="mt-auto border-t border-white/10 px-3 pt-4">
-            <SignOutButton />
-          </div>
+        <div className="flex flex-col gap-1 px-3">
+          <SheetClose asChild>
+            <Link href={BILLING_NAV.href} className={cn(sheetLink, focusRing)}>
+              <CreditCard className="size-[18px] text-home-ink-2" aria-hidden />
+              {BILLING_NAV.label}
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link href={STARTER_KIT_HREF} className={cn(sheetLink, focusRing)}>
+              <BookOpen className="size-[18px] text-home-ink-2" aria-hidden />
+              Starter Kit
+            </Link>
+          </SheetClose>
+        </div>
+        <div className="border-t border-home-rule px-5 pt-4">
+          <SignOutButton className="w-full" />
         </div>
       </SheetContent>
     </Sheet>
@@ -188,108 +173,128 @@ function MobileMenu({
 
 export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const activeView = useSearchParams().get("view");
+  const view = useSearchParams().get("view");
+  const [collapsed, setCollapsed] = useSidebarCollapsed();
 
   return (
-    <div className="min-h-dvh bg-[#050505] text-zinc-100">
+    <div className="min-h-dvh bg-home-paper font-sans text-home-ink">
       <a
         href="#workspace-main"
-        className="fixed left-3 top-3 z-50 -translate-y-20 rounded-md bg-orange-800 px-4 py-2 text-sm font-semibold text-white transition-transform focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-white motion-reduce:transition-none"
+        className="fixed left-3 top-3 z-50 -translate-y-20 rounded-md bg-home-ink px-4 py-2 text-sm font-semibold text-home-card transition-transform focus:translate-y-0 focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink motion-reduce:transition-none"
       >
         Skip to workspace content
       </a>
 
       <nav aria-label="Workspace" className="relative z-40">
-        <div className="fixed inset-y-0 left-0 hidden md:flex">
-          <div className="flex w-[4.5rem] flex-col items-center border-r border-white/10 bg-[#080808] px-3 py-4">
+        <div
+          id="workspace-sidebar"
+          className={cn(
+            "fixed inset-y-0 left-0 hidden flex-col gap-6 border-r border-home-rule bg-home-sunk px-3 py-4 lg:flex",
+            collapsed ? "w-[72px]" : "w-[248px]",
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center",
+              collapsed ? "flex-col gap-2" : "justify-between gap-2",
+            )}
+          >
             <Link
               href="/dashboard"
-              aria-label="Weekend MVP dashboard"
-              className="flex size-11 items-center justify-center rounded-lg text-orange-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
+              aria-label="Weekend MVP home"
+              className={cn(
+                "flex min-h-10 items-center gap-2.5 rounded-lg px-2 text-home-ink",
+                focusRing,
+              )}
             >
-              <Logo className="h-6 w-8" aria-label="Weekend MVP" />
+              {collapsed ? <BrandMark /> : <Logo className="h-4 w-32" />}
             </Link>
-            <div className="mt-7 flex flex-col gap-2">
-              {primaryLinks.map((item) => (
-                <RailLink
-                  key={item.href}
-                  item={item}
-                  pathname={pathname}
-                  activeView={activeView}
-                />
-              ))}
-            </div>
-            <div className="mt-auto">
-              <RailLink
-                item={{
-                  href: "/dashboard/billing",
-                  label: "Billing",
-                  icon: CreditCard,
-                  match: "prefix",
-                }}
-                pathname={pathname}
-                activeView={activeView}
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => setCollapsed(!collapsed)}
+              aria-expanded={!collapsed}
+              aria-controls="workspace-sidebar"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={cn(
+                "flex size-10 items-center justify-center rounded-lg text-home-ink-2 transition-colors hover:bg-home-card/70 hover:text-home-ink",
+                focusRing,
+              )}
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="size-[18px]" aria-hidden />
+              ) : (
+                <PanelLeftClose className="size-[18px]" aria-hidden />
+              )}
+            </button>
           </div>
 
-          <aside className="hidden w-60 flex-col border-r border-white/10 bg-[#0b0b0b] px-4 py-5 lg:flex">
-            <div className="flex items-center gap-2 px-2">
-              <Lightbulb className="size-4 text-orange-300" aria-hidden />
-              <span className="text-sm font-semibold text-zinc-100">
-                Weekend MVP
-              </span>
-            </div>
-            <p className="mt-1 px-2 text-xs leading-5 text-zinc-400">
-              Evidence to shipped outcome
+          <div className="flex flex-col gap-1">
+            {PRIMARY_NAV.map((item) => (
+              <SidebarLink
+                key={item.id}
+                href={item.href}
+                label={item.label}
+                icon={NAV_ICONS[item.id]}
+                current={isWorkspaceNavCurrent(item.id, pathname, view)}
+                collapsed={collapsed}
+              />
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <p
+              className={cn(
+                "px-3 pb-1 font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3",
+                collapsed && "sr-only",
+              )}
+            >
+              Resources
             </p>
-            <div className="mt-7 flex flex-col gap-1">
-              {workspaceLinks.map((item) => (
-                <ContextLink
-                  key={item.href}
-                  item={item}
-                  pathname={pathname}
-                  activeView={activeView}
-                />
-              ))}
-            </div>
-            <div className="mt-auto border-t border-white/10 px-2 pt-4">
-              <p className="text-xs leading-5 text-zinc-400">
-                Project cockpit becomes available after you confirm a brief.
-              </p>
-            </div>
-          </aside>
+            <SidebarLink
+              href={STARTER_KIT_HREF}
+              label="Starter Kit"
+              icon={BookOpen}
+              current={false}
+              collapsed={collapsed}
+            />
+          </div>
+
+          <div className="mt-auto">
+            <AccountMenu collapsed={collapsed} />
+          </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 flex min-h-[4.5rem] items-center justify-around border-t border-white/10 bg-[#090909] px-2 pb-[env(safe-area-inset-bottom)] md:hidden">
-          {primaryLinks.map((item) => (
-            <ContextLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              activeView={activeView}
-              compact
+        <div className="fixed inset-x-0 bottom-0 grid grid-cols-4 border-t border-home-rule bg-home-card px-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
+          {PRIMARY_NAV.map((item) => (
+            <MobileTab
+              key={item.id}
+              href={item.href}
+              label={item.label}
+              icon={NAV_ICONS[item.id]}
+              current={isWorkspaceNavCurrent(item.id, pathname, view)}
             />
           ))}
-          <MobileMenu pathname={pathname} activeView={activeView} />
+          <AccountSheet />
         </div>
       </nav>
 
-      <div className="md:pl-[4.5rem] lg:pl-[19.5rem]">
-        <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-4 border-b border-white/10 bg-[#050505] px-5 sm:px-8">
+      <div className={collapsed ? "lg:pl-[72px]" : "lg:pl-[248px]"}>
+        <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-home-rule bg-home-paper px-4 sm:px-8">
           <Link
-            href="/dashboard/explore"
-            className="flex min-h-10 min-w-0 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.025] px-3 text-sm text-zinc-400 hover:border-white/20 hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 sm:w-72"
+            href="/dashboard"
+            aria-label="Weekend MVP home"
+            className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-lg text-home-ink lg:hidden",
+              focusRing,
+            )}
           >
-            <Search className="size-4 shrink-0" aria-hidden />
-            <span className="truncate">Search the idea library</span>
+            <BrandMark />
           </Link>
-          <div className="hidden sm:block">
-            <SignOutButton />
-          </div>
+          <WorkspaceSearch />
         </header>
-        <main id="workspace-main" tabIndex={-1} className="pb-24 outline-none md:pb-0">
-          {children}
+        <main id="workspace-main" tabIndex={-1} className="outline-none">
+          <LegacyDarkSurface>{children}</LegacyDarkSurface>
         </main>
       </div>
     </div>

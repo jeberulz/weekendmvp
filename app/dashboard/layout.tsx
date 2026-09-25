@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthPlatformProvider } from "../AuthPlatformProvider";
 import { WorkspaceShell } from "@/components/platform/shell/WorkspaceShell";
+import { newsreaderEditorial } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Workspace",
@@ -24,8 +25,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthPlatformProvider>
-      <WorkspaceShell>{children}</WorkspaceShell>
+    <AuthPlatformProvider fallbackClassName="bg-home-paper">
+      {/* The research-desk serif (WP42) for the brand mark and page titles. */}
+      <div className={newsreaderEditorial.variable}>
+        <WorkspaceShell>{children}</WorkspaceShell>
+      </div>
     </AuthPlatformProvider>
   );
 }

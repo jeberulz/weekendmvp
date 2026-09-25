@@ -63,3 +63,36 @@ Append-only progress log. Do not rely on chat history for project state.
 
 - PR #77 merged homepage motion to `main` as WP43 (`docs/wp/wp43-*.md`) while this package was still on its branch. This package is now WP44: files renamed to `docs/wp/wp44-*`, story ids are `WP44-S*`, and the nine 2026-09-25 rows in `docs/wp/RULINGS.md` carry `WP44 /` scopes
 - Those rows were relabelled before they ever reached `main`, so no merged ruling row was edited
+
+## 2026-09-25 - WP29 to WP31 paused
+
+- Owner ruled that R5 also pauses WP29, WP30 and WP31. Ruling row added. Registry rows marked paused. Pause banners added to `docs/wp/v1-scope-cut.md` and `docs/wp/AGENT_HANDOFF.md`
+- Merged `origin/main` (#77) into this branch. The only conflict was `docs/wp/RULINGS.md`, where both sides appended rows. Kept main's 2026-09-24 WP43 row before this package's 2026-09-25 rows
+
+## 2026-09-25 - WP44-S2 Light workspace shell and navigation
+
+- Branch: `claude/wizardly-rubin-a6m2th` (this session is pinned to it, so S2 lands here, not on a `codex/` branch)
+- Actions taken:
+  - `WorkspaceShell` rewritten on research-desk tokens: one sidebar (248px, collapses to a 72px rail, choice kept per browser), brand wordmark with a compact W mark when collapsed and on phones, Home, Ideas and Saved, Resources (Starter Kit), account menu in the footer (Plan and billing, Sign out)
+  - New: `AccountMenu` (Radix menu, non-modal), `WorkspaceSearch` (top bar, `role="search"`, submits to Explore, `/` focuses it and never steals a typed slash), `sidebar-state` (localStorage guarded by try/catch), `LegacyDarkSurface`
+  - `workspace-current.ts` now holds the nav model and the pure checks for current item and the search shortcut. Saved is current for both the saved and interested views (R3). "New idea" and "Interested" are gone (R3, R4). `/dashboard/new` still renders by URL
+  - Phones: bottom tabs Home, Ideas, Saved, Account. Account opens a bottom sheet (focus trapped by Radix) with Plan and billing, Starter Kit and Sign out
+  - `useSignOut` tolerates a missing auth provider, so the shell no longer crashes when the Convex URL is missing
+  - `AuthPlatformProvider` takes an optional `fallbackClassName` (default stays `bg-black` for auth pages). The dashboard passes paper. The dashboard layout loads the research-desk serif
+  - Tests: `tests/platform/wp44-shell.test.ts` replaces `wp23-shell.test.ts`. `npm test` now runs `tests/platform` through a new `test:platform` script (these suites existed but never ran in `npm test`). One auth source test updated for the fallback prop
+- Different from the written criteria, on purpose:
+  - Builds (S9) and Settings (S8) are not in the nav yet, so no link leads to a 404. They join with their pages
+  - "Build with AI" is left out: there is no `/build-with` index page. It returns after S8, pointing at the member's own tool
+  - No counts on Saved or Builds: no count query exists until S3
+  - Search reads "Search ideas" without the library total until S3 passes the count
+  - Page content still uses dark styles, so it sits on `LegacyDarkSurface` until S4, S5 and S7 restyle it. Do not ship S2 to production on its own
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, as before)
+  - `npm test` pass, including 24 platform tests
+  - `npm run build` pass. `/dashboard/**` and `/ideas/[slug]` keep their route types (partial prerender)
+  - Browser pass on `next dev` with a local-only auth bypass in `middleware.ts` (removed before commit, file verified clean): 1440px open and collapsed, account menu, Saved view, 390px with the Account sheet. No horizontal scroll at 390px. `/` focuses search. Tab order: skip link, home link, collapse, Home, Ideas, Saved, Starter Kit, Account, search
+  - axe 4 (wcag2a/aa, wcag21a/aa): shell and Account sheet 0 violations. A modal account menu first raised `aria-hidden-focus`, fixed by making it non-modal. One remaining finding sits in the old page content: `aria-prohibited-attr` on the dashboard skeleton (`aria-label` on a plain div), owned by S4 and S7
+- Found:
+  - `/dashboard` never renders on the server today: `PreviewClaimRunner` calls `useMutation` during SSR with no Convex client, so React falls back to client rendering. Pre-existing on `main`. Added to S3, because server-rendered Home depends on it
+- Next: S3 (dashboard data layer and events)

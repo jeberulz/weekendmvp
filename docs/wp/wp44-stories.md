@@ -47,7 +47,7 @@ S1 rulings
     - `git diff --check`
   - Model tier: low
 
-- [ ] `WP44-S2` - Light workspace shell and navigation
+- [x] `WP44-S2` - Light workspace shell and navigation (done 2026-09-25, see progress log for what differs from the criteria below)
   - Scope: `components/platform/shell/*`, `app/dashboard/layout.tsx`, `app/dashboard/SignOutButton.tsx`, `tests/**/workspace-current*`
   - Acceptance criteria:
     - One collapsible sidebar (248px to 72px rail) replaces today's rail plus second sidebar
@@ -68,6 +68,8 @@ S1 rulings
   - Acceptance criteria:
     - `platform.dashboard.home` returns first name, saved count (union of `saved` and `interested`), 5 latest saved ideas, and fields for setup, active plan and plan tier set to empty defaults until S8, S9 and S10
     - It derives identity with `requireCurrentPlatformUser` and reads with bounded indexed queries
+    - `/dashboard` renders on the server without throwing. Today `PreviewClaimRunner` calls `useMutation` while no Convex client exists on the server, so the page falls back to client rendering (found in S2). Mount-gate it or give it a client before relying on server-rendered modules
+    - The shell's nav shows counts for Saved (and Builds once S9 lands). S2 shipped without counts because no count query existed yet
     - Two-user test: user B never sees user A's saves
     - `app/dashboard/page.tsx` is a server component that calls `getHomeData()` and passes the weekly pick and newest rows down. Those slugs equal the ones on `/` for the same hour (test)
     - Idea files are traced into the `/dashboard` function, as WP42 did for `/`
@@ -88,6 +90,8 @@ S1 rulings
     - Module 4 New this week: 5 Index-style rows with Save and "View all"
     - Right rail at 1280px+: 5 latest saved, then the offer card slot. Until S12 lands, the slot shows the Starter Kit card to free members (ruling R6)
     - Editorial modules render on the server. Personal modules show layout-sized skeletons. A failed personal query shows a module-level error, never a blank page
+    - Skeletons expose their loading label through `role="status"` (axe `aria-prohibited-attr` flags today's `aria-label` on a plain div)
+    - Home content leaves `LegacyDarkSurface`
     - All copy from PRD 6.8 applied. None of the removed system copy remains
     - `PreviewClaimRunner` still runs on `/dashboard`
   - Verification:
@@ -105,6 +109,7 @@ S1 rulings
     - Tabs: All, For you, New. Card grid by default with a list toggle. Cards show art, pitch, 4 score meters, hours, tools, Save
     - Saved page lists ideas where `saved` or `interested` is true. Unsave clears both flags
     - Save and unsave keep the existing live-region announcements
+    - Ideas has one search field: the top bar (S2) or the page's own, not both
     - Explore cards drop "Preview this idea" (R5). "Read the research" stays
   - Verification:
     - `npm run typecheck`
@@ -133,6 +138,7 @@ S1 rulings
     - Plan and billing shows the free plan and Builder's Hub ($29 a month) only. Credit packs and their checkout buttons are hidden, not deleted (R9)
     - Project cards and project links leave every dashboard surface (R5). `/dashboard/projects/**` still renders by URL
     - Error and loading states match the new layout and use the plain copy from PRD 6.8
+    - `LegacyDarkSurface` is deleted once every route is restyled
     - No change to checkout, project or intake logic. Only entry points are hidden
   - Verification:
     - `npm run typecheck`

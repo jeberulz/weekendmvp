@@ -174,7 +174,8 @@ This replaces today's rail plus second sidebar, which doubles the same links.
 
   RESOURCES
     Starter Kit
-    Build with AI         (links to /build-with)
+    Build with AI         (after S8: links to /build-with/{tool} for the member's
+                          tool. There is no /build-with index page)
 
   [Plan card]            (free only, see 6.6)
   (JI) John Iseghohi  v  (account menu: Plan and billing, Settings, Sign out)
