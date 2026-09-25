@@ -24,7 +24,6 @@ export function Hero({ idea, total }: { idea: HeroIdea; total: number }) {
         </p>
         <h1
           id="home-hero-title"
-          aria-label={`${LEAD} ${PUNCH}`}
           className="max-w-[1000px] font-editorial text-[44px] font-normal leading-[1.02] tracking-[-0.03em] text-home-ink md:text-[60px] lg:text-[76px] lg:leading-none"
         >
           <IntroWords text={LEAD} start={0.08} step={WORD_STEP} />{" "}
