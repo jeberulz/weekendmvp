@@ -37,17 +37,30 @@ export const TICKET_META: [string, string][] = [
 export const FAQS = [
   {
     question: "Do I need to code?",
-    answer: "No. Every idea includes prompts for AI tools like Cursor, Claude, and Lovable.",
+    answer:
+      "No. Every Weekend MVP idea ships with copy-paste prompts for AI builders like Cursor, Claude, Bolt, and Lovable. You pick an idea, paste the prompts, and follow a three-screen MVP (landing → input → output). Coding helps, but it’s not required to get a demo live by Sunday.",
   },
   {
     question: "Do I have to quit my job?",
-    answer: "No. Most ideas are estimated at 8 to 12 hours. That fits one weekend.",
+    answer:
+      "No. Most ideas are scoped to about 8–12 hours — roughly one weekend around a 9-to-5. The site is built for solo founders and side builders who want a live URL and early users, not a sabbatical or a co-founder.",
   },
   {
     question: "Are the ideas free?",
-    answer: "Yes. Some pages ask for your email to unlock the full research.",
+    answer:
+      "Yes. Browsing the idea library is free. Some full research pages ask for an email to unlock deeper prompts and sources. The Weekend MVP Starter Kit (scorecard, 48-hour plan, templates) is also free.",
   },
 ];
+
+/** Citeable definition for AEO / speakable schema. Keep in sync with homepage UI. */
+export const WHAT_IS =
+  "Weekend MVP is a library of researched startup ideas sized for one person and about one weekend. Each idea includes problem, market notes, stack, and copy-paste prompts for tools like Cursor, Claude, and Lovable so you can ship a live MVP without quitting your job.";
+
+export const START_HERE = [
+  { href: "/startup-ideas", label: "Browse startup ideas" },
+  { href: "/starter-kit", label: "Get the free Starter Kit" },
+  { href: "/ideas-for/non-technical", label: "Ideas for non-technical founders" },
+] as const;
 
 /**
  * Draft founder letter, written from John's public bio (WP42 design review).
