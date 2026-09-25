@@ -1,8 +1,8 @@
 # WP44 PRD - Ideas-first dashboard (free and paid)
 
 Status: Rulings complete. R1 to R9 were ruled on 2026-09-25 and are recorded
-in `docs/wp/RULINGS.md`. One follow-up is open: whether R5 also parks WP29 to
-WP31 (end of section 12).
+in `docs/wp/RULINGS.md`. The R5 follow-up is ruled too: WP29 to WP31 are paused
+until site publishing returns in v1.1.
 
 Companion docs:
 
@@ -736,10 +736,10 @@ were ruled on 2026-09-25.
 | R8 | May the dashboard sell? (WP42 ruled no monetization on `/`) | Yes. Quiet Builder's Hub surfaces plus a promo slot for future products such as webinars. Nothing sells in a member's first 24 hours | Ruled 2026-09-25 | S10, S12 |
 | R9 | Credit packs | None for now. Monthly subscription only. Revisit later | Ruled 2026-09-25 | S7, S10 |
 
-Open follow-up on R5: WP29 to WP31 (project cockpit, policy gate, production
-activation) exist to ship site publishing. If R5 parks them too,
-`docs/wp/v1-scope-cut.md` and the WP29 to WP31 rows in
-`docs/PROJECT_STRATEGY.md` need a revision. Waiting on the owner.
+R5 follow-up (ruled 2026-09-25): WP29 to WP31 (project cockpit, trust and
+safety, production activation) are paused until site publishing returns in
+v1.1. `docs/wp/v1-scope-cut.md`, `docs/wp/AGENT_HANDOFF.md` and the registry
+carry the pause.
 
 ---
 

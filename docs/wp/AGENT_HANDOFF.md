@@ -1,5 +1,9 @@
 # Agent Handoff — Build Platform Program (post-WP28 consolidation)
 
+> **Paused 2026-09-25.** Site publishing is parked for v1.1 and WP29, WP30 and
+> WP31 are paused (`docs/wp/RULINGS.md`). Do not start them. Current product work
+> is the WP44 dashboard: `docs/wp/wp44-dashboard-prd.md` and `docs/wp/wp44-stories.md`.
+
 Last updated: 2026-08-14 (UTC). Agent-agnostic. Supersedes prior handoff headers.
 
 **Consolidation branch:** `feat/platform-wp19-28-onto-main` — WP19–28 stacked onto current `main` (merge of `origin/codex/wp28-tenant-hosts` @ `d3ae862` + `origin/main`).  

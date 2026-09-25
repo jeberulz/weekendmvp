@@ -36,7 +36,7 @@ S1 rulings
 
 ## Stories
 
-- [ ] `WP44-S1` - Record rulings and freeze scope (R1 to R9 recorded 2026-09-25. IdeaBrowser screenshots, canvas export and the R5 follow-up on WP29 to WP31 remain)
+- [ ] `WP44-S1` - Record rulings and freeze scope (R1 to R9 and the WP29 to WP31 pause recorded 2026-09-25. IdeaBrowser screenshots and canvas export remain)
   - Scope: `docs/wp/RULINGS.md`, `docs/wp/wp44-dashboard-prd.md`, `docs/wp/wp44-progress.md`
   - Acceptance criteria:
     - Owner answers R1 to R9 from PRD section 12. Each answer is one new row in `docs/wp/RULINGS.md`
@@ -243,4 +243,4 @@ S1 rulings
 - Promote unknown product decisions to `docs/wp/RULINGS.md`.
 - `.agentic-workflow.yml` prefers `codex/` branches. This session is pinned to `claude/wizardly-rubin-a6m2th`, so the PRD and plan live here. Build phases should branch from `main` (for example `codex/wp44-dashboard-a`).
 - Read `convex/_generated/ai/guidelines.md` before S3, S5, S8, S9, S10, S11 and S12.
-- Site projects and the WP29 cockpit are parked for v1.1 (R5). Whether WP29 to WP31 pause as well is an open owner question (PRD section 12).
+- Site projects and the WP29 cockpit are parked for v1.1 (R5). WP29 to WP31 are paused (ruling 2026-09-25).
