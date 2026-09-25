@@ -270,6 +270,9 @@ Builds (`/dashboard/builds`)
 - Active weekend plan on top, finished plans below.
 - Site projects (claimed previews, published sites) are parked for v1.1 (R5).
   Their routes stay reachable by URL, but nothing links to them.
+- Every "Plan my weekend" link opens one start page (`/dashboard/builds/new?idea={slug}`).
+  It shows the four stages, starts the plan on the member's click, and handles
+  the one-plan limit. Cards never start a plan themselves.
 - Plan detail (`/dashboard/builds/{planId}`): the four stages from the homepage
   (`WEEKEND_PLAN` in `components/home/content.ts`), each with a short checklist,
   the matching prompts from the idea page, a one-line "core feature" field for
@@ -587,7 +590,7 @@ Weekend plans
 | FR-16 | Steps can be checked and unchecked. Progress persists across devices |
 | FR-17 | Each stage shows the idea's matching prompts with a copy button that announces "Prompt copied" |
 | FR-18 | The Sunday stage shows the idea's Landing Page prompt and saves the live link the member ships. It links to no Weekend MVP preview or publish flow (R5) |
-| FR-19 | Free members can hold 1 active plan. Starting another opens the upgrade sheet with an archive option (enforced server-side once entitlements exist) |
+| FR-19 | Free members can hold 1 active plan. Starting another opens the upgrade sheet with an archive option (enforced server-side once entitlements exist). Until S10, the start page (`/dashboard/builds/new`) explains the limit and offers "Archive it and start this idea" |
 | FR-20 | Ideas with an active plan show "Building" in Ideas and Saved |
 
 Plans and entitlements
@@ -640,7 +643,7 @@ Offers and parked features
 |---|---|---|---|
 | `ideas` search indexes | `searchField: title` and `searchField: description`, both `filterFields: [category]` | `search_title`, `search_description` | S5 |
 | `user_preferences` | `ownerId`, `tools[]`, `weeklyHours?`, `goal?`, `onboardedAt?`, `skippedAt?`, `dismissed[]?` (offer card ids, capped at 50, written by S12), `updatedAt` | `by_ownerId` | S8 |
-| `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt?`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 |
+| `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?`, `archivedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 (functions in `convex/platform/weekendPlans.ts`, since `plans.ts` holds the S7 plan constant) |
 
 All additive. No existing table, field or index changes. Read
 `convex/_generated/ai/guidelines.md` before writing any of it.

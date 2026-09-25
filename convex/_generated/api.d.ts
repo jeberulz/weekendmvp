@@ -47,6 +47,8 @@ import type * as platform_sites_publish from "../platform/sites/publish.js";
 import type * as platform_sites_read from "../platform/sites/read.js";
 import type * as platform_transitions from "../platform/transitions.js";
 import type * as platform_validators from "../platform/validators.js";
+import type * as platform_weekendPlans from "../platform/weekendPlans.js";
+import type * as platform_weekendSteps from "../platform/weekendSteps.js";
 import type * as referenceTables from "../referenceTables.js";
 import type * as resendMagicLink from "../resendMagicLink.js";
 import type * as revalidate from "../revalidate.js";
@@ -100,6 +102,8 @@ declare const fullApi: ApiFromModules<{
   "platform/sites/read": typeof platform_sites_read;
   "platform/transitions": typeof platform_transitions;
   "platform/validators": typeof platform_validators;
+  "platform/weekendPlans": typeof platform_weekendPlans;
+  "platform/weekendSteps": typeof platform_weekendSteps;
   referenceTables: typeof referenceTables;
   resendMagicLink: typeof resendMagicLink;
   revalidate: typeof revalidate;

@@ -5,6 +5,7 @@ import {
   Bookmark,
   Compass,
   CreditCard,
+  Hammer,
   Settings2,
   House,
   PanelLeftClose,
@@ -28,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
+import { BuildsCount } from "./BuildsCount";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PendingSaveRunner } from "./PendingSaveRunner";
 import { SavedCount } from "./SavedCount";
@@ -46,6 +48,7 @@ const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
   home: House,
   ideas: Compass,
   saved: Bookmark,
+  builds: Hammer,
   billing: CreditCard,
   settings: Settings2,
 };
@@ -259,7 +262,9 @@ export function WorkspaceShell({
                 icon={NAV_ICONS[item.id]}
                 current={isWorkspaceNavCurrent(item.id, pathname, view)}
                 collapsed={collapsed}
-                badge={item.id === "saved" ? <SavedCount /> : undefined}
+                badge={
+                  item.id === "saved" ? <SavedCount /> : item.id === "builds" ? <BuildsCount /> : undefined
+                }
               />
             ))}
           </div>
@@ -287,7 +292,7 @@ export function WorkspaceShell({
           </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 grid grid-cols-4 border-t border-home-rule bg-home-card px-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 grid grid-cols-5 border-t border-home-rule bg-home-card px-2 pb-[env(safe-area-inset-bottom)] lg:hidden">
           {PRIMARY_NAV.map((item) => (
             <MobileTab
               key={item.id}

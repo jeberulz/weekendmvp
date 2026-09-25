@@ -24,7 +24,7 @@ This registry tracks reserved, active, and completed Weekend MVP work packages. 
 | WP16 | Bolt and Windsurf hub enrichment | Work Package | `cursor/wp16-bolt-windsurf-enrichment` | Complete | Both hubs have improved search copy and featured idea rails. |
 | WP17 | Sitemap indexing signals | Work Package | `cursor/wp17-sitemap-indexing` | Complete — merged (#42) | Stable idea lastmod, apex system-file redirects, and indexing runbook/check script are present. |
 | WP18 | Five research-backed startup ideas | Work Package | `feat/publish-five-ideas` | Complete — merged (#44) | Five pages pass research/section gates, are seeded, and have OG assets live on `main`. |
-| WP44 | Ideas-first dashboard (free and paid) | Work Package | `claude/wizardly-rubin-a6m2th` (PRD and plan) | Rulings complete (R1–R9, 2026-09-25) — S2 to S8 done 2026-09-25; S9 next | `/dashboard` is the light ideas-first home in `docs/wp/wp44-dashboard-prd.md`; free Home, Ideas, Saved and one weekend plan ship; Builder's Hub ($29/mo, monthly only) UI and entitlements sit behind a flag; no site preview, publish or credit entry points (parked for v1.1); standard checks and WCAG 2.1 AA pass. |
+| WP44 | Ideas-first dashboard (free and paid) | Work Package | `claude/wizardly-rubin-a6m2th` (PRD and plan) | Rulings complete (R1–R9, 2026-09-25) — S2 to S9 done 2026-09-25; S10 next | `/dashboard` is the light ideas-first home in `docs/wp/wp44-dashboard-prd.md`; free Home, Ideas, Saved and one weekend plan ship; Builder's Hub ($29/mo, monthly only) UI and entitlements sit behind a flag; no site preview, publish or credit entry points (parked for v1.1); standard checks and WCAG 2.1 AA pass. |
 
 ## Build Platform Program
 

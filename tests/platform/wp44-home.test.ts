@@ -81,6 +81,11 @@ describe("WP44-S4 greeting copy", () => {
     expect(viewedState({ ...fresh, setupSkipped: true })).toBe("new");
     expect(viewedState({ ...fresh, setupDone: true })).toBe("set_up");
     expect(viewedState({ ...fresh, savedCount: 2 })).toBe("choosing");
+    // WP44-S9: a running plan wins, then a plan that just finished.
+    expect(nextStep({ ...fresh, savedCount: 3, building: true, finishedRecently: true })).toBe("building");
+    expect(nextStep({ ...fresh, savedCount: 3, finishedRecently: true })).toBe("finished");
+    expect(viewedState({ ...fresh, building: true })).toBe("building");
+    expect(viewedState({ ...fresh, finishedRecently: true })).toBe("finished");
   });
 });
 

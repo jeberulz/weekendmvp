@@ -51,19 +51,33 @@ export function statusLine(saved: { count: number; capped: boolean }, weekday: n
   return `${count} ${noun}. ${weekendLine(weekday)}`;
 }
 
-type StepInput = { savedCount: number; setupDone: boolean; setupSkipped: boolean };
+type StepInput = {
+  savedCount: number;
+  setupDone: boolean;
+  setupSkipped: boolean;
+  /** An active weekend plan exists (WP44-S9). */
+  building?: boolean;
+  /** A plan finished in the last week, by the browser's clock (WP44-S9). */
+  finishedRecently?: boolean;
+};
+
+export type NextStep = "setup" | "start" | "choosing" | "building" | "finished";
 
 /**
- * Module 1's card (PRD 6.2). The setup questions show until they are
- * answered or skipped (R7). Building and Finished arrive with S9.
+ * Module 1's card (PRD 6.2). A running plan wins, then a plan that just
+ * finished, then the shortlist. The setup questions show until they are
+ * answered or skipped (R7).
  */
-export function nextStep({ savedCount, setupDone, setupSkipped }: StepInput): "setup" | "start" | "choosing" {
+export function nextStep({ savedCount, setupDone, setupSkipped, building, finishedRecently }: StepInput): NextStep {
+  if (building) return "building";
+  if (finishedRecently) return "finished";
   if (savedCount > 0) return "choosing";
   return setupDone || setupSkipped ? "start" : "setup";
 }
 
 /** The `dashboard_viewed` state: "set_up" only when the questions were answered. */
-export function viewedState({ savedCount, setupDone }: StepInput): "new" | "set_up" | "choosing" {
-  if (savedCount > 0) return "choosing";
-  return setupDone ? "set_up" : "new";
+export function viewedState(input: StepInput): "new" | "set_up" | "choosing" | "building" | "finished" {
+  const step = nextStep(input);
+  if (step === "setup" || step === "start") return input.setupDone ? "set_up" : "new";
+  return step;
 }

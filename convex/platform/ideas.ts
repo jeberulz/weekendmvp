@@ -5,6 +5,7 @@ import { requireCurrentPlatformUser } from "./authz";
 import { rankForYou } from "./forYou";
 import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
+import { activePlanOf } from "./weekendPlans";
 import { SETUP_TOOLS, type PickReason } from "./setupOptions";
 import {
   HOURS_BUCKETS,
@@ -134,7 +135,10 @@ export const library = query({
       candidates = rows.slice(0, LIBRARY_READ_LIMIT);
     }
 
-    const saved = await readSavedIntents(ctx, user._id, LIBRARY_READ_LIMIT);
+    const [saved, active] = await Promise.all([
+      readSavedIntents(ctx, user._id, LIBRARY_READ_LIMIT),
+      activePlanOf(ctx, user._id),
+    ]);
     const savedIds = new Set(saved.rows.map((row) => row.ideaId));
 
     const base = candidates.filter(
@@ -202,7 +206,9 @@ export const library = query({
     return {
       items: ordered
         .slice(0, limit)
-        .map((idea) => toIdeaCard(idea, savedIds.has(idea._id), reasons?.get(idea._id))),
+        .map((idea) =>
+          toIdeaCard(idea, savedIds.has(idea._id), reasons?.get(idea._id), active?.ideaId === idea._id),
+        ),
       total: filtered.length,
       truncated,
       facets,

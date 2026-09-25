@@ -15,12 +15,13 @@ export const PLANS = {
     id: "free",
     name: "Free",
     priceLabel: "Free",
-    /** Only what ships today. S9 adds "1 active weekend plan". */
+    /** Only what ships today. */
     includes: [
       "Every idea, score, source and prompt",
       "Search and filter the whole library",
       "Home with the idea of the week and ideas picked for you",
       "Unlimited saved ideas in one list",
+      "1 active weekend plan, with the prompts for each day",
     ],
   },
   builders_hub: {

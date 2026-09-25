@@ -35,6 +35,8 @@ export const ideaCardValidator = v.object({
   saved: v.boolean(),
   /** For you only (WP44-S8): the one input that lifted this idea, if any. */
   reason: v.optional(pickReasonValidator),
+  /** True when this idea has the member's active weekend plan (WP44-S9). */
+  building: v.optional(v.boolean()),
 });
 
 const MAX_CARD_TOOLS = 4;
@@ -51,9 +53,15 @@ export function meanScore(idea: Pick<Doc<"ideas">, "scores">): number | null {
   return Math.round(((opportunity + pain + timing + builder_confidence) / 4) * 10) / 10;
 }
 
-export function toIdeaCard(idea: Doc<"ideas">, saved: boolean, reason?: PickReason | null) {
+export function toIdeaCard(
+  idea: Doc<"ideas">,
+  saved: boolean,
+  reason?: PickReason | null,
+  building = false,
+) {
   return {
     ...(reason ? { reason } : {}),
+    ...(building ? { building: true } : {}),
     ideaId: idea._id,
     slug: idea.slug,
     title: idea.title,

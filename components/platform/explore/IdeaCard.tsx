@@ -10,6 +10,7 @@ import {
   toolName,
 } from "@/components/ideas/idea-meta";
 import { cn } from "@/lib/utils";
+import { BuildingBadge, PlanLink } from "@/components/platform/builds/PlanLink";
 import { SaveIdeaButton } from "@/components/platform/home/SaveIdeaButton";
 import { ogArtPath } from "@/lib/home/library";
 import type { DashboardSource } from "@/lib/track";
@@ -20,11 +21,12 @@ export type IdeaCardData = FunctionReturnType<typeof api.platform.ideas.library>
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-function Category({ raw }: { raw: string }) {
+function Category({ raw, building = false }: { raw: string; building?: boolean }) {
   const slug = normalizeCategorySlug(raw);
   return (
-    <div className="flex">
+    <div className="flex flex-wrap items-center gap-2">
       <CategoryTag slug={slug} name={categoryName(slug)} />
+      {building && <BuildingBadge />}
     </div>
   );
 }
@@ -58,7 +60,7 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
         <NoArt raw={idea.category} />
       )}
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <Category raw={idea.category} />
+        <Category raw={idea.category} building={idea.building} />
         <ReasonLine reason={idea.reason} />
         <h3 className="font-editorial text-[20px] font-normal leading-[1.2] text-home-ink">
           <Link
@@ -82,14 +84,10 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
             {idea.buildTime > 0 && idea.tools.length > 0 && " · "}
             {toolList(idea.tools)}
           </p>
-          <SaveIdeaButton
-            slug={idea.slug}
-            title={idea.title}
-            variant="icon"
-            saved={idea.saved}
-            source={source}
-            className="-my-1.5 -mr-2"
-          />
+          <div className="-my-1.5 -mr-2 flex shrink-0 items-center">
+            <PlanLink slug={idea.slug} title={idea.title} source={source} building={idea.building} variant="icon" />
+            <SaveIdeaButton slug={idea.slug} title={idea.title} variant="icon" saved={idea.saved} source={source} />
+          </div>
         </div>
       </div>
     </article>
@@ -118,6 +116,11 @@ export function IdeaRow({
             {idea.title}
           </Link>
           {meta && <span className="mt-0.5 block text-[12px] text-home-ink-3">{meta}</span>}
+          {idea.building && (
+            <div className="mt-1 flex">
+              <BuildingBadge />
+            </div>
+          )}
           {idea.reason && (
             <div className="mt-1">
               <ReasonLine reason={idea.reason} />
@@ -146,7 +149,10 @@ export function IdeaRow({
           <span className="truncate text-[12px] text-home-ink-2 max-md:hidden">{toolList(idea.tools)}</span>
         </div>
       </div>
-      <SaveIdeaButton slug={idea.slug} title={idea.title} variant="icon" saved={idea.saved} source={source} />
+      <div className="flex shrink-0 items-center">
+        <PlanLink slug={idea.slug} title={idea.title} source={source} building={idea.building} variant="icon" />
+        <SaveIdeaButton slug={idea.slug} title={idea.title} variant="icon" saved={idea.saved} source={source} />
+      </div>
     </div>
   );
 }

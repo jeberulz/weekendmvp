@@ -1,8 +1,9 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
+import { Bookmark, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { startPlanHref } from "@/components/platform/builds/plan-links";
 import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
 import { signupForPendingSave, stashPendingSave } from "@/lib/pending-save";
 import { trackDashboardEvent } from "@/lib/track";
@@ -126,6 +127,14 @@ function SignedInSave({ slug, title }: { slug: string; title: string }) {
         />
         Save<span className="sr-only"> {title}</span>
       </button>
+      {/* WP44-S9: the start page handles the one-plan limit. */}
+      <Link
+        href={startPlanHref(slug, "idea_page")}
+        className={cn(BUTTON, "border-neutral-300 bg-white text-black hover:border-neutral-500")}
+      >
+        <CalendarDays aria-hidden className="size-4" strokeWidth={1.8} />
+        Plan my weekend<span className="sr-only"> for {title}</span>
+      </Link>
       {pressed && (
         <Link
           href="/dashboard/saved"
@@ -144,8 +153,8 @@ function SignedInSave({ slug, title }: { slug: string; title: string }) {
 /**
  * WP44-S6 Save island for `/ideas/{slug}`. Renders nothing on the server or
  * the first paint. After hydration: signed-in readers (per the readable
- * session hint) get the Save toggle, and everyone else gets a sign-up link
- * that completes the save once they are in.
+ * session hint) get the Save toggle and "Plan my weekend" (S9), and everyone
+ * else gets a sign-up link that completes the save once they are in.
  */
 export function SaveIdeaButton({ slug, title }: { slug: string; title: string }) {
   const hint = useSyncExternalStore(subscribeToNothing, readHint, readServerHint);

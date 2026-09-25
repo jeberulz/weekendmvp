@@ -160,8 +160,8 @@ S1 rulings
     - `npm test` including two-user and ranking-reason tests
   - Model tier: high (schema writer #2, ranking logic)
 
-- [ ] `WP44-S9` - Weekend plans and Builds
-  - Scope: `convex/schema.ts` (additive `weekend_plans`), `convex/platform/plans.ts` (new), `app/dashboard/builds/**` (new), Home module 1 Building and Finished states, Building badge in Ideas and Saved
+- [x] `WP44-S9` - Weekend plans and Builds (done 2026-09-25, see progress log for what differs from the criteria below)
+  - Scope: `convex/schema.ts` (additive `weekend_plans`), `convex/platform/weekendPlans.ts` (new, since `plans.ts` holds the S7 plan constant), `app/dashboard/builds/**` (new), Home module 1 Building and Finished states, Building badge in Ideas and Saved
   - Acceptance criteria:
     - Start a plan from Home, Ideas, Saved or an idea page. Four stages from `WEEKEND_PLAN`
     - Steps check and uncheck, persist, and announce changes politely

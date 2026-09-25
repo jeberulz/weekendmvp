@@ -138,6 +138,7 @@ describe("WP44-S3 dashboard home query", () => {
       setupDone: false,
       setupSkipped: false,
       activePlan: null,
+      lastFinished: null,
       plan: "free",
     });
   });

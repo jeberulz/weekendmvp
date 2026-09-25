@@ -287,3 +287,42 @@ Append-only progress log. Do not rely on chat history for project state.
   - `npm run build` pass. `/dashboard/settings` is a new partial-prerender route. Same 5 Turbopack warnings
   - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket keeping preference state): Home shows the three legends. Picking Bolt, Lovable, 8 hrs and Side income sends one `saveSetup`, focus lands on "Save the ideas you could build this weekend.", the message reads "Saved your answers. Picked for you now uses them.", and the picks show reason lines. "Skip for now" sends `skipSetup` and shows the Settings hint. Settings loads the saved answers checked, and a change saves with a confirmation. For you shows reason lines. 390px has no horizontal scroll. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on Home with the questions, Home after setup, phone, Settings and For you
 - Next: S9 (weekend plans and Builds, schema writer #3)
+
+## 2026-09-25 - WP44-S9 Weekend plans and Builds
+
+- `origin/main` had not moved since S8. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - Schema (writer #3, additive): `weekend_plans` with `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?`, `archivedAt?`, indexed `by_ownerId_and_status_and_updatedAt` and `by_ownerId_and_ideaId`
+  - `convex/platform/weekendSteps.ts` (pure): 4 stages and 8 steps in the homepage `WEEKEND_PLAN` order, progress, the current stage, the next step, and live link rules (http or https, no credentials, a real host, 300 characters at most)
+  - `convex/platform/weekendPlans.ts`: `start`, `toggleStep`, `setCoreFeature`, `setLiveUrl`, `finish`, `archive`, `get`, `list` and `startPreview`. Identity comes from the session. A missing plan and another member's plan both read as not found, and ids from the URL go through `normalizeId`. Only an active plan can change. Free members hold 1 active plan (R2): a second start throws `ACTIVE_PLAN_LIMIT`, and `replaceActive` archives the current plan first. Saving a core feature checks "Write down the one core feature", and saving a live link checks "Put it live and save the link"
+  - `platform.dashboard.home` returns `activePlan` and `lastFinished`. Library and Saved cards carry `building` for the idea with the active plan (FR-20)
+  - Prompts: `/api/ideas/prompts?slug=` (new) returns an idea's build prompts from its MDX, cached with the idea content. Members only (401 without a session), because the public page keeps them behind its email gate. `private, max-age=300`. Traced into the function in `next.config.ts`. Saturday gets setup and build prompts, Sunday gets landing, branding and launch prompts. All 228 ideas have a Saturday prompt. 100 have a Sunday one, and the rest show a short fallback
+  - Start page (`/dashboard/builds/new?idea=…&from=…`, new): every "Plan my weekend" link lands here. It shows the four stages and starts the plan on click. With another plan running it says so and offers "Keep my current plan" or "Archive it and start this idea". Fires `weekend_plan_started` with its source
+  - Plan detail (`/dashboard/builds/{planId}`, new): one card per stage with day, hours and a text status (Done, Now, Up next). Native checkboxes, saved with an optimistic update, with progress announced politely ("3 of 8 steps done. Saturday done."). Friday has the core feature field. Saturday and Sunday list the prompts with Copy (announces "Prompt copied") and a disclosure for the full text. Sunday has the live link field with an inline error. Monday has "Finish this weekend" behind an inline confirm. Finishing shows "You shipped." and moves focus to it. Archive also asks first. A closed plan is read only, with plain done and not-done marks. No link to preview, publish or credits (R5)
+  - Builds (`/dashboard/builds`, new): the active plan with progress, next step and Continue, then finished plans with their live links, or an empty state that points to Saved
+  - Home module 1: Building (day progress, next step, today's prompt with Copy, Open plan) and Finished for a week after a plan ends ("You shipped.", the live link, "Pick the next idea"). The shortlist gets a plan link per row. `dashboard_viewed` reports `building` and `finished`
+  - Cards and rows in Ideas and Saved: a "Building" badge and a plan link beside Save ("Open your plan" for the idea being built)
+  - Idea page island: signed-in readers also get "Plan my weekend" (source `idea_page`). Signed-out readers still see only the sign-up link
+  - Nav: Builds joins the sidebar with a count and the phone tab bar (5 tabs). The Free plan list on Plan and billing now includes "1 active weekend plan"
+  - Tests: `convex/wp44WeekendPlans.test.ts` (11: step model, progress, live link rules, sign-in, start and steps and Home, one active plan with the archive way forward and the start preview, finish to Builds with the live link, archive, two-member isolation and bad ids, invalid steps and long features, Building on cards) and `tests/platform/wp44-builds.test.ts` (14). Shell and Home tests updated for Builds and the new states
+- Different from the written criteria, on purpose:
+  - Functions live in `convex/platform/weekendPlans.ts`, not `plans.ts`, which holds the S7 plan constant
+  - Starting goes through one start page rather than a button on each card. The limit and the archive option then live in one place, and nothing starts from a prefetch or a stray tap
+  - Until S10, the limit shows as a card on the start page, not the upgrade sheet
+  - `weekend_step_completed` fires once when a stage's last step is checked, since the event takes a day, not a step
+  - `convex/_generated/api.d.ts` was edited by hand again (two new modules, generator order). `npm run convex:dev` was not run: no network to Convex
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass (Convex WP44 suites 56 tests, platform 104)
+  - `npm run build` pass. `/dashboard/builds`, `/dashboard/builds/new` and `/dashboard/builds/[planId]` are partial-prerender routes, `/api/ideas/prompts` is dynamic. Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket keeping plan state; prompts route faked in the browser with the idea's real prompts). The real prompts route answers 401 without a session and 400 for a bad slug. A bad slug on the start page redirects to Builds:
+    - Plan detail: checking a step sends `toggleStep` and announces the count. Finishing Saturday announces "Saturday done." Copy puts the prompt on the clipboard and announces "Prompt copied". A bad link sets `aria-invalid` with an error. A good link saves and shows "Open …". Finish asks, focuses "Yes, finish", then focuses "You shipped." with every step read only
+    - A wrong plan id shows "We can’t find that plan." Builds lists the active and finished plans, and the nav count reads 2
+    - Start page with a plan running shows the limit card. "Archive it and start this idea" sends `start` with `replaceActive` and opens the new plan. With nothing running, "Start my weekend plan" starts and opens it
+    - Home shows Building with the day's prompt (copy announces), Finished with the live link, and plan links on the shortlist. Saved and Ideas show one Building badge
+    - 390px: no horizontal scroll, 5 tabs. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on all 14 views
+  - Screenshots: `docs/wp/evidence/wp44-s9-plan-1440.png` and `docs/wp/evidence/wp44-s9-plan-390.png`
+- Not done here: a real signed-in check against a live Convex deployment, and the schema push. This environment cannot reach Convex
+- Next: S10 (entitlements and upgrade surfaces, flagged)

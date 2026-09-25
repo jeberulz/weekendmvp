@@ -5,14 +5,31 @@ import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
+import { STAGES, currentStage, nextStepLabel, progress } from "@/convex/platform/weekendSteps";
 import { categoryName, toolName } from "@/components/ideas/idea-meta";
+import { CopyPrompt } from "@/components/platform/builds/CopyPrompt";
+import { PlanLink } from "@/components/platform/builds/PlanLink";
+import {
+  STAGE_STATUS_LABEL,
+  dayName,
+  displayUrl,
+  finishedRecently,
+  planHref,
+  progressLine,
+  shortDate,
+  stageStatus,
+} from "@/components/platform/builds/plan-copy";
+import { usePlanPrompts } from "@/components/platform/builds/usePlanPrompts";
+import { promptForStage } from "@/lib/dashboard/weekend-prompts";
 import { trackDashboardEvent } from "@/lib/track";
+import { cn } from "@/lib/utils";
 import { ModuleSkeleton, PersonalModule } from "./module-states";
 import { SaveIdeaButton } from "./SaveIdeaButton";
 import { SetupForm } from "./SetupForm";
 import { nextStep, viewedState } from "./home-copy";
 
 type HomeState = FunctionReturnType<typeof api.platform.dashboard.home>;
+type PlanSummary = NonNullable<HomeState["activePlan"]>;
 type WeeklyRef = { slug: string; title: string } | null;
 
 const CARD = "flex flex-col gap-4 rounded-[14px] border border-home-rule bg-home-card p-5 sm:p-6";
@@ -129,7 +146,10 @@ function Shortlist({ home }: { home: HomeState }) {
             <th scope="col" className="py-2 pr-3 font-normal">Idea</th>
             <th scope="col" className="w-16 py-2 pr-3 font-normal">Hours</th>
             <th scope="col" className="w-16 py-2 pr-3 font-normal">Score</th>
-            <th scope="col" className="hidden w-[180px] py-2 font-normal sm:table-cell">Tools</th>
+            <th scope="col" className="hidden w-[180px] py-2 pr-3 font-normal sm:table-cell">Tools</th>
+            <th scope="col" className="w-11 py-2 font-normal">
+              <span className="sr-only">Plan</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -158,8 +178,11 @@ function Shortlist({ home }: { home: HomeState }) {
                   </>
                 )}
               </td>
-              <td className="hidden py-3 text-[13px] text-home-ink-2 sm:table-cell">
+              <td className="hidden py-3 pr-3 text-[13px] text-home-ink-2 sm:table-cell">
                 {idea.tools.length > 0 ? idea.tools.slice(0, 3).map(toolName).join(", ") : "None listed"}
+              </td>
+              <td className="py-1">
+                <PlanLink slug={idea.slug} title={idea.title} source="home" variant="icon" />
               </td>
             </tr>
           ))}
@@ -177,13 +200,128 @@ function Shortlist({ home }: { home: HomeState }) {
   );
 }
 
+const STAGE_BAR = {
+  done: "bg-home-sage-ink",
+  current: "bg-home-orange",
+  upcoming: "bg-home-sunk",
+} as const;
+
+/** Building (PRD 6.2): progress by day, the next step, and today's prompt. */
+function BuildingCard({ plan }: { plan: PlanSummary }) {
+  const stage = currentStage(plan.doneKeys);
+  const next = nextStepLabel(plan.doneKeys);
+  // Friday and Monday have no prompts, so there is nothing to fetch.
+  const prompts = usePlanPrompts(stage === "sat" || stage === "sun" ? plan.slug : null);
+  const prompt = prompts.status === "ready" ? promptForStage(prompts.prompts, stage) : null;
+
+  return (
+    <section aria-labelledby="next-step-title" className={CARD}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={EYEBROW}>Building now</p>
+        <p className={EYEBROW}>{progressLine(progress(plan.doneKeys))}</p>
+      </div>
+      <h2 id="next-step-title" className={TITLE}>
+        {plan.title}
+      </h2>
+      <ol aria-label="Your weekend" className="grid grid-cols-4 gap-2">
+        {STAGES.map((s) => {
+          const status = stageStatus(s.id, plan.doneKeys);
+          return (
+            <li key={s.id} className="flex flex-col gap-1.5">
+              <span aria-hidden className={cn("h-1.5 rounded-full", STAGE_BAR[status])} />
+              <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink">
+                <span aria-hidden>{s.id}</span>
+                <span className="sr-only">{dayName(s.id)}:</span>
+              </span>
+              <span className={cn("text-[12px]", status === "current" ? "font-medium text-home-ink" : "text-home-ink-3")}>
+                {STAGE_STATUS_LABEL[status]}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      {next && (
+        <div className="flex flex-col gap-0.5">
+          <p className="text-[15px] leading-[1.55] text-home-ink-2">
+            <span className="font-medium text-home-ink">Next: </span>
+            {next}.
+          </p>
+          {prompt && <p className="text-sm text-home-ink-3">Today’s prompt: {prompt.title}</p>}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {prompt && <CopyPrompt prompt={prompt} surface="home" variant="primary" />}
+        <Link
+          href={planHref(plan.planId)}
+          className={cn(
+            LINK,
+            prompt
+              ? "border border-home-rule bg-home-card text-home-ink hover:border-home-ink-3"
+              : "bg-home-ink text-home-card hover:bg-home-panel",
+          )}
+        >
+          Open plan
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/** Finished (PRD 6.2): "You shipped." with the live link, for a week. */
+function FinishedCard({ plan }: { plan: PlanSummary }) {
+  return (
+    <section aria-labelledby="next-step-title" className={CARD}>
+      <p className={EYEBROW}>Finished{plan.completedAt ? ` ${shortDate(plan.completedAt)}` : ""}</p>
+      <h2 id="next-step-title" className={TITLE}>
+        You shipped.
+      </h2>
+      <p className="text-[15px] leading-[1.55] text-home-ink-2">
+        {plan.title}
+        {plan.liveUrl ? (
+          <>
+            {" is live at "}
+            <a
+              href={plan.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+            >
+              {displayUrl(plan.liveUrl)}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            .
+          </>
+        ) : (
+          " is done."
+        )}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href="/dashboard/saved" className={`${LINK} bg-home-ink text-home-card hover:bg-home-panel`}>
+          Pick the next idea
+        </Link>
+        <Link href={planHref(plan.planId)} className={`${LINK} text-home-ink-2 hover:text-home-ink`}>
+          See the plan
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function LiveNextStep({ weekly, total }: { weekly: WeeklyRef; total: number | null }) {
   const home = useQuery(api.platform.dashboard.home);
   const viewed = useRef(false);
   const [justSetUp, setJustSetUp] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  // Browser-only (behind PersonalModule), so the local clock is safe to read.
+  const [now] = useState(() => Date.now());
   const input = home
-    ? { savedCount: home.saved.count, setupDone: home.setupDone, setupSkipped: home.setupSkipped }
+    ? {
+        savedCount: home.saved.count,
+        setupDone: home.setupDone,
+        setupSkipped: home.setupSkipped,
+        building: home.activePlan !== null,
+        finishedRecently: finishedRecently(home.lastFinished?.completedAt, now),
+      }
     : null;
   const state = input ? viewedState(input) : null;
 
@@ -199,7 +337,11 @@ function LiveNextStep({ weekly, total }: { weekly: WeeklyRef; total: number | nu
   const step = nextStep(input);
   return (
     <>
-      {step === "choosing" ? (
+      {step === "building" && home.activePlan ? (
+        <BuildingCard plan={home.activePlan} />
+      ) : step === "finished" && home.lastFinished ? (
+        <FinishedCard plan={home.lastFinished} />
+      ) : step === "choosing" ? (
         <Shortlist home={home} />
       ) : step === "setup" ? (
         <SetupCard

@@ -1,10 +1,9 @@
 /**
- * WP44-S2 workspace navigation. Builds joins in WP44-S9 once its page
- * exists, so no nav item ever leads to a 404. Settings (S8) sits in the
- * account menu beside Plan and billing.
+ * WP44-S2 workspace navigation. Builds joined in WP44-S9 with its page.
+ * Settings (S8) sits in the account menu beside Plan and billing.
  * "New idea" and "Interested" left the nav by rulings R4 and R3.
  */
-export type WorkspaceNavId = "home" | "ideas" | "saved" | "billing" | "settings";
+export type WorkspaceNavId = "home" | "ideas" | "saved" | "builds" | "billing" | "settings";
 
 export type WorkspaceNavItem = {
   id: WorkspaceNavId;
@@ -16,6 +15,7 @@ export const PRIMARY_NAV: readonly WorkspaceNavItem[] = [
   { id: "home", label: "Home", href: "/dashboard" },
   { id: "ideas", label: "Ideas", href: "/dashboard/explore" },
   { id: "saved", label: "Saved", href: "/dashboard/saved" },
+  { id: "builds", label: "Builds", href: "/dashboard/builds" },
 ];
 
 export const BILLING_NAV: WorkspaceNavItem = {
@@ -56,6 +56,8 @@ export function isWorkspaceNavCurrent(
         (pathname === "/dashboard/explore" && savedView) ||
         isAtOrUnder(pathname, "/dashboard/saved")
       );
+    case "builds":
+      return isAtOrUnder(pathname, "/dashboard/builds");
     case "billing":
       return isAtOrUnder(pathname, "/dashboard/billing");
     case "settings":

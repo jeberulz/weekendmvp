@@ -335,6 +335,23 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_ownerId", ["ownerId"]),
 
+  // WP44-S9: one row per weekend plan. Additive. `steps` lists checked
+  // steps only, bounded by the fixed step list in platform/weekendSteps.ts.
+  weekend_plans: defineTable({
+    ownerId: v.id("users"),
+    ideaId: v.id("ideas"),
+    status: v.union(v.literal("active"), v.literal("done"), v.literal("archived")),
+    steps: v.array(v.object({ key: v.string(), doneAt: v.number() })),
+    coreFeature: v.optional(v.string()),
+    liveUrl: v.optional(v.string()),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_status_and_updatedAt", ["ownerId", "status", "updatedAt"])
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
+
   tasks: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),

@@ -37,13 +37,16 @@ describe("WP44-S2 light workspace shell", () => {
     expect(dashboardPageSource).not.toContain("<main");
   });
 
-  test("links Home, Ideas and Saved, and drops New idea and Interested (R3, R4)", () => {
-    expect(PRIMARY_NAV.map((item) => item.label)).toEqual(["Home", "Ideas", "Saved"]);
+  test("links Home, Ideas, Saved and Builds, and drops New idea and Interested (R3, R4)", () => {
+    expect(PRIMARY_NAV.map((item) => item.label)).toEqual(["Home", "Ideas", "Saved", "Builds"]);
     expect(PRIMARY_NAV.map((item) => item.href)).toEqual([
       "/dashboard",
       "/dashboard/explore",
       "/dashboard/saved",
+      "/dashboard/builds",
     ]);
+    // Four tabs plus Account on phones (WP44-S9).
+    expect(shellSource).toContain("grid grid-cols-5");
     for (const source of [shellSource, navSource, accountMenuSource]) {
       expect(source).not.toContain('"/dashboard/new"');
       expect(source).not.toContain("view=interested");
@@ -116,6 +119,14 @@ describe("WP44-S2 navigation state", () => {
     expect(isWorkspaceNavCurrent("saved", "/dashboard/explore", "interested")).toBe(true);
     expect(isWorkspaceNavCurrent("saved", "/dashboard/saved", null)).toBe(true);
     expect(isWorkspaceNavCurrent("saved", "/dashboard/explore", null)).toBe(false);
+  });
+
+  test("Builds covers the list, the start page and each plan (WP44-S9)", () => {
+    expect(isWorkspaceNavCurrent("builds", "/dashboard/builds", null)).toBe(true);
+    expect(isWorkspaceNavCurrent("builds", "/dashboard/builds/new", null)).toBe(true);
+    expect(isWorkspaceNavCurrent("builds", "/dashboard/builds/abc123", null)).toBe(true);
+    expect(isWorkspaceNavCurrent("builds", "/dashboard/buildsx", null)).toBe(false);
+    expect(isWorkspaceNavCurrent("builds", "/dashboard", null)).toBe(false);
   });
 
   test("Plan and billing matches its route", () => {
