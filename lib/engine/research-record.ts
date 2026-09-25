@@ -36,6 +36,12 @@ export type Competitor = {
 export type CommunitySignal = {
   quote: string;
   citation: Citation;
+  /**
+   * True when the pipeline fetched the cited page and found the quote in it
+   * verbatim (after whitespace/punctuation normalization). False when it
+   * checked and did not find it. Absent on records made before the check.
+   */
+  verified?: boolean;
 };
 
 export type KeywordRow = {
@@ -65,6 +71,33 @@ export type UnitEconRow = {
   value: string;
 };
 
+/** One stage of the year-one acquisition funnel, e.g. 500 prospects. */
+export type FunnelStage = {
+  stage: string;
+  count: number;
+};
+
+/**
+ * Year-one revenue math. The compiler does the arithmetic (ARR and the
+ * half-close-rate downside) so the page never carries model-invented totals.
+ */
+export type YearOnePlan = {
+  funnel: FunnelStage[];
+  /** Tier the paying accounts land on (must match a pricing tier name). */
+  tier: string;
+  payingAccounts: number;
+  /** Monthly revenue per paying account in USD (seats already included). */
+  monthlyRevenuePerAccount: number;
+  /** Why the funnel numbers are plausible (sources, channel, cadence). */
+  assumptions?: string;
+};
+
+/** One idea-specific table for the Project Setup prompt. */
+export type DataTable = {
+  table: string;
+  columns: string;
+};
+
 /**
  * Optional editorial fields produced by synthesis for the MDX compiler.
  * Older records omit them; the compiler derives sensible fallbacks.
@@ -84,6 +117,16 @@ export type EditorialFields = {
   unitEconomics?: UnitEconRow[];
   /** Stack guidance specific to this idea. */
   stackNotes?: string;
+  /**
+   * Short audience label for mid-sentence use (e.g. "small GitHub teams").
+   * The full brief audience appears once, in the problem narrative.
+   */
+  audienceShort?: string;
+  /** Visual direction + voice for the Branding prompt, specific to the buyer. */
+  brandBrief?: string;
+  yearOne?: YearOnePlan;
+  /** Idea-specific tables (beyond workspaces/members/usage_events). */
+  dataModel?: DataTable[];
 };
 
 export type ResearchScores = {
@@ -151,6 +194,112 @@ export class ResearchRecordParseError extends Error {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isPositiveNum(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/** SQL identifier the Setup prompt can use as a table name. */
+const TABLE_NAME_RE = /^[a-z][a-z0-9_]{1,40}$/;
+
+export function parseYearOne(
+  value: unknown,
+  issues: string[],
+): YearOnePlan | undefined {
+  const path = "editorial.yearOne";
+  const issuesBefore = issues.length;
+  if (!isPlainObject(value)) {
+    issues.push(`${path}: expected object`);
+    return undefined;
+  }
+  const funnel: FunnelStage[] = [];
+  if (!Array.isArray(value.funnel) || value.funnel.length < 2) {
+    issues.push(`${path}.funnel: need ≥2 stages`);
+  } else {
+    value.funnel.forEach((row, i) => {
+      if (
+        !isPlainObject(row) ||
+        !isNonEmptyString(row.stage) ||
+        !isPositiveNum(row.count)
+      ) {
+        issues.push(`${path}.funnel[${i}]: need stage string and count > 0`);
+        return;
+      }
+      funnel.push({ stage: row.stage.trim(), count: Math.round(row.count) });
+    });
+    for (let i = 1; i < funnel.length; i++) {
+      if (funnel[i]!.count > funnel[i - 1]!.count) {
+        issues.push(`${path}.funnel: stage counts must not grow (stage ${i})`);
+        break;
+      }
+    }
+  }
+  if (!isNonEmptyString(value.tier)) issues.push(`${path}.tier: required`);
+  if (!isPositiveNum(value.payingAccounts)) {
+    issues.push(`${path}.payingAccounts: required number > 0`);
+  }
+  if (!isPositiveNum(value.monthlyRevenuePerAccount)) {
+    issues.push(`${path}.monthlyRevenuePerAccount: required number > 0`);
+  }
+  const last = funnel[funnel.length - 1];
+  if (
+    last &&
+    isPositiveNum(value.payingAccounts) &&
+    Math.round(value.payingAccounts) > last.count
+  ) {
+    issues.push(`${path}.payingAccounts: exceeds the last funnel stage`);
+  }
+  // Any issue (a growing funnel, more payers than the last stage) means the
+  // plan is dropped, never half-kept: callers that swallow issues must not
+  // pass an invalid plan on to the final record parse.
+  if (
+    issues.length > issuesBefore ||
+    funnel.length < 2 ||
+    !isNonEmptyString(value.tier) ||
+    !isPositiveNum(value.payingAccounts) ||
+    !isPositiveNum(value.monthlyRevenuePerAccount)
+  ) {
+    return undefined;
+  }
+  return {
+    funnel,
+    tier: value.tier.trim(),
+    payingAccounts: Math.round(value.payingAccounts),
+    monthlyRevenuePerAccount: value.monthlyRevenuePerAccount,
+    ...(isNonEmptyString(value.assumptions)
+      ? { assumptions: value.assumptions.trim() }
+      : {}),
+  };
+}
+
+export function parseDataModel(
+  value: unknown,
+  issues: string[],
+): DataTable[] | undefined {
+  const path = "editorial.dataModel";
+  if (!Array.isArray(value)) {
+    issues.push(`${path}: must be an array when present`);
+    return undefined;
+  }
+  const tables: DataTable[] = [];
+  value.forEach((row, i) => {
+    if (
+      !isPlainObject(row) ||
+      !isNonEmptyString(row.table) ||
+      !isNonEmptyString(row.columns)
+    ) {
+      issues.push(`${path}[${i}]: need table and columns strings`);
+      return;
+    }
+    const table = row.table.trim().toLowerCase();
+    if (!TABLE_NAME_RE.test(table)) {
+      issues.push(`${path}[${i}].table: '${table}' is not a SQL identifier`);
+      return;
+    }
+    tables.push({ table, columns: row.columns.trim() });
+  });
+  return tables.length > 0 ? tables : undefined;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -324,10 +473,16 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         }
         if (!isNonEmptyString(sig.quote)) issues.push(`${path}.quote: required`);
         const citation = parseCitation(sig.citation, `${path}.citation`, issues);
+        if (sig.verified !== undefined && typeof sig.verified !== "boolean") {
+          issues.push(`${path}.verified: must be boolean when present`);
+        }
         if (citation && isNonEmptyString(sig.quote)) {
           communitySignals.push({
             quote: sig.quote.trim(),
             citation,
+            ...(typeof sig.verified === "boolean"
+              ? { verified: sig.verified }
+              : {}),
           });
         }
       });
@@ -451,6 +606,8 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         "solutionNarrative",
         "competitiveNarrative",
         "stackNotes",
+        "audienceShort",
+        "brandBrief",
       ] as const) {
         const v = input.editorial[key];
         if (v !== undefined) {
@@ -508,6 +665,14 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
           });
           if (rows.length > 0) ed.unitEconomics = rows;
         }
+      }
+      if (input.editorial.yearOne !== undefined) {
+        const yearOne = parseYearOne(input.editorial.yearOne, issues);
+        if (yearOne) ed.yearOne = yearOne;
+      }
+      if (input.editorial.dataModel !== undefined) {
+        const dataModel = parseDataModel(input.editorial.dataModel, issues);
+        if (dataModel) ed.dataModel = dataModel;
       }
       if (Object.keys(ed).length > 0) editorial = ed;
     }

@@ -34,6 +34,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as cheerio from 'cheerio';
+import { ENGINE_DRAFT_PREFIX } from './lib/idea-quality.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const contentIdeasDir = path.join(root, 'content', 'ideas');
@@ -187,13 +188,22 @@ function buildIdea(raw, { draft }) {
 
 function buildIdeas() {
   const manifest = readJson('ideas/manifest.json');
-  const items = manifest.ideas.map((i) => buildIdea(i, { draft: false }));
+  // Idea-engine spot-check drafts must never reach the live grid, even if a
+  // row lands in the public manifest by mistake. They live in engine/drafts/.
+  const notEngineDraft = (i) => {
+    if (!String(i.slug).startsWith(ENGINE_DRAFT_PREFIX)) return true;
+    console.warn(`  skip: ${i.slug} is an engine draft (engine/drafts/), not seeded`);
+    return false;
+  };
+  const items = manifest.ideas
+    .filter(notEngineDraft)
+    .map((i) => buildIdea(i, { draft: false }));
   if (includeDrafts) {
     const draftPath = path.join(root, 'ideas/manifest.draft.json');
     if (fs.existsSync(draftPath)) {
-      const drafts = JSON.parse(fs.readFileSync(draftPath, 'utf8')).ideas.filter(
-        (d) => !manifest.ideas.some((i) => i.slug === d.slug),
-      );
+      const drafts = JSON.parse(fs.readFileSync(draftPath, 'utf8'))
+        .ideas.filter(notEngineDraft)
+        .filter((d) => !manifest.ideas.some((i) => i.slug === d.slug));
       items.push(...drafts.map((d) => buildIdea(d, { draft: true })));
     }
   }

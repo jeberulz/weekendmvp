@@ -1,0 +1,31 @@
+quote-gate live N=3 — Mac private worker re-run 3
+host: [redacted] (home Mac worker)
+egress_ip: [redacted home IP]
+branch: cursor/phase-7-skill-flip-d6b7
+tip_at_start: a24495f
+date_utc: 2026-09-24T11:43:00Z
+
+PROBE
+  Reddit www .json / .json     HTTP 403 (HTML theme-beta block ~190KB)
+  Reddit listing hot.json      HTTP 403
+  old.reddit .json             HTTP 302 → login interstitial (no JSON)
+  ENGINE_QUOTE_FETCH_UA retry  HTTP 403 (unchanged)
+  HN Algolia item              HTTP 200 OK
+
+SECRET GATE (accurate)
+  OPENAI_API_KEY               UNSET in shell; .env.local line EMPTY
+  PERPLEXITY_API_KEY           UNSET / missing from .env.local
+  DATAFORSEO_LOGIN/PASSWORD    UNSET / missing from .env.local
+  REDDIT_CLIENT_ID/SECRET      UNSET (expected if public .json worked)
+
+LIVE N=3
+  SKIPPED — early stop per instructions (Reddit still 403 on this network).
+  Did not burn research/compile/audit for:
+    rfp-assistant / code-reviewer / landing-page-generator-ecommerce
+
+VERDICT
+  Clear to merge from quote-gate side? NO
+  Primary blocker: Reddit public .json HTTP 403 from home egress [redacted home IP]
+    (same failure class as Cloud Agent; home path does not unblock).
+  Secondary: live provider secrets not available on this private worker
+    (cannot run N=3 even if Reddit were reachable without injecting secrets).

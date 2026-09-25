@@ -19,6 +19,7 @@ import {
   MDXRemote,
   type MDXRemoteOptions,
 } from "next-mdx-remote-client/rsc";
+import { isEngineDraftSlug } from "./engine-drafts.ts";
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 
 /* ------------------------------------------------------------------ */
@@ -38,7 +39,7 @@ export async function readMdxFile(
   dir: string,
   slug: string,
 ): Promise<MdxFile | null> {
-  if (!SLUG_RE.test(slug)) return null;
+  if (!SLUG_RE.test(slug) || isEngineDraftSlug(slug)) return null;
   const file = path.join(process.cwd(), dir, `${slug}.mdx`);
   try {
     const raw = await fs.readFile(file, "utf8");
@@ -49,12 +50,15 @@ export async function readMdxFile(
   }
 }
 
-/** All publishable slugs in a content dir (skips _private files/dirs). */
+/** All publishable slugs in a content dir (skips _private files and engine drafts). */
 export async function listMdxSlugs(dir: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(path.join(process.cwd(), dir));
     return entries
-      .filter((f) => f.endsWith(".mdx") && !f.startsWith("_"))
+      .filter(
+        (f) =>
+          f.endsWith(".mdx") && !f.startsWith("_") && !isEngineDraftSlug(f),
+      )
       .map((f) => f.slice(0, -".mdx".length))
       .sort();
   } catch {

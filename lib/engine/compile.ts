@@ -7,10 +7,12 @@
  */
 
 import type {
+  DataTable,
   EditorialFields,
   PricingTier,
   ResearchRecord,
   UnitEconRow,
+  YearOnePlan,
 } from "./research-record.ts";
 
 /** Keep in sync with scripts/lib/idea-sections.mjs */
@@ -179,6 +181,77 @@ function audienceLabel(record: ResearchRecord): string {
   return record.brief.targetCustomer.trim().replace(/\s+/g, " ");
 }
 
+/**
+ * Casing for a label used mid-sentence: "Indie developers" → "indie
+ * developers", but acronyms stay ("SMB SaaS teams", "B2B buyers").
+ */
+export function midSentence(label: string): string {
+  const first = label.split(/\s+/)[0] ?? "";
+  const isAcronym = first.length > 1 && first === first.toUpperCase();
+  const hasInnerCaps = /[A-Z]/.test(first.slice(1));
+  if (isAcronym || hasInnerCaps) return label;
+  return label.charAt(0).toLowerCase() + label.slice(1);
+}
+
+/** Short audience for repeated mentions; the full label appears once. */
+function audienceShortLabel(record: ResearchRecord): string {
+  return midSentence(
+    record.editorial?.audienceShort?.trim() || audienceLabel(record),
+  );
+}
+
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+const count = new Intl.NumberFormat("en-US");
+
+/**
+ * Year-one funnel with compiler-computed ARR and a half-close-rate downside,
+ * so revenue totals are arithmetic, never model prose.
+ */
+export function yearOneLines(plan: YearOnePlan): string {
+  const arr = plan.payingAccounts * plan.monthlyRevenuePerAccount * 12;
+  const downsideAccounts = Math.max(1, Math.floor(plan.payingAccounts / 2));
+  const downsideArr = downsideAccounts * plan.monthlyRevenuePerAccount * 12;
+  // Show cents when the price has them, so "10 × $24.99/mo" matches the ARR.
+  const monthly = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: Number.isInteger(plan.monthlyRevenuePerAccount) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(plan.monthlyRevenuePerAccount);
+  const lines = [
+    ...plan.funnel.map((f) => `- **${count.format(f.count)}** — ${f.stage}`),
+    `- **${count.format(plan.payingAccounts)} × ${monthly}/mo = ${usd.format(arr)} ARR** — ${plan.tier} accounts paying by month 12`,
+    `- **${usd.format(downsideArr)} ARR** — downside if the close rate halves (${count.format(downsideAccounts)} accounts)`,
+  ];
+  return [
+    plan.assumptions ? plan.assumptions : null,
+    lines.join("\n"),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+/** Always-present tables; the idea's own tables go between them. */
+function setupTables(
+  planCheck: string,
+  dataModel: DataTable[] | undefined,
+): string {
+  const ideaTables = (dataModel ?? [])
+    .map((t) => `- ${t.table}(${t.columns})`)
+    .join("\n");
+  return [
+    `- workspaces(id uuid pk, name text, plan text check plan in (${planCheck}), created_at timestamptz)`,
+    "- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))",
+    ideaTables ||
+      "- documents(id, workspace_id fk, title, body, source)\n- jobs(id, workspace_id fk, status, input jsonb, output jsonb)",
+    "- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)",
+  ].join("\n");
+}
+
 function nicheStats(record: ResearchRecord) {
   return record.market.stats.filter(
     (s) => !MEGA_TAM_RE.test(`${s.claim} ${s.value}`),
@@ -189,7 +262,7 @@ function defaultTiers(record: ResearchRecord): PricingTier[] {
   const fromEd = record.editorial?.pricingTiers;
   if (fromEd && fromEd.length >= 2) return fromEd;
   const notes = record.goToMarket.pricingNotes;
-  const audience = audienceLabel(record);
+  const audience = audienceShortLabel(record);
   const name = productName(record);
   return [
     {
@@ -254,20 +327,36 @@ function trimDot(s: string): string {
  * Drop later copies of any ≥8-word sentence (research sometimes restates
  * the same line in problem + market). Preserves code fences untouched.
  */
-function collapseDuplicateSentences(text: string): string {
+export function collapseDuplicateSentences(text: string): string {
   const parts = text.split(/(```[\s\S]*?```)/g);
   const seen = new Set<string>();
   return parts
     .map((part) => {
       if (part.startsWith("```")) return part;
-      return part.replace(/[^.!?\n]+[.!?]+/g, (sentence) => {
-        const words = sentence.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) || [];
-        if (words.length < 8) return sentence;
-        const key = words.join(" ").toLowerCase();
-        if (seen.has(key)) return "";
-        seen.add(key);
-        return sentence;
-      });
+      return part
+        .split("\n")
+        .map((line) => {
+          // Quote attributions, list rows, and headings carry links and
+          // titles; a "sentence" there is not prose and must stay whole.
+          if (/^\s*(>|[-*]\s|\d+\.\s|#)/.test(line)) return line;
+          // Mask markdown links so a '.' or '?' inside a title or URL is
+          // never read as a sentence end.
+          const links: string[] = [];
+          const masked = line.replace(/\[[^\]]*\]\([^)]*\)/g, (m) => {
+            links.push(m);
+            return `\u0000${links.length - 1}\u0000`;
+          });
+          const deduped = masked.replace(/[^.!?]+[.!?]+/g, (sentence) => {
+            const words = sentence.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) || [];
+            if (words.length < 8) return sentence;
+            const key = words.join(" ").toLowerCase();
+            if (seen.has(key)) return "";
+            seen.add(key);
+            return sentence;
+          });
+          return deduped.replace(/\u0000(\d+)\u0000/g, (_, i) => links[Number(i)]!);
+        })
+        .join("\n");
     })
     .join("")
     .replace(/[ \t]+\n/g, "\n")
@@ -298,17 +387,19 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const unitEcon = defaultUnitEcon(record);
   const tierKeys = tiers.map((t) => tierKey(t.name));
 
+  const audienceShort = audienceShortLabel(record);
+
   const competitorLines = record.competitors
     .map((c) => {
       const notes = trimDot(
         c.notes?.trim() ||
-          `${c.name} competes with ${name} on the neighboring job for ${audience}`,
+          `${c.name} competes with ${name} for ${audienceShort}`,
       );
       const pricing = trimDot(c.pricing);
       if (ROUNDUP_URL_RE.test(c.url)) {
         return `- **${c.name}** — ${notes}. Published pricing: ${pricing}.`;
       }
-      return `- **${c.name}** — ${notes}. Published pricing: ${pricing}. ${mdLink(`${c.name} (vendor page)`, c.url)}`;
+      return `- **${c.name}** — ${notes}. Published pricing: ${pricing}. ${mdLink(`${c.name} pricing`, c.url)}`;
     })
     .join("\n");
 
@@ -319,7 +410,10 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     )
     .join("\n");
 
+  // Only quotes the pipeline found on the cited page (or legacy records that
+  // predate the check). A quote it checked and could not find never ships.
   const signalBlocks = record.community.signals
+    .filter((s) => s.verified !== false)
     .map(
       (s) =>
         `> "${s.quote}"\n>\n> — ${mdLink(s.citation.title, s.citation.url)}`,
@@ -341,7 +435,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const keywordLines = record.keywords
     .map(
       (k) =>
-        `- **${k.term}** — ${k.volume}/mo, competition ${k.competition}, CPC $${k.cpc.toFixed(2)} (provider)`,
+        `- **${k.term}** — ${k.volume}/mo, competition ${k.competition}, CPC $${k.cpc.toFixed(2)}`,
     )
     .join("\n");
 
@@ -363,22 +457,18 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   const problemNarrative =
     ed.problemNarrative?.trim() ||
     joinBlocks([
-      `${record.brief.oneLiner} That is the job ${name} owns for ${audience}.`,
+      `${record.brief.oneLiner} That is the job ${name} owns for ${midSentence(audience)}.`,
       record.community.summary,
-      `Why ${name} now for ${audience}: ${record.whyNow}`,
+      `Why now: ${record.whyNow}`,
     ]);
 
   const solutionNarrative =
     ed.solutionNarrative?.trim() ||
     joinBlocks([
       `${name} is not another undifferentiated AI tool. ${record.goToMarket.positioning}`,
-      `${name} is built for ${audience}, not a generic seat count.`,
     ]);
 
-  const problemBody = joinBlocks([
-    problemNarrative,
-    signalBlocks,
-  ]);
+  const problemBody = joinBlocks([problemNarrative, signalBlocks]);
 
   const solutionBody = joinBlocks([
     solutionNarrative,
@@ -389,49 +479,56 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     dontBuild,
   ]);
 
-  const whyLine = `Timing for ${name}: ${record.whyNow}`;
   const marketBody = joinBlocks([
     record.market.summary,
-    problemNarrative.includes(trimDot(record.whyNow)) ? null : whyLine,
-    stats.length > 0
-      ? `Cited niche signals for ${audience}:\n\n${statLines}`
-      : null,
+    problemNarrative.includes(trimDot(record.whyNow))
+      ? null
+      : `Why now: ${record.whyNow}`,
+    stats.length > 0 ? `**Market signals**\n\n${statLines}` : null,
     keywordLines
-      ? `Keyword demand for ${name} (provider metrics):\n\n${keywordLines}`
+      ? `**Search demand** (DataForSEO, US monthly)\n\n${keywordLines}`
       : null,
   ]);
 
   const competitiveBody = joinBlocks([
     ed.competitiveNarrative?.trim() ||
-      `${name} wins for ${audience} by staying narrower than the platforms below.`,
+      `${name} wins by staying narrower than the platforms below.`,
     competitorLines,
     "**Your Opportunity**",
-    `${name} opportunity for ${audience}: ${record.goToMarket.positioning}`,
+    record.goToMarket.positioning,
   ]);
 
   const businessBody = joinBlocks([
-    `${name} pricing for ${audience}: ${record.goToMarket.pricingNotes}`,
+    record.goToMarket.pricingNotes,
     tierLines,
     "**Unit Economics**",
     unitLines,
-    channelLines
-      ? `${name} channels:\n\n${channelLines}`
-      : null,
+    ed.yearOne ? "**Year-One Math**" : null,
+    ed.yearOne ? yearOneLines(ed.yearOne) : null,
+    channelLines ? `**Channels**\n\n${channelLines}` : null,
   ]);
 
+  const tableNames = (ed.dataModel ?? []).map((t) => t.table);
   const stackBody = joinBlocks([
     ed.stackNotes?.trim() ||
-      `${name} for ${audience}: Next.js + TypeScript, Postgres, auth, Stripe for the ${tiers.map((t) => t.name).join(" / ")} tiers, Vercel hosting. Add LLM/embeddings only where a How-it-works step needs them (${stepTitles}).`,
+      `Next.js + TypeScript, Postgres, auth, Stripe for the ${tiers.map((t) => t.name).join(" / ")} tiers, Vercel hosting. Add LLM/embeddings only where a How-it-works step needs them (${stepTitles}).`,
     [
-      `- **Next.js + TypeScript** — ${name} UI, API routes, and screens for ${audience}`,
-      `- **Postgres (Supabase or Neon)** — ${name} workspaces, documents, usage meters`,
-      `- **Auth (Clerk or Supabase Auth)** — ${name} seats and roles for ${audience}`,
-      `- **Stripe Billing** — ${name} subscriptions matching ${tiers.map((t) => t.name).join(" / ")}`,
-      `- **Vercel** — host ${name} previews and production`,
+      `- **Next.js + TypeScript** — screens for ${stepTitles}`,
+      `- **Postgres (Supabase or Neon)** — ${tableNames.length > 0 ? tableNames.join(", ") : "workspaces, members, usage meters"}`,
+      "- **Auth (Clerk or Supabase Auth)** — workspace seats and roles",
+      `- **Stripe Billing** — ${tiers.map((t) => t.name).join(" / ")} subscriptions`,
+      "- **Vercel** — previews and production",
     ].join("\n"),
   ]);
 
-  const brandMarkHint = `a simple mark that fits ${name}'s job for ${audience}`;
+  const coreFeatureLines = steps.map((s, i) => {
+    const firstSentence = s.body.split(/(?<=[.!?])\s+/)[0] ?? s.body;
+    return `${i + 1}. ${s.title}: ${trimDot(firstSentence)}.`;
+  });
+
+  const brandBrief =
+    ed.brandBrief?.trim() ||
+    `Position ${name} as ${trimDot(record.goToMarket.positioning)}.`;
 
   const promptsBody = [
     `Copy these ${name} build prompts into Claude, Cursor, or your AI coding tool.`,
@@ -439,30 +536,34 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     "**1. Project Setup**",
     "",
     "```text",
-    `Create a Next.js App Router (TypeScript, Tailwind) app named ${name} for ${audience}.`,
-    `Postgres: workspaces(id, name, plan text check plan in (${planCheck})), members(id, workspace_id, user_id, role), documents(id, workspace_id, title, body, source), jobs(id, workspace_id, status, input jsonb, output jsonb), usage_events(id, workspace_id, tokens, usd_micros).`,
-    `Stripe catalog must match Business Model tiers exactly: ${tierSummary}. Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ${priceEnv}, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
-    `Non-goals for ${name}: ${dontBuild}`,
+    `Create a Next.js App Router (TypeScript, Tailwind) app named ${name} for ${audienceShort}.`,
+    "Postgres tables with constraints:",
+    setupTables(planCheck, ed.dataModel),
+    `Stripe catalog must match the pricing tiers exactly: ${tierSummary}. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.`,
+    `Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ${priceEnv}, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
+    `Non-goals: ${dontBuild}`,
     "```",
     "",
     "**2. Core Feature**",
     "",
     "```text",
-    `Implement ${name}'s workflow as separate screens: ${stepTitles}.`,
-    `Persist ${name} job state between steps. Acceptance: a new workspace finishes ${steps.map((s) => s.title).join(" → ")} on sample data for ${audience}.`,
+    `Build ${name}'s core workflow as ${steps.length} screens, in order:`,
+    ...coreFeatureLines,
+    `Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes ${steps.map((s) => s.title).join(" → ")} without leaving the app, and every generated item links back to its source.`,
     "```",
     "",
     "**3. Landing Page**",
     "",
     "```text",
-    `One-pager for ${name}. Hero: "${record.brief.oneLiner}".`,
-    `Sections: problem for ${audience}; how ${name} works (${stepTitles}); competitor strip (${record.competitors.map((c) => c.name).join(", ")}); pricing (${tierSummary}); CTA into the ${name} core workflow.`,
+    `One-pager for ${name}. Hero: "${record.brief.oneLiner}"`,
+    `Sections: the problem for ${audienceShort}; how ${name} works (${stepTitles}); competitor strip (${record.competitors.map((c) => `${c.name}: ${trimDot(c.pricing)}`).join("; ")}); pricing (${tierSummary}); one CTA into the first workflow step.`,
     "```",
     "",
     "**4. Branding Package**",
     "",
     "```text",
-    `Brand ${name}: wordmark plus ${brandMarkHint}. Voice: specific buyers (${audience}), specific money. Always say ${name} — never "our AI platform". One-page ${name} brand sheet (hex, type, three CTA lines).`,
+    `Brand ${name} for ${audienceShort}. ${brandBrief}`,
+    `Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, three CTA lines, a pricing-page headline, and two onboarding email subject lines. Always say ${name}, never "our AI platform".`,
     "```",
   ].join("\n");
 

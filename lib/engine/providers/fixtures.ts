@@ -11,6 +11,8 @@
  * captured from live traffic.
  */
 
+import type { SourceTextProvider } from "./sourceText.ts";
+
 import type { Fetcher } from "./openai.ts";
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -168,6 +170,39 @@ export const SYNTHESIS_SCORE_FIXTURE = {
         { label: "CiteDraft target gross margin Team", value: "~75%" },
         { label: "CiteDraft CAC payback", value: "under 2 months at $199" },
       ],
+      audienceShort: "SMB SaaS sales teams",
+      brandBrief:
+        "CiteDraft should read like a careful sales engineer: calm, exact, and a little dry. The mark signals a footnote or a checked source, never a sparkle or chat bubble. Use one ink-blue accent on paper white. Copy names the questionnaire, the deadline, and the approved exhibit; it never promises that AI writes the answer for you.",
+      yearOne: {
+        funnel: [
+          { stage: "SE leads sourced from RevOps communities and LinkedIn", count: 400 },
+          { stage: "teams upload a real questionnaire in the trial", count: 60 },
+          { stage: "teams pay after their first export", count: 15 },
+        ],
+        tier: "Team",
+        payingAccounts: 15,
+        monthlyRevenuePerAccount: 199,
+        assumptions:
+          "Assumes a 15% trial rate from warm community outreach and a 25% trial-to-paid rate once a team exports one cited questionnaire.",
+      },
+      dataModel: [
+        {
+          table: "library_documents",
+          columns: "id, workspace_id fk, title text, body text, approved_by uuid, approved_at timestamptz",
+        },
+        {
+          table: "questionnaires",
+          columns: "id, workspace_id fk, buyer text, due_at timestamptz, status text check status in ('draft','review','exported')",
+        },
+        {
+          table: "answers",
+          columns: "id, questionnaire_id fk, question text, draft text, confidence numeric, reviewer_id uuid null",
+        },
+        {
+          table: "answer_citations",
+          columns: "id, answer_id fk, library_document_id fk, span text",
+        },
+      ],
       stackNotes:
         "CiteDraft runs Next.js + Postgres + embeddings over the win library. Stripe seats for Starter/Team/Scale. No custom deploy plane. Meter tokens per workspace from week one so Team margins stay visible.",
     },
@@ -238,7 +273,7 @@ export const SEARCH_MARKET_FIXTURE = {
     {
       message: {
         content:
-          "RFP software market shows high-teens CAGR through the mid-2030s. AI-augmented response automation is sized in the low single-digit billions USD for 2024 with double-digit growth.",
+          "RFP software market shows high-teens CAGR through the mid-2030s [1]. AI-augmented response automation is sized in the low single-digit billions USD for 2024 with double-digit growth [2].",
       },
     },
   ],
@@ -262,7 +297,7 @@ export const SEARCH_COMPETITORS_FIXTURE = {
     {
       message: {
         content:
-          "Loopio Foundations from ~$20,000/year. Responsive is quote-based enterprise. Qvidian (Upland) runs 5-figure annual contracts.",
+          "Loopio Foundations from ~$20,000/year [1]. Responsive is quote-based enterprise [2]. Qvidian (Upland) runs 5-figure annual contracts [3].",
       },
     },
   ],
@@ -291,7 +326,7 @@ export const SEARCH_COMMUNITY_FIXTURE = {
     {
       message: {
         content:
-          "Sales engineers report burning weekends on SOC2 questionnaires. Teams say Loopio only works if you already have a proposal ops hire.",
+          "Sales engineers report burning weekends on SOC2 questionnaires [1]. Teams say Loopio only works if you already have a proposal ops hire [2].",
       },
     },
   ],
@@ -412,4 +447,22 @@ export function unreachableFetch(): Fetcher {
   return (async () => {
     throw new Error("ECONNREFUSED");
   }) as Fetcher;
+}
+
+/**
+ * Fixture page text for quote verification: the community snippets stand in
+ * for the cited threads, so fixture quotes verify with no network.
+ */
+export function fixtureSourceText(
+  pages: Record<string, string> = Object.fromEntries(
+    SEARCH_COMMUNITY_FIXTURE.search_results.map((r) => [r.url, r.snippet]),
+  ),
+): SourceTextProvider {
+  return {
+    async fetchText(url: string): Promise<string> {
+      const text = pages[url];
+      if (text === undefined) throw new Error(`fixture: no page for ${url}`);
+      return text;
+    },
+  };
 }

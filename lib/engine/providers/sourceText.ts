@@ -1,0 +1,422 @@
+/**
+ * Fetch the readable text of a cited page so the pipeline can check that a
+ * community quote really appears there. Not a billed provider: no API key,
+ * no cost record.
+ *
+ * - Reddit threads → the official OAuth API (app-only token) when
+ *   REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET are set, else the public `.json`
+ *   listing. Reddit answers the public endpoint with 403 from most cloud
+ *   networks, so set the credentials anywhere but a home connection.
+ * - Hacker News items → the Algolia items API (story + comment tree).
+ * - Anything else → the HTML with scripts/styles/tags stripped.
+ *
+ * Citation URLs come from search results, so every request on every path
+ * (the first hop and each redirect) must resolve to a public address, and the
+ * default transport re-checks the address the socket actually connects to:
+ * loopback, private, link-local and metadata-service targets are refused.
+ */
+
+import { lookup as dnsLookup } from "node:dns";
+import { lookup } from "node:dns/promises";
+import http from "node:http";
+import https from "node:https";
+import type { LookupFunction } from "node:net";
+import { isIP } from "node:net";
+
+export type SourceTextProvider = {
+  fetchText(url: string): Promise<string>;
+};
+
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
+export type CreateSourceTextOptions = {
+  fetchImpl?: FetchLike;
+  timeoutMs?: number;
+  userAgent?: string;
+  /** Reddit app credentials (script or web app, app-only OAuth). */
+  redditClientId?: string;
+  redditClientSecret?: string;
+  /** Resolve a hostname to its IP addresses (defaults to DNS). */
+  resolveHost?: (hostname: string) => Promise<string[]>;
+};
+
+const MAX_REDIRECTS = 5;
+
+const DEFAULT_UA =
+  "weekendmvp-idea-engine/1.0 (quote verification; +https://www.weekendmvp.app)";
+
+/** Collect every string under the given keys in a nested JSON value. */
+function collectStrings(value: unknown, keys: Set<string>, out: string[]): void {
+  if (Array.isArray(value)) {
+    for (const v of value) collectStrings(v, keys, out);
+    return;
+  }
+  if (typeof value !== "object" || value === null) return;
+  for (const [k, v] of Object.entries(value)) {
+    if (typeof v === "string" && keys.has(k)) out.push(v);
+    else if (typeof v === "object") collectStrings(v, keys, out);
+  }
+}
+
+/** The character for a numeric entity, or the raw entity when out of range. */
+function codePointOr(n: number, raw: string): string {
+  return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : raw;
+}
+
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    // Numeric entities (HN's Algolia text encodes "/" as &#x2F;, "'" as &#x27;).
+    .replace(/&#x([0-9a-f]+);/gi, (m: string, h: string) => codePointOr(parseInt(h, 16), m))
+    .replace(/&#(\d+);/g, (m: string, d: string) => codePointOr(Number(d), m))
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    // Last, so "&amp;lt;" becomes "&lt;" text rather than "<".
+    .replace(/&amp;/g, "&");
+}
+
+/** Rewrite a Reddit thread URL to its JSON listing, or null. */
+export function redditJsonUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)reddit\.com$/.test(u.hostname)) return null;
+    if (!/\/comments\//.test(u.pathname)) return null;
+    const pathname = u.pathname.replace(/\/+$/, "");
+    return `https://www.reddit.com${pathname}.json?limit=500&raw_json=1`;
+  } catch {
+    return null;
+  }
+}
+
+/** Reddit thread path (`/r/x/comments/id/slug`) for the OAuth host, or null. */
+export function redditThreadPath(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (!/(^|\.)reddit\.com$/.test(u.hostname)) return null;
+    if (!/\/comments\//.test(u.pathname)) return null;
+    return u.pathname.replace(/\/+$/, "");
+  } catch {
+    return null;
+  }
+}
+
+/** Rewrite a Hacker News item URL to the Algolia items API, or null. */
+export function hnApiUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname !== "news.ycombinator.com") return null;
+    const id = u.searchParams.get("id");
+    if (!id || !/^\d+$/.test(id)) return null;
+    return `https://hn.algolia.com/api/v1/items/${id}`;
+  } catch {
+    return null;
+  }
+}
+
+function ipv4Blocked(ip: string): boolean {
+  const [a = 0, b = 0, c = 0] = ip.split(".").map(Number);
+  return (
+    a === 0 || // "this" network
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) || // carrier-grade NAT
+    (a === 169 && b === 254) || // link-local, cloud metadata
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 198 && (b === 18 || b === 19)) || // benchmarking
+    a >= 224 // multicast and reserved
+  );
+}
+
+/** Expand an IPv6 address (any notation) to its eight 16-bit groups. */
+function ipv6Groups(ip: string): number[] | null {
+  let text = ip.toLowerCase().replace(/%.*$/, "");
+  // A trailing dotted IPv4 part becomes two hex groups.
+  const dotted = text.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (dotted) {
+    const [a, b, c, d] = dotted[2]!.split(".").map(Number) as [number, number, number, number];
+    text = `${dotted[1]}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const halves = text.split("::");
+  if (halves.length > 2) return null;
+  const head = halves[0] ? halves[0].split(":") : [];
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
+  const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
+  const parts = [...head, ...Array<string>(Math.max(fill, 0)).fill("0"), ...tail];
+  if (parts.length !== 8) return null;
+  const groups = parts.map((g) => parseInt(g, 16));
+  return groups.every((g) => Number.isInteger(g) && g >= 0 && g <= 0xffff) ? groups : null;
+}
+
+/** True for loopback, private, link-local, metadata and other non-public IPs. */
+export function isBlockedAddress(ip: string): boolean {
+  const version = isIP(ip);
+  if (version === 4) return ipv4Blocked(ip);
+  if (version !== 6) return true;
+  const g = ipv6Groups(ip);
+  if (!g) return true;
+  const embedded = () => `${g[6]! >> 8}.${g[6]! & 0xff}.${g[7]! >> 8}.${g[7]! & 0xff}`;
+  const zeroTo = (n: number) => g.slice(0, n).every((x) => x === 0);
+  // ::a.b.c.d (IPv4-compatible, also covers :: and ::1) and ::ffff:a.b.c.d (mapped),
+  // in dotted or hex form.
+  if (zeroTo(6) || (zeroTo(5) && g[5] === 0xffff)) {
+    return zeroTo(7) ? true : ipv4Blocked(embedded());
+  }
+  // 64:ff9b::/96 NAT64 carries an IPv4 address in its last 32 bits.
+  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every((x) => x === 0)) {
+    return ipv4Blocked(embedded());
+  }
+  return (
+    (g[0]! & 0xfe00) === 0xfc00 || // unique local fc00::/7
+    (g[0]! & 0xffc0) === 0xfe80 || // link-local fe80::/10
+    (g[0]! & 0xff00) === 0xff00 // multicast
+  );
+}
+
+async function defaultResolveHost(hostname: string): Promise<string[]> {
+  const found = await lookup(hostname, { all: true, verbatim: true });
+  return found.map((a) => a.address);
+}
+
+/** Throw unless the URL is http(s) and its host resolves only to public IPs. */
+export async function assertPublicUrl(
+  url: string,
+  resolveHost: (hostname: string) => Promise<string[]> = defaultResolveHost,
+): Promise<void> {
+  const u = new URL(url);
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error(`Refusing non-http source URL: ${url}`);
+  }
+  const host = u.hostname.replace(/^\[|\]$/g, "").toLowerCase();
+  if (host === "localhost" || host.endsWith(".localhost")) {
+    throw new Error(`Refusing non-public source URL: ${url}`);
+  }
+  const addresses = isIP(host) ? [host] : await resolveHost(host);
+  if (addresses.length === 0 || addresses.some(isBlockedAddress)) {
+    throw new Error(`Refusing non-public source URL: ${url}`);
+  }
+}
+
+/**
+ * DNS lookup for the socket itself: refuses the connection when any resolved
+ * address is non-public. Because the check runs at connect time, a host that
+ * re-resolves to a private address after `assertPublicUrl` is still refused.
+ */
+const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
+  dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) return callback(err, "", 0);
+    const list = addresses as { address: string; family: number }[];
+    if (list.length === 0 || list.some((a) => isBlockedAddress(a.address))) {
+      return callback(
+        Object.assign(new Error(`Refusing non-public address for ${hostname}`), {
+          code: "ENONPUBLIC",
+        }),
+        "",
+        0,
+      );
+    }
+    if (options.all) return callback(null, list as never);
+    callback(null, list[0]!.address, list[0]!.family);
+  });
+};
+
+/**
+ * Minimal fetch over node:http(s) with `publicOnlyLookup`. It never follows
+ * redirects itself; the caller checks each hop.
+ */
+export const publicOnlyFetch: FetchLike = (input, init = {}) =>
+  new Promise<Response>((resolve, reject) => {
+    const u = new URL(input);
+    const client = u.protocol === "https:" ? https : http;
+    const headers: Record<string, string> = {};
+    new Headers(init.headers).forEach((v, k) => {
+      headers[k] = v;
+    });
+    const req = client.request(
+      u,
+      {
+        method: init.method ?? "GET",
+        headers,
+        lookup: publicOnlyLookup,
+        signal: init.signal ?? undefined,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (c: Buffer) => chunks.push(c));
+        res.on("error", reject);
+        res.on("end", () => {
+          const status = res.statusCode ?? 0;
+          const outHeaders = new Headers();
+          for (const [k, v] of Object.entries(res.headers)) {
+            if (typeof v === "string") outHeaders.set(k, v);
+            else if (Array.isArray(v)) for (const item of v) outHeaders.append(k, item);
+          }
+          const empty = status === 204 || status === 304 || init.method === "HEAD";
+          resolve(new Response(empty ? null : Buffer.concat(chunks), { status, headers: outHeaders }));
+        });
+      },
+    );
+    req.on("error", reject);
+    if (typeof init.body === "string") req.write(init.body);
+    req.end();
+  });
+
+export function createSourceTextProvider(
+  options: CreateSourceTextOptions = {},
+): SourceTextProvider {
+  const fetchImpl: FetchLike = options.fetchImpl ?? publicOnlyFetch;
+  const timeoutMs = options.timeoutMs ?? 15_000;
+  // An empty value (e.g. copied from .env.example) means "unset".
+  const userAgent =
+    options.userAgent?.trim() ||
+    process.env.ENGINE_QUOTE_FETCH_UA?.trim() ||
+    DEFAULT_UA;
+  const redditId = options.redditClientId ?? process.env.REDDIT_CLIENT_ID;
+  const redditSecret =
+    options.redditClientSecret ?? process.env.REDDIT_CLIENT_SECRET;
+  const resolveHost = options.resolveHost ?? defaultResolveHost;
+  let redditToken: Promise<string> | null = null;
+
+  /**
+   * Every request goes through here: the destination of the request and of
+   * each redirect must be public. Only GETs follow redirects.
+   */
+  const send = async (url: string, init: RequestInit): Promise<Response> => {
+    let current = url;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
+      await assertPublicUrl(current, resolveHost);
+      const res = await fetchImpl(current, {
+        ...init,
+        signal: AbortSignal.timeout(timeoutMs),
+        redirect: "manual",
+      });
+      const location = res.headers.get("location");
+      if (res.status < 300 || res.status >= 400 || !location) return res;
+      if ((init.method ?? "GET") !== "GET") {
+        throw new Error(`Unexpected redirect for ${init.method} ${current}`);
+      }
+      current = new URL(location, current).toString();
+    }
+    throw new Error(`Too many redirects for ${url}`);
+  };
+
+  const redditBearer = (): Promise<string> => {
+    if (!redditToken) {
+      redditToken = (async () => {
+        const basic = Buffer.from(`${redditId}:${redditSecret}`).toString("base64");
+        const res = await send("https://www.reddit.com/api/v1/access_token", {
+          method: "POST",
+          headers: {
+            authorization: `Basic ${basic}`,
+            "content-type": "application/x-www-form-urlencoded",
+            "user-agent": userAgent,
+          },
+          body: "grant_type=client_credentials",
+        });
+        if (!res.ok) {
+          throw new Error(`Reddit OAuth token request failed: HTTP ${res.status}`);
+        }
+        const json = (await res.json()) as { access_token?: unknown };
+        if (typeof json.access_token !== "string") {
+          throw new Error("Reddit OAuth token response had no access_token");
+        }
+        return json.access_token;
+      })();
+      // A failed token request should be retried by the next fetch.
+      redditToken.catch(() => {
+        redditToken = null;
+      });
+    }
+    return redditToken;
+  };
+
+  const get = async (url: string): Promise<Response> => {
+    const res = await send(url, {
+      headers: { "user-agent": userAgent, accept: "application/json,text/html" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+    return res;
+  };
+
+  return {
+    async fetchText(url: string): Promise<string> {
+      const threadPath = redditThreadPath(url);
+      if (threadPath && redditId && redditSecret) {
+        const token = await redditBearer();
+        const res = await send(
+          `https://oauth.reddit.com${threadPath}?limit=500&raw_json=1`,
+          { headers: { authorization: `bearer ${token}`, "user-agent": userAgent } },
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status} for Reddit API ${threadPath}`);
+        const parts: string[] = [];
+        collectStrings(await res.json(), new Set(["title", "selftext", "body"]), parts);
+        return parts.join("\n");
+      }
+      const reddit = redditJsonUrl(url);
+      if (reddit) {
+        const res = await send(reddit, {
+          headers: { "user-agent": userAgent, accept: "application/json" },
+        });
+        if (!res.ok) {
+          throw new Error(
+            `HTTP ${res.status} for ${reddit}${res.status === 403 ? " (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)" : ""}`,
+          );
+        }
+        const json: unknown = await res.json();
+        const parts: string[] = [];
+        collectStrings(json, new Set(["title", "selftext", "body"]), parts);
+        return parts.join("\n");
+      }
+      const hn = hnApiUrl(url);
+      if (hn) {
+        const json: unknown = await (await get(hn)).json();
+        const parts: string[] = [];
+        collectStrings(json, new Set(["title", "text"]), parts);
+        return htmlToText(parts.join("\n"));
+      }
+      return htmlToText(await (await get(url)).text());
+    },
+  };
+}
+
+/**
+ * Loose-but-honest comparison form: lowercase, curly quotes and dashes
+ * folded, every run of non-alphanumerics collapsed to one space. Wording
+ * must match; punctuation and whitespace may differ.
+ */
+export function normalizeForMatch(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/'/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * True when the quote appears in the page text. An ellipsis in the quote
+ * marks an elision, so each fragment must appear, in order.
+ */
+export function quoteAppearsIn(quote: string, pageText: string): boolean {
+  // Pad with spaces so fragments match whole words only ("cat" ≠ "concat").
+  const page = ` ${normalizeForMatch(pageText)} `;
+  const fragments = quote
+    .split(/\.\.\.|…/)
+    .map(normalizeForMatch)
+    .filter((f) => f.length > 0);
+  // At least one fragment must be long enough to be a real quote.
+  if (!fragments.some((f) => f.split(" ").length >= 3)) return false;
+  let from = 0;
+  for (const fragment of fragments) {
+    const at = page.indexOf(` ${fragment} `, from);
+    if (at === -1) return false;
+    from = at + fragment.length + 1;
+  }
+  return true;
+}

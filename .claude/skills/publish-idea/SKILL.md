@@ -1,525 +1,177 @@
 ---
 name: publish-idea
-description: "Publish a startup idea page on the Next.js + MDX + Convex site. REQUIRED PATH: Ideabrowser MCP — pulls a pre-validated, scored, citation-backed idea and runs a 7-call research stack. DRAFT OPT-IN (only when no MCP match exists): /publish-idea --from-draft {folder-name}. Writes content/ideas/{slug}.mdx (body) + an ideas/manifest.json entry (metadata), runs the manual section gate, then seeds Convex (npm run seed:convex) and generates the OG card (npm run og:generate). Usage: /publish-idea <idea_id> (MCP) OR /publish-idea --from-draft {folder-name} (drafts)."
+description: "Publish a startup idea page on the Next.js + MDX + Convex site. DEFAULT: /publish-idea {title} — write a brief, run npm run engine:research --live, then npm run engine:compile. OPT-IN: /publish-idea --from-draft {folder-name} when the seed lives in ideas/drafts/. After compile: npm run audit:idea, npm run validate:idea-tags, seed Convex, generate OG; commit/push only when the operator asks. Ideabrowser MCP is not part of this skill."
 ---
 
 # Publish Idea Skill
 
-Transform validated startup ideas into research-backed `/ideas/{slug}` pages on the Next.js App Router site.
+Transform a brief (or draft folder) into a research-backed `/ideas/{slug}` page via the **local idea engine** — not Ideabrowser MCP.
 
 ## How a page actually renders (read this first)
 
-The site is **Next.js + MDX + Convex**, not static HTML. An idea page is produced from two files plus two automated steps — the skill never writes HTML, `<head>`, schema, nav, or analytics:
+The site is **Next.js + MDX + Convex**. An idea page is two files plus automated steps — the skill never writes HTML, `<head>`, schema, nav, or analytics:
 
 | Layer | Owned by | This skill writes? |
 |---|---|---|
-| **Body** (the prose) | `content/ideas/{slug}.mdx` — frontmatter (`slug` + `title` only) + canonical `##` sections | ✅ yes |
-| **Metadata** (description, category, scores, og, provenance) | `ideas/manifest.json` `ideas[]` — the source of truth | ✅ yes |
-| **Grid card + ItemList JSON-LD** on `/startup-ideas`, hub pages | generated dynamically from Convex after `seed:convex` | ❌ automatic |
-| **Page metadata, OG tags, full JSON-LD @graph** (Person / Article / SoftwareApplication / HowTo / BreadcrumbList) | `app/ideas/[slug]/page.tsx` — derived from MDX + manifest | ❌ route does it |
-| **Nav, footer, analytics** | shared App Router layout (`app/layout.tsx`) | ❌ global, no per-page injection |
+| **Body** (the prose) | `content/ideas/{slug}.mdx` — frontmatter (`slug` + `title` only) + canonical `##` sections | ✅ via `engine:compile` (polish allowed after) |
+| **Metadata** (description, category, scores, og, provenance) | `ideas/manifest.json` `ideas[]` — the source of truth | ✅ via compile + tagging fill |
+| **Grid card + ItemList JSON-LD** on `/startup-ideas`, hub pages | Convex after `seed:convex` | ❌ automatic |
+| **Page metadata, OG tags, full JSON-LD @graph** | `app/ideas/[slug]/page.tsx` | ❌ route does it |
+| **Nav, footer, analytics** | shared App Router layout | ❌ global |
 | **Sitemap entry** | `app/sitemap.ts` auto-discovers `content/ideas/*.mdx` | ❌ automatic |
 | **OG card PNG** | `image/og/idea/{slug}.png` via `npm run og:generate` | ✅ automated step |
 
 Practical consequences:
-- The `HowTo` schema is parsed from the MDX body: the `## The Solution` section **must** contain a `**How it works:**` line followed by a numbered list (`1.` / `2.` / `3.`). Those become the HowTo steps.
-- The idea's meta description comes from the `manifest.json` `description` field; if absent the route falls back to an `excerpt()` of the first paragraph. Always set `description` in the manifest.
-- Slugs must match `^[a-z0-9-]+$` (validated in `lib/mdx.tsx`). Files starting with `_` are excluded.
-- **An idea is NOT live until it is seeded into the PRODUCTION Convex deployment.** The grid and all hub pages query Convex first; MDX is only a build-time fallback for the individual page. The live site reads the **production** deployment — so a plain `npm run seed:convex` (dev) is not enough. You must also run `npm run seed:convex -- --prod`. Skipping the prod seed means the page may render at `/ideas/{slug}` but never appears in the live `/startup-ideas` grid or hubs.
+- The `HowTo` schema is parsed from the MDX body: `## The Solution` **must** contain `**How it works:**` followed by a numbered list (`1.` / `2.` / `3.`).
+- Meta description comes from the manifest `description` field.
+- Slugs must match `^[a-z0-9-]+$` (validated in `lib/mdx.tsx`). Files starting with `_` are excluded from the site.
+- **An idea is NOT live until seeded into the PRODUCTION Convex deployment** (`npm run seed:convex -- --prod`) **and** the MDX/OG are pushed so Vercel builds them. Dev seed alone is not enough for the live grid.
 
 ---
 
-## Two Modes
-
-### 🟢 Mode A — Ideabrowser MCP (REQUIRED default)
+## Usage
 
 ```
-/publish-idea <idea_id>
-```
-
-Example: `/publish-idea 20`
-
-Pulls a pre-validated idea from the Ideabrowser database (1,474+ scored ideas). Each idea ships with cited market research, competitor pricing, community signals from Reddit/YouTube/Facebook, value-ladder pricing tiers, and a Hormozi-style offer breakdown. Mode A is the **default, required path** — it produces bodies that clear the section contract (`ideas/SECTIONS.md`). Do not fall back to WebSearch.
-
-### 🟡 Mode B — Draft Folder (explicit opt-in only)
-
-```
+/publish-idea {title}
 /publish-idea --from-draft {folder-name}
 ```
 
-Example: `/publish-idea --from-draft nutrition-planner`
+Examples:
+- `/publish-idea AI invoice chaser for freelancers` — default engine path
+- `/publish-idea --from-draft nutrition-planner` — same engine path; brief built from `ideas/drafts/nutrition-planner/raw.md`
 
-Reads `ideas/drafts/{folder-name}/raw.md`, then performs deep WebSearch research. **Only use this when the user explicitly passes `--from-draft`.** Typical trigger: an original concept with no matching MCP record. Mode B must still clear the same section bar (same 7 sections, ≥ ~800 words of body), which means WebSearch must produce 3+ competitors with pricing and 2+ cited market stats — not optional.
+**Do not** pass Ideabrowser numeric `idea_id`s. There is no MCP Mode A in this skill.
 
-### Which mode to pick?
-
-| Situation | Mode |
+| Situation | Path |
 |---|---|
-| User gives a numeric `idea_id` | **A (MCP)** — default |
-| User says "find a new idea to publish" | **A (MCP)** — call `browse_ideas`, then publish chosen result |
-| User passes `--from-draft {folder-name}` explicitly | **B (folder)** |
-| User points to `ideas/drafts/` without `--from-draft` | Ask: do they want Mode A (look up matching MCP idea) or Mode B (pass `--from-draft`)? |
-| Folder exists AND matching MCP idea exists | **A (MCP)** — richer data, do not prompt |
+| User gives a title / one-liner | **Default** — write brief → `engine:research` → `engine:compile` |
+| User passes `--from-draft {folder}` | **Draft** — read `ideas/drafts/{folder}/raw.md` → same engine pipeline |
+| User points at `ideas/drafts/` without the flag | Ask whether to run `--from-draft {folder}` |
+| Engine research/compile fails the auditor | **STOP** — surface the failure. Do not invent thin WebSearch filler to paper over it. Do not call Ideabrowser MCP. |
 
-If ambiguous, default to Mode A and ask the user to confirm the idea_id.
+`npm run engine:eval` only re-audits the three hand-written gold pages (auditor regressions). Engine output is covered by `npm run test:engine`, which compiles a fixture record and runs the full engine audit on it. If a live compile cannot clear the auditor on this machine, stop and report — do not start phase 9.
 
 ---
 
-## What This Skill Does (both modes)
+## What This Skill Does
 
-1. **Sources content** — Mode A: MCP `get_idea_research` calls. Mode B: WebSearch on raw.md keywords.
-2. **Writes original expanded content** based on research findings (NEVER copies raw text verbatim except the title).
-3. **Writes** `content/ideas/{slug}.mdx` — minimal frontmatter (`slug` + `title`) + the canonical `##` body sections.
-4. **Adds** an entry to `ideas/manifest.json` with full provenance, scores, og, and the meta description.
-5. **Runs the manual section gate** against `ideas/SECTIONS.md` (all 7 sections present, body ≥ ~800 words, no leftover placeholders).
-6. **Seeds Convex (dev AND `--prod`)** via `npm run seed:convex` so the idea appears in the grid + hubs — the live grid reads the **production** deployment, so the `--prod` seed is required for online visibility.
-7. **Generates the OG card** via `npm run og:generate -- --slug {slug} --surface idea --non-blocking` (best-effort, never blocks the publish).
-8. **Deploys** — commits & pushes the MDX + OG PNG (git push → Vercel build) so the page and image actually exist in production; the prod seed alone only feeds the grid/hub data.
-9. **Reports** what was created with research sources/citations.
-
-The grid card, ItemList JSON-LD, page schema graph, nav/footer/analytics, and sitemap entry are **all produced automatically** by the App Router routes + layout after seeding and the next build — the skill no longer emits any of them.
+1. **Builds a brief** JSON (`title`, `audience`, `revenueModel`, `seedKeywords[]`, optional `slug` / `oneLiner`).
+2. **Runs** `npm run engine:research -- --brief {path} --live --out engine/records/{slug}.json`.
+3. **Runs** `npm run engine:compile -- --record engine/records/{slug}.json` → MDX + manifest stub (`source: "engine:{slug}"`).
+4. **Fills tagging** on the manifest row (category, tools≥2, audiences≥2, revenueGoal, buildTime, og).
+5. **Gates:** `npm run audit:idea -- --slug {slug}` then `npm run validate:idea-tags -- --slug {slug}`.
+6. **Seeds Convex** (dev now; `--prod` only after the operator-authorized deploy returns 200).
+7. **Generates the OG card** (`npm run og:generate -- --slug {slug} --surface idea --non-blocking`).
+8. **Commits / pushes only when the operator explicitly asks** — never auto-push to `main`.
+9. **Reports** slug, record path, audit metrics, seed/OG status, preview URL.
 
 ---
 
 ## ═══════════════════════════════════════════
-## MODE A: Ideabrowser MCP Workflow (DEFAULT)
+## DEFAULT: Engine pipeline (title or draft)
 ## ═══════════════════════════════════════════
 
-### A.1 — Source the idea
+### Step 1 — Build the brief
 
-If the user supplies an `idea_id`, skip to A.2. Otherwise, call `mcp__ideabrowser__browse_ideas` to pick one. **Filter for weekend-MVP fit:**
-
-```
-mcp__ideabrowser__browse_ideas({
-  sort: "highest_opportunity",
-  build_difficulty: "easy",   // or "moderate" — never "hard"
-  limit: 15
-})
-```
-
-Then narrow to ideas where `scores.builder_confidence >= 7` AND `scores.opportunity >= 8`. Skip ideas with `founder_fit_tags` containing "domain_expertise_required" if it's deeply specialized (e.g., medical, legal).
-
-Present the user a numbered shortlist (3–5 picks) with title, scores, and 1-line summary, then ask which to publish.
-
-### A.2 — Pull deep research (7 calls, all required)
-
-Run these MCP calls **in parallel** before writing any MDX. All seven are required — the section gate in Step 3 will fail without the sections they populate.
-
-```
-mcp__ideabrowser__get_idea_research({ idea_id })                                   // base record
-mcp__ideabrowser__get_idea_research({ idea_id, section: "competitive_analysis" })  // → Competitive Landscape
-mcp__ideabrowser__get_idea_research({ idea_id, section: "go_to_market" })          // → positioning, Business Model
-mcp__ideabrowser__get_idea_research({ idea_id, section: "keyword_list" })          // → meta description keywords
-mcp__ideabrowser__get_idea_research({ idea_id, section: "community_analysis" })    // → Problem evidence, social proof
-mcp__ideabrowser__research_market_insight({ idea_id })                             // → Market Research stats
-mcp__ideabrowser__research_trend({ idea_id })                                      // → "Why Now" timing angle
-```
-
-Capture the citation arrays from `competitive_analysis.data.citations` and `research_market_insight` for the `## Sources` section.
-
-### A.2.1 — STOP rule (thin-research guard)
-
-Before proceeding to A.3, verify:
-
-- `competitive_analysis` returned **3 or more named competitors with pricing**
-- `research_market_insight` returned **at least 2 cited market statistics**
-- `go_to_market` returned **pricing tiers or positioning angles** (not empty)
-
-If any fail, **STOP**. Do not fall back to generic WebSearch — that is what produced the thin pages Phase 1 quarantined. Surface the gap to the user:
-
-> "MCP research for idea_id {n} returned thin data on {section}. Pick a different idea_id, or pass `--from-draft` to enter Mode B with full WebSearch discipline."
-
-Wait for the user's decision. Never paper over thin MCP data.
-
-### A.3 — Map MCP data → MDX body sections
-
-Use this mapping (the MCP gives you most fields directly — don't re-research). Each row maps to a canonical `##` section in `content/ideas/{slug}.mdx`:
-
-| MDX section | MCP source field |
-|---|---|
-| `title` (frontmatter) | `title` (clean it: strip "($XM ARR)" suffixes) |
-| `description` (→ manifest, not MDX) | `summary` rewritten as a ~155-char SEO blurb |
-| Category (→ manifest) | Map `categorization.type` + content domain → **exactly one** of the 12 live kebab slugs: `saas`, `productivity`, `health`, `marketplace`, `ai-tools`, `automation`, `education`, `b2b`, `developer-tools`, `ecommerce`, `creator-tools`, `fintech`. Never use display names (`SaaS`, `Creator`). |
-| Build time (→ manifest) | Canonical hour string only (matches hub `buildTimeValues`): `builder_confidence >= 7` → `"10"`; `5–6` → `"12"`; lower → `"20"`. **Never** write `"8-10 hrs"` / `"10-12 hrs"` — those miss `/ideas/build-in-weekend`. |
-| Tools (→ manifest) | ≥2 from: `cursor`, `claude`, `bolt`, `v0`, `lovable`, `replit`, `windsurf`, `no-code`. Pick for stack fit — do **not** default to only `[cursor, claude]`. (`claude-code` is a Build With hub alias for `claude` — tag `claude`, not `claude-code`.) |
-| Audiences (→ manifest) | ≥2 from: `developers`, `designers`, `non-technical`, `solo-founders`, `weekend-builders`, `side-hustlers`, `marketers`, `freelancers`, `creators`, `small-business-owners`. Choose from the idea's buyer — do **not** default to only `[solo-founders]`. Free-text niches are forbidden. |
-| Revenue goal (→ manifest) | Exactly one of: `1k-month`, `5k-month`, `10k-month`, `passive-income`, `quick-wins`. |
-| **`## The Problem`** | `detailed_idea.pain_points_addressed` + `scores.pain.key_pain_points` + `scores.pain.market_evidence` |
-| **`## The Solution`** (incl. `**How it works:**` numbered list) | `detailed_idea.detailed_summary` + `research_summaries.analysis.core_proposition.solution` + `product_offerings` for the steps |
-| **`## Market Research`** | `scores.opportunity.market_potential.reason` + `tags.highlight_justification` + `research_market_insight` (real numbers + CAGR, already cited) |
-| **`## Competitive Landscape`** (incl. `**Your Opportunity**`) | `competitive_analysis.data.content` (competitor names, pricing, gaps) + `research_summaries.market_gap` |
-| **`## Business Model`** (incl. unit economics) | `value_ladder.offers` (Frontend / Middle / Backend tiers, already priced) + `revenue_potential.examples` |
-| **`## Recommended Tech Stack`** | Derive from `detailed_idea.detailed_summary` (AI/API mentions); fall back to Next.js + Supabase + Clerk + the relevant AI API |
-| **`## AI Prompts to Build This`** | Generate 3+ prompts (see Step 4) seeded with MCP-sourced features |
-| **`## Sources`** | `competitive_analysis.data.citations` array + `research_market_insight` citations — markdown links |
-
-### A.4 — Generate slug
-
-From the cleaned title:
-- Strip parentheticals: `"X ($2M ARR)"` → `"X"`
-- Strip "AI-Powered", "Automated" prefixes if it makes the slug too long
-- Lowercase, kebab-case: `"AI Landing Page Generator E-commerce"` → `"ai-landing-page-generator-ecommerce"`
-- Must match `^[a-z0-9-]+$` (lowercase letters, digits, hyphens only — strip anything else, e.g. `&` → `and` or drop it)
-- Verify uniqueness against `ideas/manifest.json` and `content/ideas/`
-
-### A.5 — Write MDX, manifest, then seed + OG
-
-Follow the shared sink sequence in **Steps 5–9** below (write `content/ideas/{slug}.mdx`, add the manifest entry, run the section gate, `npm run seed:convex`, `npm run og:generate`). Use the body-shape exemplars named in Step 4.5.
-
-### A.6 — Output report (Mode A)
-
-```
-## Published: {IDEA_TITLE}
-
-**Source:** Ideabrowser MCP (idea_id: {idea_id}) — opportunity {opportunity_score}/10, pain {pain_score}/10, timing {timing_score}/10
-
-**Files created/modified:**
-- content/ideas/{slug}.mdx (new — slug + title frontmatter, 8 canonical sections)
-- ideas/manifest.json (updated — provenance, scores, og.subject/accent/status, description)
-- Convex (seeded via `npm run seed:convex` — idea now in /startup-ideas grid + hubs)
-- image/og/idea/{slug}.png (new — composed OG card via Recraft v3, IF og.status=ready)
-
-**Seed status:** {dev: OK/failed; prod: OK/failed — prod required for the live grid/hub card; see Step 8}
-**OG card:** {provider: recraft | openai-gpt-image-1} — og.status: {ready | failed}. {If failed: page ships with the site-wide fallback image; a future `npm run og:generate` retries.}
-**Deploy / live status:** {LIVE — pushed, Vercel deployed, `/ideas/{slug}` returns 200 | STAGED — written + seeded locally but NOT deployed; page/OG 404 until `git push` (Step 10)}
-
-**Sections included:** The Problem, The Solution (+ How it works), Market Research, Competitive Landscape, Business Model, Recommended Tech Stack, AI Prompts to Build This, Sources
-
-**Citations (from MCP):**
-- {citation_1}
-- {citation_2}
-- ... (list all from competitive_analysis.data.citations)
-
-**Preview:** Run `npm run dev` and open http://localhost:5173/ideas/{slug} to verify all 8 sections render. **Live** requires the deploy (Step 10) — confirm `https://www.weekendmvp.app/ideas/{slug}` returns 200.
-```
-
----
-
-## ═══════════════════════════════════════════
-## MODE B: Draft Folder Workflow (fallback)
-## ═══════════════════════════════════════════
-
-Use only when no MCP idea matches. Process below.
-
-## CRITICAL: Content Guidelines
-
-**THE RAW.MD FILE IS A STARTING POINT, NOT A SOURCE TO COPY.**
-
-### What to Use from raw.md:
-- **Title**: Use the idea title EXACTLY as written (this is the only verbatim content)
-- **Concept**: Understand the core concept to guide research
-- **Keywords**: Extract keywords for research queries
-
-### What NOT to Do:
-- ❌ Do NOT copy problem descriptions word-for-word
-- ❌ Do NOT copy solution descriptions word-for-word
-- ❌ Do NOT use market stats from raw.md without verification
-- ❌ Do NOT copy competitor information without research
-- ❌ Do NOT use any prose from raw.md directly
-
-### What to Do Instead:
-- ✅ Research the problem space independently using WebSearch
-- ✅ Find current market statistics and cite sources
-- ✅ Research actual competitors and their current pricing
-- ✅ Write original, expanded content based on research findings
-- ✅ Create fresh perspectives informed by real data
-
----
-
-## Source Structure
-
-The skill expects this folder structure:
-
-```
-ideas/drafts/{folder-name}/
-  raw.md              <- idea seed/concept (REQUIRED) - used for title + research direction
-  competitors.md      <- optional: competitor names to research
-  notes.md            <- optional: additional context
-  assets/             <- optional: screenshots, images
-```
-
-At minimum, `raw.md` must exist with the idea title and core concept.
-
----
-
-## Section Analysis (Research-Driven)
-
-The 7 canonical sections are **always** present in a published MDX file. Research determines their depth, not their existence:
-
-| Section (MDX `##`) | Always present | Research required |
-|---------|---------------|-------------------|
-| The Problem | ✅ | Search for pain points, user complaints, industry challenges |
-| The Solution (+ How it works) | ✅ | Design user flow based on competitor analysis; numbered steps feed HowTo schema |
-| Market Research | ✅ | **Must find 3+ stats** from web research |
-| Competitive Landscape | ✅ | **Must research 3+ competitors** with current pricing |
-| Business Model | ✅ | Base tiers on competitor pricing research |
-| Recommended Tech Stack | ✅ | Research best tools for this type of app |
-| AI Prompts to Build This | ✅ | Generate 3+ prompts based on researched tech stack |
-| Sources | ✅ | Markdown links to the stats/pricing you cited |
-
-If research is genuinely thin for a section, that is a signal to **stop and reconsider the idea** (Mode A: re-check the STOP rule; Mode B: do more WebSearch) — not to ship a stub section.
-
----
-
-## Step-by-Step Process
-
-### Step 1: Read Source Files
-
-Read all `.md` files from `ideas/drafts/{folder-name}/`:
-
-```
-- raw.md (required)
-- competitors.md (optional)
-- notes.md (optional)
-- Any other .md files present
-```
-
-**Extract from raw.md:**
-- The idea **title** (use verbatim)
-- Core concept keywords for research
-- Target audience hints
-- Competitor names mentioned (for research)
-
-### Step 2: Deep Web Research (REQUIRED)
-
-**You MUST perform web research before writing any content.** Use the WebSearch tool to research:
-
-#### 2a. Market Research Queries
-Run searches like:
-- `"{industry} market size 2024 2025"`
-- `"{target audience} pain points {problem area}"`
-- `"{problem area} industry trends statistics"`
-- `"{target audience} software spending habits"`
-
-**Goal:** Find 3-5 market statistics with sources for the Market Research section.
-
-#### 2b. Competitor Research Queries
-For each competitor mentioned in raw.md (or discovered):
-- `"{competitor name} pricing plans 2024"`
-- `"{competitor name} reviews features"`
-- `"{competitor name} vs alternatives"`
-- `"{industry} software tools comparison"`
-
-**Goal:** Document 3-5 competitors with current pricing and feature gaps.
-
-#### 2c. Solution Validation Queries
-- `"{problem} solutions software"`
-- `"how {target audience} currently solve {problem}"`
-- `"{industry} workflow automation tools"`
-
-**Goal:** Understand current solutions and identify gaps for the "Your Opportunity" callout.
-
-#### 2d. Tech Stack Research (if needed)
-- `"best tech stack for {type of app} 2024"`
-- `"{specific feature} API integration options"`
-
-**Goal:** Recommend modern, appropriate technologies.
-
-### Step 3: Write Original Content
-
-Based on research findings, write ORIGINAL content for each section. **Do NOT copy from raw.md.**
-
-**Body sections (live in the MDX file):**
-- `## The Problem` — pain points and frustrations, cite stats
-- `## The Solution` — how the product solves it, **including** a `**How it works:**` line followed by a numbered list (`1.` / `2.` / `3.`) — these steps are parsed into the page's HowTo JSON-LD
-- `## Market Research` — stats, trends, validation (from Step 2a)
-- `## Competitive Landscape` — named competitors, pricing, gaps (from Step 2b), plus a `**Your Opportunity**` callout
-- `## Business Model` — pricing tiers, unit economics, target MRR path
-- `## Recommended Tech Stack` — named framework/database/hosting/AI API
-- `## AI Prompts to Build This` — 3+ fenced code blocks (see Step 4)
-- `## Sources` — markdown links to everything you cited
-
-**Metadata fields (live in `ideas/manifest.json`, NOT in MDX frontmatter):**
-- `title` — the idea name (the only thing copied verbatim from raw.md); also the MDX `title`
-- `description` — full meta description for SEO (write fresh, ~155 chars)
-- `category` — **exactly one** of: `saas`, `productivity`, `health`, `marketplace`, `ai-tools`, `automation`, `education`, `b2b`, `developer-tools`, `ecommerce`, `creator-tools`, `fintech`
-- `buildTime` — **canonical hour string only**: `"8"`, `"10"`, `"12"`, `"20"`, `"24"`, `"30"`, or `"40"` (must match `/ideas/build-in-*` hub `buildTimeValues`). Never `"8-10 hrs"`.
-- `revenueGoal` — exactly one of: `1k-month`, `5k-month`, `10k-month`, `passive-income`, `quick-wins`
-- `tools[]` — **≥2** from: `cursor`, `claude`, `bolt`, `v0`, `lovable`, `replit`, `windsurf`, `no-code` (these feed `/build-with/{tool}`)
-- `audiences[]` — **≥2** from: `developers`, `designers`, `non-technical`, `solo-founders`, `weekend-builders`, `side-hustlers`, `marketers`, `freelancers`, `creators`, `small-business-owners` (these feed `/ideas-for/{audience}`). No free-text niches.
-- `applicationCategory` — Schema.org SoftwareApplication category (see Step 6)
-- `og.subject` — a concrete, single-subject director's-note for the per-page OG card. Used by `npm run og:generate` (Step 9). Example: `"A glowing laptop screen on a dark counter, lavender backlight, late night, shallow focus"`. Match the brand: dark scene, one accent color visible, one tactile object, no people/faces/text. See `IMAGES.md` for the full prompt-writing guide.
-- `og.accent` — one of `lime`, `mint`, `lavender`, `emerald`, `aubergine` — the brand accent for the card's logo chip / dot / bottom bar. Pick one that fits the idea's vibe and avoids monotony with adjacent manifest entries.
-
-> Do **not** add `description`, `category`, `og`, or any other field to the MDX frontmatter. All existing idea files carry **only** `slug` and `title`, and the route derives everything else from the manifest. Richer idea frontmatter is a bug.
->
-> **Hub enrichment is mandatory.** A publish that only sets `category` + `[cursor,claude]` + `[solo-founders]` is incomplete — it under-feeds Build With / Ideas For / build-time hubs. Run `npm run validate:idea-tags -- --slug {slug}` before seeding.
-
-### Step 4: Generate AI Build Prompts
-
-Always generate 3+ prompts tailored to the specific idea, as fenced ```text code blocks under `## AI Prompts to Build This`. Suggested set:
-
-**1. Project Setup Prompt:**
-```
-Create a new {STACK} project for {IDEA_NAME}. Set up:
-- Project structure with {FRAMEWORK}
-- Database schema for {CORE_ENTITIES}
-- Authentication with {AUTH_METHOD}
-- Basic API routes for {CORE_FEATURES}
-Include TypeScript, proper error handling, and environment variables.
-```
-
-**2. Core Feature Prompt:**
-```
-Build the main feature for {IDEA_NAME}: {CORE_FEATURE_DESCRIPTION}.
-
-Requirements:
-- {REQUIREMENT_1}
-- {REQUIREMENT_2}
-- {REQUIREMENT_3}
-
-The user flow should be: {USER_FLOW_STEPS}
-```
-
-**3. Configuration / Landing Page Prompt** (pick what fits the idea):
-```
-Add per-{entity} configuration for {IDEA_NAME}: {CONFIG_FIELDS_AND_BEHAVIOR}.
-```
-
-### Step 4.5: Voice check (required before writing MDX)
-
-Before writing any prose, read **two existing well-formed idea MDX files** to calibrate tone, section depth, and link density:
-
-- `content/ideas/sms-time-tracker.mdx` (8 sections, ~2,400 words, full Sources block)
-- `content/ideas/ai-nutrition-planner-trainers.mdx` (8 sections, ~2,200 words, full Sources block)
-
-Also keep `content/ideas/ai-code-reviewer.mdx` open as the **body-shape reference** for the `**How it works:**` numbered list, the `**Your Opportunity**` callout, the unit-economics bullets, and the AI-prompt code blocks.
-
-Do **not** skim — read them. Then match their rhythm: section count, paragraph length in The Problem / The Solution, citation style in Market Research, competitor density, pricing-tier structure. Thin pages exist because earlier runs skipped this step and drifted toward short, generic copy. This step is cheap insurance.
-
-### Step 5: Write the MDX file
-
-Save the body to:
-
-```
-content/ideas/{slug}.mdx
-```
-
-Frontmatter is **exactly** two quoted fields, nothing else:
-
-```mdx
----
-slug: "{slug}"
-title: "{Idea Title}"
----
-
-## The Problem
-
-{...}
-
-## The Solution
-
-{...}
-
-**How it works:**
-
-1. **{Step title}** — {step description}
-2. **{Step title}** — {step description}
-3. **{Step title}** — {step description}
-
-## Market Research
-
-{...}
-
-## Competitive Landscape
-
-{...}
-
-**Your Opportunity**
-
-{...}
-
-## Business Model
-
-{...}
-
-## Recommended Tech Stack
-
-{...}
-
-## AI Prompts to Build This
-
-Copy and paste these into Claude, Cursor, or your favorite AI tool.
-
-**1. Project Setup**
-
-```text
-{prompt}
-```
-
-## Sources
-
-- [{Source title}]({url})
-- [{Source title}]({url})
-```
-
-Authoring rules for body quality:
-- Plain GitHub-flavored markdown only (`##`/`###`, `**bold**`, `-` lists, `1.` lists, fenced ```code```, `[text](url)` links). No raw HTML, no `<head>`, no `<script>`, no email-gate markup, no nav/footer — the route and layout provide all of that.
-- **MDX, not plain markdown — escape bare `<` and `{` in prose.** This is `.mdx`, so a bare `<` or `{` outside a fenced code block is parsed as JSX and **crashes the page build (500 in production), not just a render glitch**. The classic trap is unit economics like `<$0.01` or `<5%`. Write `under $0.01` / `~$0.005` / `&lt;5%` instead, and avoid bare `{…}` in prose (use `≈`, "about", or wrap in backticks). Inside fenced ```code``` blocks, `<` and `{` are safe — only prose is affected.
-- The `## The Solution` section **must** include the `**How it works:**` numbered list (HowTo schema depends on it).
-- Slug in frontmatter must equal the filename and match `^[a-z0-9-]+$`.
-
-### Step 6: Add the manifest entry (with provenance)
-
-Add an entry to `ideas/manifest.json` `ideas[]` that captures full provenance so future backfill passes can reason about where content came from. **`manifest.json` is the metadata source of truth** — `seed:convex` reads it (→ Convex grid/hubs) and `og:generate` reads it (→ OG PNG):
+Write `engine/briefs/{slug-or-temp}.json` (or a temp path). Shape:
 
 ```json
 {
-  "slug": "{slug}",
-  "title": "{title}",
-  "publishedAt": "{YYYY-MM-DD}",
-  "category": "{category}",
-  "description": "{meta_description}",
-  "buildTime": "10",
-  "revenueGoal": "5k-month",
-  "applicationCategory": "{SchemaCategory}",
-  "tools": ["cursor", "claude", "bolt"],
-  "audiences": ["developers", "solo-founders"],
-  "source": "ideabrowser:{idea_id}",
-  "og": {
-    "subject": "{og_subject from Step 3}",
-    "accent": "{og_accent from Step 3}",
-    "status": "pending"
-  },
-  "provenance": {
-    "researchCalls": [
-      "get_idea_research",
-      "competitive_analysis",
-      "go_to_market",
-      "keyword_list",
-      "community_analysis",
-      "research_market_insight",
-      "research_trend"
-    ],
-    "citations": {N},
-    "wordCount": {N},
-    "auditPassed": true,
-    "auditRunAt": "{ISO-8601 timestamp}"
-  },
-  "scores": { "opportunity": N, "pain": N, "timing": N, "builder_confidence": N },
-  "researchLevel": "{deep|standard}"
+  "title": "AI Invoice Chaser for Freelancers",
+  "audience": "Solo freelancers and agencies chasing late invoices",
+  "revenueModel": "SaaS subscription with usage-based reminder credits",
+  "seedKeywords": ["invoice chaser", "late payment reminder software", "freelance invoicing automation"],
+  "slug": "ai-invoice-chaser-freelancers",
+  "oneLiner": "Auto-nags late clients so freelancers get paid without the awkward emails."
 }
 ```
 
-Field rules:
-- `description` — the meta description you wrote in Step 3. This feeds Convex and the grid card excerpt, and is the route's preferred meta description. Always set it.
-- `category` — exactly one of the 12 live kebab slugs (see Step 3). Never display names.
-- `buildTime` — canonical hour string (`"8"|"10"|"12"|"20"|"24"|"30"|"40"`). This is what `/ideas/build-in-weekend` (`["8","10","12"]`), `/ideas/build-in-8-hours` (`["8"]`), and `/ideas/build-in-1-week` (`["20","24","30","40"]`) match on — exact string equality.
-- `revenueGoal` — exactly one of `1k-month|5k-month|10k-month|passive-income|quick-wins`.
-- `tools[]` — ≥2 allowlisted tools (see Step 3). These feed `/build-with/{tool}`. Do not invent tool slugs; do not tag `claude-code` (alias of `claude`).
-- `audiences[]` — ≥2 allowlisted audiences (see Step 3). These feed `/ideas-for/{audience}`. Free-text niches (`shopify-merchants`, `educators`, Title Case strings) are rejected by `npm run validate:idea-tags`.
-- `source` — Mode A: `"ideabrowser:{idea_id}"`. Mode B (`--from-draft`): `"draft:{folder-name}"` and **drop the `scores` block** (scores are Mode A only).
-- `applicationCategory` — Schema.org category for the SoftwareApplication node (e.g. `BusinessApplication` for SaaS, `DeveloperApplication` for Developer, `ProductivityApplication` for Productivity, `HealthApplication`, `FinanceApplication`, `EducationalApplication`, `MultimediaApplication`, `ShoppingApplication`).
-- `og.subject` / `og.accent` — copy the values you authored in Step 3. `og.status` is `"pending"` here; Step 9 flips it to `"ready"` (success) or `"failed"` (both providers errored — non-blocking, page still ships).
-- `provenance.researchCalls` — list the calls actually made. Mode B replaces MCP names with `"websearch:market"`, `"websearch:competitors"`, `"websearch:tech"`.
-- `provenance.citations` / `provenance.wordCount` — count from your written MDX (citation links in `## Sources`; body words). `wordCount` should be ≥ ~800.
-- `provenance.auditPassed` — set `true` only after the Step 7 manual gate passes.
+**Idea gate (before spending on research).** Ideabrowser used to pre-validate ideas; now you do. Refuse the title and say why unless all three hold:
+1. A **named buyer who pays today** for a worse workaround (a tool, a contractor, or hours they can price).
+2. **Evidence the pain is public**: at least one Reddit / HN / forum thread you can link, or a seed keyword you expect to carry search volume.
+3. A **wedge the incumbents skip** (too small, too niche, too price-sensitive), stated in one sentence.
 
-Use today's date for `publishedAt`.
+Also refuse if an existing idea already covers the same buyer + job (search `ideas/manifest.json` titles and descriptions, not just slugs).
 
-### Step 6b: Add the homepage `highlights` block (required for new ideas)
+**From a title only:** write a tight audience, revenue model, and 3–5 seed keywords from the title. Confirm the slug is free in `ideas/manifest.json` and `content/ideas/`.
 
-The homepage features one idea a week in "Inside every idea" and reads this block before falling back to parsing the MDX (WP42 ruling, 2026-09-24). Write it from the MDX you just finished; never invent a number that is not in the body and its `## Sources`.
+**From `--from-draft {folder}`:**
+- Require `ideas/drafts/{folder}/raw.md`.
+- Use the draft **title verbatim**.
+- Pull audience / keywords / competitors mentioned in raw.md into the brief — do **not** copy draft prose into the MDX.
+- Optional `competitors.md` / `notes.md` inform seed keywords only.
+
+### Step 2 — Research (live)
+
+```bash
+npm run engine:research -- --brief engine/briefs/{name}.json --live --out engine/records/{slug}.json
+```
+
+Requires `OPENAI_API_KEY`, `PERPLEXITY_API_KEY`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` (shell, then `.env.local`, then `.env`). Cost cap is **$4.00** per run.
+
+Fixture-only (no keys, canned data — **not** for publishing new ideas):
+
+```bash
+npm run engine:research -- --fixture rfp-assistant --out /tmp/record.json
+```
+
+The pipeline **fails closed** on thin research. That replaces the old chat-only STOP rule:
+
+- Fewer than 2 niche market stats or 3 priced competitors → fail.
+- Any stat or competitor price whose numbers do not appear in the search results is **dropped** as model-invented (and can push the run under those minimums).
+- Keyword volume / CPC come only from DataForSEO.
+- **Quote verification:** right after the community search (before any DataForSEO or synthesis spend) the pipeline reads every cited page: Reddit threads, HN items (Algolia API), or plain pages. Fewer than 2 readable pages → `[community_signals] only N/M cited community pages could be read …` and the run stops cheaply. The page text goes to synthesis, which must copy quotes from it; afterwards each quote is checked against its page, and fewer than 2 found → `[provenance_parse] quote verification: …`. Never hand-mark quotes as verified.
+- **Reddit needs app credentials on most networks.** Reddit answers the public `.json` endpoint with HTTP 403 from cloud machines (seen on the Cursor agent). Create a free "script" app at reddit.com/prefs/apps and set `REDDIT_CLIENT_ID` + `REDDIT_CLIENT_SECRET`; the engine then uses Reddit's OAuth API. `ENGINE_QUOTE_FETCH_UA` alone does not get past the block.
+- **DataForSEO balance:** a negative balance fails `keywords_demand` with `40200 Payment Required`. Top up before a batch.
+
+### Step 3 — Compile
+
+```bash
+npm run engine:compile -- --record engine/records/{slug}.json
+# overwrite existing MDX/manifest row only with explicit --force
+```
+
+Writes:
+- `content/ideas/{slug}.mdx` — frontmatter `slug` + `title`, **eight** `##` headings (seven canonical + `## Sources`)
+- `ideas/manifest.json` row with `source: "engine:{slug}"`, provenance, scores when present; tagging fields stubbed for the operator
+
+Compiler does **not** seed Convex, generate OG, or push git.
+
+Spot-check drafts use the `engine-draft-{slug}` slug. They compile to `engine/drafts/` (MDX + `engine/drafts/manifest.json`), are refused in `content/ideas/`, and are blocked from the page route, sitemap, and Convex seed. Never publish an `engine-draft-*` slug.
+
+### Step 3.1 — Quality bar (auditor failures, not chat rules)
+
+`npm run audit:idea -- --slug {slug}` must pass. It finds the record at `engine/records/{slug}.json` automatically (or pass `--record path`). Every page whose manifest `source` starts with `engine:` gets the **deep bar**, not just drafts. The bar includes (see `ideas/SECTIONS.md` + `scripts/audit-idea-mdx.mjs`):
+
+- All **8** headings in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This → **Sources**
+- `**How it works:**` numbered list (≥2 steps) under The Solution
+- **≥2** markdown citation links in Sources (cited market stats live here)
+- Competitive Landscape names **≥3 competitors with pricing** (pipeline + deep-draft gates enforce this; treat missing competitors as a failed publish)
+- Body **≥2,200 words**, no stock filler, no ≥8-word sentence repeated on the page or shared with another engine page
+- No broken markdown links; no placeholders; no bare `<` / `{` in prose (MDX JSX traps → 500)
+- Named How-it-works steps (never `Step 1`), niche market sizing only, first-party competitor pricing links
+- **Business Model**: number-first Unit Economics bullets, and **Year-One Math** (funnel → paying accounts → compiler-computed ARR + half-close-rate downside) landing on a real tier
+- **AI Prompts**: four prompts (Setup ≥60 words with ≥3 idea-specific tables, Core Feature ≥70, Landing ≥40, Branding ≥70); Setup tiers match Business Model tiers
+- **≥2 community quotes verified on their cited pages**, every on-page quote present in the record, and the full audience label used at most twice
+
+If audit fails: **STOP**. Fix the record (re-research) or refuse the idea. Do not fall back to Ideabrowser MCP.
+
+### Step 4 — Tagging fill (required before seed)
+
+Compile leaves `category: "uncategorized"` and empty `tools` / `audiences`. Edit the manifest row:
+
+| Field | Rule |
+|---|---|
+| `category` | Exactly one of: `saas`, `productivity`, `health`, `marketplace`, `ai-tools`, `automation`, `education`, `b2b`, `developer-tools`, `ecommerce`, `creator-tools`, `fintech` |
+| `buildTime` | Canonical hour string only: `"8"`, `"10"`, `"12"`, `"20"`, `"24"`, `"30"`, `"40"` |
+| `revenueGoal` | Exactly one of: `1k-month`, `5k-month`, `10k-month`, `passive-income`, `quick-wins` |
+| `tools[]` | ≥2 from: `cursor`, `claude`, `bolt`, `v0`, `lovable`, `replit`, `windsurf`, `no-code` (tag `claude`, not `claude-code`) |
+| `audiences[]` | ≥2 from: `developers`, `designers`, `non-technical`, `solo-founders`, `weekend-builders`, `side-hustlers`, `marketers`, `freelancers`, `creators`, `small-business-owners` |
+| `description` | ~155-char SEO blurb if the one-liner is weak |
+| `og.subject` / `og.accent` | Concrete still-life director's note; accent one of `lime`, `mint`, `lavender`, `emerald`, `aubergine` |
+| `applicationCategory` | Schema.org SoftwareApplication category |
+
+**Homepage `highlights` block (required for new ideas).** The homepage features one idea a week in "Inside every idea" and reads this block before falling back to parsing the MDX (WP42 ruling, 2026-09-24). Write it from the compiled MDX: every figure must already be in the body and its `## Sources`, the quote comes from `## The Problem`, and competitors and prices come from `## Competitive Landscape`. Never invent a number.
 
 ```json
 "highlights": {
@@ -538,171 +190,184 @@ The homepage features one idea a week in "Inside every idea" and reads this bloc
 ```
 
 Field rules (checked by `npm run validate:idea-tags`):
-- `problemQuote` — one or two sentences from `## The Problem`, ≤ 190 characters. It renders inside quote marks, so write it as a quote.
-- `stats` — 1–3 entries. `value` ≤ 12 characters (`20M`, `$15.8B`, `27%`); `label` ≤ 90 characters and reads after the value; `source` (optional) ≤ 48 characters, the publisher's short name.
-- `competitors` — optional, 3–5 entries from `## Competitive Landscape`. `name` ≤ 32 characters; `price` ≤ 16 characters (`$15–$59/mo`, `from $0`, `$335/yr`).
+- `problemQuote`: one or two sentences from `## The Problem`, ≤ 190 characters. It renders inside quote marks, so write it as a quote.
+- `stats`: 1–3 entries. `value` ≤ 12 characters (`20M`, `$15.8B`, `27%`); `label` ≤ 90 characters and reads after the value; `source` (optional) ≤ 48 characters, the publisher's short name.
+- `competitors`: optional, 3–5 entries. `name` ≤ 32 characters; `price` ≤ 16 characters (`$15–$59/mo`, `from $0`, `$335/yr`).
 
-### Step 7: Manual section gate + tagging gate
+The validator treats `highlights` as optional for older ideas, so also confirm by eye that a new entry has one.
 
-There is **no audit script** for body prose anymore. Manually verify the MDX body against `ideas/SECTIONS.md` before seeding:
-
-- [ ] All 7 required `##` sections present, in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This (plus `## Sources`).
-- [ ] `## The Solution` contains the `**How it works:**` line + a numbered list (1./2./3.) — confirm it's there or the HowTo schema breaks.
-- [ ] Body word count ≥ ~800 words (aim for 1,500–2,400 like the exemplars).
-- [ ] Competitive Landscape names 3+ competitors with pricing; Market Research has 2+ cited stats.
-- [ ] No leftover placeholders (`{{VAR}}`, `IDEA_TITLE`, `{slug}`, `TODO`, `Lorem`).
-- [ ] **No bare `<` or `{` in prose** (outside fenced code) — these compile as JSX and 500 the page. Watch unit-economics lines like `<$0.01`.
-- [ ] Frontmatter is exactly `slug` + `title`, both quoted.
-
-**Tagging gate (mechanical — required):**
+Then:
 
 ```bash
+npm run audit:idea -- --slug {slug}
 npm run validate:idea-tags -- --slug {slug}
 # expect: 1/1 ideas pass tagging contract (0 fail)
 ```
 
-This fails if `category` / `tools[]` / `audiences[]` / `revenueGoal` / `buildTime` are missing, under-tagged (<2 tools or <2 audiences), or outside the allowlists, or if the `highlights` block from Step 6b breaks its shape or length rules. The validator treats `highlights` as optional for older ideas, so also confirm by eye that a new entry has one. Fix the manifest entry before seeding. To re-check the whole corpus: `npm run validate:idea-tags`.
+Set `provenance.auditPassed: true` and `provenance.auditRunAt` only after both pass.
 
-Quick body checks you can run:
+Optional voice polish: read `content/ideas/course-translation-resale-network.mdx` (the benchmark in `engine/eval/deep-benchmark.md`), then edit the compiled MDX to match its depth — **re-run `audit:idea` after any prose edit**. Never edit a quote's wording; the auditor fails a quote that no longer matches its verified record entry.
 
-```bash
-grep -c '^## ' content/ideas/{slug}.mdx        # expect 8 (7 canonical + Sources)
-grep -n 'How it works' content/ideas/{slug}.mdx # expect 1 hit under The Solution
-wc -w content/ideas/{slug}.mdx                  # expect ~800+ words
-# MDX safety: bare < or { in prose (outside ``` fences) → JSX parse error → 500. Expect NO output:
-awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/ideas/{slug}.mdx
-```
+### Step 4.1 — Human spot check (before any commit or `--prod` seed)
 
-If any check fails, fix the MDX (or tags) before continuing. Do not set `provenance.auditPassed: true` until both the section gate and the tagging gate pass. The MDX-safety `awk` line is the cheapest way to avoid a production 500 — treat any output as a blocker.
+Open two of the cited community threads in a browser and confirm the quoted words are there. Open two competitor pricing links and confirm the prices. The pipeline checks these automatically; this catches a thread that was deleted or edited since the run. If anything is off, re-run research — do not patch the MDX by hand.
 
-### Step 8: Seed Convex — DEV **and** PROD (required for grid/hub visibility)
-
-Push the idea (and the rest of the manifest) into Convex so it appears in `/startup-ideas` and all hub pages. The grid and hubs **list from Convex** (MDX is only a build-time fallback), so the idea is **NOT on the live grid** until the **production** deployment is seeded. Seed **both**:
+### Step 5 — Seed Convex (dev now; prod only after deploy)
 
 ```bash
-npm run seed:convex            # dev deployment (local preview)
-npm run seed:convex -- --prod   # production deployment (LIVE site) — REQUIRED for grid/hub visibility
+npm run seed:convex              # dev — staged work
 ```
 
-- Both are **idempotent** — upsert by slug, so re-running is safe and re-seeds the whole manifest.
-- The prod upsert auto-schedules cache revalidation (`internal.revalidate.run` → `https://weekendmvp.app/api/revalidate`) for the `ideas`/affected hub tags, so the grid updates live within seconds — no redeploy needed.
-- **Prerequisites:** dev seed needs `npx convex dev` running (or seed functions deployed via `npx convex deploy`); prod seed needs production deployment access.
-- **Failure signatures:**
-  - Dev seed fails (Convex dev not running) → local grid won't update.
-  - **Skipping the `--prod` seed → the idea renders at `/ideas/{slug}` but never appears in the live `/startup-ideas` grid or hubs.** This is the #1 "I can't see my idea" cause. Always run the prod seed and confirm it reports `inserted`/`updated`. Do **not** claim grid/hub visibility until the prod seed succeeds.
-- Dry-run preview (optional): `npm run seed:convex -- --dry-run`.
+Do **not** seed production yet. The seed marks the idea as MDX-backed because the file exists locally, but the live route cannot read it until Vercel has built it; seeding prod first puts a card on the live grid that links to a 404. Production seeding happens in Step 7, after the deploy is live.
 
-### Step 9: Generate the per-page OG card (best-effort, never blocks publish)
-
-After the manifest entry is in place (with `og.subject` + `og.accent`), run the OG generator scoped to this slug with `--non-blocking`:
+### Step 6 — OG card (best-effort, never blocks publish)
 
 ```bash
 npm run og:generate -- --slug {slug} --surface idea --non-blocking
 ```
 
-Behavior:
-- On success: writes `image/og/idea/{slug}.png`, flips manifest `og.status` from `"pending"` → `"ready"`. Provider (`recraft` or `openai-gpt-image-1`) is logged so you can spot fallbacks.
-- On failure (Recraft AND `gpt-image-1` both errored): flips `og.status` to `"failed"`, exits 0 (because `--non-blocking`). The publish continues. The route's OG meta points at the expected PNG path; social crawlers fall back to the site-wide `image/og-image.png` when the file is missing. A future `npm run og:generate` retries every entry with `og.status: "failed"`.
+Success → `og.status: "ready"`. Both providers fail → `"failed"`, exit 0, publish continues.
 
-**Critical invariant:** the publish flow's success status MUST be independent of the OG card outcome. Never let a Recraft/OpenAI API error block an idea page from shipping.
+### Step 7 — Deploy only when asked
 
-See `IMAGES.md` for setup, drift recovery, and prompt-writing rules.
-
-### Step 10: Deploy to production (REQUIRED for the page + OG image to exist live)
-
-**The `--prod` Convex seed (Step 8) only feeds the grid/hub *data*. It does NOT make the idea page or its OG image exist in production.** Going fully live takes **two** independent things:
-
-| What | Source | Made live by |
-|------|--------|--------------|
-| `/startup-ideas` grid card + hub listings (data) | production Convex | `npm run seed:convex -- --prod` (Step 8) |
-| `/ideas/{slug}` page (renders MDX at build time) | `content/ideas/{slug}.mdx` in the repo | **git push → Vercel deploy** |
-| Hero / OG image | `public/image/og/idea/{slug}.png` in the repo | **git push → Vercel deploy** |
-
-The new `.mdx` and `.png` files must be **committed and pushed** — that triggers the Vercel build that bundles them. Without the deploy, `/ideas/{slug}` and the OG image return **404** even though the prod seed succeeded and the grid card may already point at them.
+Commit + push MDX + OG PNG **only if the operator explicitly asks**. Do not push to `main` on your own.
 
 ```bash
-git add content/ideas/{slug}.mdx ideas/manifest.json public/image/og/idea/{slug}.png
+git add content/ideas/{slug}.mdx ideas/manifest.json
+# The OG card is non-blocking (Step 6): stage it only if it was generated.
+[ -f public/image/og/idea/{slug}.png ] && git add public/image/og/idea/{slug}.png
 git commit -m "content(idea): {title}"
-git push origin main   # triggers the Vercel production deploy
+git push   # only when asked; triggers Vercel
 ```
 
-Confirm after the deploy finishes (~1-2 min): `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/ideas/{slug}` → expect **200**. Do **not** report the idea as "live" until the page returns 200. If no push was authorized, report it as **staged + seeded**, not live.
+Confirm the page is live: `curl -s -o /dev/null -w "%{http_code}\n" https://www.weekendmvp.app/ideas/{slug}` → **200**.
 
-See `IMAGES.md` for setup, drift recovery, and prompt-writing rules.
+Only then seed production so the grid and hubs list it:
+
+```bash
+npm run seed:convex -- --prod    # after the 200 above; REQUIRED for live /startup-ideas + hubs
+```
+
+Skipping `--prod` after deploy is the #1 "I can't see my idea" cause. No deploy authorization → no prod seed; report **staged (dev seed only)**.
+
+### Step 8 — Output report
+
+```
+## Published: {IDEA_TITLE}
+
+**Source:** idea engine (`engine:{slug}`) — record at engine/records/{slug}.json
+
+**Files:**
+- content/ideas/{slug}.mdx (8 headings including Sources)
+- ideas/manifest.json (tagged, provenance, og)
+- engine/records/{slug}.json
+- image/og/idea/{slug}.png (if og.status=ready)
+
+**Audit:** words={N} competitors={N} sources={N} howTo={N} — audit:idea PASS; validate:idea-tags PASS
+**Seed:** {dev: OK/failed; prod: OK/failed}
+**OG:** {ready|failed}
+**Deploy:** {LIVE | STAGED — not pushed}
+
+**Preview:** npm run dev → http://localhost:3000/ideas/{slug}
+```
 
 ---
 
-## What the route already provides (do NOT author these)
+## MDX shape (compiler output — do not break)
 
-The old skill emitted `<head>` meta, JSON-LD, an email gate, nav, footer, and analytics into each HTML file. **None of that is the skill's job anymore.** For reference, here is who owns each piece now:
+```mdx
+---
+slug: "{slug}"
+title: "{Idea Title}"
+---
 
-- **Page metadata + OG/Twitter tags** — `app/ideas/[slug]/page.tsx` `generateMetadata`, built from manifest (`description`) + the `image/og/idea/{slug}.png` path. No longer needed in the skill — handled by the route.
-- **JSON-LD @graph** (Person / Article / SoftwareApplication / HowTo / BreadcrumbList) — emitted by the route. The `HowTo` steps come from your `**How it works:**` numbered list; `SoftwareApplication.applicationCategory` comes from the manifest. No longer needed in the skill — handled by the route.
-- **Nav + sticky subnav + footer** — the shared App Router layout. No longer needed — handled by the layout (the old `scripts/sync-idea-nav.js` step is gone).
-- **Analytics (GA / Meta Pixel)** — global in the layout. No longer needed — handled by the layout (the old `scripts/inject-analytics.js` step is gone).
-- **Email gate** — handled by the app, not per-page MDX. No longer author email-gate markup.
-- **Grid card + ItemList JSON-LD** on `/startup-ideas` — generated dynamically from Convex after `npm run seed:convex`. No longer needed — automatic (the old "edit `startup-ideas.html`" steps are gone).
-- **Sitemap entry** — `app/sitemap.ts` auto-discovers `content/ideas/*.mdx`. No longer needed — automatic (the old "edit `sitemap.xml`" step is gone).
+## The Problem
+...
 
-The only thing that affects SEO/AEO quality from the skill's side is **MDX body quality**: complete sections, real citations in `## Sources`, and a clean `**How it works:**` numbered list.
+## The Solution
+...
+
+**How it works:**
+
+1. **{Step}** — ...
+2. **{Step}** — ...
+3. **{Step}** — ...
+
+## Market Research
+...
+
+## Competitive Landscape
+...
+
+**Your Opportunity**
+...
+
+## Business Model
+...
+
+## Recommended Tech Stack
+...
+
+## AI Prompts to Build This
+...
+
+## Sources
+
+- [{title}]({url})
+- [{title}]({url})
+```
+
+Authoring rules:
+- GFM only. No raw HTML / email-gate / nav.
+- Escape bare `<` and `{` in prose (`under $0.01`, not `<$0.01`) or the page 500s.
+- Frontmatter is **exactly** `slug` + `title`.
+
+Quick checks:
+
+```bash
+grep -c '^## ' content/ideas/{slug}.mdx        # expect 8
+grep -n 'How it works' content/ideas/{slug}.mdx
+wc -w content/ideas/{slug}.mdx
+awk '/^```/{c=!c} !c && /[<{]/{print NR": "$0}' content/ideas/{slug}.mdx
+```
+
+---
+
+## What the route already provides (do NOT author)
+
+Page metadata, JSON-LD @graph, nav/footer, analytics, email gate, grid ItemList, sitemap — all owned by App Router routes/layouts after seed. Skill quality = MDX body + manifest tagging.
 
 ---
 
 ## Error Handling
 
-- If `ideas/drafts/{folder-name}/` doesn't exist (Mode B): report the error with instructions.
-- If `raw.md` is missing (Mode B): report the error, it's required.
-- If MCP research is thin (Mode A): apply the A.2.1 STOP rule — do not paper over it.
-- If `npm run seed:convex` fails: surface the `npx convex dev` prerequisite and do not claim grid visibility (see Step 8).
-- If `npm run og:generate` fails: that's fine — `og.status: "failed"`, the publish still succeeds (non-blocking invariant).
+- Missing `ideas/drafts/{folder}/raw.md` → report and stop.
+- `engine:research` throws (thin research / cost cap / missing keys) → surface the error; do not call Ideabrowser MCP; do not invent stats.
+- `engine:compile` refuses overwrite → pass `--force` only with operator OK, or pick a new slug.
+- `audit:idea` fails → fix or abandon; never set `auditPassed: true`.
+- `validate:idea-tags` fails → fix allowlists before seed.
+- `seed:convex` fails → do not claim grid visibility.
+- `og:generate` fails → fine (`og.status: "failed"`); publish continues.
+- No commit authorization → report **staged + seeded**, not live.
 
 ---
 
 ## Checklist
 
-Before marking complete:
-
-### Research Checklist — Mode A (MCP, default)
-- [ ] Resolved `idea_id` (user-supplied or chosen via `browse_ideas` shortlist)
-- [ ] Called `get_idea_research(idea_id)` for base record
-- [ ] Called `get_idea_research(idea_id, "competitive_analysis")` — 3+ named competitors with pricing
-- [ ] Called `get_idea_research(idea_id, "go_to_market")` — pricing tiers / positioning
-- [ ] Called `get_idea_research(idea_id, "keyword_list")` — meta description keywords
-- [ ] Called `get_idea_research(idea_id, "community_analysis")` — Reddit/YT/FB demand signals
-- [ ] Called `research_market_insight(idea_id)` — 2+ cited market statistics
-- [ ] Called `research_trend(idea_id)` — "Why Now" timing angle
-- [ ] Passed the A.2.1 STOP rule (no thin sections)
-- [ ] Captured citations from `competitive_analysis.data.citations` + `research_market_insight`
-- [ ] Never used WebSearch fallback (if tempted, re-check STOP rule)
-
-### Research Checklist — Mode B (folder, fallback only)
-- [ ] Read raw.md and extracted title + research keywords
-- [ ] **Performed WebSearch for market data** (3+ statistics found)
-- [ ] **Performed WebSearch for competitors** (3+ competitors with current pricing)
-- [ ] **Performed WebSearch for industry trends**
-- [ ] **Performed WebSearch for tech stack** (if applicable)
-
-### Content Checklist (REQUIRED - NO COPYING)
-- [ ] Completed Step 4.5 voice check (read 2 reference MDX files)
-- [ ] The Problem: written fresh with research stats (NOT from raw.md)
-- [ ] The Solution: original, with `**How it works:**` numbered list (NOT from raw.md)
-- [ ] Market Research: verified statistics with sources
-- [ ] Competitive Landscape: 3+ competitors, current pricing, `**Your Opportunity**` callout
-- [ ] Business Model: pricing tiers + unit economics
-- [ ] Recommended Tech Stack: named framework/database/hosting
-- [ ] AI Prompts to Build This: 3+ fenced code blocks
-- [ ] Sources: markdown links to everything cited
-
-### Publishing Checklist
-- [ ] Wrote `content/ideas/{slug}.mdx` — frontmatter exactly `slug` + `title`, slug matches `^[a-z0-9-]+$`
-- [ ] Added `ideas/manifest.json` entry with full provenance (researchCalls, citations, wordCount, auditPassed, auditRunAt), `description`, `scores` (Mode A only), `source`, `applicationCategory`
-- [ ] Manifest entry includes `og.subject` + `og.accent` + `og.status: "pending"`
-- [ ] **Tagging contract:** `category` is one of the 12 live slugs; `tools[]` ≥2 allowlisted; `audiences[]` ≥2 allowlisted; `revenueGoal` allowlisted; `buildTime` canonical (`"8"|"10"|"12"|"20"|"24"|"30"|"40"`) — ran `npm run validate:idea-tags -- --slug {slug}` and it passed
-- [ ] Passed the Step 7 manual section gate (8 `##` sections, How-it-works list, ≥ ~800 words, no placeholders)
-- [ ] Ran `npm run seed:convex` (dev) **AND** `npm run seed:convex -- --prod` (production — required for live grid/hub visibility) and confirmed both succeeded; if either failed, surfaced the fix and did NOT claim grid visibility
-- [ ] **Deployed (Step 10):** committed + pushed the MDX + OG PNG so the page/image exist in prod (git push → Vercel); confirmed `/ideas/{slug}` returns 200 live. (If no push authorized, reported it as staged + seeded, NOT live.)
-- [ ] Ran `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
-- [ ] Confirmed `og.status` is `"ready"` or `"failed"` (publish proceeds either way)
-- [ ] Verified `/ideas/{slug}` renders all 8 sections in `npm run dev`
-- [ ] Spot-checked that the idea appears on at least one `/build-with/{tool}` and one `/ideas-for/{audience}` hub after seed (not just `/startup-ideas`)
-- [ ] Listed research sources in the output report
+### Engine path
+- [ ] Brief written (from title or `--from-draft` raw.md)
+- [ ] `npm run engine:research -- --brief … --live --out engine/records/{slug}.json`
+- [ ] `npm run engine:compile -- --record engine/records/{slug}.json`
+- [ ] Manifest tagging filled (category, ≥2 tools, ≥2 audiences, revenueGoal, buildTime, og)
+- [ ] Homepage `highlights` block written from the MDX (quote, 1–3 stats, 3–5 competitors), no invented numbers
+- [ ] Idea gate passed (paying buyer, public pain, wedge) and no existing idea covers it
+- [ ] `npm run audit:idea -- --slug {slug}` PASS on the deep bar (≥2,200 words, verified quotes, Year-One Math, idea-specific schema, no broken links)
+- [ ] `npm run validate:idea-tags -- --slug {slug}` PASS
+- [ ] `provenance.auditPassed` set true only after both gates
+- [ ] Human spot check: 2 cited threads + 2 competitor prices confirmed in a browser
+- [ ] `npm run seed:convex` (dev)
+- [ ] `npm run seed:convex -- --prod` only after the authorized deploy returns 200
+- [ ] `npm run og:generate -- --slug {slug} --surface idea --non-blocking`
+- [ ] Commit/push **only if operator asked**
+- [ ] Preview at `http://localhost:3000/ideas/{slug}` (all 8 sections)
+- [ ] No Ideabrowser MCP calls were made
