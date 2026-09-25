@@ -27,7 +27,9 @@ import {
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
+import { WhenConvexReady } from "@/components/platform/client-gates";
 import { WorkspaceSurface } from "./LegacyDarkSurface";
+import { PendingSaveRunner } from "./PendingSaveRunner";
 import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
 import {
@@ -306,6 +308,10 @@ export function WorkspaceShell({
           <WorkspaceSearch ideaCount={ideaCount} />
         </header>
         <main id="workspace-main" tabIndex={-1} className="outline-none">
+          {/* WP44-S6: finishes a save started on a public idea page before sign-up. */}
+          <WhenConvexReady>
+            <PendingSaveRunner />
+          </WhenConvexReady>
           <WorkspaceSurface pathname={pathname}>{children}</WorkspaceSurface>
         </main>
       </div>

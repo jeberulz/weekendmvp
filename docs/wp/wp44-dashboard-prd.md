@@ -568,8 +568,8 @@ Library and saving
 | FR-7 | Ideas search runs over the full library through a Convex search index on `ideas`, filtered by category |
 | FR-8 | Filters (category, tools, build time, revenue goal) combine with search and sort, and live in the URL |
 | FR-9 | Save is one toggle. Saved shows ideas where `saved` or `interested` is true. Unsave clears both flags |
-| FR-10 | Signed-in readers can save from `/ideas/{slug}`. The page stays static and crawlable. The save control is a client island that renders only when the `wmvp_signed_in` hint cookie is present |
-| FR-11 | Anonymous readers who click Save go to `/signup?returnTo=/ideas/{slug}` and the save completes after signup |
+| FR-10 | Signed-in readers can save from `/ideas/{slug}`. The page stays static and crawlable. The save control is a client island that renders nothing on the server or first paint. With the `wmvp_signed_in` hint cookie it is the Save toggle, served by a same-origin route that reads the session on the server |
+| FR-11 | Anonymous readers who click Save go to `/signup?returnTo=/dashboard/saved`. The idea waits in their browser and the save completes on the dashboard after signup, with a link back to the idea. (Changed in S6: returning to `/ideas/{slug}` would need three auth redirect allowlists widened) |
 
 Setup and personalization
 

@@ -206,3 +206,31 @@ Append-only progress log. Do not rely on chat history for project state.
 - Found:
   - The three newest ideas (24 Sep) have `og.status: "pending"`, so they have no cover art anywhere yet. `npm run og:generate` should fill them. Not run here: it is a content step outside this story
 - Next: S6 (Save from the public idea page)
+
+## 2026-09-25 - WP44-S6 Save from the public idea page
+
+- Merged `origin/main` (#80, homepage structured-data tests) first. No conflicts
+- Actions taken:
+  - `components/ideas/SaveIdeaButton.tsx`: client island on `/ideas/{slug}`. Its server snapshot is null, so the server HTML and the first paint carry no Save control. After hydration, readers with the `wmvp_signed_in` hint get the Save toggle (`aria-pressed`, polite announcement, "See your saved ideas" once saved). Everyone else gets "Save idea", a link to sign-up
+  - `app/api/platform/saved/route.ts` (new): GET returns this member's saved state for one slug, POST sets it. The route reads the httpOnly session with `convexAuthNextjsToken()` and calls `platform.dashboard.savedState` and `setSaved`, so the idea page never reads cookies and stays prerendered. POST refuses any request without a same-origin `Origin` (and a cross-site `Sec-Fetch-Site`) before it reads the body or the session. Slugs are validated. Responses are `private, no-store`. A stale hint (no real session) reads as signed out and falls back to the sign-up link
+  - `lib/pending-save.ts` (new): an anonymous click stores `{ slug, title, at }` in this browser, then goes to `/signup?returnTo=/dashboard/saved`. Nothing goes in the URL, so a crafted link cannot save an idea for someone. Entries expire after 2 hours and are read once
+  - `components/platform/shell/PendingSaveRunner.tsx` (new), mounted in the shell behind `WhenConvexReady`: completes the pending save once, then shows "Saved “…”. Back to the idea" in a polite live region with a dismiss button
+  - `app/ideas/[slug]/page.tsx`: `PreviewIdeaCta` no longer renders (R5). The component and `/build/{slug}` stay for v1.1. The island sits in a reserved `min-h-10` slot under the scores
+  - Tests: `tests/platform/wp44-idea-save.test.ts` (14: stash round trip, expiry, future and malformed entries, blocked storage, return path inside the auth allowlist, slug rules, same-origin checks, body parsing, check order in the route, static page, reserved slot, canonical and JSON-LD, island server snapshot, runner gating). `tests/security/wp25-routes.test.mjs` now asserts the preview CTA is not rendered and the component still exists
+- Different from the written criteria, on purpose:
+  - Sign-up returns to `/dashboard/saved`, not `/ideas/{slug}`. Returning to the idea page means widening three post-auth redirect allowlists that are deliberately locked to `/dashboard`: `safePlatformReturn` in `lib/auth-return.ts`, `safeAuthRedirect` in `convex/auth.ts` (a Convex deploy), and `safeDashboardReturn` in `convex/resendMagicLink.ts`. Auth code stays untouched. The save still completes after sign-up, and the notice links straight back to the idea. PRD FR-10 and FR-11 updated to match
+  - The written criteria said the island shows only with the hint cookie, and also that anonymous readers can click Save. Both hold: signed-in readers get the toggle, anonymous readers get the sign-up link, and neither is in the server HTML
+  - The save state comes from a small API route rather than a Convex client on the page. A client-only Convex Auth provider cannot see a session that started on the server (sign-in redirects straight to the return path, so no token reaches the browser), and mounting the server provider would make every idea page dynamic
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass, including the canonical and SEO suites (`tests/redirects`, `tests/links`, `tests/home/seo.test.ts`)
+  - `npm run build` pass. The `/ideas/[slug]` rows are identical to S5's build (◐ route, ○ prerendered paths, 1d/1w). `/api/platform/saved` is a dynamic route. The prerendered `ideas/abandoned-cart-recovery.html` has the canonical tag, 2 JSON-LD blocks, the empty reserved slot, and no Save control or preview link
+  - Browser (dev server; local-only auth bypass in `middleware.ts`, removed before commit, file verified clean):
+    - Real route guards with no session: GET gives `{"signedIn":false}` with `private, no-store`, a bad slug gives 400, POST without an Origin or from another origin gives 403, and a same-origin POST without a session gives 401
+    - Signed out: "Save idea" links to `/signup?returnTo=%2Fdashboard%2Fsaved` and stores the pending save. Layout shift 0 at 1280px and at 390px, no horizontal scroll
+    - Signed in (route responses faked in the browser): the toggle posts `{ slug, saved: true }`, turns pressed, announces "Saved …" and shows "See your saved ideas". A stale hint falls back to the sign-up link
+    - Dashboard with a pending save and a fake Convex websocket: `setSaved` runs once, the notice reads "Saved “…”. Back to the idea", the stash is cleared, and a reload does not save again
+    - axe 4 (wcag2a/aa, wcag21a/aa): 0 violations in the idea page Save slot, signed out and signed in. On the dashboard the only finding is the cookie banner's "Learn more in our Privacy Policy" line (`text-neutral-500` on near-black), which shows until consent is chosen. Pre-existing and site-wide. Queued as its own task
+- Not done here: a real signed-in check against a live Convex deployment. This environment cannot reach Convex, so the session path through `convexAuthNextjsToken()` is exercised by the anonymous route checks only
+- Next: S7 (restyle billing, projects, intake, error and loading; subscription-only Plan and billing)

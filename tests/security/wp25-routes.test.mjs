@@ -15,12 +15,13 @@ test("private WP25 routes remain noindex", async () => {
   }
 });
 
-test("actual idea renderer adds a normal same-origin preview link without changing metadata or JSON-LD", async () => {
+test("idea renderer parks the preview link (R5) without changing metadata or JSON-LD", async () => {
   const [page, cta] = await Promise.all([
     read("app/ideas/[slug]/page.tsx"),
     read("components/ideas/PreviewIdeaCta.tsx"),
   ]);
-  assert.match(page, /<PreviewIdeaCta slug=\{slug\} title=\{title\} \/>/);
+  // WP44-S6: site preview is parked for v1.1. The component stays for then.
+  assert.doesNotMatch(page, /<PreviewIdeaCta\b/);
   assert.match(cta, /href=\{`\/build\/\$\{slug\}`\}/);
   assert.match(cta, />\s*Preview this idea\s*/);
   assert.doesNotMatch(cta, /onClick|window\.|router\./);

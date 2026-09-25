@@ -119,7 +119,7 @@ S1 rulings
     - `npm run test:convex` passes, and `npm run convex:dev` accepts the additive index on a dev deployment
   - Model tier: high (schema writer #1)
 
-- [ ] `WP44-S6` - Save from the public idea page
+- [x] `WP44-S6` - Save from the public idea page
   - Scope: `components/ideas/SaveIdeaButton.tsx` (new client island), `app/ideas/[slug]/page.tsx` (mount point only), `lib/auth-return.ts` if a pending-save param is needed
   - Acceptance criteria:
     - The island renders nothing on the server and on first paint. After hydration it shows Save only when the `wmvp_signed_in` hint cookie exists
