@@ -30,6 +30,7 @@ import type * as platform_ideaCards from "../platform/ideaCards.js";
 import type * as platform_ideas from "../platform/ideas.js";
 import type * as platform_intake from "../platform/intake.js";
 import type * as platform_libraryFilters from "../platform/libraryFilters.js";
+import type * as platform_plans from "../platform/plans.js";
 import type * as platform_preview_capabilities from "../platform/preview/capabilities.js";
 import type * as platform_preview_claim from "../platform/preview/claim.js";
 import type * as platform_preview_customisation from "../platform/preview/customisation.js";
@@ -78,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   "platform/ideas": typeof platform_ideas;
   "platform/intake": typeof platform_intake;
   "platform/libraryFilters": typeof platform_libraryFilters;
+  "platform/plans": typeof platform_plans;
   "platform/preview/capabilities": typeof platform_preview_capabilities;
   "platform/preview/claim": typeof platform_preview_claim;
   "platform/preview/customisation": typeof platform_preview_customisation;

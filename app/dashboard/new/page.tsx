@@ -17,7 +17,7 @@ export default async function NewIdeaPage({
 }) {
   const { project } = await searchParams;
   return (
-    <section aria-label="Own idea intake" className="min-h-full px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <section aria-label="Own idea intake" className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <OwnIdeaIntake projectId={project} />
     </section>
   );

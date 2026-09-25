@@ -9,28 +9,28 @@ export function IntakeProgress({ step }: { step: "shape" | "review" }) {
           className="flex items-center gap-2"
         >
           <span
-            className="flex size-6 items-center justify-center rounded-full border border-white/15 text-xs text-zinc-200"
+            className="flex size-6 items-center justify-center rounded-full border border-home-rule text-xs text-home-ink"
             aria-hidden="true"
           >
             {step === "review" ? <Check className="size-3.5" /> : "1"}
           </span>
-          <span className={step === "shape" ? "font-medium text-zinc-100" : "text-zinc-400"}>
+          <span className={step === "shape" ? "font-medium text-home-ink" : "text-home-ink-3"}>
             Shape the brief
             {step === "shape" ? <span className="sr-only"> — current step</span> : null}
           </span>
         </li>
-        <li aria-hidden="true" className="hidden text-zinc-700 sm:block">/</li>
+        <li aria-hidden="true" className="hidden text-home-ink-2 sm:block">/</li>
         <li
           aria-current={step === "review" ? "step" : undefined}
           className="flex items-center gap-2"
         >
           <span
-            className="flex size-6 items-center justify-center rounded-full border border-white/15 text-xs text-zinc-200"
+            className="flex size-6 items-center justify-center rounded-full border border-home-rule text-xs text-home-ink"
             aria-hidden="true"
           >
             2
           </span>
-          <span className={step === "review" ? "font-medium text-zinc-100" : "text-zinc-400"}>
+          <span className={step === "review" ? "font-medium text-home-ink" : "text-home-ink-3"}>
             Review and confirm
             {step === "review" ? <span className="sr-only"> — current step</span> : null}
           </span>
@@ -42,7 +42,7 @@ export function IntakeProgress({ step }: { step: "shape" | "review" }) {
 
 export function ResumeNotice() {
   return (
-    <p className="mt-4 text-sm text-amber-200" role="status">
+    <p className="mt-4 text-sm text-home-orange-ink" role="status">
       Resumed your server-saved draft. Confirmed versions are never overwritten.
     </p>
   );
@@ -53,7 +53,7 @@ export function DraftMessage({ message }: { message: string }) {
     <div
       aria-live="polite"
       aria-atomic="true"
-      className="mt-4 min-h-6 text-sm text-red-300"
+      className="mt-4 min-h-6 text-sm text-red-700"
     >
       {message}
     </div>
@@ -62,7 +62,7 @@ export function DraftMessage({ message }: { message: string }) {
 
 export function SaveStatus({ status }: { status: "idle" | "saving" | "saved" | "error" }) {
   return (
-    <p className="flex min-h-5 items-center gap-2 text-sm text-zinc-400" aria-live="polite">
+    <p className="flex min-h-5 items-center gap-2 text-sm text-home-ink-3" aria-live="polite">
       {status === "saving" ? (
         <>
           <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />

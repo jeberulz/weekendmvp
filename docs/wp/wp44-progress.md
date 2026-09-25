@@ -234,3 +234,28 @@ Append-only progress log. Do not rely on chat history for project state.
     - axe 4 (wcag2a/aa, wcag21a/aa): 0 violations in the idea page Save slot, signed out and signed in. On the dashboard the only finding is the cookie banner's "Learn more in our Privacy Policy" line (`text-neutral-500` on near-black), which shows until consent is chosen. Pre-existing and site-wide. Queued as its own task
 - Not done here: a real signed-in check against a live Convex deployment. This environment cannot reach Convex, so the session path through `convexAuthNextjsToken()` is exercised by the anonymous route checks only
 - Next: S7 (restyle billing, projects, intake, error and loading; subscription-only Plan and billing)
+
+## 2026-09-25 - WP44-S7 Restyle the remaining dashboard routes
+
+- `origin/main` had not moved since S6. Nothing to merge
+- Actions taken:
+  - `app/globals.css`: a `.theme-desk` scope maps the shadcn tokens (Button, Badge, Label, Input) onto the research-desk palette. The workspace shell sets it, so every control under `/dashboard/**` reads light. `--input` is ink-3, which keeps field borders at 3:1 against the card
+  - `LegacyDarkSurface` deleted. The shell keeps only the phone tab-bar padding
+  - Plan and billing (`/dashboard/billing`): titled "Plan and billing", no `main` of its own (fixes the nested landmark). Shows the Free plan as the current plan with what it includes today, and "Nothing to pay on the Free plan". Builder's Hub ($29 a month, billed monthly) shows only when `NEXT_PUBLIC_BUILDERS_HUB=on`, with "Not open yet" and no upgrade button
+  - `convex/platform/plans.ts` (new, pure): the one plan constant (ids `free` and `builders_hub`, names, price, what each includes) and the `buildersHubUiEnabled` flag check. S10's entitlements resolver goes beside it. `.env.example` documents the flag
+  - Credit packs hidden, not deleted (R9): the page no longer renders `BillingWorkspace`. The component, checkout route and ledger stay as they are
+  - Projects (`/dashboard/projects/**`) and intake (`/dashboard/new`) restyled. They still render by URL. The "Add your idea" buttons are gone (R4), so nothing links to intake. The project cockpit hides its publish form and credit balance behind `SITE_PUBLISHING_PARKED` (R5, R9). The publish and credit code is untouched, and the balance query is skipped while parked
+  - Page titles on these routes use the serif heading. Outer spacing matches Home, Ideas and Saved. Skeletons announce through `role="status"`. Route errors use the light `PlatformRouteError`
+  - Tests: `tests/platform/wp44-restyle.test.ts` (9: no dark classes in any route or platform component, apart from the parked `BillingWorkspace`; the dark surface is gone; the token scope; skeleton roles; Plan and billing title, landmark and flag; credits hidden but kept; the plan constant; no links to projects or intake; the cockpit hides publish and credits). S4 and S5 tests updated for the deleted surface
+- Different from the written criteria, on purpose:
+  - Builder's Hub shows on Plan and billing only behind its flag. S10 requires all Builder's Hub UI hidden in production until the owner turns it on, and there is nothing to buy yet. The flag and the plan constant are created here so S10 builds on them
+  - The Free plan lists only what ships today. "1 active weekend plan" joins the list with S9
+  - Project cards stay on `/dashboard/projects`. That page is only reachable by URL now, and the criteria keep it rendering. No other surface links to it
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass. Billing, intake and WP29 cockpit suites unchanged and green. The env documentation test caught the new flag first, and `.env.example` now lists it
+  - `npm run build` pass. Every `/dashboard/**` route keeps its route type. Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket with project and intake data): Home, Ideas, Saved, Plan and billing, Projects, a project, a missing project (route error) and intake, each at 1440px and 390px. Every page has exactly one `main`, the right `h1`, and no horizontal scroll. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on all 16 views. Plan and billing also checked with the Builder's Hub flag on: 0 violations
+- Phase A (S2 to S7) is complete
+- Next: S8 (setup questions and personal ranking, schema writer #2)

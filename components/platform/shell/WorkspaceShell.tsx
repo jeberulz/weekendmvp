@@ -28,7 +28,6 @@ import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
 import { WhenConvexReady } from "@/components/platform/client-gates";
-import { WorkspaceSurface } from "./LegacyDarkSurface";
 import { PendingSaveRunner } from "./PendingSaveRunner";
 import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
@@ -190,7 +189,7 @@ export function WorkspaceShell({
   const [collapsed, setCollapsed] = useSidebarCollapsed();
 
   return (
-    <div className="min-h-dvh bg-home-paper font-sans text-home-ink">
+    <div className="theme-desk min-h-dvh bg-home-paper font-sans text-home-ink">
       <a
         href="#workspace-main"
         className="fixed left-3 top-3 z-50 -translate-y-20 rounded-md bg-home-ink px-4 py-2 text-sm font-semibold text-home-card transition-transform focus:translate-y-0 focus:outline-2 focus:outline-offset-2 focus:outline-home-orange-ink motion-reduce:transition-none"
@@ -312,7 +311,8 @@ export function WorkspaceShell({
           <WhenConvexReady>
             <PendingSaveRunner />
           </WhenConvexReady>
-          <WorkspaceSurface pathname={pathname}>{children}</WorkspaceSurface>
+          {/* Room for the phone tab bar. */}
+          <div className="pb-24 lg:pb-0">{children}</div>
         </main>
       </div>
     </div>

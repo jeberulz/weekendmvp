@@ -14,7 +14,6 @@ import railSource from "../../components/platform/home/HomeRail.tsx?raw";
 import saveSource from "../../components/platform/home/SaveIdeaButton.tsx?raw";
 import scoreMetersSource from "../../components/platform/explore/ScoreMeters.tsx?raw";
 import statesSource from "../../components/platform/home/module-states.tsx?raw";
-import surfaceSource from "../../components/platform/shell/LegacyDarkSurface.tsx?raw";
 import shellSource from "../../components/platform/shell/WorkspaceShell.tsx?raw";
 import {
   MODULE_ERROR_COPY,
@@ -113,9 +112,8 @@ describe("WP44-S4 Home composition", () => {
     expect(statesSource).toContain("<ModuleErrorBoundary");
   });
 
-  test("Home leaves the legacy dark surface", () => {
-    expect(surfaceSource).toContain('const RESTYLED = new Set(["/dashboard",');
-    expect(shellSource).toContain("<WorkspaceSurface pathname={pathname}>");
+  test("Home is on the research-desk tokens (the dark surface is gone, S7)", () => {
+    expect(shellSource).not.toContain("LegacyDarkSurface");
     for (const [name, source] of Object.entries(homeSources)) {
       expect(source, name).not.toContain("#050505");
       expect(source, name).not.toMatch(/\bzinc-\d/);

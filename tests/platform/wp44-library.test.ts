@@ -11,7 +11,6 @@ import savedSource from "../../components/platform/explore/SavedIdeas.tsx?raw";
 import saveSource from "../../components/platform/home/SaveIdeaButton.tsx?raw";
 import picksSource from "../../components/platform/home/PickedForYou.tsx?raw";
 import searchSource from "../../components/platform/shell/WorkspaceSearch.tsx?raw";
-import surfaceSource from "../../components/platform/shell/LegacyDarkSurface.tsx?raw";
 import ideasQuerySource from "../../convex/platform/ideas.ts?raw";
 import schemaSource from "../../convex/schema.ts?raw";
 import {
@@ -163,8 +162,6 @@ describe("WP44-S5 pages", () => {
   });
 
   test("Ideas and Saved are on the research-desk tokens", () => {
-    expect(surfaceSource).toContain('"/dashboard/explore"');
-    expect(surfaceSource).toContain('"/dashboard/saved"');
     for (const [name, source] of Object.entries(librarySources)) {
       expect(source, name).not.toContain("#050505");
       expect(source, name).not.toMatch(/\bzinc-\d/);

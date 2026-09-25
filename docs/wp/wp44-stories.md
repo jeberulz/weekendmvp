@@ -132,7 +132,7 @@ S1 rulings
     - Manual check signed in and signed out
   - Model tier: mid (touches a public SEO page)
 
-- [ ] `WP44-S7` - Restyle the remaining dashboard routes
+- [x] `WP44-S7` - Restyle the remaining dashboard routes
   - Scope: `app/dashboard/billing/*`, `components/platform/billing/*`, `app/dashboard/projects/**`, `components/platform/projects/*`, `app/dashboard/new/*`, `components/platform/intake/*`, `app/dashboard/**/error.tsx`, `app/dashboard/**/loading.tsx`
   - Acceptance criteria:
     - Every `/dashboard/**` route uses the research-desk theme
