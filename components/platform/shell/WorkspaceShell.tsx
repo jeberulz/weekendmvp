@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
 import { LegacyDarkSurface } from "./LegacyDarkSurface";
+import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
 import {
   BILLING_NAV,
@@ -66,12 +67,14 @@ function SidebarLink({
   icon: Icon,
   current,
   collapsed,
+  badge,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   current: boolean;
   collapsed: boolean;
+  badge?: ReactNode;
 }) {
   return (
     <Link
@@ -89,6 +92,7 @@ function SidebarLink({
     >
       <Icon className="size-[18px] shrink-0" aria-hidden />
       <span className={cn(collapsed && "sr-only")}>{label}</span>
+      {!collapsed && badge}
     </Link>
   );
 }
@@ -171,7 +175,14 @@ function AccountSheet() {
   );
 }
 
-export function WorkspaceShell({ children }: { children: ReactNode }) {
+export function WorkspaceShell({
+  children,
+  ideaCount = null,
+}: {
+  children: ReactNode;
+  /** Live ideas in the library, for the search placeholder. */
+  ideaCount?: number | null;
+}) {
   const pathname = usePathname();
   const view = useSearchParams().get("view");
   const [collapsed, setCollapsed] = useSidebarCollapsed();
@@ -238,6 +249,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
                 icon={NAV_ICONS[item.id]}
                 current={isWorkspaceNavCurrent(item.id, pathname, view)}
                 collapsed={collapsed}
+                badge={item.id === "saved" ? <SavedCount /> : undefined}
               />
             ))}
           </div>
@@ -291,7 +303,7 @@ export function WorkspaceShell({ children }: { children: ReactNode }) {
           >
             <BrandMark />
           </Link>
-          <WorkspaceSearch />
+          <WorkspaceSearch ideaCount={ideaCount} />
         </header>
         <main id="workspace-main" tabIndex={-1} className="outline-none">
           <LegacyDarkSurface>{children}</LegacyDarkSurface>

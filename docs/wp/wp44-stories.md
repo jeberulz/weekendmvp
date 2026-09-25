@@ -63,7 +63,7 @@ S1 rulings
     - Screenshots at 390px and 1440px, keyboard pass through nav and sheet
   - Model tier: mid
 
-- [ ] `WP44-S3` - Dashboard data layer and events
+- [x] `WP44-S3` - Dashboard data layer and events (done 2026-09-25, see progress log for what differs from the criteria below)
   - Scope: `convex/platform/dashboard.ts` (new), `convex/platform/ideas.ts` (deprecate `dashboardSummary` once unused), `app/dashboard/page.tsx`, `next.config.ts` (file tracing for `/dashboard` only), `lib/track.ts` event names, tests under `convex/` and `tests/`
   - Acceptance criteria:
     - `platform.dashboard.home` returns first name, saved count (union of `saved` and `interested`), 5 latest saved ideas, and fields for setup, active plan and plan tier set to empty defaults until S8, S9 and S10
@@ -92,6 +92,8 @@ S1 rulings
     - Editorial modules render on the server. Personal modules show layout-sized skeletons. A failed personal query shows a module-level error, never a blank page
     - Skeletons expose their loading label through `role="status"` (axe `aria-prohibited-attr` flags today's `aria-label` on a plain div)
     - Home content leaves `LegacyDarkSurface`
+    - `app/dashboard/page.tsx` calls `getDashboardEditorial()` (S3) and passes `weekly` and `newest` to the modules. Every Convex consumer sits inside `WhenConvexReady`
+    - Once the old Home is gone, delete `platform.ideas.dashboardSummary` and its WP23 tests
     - All copy from PRD 6.8 applied. None of the removed system copy remains
     - `PreviewClaimRunner` still runs on `/dashboard`
   - Verification:

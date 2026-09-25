@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
     // The homepage reads idea MDX + the manifest when its hourly cache
     // regenerates (WP42 weekly picks), so trace them into the `/` function.
     "/": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
+    // The dashboard layout reads the same cache for the library total, and
+    // Home shows the same weekly pick and newest ideas (WP44-S3).
+    "/dashboard": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
+    "/dashboard/**": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
     "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
     // sitemap.xml enumerates MDX at request time, so the content dirs must be
     // traced into its function bundle or it emits hub pages only.

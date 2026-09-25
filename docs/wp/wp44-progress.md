@@ -96,3 +96,31 @@ Append-only progress log. Do not rely on chat history for project state.
 - Found:
   - `/dashboard` never renders on the server today: `PreviewClaimRunner` calls `useMutation` during SSR with no Convex client, so React falls back to client rendering. Pre-existing on `main`. Added to S3, because server-rendered Home depends on it
 - Next: S3 (dashboard data layer and events)
+
+## 2026-09-25 - WP44-S3 Dashboard data layer and events
+
+- Merged `origin/main` (#79, SEO crawl-budget cleanup) first. No conflicts
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - `convex/platform/dashboard.ts`: `platform.dashboard.home` returns first name, saved count, whether it is capped, the 5 latest saved ideas, and the defaults later stories fill (`setupDone: false`, `activePlan: null`, `plan: "free"`). Identity comes from `requireCurrentPlatformUser`. Saved is the union of the `saved` and `interested` flags (R3), read newest first from their two indexes, 100 rows each at most
+  - `components/platform/client-gates.tsx`: `WhenConvexReady` (browser only, valid Convex URL only) and `QuietErrorBoundary`
+  - Fixed the S2 finding: `PreviewClaimRunner` sits inside `WhenConvexReady`, so `/dashboard` renders on the server again
+  - Shell: Saved shows its count in the sidebar ("99+" past 99, nothing at zero), gated and error-bounded. Search reads "Search N ideas" with the live library total
+  - `lib/dashboard/editorial.ts` wraps the homepage's hourly `getHomeData()` cache: library total, week, weekly pick (the homepage's section 03 idea) and the 5 newest ideas. Returns null instead of throwing. The dashboard layout reads it for the total
+  - `next.config.ts` traces the idea MDX and manifest into `/dashboard` and `/dashboard/**`
+  - `lib/track.ts`: typed `trackDashboardEvent` for every PRD section 10 event. Each event forwards only its allowlisted keys
+  - Tests: `convex/wp44Dashboard.test.ts` (7: sign-in required, R3 union and order, defaults, display-name greeting, two-member isolation, 99 cap, deleted ideas skipped) and `tests/platform/wp44-data.test.ts` (8: editorial mapping, layout wiring, tracing, server-render gates, event allowlist)
+- Different from the written criteria, on purpose:
+  - The page does not pass the weekly pick and newest ideas yet: nothing renders them until S4. S3 ships and tests the loader, and the layout already uses it. S4 wires the page
+  - `convex/_generated/api.d.ts` was edited by hand (two lines, generator order and format) because `npx convex codegen` needs network access to Convex, which this environment blocks. The next real codegen should reproduce it exactly
+  - The saved count is a bounded read capped at 99, not a denormalized counter. Rows per member are bounded by the library (one intent per idea) and the badge never shows more than "99+", so a counter would add a schema change and a write on every save for no visible gain. Revisit if intents ever stop being one per idea
+  - `platform.ideas.dashboardSummary` stays until S4 removes the old Home that uses it
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass
+  - `npm run build` pass. Dashboard routes now revalidate hourly (1h/1d) instead of daily, because the layout reads the hourly homepage cache. The 5 Turbopack tracing warnings are the same ones WP42 recorded (`lib/mdx.tsx`, `lib/sitemap-data.ts`)
+  - Browser, local-only auth bypass (removed before commit, file verified clean): the dev log shows no "Could not find Convex client" error, and the server HTML carries the shell and "Search 226 ideas". axe: shell and Account sheet 0 violations. The old Home skeleton still has `aria-prohibited-attr` (S4)
+- Found:
+  - A save whose idea row was deleted still counts in the badge but is left out of the latest list. Ideas are retired in the manifest rather than deleted, so this is rare. Noted, not fixed
+- Next: S4 (Home modules)

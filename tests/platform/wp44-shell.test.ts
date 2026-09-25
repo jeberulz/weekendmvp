@@ -21,7 +21,7 @@ describe("WP44-S2 light workspace shell", () => {
   test("keeps the request-time auth boundary and private metadata", () => {
     expect(dashboardLayoutSource).toContain("<AuthPlatformProvider");
     expect(dashboardLayoutSource).toContain('fallbackClassName="bg-home-paper"');
-    expect(dashboardLayoutSource).toContain("<WorkspaceShell>");
+    expect(dashboardLayoutSource).toContain("<WorkspaceShell ideaCount=");
     expect(dashboardLayoutSource).toContain("index: false");
     expect(dashboardLayoutSource).toContain("noarchive: true");
     expect(dashboardLayoutSource).toContain("nocache: true");

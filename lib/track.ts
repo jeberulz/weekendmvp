@@ -66,3 +66,59 @@ export function trackPageSection(section: string): void {
     section_name: section,
   });
 }
+
+/**
+ * WP44 dashboard events (PRD section 10). Props are enums, counts and config
+ * ids only: never an email, a name, a note or any other free text. Each event
+ * forwards only its allowlisted keys, so a stray field cannot leak.
+ */
+export type DashboardState = "new" | "set_up" | "choosing" | "building" | "finished";
+export type DashboardPlan = "free" | "builders_hub";
+export type DashboardSurface = "sidebar" | "sheet" | "tag" | "billing";
+export type DashboardFeature = "weekend_plan" | "collections" | "prompt_pack" | "compare";
+export type DashboardSource = "home" | "ideas" | "saved" | "idea_page";
+export type OfferKind = "starter_kit" | "promo";
+
+export type DashboardEvent =
+  | { name: "dashboard_viewed"; props: { state: DashboardState; plan: DashboardPlan } }
+  | {
+      name: "setup_completed";
+      props: { tools_count: number; hours_bucket: "8" | "12" | "20" | "more"; goal: string };
+    }
+  | { name: "setup_skipped"; props: Record<string, never> }
+  | {
+      name: "explore_state_changed";
+      props: { flag: "saved"; value: boolean; source: DashboardSource };
+    }
+  | { name: "weekend_plan_started"; props: { source: DashboardSource } }
+  | { name: "weekend_step_completed"; props: { step: "fri" | "sat" | "sun" | "mon" } }
+  | { name: "prompt_copied"; props: { surface: "plan" | "home" | "idea_page" } }
+  | { name: "upgrade_prompt_viewed"; props: { surface: DashboardSurface; feature: DashboardFeature } }
+  | { name: "upgrade_clicked"; props: { surface: DashboardSurface; feature: DashboardFeature } }
+  | { name: "offer_viewed"; props: { offer_id: string; kind: OfferKind } }
+  | { name: "offer_clicked"; props: { offer_id: string; kind: OfferKind } }
+  | { name: "offer_dismissed"; props: { offer_id: string; kind: OfferKind } };
+
+export const DASHBOARD_EVENT_PROPS = {
+  dashboard_viewed: ["state", "plan"],
+  setup_completed: ["tools_count", "hours_bucket", "goal"],
+  setup_skipped: [],
+  explore_state_changed: ["flag", "value", "source"],
+  weekend_plan_started: ["source"],
+  weekend_step_completed: ["step"],
+  prompt_copied: ["surface"],
+  upgrade_prompt_viewed: ["surface", "feature"],
+  upgrade_clicked: ["surface", "feature"],
+  offer_viewed: ["offer_id", "kind"],
+  offer_clicked: ["offer_id", "kind"],
+  offer_dismissed: ["offer_id", "kind"],
+} as const satisfies { [N in DashboardEvent["name"]]: readonly string[] };
+
+export function trackDashboardEvent(event: DashboardEvent): void {
+  const allowed: readonly string[] = DASHBOARD_EVENT_PROPS[event.name];
+  const props: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(event.props)) {
+    if (allowed.includes(key)) props[key] = value;
+  }
+  trackEvent(event.name, props);
+}

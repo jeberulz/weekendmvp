@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { isSearchShortcut } from "./workspace-current";
 
-export function WorkspaceSearch() {
+export function WorkspaceSearch({ ideaCount }: { ideaCount: number | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -54,7 +54,7 @@ export function WorkspaceSearch() {
         defaultValue={current}
         maxLength={80}
         autoComplete="off"
-        placeholder="Search ideas"
+        placeholder={ideaCount ? `Search ${ideaCount} ideas` : "Search ideas"}
         aria-keyshortcuts="/"
         className="h-10 w-full rounded-lg border border-home-rule bg-home-card pl-9 pr-10 text-sm text-home-ink outline-none transition-colors placeholder:text-home-ink-3 hover:border-home-ink-3 focus-visible:border-home-orange-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-home-orange-ink"
       />

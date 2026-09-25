@@ -1,4 +1,5 @@
 import { DashboardHome } from "@/components/platform/shell/DashboardHome";
+import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
 
 export default function DashboardPage() {
@@ -6,8 +7,11 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
       {/* WP27-S5. Claims a capability stashed on `/login` or `/signup`, if there
           is one. Renders nothing when there is not, so the ordinary dashboard
-          is unchanged for everyone who did not arrive from a preview. */}
-      <PreviewClaimRunner />
+          is unchanged for everyone who did not arrive from a preview. Gated so
+          its `useMutation` never runs on the server (WP44-S3). */}
+      <WhenConvexReady>
+        <PreviewClaimRunner />
+      </WhenConvexReady>
       <DashboardHome />
     </div>
   );
