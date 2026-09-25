@@ -1,4 +1,4 @@
-# WP43 PRD - Ideas-first dashboard (free and paid)
+# WP44 PRD - Ideas-first dashboard (free and paid)
 
 Status: Rulings complete. R1 to R9 were ruled on 2026-09-25 and are recorded
 in `docs/wp/RULINGS.md`. One follow-up is open: whether R5 also parks WP29 to
@@ -6,8 +6,8 @@ WP31 (end of section 12).
 
 Companion docs:
 
-- `docs/wp/wp43-stories.md` - the build plan, story by story
-- `docs/wp/wp43-progress.md` - progress log
+- `docs/wp/wp44-stories.md` - the build plan, story by story
+- `docs/wp/wp44-progress.md` - progress log
 - Design canvas: [Weekend MVP Dashboard](https://claude.ai/artifact/SoKxJm9Urpeyo8p9NntLG5) - five artboards (new member, free member building, Builder's Hub member, phone, upgrade sheet). Private to the owner until shared
 
 ---
@@ -659,7 +659,7 @@ upgrade sheet.
 Builder's Hub billing needs a Stripe monthly subscription, webhooks, and a
 subscription record. No credit packs (R9). That is a payments change, so it
 runs as its own high-risk Work Package, with the same exactly-once and
-server-confirmed rules as WP24. WP43 ships the UI and the resolver, not the
+server-confirmed rules as WP24. WP44 ships the UI and the resolver, not the
 billing code.
 
 ### 9.5 Offers

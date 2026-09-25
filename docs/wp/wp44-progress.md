@@ -1,4 +1,4 @@
-# WP43 Progress - Ideas-first dashboard (free and paid)
+# WP44 Progress - Ideas-first dashboard (free and paid)
 
 Append-only progress log. Do not rely on chat history for project state.
 
@@ -6,7 +6,7 @@ Append-only progress log. Do not rely on chat history for project state.
 
 - Branch/worktree: `claude/wizardly-rubin-a6m2th` (no worktree)
 - Assignment: deep dive on what `/dashboard` should be after the ideas-first direction (WP42), for free and paid members. Write a PRD and a build plan. No product code in this step
-- File boundaries: `docs/wp/wp43-*`, `docs/PROJECT_STRATEGY.md` (registry row)
+- File boundaries: `docs/wp/wp44-*`, `docs/PROJECT_STRATEGY.md` (registry row)
 - Required checks: `git diff --check`
 - Initial risks:
   - Paid plan name, price and limits are not ruled. PRD section 12 lists them
@@ -58,3 +58,8 @@ Append-only progress log. Do not rely on chat history for project state.
   - WP29 to WP31 exist to ship site publishing, so R5 may pause them too. Asked the owner. `docs/wp/v1-scope-cut.md` is unchanged until they answer
 - Checks run: `git diff --check`
 - Next: owner answers the WP29 to WP31 question. Phase A starts with S2
+
+## 2026-09-25 - Renumbered from WP43 to WP44
+
+- PR #77 merged homepage motion to `main` as WP43 (`docs/wp/wp43-*.md`) while this package was still on its branch. This package is now WP44: files renamed to `docs/wp/wp44-*`, story ids are `WP44-S*`, and the nine 2026-09-25 rows in `docs/wp/RULINGS.md` carry `WP44 /` scopes
+- Those rows were relabelled before they ever reached `main`, so no merged ruling row was edited

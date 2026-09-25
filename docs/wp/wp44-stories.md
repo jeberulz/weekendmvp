@@ -1,11 +1,11 @@
-# WP43 Stories - Ideas-first dashboard (free and paid)
+# WP44 Stories - Ideas-first dashboard (free and paid)
 
 Branch: `claude/wizardly-rubin-a6m2th` (PRD and plan). Build phases branch from `main` per phase (see Sequencing).
 Lane: Work Package (UI flow, shared logic, additive schema). The subscription billing it depends on is a separate high-risk Work Package.
 Registry: `docs/PROJECT_STRATEGY.md`
-Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp43-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. No site preview, publish or credit entry points remain (R5, R9). Builder's Hub UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
+Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp44-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. No site preview, publish or credit entry points remain (R5, R9). Builder's Hub UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
 
-Product source: `docs/wp/wp43-dashboard-prd.md`. Visual source: the design canvas [Weekend MVP Dashboard](https://claude.ai/artifact/SoKxJm9Urpeyo8p9NntLG5) (private until shared). S1 exports approved artboards to `docs/wp/evidence/`.
+Product source: `docs/wp/wp44-dashboard-prd.md`. Visual source: the design canvas [Weekend MVP Dashboard](https://claude.ai/artifact/SoKxJm9Urpeyo8p9NntLG5) (private until shared). S1 exports approved artboards to `docs/wp/evidence/`.
 
 ## Sequencing
 
@@ -36,18 +36,18 @@ S1 rulings
 
 ## Stories
 
-- [ ] `WP43-S1` - Record rulings and freeze scope (R1 to R9 recorded 2026-09-25. IdeaBrowser screenshots, canvas export and the R5 follow-up on WP29 to WP31 remain)
-  - Scope: `docs/wp/RULINGS.md`, `docs/wp/wp43-dashboard-prd.md`, `docs/wp/wp43-progress.md`
+- [ ] `WP44-S1` - Record rulings and freeze scope (R1 to R9 recorded 2026-09-25. IdeaBrowser screenshots, canvas export and the R5 follow-up on WP29 to WP31 remain)
+  - Scope: `docs/wp/RULINGS.md`, `docs/wp/wp44-dashboard-prd.md`, `docs/wp/wp44-progress.md`
   - Acceptance criteria:
     - Owner answers R1 to R9 from PRD section 12. Each answer is one new row in `docs/wp/RULINGS.md`
     - PRD status changes from Draft to Approved, with any changes the rulings make
     - Fresh IdeaBrowser logged-in screenshots saved to `docs/wp/evidence/` (the session that wrote the PRD could not reach the site)
-    - Approved canvas artboards exported as PNGs to `docs/wp/evidence/wp43-*.png`
+    - Approved canvas artboards exported as PNGs to `docs/wp/evidence/wp44-*.png`
   - Verification:
     - `git diff --check`
   - Model tier: low
 
-- [ ] `WP43-S2` - Light workspace shell and navigation
+- [ ] `WP44-S2` - Light workspace shell and navigation
   - Scope: `components/platform/shell/*`, `app/dashboard/layout.tsx`, `app/dashboard/SignOutButton.tsx`, `tests/**/workspace-current*`
   - Acceptance criteria:
     - One collapsible sidebar (248px to 72px rail) replaces today's rail plus second sidebar
@@ -63,7 +63,7 @@ S1 rulings
     - Screenshots at 390px and 1440px, keyboard pass through nav and sheet
   - Model tier: mid
 
-- [ ] `WP43-S3` - Dashboard data layer and events
+- [ ] `WP44-S3` - Dashboard data layer and events
   - Scope: `convex/platform/dashboard.ts` (new), `convex/platform/ideas.ts` (deprecate `dashboardSummary` once unused), `app/dashboard/page.tsx`, `next.config.ts` (file tracing for `/dashboard` only), `lib/track.ts` event names, tests under `convex/` and `tests/`
   - Acceptance criteria:
     - `platform.dashboard.home` returns first name, saved count (union of `saved` and `interested`), 5 latest saved ideas, and fields for setup, active plan and plan tier set to empty defaults until S8, S9 and S10
@@ -78,7 +78,7 @@ S1 rulings
     - `npm run build` shows `/dashboard` builds and `/` is unchanged
   - Model tier: high (Convex data and auth boundary)
 
-- [ ] `WP43-S4` - Home modules
+- [ ] `WP44-S4` - Home modules
   - Scope: `components/platform/home/*` (new), `components/platform/shell/DashboardHome.tsx` (replaced), reuse from `components/home/*` without editing it
   - Acceptance criteria:
     - Date line, serif greeting (time of day and first name, no comma when no name), status line
@@ -97,7 +97,7 @@ S1 rulings
     - Screenshots of each module state at 390px and 1440px compared with the canvas artboards
   - Model tier: mid
 
-- [ ] `WP43-S5` - Ideas library and Saved
+- [ ] `WP44-S5` - Ideas library and Saved
   - Scope: `convex/schema.ts` (additive `searchIndex` on `ideas` only), `convex/platform/ideas.ts`, `components/platform/explore/*`, `app/dashboard/explore/*`, `app/dashboard/saved/*` (new), tests
   - Acceptance criteria:
     - Search runs over the full library through the new search index. The "applies to each indexed page" limitation and its copy are gone
@@ -112,7 +112,7 @@ S1 rulings
     - `npm run test:convex` passes, and `npm run convex:dev` accepts the additive index on a dev deployment
   - Model tier: high (schema writer #1)
 
-- [ ] `WP43-S6` - Save from the public idea page
+- [ ] `WP44-S6` - Save from the public idea page
   - Scope: `components/ideas/SaveIdeaButton.tsx` (new client island), `app/ideas/[slug]/page.tsx` (mount point only), `lib/auth-return.ts` if a pending-save param is needed
   - Acceptance criteria:
     - The island renders nothing on the server and on first paint. After hydration it shows Save only when the `wmvp_signed_in` hint cookie exists
@@ -125,7 +125,7 @@ S1 rulings
     - Manual check signed in and signed out
   - Model tier: mid (touches a public SEO page)
 
-- [ ] `WP43-S7` - Restyle the remaining dashboard routes
+- [ ] `WP44-S7` - Restyle the remaining dashboard routes
   - Scope: `app/dashboard/billing/*`, `components/platform/billing/*`, `app/dashboard/projects/**`, `components/platform/projects/*`, `app/dashboard/new/*`, `components/platform/intake/*`, `app/dashboard/**/error.tsx`, `app/dashboard/**/loading.tsx`
   - Acceptance criteria:
     - Every `/dashboard/**` route uses the research-desk theme
@@ -140,7 +140,7 @@ S1 rulings
     - axe at 390px and 1440px on each route
   - Model tier: mid
 
-- [ ] `WP43-S8` - Setup questions and personal ranking
+- [ ] `WP44-S8` - Setup questions and personal ranking
   - Scope: `convex/schema.ts` (additive `user_preferences`), `convex/platform/preferences.ts` (new), `convex/platform/ideas.ts` (`for_you` ranking and `reason`), Home module 1 and 3, Settings page `app/dashboard/settings/*` (new)
   - Acceptance criteria:
     - Three questions inline on Home (tools, weekend hours, goal) as checkbox and radio groups inside fieldsets. Skippable (ruling R7)
@@ -152,7 +152,7 @@ S1 rulings
     - `npm test` including two-user and ranking-reason tests
   - Model tier: high (schema writer #2, ranking logic)
 
-- [ ] `WP43-S9` - Weekend plans and Builds
+- [ ] `WP44-S9` - Weekend plans and Builds
   - Scope: `convex/schema.ts` (additive `weekend_plans`), `convex/platform/plans.ts` (new), `app/dashboard/builds/**` (new), Home module 1 Building and Finished states, Building badge in Ideas and Saved
   - Acceptance criteria:
     - Start a plan from Home, Ideas, Saved or an idea page. Four stages from `WEEKEND_PLAN`
@@ -167,7 +167,7 @@ S1 rulings
     - Screenshots of the plan detail at 390px and 1440px
   - Model tier: high (schema writer #3, state machine)
 
-- [ ] `WP43-S10` - Entitlements and upgrade surfaces (flagged)
+- [ ] `WP44-S10` - Entitlements and upgrade surfaces (flagged)
   - Scope: `convex/platform/entitlements.ts` (new), gated mutations from S9 and S11, `components/platform/plan/*` (new: Plan card, upgrade sheet, comparison table), Plan and billing page
   - Acceptance criteria:
     - `getEntitlements(ctx, ownerId)` returns `{ plan, limits }` and returns Free until the subscription WP ships
@@ -183,7 +183,7 @@ S1 rulings
     - `npm test` including "client cannot bypass the limit" tests
   - Model tier: high (access control)
 
-- [ ] `WP43-S11` - Builder's Hub features (flagged)
+- [ ] `WP44-S11` - Builder's Hub features (flagged)
   - Scope: collections and notes (additive tables, schema writer #4, after S9), prompt pack export (`lib/prompt-pack/*`, deterministic, no AI calls), compare view (`app/dashboard/compare/*`)
   - Acceptance criteria:
     - Collections: create, rename, delete, add and remove ideas. Notes are private and owner-scoped
@@ -195,7 +195,7 @@ S1 rulings
     - `npm test` including ownership and entitlement tests
   - Model tier: mid (high for the schema part)
 
-- [ ] `WP43-S12` - Offer card: Starter Kit and promos (R6, R8)
+- [ ] `WP44-S12` - Offer card: Starter Kit and promos (R6, R8)
   - Scope: `lib/dashboard/offers.ts` (new), `convex/platform/dashboard.ts` (offer choice), `convex/platform/preferences.ts` (dismiss mutation), `components/platform/home/OfferCard.tsx` (new), tests
   - Acceptance criteria:
     - The Home rail shows at most one offer card, chosen by the PRD 6.2 rules: first 24 hours after signup shows only the Starter Kit card, later an active promo wins, else the Starter Kit card while the kit is unclaimed, else nothing
@@ -210,7 +210,7 @@ S1 rulings
     - `npm test` including offer choice with a fixed clock, and a two-user dismissal test
   - Model tier: mid
 
-- [ ] `WP43-S13` - Package gate
+- [ ] `WP44-S13` - Package gate
   - Scope: verification only
   - Acceptance criteria:
     - Standard checks green
@@ -219,7 +219,7 @@ S1 rulings
     - No link to `/build/**`, `/preview/**`, `/dashboard/projects/**` or credit checkout from any dashboard route or idea page (R5, R9)
     - `/ideas/{slug}` route type, canonical and JSON-LD unchanged
     - Private routes noindex and absent from the sitemap
-    - Evidence recorded in `docs/wp/wp43-progress.md` and `docs/wp/wave-gate-report.md`
+    - Evidence recorded in `docs/wp/wp44-progress.md` and `docs/wp/wave-gate-report.md`
   - Verification:
     - `npm run typecheck`
     - `npm run lint`
@@ -241,6 +241,6 @@ S1 rulings
 ## Notes
 
 - Promote unknown product decisions to `docs/wp/RULINGS.md`.
-- `.agentic-workflow.yml` prefers `codex/` branches. This session is pinned to `claude/wizardly-rubin-a6m2th`, so the PRD and plan live here. Build phases should branch from `main` (for example `codex/wp43-dashboard-a`).
+- `.agentic-workflow.yml` prefers `codex/` branches. This session is pinned to `claude/wizardly-rubin-a6m2th`, so the PRD and plan live here. Build phases should branch from `main` (for example `codex/wp44-dashboard-a`).
 - Read `convex/_generated/ai/guidelines.md` before S3, S5, S8, S9, S10, S11 and S12.
 - Site projects and the WP29 cockpit are parked for v1.1 (R5). Whether WP29 to WP31 pause as well is an open owner question (PRD section 12).
