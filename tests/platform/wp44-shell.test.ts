@@ -42,7 +42,7 @@ describe("WP44-S2 light workspace shell", () => {
     expect(PRIMARY_NAV.map((item) => item.href)).toEqual([
       "/dashboard",
       "/dashboard/explore",
-      "/dashboard/explore?view=saved",
+      "/dashboard/saved",
     ]);
     for (const source of [shellSource, navSource, accountMenuSource]) {
       expect(source).not.toContain('"/dashboard/new"');
@@ -76,7 +76,7 @@ describe("WP44-S2 light workspace shell", () => {
 
   test("searches the whole library from the top bar", () => {
     expect(searchSource).toContain('role="search"');
-    expect(searchSource).toContain('action="/dashboard/explore"');
+    expect(searchSource).toContain("action={IDEAS_PATH}");
     expect(searchSource).toContain('name="q"');
     expect(searchSource).toContain('aria-keyshortcuts="/"');
     expect(searchSource).toContain('<label htmlFor="workspace-search" className="sr-only">');

@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
 
 /**
  * WP44 dashboard data. Owner-scoped: identity always comes from the session,
@@ -13,6 +14,9 @@ import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
 export const SAVED_COUNT_CAP = 99;
 const LATEST_SAVED_READ = 8;
 const LATEST_SAVED_RESULT = 5;
+/** The Saved page reads at most this many saves. The library is smaller. */
+export const SAVED_LIST_CAP = 500;
+const MAX_SAVED_LIST_LIMIT = 240;
 
 const savedIdeaValidator = v.object({
   ideaId: v.id("ideas"),
@@ -44,13 +48,6 @@ const homeValidator = v.object({
   plan: v.union(v.literal("free"), v.literal("builders_hub")),
 });
 
-/** Same formula as Explore's canonical score. */
-function meanScore(idea: Doc<"ideas">): number | null {
-  if (idea.scores === undefined) return null;
-  const { opportunity, pain, timing, builder_confidence } = idea.scores;
-  return Math.round(((opportunity + pain + timing + builder_confidence) / 4) * 10) / 10;
-}
-
 function firstNameOf(user: Doc<"users">): string | null {
   const full = (user.displayName ?? user.name ?? "").trim();
   if (full === "") return null;
@@ -63,33 +60,11 @@ export const home = query({
   handler: async (ctx) => {
     const user = await requireCurrentPlatformUser(ctx);
 
-    // Ruling R3: Saved shows ideas marked saved or interested. Each flag has
-    // its own index, so read both newest first, one past the cap, and merge.
-    // A list that stops short of the cap is complete, so the merged count is
-    // exact whenever it stays at or under the cap.
-    const [savedRows, interestedRows] = await Promise.all([
-      ctx.db
-        .query("idea_intents")
-        .withIndex("by_ownerId_and_saved_and_updatedAt", (q) =>
-          q.eq("ownerId", user._id).eq("saved", true),
-        )
-        .order("desc")
-        .take(SAVED_COUNT_CAP + 1),
-      ctx.db
-        .query("idea_intents")
-        .withIndex("by_ownerId_and_interested_and_updatedAt", (q) =>
-          q.eq("ownerId", user._id).eq("interested", true),
-        )
-        .order("desc")
-        .take(SAVED_COUNT_CAP + 1),
-    ]);
-
-    const byIdea = new Map<Id<"ideas">, Doc<"idea_intents">>();
-    for (const row of [...savedRows, ...interestedRows]) {
-      byIdea.set(row.ideaId, row);
-    }
-    const newestFirst = [...byIdea.values()].sort(
-      (a, b) => b.updatedAt - a.updatedAt,
+    // Ruling R3: Saved shows ideas marked saved or interested.
+    const { rows: newestFirst, capped } = await readSavedIntents(
+      ctx,
+      user._id,
+      SAVED_COUNT_CAP,
     );
 
     const latest = (
@@ -117,8 +92,8 @@ export const home = query({
     return {
       firstName: firstNameOf(user),
       saved: {
-        count: Math.min(newestFirst.length, SAVED_COUNT_CAP),
-        capped: newestFirst.length > SAVED_COUNT_CAP,
+        count: newestFirst.length,
+        capped,
         latest,
       },
       setupDone: false,
@@ -198,5 +173,32 @@ export const setSaved = mutation({
       await ctx.db.patch("idea_intents", existing._id, { ...next, updatedAt });
     }
     return { saved: args.saved };
+  },
+});
+
+/**
+ * The Saved page (WP44-S5): ideas marked saved or interested (R3), newest
+ * save first. `total` is exact up to SAVED_LIST_CAP.
+ */
+export const savedList = query({
+  args: { limit: v.number() },
+  returns: v.object({
+    items: v.array(v.object({ card: ideaCardValidator, savedAt: v.number() })),
+    total: v.number(),
+    capped: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const limit = Math.max(1, Math.min(Math.floor(args.limit) || 1, MAX_SAVED_LIST_LIMIT));
+    const { rows, capped } = await readSavedIntents(ctx, user._id, SAVED_LIST_CAP);
+    const items = (
+      await Promise.all(
+        rows.slice(0, limit).map(async (row) => {
+          const idea = await ctx.db.get("ideas", row.ideaId);
+          return idea === null ? null : { card: toIdeaCard(idea, true), savedAt: row.updatedAt };
+        }),
+      )
+    ).filter((item) => item !== null);
+    return { items, total: rows.length, capped };
   },
 });

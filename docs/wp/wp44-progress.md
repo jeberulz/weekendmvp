@@ -165,3 +165,44 @@ Append-only progress log. Do not rely on chat history for project state.
 - Found:
   - `for_you` ranks one page of ideas (newest first), so picks come from the 24 newest ideas only. S8 owns ranking and should rank the whole library
 - Next: S5 (Ideas library and Saved)
+
+## 2026-09-25 - WP44-S5 Ideas library and Saved
+
+- `origin/main` had not moved since S4. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - Schema (writer #1, additive): two search indexes on `ideas`, `search_title` and `search_description`, both filterable by category
+  - `convex/platform/ideas.ts`: new `platform.ideas.library` query. Search reads both search indexes (title matches first). Without search it reads the whole library, newest first, capped at 1,000 rows with a `truncated` flag. Filters (category, any of the picked tools, build-time bucket, revenue goal) combine with search and sort. Facet counts for each filter ignore that filter's own choice. Sorts: best match, newest, highest score, and recommended (score plus a small lift for categories the member saves). New takes its 30-day bound from the client, because queries must not read the clock. `unsavedOnly` serves Home's picks
+  - `convex/platform/ideaCards.ts`: one card shape for every list, and `readSavedIntents` (saved or interested, R3) shared by Home, the library and Saved
+  - `platform.dashboard.savedList`: the Saved page, newest save first, exact total up to 500
+  - Ideas page (`/dashboard/explore`, titled "Ideas"): tabs All, For you, New as links with `aria-current`. Filters as labelled selects with counts, plus a Tools menu of checkboxes that stays open for several picks. Active filters show as removable chips with "Clear all". Sort on the All tab. Grid by default, list toggle kept per browser. "Show more ideas" grows the page by 24 and keeps the old results on screen while the next load
+  - One search field: the top bar. On Ideas it keeps the tab and filters when a new search runs. The page has no field of its own
+  - Cards: art band (a category-tinted stand-in with the category icon when the cover is not generated yet), category, title, two-line pitch, four score bars, hours, tools, Save. List rows: title, category, hours, score, tools, Save
+  - Saved page (`/dashboard/saved`): one list, newest first, with the save date. A removed row stays in place as unsaved until the member leaves, so its announcement is heard and Save undoes it
+  - `/dashboard/explore?view=saved` and `view=interested` redirect to `/dashboard/saved`. `view=building` redirects to Ideas. The sidebar Saved link and Home links point at `/dashboard/saved`
+  - `SaveIdeaButton` takes an optional known `saved` state, so list cards skip the per-idea subscription. Announcements unchanged
+  - Home picks now use `library` with `unsavedOnly`, so they rank the whole library (the S4 finding)
+  - `ScoreMeters` shared by the weekly pick and the cards. `components/home/ui.tsx` exports `categoryTintClass` (additive, the homepage is unchanged)
+  - Removed: `platform.ideas.explore`, `platform.ideas.setIntent` (no callers left: Save is the one toggle, R3), `ExploreWorkspace`, `ExploreCard`, `convex/platformIdeas.test.ts` and `tests/platform/wp23-explore.test.ts`
+  - Tests: `convex/wp44Library.test.ts` (15: vocabulary, sign-in, search past the first page with 60 ideas, combined filters and facets, New bound, three sorts, R3 saved marks and `unsavedOnly`, two-member isolation, limits, card shape, Saved list order and isolation, removal clears both flags, paging past deleted ideas) and `tests/platform/wp44-library.test.ts` (15: URL state, search wiring, removed copy, one search field, redirects, tabs, cards, filters and tokens)
+- Different from the written criteria, on purpose:
+  - Search also covers descriptions (second search index). Title-only search missed ideas whose titles do not name the problem, for example "Chases every unpaid invoice" under a product name
+  - The library is not cursor-paginated. It is a bounded catalog (226 ideas), so one capped read gives exact totals and facet counts over the whole library, which pages cannot. Past 1,000 ideas, browsing shows the newest 1,000 and says so, while search still reaches the rest. Revisit with the aggregate component if the library passes 1,000
+  - Filter counts sit inside the selects and the Tools menu. Chips show only active filters. Chips for all 30 options would push the results below the fold
+  - The sort menu shows on the All tab only. For you always ranks by recommendation and New always sorts newest
+  - Cards no longer show "Building" from site projects (parked, R5). S9 brings it back from weekend plans
+  - Saved has no "Compare" hint and no "Plan my weekend" yet. They come with S11 and S9
+  - `npm run convex:dev` against a dev deployment was not run: this environment cannot reach Convex. The indexes are additive and `convex-test` exercises both, but the first real deploy is where the backfill gets confirmed. `convex/_generated/api.d.ts` was edited by hand again (two new modules, generator order)
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass (`test:convex` 21 files, `test:platform` 4 files)
+  - `npm run build` pass. `/dashboard/saved` is a new partial-prerender route. Same 5 Turbopack warnings
+  - Browser, local-only auth bypass in `middleware.ts` (removed before commit, file verified clean) and the fake Convex websocket, now answering `library` and `savedList` from the real manifest:
+    - Ideas at 1440px: 24 cards, "Show more ideas" makes 48. Top-bar search for "invoice" gives 7 matches. Category plus Bolt gives 9, the Tools menu stays open while picking, and a new search keeps both filters in the URL. List layout survives a reload. Save on a row announces "Saved …". New shows 53 ideas. `view=interested` lands on Saved
+    - Saved at 1440px: 4 rows. Removing one keeps the row, unpressed, announces the removal, and the count drops to 3. Empty state checked
+    - 390px: no horizontal scroll on either page
+    - axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on every screen, including the open Tools menu. A portalled menu first raised `region`, fixed by rendering it inside `main`
+- Found:
+  - The three newest ideas (24 Sep) have `og.status: "pending"`, so they have no cover art anywhere yet. `npm run og:generate` should fill them. Not run here: it is a content step outside this story
+- Next: S6 (Save from the public idea page)

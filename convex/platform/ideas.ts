@@ -1,363 +1,203 @@
-import {
-  paginationOptsValidator,
-  paginationResultValidator,
-} from "convex/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import { mutation, query, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
-import { intentFlagValidator } from "./validators";
+import { query } from "../_generated/server";
+import { requireCurrentPlatformUser } from "./authz";
+import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
+import {
+  HOURS_BUCKETS,
+  MAX_LIBRARY_LIMIT,
+  MAX_SEARCH_LENGTH,
+  MAX_TOOL_FILTERS,
+  effectiveSort,
+  hoursBucket,
+  type LibrarySort,
+} from "./libraryFilters";
 
-const exploreViewValidator = v.union(
+/**
+ * The idea library is a bounded catalog (226 ideas in September 2026). One
+ * read of the newest LIBRARY_READ_LIMIT rows covers all of it, so search,
+ * every filter, facet counts and sorting run over the whole library instead
+ * of one page at a time (PRD finding A7). `truncated` says when the cap bites.
+ */
+export const LIBRARY_READ_LIMIT = 1000;
+/** Per search index. Convex caps one search at 1024 results. */
+const SEARCH_READ_LIMIT = 256;
+const AFFINITY_SAVED_LIMIT = 48;
+const AFFINITY_STEP = 0.1;
+const MAX_AFFINITY_BOOST = 0.5;
+
+// Spelled out so the generated API types stay exact. The tests check they
+// match the shared lists in libraryFilters.ts.
+export const libraryViewValidator = v.union(
   v.literal("all"),
   v.literal("for_you"),
-  v.literal("saved"),
-  v.literal("interested"),
-  v.literal("building"),
+  v.literal("new"),
 );
-
-const exploreSortValidator = v.union(
-  v.literal("recommended"),
+export const librarySortValidator = v.union(
+  v.literal("relevance"),
   v.literal("newest"),
   v.literal("score"),
 );
+export const hoursBucketValidator = v.union(
+  v.literal("8"),
+  v.literal("12"),
+  v.literal("16"),
+  v.literal("more"),
+);
 
-const exploreCardValidator = v.object({
-  ideaId: v.id("ideas"),
-  slug: v.string(),
-  title: v.string(),
-  description: v.string(),
-  category: v.string(),
-  buildTime: v.string(),
-  revenueGoal: v.string(),
-  publishedAt: v.number(),
-  score: v.union(v.number(), v.null()),
-  saved: v.boolean(),
-  interested: v.boolean(),
-  building: v.boolean(),
-});
+const facetValidator = v.array(v.object({ value: v.string(), count: v.number() }));
 
-type ExploreCard = {
-  ideaId: Id<"ideas">;
-  slug: string;
-  title: string;
-  description: string;
-  category: string;
-  buildTime: string;
-  revenueGoal: string;
-  publishedAt: number;
-  score: number | null;
-  saved: boolean;
-  interested: boolean;
-  building: boolean;
-};
+type Dimension = "category" | "tools" | "hours" | "goal";
+const DIMENSIONS: Dimension[] = ["category", "tools", "hours", "goal"];
 
-type ExploreSort = "recommended" | "newest" | "score";
-
-const AFFINITY_INTENT_LIMIT = 48;
-const MAX_AFFINITY_BOOST = 0.5;
-
-function canonicalScore(idea: Doc<"ideas">): number | null {
-  if (idea.scores === undefined) return null;
-  const values = [
-    idea.scores.opportunity,
-    idea.scores.pain,
-    idea.scores.timing,
-    idea.scores.builder_confidence,
-  ];
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-async function ownerIntent(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-  ideaId: Id<"ideas">,
-) {
-  return await ctx.db
-    .query("idea_intents")
-    .withIndex("by_ownerId_and_ideaId", (q) =>
-      q.eq("ownerId", ownerId).eq("ideaId", ideaId),
-    )
-    .unique();
-}
-
-async function ownerIsBuilding(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-  ideaId: Id<"ideas">,
-) {
-  const activeProject = await ctx.db
-    .query("projects")
-    .withIndex("by_ownerId_and_sourceIdeaId_and_archivedAt", (q) =>
-      q
-        .eq("ownerId", ownerId)
-        .eq("sourceIdeaId", ideaId)
-        .eq("archivedAt", undefined),
-    )
-    .first();
-  return activeProject !== null;
-}
-
-async function toExploreCard(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-  idea: Doc<"ideas">,
-  knownIntent?: Doc<"idea_intents"> | null,
-  buildingOverride?: boolean,
-): Promise<ExploreCard> {
-  const [intent, building] = await Promise.all([
-    knownIntent === undefined ? ownerIntent(ctx, ownerId, idea._id) : knownIntent,
-    buildingOverride === undefined
-      ? ownerIsBuilding(ctx, ownerId, idea._id)
-      : buildingOverride,
-  ]);
-  const score = canonicalScore(idea);
-  return {
-    ideaId: idea._id,
-    slug: idea.slug,
-    title: idea.title,
-    description: idea.description,
-    category: idea.category,
-    buildTime: idea.buildTime,
-    revenueGoal: idea.revenueGoal,
-    publishedAt: idea.publishedAt,
-    score: score === null ? null : Math.round(score * 10) / 10,
-    saved: intent?.saved ?? false,
-    interested: intent?.interested ?? false,
-    building,
-  };
-}
-
-async function categoryAffinity(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-): Promise<Map<string, number>> {
-  const intents = await ctx.db
-    .query("idea_intents")
-    .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", ownerId))
-    .order("desc")
-    .take(AFFINITY_INTENT_LIMIT);
-  const categories = await Promise.all(
-    intents
-      .filter((intent) => intent.saved || intent.interested)
-      .map(async (intent) => {
-        const idea = await ctx.db.get("ideas", intent.ideaId);
-        if (idea === null) return null;
-        return {
-          category: idea.category,
-          weight: Number(intent.saved) + Number(intent.interested),
-        };
-      }),
-  );
-  const affinity = new Map<string, number>();
-  for (const item of categories) {
-    if (item === null) continue;
-    affinity.set(item.category, (affinity.get(item.category) ?? 0) + item.weight);
+function countBy(ideas: Doc<"ideas">[], keysOf: (idea: Doc<"ideas">) => string[]) {
+  const counts = new Map<string, number>();
+  for (const idea of ideas) {
+    for (const key of keysOf(idea)) counts.set(key, (counts.get(key) ?? 0) + 1);
   }
-  return affinity;
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 }
 
-function stableExploreSort(
-  cards: ExploreCard[],
-  sort: ExploreSort,
-  affinity: Map<string, number>,
-) {
-  const recommendationScore = (card: ExploreCard) => {
-    const base = card.score ?? 0;
-    const boost = Math.min(
-      (affinity.get(card.category) ?? 0) * 0.1,
-      MAX_AFFINITY_BOOST,
-    );
-    return base + boost;
-  };
-
-  return cards.sort((a, b) => {
-    const primary =
-      sort === "newest"
-        ? b.publishedAt - a.publishedAt
-        : sort === "score"
-          ? (b.score ?? 0) - (a.score ?? 0)
-          : recommendationScore(b) - recommendationScore(a);
-    if (primary !== 0) return primary;
-    if (b.publishedAt !== a.publishedAt) return b.publishedAt - a.publishedAt;
-    return a.slug.localeCompare(b.slug);
-  });
-}
-
-function filterExplorePage(
-  cards: ExploreCard[],
-  search: string | undefined,
-  category: string | undefined,
-) {
-  const normalizedSearch = search?.trim().toLocaleLowerCase().slice(0, 80) ?? "";
-  return cards.filter((card) => {
-    if (category && card.category !== category) return false;
-    if (!normalizedSearch) return true;
-    const haystack = [card.title, card.description, card.category]
-      .join(" ")
-      .toLocaleLowerCase();
-    return haystack.includes(normalizedSearch);
-  });
-}
-
-async function finishExplorePage(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-  cards: ExploreCard[],
-  args: { search?: string; category?: string; sort: ExploreSort },
-) {
-  const affinity =
-    args.sort === "recommended"
-      ? await categoryAffinity(ctx, ownerId)
-      : new Map<string, number>();
-  return stableExploreSort(
-    filterExplorePage(cards, args.search, args.category),
-    args.sort,
-    affinity,
-  );
+function byNewest(a: Doc<"ideas">, b: Doc<"ideas">) {
+  return b.publishedAt - a.publishedAt || a.slug.localeCompare(b.slug);
 }
 
 /**
- * Owner-aware discovery over canonical idea rows. Every view starts from an
- * existing index and paginates before any per-page search/filter/ranking.
+ * Owner-aware Ideas library (WP44-S5). Search uses the title and description
+ * search indexes. Filters combine: category, any of the picked tools, a build
+ * time bucket and a revenue goal. Facet counts for each filter ignore that
+ * filter's own choice, so every option shows what picking it would give.
  */
-export const explore = query({
+export const library = query({
   args: {
-    paginationOpts: paginationOptsValidator,
-    view: exploreViewValidator,
+    view: libraryViewValidator,
     search: v.optional(v.string()),
     category: v.optional(v.string()),
-    sort: exploreSortValidator,
-  },
-  returns: paginationResultValidator(exploreCardValidator),
-  handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
-
-    if (args.view === "saved" || args.view === "interested") {
-      const source =
-        args.view === "saved"
-          ? ctx.db
-              .query("idea_intents")
-              .withIndex("by_ownerId_and_saved_and_updatedAt", (q) =>
-                q.eq("ownerId", user._id).eq("saved", true),
-              )
-          : ctx.db
-              .query("idea_intents")
-              .withIndex("by_ownerId_and_interested_and_updatedAt", (q) =>
-                q.eq("ownerId", user._id).eq("interested", true),
-              );
-      const result = await source.order("desc").paginate(args.paginationOpts);
-      const cards = (
-        await Promise.all(
-          result.page.map(async (intent) => {
-            const idea = await ctx.db.get("ideas", intent.ideaId);
-            return idea === null
-              ? null
-              : await toExploreCard(ctx, user._id, idea, intent);
-          }),
-        )
-      ).filter((card) => card !== null);
-      return {
-        ...result,
-        page: await finishExplorePage(ctx, user._id, cards, args),
-      };
-    }
-
-    if (args.view === "building") {
-      // Traverse canonical ideas, then derive owner project state. This avoids
-      // duplicate cards when one idea has multiple project revisions.
-      const source = args.category
-        ? ctx.db
-            .query("ideas")
-            .withIndex("by_category_publishedAt", (q) =>
-              q.eq("category", args.category!),
-            )
-        : ctx.db.query("ideas").withIndex("by_publishedAt");
-      const result = await source.order("desc").paginate(args.paginationOpts);
-      const cards = (
-        await Promise.all(
-          result.page.map(async (idea) => {
-            const card = await toExploreCard(ctx, user._id, idea);
-            return card.building ? card : null;
-          }),
-        )
-      ).filter((card) => card !== null);
-      return {
-        ...result,
-        page: await finishExplorePage(ctx, user._id, cards, args),
-      };
-    }
-
-    const source = args.category
-      ? ctx.db
-          .query("ideas")
-          .withIndex("by_category_publishedAt", (q) =>
-            q.eq("category", args.category!),
-          )
-      : ctx.db.query("ideas").withIndex("by_publishedAt");
-    const result = await source.order("desc").paginate(args.paginationOpts);
-    const cards = await Promise.all(
-      result.page.map((idea) => toExploreCard(ctx, user._id, idea)),
-    );
-    return {
-      ...result,
-      page: await finishExplorePage(ctx, user._id, cards, args),
-    };
-  },
-});
-
-/**
- * Server-confirmed, owner-scoped intent update. Saved and Interested remain
- * independent fields; Building is deliberately absent because it is derived
- * only from the owner's active projects.
- */
-export const setIntent = mutation({
-  args: {
-    ideaId: v.id("ideas"),
-    flag: intentFlagValidator,
-    value: v.boolean(),
+    tools: v.optional(v.array(v.string())),
+    hours: v.optional(hoursBucketValidator),
+    goal: v.optional(v.string()),
+    sort: v.optional(librarySortValidator),
+    /** The New tab's lower bound. The client passes it: queries never read the clock. */
+    publishedAfter: v.optional(v.number()),
+    /** Home's picks leave out what the member already saved. */
+    unsavedOnly: v.optional(v.boolean()),
+    limit: v.number(),
   },
   returns: v.object({
-    ideaId: v.id("ideas"),
-    saved: v.boolean(),
-    interested: v.boolean(),
-    updatedAt: v.number(),
+    items: v.array(ideaCardValidator),
+    total: v.number(),
+    truncated: v.boolean(),
+    facets: v.object({
+      category: facetValidator,
+      tools: facetValidator,
+      hours: facetValidator,
+      goal: facetValidator,
+    }),
   }),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const idea = await ctx.db.get("ideas", args.ideaId);
-    if (idea === null) {
-      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    const search = (args.search ?? "").trim().slice(0, MAX_SEARCH_LENGTH);
+    const tools = (args.tools ?? []).slice(0, MAX_TOOL_FILTERS);
+    const limit = Math.max(1, Math.min(Math.floor(args.limit) || 1, MAX_LIBRARY_LIMIT));
+
+    let candidates: Doc<"ideas">[];
+    let truncated = false;
+    if (search) {
+      // Title matches rank first, then description-only matches.
+      const [byTitle, byDescription] = await Promise.all([
+        ctx.db
+          .query("ideas")
+          .withSearchIndex("search_title", (q) => q.search("title", search))
+          .take(SEARCH_READ_LIMIT),
+        ctx.db
+          .query("ideas")
+          .withSearchIndex("search_description", (q) => q.search("description", search))
+          .take(SEARCH_READ_LIMIT),
+      ]);
+      const seen = new Set<Id<"ideas">>();
+      candidates = [];
+      for (const idea of [...byTitle, ...byDescription]) {
+        if (seen.has(idea._id)) continue;
+        seen.add(idea._id);
+        candidates.push(idea);
+      }
+    } else {
+      const rows = await ctx.db
+        .query("ideas")
+        .withIndex("by_publishedAt")
+        .order("desc")
+        .take(LIBRARY_READ_LIMIT + 1);
+      truncated = rows.length > LIBRARY_READ_LIMIT;
+      candidates = rows.slice(0, LIBRARY_READ_LIMIT);
     }
-    const existing = await ctx.db
-      .query("idea_intents")
-      .withIndex("by_ownerId_and_ideaId", (q) =>
-        q.eq("ownerId", user._id).eq("ideaId", idea._id),
-      )
-      .unique();
-    const updatedAt = Date.now();
-    const next = {
-      saved: args.flag === "saved" ? args.value : (existing?.saved ?? false),
-      interested:
-        args.flag === "interested"
-          ? args.value
-          : (existing?.interested ?? false),
+
+    const saved = await readSavedIntents(ctx, user._id, LIBRARY_READ_LIMIT);
+    const savedIds = new Set(saved.rows.map((row) => row.ideaId));
+
+    const base = candidates.filter(
+      (idea) =>
+        (args.view !== "new" ||
+          args.publishedAfter === undefined ||
+          idea.publishedAt >= args.publishedAfter) &&
+        (!args.unsavedOnly || !savedIds.has(idea._id)),
+    );
+
+    const matches: Record<Dimension, (idea: Doc<"ideas">) => boolean> = {
+      category: (idea) => !args.category || idea.category === args.category,
+      tools: (idea) => tools.length === 0 || tools.some((tool) => idea.tools.includes(tool)),
+      hours: (idea) => !args.hours || hoursBucket(hoursOf(idea)) === args.hours,
+      goal: (idea) => !args.goal || idea.revenueGoal === args.goal,
+    };
+    const passes = (idea: Doc<"ideas">, except?: Dimension) =>
+      DIMENSIONS.every((dimension) => dimension === except || matches[dimension](idea));
+
+    const filtered = base.filter((idea) => passes(idea));
+    const without = (dimension: Dimension) => base.filter((idea) => passes(idea, dimension));
+    const hoursCounts = countBy(without("hours"), (idea) => [hoursBucket(hoursOf(idea))]);
+    const facets = {
+      category: countBy(without("category"), (idea) => [idea.category]),
+      tools: countBy(without("tools"), (idea) => idea.tools),
+      hours: HOURS_BUCKETS.map((value) => ({
+        value,
+        count: hoursCounts.find((facet) => facet.value === value)?.count ?? 0,
+      })),
+      goal: countBy(without("goal"), (idea) => [idea.revenueGoal]),
     };
 
-    if (existing === null) {
-      await ctx.db.insert("idea_intents", {
-        ownerId: user._id,
-        ideaId: idea._id,
-        ...next,
-        updatedAt,
-      });
-    } else {
-      await ctx.db.patch("idea_intents", existing._id, {
-        ...next,
-        updatedAt,
-      });
+    const sort: LibrarySort = effectiveSort(args.view, args.sort, search !== "");
+    let ordered = filtered;
+    if (sort === "newest") {
+      ordered = [...filtered].sort(byNewest);
+    } else if (sort === "score") {
+      ordered = [...filtered].sort(
+        (a, b) => (meanScore(b) ?? 0) - (meanScore(a) ?? 0) || byNewest(a, b),
+      );
+    } else if (sort === "recommended") {
+      // Research score plus a small boost for categories the member saves.
+      const inMemory = new Map(candidates.map((idea) => [idea._id, idea]));
+      const recentSaved = await Promise.all(
+        saved.rows
+          .slice(0, AFFINITY_SAVED_LIMIT)
+          .map(async (row) => inMemory.get(row.ideaId) ?? (await ctx.db.get("ideas", row.ideaId))),
+      );
+      const affinity = new Map<string, number>();
+      for (const idea of recentSaved) {
+        if (idea) affinity.set(idea.category, (affinity.get(idea.category) ?? 0) + 1);
+      }
+      const rank = (idea: Doc<"ideas">) =>
+        (meanScore(idea) ?? 0) +
+        Math.min((affinity.get(idea.category) ?? 0) * AFFINITY_STEP, MAX_AFFINITY_BOOST);
+      ordered = [...filtered].sort((a, b) => rank(b) - rank(a) || byNewest(a, b));
     }
+    // "relevance" keeps the search order.
 
-    return { ideaId: idea._id, ...next, updatedAt };
+    return {
+      items: ordered.slice(0, limit).map((idea) => toIdeaCard(idea, savedIds.has(idea._id))),
+      total: filtered.length,
+      truncated,
+      facets,
+    };
   },
 });

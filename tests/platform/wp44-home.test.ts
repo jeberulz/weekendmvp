@@ -12,6 +12,7 @@ import picksSource from "../../components/platform/home/PickedForYou.tsx?raw";
 import newestSource from "../../components/platform/home/NewestIdeas.tsx?raw";
 import railSource from "../../components/platform/home/HomeRail.tsx?raw";
 import saveSource from "../../components/platform/home/SaveIdeaButton.tsx?raw";
+import scoreMetersSource from "../../components/platform/explore/ScoreMeters.tsx?raw";
 import statesSource from "../../components/platform/home/module-states.tsx?raw";
 import surfaceSource from "../../components/platform/shell/LegacyDarkSurface.tsx?raw";
 import shellSource from "../../components/platform/shell/WorkspaceShell.tsx?raw";
@@ -113,7 +114,7 @@ describe("WP44-S4 Home composition", () => {
   });
 
   test("Home leaves the legacy dark surface", () => {
-    expect(surfaceSource).toContain('const RESTYLED = new Set(["/dashboard"])');
+    expect(surfaceSource).toContain('const RESTYLED = new Set(["/dashboard",');
     expect(shellSource).toContain("<WorkspaceSurface pathname={pathname}>");
     for (const [name, source] of Object.entries(homeSources)) {
       expect(source, name).not.toContain("#050505");
@@ -197,9 +198,10 @@ describe("WP44-S4 accessibility contracts", () => {
   });
 
   test("scores are text, bars are decoration", () => {
-    expect(weeklySource).toContain("<dt");
-    expect(weeklySource).toContain('<span className="sr-only"> out of 10</span>');
-    expect(weeklySource).toContain("<dd aria-hidden");
+    expect(weeklySource).toContain("<ScoreMeters scores={idea.scores} />");
+    expect(scoreMetersSource).toContain("<dt");
+    expect(scoreMetersSource).toContain('<span className="sr-only"> out of 10</span>');
+    expect(scoreMetersSource).toContain("<dd aria-hidden");
   });
 });
 

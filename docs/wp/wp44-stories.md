@@ -103,7 +103,7 @@ S1 rulings
     - Screenshots of each module state at 390px and 1440px compared with the canvas artboards
   - Model tier: mid
 
-- [ ] `WP44-S5` - Ideas library and Saved
+- [x] `WP44-S5` - Ideas library and Saved
   - Scope: `convex/schema.ts` (additive `searchIndex` on `ideas` only), `convex/platform/ideas.ts`, `components/platform/explore/*`, `app/dashboard/explore/*`, `app/dashboard/saved/*` (new), tests
   - Acceptance criteria:
     - Search runs over the full library through the new search index. The "applies to each indexed page" limitation and its copy are gone

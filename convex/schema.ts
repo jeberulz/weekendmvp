@@ -64,7 +64,13 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_publishedAt", ["publishedAt"])
     .index("by_category_publishedAt", ["category", "publishedAt"])
-    .index("by_revenueGoal_publishedAt", ["revenueGoal", "publishedAt"]),
+    .index("by_revenueGoal_publishedAt", ["revenueGoal", "publishedAt"])
+    // WP44-S5: full-library search on the dashboard Ideas page. Additive.
+    .searchIndex("search_title", { searchField: "title", filterFields: ["category"] })
+    .searchIndex("search_description", {
+      searchField: "description",
+      filterFields: ["category"],
+    }),
 
   articles: defineTable({
     slug: v.string(),

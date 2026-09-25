@@ -638,7 +638,7 @@ Offers and parked features
 
 | Table or index | Fields | Indexes | Story |
 |---|---|---|---|
-| `ideas` search index | `searchField: title`, `filterFields: [category]` | `search_title` | S5 |
+| `ideas` search indexes | `searchField: title` and `searchField: description`, both `filterFields: [category]` | `search_title`, `search_description` | S5 |
 | `user_preferences` | `ownerId`, `tools[]`, `weeklyHours`, `goal`, `onboardedAt?`, `dismissed[]` (offer card ids, capped at 50), `updatedAt` | `by_ownerId` | S8 |
 | `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt?`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 |
 

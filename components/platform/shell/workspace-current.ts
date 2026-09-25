@@ -14,8 +14,7 @@ export type WorkspaceNavItem = {
 export const PRIMARY_NAV: readonly WorkspaceNavItem[] = [
   { id: "home", label: "Home", href: "/dashboard" },
   { id: "ideas", label: "Ideas", href: "/dashboard/explore" },
-  // The Explore saved view until WP44-S5 adds /dashboard/saved.
-  { id: "saved", label: "Saved", href: "/dashboard/explore?view=saved" },
+  { id: "saved", label: "Saved", href: "/dashboard/saved" },
 ];
 
 export const BILLING_NAV: WorkspaceNavItem = {
@@ -26,7 +25,8 @@ export const BILLING_NAV: WorkspaceNavItem = {
 
 export const STARTER_KIT_HREF = "/starter-kit";
 
-// Ruling R3: Saved and Interested read as one list on screen.
+// Ruling R3: Saved and Interested read as one list on screen. The old
+// Explore views redirect to /dashboard/saved (WP44-S5).
 const SAVED_VIEWS = new Set(["saved", "interested"]);
 
 function isAtOrUnder(pathname: string, base: string) {

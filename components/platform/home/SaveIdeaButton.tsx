@@ -19,6 +19,11 @@ type SaveIdeaButtonProps = {
   variant?: Variant;
   source?: DashboardSource;
   className?: string;
+  /**
+   * The saved state when a list query already knows it. Skips the per-idea
+   * subscription. Leave it out on editorial cards, which come from the manifest.
+   */
+  saved?: boolean;
 };
 
 const VARIANT: Record<Variant, { base: string; pressed: string }> = {
@@ -87,8 +92,13 @@ function LiveSaveButton({
   variant,
   source,
   className,
-}: Required<Omit<SaveIdeaButtonProps, "className">> & { className?: string }) {
-  const state = useQuery(api.platform.dashboard.savedState, { slug });
+  saved,
+}: Required<Omit<SaveIdeaButtonProps, "className" | "saved">> &
+  Pick<SaveIdeaButtonProps, "className" | "saved">) {
+  const state = useQuery(
+    api.platform.dashboard.savedState,
+    saved === undefined ? { slug } : "skip",
+  );
   const setSaved = useMutation(api.platform.dashboard.setSaved).withOptimisticUpdate(
     (store, args) => {
       const current = store.getQuery(api.platform.dashboard.savedState, { slug: args.slug });
@@ -97,14 +107,19 @@ function LiveSaveButton({
       }
     },
   );
+  // For a known (list) state: shows the click at once. Convex resolves the
+  // mutation only after the list query carries it, so this clears cleanly.
+  const [optimistic, setOptimistic] = useState<boolean | null>(null);
   const [message, setMessage] = useState("");
 
   // Published but not seeded into Convex yet: there is nothing to save.
-  if (state === null) return null;
-  const pressed = state?.saved ?? false;
+  if (saved === undefined && state === null) return null;
+  const known = saved ?? state?.saved;
+  const pressed = optimistic ?? known ?? false;
 
   async function toggle() {
     const next = !pressed;
+    setOptimistic(next);
     try {
       await setSaved({ slug, saved: next });
       setMessage(next ? `Saved ${title}.` : `Removed ${title} from Saved.`);
@@ -115,6 +130,8 @@ function LiveSaveButton({
     } catch (error) {
       console.error("Save toggle failed", error);
       setMessage("Could not update Saved. Try again.");
+    } finally {
+      setOptimistic(null);
     }
   }
 
@@ -122,7 +139,7 @@ function LiveSaveButton({
     <>
       <SaveButtonView
         pressed={pressed}
-        disabled={state === undefined}
+        disabled={known === undefined}
         onClick={toggle}
         label={label}
         title={title}
@@ -148,6 +165,7 @@ export function SaveIdeaButton({
   variant = "button",
   source = "home",
   className,
+  saved,
 }: SaveIdeaButtonProps) {
   const standIn = (
     <SaveButtonView
@@ -169,6 +187,7 @@ export function SaveIdeaButton({
           variant={variant}
           source={source}
           className={className}
+          saved={saved}
         />
       </QuietErrorBoundary>
     </WhenConvexReady>

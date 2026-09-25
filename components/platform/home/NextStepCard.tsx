@@ -107,7 +107,7 @@ function Shortlist({ home }: { home: HomeState }) {
         </tbody>
       </table>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href="/dashboard/explore?view=saved" className={`${LINK} bg-home-ink text-home-card hover:bg-home-panel`}>
+        <Link href="/dashboard/saved" className={`${LINK} bg-home-ink text-home-card hover:bg-home-panel`}>
           See all saved
         </Link>
         <Link href="/dashboard/explore" className={`${LINK} text-home-ink-2 hover:text-home-ink`}>

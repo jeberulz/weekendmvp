@@ -38,7 +38,7 @@ function SavedList({ home, headingRef }: { home: HomeState; headingRef: RefObjec
         </h2>
         {count > 0 && (
           <Link
-            href="/dashboard/explore?view=saved"
+            href="/dashboard/saved"
             className={`text-[13px] font-medium text-home-orange-ink underline-offset-4 hover:text-home-ink hover:underline ${FOCUS}`}
           >
             See all<span className="sr-only"> saved ideas</span>

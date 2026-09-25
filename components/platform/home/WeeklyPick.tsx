@@ -5,14 +5,8 @@ import { toolName } from "@/components/ideas/idea-meta";
 import { GOAL_LABEL } from "@/lib/home/labels";
 import { clamp } from "@/lib/home/text";
 import type { SpotlightIdea } from "@/lib/home/types";
+import { ScoreMeters } from "@/components/platform/explore/ScoreMeters";
 import { SaveIdeaButton } from "./SaveIdeaButton";
-
-const SCORES = [
-  ["Opportunity", "opportunity"],
-  ["Pain", "pain"],
-  ["Timing", "timing"],
-  ["Builder confidence", "builder_confidence"],
-] as const;
 
 /**
  * Module 2. The homepage's idea of the week, rendered on the server from the
@@ -46,23 +40,7 @@ export function WeeklyPick({ idea, weekLabel }: { idea: SpotlightIdea; weekLabel
             {idea.title}
           </h3>
           <p className="max-w-[640px] text-[15px] leading-[1.55] text-home-ink-2">{clamp(idea.description, 220)}</p>
-          <dl className="grid grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2">
-            {SCORES.map(([label, key]) => {
-              const value = idea.scores[key];
-              return (
-                <div key={key} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-y-1.5 text-[13px]">
-                  <dt className="text-home-ink-3">{label}</dt>
-                  <dd className="font-semibold text-home-ink">
-                    {value}
-                    <span className="sr-only"> out of 10</span>
-                  </dd>
-                  <dd aria-hidden className="col-span-2 h-1.5 overflow-hidden rounded-full bg-home-rule">
-                    <div className="h-full bg-home-ink" style={{ width: `${Math.max(0, Math.min(value, 10)) * 10}%` }} />
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
+          <ScoreMeters scores={idea.scores} />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-home-ink-2">
             <span className="font-mono text-[11px] tracking-[0.08em] text-home-ink">{idea.buildTime} HRS</span>
             {goal && <span>{goal} goal</span>}

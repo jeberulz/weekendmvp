@@ -165,12 +165,15 @@ const CATEGORY_TINT: Record<string, string> = {
   automation: "sage",
 };
 
+/** Background and ink classes for a category's tint (also used by dashboard cards). */
+export const categoryTintClass = (slug: string) => TINT[CATEGORY_TINT[slug] ?? "sky"];
+
 export function CategoryTag({ slug, name }: { slug: string; name: string }) {
   return (
     <span
       className={cn(
         "inline-flex h-[22px] items-center rounded-full px-[9px] font-mono text-[11px] font-medium uppercase tracking-[0.06em]",
-        TINT[CATEGORY_TINT[slug] ?? "sky"],
+        categoryTintClass(slug),
       )}
     >
       {name}

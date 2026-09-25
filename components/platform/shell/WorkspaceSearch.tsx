@@ -3,14 +3,24 @@
 import { Search } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import {
+  IDEAS_PATH,
+  libraryEntries,
+  parseLibraryParams,
+} from "@/components/platform/explore/library-params";
 import { isSearchShortcut } from "./workspace-current";
 
 export function WorkspaceSearch({ ideaCount }: { ideaCount: number | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const current =
-    pathname === "/dashboard/explore" ? (searchParams.get("q") ?? "") : "";
+  const onIdeas = pathname === IDEAS_PATH;
+  const current = onIdeas ? (searchParams.get("q") ?? "") : "";
+  // On Ideas, a new search keeps the tab and filters. The sort resets so a
+  // search can default to best match.
+  const carried = onIdeas
+    ? libraryEntries({ ...parseLibraryParams(searchParams), q: "", sort: undefined })
+    : [];
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -34,7 +44,7 @@ export function WorkspaceSearch({ ideaCount }: { ideaCount: number | null }) {
   return (
     <form
       role="search"
-      action="/dashboard/explore"
+      action={IDEAS_PATH}
       method="get"
       className="relative w-full max-w-md"
     >
@@ -58,6 +68,9 @@ export function WorkspaceSearch({ ideaCount }: { ideaCount: number | null }) {
         aria-keyshortcuts="/"
         className="h-10 w-full rounded-lg border border-home-rule bg-home-card pl-9 pr-10 text-sm text-home-ink outline-none transition-colors placeholder:text-home-ink-3 hover:border-home-ink-3 focus-visible:border-home-orange-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-home-orange-ink"
       />
+      {carried.map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
       <kbd
         aria-hidden
         className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-home-rule bg-home-paper px-1.5 font-mono text-[11px] leading-5 text-home-ink-3 sm:block"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
@@ -10,42 +11,36 @@ import { ModuleSkeleton, PersonalModule } from "./module-states";
 import { SaveIdeaButton } from "./SaveIdeaButton";
 
 const PICK_COUNT = 3;
-/** One page of the ranked library is plenty to find three unsaved ideas. */
-const PICK_POOL = 24;
+
+type Pick = FunctionReturnType<typeof api.platform.ideas.library>["items"][number];
 
 function PicksSkeleton() {
   return <ModuleSkeleton label="Loading ideas picked for you" className="h-[172px]" />;
 }
 
 function LivePicks({ exclude }: { exclude: string[] }) {
-  const result = useQuery(api.platform.ideas.explore, {
-    paginationOpts: { numItems: PICK_POOL, cursor: null },
+  // Ranked over the whole library, saved ideas left out on the server.
+  const result = useQuery(api.platform.ideas.library, {
     view: "for_you",
-    sort: "recommended",
+    unsavedOnly: true,
+    limit: PICK_COUNT + exclude.length,
   });
-  // Pin the first three picks. Otherwise saving one would swap the card out
-  // from under the member's pointer as the query re-runs.
-  const [pinned, setPinned] = useState<string[] | null>(null);
+  // Pin the first three picks. Otherwise saving one would drop it from the
+  // query and swap the card out from under the member's pointer.
+  const [picks, setPicks] = useState<Pick[] | null>(null);
 
   if (result === undefined) return <PicksSkeleton />;
 
-  if (pinned === null) {
+  if (picks === null) {
     const skip = new Set(exclude);
-    const slugs = result.page
-      .filter((idea) => !idea.saved && !idea.interested && !skip.has(idea.slug))
-      .slice(0, PICK_COUNT)
-      .map((idea) => idea.slug);
-    setPinned(slugs);
+    setPicks(result.items.filter((idea) => !skip.has(idea.slug)).slice(0, PICK_COUNT));
     return <PicksSkeleton />;
   }
-
-  const bySlug = new Map(result.page.map((idea) => [idea.slug, idea]));
-  const picks = pinned.map((slug) => bySlug.get(slug)).filter((idea) => idea !== undefined);
 
   if (picks.length === 0) {
     return (
       <p className="rounded-[14px] border border-home-rule bg-home-card px-5 py-4 text-sm text-home-ink-2">
-        You have saved every recent idea.{" "}
+        You have saved every idea we would pick for you.{" "}
         <Link
           href="/dashboard/explore"
           className="font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
