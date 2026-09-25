@@ -639,7 +639,7 @@ Offers and parked features
 | Table or index | Fields | Indexes | Story |
 |---|---|---|---|
 | `ideas` search indexes | `searchField: title` and `searchField: description`, both `filterFields: [category]` | `search_title`, `search_description` | S5 |
-| `user_preferences` | `ownerId`, `tools[]`, `weeklyHours`, `goal`, `onboardedAt?`, `dismissed[]` (offer card ids, capped at 50), `updatedAt` | `by_ownerId` | S8 |
+| `user_preferences` | `ownerId`, `tools[]`, `weeklyHours?`, `goal?`, `onboardedAt?`, `skippedAt?`, `dismissed[]?` (offer card ids, capped at 50, written by S12), `updatedAt` | `by_ownerId` | S8 |
 | `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt?`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 |
 
 All additive. No existing table, field or index changes. Read

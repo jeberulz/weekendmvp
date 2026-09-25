@@ -1,9 +1,10 @@
 /**
- * WP44-S2 workspace navigation. Builds joins in WP44-S9 and Settings in
- * WP44-S8, once their pages exist, so no nav item ever leads to a 404.
+ * WP44-S2 workspace navigation. Builds joins in WP44-S9 once its page
+ * exists, so no nav item ever leads to a 404. Settings (S8) sits in the
+ * account menu beside Plan and billing.
  * "New idea" and "Interested" left the nav by rulings R4 and R3.
  */
-export type WorkspaceNavId = "home" | "ideas" | "saved" | "billing";
+export type WorkspaceNavId = "home" | "ideas" | "saved" | "billing" | "settings";
 
 export type WorkspaceNavItem = {
   id: WorkspaceNavId;
@@ -21,6 +22,12 @@ export const BILLING_NAV: WorkspaceNavItem = {
   id: "billing",
   label: "Plan and billing",
   href: "/dashboard/billing",
+};
+
+export const SETTINGS_NAV: WorkspaceNavItem = {
+  id: "settings",
+  label: "Settings",
+  href: "/dashboard/settings",
 };
 
 export const STARTER_KIT_HREF = "/starter-kit";
@@ -51,6 +58,8 @@ export function isWorkspaceNavCurrent(
       );
     case "billing":
       return isAtOrUnder(pathname, "/dashboard/billing");
+    case "settings":
+      return isAtOrUnder(pathname, "/dashboard/settings");
   }
 }
 

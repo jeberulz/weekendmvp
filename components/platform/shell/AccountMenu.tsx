@@ -1,11 +1,11 @@
 "use client";
 
-import { ChevronsUpDown, CreditCard, LogOut, UserRound } from "lucide-react";
+import { ChevronsUpDown, CreditCard, LogOut, Settings2, UserRound } from "lucide-react";
 import Link from "next/link";
 import { DropdownMenu } from "radix-ui";
 import { useSignOut } from "@/app/dashboard/SignOutButton";
 import { cn } from "@/lib/utils";
-import { BILLING_NAV } from "./workspace-current";
+import { BILLING_NAV, SETTINGS_NAV } from "./workspace-current";
 
 const itemClass =
   "flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-sm text-home-ink outline-none data-[disabled]:cursor-wait data-[disabled]:opacity-60 data-[highlighted]:bg-home-sunk data-[highlighted]:shadow-[inset_0_0_0_2px_var(--color-home-orange-ink)]";
@@ -53,6 +53,12 @@ export function AccountMenu({ collapsed }: { collapsed: boolean }) {
             <Link href={BILLING_NAV.href}>
               <CreditCard className="size-4 text-home-ink-2" aria-hidden />
               {BILLING_NAV.label}
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild className={itemClass}>
+            <Link href={SETTINGS_NAV.href}>
+              <Settings2 className="size-4 text-home-ink-2" aria-hidden />
+              {SETTINGS_NAV.label}
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-1 h-px bg-home-rule" />

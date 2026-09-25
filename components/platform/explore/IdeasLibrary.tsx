@@ -110,7 +110,13 @@ function LiveLibrary() {
       <ViewTabs params={params} />
       {params.view === "for_you" && (
         <p className="text-sm text-home-ink-2">
-          Ranked by research score, with a small lift for categories you save.
+          Ranked by research score, your setup answers and the ideas you save.{" "}
+          <Link
+            href="/dashboard/settings"
+            className={cn("font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink", FOCUS)}
+          >
+            Edit your answers
+          </Link>
         </p>
       )}
       {params.view === "new" && (

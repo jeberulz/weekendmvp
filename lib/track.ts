@@ -83,7 +83,8 @@ export type DashboardEvent =
   | { name: "dashboard_viewed"; props: { state: DashboardState; plan: DashboardPlan } }
   | {
       name: "setup_completed";
-      props: { tools_count: number; hours_bucket: "8" | "12" | "20" | "more"; goal: string };
+      /** "none" when the member left that question unanswered. */
+      props: { tools_count: number; hours_bucket: "8" | "12" | "20" | "more" | "none"; goal: string };
     }
   | { name: "setup_skipped"; props: Record<string, never> }
   | {

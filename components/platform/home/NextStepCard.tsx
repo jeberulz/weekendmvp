@@ -1,15 +1,16 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { categoryName, toolName } from "@/components/ideas/idea-meta";
 import { trackDashboardEvent } from "@/lib/track";
 import { ModuleSkeleton, PersonalModule } from "./module-states";
 import { SaveIdeaButton } from "./SaveIdeaButton";
-import { nextStepState } from "./home-copy";
+import { SetupForm } from "./SetupForm";
+import { nextStep, viewedState } from "./home-copy";
 
 type HomeState = FunctionReturnType<typeof api.platform.dashboard.home>;
 type WeeklyRef = { slug: string; title: string } | null;
@@ -20,11 +21,69 @@ const TITLE = "font-editorial text-[24px] font-normal leading-[1.15] tracking-[-
 const LINK =
   "inline-flex h-11 items-center gap-2 rounded-[9px] px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-function StartHere({ weekly, total }: { weekly: WeeklyRef; total: number | null }) {
+function SetupCard({ onDone }: { onDone: (message: string) => void }) {
+  const skipSetup = useMutation(api.platform.preferences.skipSetup);
+  const [skipping, setSkipping] = useState(false);
+
+  async function skip() {
+    setSkipping(true);
+    try {
+      await skipSetup({});
+      trackDashboardEvent({ name: "setup_skipped", props: {} });
+      onDone("Skipped. You can answer any time in Settings.");
+    } catch (error) {
+      console.error("Skipping setup failed", error);
+      setSkipping(false);
+    }
+  }
+
+  return (
+    <section aria-labelledby="setup-title" className={CARD}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={EYEBROW}>Start here</p>
+        <p className={EYEBROW}>3 questions, all optional</p>
+      </div>
+      <h2 id="setup-title" className={TITLE}>
+        Tell us how you build, and we will pick ideas that fit.
+      </h2>
+      <SetupForm
+        initial={{ tools: [], weeklyHours: null, goal: null }}
+        submitLabel="Show my ideas"
+        onSaved={() => onDone("Saved your answers. Picked for you now uses them.")}
+        secondary={
+          <button
+            type="button"
+            onClick={skip}
+            disabled={skipping}
+            className={`${LINK} px-2.5 text-home-ink-2 hover:text-home-ink disabled:cursor-wait disabled:opacity-60`}
+          >
+            Skip for now
+          </button>
+        }
+      />
+    </section>
+  );
+}
+
+function StartHere({
+  weekly,
+  total,
+  focusOnMount,
+}: {
+  weekly: WeeklyRef;
+  total: number | null;
+  focusOnMount: boolean;
+}) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  // After setup the questions give way to this card. Move focus with them.
+  useEffect(() => {
+    if (focusOnMount) heading.current?.focus();
+  }, [focusOnMount]);
+
   return (
     <section aria-labelledby="next-step-title" className={CARD}>
       <p className={EYEBROW}>Start here</p>
-      <h2 id="next-step-title" className={TITLE}>
+      <h2 id="next-step-title" ref={heading} tabIndex={-1} className={`${TITLE} outline-none`}>
         Save the ideas you could build this weekend.
       </h2>
       <p className="max-w-[560px] text-[15px] leading-[1.55] text-home-ink-2">
@@ -121,7 +180,12 @@ function Shortlist({ home }: { home: HomeState }) {
 function LiveNextStep({ weekly, total }: { weekly: WeeklyRef; total: number | null }) {
   const home = useQuery(api.platform.dashboard.home);
   const viewed = useRef(false);
-  const state = home ? nextStepState(home.saved.count) : null;
+  const [justSetUp, setJustSetUp] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const input = home
+    ? { savedCount: home.saved.count, setupDone: home.setupDone, setupSkipped: home.setupSkipped }
+    : null;
+  const state = input ? viewedState(input) : null;
 
   useEffect(() => {
     if (!home || !state || viewed.current) return;
@@ -129,8 +193,29 @@ function LiveNextStep({ weekly, total }: { weekly: WeeklyRef; total: number | nu
     trackDashboardEvent({ name: "dashboard_viewed", props: { state, plan: home.plan } });
   }, [home, state]);
 
-  if (home === undefined) return <ModuleSkeleton label="Loading your next step" className="h-[260px]" />;
-  return state === "choosing" ? <Shortlist home={home} /> : <StartHere weekly={weekly} total={total} />;
+  if (home === undefined || input === null) {
+    return <ModuleSkeleton label="Loading your next step" className="h-[260px]" />;
+  }
+  const step = nextStep(input);
+  return (
+    <>
+      {step === "choosing" ? (
+        <Shortlist home={home} />
+      ) : step === "setup" ? (
+        <SetupCard
+          onDone={(message) => {
+            setJustSetUp(true);
+            setAnnouncement(message);
+          }}
+        />
+      ) : (
+        <StartHere weekly={weekly} total={total} focusOnMount={justSetUp} />
+      )}
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
+    </>
+  );
 }
 
 /** Module 1. Changes with the member's state (PRD 6.2). */

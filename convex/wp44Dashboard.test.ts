@@ -136,6 +136,7 @@ describe("WP44-S3 dashboard home query", () => {
       firstName: null,
       saved: { count: 0, capped: false, latest: [] },
       setupDone: false,
+      setupSkipped: false,
       activePlan: null,
       plan: "free",
     });

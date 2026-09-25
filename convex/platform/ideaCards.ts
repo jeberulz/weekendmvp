@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
+import type { PickReason } from "./setupOptions";
+import { pickReasonValidator } from "./setupValidators";
 
 /**
  * The card every WP44 idea list returns (Ideas, Saved, Home picks). Owner
@@ -31,24 +33,27 @@ export const ideaCardValidator = v.object({
   hasArt: v.boolean(),
   publishedAt: v.number(),
   saved: v.boolean(),
+  /** For you only (WP44-S8): the one input that lifted this idea, if any. */
+  reason: v.optional(pickReasonValidator),
 });
 
 const MAX_CARD_TOOLS = 4;
 
-export function hoursOf(idea: Doc<"ideas">): number {
+export function hoursOf(idea: Pick<Doc<"ideas">, "buildTime">): number {
   const hours = Number(idea.buildTime);
   return Number.isFinite(hours) && hours > 0 ? hours : 0;
 }
 
 /** Same formula Explore used for its canonical score. */
-export function meanScore(idea: Doc<"ideas">): number | null {
+export function meanScore(idea: Pick<Doc<"ideas">, "scores">): number | null {
   if (idea.scores === undefined) return null;
   const { opportunity, pain, timing, builder_confidence } = idea.scores;
   return Math.round(((opportunity + pain + timing + builder_confidence) / 4) * 10) / 10;
 }
 
-export function toIdeaCard(idea: Doc<"ideas">, saved: boolean) {
+export function toIdeaCard(idea: Doc<"ideas">, saved: boolean, reason?: PickReason | null) {
   return {
+    ...(reason ? { reason } : {}),
     ideaId: idea._id,
     slug: idea.slug,
     title: idea.title,

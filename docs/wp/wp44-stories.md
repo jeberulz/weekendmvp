@@ -148,7 +148,7 @@ S1 rulings
     - axe at 390px and 1440px on each route
   - Model tier: mid
 
-- [ ] `WP44-S8` - Setup questions and personal ranking
+- [x] `WP44-S8` - Setup questions and personal ranking
   - Scope: `convex/schema.ts` (additive `user_preferences`), `convex/platform/preferences.ts` (new), `convex/platform/ideas.ts` (`for_you` ranking and `reason`), Home module 1 and 3, Settings page `app/dashboard/settings/*` (new)
   - Acceptance criteria:
     - Three questions inline on Home (tools, weekend hours, goal) as checkbox and radio groups inside fieldsets. Skippable (ruling R7)

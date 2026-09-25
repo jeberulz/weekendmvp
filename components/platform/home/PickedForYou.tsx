@@ -7,6 +7,7 @@ import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { CategoryTag } from "@/components/home/ui";
 import { categoryName, normalizeCategorySlug } from "@/components/ideas/idea-meta";
+import { ReasonLine } from "@/components/platform/explore/ReasonLine";
 import { ModuleSkeleton, PersonalModule } from "./module-states";
 import { SaveIdeaButton } from "./SaveIdeaButton";
 
@@ -63,6 +64,7 @@ function LivePicks({ exclude }: { exclude: string[] }) {
             <div className="flex">
               <CategoryTag slug={category} name={categoryName(category)} />
             </div>
+            <ReasonLine reason={idea.reason} />
             <h3 className="font-editorial text-[19px] font-normal leading-[1.2] text-home-ink">
               <Link
                 href={`/ideas/${idea.slug}`}
@@ -84,10 +86,36 @@ function LivePicks({ exclude }: { exclude: string[] }) {
   );
 }
 
+const HINT = "text-[13px] text-home-ink-3";
+
+/** New answers re-rank the library, so the pinned picks start over. */
+function PicksForMember({ exclude }: { exclude: string[] }) {
+  const prefs = useQuery(api.platform.preferences.get);
+  if (prefs === undefined) return <PicksSkeleton />;
+  return (
+    <>
+      <LivePicks key={prefs.updatedAt ?? 0} exclude={exclude} />
+      {!prefs.setupDone &&
+        (prefs.setupSkipped ? (
+          <p className={HINT}>
+            <Link
+              href="/dashboard/settings"
+              className="font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+            >
+              Answer three quick questions
+            </Link>{" "}
+            and these picks get personal.
+          </p>
+        ) : (
+          <p className={HINT}>Answer the three questions above and these picks get personal.</p>
+        ))}
+    </>
+  );
+}
+
 /**
- * Module 3. Three unsaved ideas from the `for_you` ranking. No reason line
- * yet: reasons arrive with the setup questions (S8), and a card shows none
- * rather than an invented one.
+ * Module 3. Three unsaved ideas from the `for_you` ranking, each with the
+ * one input that lifted it (WP44-S8), or no reason line at all.
  */
 export function PickedForYou({ exclude }: { exclude: string[] }) {
   return (
@@ -107,7 +135,7 @@ export function PickedForYou({ exclude }: { exclude: string[] }) {
         </Link>
       </div>
       <PersonalModule skeleton={<PicksSkeleton />}>
-        <LivePicks exclude={exclude} />
+        <PicksForMember exclude={exclude} />
       </PersonalModule>
     </section>
   );

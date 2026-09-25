@@ -20,7 +20,8 @@ import {
   dateLine,
   greeting,
   isoWeek,
-  nextStepState,
+  nextStep,
+  viewedState,
   statusLine,
   timeOfDay,
 } from "../../components/platform/home/home-copy";
@@ -70,9 +71,16 @@ describe("WP44-S4 greeting copy", () => {
     expect(statusLine({ count: 2, capped: false }, 0)).toBe("2 saved ideas. It’s Sunday. Ship day.");
   });
 
-  test("module 1 moves from new to choosing on the first save", () => {
-    expect(nextStepState(0)).toBe("new");
-    expect(nextStepState(1)).toBe("choosing");
+  test("module 1 asks the setup questions, then starts, then shortlists", () => {
+    const fresh = { savedCount: 0, setupDone: false, setupSkipped: false };
+    expect(nextStep(fresh)).toBe("setup");
+    expect(nextStep({ ...fresh, setupSkipped: true })).toBe("start");
+    expect(nextStep({ ...fresh, setupDone: true })).toBe("start");
+    expect(nextStep({ ...fresh, savedCount: 1 })).toBe("choosing");
+    expect(viewedState(fresh)).toBe("new");
+    expect(viewedState({ ...fresh, setupSkipped: true })).toBe("new");
+    expect(viewedState({ ...fresh, setupDone: true })).toBe("set_up");
+    expect(viewedState({ ...fresh, savedCount: 2 })).toBe("choosing");
   });
 });
 
@@ -168,7 +176,8 @@ describe("WP44-S4 states and copy", () => {
 
   test("picked for you shows no invented reason", () => {
     expect(picksSource).not.toContain("Popular this month");
-    expect(picksSource).not.toContain("idea.reason");
+    // S8: reasons come only from the ranking, through ReasonLine.
+    expect(picksSource).toContain("<ReasonLine reason={idea.reason} />");
   });
 
   test("the newest list does not claim to be this week's", () => {

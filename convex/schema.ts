@@ -313,6 +313,28 @@ export default defineSchema({
       "updatedAt",
     ]),
 
+  // WP44-S8: setup answers, one row per member. Additive. `dismissed` holds
+  // offer card ids for WP44-S12, capped at 50 by the writer.
+  user_preferences: defineTable({
+    ownerId: v.id("users"),
+    tools: v.array(v.string()),
+    weeklyHours: v.optional(
+      v.union(v.literal("8"), v.literal("12"), v.literal("20"), v.literal("more")),
+    ),
+    goal: v.optional(
+      v.union(
+        v.literal("side-income"),
+        v.literal("learn"),
+        v.literal("portfolio"),
+        v.literal("replace-job"),
+      ),
+    ),
+    onboardedAt: v.optional(v.number()),
+    skippedAt: v.optional(v.number()),
+    dismissed: v.optional(v.array(v.string())),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
+
   tasks: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),

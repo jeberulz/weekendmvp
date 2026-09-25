@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { SaveIdeaButton } from "@/components/platform/home/SaveIdeaButton";
 import { ogArtPath } from "@/lib/home/library";
 import type { DashboardSource } from "@/lib/track";
+import { ReasonLine } from "./ReasonLine";
 import { ScoreMeters } from "./ScoreMeters";
 
 export type IdeaCardData = FunctionReturnType<typeof api.platform.ideas.library>["items"][number];
@@ -58,6 +59,7 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
       )}
       <div className="flex flex-1 flex-col gap-3 p-4">
         <Category raw={idea.category} />
+        <ReasonLine reason={idea.reason} />
         <h3 className="font-editorial text-[20px] font-normal leading-[1.2] text-home-ink">
           <Link
             href={`/ideas/${idea.slug}`}
@@ -116,6 +118,11 @@ export function IdeaRow({
             {idea.title}
           </Link>
           {meta && <span className="mt-0.5 block text-[12px] text-home-ink-3">{meta}</span>}
+          {idea.reason && (
+            <div className="mt-1">
+              <ReasonLine reason={idea.reason} />
+            </div>
+          )}
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 md:contents">
           <Category raw={idea.category} />

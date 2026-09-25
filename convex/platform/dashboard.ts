@@ -3,6 +3,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
 import { ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
+import { readPreferences } from "./preferences";
 
 /**
  * WP44 dashboard data. Owner-scoped: identity always comes from the session,
@@ -40,8 +41,10 @@ const homeValidator = v.object({
     capped: v.boolean(),
     latest: v.array(savedIdeaValidator),
   }),
-  /** WP44-S8 fills this from the setup questions. */
+  /** The setup questions were answered (WP44-S8). */
   setupDone: v.boolean(),
+  /** The member chose "Skip for now" (ruling R7). */
+  setupSkipped: v.boolean(),
   /** WP44-S9 fills this with the active weekend plan. */
   activePlan: v.null(),
   /** WP44-S10 resolves this from entitlements. Free until then. */
@@ -61,11 +64,10 @@ export const home = query({
     const user = await requireCurrentPlatformUser(ctx);
 
     // Ruling R3: Saved shows ideas marked saved or interested.
-    const { rows: newestFirst, capped } = await readSavedIntents(
-      ctx,
-      user._id,
-      SAVED_COUNT_CAP,
-    );
+    const [{ rows: newestFirst, capped }, prefs] = await Promise.all([
+      readSavedIntents(ctx, user._id, SAVED_COUNT_CAP),
+      readPreferences(ctx, user._id),
+    ]);
 
     const latest = (
       await Promise.all(
@@ -96,7 +98,8 @@ export const home = query({
         capped,
         latest,
       },
-      setupDone: false,
+      setupDone: prefs?.onboardedAt !== undefined,
+      setupSkipped: prefs?.skippedAt !== undefined,
       activePlan: null,
       plan: "free" as const,
     };

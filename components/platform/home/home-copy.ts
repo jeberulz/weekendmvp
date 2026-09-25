@@ -51,10 +51,19 @@ export function statusLine(saved: { count: number; capped: boolean }, weekday: n
   return `${count} ${noun}. ${weekendLine(weekday)}`;
 }
 
+type StepInput = { savedCount: number; setupDone: boolean; setupSkipped: boolean };
+
 /**
- * Module 1's state. Building and Finished arrive with weekend plans (S9), and
- * "set_up" with the setup questions (S8).
+ * Module 1's card (PRD 6.2). The setup questions show until they are
+ * answered or skipped (R7). Building and Finished arrive with S9.
  */
-export function nextStepState(savedCount: number): "new" | "choosing" {
-  return savedCount > 0 ? "choosing" : "new";
+export function nextStep({ savedCount, setupDone, setupSkipped }: StepInput): "setup" | "start" | "choosing" {
+  if (savedCount > 0) return "choosing";
+  return setupDone || setupSkipped ? "start" : "setup";
+}
+
+/** The `dashboard_viewed` state: "set_up" only when the questions were answered. */
+export function viewedState({ savedCount, setupDone }: StepInput): "new" | "set_up" | "choosing" {
+  if (savedCount > 0) return "choosing";
+  return setupDone ? "set_up" : "new";
 }

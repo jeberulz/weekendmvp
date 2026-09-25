@@ -259,3 +259,31 @@ Append-only progress log. Do not rely on chat history for project state.
   - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket with project and intake data): Home, Ideas, Saved, Plan and billing, Projects, a project, a missing project (route error) and intake, each at 1440px and 390px. Every page has exactly one `main`, the right `h1`, and no horizontal scroll. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on all 16 views. Plan and billing also checked with the Builder's Hub flag on: 0 violations
 - Phase A (S2 to S7) is complete
 - Next: S8 (setup questions and personal ranking, schema writer #2)
+
+## 2026-09-25 - WP44-S8 Setup questions and personal ranking
+
+- `origin/main` had not moved since S7. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - Schema (writer #2, additive): `user_preferences` with `ownerId`, `tools[]`, optional `weeklyHours` and `goal`, `onboardedAt?`, `skippedAt?`, `dismissed[]?` (for S12) and `updatedAt`, indexed `by_ownerId`
+  - `convex/platform/setupOptions.ts` (pure) and `setupValidators.ts`: the tool, hours and goal lists, labels, the goal-to-revenue map, `fitsWeekend`, and the reason shapes and their sentences
+  - `convex/platform/preferences.ts`: `get`, `saveSetup` and `skipSetup`, owner-scoped through the session. Tools must come from the allowlist (at most 8, deduped). A left-out answer is cleared. Skipping keeps any answers
+  - `convex/platform/forYou.ts` (pure): For you rank = research score plus bounded nudges: saved-category lift (0.1 per save, up to 0.5), weekend fit (+0.4, or -0.6 when the build is longer than the member's weekend), goal match (+0.3), tool match (+0.3). Each idea gets at most one reason. A saved idea in the same category wins ("Like SlackToDoc, which you saved"). Otherwise the rarest input that applies wins, and any input matching more than 80% of ideas is never used, so a reason always says something
+  - `platform.ideas.library` ranks For you with it and returns `reason` on For you cards only. `platform.dashboard.home` reports `setupDone` and `setupSkipped`
+  - Home module 1: the three questions as checkbox and radio groups in fieldsets, with the native control visible in each chip. "Show my ideas" saves, "Skip for now" skips (R7). Either way the card becomes "Start here", focus moves to its heading, and a polite message says what happened. Module 3 shows the reason line and re-picks when the answers change, with a hint to answer (or a link to Settings after a skip)
+  - Ideas For you tab: reason lines on cards and rows, and an explainer with "Edit your answers"
+  - Settings (`/dashboard/settings`, new): the same form, prefilled, "Save answers". Linked from the account menu and the phone sheet
+  - Events: `setup_completed` (tool count, hours bucket, goal, "none" for an unanswered question) and `setup_skipped`
+  - Tests: `convex/wp44Preferences.test.ts` (15: vocabulary, weekend fit, reason sentences, sign-in, save and clear, allowlist, skip, two-member isolation, ranking moves with answers, "like" reason, reasons only in For you, two members see different orders, rarest input wins, near-universal tool never shows, no inputs means score order) and `tests/platform/wp44-setup.test.ts` (8)
+- Different from the written criteria, on purpose:
+  - Learning and portfolio goals have no revenue target, so they never move the ranking or appear as a reason. Side income maps to $1K and $5K goals, replacing a job to $10K
+  - Audiences are not used yet. `solo-founders` is on 192 of 226 ideas, so it would not separate anything
+  - A reason names the rarest input that applies, not the heaviest one. Side income matches about 69% of the library, so it would otherwise label most cards
+  - `convex/_generated/api.d.ts` was edited by hand again (five new modules, generator order). `npm run convex:dev` was not run: no network to Convex
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass (Convex WP44 suites 45 tests, platform 89)
+  - `npm run build` pass. `/dashboard/settings` is a new partial-prerender route. Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket keeping preference state): Home shows the three legends. Picking Bolt, Lovable, 8 hrs and Side income sends one `saveSetup`, focus lands on "Save the ideas you could build this weekend.", the message reads "Saved your answers. Picked for you now uses them.", and the picks show reason lines. "Skip for now" sends `skipSetup` and shows the Settings hint. Settings loads the saved answers checked, and a change saves with a confirmation. For you shows reason lines. 390px has no horizontal scroll. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on Home with the questions, Home after setup, phone, Settings and For you
+- Next: S9 (weekend plans and Builds, schema writer #3)

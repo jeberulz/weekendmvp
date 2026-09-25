@@ -5,6 +5,7 @@ import {
   Bookmark,
   Compass,
   CreditCard,
+  Settings2,
   House,
   PanelLeftClose,
   PanelLeftOpen,
@@ -33,6 +34,7 @@ import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
 import {
   BILLING_NAV,
+  SETTINGS_NAV,
   PRIMARY_NAV,
   STARTER_KIT_HREF,
   isWorkspaceNavCurrent,
@@ -45,6 +47,7 @@ const NAV_ICONS: Record<WorkspaceNavId, LucideIcon> = {
   ideas: Compass,
   saved: Bookmark,
   billing: CreditCard,
+  settings: Settings2,
 };
 
 const focusRing =
@@ -151,7 +154,7 @@ function AccountSheet() {
         <SheetHeader className="border-b border-home-rule px-5 pb-4 pt-5 text-left">
           <SheetTitle className="text-base text-home-ink">Account</SheetTitle>
           <SheetDescription className="text-home-ink-2">
-            Your plan, resources and sign out.
+            Your plan, settings, resources and sign out.
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3">
@@ -159,6 +162,12 @@ function AccountSheet() {
             <Link href={BILLING_NAV.href} className={cn(sheetLink, focusRing)}>
               <CreditCard className="size-[18px] text-home-ink-2" aria-hidden />
               {BILLING_NAV.label}
+            </Link>
+          </SheetClose>
+          <SheetClose asChild>
+            <Link href={SETTINGS_NAV.href} className={cn(sheetLink, focusRing)}>
+              <Settings2 className="size-[18px] text-home-ink-2" aria-hidden />
+              {SETTINGS_NAV.label}
             </Link>
           </SheetClose>
           <SheetClose asChild>

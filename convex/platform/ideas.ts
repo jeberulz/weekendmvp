@@ -2,7 +2,10 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { requireCurrentPlatformUser } from "./authz";
+import { rankForYou } from "./forYou";
 import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
+import { readPreferences } from "./preferences";
+import { SETUP_TOOLS, type PickReason } from "./setupOptions";
 import {
   HOURS_BUCKETS,
   MAX_LIBRARY_LIMIT,
@@ -23,8 +26,6 @@ export const LIBRARY_READ_LIMIT = 1000;
 /** Per search index. Convex caps one search at 1024 results. */
 const SEARCH_READ_LIMIT = 256;
 const AFFINITY_SAVED_LIMIT = 48;
-const AFFINITY_STEP = 0.1;
-const MAX_AFFINITY_BOOST = 0.5;
 
 // Spelled out so the generated API types stay exact. The tests check they
 // match the shared lists in libraryFilters.ts.
@@ -168,6 +169,7 @@ export const library = query({
 
     const sort: LibrarySort = effectiveSort(args.view, args.sort, search !== "");
     let ordered = filtered;
+    let reasons: Map<Id<"ideas">, PickReason | null> | null = null;
     if (sort === "newest") {
       ordered = [...filtered].sort(byNewest);
     } else if (sort === "score") {
@@ -175,26 +177,32 @@ export const library = query({
         (a, b) => (meanScore(b) ?? 0) - (meanScore(a) ?? 0) || byNewest(a, b),
       );
     } else if (sort === "recommended") {
-      // Research score plus a small boost for categories the member saves.
+      // Research score plus bounded nudges from the member's setup answers
+      // and saves (WP44-S8). Reasons ride along for the For you view.
       const inMemory = new Map(candidates.map((idea) => [idea._id, idea]));
-      const recentSaved = await Promise.all(
-        saved.rows
-          .slice(0, AFFINITY_SAVED_LIMIT)
-          .map(async (row) => inMemory.get(row.ideaId) ?? (await ctx.db.get("ideas", row.ideaId))),
-      );
-      const affinity = new Map<string, number>();
-      for (const idea of recentSaved) {
-        if (idea) affinity.set(idea.category, (affinity.get(idea.category) ?? 0) + 1);
-      }
-      const rank = (idea: Doc<"ideas">) =>
-        (meanScore(idea) ?? 0) +
-        Math.min((affinity.get(idea.category) ?? 0) * AFFINITY_STEP, MAX_AFFINITY_BOOST);
-      ordered = [...filtered].sort((a, b) => rank(b) - rank(a) || byNewest(a, b));
+      const [prefs, recentSaved] = await Promise.all([
+        readPreferences(ctx, user._id),
+        Promise.all(
+          saved.rows
+            .slice(0, AFFINITY_SAVED_LIMIT)
+            .map(async (row) => inMemory.get(row.ideaId) ?? (await ctx.db.get("ideas", row.ideaId))),
+        ),
+      ]);
+      const ranked = rankForYou(filtered, {
+        tools: SETUP_TOOLS.filter((tool) => prefs?.tools.includes(tool)),
+        weeklyHours: prefs?.weeklyHours,
+        goal: prefs?.goal,
+        savedNewestFirst: recentSaved.filter((idea) => idea !== null),
+      });
+      ordered = ranked.ordered;
+      reasons = ranked.reasons;
     }
     // "relevance" keeps the search order.
 
     return {
-      items: ordered.slice(0, limit).map((idea) => toIdeaCard(idea, savedIds.has(idea._id))),
+      items: ordered
+        .slice(0, limit)
+        .map((idea) => toIdeaCard(idea, savedIds.has(idea._id), reasons?.get(idea._id))),
       total: filtered.length,
       truncated,
       facets,
