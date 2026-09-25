@@ -1,10 +1,13 @@
-import { DashboardHome } from "@/components/platform/shell/DashboardHome";
+import { DashboardHome } from "@/components/platform/home/DashboardHome";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PreviewClaimRunner } from "@/components/preview/PreviewClaimHandoff";
+import { getDashboardEditorial } from "@/lib/dashboard/editorial";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // The homepage's hourly cache: idea of the week and newest ideas match `/`.
+  const editorial = await getDashboardEditorial();
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
+    <>
       {/* WP27-S5. Claims a capability stashed on `/login` or `/signup`, if there
           is one. Renders nothing when there is not, so the ordinary dashboard
           is unchanged for everyone who did not arrive from a preview. Gated so
@@ -12,7 +15,7 @@ export default function DashboardPage() {
       <WhenConvexReady>
         <PreviewClaimRunner />
       </WhenConvexReady>
-      <DashboardHome />
-    </div>
+      <DashboardHome editorial={editorial} />
+    </>
   );
 }

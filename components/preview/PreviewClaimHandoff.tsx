@@ -134,7 +134,7 @@ export function PreviewClaimRunner() {
     // narrates a background step and must not interrupt what is being read.
     <div aria-live="polite">
       {status !== "idle" && (
-        <div className="mb-6 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-300">
+        <div className="mx-auto mt-6 w-[calc(100%-2.5rem)] max-w-[1120px] rounded-lg border border-home-rule bg-home-card px-4 py-3 text-sm text-home-ink-2">
           {status === "claimed" && "Your preview is saved to this workspace."}
           {status === "failed" &&
             "That preview link could not be added. Preview links are private and last seven days."}

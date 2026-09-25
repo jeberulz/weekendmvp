@@ -14,13 +14,18 @@ const emptySubscribe = () => () => undefined;
 export function WhenConvexReady({
   children,
   fallback = null,
+  unavailable,
 }: {
   children: ReactNode;
+  /** Shown on the server and during the first client render. */
   fallback?: ReactNode;
+  /** Shown in the browser when the Convex URL is missing or invalid. Defaults to `fallback`. */
+  unavailable?: ReactNode;
 }) {
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
-  if (!mounted || !isValidPlatformConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL)) {
-    return fallback;
+  if (!mounted) return fallback;
+  if (!isValidPlatformConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL)) {
+    return unavailable === undefined ? fallback : unavailable;
   }
   return children;
 }

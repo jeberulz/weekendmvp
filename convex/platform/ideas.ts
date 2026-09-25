@@ -6,34 +6,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
-import {
-  intentFlagValidator,
-  projectSourceValidator,
-  projectStatusValidator,
-} from "./validators";
-
-const dashboardProjectValidator = v.object({
-  id: v.id("projects"),
-  title: v.string(),
-  source: projectSourceValidator,
-  status: projectStatusValidator,
-  updatedAt: v.number(),
-});
-
-const dashboardIntentValidator = v.object({
-  ideaId: v.id("ideas"),
-  slug: v.string(),
-  title: v.string(),
-  category: v.string(),
-  saved: v.boolean(),
-  interested: v.boolean(),
-  updatedAt: v.number(),
-});
-
-const DASHBOARD_PROJECT_READ_LIMIT = 12;
-const DASHBOARD_PROJECT_RESULT_LIMIT = 6;
-const DASHBOARD_INTENT_READ_LIMIT = 16;
-const DASHBOARD_INTENT_RESULT_LIMIT = 6;
+import { intentFlagValidator } from "./validators";
 
 const exploreViewValidator = v.union(
   v.literal("all"),
@@ -243,78 +216,6 @@ async function finishExplorePage(
     affinity,
   );
 }
-
-/**
- * Bounded owner-only state for the dashboard home. Missing account/project
- * data stays null/empty so the UI never invents activity or balances.
- */
-export const dashboardSummary = query({
-  args: {},
-  returns: v.object({
-    userName: v.union(v.string(), v.null()),
-    projects: v.array(dashboardProjectValidator),
-    recentIntents: v.array(dashboardIntentValidator),
-    creditBalance: v.union(v.int64(), v.null()),
-  }),
-  handler: async (ctx) => {
-    const user = await requireCurrentPlatformUser(ctx);
-
-    const projectRows = await ctx.db
-      .query("projects")
-      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
-      .order("desc")
-      .take(DASHBOARD_PROJECT_READ_LIMIT);
-    const projects = projectRows
-      .filter((project) => project.archivedAt === undefined)
-      .slice(0, DASHBOARD_PROJECT_RESULT_LIMIT)
-      .map((project) => ({
-        id: project._id,
-        title: project.title,
-        source: project.source,
-        status: project.status,
-        updatedAt: project.updatedAt,
-      }));
-
-    const intentRows = await ctx.db
-      .query("idea_intents")
-      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
-      .order("desc")
-      .take(DASHBOARD_INTENT_READ_LIMIT);
-    const recentIntents = (
-      await Promise.all(
-        intentRows
-          .filter((intent) => intent.saved || intent.interested)
-          .map(async (intent) => {
-            const idea = await ctx.db.get("ideas", intent.ideaId);
-            if (idea === null) return null;
-            return {
-              ideaId: idea._id,
-              slug: idea.slug,
-              title: idea.title,
-              category: idea.category,
-              saved: intent.saved,
-              interested: intent.interested,
-              updatedAt: intent.updatedAt,
-            };
-          }),
-      )
-    )
-      .filter((intent) => intent !== null)
-      .slice(0, DASHBOARD_INTENT_RESULT_LIMIT);
-
-    const creditAccount = await ctx.db
-      .query("credit_accounts")
-      .withIndex("by_ownerId", (q) => q.eq("ownerId", user._id))
-      .unique();
-
-    return {
-      userName: user.displayName ?? user.name ?? null,
-      projects,
-      recentIntents,
-      creditBalance: creditAccount?.balance ?? null,
-    };
-  },
-});
 
 /**
  * Owner-aware discovery over canonical idea rows. Every view starts from an

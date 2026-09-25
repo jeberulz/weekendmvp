@@ -1,10 +1,17 @@
 export default function DashboardLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12" aria-label="Loading workspace">
-      <div className="animate-pulse space-y-8 motion-reduce:animate-none">
-        <div className="h-8 w-52 rounded-md bg-white/8" />
-        <div className="h-28 max-w-3xl rounded-xl bg-white/5" />
-        <div className="h-16 max-w-3xl rounded-lg bg-white/5" />
+    <div className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <div
+        role="status"
+        className="flex animate-pulse flex-col gap-8 motion-reduce:animate-none"
+      >
+        <span className="sr-only">Loading your workspace</span>
+        <div aria-hidden className="flex flex-col gap-2">
+          <div className="h-3.5 w-40 rounded bg-home-sunk" />
+          <div className="h-10 w-72 max-w-full rounded-md bg-home-sunk" />
+        </div>
+        <div aria-hidden className="h-[260px] max-w-3xl rounded-[14px] bg-home-sunk" />
+        <div aria-hidden className="h-[320px] max-w-3xl rounded-[14px] bg-home-sunk" />
       </div>
     </div>
   );

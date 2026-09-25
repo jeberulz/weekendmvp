@@ -124,3 +124,44 @@ Append-only progress log. Do not rely on chat history for project state.
 - Found:
   - A save whose idea row was deleted still counts in the badge but is left out of the latest list. Ideas are retired in the manifest rather than deleted, so this is rare. Noted, not fixed
 - Next: S4 (Home modules)
+
+## 2026-09-25 - WP44-S4 Home modules
+
+- Merged `origin/main` (#78, homepage AEO fixes) first. No conflicts
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - New Home in `components/platform/home/*`, on research-desk tokens, off `LegacyDarkSurface` (`WorkspaceSurface` skips it for `/dashboard` only)
+  - Greeting: date line with ISO week, serif greeting by local time of day and first name (no comma without a name), status line ("4 saved ideas. Your weekend starts Friday.")
+  - Module 1, next step card: New shows "Start here" with "Save this week’s pick" and "Browse N ideas". Choosing (1+ saves) shows the 3 latest saved ideas as a comparison table (hours, score, tools) with "See all saved"
+  - Module 2, idea of the week: art band, category, title, pitch, four labelled score bars, hours, goal, cited sources, tools, "Read the research", Save. Server-rendered from the homepage cache
+  - Module 3, picked for you: 3 unsaved ideas from the `for_you` view, skipping ideas Home already shows. The three are pinned on first load, so saving one does not swap the card away
+  - Module 4, newest ideas: 5 Index rows (N°, title, category, hours, Save) and "View all" (Explore, newest first). Server-rendered
+  - Rail (1280px+, stacks under module 4 below that): 5 latest saved, then the Starter Kit card for free members, dismissible, with `offer_viewed`, `offer_clicked` and `offer_dismissed`. Dismiss moves focus to the Saved heading
+  - Save toggle (`SaveIdeaButton`): `aria-pressed`, filled icon when saved, polite live announcement, optimistic update, `explore_state_changed` with source `home`. New Convex `platform.dashboard.savedState({ slug })` and `platform.dashboard.setSaved({ slug, saved })`. Removing clears both flags (R3). Keyed by slug because editorial cards come from the manifest
+  - `platform.dashboard.home` latest rows now carry goal, tools and the mean score for the shortlist
+  - Every Convex consumer sits behind `WhenConvexReady` plus an error boundary. `WhenConvexReady` gained an `unavailable` slot for a missing Convex URL. Skeletons use `role="status"`. A failed module shows "We can’t load your ideas right now. Try again in a minute." with a retry, and the editorial modules stay
+  - `app/dashboard/loading.tsx` and `error.tsx` restyled light. The preview-claim notice restyled light
+  - `dashboard_viewed` fires once with state and plan
+  - Removed: the old `components/platform/shell/DashboardHome.tsx`, `platform.ideas.dashboardSummary` and its WP23 tests, `tests/platform/wp23-dashboard.test.ts` (its Convex URL checks moved to the new test)
+  - `lib/home`: `SpotlightIdea` gained `tools` (additive, the homepage ignores it)
+  - Tests: `tests/platform/wp44-home.test.ts` (21: copy helpers, module order, server rendering, gates, removed copy, a11y contracts) and 8 more in `convex/wp44Dashboard.test.ts` (sign-in, unseeded idea, save and remove, R3 clearing, Interested reads as saved, keeps Interested on save, no-op remove, two-member isolation)
+- Different from the written criteria, on purpose:
+  - Module 4 is labelled "Newest ideas", not "New this week". The five newest span 10 to 24 September, so "this week" would be false
+  - The "New, set up" state and the setup questions arrive with S8. Until then New shows the "Start here" card
+  - Choosing's primary action is "See all saved", not "Plan my weekend". Weekend plans arrive with S9
+  - No "Past picks" link: there is no page for it
+  - The Starter Kit dismissal is per browser (localStorage) until S12 stores it on the member. The card does not yet hide for members who claimed the kit (S12 checks that on the server)
+  - Module 1's New card and module 2 both offer the weekly pick. Module 1 shows only a Save button for it, not a second card
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, all in `scripts/`, unchanged)
+  - `npm test` pass (platform 49, Convex WP44 23 with the WP23 explore and intent tests)
+  - `npm run build` pass. Same 5 Turbopack warnings as before
+  - Browser, local-only auth bypass in `middleware.ts` (removed before commit, file verified clean) and a fake Convex websocket in Playwright that answers `home`, `savedState`, `explore` and `setSaved` from the real manifest:
+    - 1440px and 390px for New, Choosing and module errors. 1280px shows the rail beside the modules. No horizontal scroll at 390px
+    - Clicking "Save this week’s pick" turns module 1 into the shortlist and the status line into "1 saved idea"
+    - Dismissing the kit card stores it and moves focus to "Saved"
+    - axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations in every state, including loading. The S2/S3 `aria-prohibited-attr` finding is gone
+- Found:
+  - `for_you` ranks one page of ideas (newest first), so picks come from the 24 newest ideas only. S8 owns ranking and should rank the whole library
+- Next: S5 (Ideas library and Saved)

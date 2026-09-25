@@ -103,8 +103,27 @@ describe("WP44-S3 dashboard home query", () => {
       title: "Idea idea 1",
       category: "automation",
       buildTime: "12",
+      revenueGoal: "5k-month",
+      tools: ["cursor"],
+      score: null,
       updatedAt: 30,
     });
+  });
+
+  test("gives the shortlist a mean score when the idea is scored", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "scores@example.test");
+    const [ideaId] = await seedIdeas(t, 1);
+    await t.run(async (ctx) => {
+      await ctx.db.patch("ideas", ideaId, {
+        scores: { opportunity: 9, pain: 8, timing: 7, builder_confidence: 7 },
+      });
+    });
+    await seedIntent(t, owner.userId, ideaId, { saved: true, interested: false }, 1);
+
+    const home = await asUser(t, owner).query(api.platform.dashboard.home, {});
+
+    expect(home.saved.latest[0].score).toBe(7.8);
   });
 
   test("returns the empty defaults later stories fill in", async () => {
@@ -186,5 +205,140 @@ describe("WP44-S3 dashboard home query", () => {
     const home = await asUser(t, owner).query(api.platform.dashboard.home, {});
 
     expect(home.saved.latest.map((row) => row.ideaId)).toEqual([kept]);
+  });
+});
+
+async function intentRows(t: TestConvex<typeof schema>, ownerId: Id<"users">) {
+  return await t.run(async (ctx) =>
+    ctx.db
+      .query("idea_intents")
+      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", ownerId))
+      .take(10),
+  );
+}
+
+describe("WP44-S4 save toggle", () => {
+  test("denies anonymous callers", async () => {
+    const t = convexTest(schema, modules);
+    await seedIdeas(t, 1);
+    await expect(
+      t.query(api.platform.dashboard.savedState, { slug: "idea-0" }),
+    ).rejects.toThrow("UNAUTHENTICATED");
+    await expect(
+      t.mutation(api.platform.dashboard.setSaved, { slug: "idea-0", saved: true }),
+    ).rejects.toThrow("UNAUTHENTICATED");
+  });
+
+  test("returns null for an idea that is not in Convex yet", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "early@example.test");
+
+    const state = await asUser(t, owner).query(api.platform.dashboard.savedState, {
+      slug: "published-but-not-seeded",
+    });
+
+    expect(state).toBeNull();
+    await expect(
+      asUser(t, owner).mutation(api.platform.dashboard.setSaved, {
+        slug: "published-but-not-seeded",
+        saved: true,
+      }),
+    ).rejects.toThrow("RESOURCE_NOT_FOUND");
+  });
+
+  test("saves and removes, and removing clears Interested too (R3)", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "toggle@example.test");
+    const [ideaId] = await seedIdeas(t, 1);
+    const member = asUser(t, owner);
+
+    expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
+      saved: false,
+    });
+
+    await member.mutation(api.platform.dashboard.setSaved, { slug: "idea-0", saved: true });
+    expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
+      saved: true,
+    });
+    const home = await member.query(api.platform.dashboard.home, {});
+    expect(home.saved.count).toBe(1);
+
+    await t.run(async (ctx) => {
+      const row = await ctx.db
+        .query("idea_intents")
+        .withIndex("by_ownerId_and_ideaId", (q) =>
+          q.eq("ownerId", owner.userId).eq("ideaId", ideaId),
+        )
+        .unique();
+      await ctx.db.patch("idea_intents", row!._id, { interested: true });
+    });
+
+    await member.mutation(api.platform.dashboard.setSaved, { slug: "idea-0", saved: false });
+    const rows = await intentRows(t, owner.userId);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ saved: false, interested: false });
+    expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
+      saved: false,
+    });
+  });
+
+  test("reads an Interested-only idea as saved (R3)", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "interested@example.test");
+    const [ideaId] = await seedIdeas(t, 1);
+    await seedIntent(t, owner.userId, ideaId, { saved: false, interested: true }, 1);
+
+    const state = await asUser(t, owner).query(api.platform.dashboard.savedState, {
+      slug: "idea-0",
+    });
+
+    expect(state).toEqual({ saved: true });
+  });
+
+  test("saving keeps an existing Interested flag", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "keeps@example.test");
+    const [ideaId] = await seedIdeas(t, 1);
+    await seedIntent(t, owner.userId, ideaId, { saved: false, interested: true }, 1);
+
+    await asUser(t, owner).mutation(api.platform.dashboard.setSaved, {
+      slug: "idea-0",
+      saved: true,
+    });
+
+    const rows = await intentRows(t, owner.userId);
+    expect(rows[0]).toMatchObject({ saved: true, interested: true });
+  });
+
+  test("removing an idea that was never saved writes nothing", async () => {
+    const t = convexTest(schema, modules);
+    const owner = await seedUser(t, "noop@example.test");
+    await seedIdeas(t, 1);
+
+    const result = await asUser(t, owner).mutation(api.platform.dashboard.setSaved, {
+      slug: "idea-0",
+      saved: false,
+    });
+
+    expect(result).toEqual({ saved: false });
+    expect(await intentRows(t, owner.userId)).toHaveLength(0);
+  });
+
+  test("one member's save never changes another member's state", async () => {
+    const t = convexTest(schema, modules);
+    const alice = await seedUser(t, "alice@example.test");
+    const bob = await seedUser(t, "bob@example.test");
+    await seedIdeas(t, 1);
+
+    await asUser(t, alice).mutation(api.platform.dashboard.setSaved, {
+      slug: "idea-0",
+      saved: true,
+    });
+
+    expect(
+      await asUser(t, bob).query(api.platform.dashboard.savedState, { slug: "idea-0" }),
+    ).toEqual({ saved: false });
+    expect(await intentRows(t, bob.userId)).toHaveLength(0);
+    expect(await intentRows(t, alice.userId)).toHaveLength(1);
   });
 });

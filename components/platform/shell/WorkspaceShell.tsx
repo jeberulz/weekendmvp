@@ -27,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
-import { LegacyDarkSurface } from "./LegacyDarkSurface";
+import { WorkspaceSurface } from "./LegacyDarkSurface";
 import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
 import {
@@ -306,7 +306,7 @@ export function WorkspaceShell({
           <WorkspaceSearch ideaCount={ideaCount} />
         </header>
         <main id="workspace-main" tabIndex={-1} className="outline-none">
-          <LegacyDarkSurface>{children}</LegacyDarkSurface>
+          <WorkspaceSurface pathname={pathname}>{children}</WorkspaceSurface>
         </main>
       </div>
     </div>

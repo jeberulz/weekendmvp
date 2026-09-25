@@ -80,7 +80,7 @@ S1 rulings
     - `npm run build` shows `/dashboard` builds and `/` is unchanged
   - Model tier: high (Convex data and auth boundary)
 
-- [ ] `WP44-S4` - Home modules
+- [x] `WP44-S4` - Home modules
   - Scope: `components/platform/home/*` (new), `components/platform/shell/DashboardHome.tsx` (replaced), reuse from `components/home/*` without editing it
   - Acceptance criteria:
     - Date line, serif greeting (time of day and first name, no comma when no name), status line
