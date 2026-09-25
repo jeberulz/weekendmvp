@@ -9,8 +9,8 @@ export function WhatIs() {
     <section aria-labelledby="home-what-is-label" className="border-t border-home-rule bg-home-paper">
       <Container className="flex flex-col gap-6 py-10 md:gap-7 md:py-12 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
         <div className="flex max-w-[720px] flex-col gap-3.5">
-          <Eyebrow>
-            <span id="home-what-is-label">What is Weekend MVP</span>
+          <Eyebrow as="h2" id="home-what-is-label">
+            What is Weekend MVP?
           </Eyebrow>
           <p id="home-what-is" className="text-[17px] leading-[1.6] text-home-ink-2 md:text-lg md:leading-[1.65]">
             {WHAT_IS}

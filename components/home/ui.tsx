@@ -14,9 +14,23 @@ export function Container({ className, children, m }: { className?: string; chil
   );
 }
 
-export function Eyebrow({ children, dark = false, className }: { children: ReactNode; dark?: boolean; className?: string }) {
+/** `as="h2"` makes the eyebrow the section heading when the section has no other. */
+export function Eyebrow({
+  children,
+  dark = false,
+  className,
+  as: Tag = "p",
+  id,
+}: {
+  children: ReactNode;
+  dark?: boolean;
+  className?: string;
+  as?: "p" | "h2";
+  id?: string;
+}) {
   return (
-    <p
+    <Tag
+      id={id}
       className={cn(
         "font-mono text-[11px] font-medium uppercase leading-[14px] tracking-[0.08em] md:text-xs md:leading-4",
         dark ? "text-home-orange-light" : "text-home-orange-ink",
@@ -24,7 +38,7 @@ export function Eyebrow({ children, dark = false, className }: { children: React
       )}
     >
       {children}
-    </p>
+    </Tag>
   );
 }
 
