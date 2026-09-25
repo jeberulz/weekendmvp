@@ -3,7 +3,7 @@
 Branch: `claude/wizardly-rubin-a6m2th` (PRD and plan). Build phases branch from `main` per phase (see Sequencing).
 Lane: Work Package (UI flow, shared logic, additive schema). The subscription billing it depends on is a separate high-risk Work Package.
 Registry: `docs/PROJECT_STRATEGY.md`
-Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp43-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. Builder's Hub UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
+Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp43-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. No site preview, publish or credit entry points remain (R5, R9). Builder's Hub UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
 
 Product source: `docs/wp/wp43-dashboard-prd.md`. Visual source: the design canvas [Weekend MVP Dashboard](https://claude.ai/artifact/SoKxJm9Urpeyo8p9NntLG5) (private until shared). S1 exports approved artboards to `docs/wp/evidence/`.
 
@@ -16,17 +16,18 @@ S1 rulings
  |     S2 shell + nav ──> S3 data + events ──> S4 Home modules
  |                                   └──────> S5 Ideas + Saved (schema writer #1: search index)
  |     S6 save from idea page (after S5)
- |     S7 restyle remaining routes (parallel with S4 to S6, separate files)
+ |     S7 restyle remaining routes, hide publish and credit entry points (parallel with S4 to S6, separate files)
  |
  +-- Phase B (after S5 merges)
  |     S8 setup + preferences (schema writer #2)
  |     S9 weekend plans (schema writer #3, after S8 merges)
+ |     S12 offer card: Starter Kit and promos (after S4 and S8)
  |
- +-- Phase C (after rulings R5, R8, R9. R1 and R2 ruled 2026-09-25)
+ +-- Phase C (all rulings done. Stays behind a flag until the subscription WP passes)
  |     S10 entitlements + upgrade surfaces (flagged)
  |     S11 Builder's Hub features (flagged)
  |
- S12 package gate
+ S13 package gate
 ```
 
 - One `convex/schema.ts` writer per merge window: S5, then S8, then S9.
@@ -35,7 +36,7 @@ S1 rulings
 
 ## Stories
 
-- [ ] `WP43-S1` - Record rulings and freeze scope (R1 to R4 recorded 2026-09-25. R5 to R9 open)
+- [ ] `WP43-S1` - Record rulings and freeze scope (R1 to R9 recorded 2026-09-25. IdeaBrowser screenshots, canvas export and the R5 follow-up on WP29 to WP31 remain)
   - Scope: `docs/wp/RULINGS.md`, `docs/wp/wp43-dashboard-prd.md`, `docs/wp/wp43-progress.md`
   - Acceptance criteria:
     - Owner answers R1 to R9 from PRD section 12. Each answer is one new row in `docs/wp/RULINGS.md`
@@ -85,7 +86,7 @@ S1 rulings
     - Module 2 Idea of the week with art band, 4 labelled score meters, hours, tools, Read the research, Save
     - Module 3 Picked for you: 3 unsaved ideas from the `for_you` view. Reason line shows only when S8 supplies one
     - Module 4 New this week: 5 Index-style rows with Save and "View all"
-    - Right rail at 1280px+: 5 latest saved and the Starter Kit card (ruling R6)
+    - Right rail at 1280px+: 5 latest saved, then the offer card slot. Until S12 lands, the slot shows the Starter Kit card to free members (ruling R6)
     - Editorial modules render on the server. Personal modules show layout-sized skeletons. A failed personal query shows a module-level error, never a blank page
     - All copy from PRD 6.8 applied. None of the removed system copy remains
     - `PreviewClaimRunner` still runs on `/dashboard`
@@ -104,6 +105,7 @@ S1 rulings
     - Tabs: All, For you, New. Card grid by default with a list toggle. Cards show art, pitch, 4 score meters, hours, tools, Save
     - Saved page lists ideas where `saved` or `interested` is true. Unsave clears both flags
     - Save and unsave keep the existing live-region announcements
+    - Explore cards drop "Preview this idea" (R5). "Read the research" stays
   - Verification:
     - `npm run typecheck`
     - `npm test` including a two-user test for Saved and a search test across more than one page of results
@@ -115,6 +117,7 @@ S1 rulings
   - Acceptance criteria:
     - The island renders nothing on the server and on first paint. After hydration it shows Save only when the `wmvp_signed_in` hint cookie exists
     - Anonymous click goes to `/signup?returnTo=/ideas/{slug}` and the save completes after signup
+    - `PreviewIdeaCta` no longer renders on `/ideas/{slug}` (R5). The component and `/build/{slug}` stay in the codebase for v1.1
     - `/ideas/{slug}` keeps its route type in the build output, its canonical tag, and its JSON-LD
   - Verification:
     - `npm run build` route table unchanged for `/ideas/[slug]`
@@ -127,8 +130,10 @@ S1 rulings
   - Acceptance criteria:
     - Every `/dashboard/**` route uses the research-desk theme
     - Billing is titled "Plan and billing" and no longer renders its own `main` (fixes the nested landmark)
+    - Plan and billing shows the free plan and Builder's Hub ($29 a month) only. Credit packs and their checkout buttons are hidden, not deleted (R9)
+    - Project cards and project links leave every dashboard surface (R5). `/dashboard/projects/**` still renders by URL
     - Error and loading states match the new layout and use the plain copy from PRD 6.8
-    - No behaviour change to checkout, projects or intake
+    - No change to checkout, project or intake logic. Only entry points are hidden
   - Verification:
     - `npm run typecheck`
     - `npm test` (billing and intake suites unchanged and green)
@@ -153,8 +158,8 @@ S1 rulings
     - Start a plan from Home, Ideas, Saved or an idea page. Four stages from `WEEKEND_PLAN`
     - Steps check and uncheck, persist, and announce changes politely
     - Each stage shows the idea's matching prompts with copy and a "Prompt copied" announcement
-    - Sunday links to `/build/{slug}` and shows the live URL once a linked project is published
-    - Builds lists the active plan, finished plans, and existing projects (claimed previews, published sites)
+    - Sunday shows the idea's Landing Page prompt and a field for the live link the member ships. It links to no Weekend MVP preview or publish flow (R5)
+    - Builds lists the active plan and finished plans with their live links. Site projects are parked (R5)
     - Free members hold 1 active plan. Until S10 the limit is enforced in the mutation with a plain error message
   - Verification:
     - `npm run typecheck`
@@ -168,6 +173,7 @@ S1 rulings
     - `getEntitlements(ctx, ownerId)` returns `{ plan, limits }` and returns Free until the subscription WP ships
     - Gated mutations throw `ConvexError({ code: "UPGRADE_REQUIRED", feature })`. The UI opens the upgrade sheet for that feature
     - Plan card, sheet, tags and Plan and billing page follow PRD 6.6. Every sheet has a free way forward
+    - Builder's Hub is sold monthly only (R9). The sheet and Plan and billing page never mention hosting or credits (R5)
     - The plan id is `builders_hub`, never `builder` (the credit pack catalog owns that id). The name "Builder's Hub" and the $29 monthly price come from one plan constant
     - A feature flag hides all Builder's Hub UI in production until the owner turns it on
     - A Builder's Hub member sees no upgrade prompt anywhere (test with a stubbed `builders_hub` resolver)
@@ -189,12 +195,28 @@ S1 rulings
     - `npm test` including ownership and entitlement tests
   - Model tier: mid (high for the schema part)
 
-- [ ] `WP43-S12` - Package gate
+- [ ] `WP43-S12` - Offer card: Starter Kit and promos (R6, R8)
+  - Scope: `lib/dashboard/offers.ts` (new), `convex/platform/dashboard.ts` (offer choice), `convex/platform/preferences.ts` (dismiss mutation), `components/platform/home/OfferCard.tsx` (new), tests
+  - Acceptance criteria:
+    - The Home rail shows at most one offer card, chosen by the PRD 6.2 rules: first 24 hours after signup shows only the Starter Kit card, later an active promo wins, else the Starter Kit card while the kit is unclaimed, else nothing
+    - "Kit claimed" is a `subscriptions` row for the member's email, checked on the server. The email never reaches the client
+    - Promos come from `lib/dashboard/offers.ts` with start and end times. An expired or future promo never shows
+    - Dismiss hides the card for that member on every device (`user_preferences.dismissed`)
+    - Builder's Hub members see promos, never the Builder's Hub upsell
+    - `offer_viewed`, `offer_clicked` and `offer_dismissed` fire with no PII
+    - The card is a labelled region with a real dismiss button (`aria-label="Dismiss"`) that returns focus sensibly
+  - Verification:
+    - `npm run typecheck`
+    - `npm test` including offer choice with a fixed clock, and a two-user dismissal test
+  - Model tier: mid
+
+- [ ] `WP43-S13` - Package gate
   - Scope: verification only
   - Acceptance criteria:
     - Standard checks green
     - axe (wcag2a/aa, wcag21a/aa) 0 violations on every `/dashboard/**` route at 390px and 1440px
-    - Keyboard and screen reader pass on nav, save, setup, plan steps and the upgrade sheet
+    - Keyboard and screen reader pass on nav, save, setup, plan steps, the offer card and the upgrade sheet
+    - No link to `/build/**`, `/preview/**`, `/dashboard/projects/**` or credit checkout from any dashboard route or idea page (R5, R9)
     - `/ideas/{slug}` route type, canonical and JSON-LD unchanged
     - Private routes noindex and absent from the sitemap
     - Evidence recorded in `docs/wp/wp43-progress.md` and `docs/wp/wave-gate-report.md`
@@ -207,7 +229,8 @@ S1 rulings
 
 ## Out Of Scope
 
-- Stripe subscription checkout, webhooks and the subscription record (proposed as its own high-risk WP after ruling R5. R1 is ruled: Builder's Hub, $29 a month)
+- Stripe subscription checkout, webhooks and the subscription record (its own high-risk WP: Builder's Hub, $29 a month, monthly only)
+- Landing page preview, publishing, hosting, tenant sites and credit packs (parked for v1.1, R5 and R9). Their code stays, unlinked
 - Own-idea Validation Reports (WP26 S2 to S6, v1.1)
 - Any paywall, blur or delay on `/ideas/{slug}` or `/startup-ideas`
 - AI chat or agents on Home
@@ -219,5 +242,5 @@ S1 rulings
 
 - Promote unknown product decisions to `docs/wp/RULINGS.md`.
 - `.agentic-workflow.yml` prefers `codex/` branches. This session is pinned to `claude/wizardly-rubin-a6m2th`, so the PRD and plan live here. Build phases should branch from `main` (for example `codex/wp43-dashboard-a`).
-- Read `convex/_generated/ai/guidelines.md` before S3, S5, S8, S9, S10 and S11.
-- WP29-min (project cockpit) should hang off Builds (S9), not off Home.
+- Read `convex/_generated/ai/guidelines.md` before S3, S5, S8, S9, S10, S11 and S12.
+- Site projects and the WP29 cockpit are parked for v1.1 (R5). Whether WP29 to WP31 pause as well is an open owner question (PRD section 12).

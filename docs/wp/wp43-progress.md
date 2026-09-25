@@ -41,3 +41,20 @@ Append-only progress log. Do not rely on chat history for project state.
   - R5 matters more now: the 25-credit pack that publishes one page and a month of Builder's Hub both cost $29
 - Checks run: `git diff --check`
 - Next: owner answers R5 to R9 and sets the annual price. Phase A can start with S2 (shell and navigation), which R3 and R4 unblock
+
+## 2026-09-25 - Owner rulings R5 to R9
+
+- Actions taken:
+  - Recorded five rows in `docs/wp/RULINGS.md`: site publishing parked for v1.1 (R5), Starter Kit card on free Home (R6), setup skippable (R7), the dashboard may sell, including promos for future products such as webinars (R8), no credit packs for now (R9)
+  - PRD: status, non-goals, offer card rules (6.2), Builds and Plan and billing (6.3), free vs paid table (6.5), upgrade surfaces (6.6), wireframes, FR-18, new FR-29 to FR-32, schema rows, section 9.5 Offers, analytics, risks, section 12
+  - Stories: new S12 (offer card), gate renumbered to S13, publish entry points removed in S5, S6, S7 and S9, Builder's Hub monthly only in S10
+  - Canvas: hosted site removed from Builder's Hub, promo offer card added to the returning-member boards, dismiss buttons on offer cards, notes updated
+- Decisions made (proposals inside the rulings):
+  - "First session" means the first 24 hours after signup, taken from `users._creationTime`
+  - Promos live in a typed config file (`lib/dashboard/offers.ts`), not an admin screen
+  - Dismissals persist in `user_preferences.dismissed`, so no new table
+- Found:
+  - With publishing, hosting and reports parked, Builder's Hub at $29 a month sells collections, prompt packs, unlimited weekend plans and compare. Logged as a risk in PRD section 11
+  - WP29 to WP31 exist to ship site publishing, so R5 may pause them too. Asked the owner. `docs/wp/v1-scope-cut.md` is unchanged until they answer
+- Checks run: `git diff --check`
+- Next: owner answers the WP29 to WP31 question. Phase A starts with S2

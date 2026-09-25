@@ -1,8 +1,8 @@
 # WP43 PRD - Ideas-first dashboard (free and paid)
 
-Status: In review. R1 to R4 were ruled on 2026-09-25 and are recorded in
-`docs/wp/RULINGS.md`. R5 to R9 are still open (section 12) and must land there
-before the matching stories start.
+Status: Rulings complete. R1 to R9 were ruled on 2026-09-25 and are recorded
+in `docs/wp/RULINGS.md`. One follow-up is open: whether R5 also parks WP29 to
+WP31 (end of section 12).
 
 Companion docs:
 
@@ -111,7 +111,7 @@ paywall on research.
 | New member | Signup from `/`, an idea page, or the Starter Kit | "Show me an idea worth my weekend." | This week's pick, a short setup, fresh ideas |
 | Browser | Returns weekly, saves ideas, has not built | "Help me choose." | Saved ideas side by side, picks for them with reasons |
 | Weekend builder | Has started a plan | "Tell me what to do next and give me the prompt." | Plan progress, next step, copy-ready prompt |
-| Paying builder | Upgraded | "Keep my ideas organised and get my build live." | Collections, prompt packs, hosted site status, no upsell |
+| Paying builder | Upgraded | "Keep my ideas organised and get my build live." | Collections, prompt packs, plan usage, no Builder's Hub upsell |
 
 ---
 
@@ -133,6 +133,7 @@ paywall on research.
 - Teams, comments, sharing, public profiles
 - Dark mode for the workspace
 - Stripe subscription billing code (separate high-risk WP, see section 9.4)
+- Landing page preview, publishing, hosting and credit packs (parked for v1.1, R5 and R9)
 
 ### 5.3 Metrics
 
@@ -216,7 +217,7 @@ Module 1 changes with the user's state:
 | New, set up | No saves, setup done | This week's pick with a "Start here" label | Save this idea |
 | Choosing | 1+ saves, no active plan | Top 3 saved ideas as a compact comparison (hours, tools, scores) | Plan my weekend |
 | Building | Active weekend plan | Plan progress (Fri, Sat, Sun, Mon), the next step, and its prompt | Copy prompt / Open plan |
-| Finished | Plan reached Monday | "You shipped." Link to the live URL if one exists | Pick the next idea |
+| Finished | Plan reached Monday | "You shipped." Shows the live link the member saved on Sunday | Pick the next idea |
 
 Module 2, Idea of the week: full-width card with the idea's art band, title,
 one-line pitch, four scores (Opportunity, Pain, Timing, Builder confidence),
@@ -233,6 +234,19 @@ hours, save). "View all" goes to Ideas sorted by newest.
 
 Right rail: shows only at 1280px and wider. Below that its modules drop under
 module 4, except the Plan card, which stays in the sidebar.
+
+Offer card (rulings R6 and R8): the rail holds at most one offer card, under
+Saved.
+
+- In a member's first 24 hours after signup: the Starter Kit card, until they
+  claim the kit. No promos.
+- After that: an active promo for another Weekend MVP product (a webinar, a
+  workshop) if one is running, else the Starter Kit card if the kit is not
+  claimed yet, else nothing.
+- Every offer card has a dismiss button. A dismissed card stays gone for that
+  member.
+- Builder's Hub members see promos for other products. They never see the
+  Builder's Hub upsell.
 
 ### 6.3 Other screens
 
@@ -253,18 +267,20 @@ Saved (`/dashboard/saved`)
 Builds (`/dashboard/builds`)
 
 - Active weekend plan on top, finished plans below.
-- Projects (previews claimed into projects, published sites) appear here too,
-  so the WP29 cockpit hangs off this screen, not off Home.
+- Site projects (claimed previews, published sites) are parked for v1.1 (R5).
+  Their routes stay reachable by URL, but nothing links to them.
 - Plan detail (`/dashboard/builds/{planId}`): the four stages from the homepage
   (`WEEKEND_PLAN` in `components/home/content.ts`), each with a short checklist,
   the matching prompts from the idea page, a one-line "core feature" field for
-  scope, and on Sunday a "Make the landing page" step that opens the existing
-  preview flow (`/build/{slug}`).
+  scope, and on Sunday the idea's Landing Page prompt plus a field for the
+  live link the member ships. Weekend MVP's own landing page builder returns
+  in v1.1 (R5).
 
 Plan and billing (`/dashboard/billing`, relabelled)
 
 - Current plan, what it includes, and upgrade or manage.
-- Credit balance and packs stay here for publishing (existing WP24 flow).
+- Builder's Hub monthly subscription only. Credit packs stay hidden until the
+  owner revisits them (R9). The WP24 credit code stays in place, unlinked.
 
 ### 6.4 Setup (first visit)
 
@@ -285,7 +301,7 @@ in with reasons. No modal, no page change.
 ### 6.5 Free vs paid
 
 The paid plan is Builder's Hub at $29 a month (ruling R1, 2026-09-25). The
-annual price is not set yet. The free limits below are ruling R2. In code the
+plan is sold monthly only for now (R9). The free limits below are ruling R2. In code the
 plan id is `builders_hub`, and the UI reads the name and price from one
 constant, so a rename or price change never touches stored data. Do not reuse
 the id `builder`: the credit pack catalog already uses it (see R9).
@@ -300,9 +316,9 @@ the id `builder`: the credit pack catalog already uses it (see R9).
 | Weekend plan | No | 1 active plan | Unlimited, with history |
 | Copy prompts | Yes | Yes | Yes, plus prompt pack export per tool |
 | Compare ideas side by side | No | No | Up to 4 |
-| Landing page preview | 1, expires in 7 days | Claim and keep previews | Same |
-| Publish a landing page | No | Credit packs (existing) | 1 hosted site included, credits for more |
-| Validation Report on your own idea (v1.1) | No | 1 free | 5 a month |
+| Landing page preview, publishing and hosting | v1.1 (R5) | v1.1 | v1.1 |
+| Validation Report on your own idea | v1.1 (R4) | v1.1 | v1.1 |
+| Price | Free | Free | $29 a month, billed monthly |
 
 Why these lines:
 
@@ -313,7 +329,11 @@ Why these lines:
 - Prompt pack export is a deterministic file build from content we already
   have (for example a `CLAUDE.md`, a `.cursor/rules` file, a Lovable brief).
   It costs nothing to run and saves a builder real setup time.
-- Hosting is the cost we carry, so it belongs in the paid plan.
+- Publishing, hosting and own-idea reports return in v1.1 (R4, R5). Hosting
+  is then the natural next Builder's Hub benefit, since it is a cost we carry
+  every month.
+- No credit packs for now (R9). One monthly price is easier to explain while
+  the product leads with ideas.
 
 ### 6.6 Upgrade surfaces
 
@@ -321,7 +341,7 @@ Allowed surfaces, and nothing else:
 
 1. Plan card in the sidebar footer (free only). Shows usage, not ads:
    "Free plan. 1 of 1 weekend plan in use. Builder's Hub adds collections,
-   prompt packs and a hosted site." Link: "See Builder's Hub". Pattern from Arcade's
+   prompt packs and unlimited weekend plans." Link: "See Builder's Hub". Pattern from Arcade's
    "Free Plan 1/3" meter.
 2. Point-of-intent sheet when a free member reaches for a Builder's Hub
    feature (start a 2nd plan, create a collection, export a prompt pack,
@@ -333,16 +353,21 @@ Allowed surfaces, and nothing else:
 3. "Builder's Hub" tag on the locked action itself (a small text label, not a
    padlock wall). Clay's "Ads - Upgrade" nav badge is the reference.
 4. Plan and billing page with a Free vs Builder's Hub table and a "Current plan" label.
+5. The offer card in the Home rail (section 6.2), which also carries promos
+   for other Weekend MVP products such as webinars (R8).
 
 Rules:
 
 - Never blur, truncate or delay research, on any page, for any plan.
-- No upgrade prompt in the first session, except when the user clicks a Builder's Hub feature.
-- One upgrade surface per screen beyond the sidebar card.
+- Nothing sells in a member's first 24 hours: no promos and no upgrade
+  prompts, except the sheet when the member clicks a Builder's Hub feature.
+- Home carries at most one offer card. Builder's Hub tags appear only on
+  locked actions.
 - No countdown timers, fake discounts or pre-checked boxes.
-- Builder's Hub members see zero upsell. They see what they have: collections,
-  quota left ("3 of 5 reports left this month"), hosted site status.
-- The public homepage stays free of monetization (WP42 ruling).
+- Builder's Hub members never see the Builder's Hub upsell. They see what they
+  have (plan usage) and, like everyone, promos for other products.
+- The public homepage stays free of monetization (WP42 ruling). The dashboard
+  may sell (R8).
 
 ### 6.7 Visual design
 
@@ -385,7 +410,7 @@ Motion: 150ms colour and border transitions only. Respect
 | Only your active, server-owned records. | (remove) |
 | Saved and Interested remain independent. | (remove) |
 | Supported shortcuts. These open explicit workflows; they do not run an autonomous agent. | (remove the section) |
-| Available balance: 25 credits. Billing changes only after server confirmation. | Credits: 25 (in the account menu) |
+| Available balance: 25 credits. Billing changes only after server confirmation. | (remove. No credits in v1, R9) |
 | Search loaded idea metadata | Search 228 ideas |
 | Canonical score 8/10 | Score 8/10 |
 | Project cockpit becomes available after you confirm a brief. | (remove) |
@@ -457,7 +482,7 @@ read them. ASCII versions follow.
 | | 1 of 1 plan in use | | [You build with Cursor] [Fits 12 hrs] [Like SlackToDoc]  |
 | | Builder's Hub adds | |  Invoice Reconciler     Tutor planner   Meeting notes    |
 | | collections, packs | |                                                          |
-| | and a hosted site. | | NEW THIS WEEK                              View all ->   |
+| | and more plans.    | | NEW THIS WEEK                              View all ->   |
 | | See Builder's Hub  | | N°228  AI Landing Page Gen.  AI TOOLS  10 HRS   [Save]   |
 | +--------------------+ | N°227  Youth Sports Hub      CREATOR   12 HRS   [Save]   |
 | (JI) John  Free    v   |                                                          |
@@ -471,8 +496,8 @@ Sidebar:  COLLECTIONS group appears (Fintech shortlist, Weekend in Oct, + New)
           Plan card is gone. Account chip reads "John · Builder's Hub"
 Module 1: same, plus "Export prompt pack" next to Copy prompt
 Saved:    collections, notes, "Compare (2)" action bar
-Builds:   hosted site row: "slacktodoc.weekendmvp.app · Live · 38 visits this week"
-          reports meter: "3 of 5 Validation Reports left this month" (v1.1)
+Builds:   every plan kept, with history and the live links members shipped
+Rail:     plan usage (weekend plans, collections), then the offer card
 ```
 
 ### 7.3 Mobile, 390px
@@ -512,7 +537,7 @@ Builds:   hosted site row: "slacktodoc.weekendmvp.app · Live · 38 visits this 
 |  1 active plan        ->  Unlimited plans        |
 |  One saved list       ->  Collections and notes  |
 |  Copy prompts         ->  Prompt pack export     |
-|  Credits to publish   ->  1 hosted site included |
+|  One idea at a time   ->  Compare up to 4 ideas  |
 |                                                  |
 |  [ Upgrade to Builder's Hub · $29/mo ]           |
 |  [ Archive SlackToDoc and start this one ]       |
@@ -560,7 +585,7 @@ Weekend plans
 | FR-15 | A member can start a plan from any idea. It creates an owner-scoped plan with the 4 stages |
 | FR-16 | Steps can be checked and unchecked. Progress persists across devices |
 | FR-17 | Each stage shows the idea's matching prompts with a copy button that announces "Prompt copied" |
-| FR-18 | The Sunday stage links to the existing preview flow (`/build/{slug}`) and, once published, shows the live URL |
+| FR-18 | The Sunday stage shows the idea's Landing Page prompt and saves the live link the member ships. It links to no Weekend MVP preview or publish flow (R5) |
 | FR-19 | Free members can hold 1 active plan. Starting another opens the upgrade sheet with an archive option (enforced server-side once entitlements exist) |
 | FR-20 | Ideas with an active plan show "Building" in Ideas and Saved |
 
@@ -581,6 +606,15 @@ Shell and quality
 | FR-26 | Exactly one `main` per page |
 | FR-27 | All private routes stay `noindex` and out of the sitemap |
 | FR-28 | "New idea" is removed from navigation until own-idea reports ship. Existing drafts stay reachable from Builds |
+
+Offers and parked features
+
+| ID | Requirement |
+|---|---|
+| FR-29 | No landing page preview, publish, hosting or credit entry point appears on `/dashboard/**` or `/ideas/{slug}` until v1.1 (R5, R9). Today that means `PreviewIdeaCta` on idea pages, "Preview this idea" on Explore cards and the old dashboard home, and project cards. The routes stay reachable by URL, and `PreviewClaimRunner` still claims a stashed preview |
+| FR-30 | Plan and billing sells the Builder's Hub monthly subscription only. Credit packs stay hidden (R9) |
+| FR-31 | The Home rail shows at most one offer card, chosen by the rules in 6.2. Offer cards are dismissible, and a dismissal persists per member on the server |
+| FR-32 | Promos come from one config file (id, title, blurb, date text, link, start and end time). No promo shows in a member's first 24 hours after signup |
 
 ---
 
@@ -604,8 +638,8 @@ Shell and quality
 | Table or index | Fields | Indexes | Story |
 |---|---|---|---|
 | `ideas` search index | `searchField: title`, `filterFields: [category]` | `search_title` | S5 |
-| `user_preferences` | `ownerId`, `tools[]`, `weeklyHours`, `goal`, `onboardedAt?`, `updatedAt` | `by_ownerId` | S8 |
-| `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt?`), `coreFeature?`, `projectId?`, `startedAt`, `updatedAt`, `completedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 |
+| `user_preferences` | `ownerId`, `tools[]`, `weeklyHours`, `goal`, `onboardedAt?`, `dismissed[]` (offer card ids, capped at 50), `updatedAt` | `by_ownerId` | S8 |
+| `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt?`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 |
 
 All additive. No existing table, field or index changes. Read
 `convex/_generated/ai/guidelines.md` before writing any of it.
@@ -622,11 +656,22 @@ upgrade sheet.
 
 ### 9.4 Payments
 
-Builder's Hub billing needs Stripe subscriptions, webhooks, and a
-subscription record. That is a payments change, so it runs as its own
-high-risk Work Package after ruling R5 (R1 is ruled), with the same exactly-once and
+Builder's Hub billing needs a Stripe monthly subscription, webhooks, and a
+subscription record. No credit packs (R9). That is a payments change, so it
+runs as its own high-risk Work Package, with the same exactly-once and
 server-confirmed rules as WP24. WP43 ships the UI and the resolver, not the
 billing code.
+
+### 9.5 Offers
+
+- Promos live in `lib/dashboard/offers.ts` as typed config: id, title, blurb,
+  date text, link, `startsAt`, `endsAt`. Changing a promo is a code change and
+  a deploy, the same way programmatic hubs work today.
+- "Kit claimed" means a `subscriptions` row exists for the member's email
+  (existing `by_email` index), read inside the owner-scoped dashboard query.
+  The email never reaches the client.
+- "First 24 hours" uses the member's `users._creationTime`.
+- Dismissals live in `user_preferences.dismissed` (S8).
 
 ---
 
@@ -646,6 +691,9 @@ names, notes or free text.
 | `prompt_copied` | `surface` (plan, home, idea_page) |
 | `upgrade_prompt_viewed` | `surface` (sidebar, sheet, tag, billing), `feature` |
 | `upgrade_clicked` | `surface`, `feature` |
+| `offer_viewed` | `offer_id`, `kind` (starter_kit, promo) |
+| `offer_clicked` | `offer_id`, `kind` |
+| `offer_dismissed` | `offer_id`, `kind` |
 
 Paid outcomes (`checkout_completed` and the like) are emitted only after
 server confirmation, as the existing analytics contract requires.
@@ -658,8 +706,11 @@ server confirmation, as the existing analytics contract requires.
 |---|---|
 | Save island on idea pages turns them dynamic and hurts SEO | Keep the page static. Island reads the hint cookie after hydration. Check the build output route type and the canonical SEO suite |
 | Theme switch leaves billing, projects and intake dark | S7 restyles every `/dashboard/**` route in the same WP |
-| Paid UI ships before billing rules are settled | Phase C sits behind rulings R5 and R8 and a flag. Phase A and B stand alone |
-| Two things are called Builder | The credit pack catalog (`convex/platform/billing/catalog.ts`) already has a pack named "Builder" (id `builder`, $79 for 75 credits), and a pack named "Starter" sits next to the free Starter Kit. Rename the pack display names before Builder's Hub ships (R9). Keep the pack ids, which checkout maps to Stripe prices |
+| Paid UI ships before subscription billing exists | Phase C sits behind a flag until the subscription WP passes its gate. Phase A and B stand alone |
+| Builder's Hub feels thin at $29 while publishing, hosting and reports are parked | Turn Phase C on when the owner judges the bundle ready. Member access to the webinars the dashboard will promote (R8) would make it stronger |
+| Promos turn Home into an ad board | One offer card, dated, dismissible, never in the first 24 hours |
+| Members halfway through the old preview flow hit a dead end | `/preview/{token}` and preview claims keep working. Only the entry points go (FR-29) |
+| Credit pack names clash with Builder's Hub and the Starter Kit | Packs are hidden for now (R9). Rename their display names before they return |
 | Two stories edit `convex/schema.ts` at once | S5, S8 and S9 run in sequence, one schema writer per merge window |
 | Weekly pick differs between `/` and `/dashboard` | Both call `getHomeData()`. Add a test that compares the two slugs |
 | Recommendations feel random | Show a reason only when it maps to a real input. No reason beats a made-up one |
@@ -673,17 +724,22 @@ server confirmation, as the existing analytics contract requires.
 Record each in `docs/wp/RULINGS.md` before the story that needs it. R1 to R4
 were ruled on 2026-09-25.
 
-| # | Question | Ruling or recommendation | Status | Blocks |
+| # | Question | Ruling | Status | Blocks |
 |---|---|---|---|---|
-| R1 | Paid plan name, monthly price, annual price | Builder's Hub, $29 a month. Annual price not set | Ruled 2026-09-25. Annual price open | S10 to S12 |
+| R1 | Paid plan name and price | Builder's Hub, $29 a month. Monthly only for now (R9) | Ruled 2026-09-25 | S10, S11 |
 | R2 | Free limits | Unlimited saves in one list, 1 active weekend plan. Collections, prompt pack export and compare are Builder's Hub only | Ruled 2026-09-25 | S9, S10 |
 | R3 | Merge Interested into Saved in the UI | Yes. One Save toggle and one Saved list. Both flags stay in data | Ruled 2026-09-25 | S5 |
 | R4 | Park "Bring your own idea" until v1.1 reports ship | Yes. Hidden from nav. The route stays for existing drafts | Ruled 2026-09-25 | S2 |
-| R5 | Credits and subscription together | Recommendation: keep credit packs for publishing, and Builder's Hub includes 1 hosted site. The 25-credit pack that publishes one page also costs $29, so decide what a credit-published site gets without Builder's Hub. `docs/wp/program-platform-plan.md` proposed 30 days of hosting, with the paid plan keeping it online after that | Open | S10, payments WP |
-| R6 | Starter Kit card on free Home | Recommendation: yes, in the right rail, dismissible, hidden once subscribed | Open | S4 |
-| R7 | Setup questions: skippable or required | Recommendation: skippable | Open | S8 |
-| R8 | Does the dashboard count as "monetization push"? (WP42 ruled none on `/`) | Recommendation: quiet sidebar card and point-of-intent sheets only. Nothing on first session | Open | S10 |
-| R9 | Credit pack names clash with the plan and the Starter Kit: "Starter" ($29, 25 credits), "Builder" ($79, 75 credits), "Studio" ($199, 220 credits) | Recommendation: show packs by size ("25 credits", "75 credits", "220 credits"). Change display names only. The ids stay, since checkout maps them to Stripe prices | Open | S7, S10 |
+| R5 | Credits, subscription and site publishing | Park everything to do with site publishing for v1.1: preview, publish, hosting, tenant sites, and the credits that pay for them | Ruled 2026-09-25 | S5, S6, S7, S9 |
+| R6 | Starter Kit card on free Home | Yes. Right rail, dismissible, hidden once the member has claimed the kit | Ruled 2026-09-25 | S4, S12 |
+| R7 | Setup questions: skippable or required | Skippable | Ruled 2026-09-25 | S8 |
+| R8 | May the dashboard sell? (WP42 ruled no monetization on `/`) | Yes. Quiet Builder's Hub surfaces plus a promo slot for future products such as webinars. Nothing sells in a member's first 24 hours | Ruled 2026-09-25 | S10, S12 |
+| R9 | Credit packs | None for now. Monthly subscription only. Revisit later | Ruled 2026-09-25 | S7, S10 |
+
+Open follow-up on R5: WP29 to WP31 (project cockpit, policy gate, production
+activation) exist to ship site publishing. If R5 parks them too,
+`docs/wp/v1-scope-cut.md` and the WP29 to WP31 rows in
+`docs/PROJECT_STRATEGY.md` need a revision. Waiting on the owner.
 
 ---
 
