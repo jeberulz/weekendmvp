@@ -3,7 +3,7 @@
 Branch: `claude/wizardly-rubin-a6m2th` (PRD and plan). Build phases branch from `main` per phase (see Sequencing).
 Lane: Work Package (UI flow, shared logic, additive schema). The subscription billing it depends on is a separate high-risk Work Package.
 Registry: `docs/PROJECT_STRATEGY.md`
-Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp43-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. Builder UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
+Definition of done: `/dashboard` is the light, ideas-first home described in `docs/wp/wp43-dashboard-prd.md`. Free members get Home, Ideas, Saved and one weekend plan. Builder's Hub UI and server-side entitlements exist behind a flag. Every `/dashboard/**` route passes `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and a WCAG 2.1 AA review at 390px and 1440px, and `/ideas/{slug}` stays static and canonical.
 
 Product source: `docs/wp/wp43-dashboard-prd.md`. Visual source: the design canvas [Weekend MVP Dashboard](https://claude.ai/artifact/SoKxJm9Urpeyo8p9NntLG5) (private until shared). S1 exports approved artboards to `docs/wp/evidence/`.
 
@@ -22,9 +22,9 @@ S1 rulings
  |     S8 setup + preferences (schema writer #2)
  |     S9 weekend plans (schema writer #3, after S8 merges)
  |
- +-- Phase C (after rulings R1, R2, R5, R8)
+ +-- Phase C (after rulings R5, R8, R9. R1 and R2 ruled 2026-09-25)
  |     S10 entitlements + upgrade surfaces (flagged)
- |     S11 Builder features (flagged)
+ |     S11 Builder's Hub features (flagged)
  |
  S12 package gate
 ```
@@ -35,10 +35,10 @@ S1 rulings
 
 ## Stories
 
-- [ ] `WP43-S1` - Record rulings and freeze scope
+- [ ] `WP43-S1` - Record rulings and freeze scope (R1 to R4 recorded 2026-09-25. R5 to R9 open)
   - Scope: `docs/wp/RULINGS.md`, `docs/wp/wp43-dashboard-prd.md`, `docs/wp/wp43-progress.md`
   - Acceptance criteria:
-    - Owner answers R1 to R8 from PRD section 12. Each answer is one new row in `docs/wp/RULINGS.md`
+    - Owner answers R1 to R9 from PRD section 12. Each answer is one new row in `docs/wp/RULINGS.md`
     - PRD status changes from Draft to Approved, with any changes the rulings make
     - Fresh IdeaBrowser logged-in screenshots saved to `docs/wp/evidence/` (the session that wrote the PRD could not reach the site)
     - Approved canvas artboards exported as PNGs to `docs/wp/evidence/wp43-*.png`
@@ -168,15 +168,16 @@ S1 rulings
     - `getEntitlements(ctx, ownerId)` returns `{ plan, limits }` and returns Free until the subscription WP ships
     - Gated mutations throw `ConvexError({ code: "UPGRADE_REQUIRED", feature })`. The UI opens the upgrade sheet for that feature
     - Plan card, sheet, tags and Plan and billing page follow PRD 6.6. Every sheet has a free way forward
-    - A feature flag hides all Builder UI in production until the owner turns it on
-    - Builder state shows no upgrade prompt anywhere (test with a stubbed Builder resolver)
+    - The plan id is `builders_hub`, never `builder` (the credit pack catalog owns that id). The name "Builder's Hub" and the $29 monthly price come from one plan constant
+    - A feature flag hides all Builder's Hub UI in production until the owner turns it on
+    - A Builder's Hub member sees no upgrade prompt anywhere (test with a stubbed `builders_hub` resolver)
     - `upgrade_prompt_viewed` and `upgrade_clicked` fire
   - Verification:
     - `npm run typecheck`
     - `npm test` including "client cannot bypass the limit" tests
   - Model tier: high (access control)
 
-- [ ] `WP43-S11` - Builder features (flagged)
+- [ ] `WP43-S11` - Builder's Hub features (flagged)
   - Scope: collections and notes (additive tables, schema writer #4, after S9), prompt pack export (`lib/prompt-pack/*`, deterministic, no AI calls), compare view (`app/dashboard/compare/*`)
   - Acceptance criteria:
     - Collections: create, rename, delete, add and remove ideas. Notes are private and owner-scoped
@@ -206,7 +207,7 @@ S1 rulings
 
 ## Out Of Scope
 
-- Stripe subscription checkout, webhooks and the subscription record (proposed as its own high-risk WP after rulings R1 and R5)
+- Stripe subscription checkout, webhooks and the subscription record (proposed as its own high-risk WP after ruling R5. R1 is ruled: Builder's Hub, $29 a month)
 - Own-idea Validation Reports (WP26 S2 to S6, v1.1)
 - Any paywall, blur or delay on `/ideas/{slug}` or `/startup-ideas`
 - AI chat or agents on Home
