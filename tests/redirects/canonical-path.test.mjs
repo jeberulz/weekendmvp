@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  aliasPath,
+  canonicalPath,
   cleanPath,
   isProdApexHost,
   isProdWwwHost,
   pathNeedsCleaning,
+  pathNeedsRedirect,
 } from "../../lib/canonical-path.ts";
 
 describe("cleanPath", () => {
@@ -50,6 +53,28 @@ describe("pathNeedsCleaning", () => {
     assert.equal(pathNeedsCleaning("/a/"), true);
     assert.equal(pathNeedsCleaning("/a"), false);
     assert.equal(pathNeedsCleaning("/"), false);
+  });
+});
+
+describe("aliasPath + canonicalPath", () => {
+  it("aliases the bare ideas index to the live archive", () => {
+    assert.equal(aliasPath("/ideas"), "/startup-ideas");
+    assert.equal(aliasPath("/ideas/foo"), "/ideas/foo");
+    assert.equal(aliasPath("/startup-ideas"), "/startup-ideas");
+  });
+
+  it("folds slash/.html cleaning into the ideas alias in one hop", () => {
+    assert.equal(canonicalPath("/ideas"), "/startup-ideas");
+    assert.equal(canonicalPath("/ideas/"), "/startup-ideas");
+    assert.equal(canonicalPath("/ideas.html"), "/startup-ideas");
+    assert.equal(canonicalPath("/ideas.html/"), "/startup-ideas");
+    assert.equal(canonicalPath("/ideas/foo/"), "/ideas/foo");
+  });
+
+  it("flags alias-only paths as needing a redirect", () => {
+    assert.equal(pathNeedsRedirect("/ideas"), true);
+    assert.equal(pathNeedsRedirect("/startup-ideas"), false);
+    assert.equal(pathNeedsRedirect("/ideas/foo"), false);
   });
 });
 

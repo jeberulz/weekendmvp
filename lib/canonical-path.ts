@@ -28,8 +28,30 @@ export function cleanPath(pathname: string): string {
   return path || "/";
 }
 
+/**
+ * Path aliases that must resolve in the same hop as slash/.html cleaning
+ * so apex + dirty + rename never becomes a redirect chain.
+ *
+ * `/ideas` is the pre-archive index; the live archive is `/startup-ideas`.
+ * Idea detail URLs stay at `/ideas/{slug}`.
+ */
+export function aliasPath(pathname: string): string {
+  if (pathname === "/ideas") return "/startup-ideas";
+  return pathname;
+}
+
+/** Clean + alias. The destination path for a one-hop canonical redirect. */
+export function canonicalPath(pathname: string): string {
+  return aliasPath(cleanPath(pathname));
+}
+
 export function pathNeedsCleaning(pathname: string): boolean {
   return cleanPath(pathname) !== pathname;
+}
+
+/** True when the request path is not yet the canonical destination path. */
+export function pathNeedsRedirect(pathname: string): boolean {
+  return canonicalPath(pathname) !== pathname;
 }
 
 /** Production hosts that participate in apex↔www canonicalization. */
