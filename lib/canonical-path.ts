@@ -5,7 +5,7 @@
  * Does not touch host; callers decide whether to force www.
  */
 
-/** Strip trailing slash (except `/`) then `.html` / `.htm`. */
+/** Strip trailing slash (except `/`) then `.html` / `.htm`, then `/index`. */
 export function cleanPath(pathname: string): string {
   let path = pathname || "/";
 
@@ -20,9 +20,11 @@ export function cleanPath(pathname: string): string {
     path = path.slice(0, -4);
   }
 
-  // /index.html → /index → /
-  if (path.toLowerCase() === "/index") {
-    path = "/";
+  // Collapse a trailing `/index` segment so dirty legacy URLs land on the
+  // parent in one hop: `/startup-ideas/index.html` → `/startup-ideas`,
+  // not `/startup-ideas/index` (which 404s). Also covers root `/index.html`.
+  if (path.toLowerCase().endsWith("/index")) {
+    path = path.slice(0, -"/index".length) || "/";
   }
 
   return path || "/";

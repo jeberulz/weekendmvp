@@ -7,6 +7,8 @@
  * manifest.json read is replaced by the Convex `api.ideas.latest` query.
  * Any failure (Convex unavailable, no ideas yet) falls back to a 302 to
  * /startup-ideas, matching the legacy fallback.
+ *
+ * Intentionally noindex: email deep-link only — not an index target.
  */
 
 import { NextResponse } from "next/server";
@@ -24,7 +26,7 @@ export async function GET(request: Request) {
       const convex = new ConvexHttpClient(convexUrl);
       const idea = await convex.query(api.ideas.latest, {});
       if (idea) {
-        return NextResponse.redirect(new URL(`/ideas/${idea.slug}`, request.url), 302);
+        return noindexRedirect(new URL(`/ideas/${idea.slug}`, request.url));
       }
     }
   } catch (error) {
@@ -32,5 +34,12 @@ export async function GET(request: Request) {
   }
 
   // Fallback when Convex is unavailable or there are no ideas yet.
-  return NextResponse.redirect(new URL("/startup-ideas", request.url), 302);
+  return noindexRedirect(new URL("/startup-ideas", request.url));
+}
+
+/** Email deep-link — stay reachable, stay out of the index (GSC P1). */
+function noindexRedirect(url: URL) {
+  const response = NextResponse.redirect(url, 302);
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return response;
 }

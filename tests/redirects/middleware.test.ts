@@ -121,6 +121,19 @@ describe("canonical host middleware", () => {
       "https://www.weekendmvp.app/startup-ideas",
     );
   });
+
+  it("308s nested index.html to the parent archive in one hop", async () => {
+    const response = await runMiddleware(
+      request(
+        "https://www.weekendmvp.app/startup-ideas/index.html",
+        "www.weekendmvp.app",
+      ),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/startup-ideas",
+    );
+  });
 });
 
 describe("build soft-404 upgrade", () => {

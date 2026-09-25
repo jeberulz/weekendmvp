@@ -45,6 +45,14 @@ describe("cleanPath", () => {
     assert.equal(cleanPath("/index.html"), "/");
     assert.equal(cleanPath("/index"), "/");
   });
+
+  it("collapses nested …/index.html to the parent path", () => {
+    assert.equal(cleanPath("/startup-ideas/index.html"), "/startup-ideas");
+    assert.equal(cleanPath("/startup-ideas/index"), "/startup-ideas");
+    assert.equal(cleanPath("/startup-ideas/index/"), "/startup-ideas");
+    assert.equal(cleanPath("/articles/foo/index.html"), "/articles/foo");
+    assert.equal(cleanPath("/Startup-Ideas/INDEX.HTML"), "/Startup-Ideas");
+  });
 });
 
 describe("pathNeedsCleaning", () => {
