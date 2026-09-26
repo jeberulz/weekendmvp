@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import { requireFeature } from "./entitlements";
 import { NOTE_MAX } from "./hubLimits";
 
@@ -47,7 +47,7 @@ export const save = mutation({
   args: { slug: v.string(), body: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const idea = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))

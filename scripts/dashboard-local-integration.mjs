@@ -1,4 +1,5 @@
-/** Repeatable real-backend auth/HTTP regression; never sends an email. */
+/** Disposable local backend + Next development or local production build.
+ * This does not test a production deployment and never sends an email. */
 import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
@@ -73,12 +74,34 @@ async function main() {
   const persisted = await (await fetch(savedUrl, { headers: { cookie } })).json();
   assert.deepEqual(persisted, { signedIn: true, saved: true, version: 2 });
   stage = "forged signed-cookie rejection";
-  // Future exp keeps the middleware from trying a refresh; the backend must
-  // reject the invented JWT itself. A refresh-cookie string is not authority.
+  // Both iat and exp are required by the installed middleware freshness check.
+  // Use a real refresh credential and assert no refreshed JWT is issued, so
+  // a failed dummy refresh cannot make this assertion pass.
+  const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
-  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600, sub: "invented" })).toString("base64url");
-  statuses.forged = (await request(`__convexAuthJWT=${header}.${payload}.invented; __convexAuthRefreshToken=invented`)).status;
+  const forgedToken = (iat, exp) => `${header}.${Buffer.from(JSON.stringify({ iat, exp, sub: "invented" })).toString("base64url")}.invented`;
+  const forged = forgedToken(now, now + 3600);
+  const forgedCookie = token => `__convexAuthJWT=${token}; __convexAuthRefreshToken=${result.tokens.refreshToken}`;
+  const backendRejection = await fetch("http://127.0.0.1:3310/api/mutation", {
+    method: "POST", headers: { authorization: `Bearer ${forged}`, "content-type": "application/json" },
+    body: JSON.stringify({ path: "platform/dashboard:requireMember", args: {}, format: "json" }),
+  });
+  assert.equal(backendRejection.status, 401);
+  statuses.forgedBackend = backendRejection.status;
+  const forgedResponse = await request(forgedCookie(forged));
+  statuses.forged = forgedResponse.status;
   assert.equal(statuses.forged, 401);
+  assert(!forgedResponse.headers.getSetCookie().some(value => value.startsWith("__convexAuthJWT=")), "Fresh forged JWT must reach the route without refresh");
+  stage = "refresh positive control";
+  // The same forged identity with an expired timestamp MUST issue a fresh
+  // signed cookie using the genuine credential. Replay it as a browser would.
+  const refreshed = await request(forgedCookie(forgedToken(now - 3600, now - 1)));
+  assert.equal(refreshed.status, 200, "Refreshed JWT must reach the first API request");
+  statuses.refreshFirstRequest = refreshed.status;
+  const refreshedCookies = refreshed.headers.getSetCookie().map(value => value.split(";")[0]);
+  assert(refreshedCookies.some(value => /^__convexAuthJWT=.+/.test(value)), "Positive control must issue a signed JWT");
+  statuses.refreshControl = (await request(refreshedCookies.join("; "))).status;
+  assert.equal(statuses.refreshControl, 200);
   stage = "real logout";
   await client.action(makeFunctionReference("auth:signOut"), {});
   stage = "revoked signed-token membership rejection";
@@ -103,7 +126,10 @@ async function main() {
   assert([307, 308].includes(privatePage.status));
   assert.match(privatePage.headers.get("location") ?? "", /\/(?:signin|login)(?:\?|$)/);
   const summary = {
+    environment: frontendPort === "3189" ? "local production build" : "local development server",
+    productionDeployment: false,
     backend: "http://127.0.0.1:3310", frontend, canonicalOrigin,
+    forgedJwtFreshIat: true, forgedCookieUsesGenuineRefresh: true, refreshPositiveControl: true,
     realAuthRedemption: true, externalDelivery: false, realLogout: true,
     privateCacheHeaders: true, publicCanonicalAndJsonLd: true, privateRoutesExcludedFromSitemap: true,
     statuses, passed: true,

@@ -458,3 +458,13 @@ Owner supplied PR #81 and authorized the repair plan including UX. Reconciled ca
 WP44-R1–R4 engineering repairs and independent review are complete. Full gate: 1,106 tests pass, typecheck passes, lint zero errors/35 existing warnings, production build 428 pages, full/production audit zero vulnerabilities. Real anonymous Convex schema/codegen and real Next production-server auth/CAS/SEO tests pass. Trace-assembled prompt/export/sitemap artifacts are 8.49–8.74 MB, with no unintended project files.
 
 All A01–A11 and B01–B04 code repairs and all four PR comments are reconciled in `docs/reviews/2026-09-26-dashboard-implementation.md`; B05 paid activation stays separate. UX browser evidence covers preferences, saved intent, planning/completion/archive/restore, rapid Save, mobile and short-sheet focus/scrolling. Original S13 release gate is reopened to avoid claiming full accessibility/provider verification from incomplete evidence. No production deployment, data migration, external send or merge performed.
+
+### PR review follow-up — started 2026-09-26
+
+Work Package lane, same PR/worktree and local branch. Reviewing Claude comment [5849896214](https://github.com/jeberulz/weekendmvp/pull/81#issuecomment-5849896214) against head `19dd5b7`. R5–R8 define the bounded follow-up. Production backfill/deploy/merge are not performed by this repair pass.
+
+The corrected forged-token fixture exposed a same-request refresh defect: middleware returned `NextResponse.next()` without forwarding refreshed request headers, so an expired-cookie request received 401 even though fresh cookies were issued. R7 now includes the narrowly scoped middleware handoff and a regression; verification worker is the sole middleware writer.
+
+### PR review follow-up — engineering gate complete
+
+WP44-R5–R8 complete. All Claude nudges reconciled in `docs/reviews/2026-09-26-dashboard-review-followup.md`, including new same-request session refresh repair. Verification: 1,133 tests (221 Node + 912 Vitest), typecheck, lint (0 errors/35 baseline warnings), build (428 pages), required trace content, corpus/tags, supported local Convex codegen and real local production-build auth integration. Chromium observed Save/Retry focus, shortlist semantics/44px targets and empty-draft rendering. Two stale source assertions were updated to assert the stricter mutation guard and post-delete focus effect; no assertions weakened or tests skipped. Logs and explicitly scoped browser observations are in `docs/reviews/evidence/dashboard-review-followup-2026-09-26/`. Production backfill/deploy/merge not performed. WP44-S13 external-provider/full accessibility/go-live gates remain open. Owned temporary local servers are stopped.

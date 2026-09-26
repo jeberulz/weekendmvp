@@ -23,6 +23,7 @@ export async function GET(request: Request) {
   const convex = memberClient(token);
   if (convex === null) return json({ code: "UNAVAILABLE" }, 503);
   try {
+    await convex.mutation(api.platform.dashboard.requireMember, {});
     const state = await convex.query(api.platform.dashboard.savedState, { slug });
     // null: published but not in Convex yet, so there is nothing to save.
     return json({ signedIn: true, saved: state === null ? null : state.saved, version: state?.version ?? 0 });

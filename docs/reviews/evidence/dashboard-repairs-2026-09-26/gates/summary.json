@@ -18,9 +18,10 @@
   },
   "fullAuditVulnerabilities": 0,
   "productionAuditVulnerabilities": 0,
-  "realProductionServerIntegration": "pass",
   "providerPackagedArtifactMeasured": false,
   "externalEmailDeliveryTested": false,
   "googleOAuthTested": false,
-  "fullAccessibilityCertification": false
+  "fullAccessibilityCertification": false,
+  "localProductionBuildIntegration": "pass",
+  "forgedTokenEvidenceLimitation": "Original fixture omitted iat and could be rejected by middleware refresh. Superseded by the PR review follow-up integration gate."
 }

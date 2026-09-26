@@ -44,6 +44,7 @@ const VARIANT: Record<Variant, { base: string; pressed: string }> = {
 function SaveButtonView({
   pressed,
   disabled,
+  pending = false,
   onClick,
   label,
   title,
@@ -52,6 +53,7 @@ function SaveButtonView({
 }: {
   pressed: boolean;
   disabled: boolean;
+  pending?: boolean;
   onClick?: () => void;
   label: string;
   title: string;
@@ -63,6 +65,7 @@ function SaveButtonView({
     <button
       type="button"
       aria-pressed={pressed}
+      aria-busy={pending}
       disabled={disabled}
       onClick={onClick}
       className={cn(
@@ -149,7 +152,8 @@ function LiveSaveButton({
     <>
       <SaveButtonView
         pressed={pressed}
-        disabled={known === undefined || pending}
+        disabled={known === undefined}
+        pending={pending}
         onClick={toggle}
         label={label}
         title={title}

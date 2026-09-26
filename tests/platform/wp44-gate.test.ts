@@ -28,7 +28,8 @@ describe("WP44-S13 focus starts on the safe choice", () => {
 
   test("finishing, archiving and deleting confirms start on the cancel button", () => {
     expect(planDetailSource).toContain("if (asking) cancelRef.current?.focus();");
-    expect(collectionViewSource).toContain("if (confirming) cancelButton.current?.focus();");
+    expect(collectionViewSource).toContain("if (confirming && !deleting) cancelButton.current?.focus();");
+    expect(collectionViewSource).toContain("}, [confirming, deleting]);");
   });
 });
 

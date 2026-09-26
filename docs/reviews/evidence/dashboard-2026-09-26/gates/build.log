@@ -18,9 +18,9 @@
   Finished TypeScript in 8.8s ...
   Collecting page data using 14 workers ...
   Generating static pages using 14 workers (0/428) ...
-  Generating static pages using 14 workers (107/428) 
-  Generating static pages using 14 workers (214/428) 
-  Generating static pages using 14 workers (321/428) 
+  Generating static pages using 14 workers (107/428)
+  Generating static pages using 14 workers (214/428)
+  Generating static pages using 14 workers (321/428)
 ✓ Generating static pages using 14 workers (428/428) in 6.8s
 Turbopack build encountered 5 warnings:
 ./lib/mdx.tsx:55:27

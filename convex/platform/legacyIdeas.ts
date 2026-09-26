@@ -5,7 +5,7 @@ import {
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import {
   intentFlagValidator,
   projectSourceValidator,
@@ -423,7 +423,7 @@ export const setIntent = mutation({
     updatedAt: v.number(),
   }),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const idea = await ctx.db.get("ideas", args.ideaId);
     if (idea === null) {
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });

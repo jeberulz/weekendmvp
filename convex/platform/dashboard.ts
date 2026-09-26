@@ -1,8 +1,9 @@
+import { normalizeEmail } from "../authEmail";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import { ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
 import { getEntitlements } from "./entitlements";
@@ -167,7 +168,7 @@ export const setSaved = mutation({
   args: { slug: v.string(), saved: v.boolean(), expectedVersion: v.optional(v.number()) },
   returns: v.object({ saved: v.boolean(), version: v.number() }),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const idea = await ideaBySlug(ctx, args.slug);
     if (idea === null) {
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
@@ -288,31 +289,41 @@ export const offer = query({
   returns: v.union(offerValidator, v.null()),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const email = user.email?.trim().toLowerCase();
-    const [prefs, { plan }, normalized, legacy] = await Promise.all([
+    const email = user.email ? normalizeEmail(user.email) : undefined;
+    const [prefs, { plan }] = await Promise.all([
       readPreferences(ctx, user._id),
       getEntitlements(ctx, user._id),
-      email
-        ? ctx.db
-            .query("subscriptions")
-            .withIndex("by_normalizedEmail", (q) => q.eq("normalizedEmail", email))
-            .take(KIT_CLAIM_READ + 1)
-        : [],
-      // Existing mixed-case rows predate normalizedEmail. No production
-      // backfill is performed here. If this compatibility scan is incomplete,
-      // conservatively suppress the offer instead of claiming the kit is new.
-      email
-        ? ctx.db
+    ]);
+    let kitClaimed = false;
+    if (email) {
+      // Preserve the cheap canonical lookup for old rows written before the
+      // derived key existed; use the new key for normalized legacy variants.
+      const canonical = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .take(KIT_CLAIM_READ + 1);
+      kitClaimed = canonical.some(isKitClaim);
+      if (!kitClaimed) {
+        const normalized = await ctx.db
+          .query("subscriptions")
+          .withIndex("by_normalizedEmail", (q) => q.eq("normalizedEmail", email))
+          .take(KIT_CLAIM_READ + 1);
+        kitClaimed = normalized.some(isKitClaim);
+        if (!kitClaimed) {
+          const legacy = await ctx.db
             .query("subscriptions")
             .withIndex("by_normalizedEmail", (q) => q.eq("normalizedEmail", undefined))
-            .take(LEGACY_CLAIM_READ + 1)
-        : [],
-    ]);
-    const kitClaimed =
-      normalized.some(isKitClaim) ||
-      legacy.some((row) => row.email.trim().toLowerCase() === email && isKitClaim(row));
-    if (!kitClaimed && (normalized.length > KIT_CLAIM_READ || legacy.length > LEGACY_CLAIM_READ))
-      return null;
+            .take(LEGACY_CLAIM_READ + 1);
+          // Until the operator backfill completes, an incomplete scan only
+          // suppresses the kit. Public promos remain eligible for selection.
+          kitClaimed =
+            legacy.some((row) => normalizeEmail(row.email) === email && isKitClaim(row)) ||
+            canonical.length > KIT_CLAIM_READ ||
+            normalized.length > KIT_CLAIM_READ ||
+            legacy.length > LEGACY_CLAIM_READ;
+        }
+      }
+    }
     return chooseOffer({
       now: args.now,
       joinedAt: user._creationTime,
@@ -371,7 +382,7 @@ export const requireMember = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    await requireCurrentPlatformUser(ctx);
+    await requireCurrentPlatformUserForMutation(ctx);
     return null;
   },
 });

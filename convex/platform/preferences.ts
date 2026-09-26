@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { OFFER_IDS, withDismissed } from "../../lib/dashboard/offers";
-import { requireCurrentPlatformUser } from "./authz";
+import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import { MAX_SETUP_TOOLS, SETUP_TOOLS } from "./setupOptions";
 import {
   setupGoalValidator,
@@ -65,7 +65,7 @@ export const saveSetup = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     if (
       args.tools.length > MAX_SETUP_TOOLS ||
       args.tools.some((tool) => !KNOWN_TOOLS.has(tool))
@@ -102,7 +102,7 @@ export const skipSetup = mutation({
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
     const existing = await readPreferences(ctx, user._id);
     if (existing === null) {
@@ -127,7 +127,7 @@ export const dismissOffer = mutation({
   args: { offerId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     if (!OFFER_IDS.has(args.offerId)) throw new ConvexError({ code: "INVALID_OFFER" });
     const now = Date.now();
     const existing = await readPreferences(ctx, user._id);

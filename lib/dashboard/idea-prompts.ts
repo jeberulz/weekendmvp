@@ -34,5 +34,11 @@ export async function getIdeaPackContent(slug: string) {
 }
 
 export async function getIdeaTiers(slug: string): Promise<Tier[]> {
-  return (await extractOf(slug))?.tiers ?? [];
+  // Compare is optional enrichment: unknown slugs must still render while
+  // the fallback backend is unavailable. Prompt/export callers stay strict.
+  try {
+    return (await extractOf(slug))?.tiers ?? [];
+  } catch {
+    return [];
+  }
 }

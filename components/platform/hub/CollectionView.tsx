@@ -122,12 +122,12 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
 
   // Deleting can't be undone, so focus starts on the safe choice.
   useEffect(() => {
-    if (confirming) cancelButton.current?.focus();
+    if (confirming && !deleting) cancelButton.current?.focus();
     else if (restoreFocus.current) {
       restoreFocus.current = false;
       deleteButton.current?.focus();
     }
-  }, [confirming]);
+  }, [confirming, deleting]);
 
   if (data === undefined) return <ModuleSkeleton label="Loading the collection" className="h-[320px]" />;
   const { collection, items } = data;
@@ -191,7 +191,6 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
                   setDeleteError("We could not delete this collection. It has not been confirmed. Try again.");
                   deletingRef.current = false;
                   setDeleting(false);
-                  cancelButton.current?.focus();
                 }
               }}
               className={cn(BUTTON, "bg-home-ink text-home-card hover:bg-home-panel")}

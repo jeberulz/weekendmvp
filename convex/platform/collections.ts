@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import { requireFeature } from "./entitlements";
 import { COLLECTION_ITEMS_MAX, COLLECTION_NAME_MAX, COLLECTIONS_MAX } from "./hubLimits";
 import { ideaCardValidator, savedAmong, toIdeaCard } from "./ideaCards";
@@ -80,7 +80,7 @@ export const create = mutation({
   args: { name: v.string() },
   returns: v.object({ collectionId: v.id("collections") }),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     await requireFeature(ctx, user._id, "collections");
     const name = cleanName(args.name);
     const existing = await ctx.db
@@ -104,7 +104,7 @@ export const rename = mutation({
   args: { collectionId: v.string(), name: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     await requireFeature(ctx, user._id, "collections");
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     await ctx.db.patch("collections", collection._id, { name: cleanName(args.name), updatedAt: Date.now() });
@@ -117,7 +117,7 @@ export const remove = mutation({
   args: { collectionId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     // Retain the collection and its items under the v1 soft-delete policy.
     await ctx.db.patch("collections", collection._id, { deletedAt: Date.now(), updatedAt: Date.now() });
@@ -129,7 +129,7 @@ export const addIdea = mutation({
   args: { collectionId: v.string(), slug: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     await requireFeature(ctx, user._id, "collections");
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     const idea = await ideaBySlug(ctx, args.slug);
@@ -154,7 +154,7 @@ export const removeIdea = mutation({
   args: { collectionId: v.string(), slug: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     const idea = await ideaBySlug(ctx, args.slug);
     const item = await itemFor(ctx, collection._id, idea._id);

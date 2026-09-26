@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation } from "../../_generated/server";
-import { requireOwnedProject } from "../authz";
+import { requireOwnedProjectForMutation } from "../authz";
 import { assertCheckoutIdempotencyKey, getCreditPack } from "./catalog";
 
 export const prepare = mutation({
@@ -10,7 +10,7 @@ export const prepare = mutation({
     idempotencyKey: v.string(),
   },
   handler: async (ctx, args) => {
-    const project = await requireOwnedProject(ctx, args.projectId);
+    const project = await requireOwnedProjectForMutation(ctx, args.projectId);
     const pack = getCreditPack(args.packId);
     const idempotencyKey = assertCheckoutIdempotencyKey(args.idempotencyKey);
     const existing = await ctx.db

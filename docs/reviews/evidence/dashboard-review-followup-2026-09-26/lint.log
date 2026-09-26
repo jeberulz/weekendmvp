@@ -231,4 +231,3 @@ Calling setState synchronously within an effect body causes cascading renders th
   37:7  warning  'root' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 ✖ 35 problems (0 errors, 35 warnings)
-

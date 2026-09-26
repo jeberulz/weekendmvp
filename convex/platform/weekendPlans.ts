@@ -3,7 +3,7 @@ import { paginationOptsValidator, paginationResultValidator } from "convex/serve
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
 import { getEntitlements, upgradeRequired } from "./entitlements";
 import { hoursOf } from "./ideaCards";
 import { CORE_FEATURE_MAX, FINISHED_LIST_LIMIT, isStepKey, normalizeLiveUrl } from "./weekendSteps";
@@ -135,7 +135,7 @@ export const start = mutation({
   },
   returns: v.object({ planId: v.id("weekend_plans"), created: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const idea = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
@@ -192,7 +192,7 @@ export const toggleStep = mutation({
   args: { planId: v.string(), key: v.string(), done: v.boolean() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     if (!isStepKey(args.key)) throw new ConvexError({ code: "INVALID_STEP" });
     const plan = await ownedActivePlan(ctx, user._id, args.planId);
     const now = Date.now();
@@ -207,7 +207,7 @@ export const setCoreFeature = mutation({
   args: { planId: v.string(), text: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const text = args.text.trim();
     if (text.length > CORE_FEATURE_MAX) throw new ConvexError({ code: "CORE_FEATURE_TOO_LONG" });
     const plan = await ownedActivePlan(ctx, user._id, args.planId);
@@ -225,7 +225,7 @@ export const setLiveUrl = mutation({
   args: { planId: v.string(), url: v.string() },
   returns: v.object({ liveUrl: v.union(v.string(), v.null()) }),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const liveUrl = args.url.trim() === "" ? null : normalizeLiveUrl(args.url);
     if (args.url.trim() !== "" && liveUrl === null) throw new ConvexError({ code: "INVALID_LIVE_URL" });
     const plan = await ownedActivePlan(ctx, user._id, args.planId);
@@ -243,7 +243,7 @@ export const finish = mutation({
   args: { planId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const plan = await ownedActivePlan(ctx, user._id, args.planId);
     const now = Date.now();
     await ctx.db.patch("weekend_plans", plan._id, { status: "done", completedAt: now, updatedAt: now });
@@ -255,7 +255,7 @@ export const archive = mutation({
   args: { planId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const plan = await ownedActivePlan(ctx, user._id, args.planId);
     const now = Date.now();
     await ctx.db.patch("weekend_plans", plan._id, { status: "archived", archivedAt: now, updatedAt: now });
@@ -380,7 +380,7 @@ export const restore = mutation({
   args: { planId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const plan = await ownedPlan(ctx, user._id, args.planId);
     if (plan.status === "active") return null;
     if (plan.status !== "archived") throw new ConvexError({ code: "PLAN_NOT_ARCHIVED" });

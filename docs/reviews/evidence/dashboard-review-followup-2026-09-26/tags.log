@@ -1,0 +1,6 @@
+
+> weekendmvp@1.0.0 validate:idea-tags
+> node scripts/validate-idea-tags.mjs
+
+
+228/228 ideas pass tagging contract (0 fail)

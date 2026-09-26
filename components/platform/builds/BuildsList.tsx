@@ -148,9 +148,15 @@ export function Drafts() {
     { initialNumItems: 20 },
   );
   const drafts = results.filter((project) => project.source === "own_idea" && project.nextAction === "resume_brief");
-  if (drafts.length === 0 && status === "Exhausted") return null;
+  const [checkedMore, setCheckedMore] = useState(false);
+  const checking = status === "LoadingFirstPage" || status === "LoadingMore";
+  const draftStatus = checking ? "Checking your existing drafts…" : status === "Exhausted"
+    ? (drafts.length ? "All projects checked for drafts." : "All projects checked. No existing idea drafts found.")
+    : drafts.length ? `${drafts.length} existing idea ${drafts.length === 1 ? "draft found" : "drafts found"}; more projects remain to check.`
+    : "No drafts in the projects checked so far.";
   return (
-    <section aria-labelledby="draft-plans" className="flex flex-col gap-3">
+    <section aria-label="Existing idea drafts" className="flex flex-col gap-3">
+      {drafts.length > 0 && <>
       <h2
         id="draft-plans"
         className="font-editorial text-[24px] font-normal leading-[1.15] tracking-[-0.015em] text-home-ink"
@@ -160,7 +166,8 @@ export function Drafts() {
       <p className="text-[15px] text-home-ink-2">
         Bringing your own idea is paused until idea reports are ready. Your drafts are kept here.
       </p>
-      <ul className="divide-y divide-home-rule border-y border-home-ink">
+      </>}
+      {drafts.length > 0 && <ul className="divide-y divide-home-rule border-y border-home-ink">
         {drafts.map((draft) => (
           <li key={draft.projectId} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
             <div className="min-w-0 flex-1">
@@ -172,17 +179,17 @@ export function Drafts() {
             </Link>
           </li>
         ))}
-      </ul>
-      {drafts.length === 0 && <p role="status" className="text-sm text-home-ink-2">{status === "LoadingFirstPage" || status === "LoadingMore" ? "Checking your existing drafts…" : "No drafts in the projects checked so far."}</p>}
-      {(status === "CanLoadMore" || status === "LoadingMore") && (
+      </ul>}
+      <p role="status" className={drafts.length === 0 && !checkedMore && (status === "LoadingFirstPage" || status === "Exhausted") ? "sr-only" : "text-sm text-home-ink-2"}>{draftStatus}</p>
+      {(checkedMore || status === "CanLoadMore" || status === "LoadingMore") && (
         <div>
           <button
             type="button"
-            onClick={() => loadMore(20)}
-            disabled={status !== "CanLoadMore"}
+            onClick={() => { if (status === "CanLoadMore") { setCheckedMore(true); loadMore(20); } }}
+            aria-disabled={status !== "CanLoadMore"}
             className={cn(BUTTON, "border border-home-rule bg-home-card text-home-ink hover:border-home-ink-3")}
           >
-            {status === "LoadingMore" ? "Loading…" : "Check more projects for drafts"}
+            {status === "Exhausted" ? "All projects checked" : status === "LoadingMore" ? "Loading…" : "Check more projects for drafts"}
           </button>
         </div>
       )}
@@ -205,7 +212,9 @@ function ArchivedPlan({ plan }: { plan: Summary }) {
           const code = caught instanceof ConvexError ? (caught.data as { code?: string }).code : null;
           setError(code === "UPGRADE_REQUIRED" || code === "PLAN_LIMIT"
             ? "Your active plan limit is reached. Finish or archive a plan first; nothing has been changed."
-            : "We could not restore this plan. Try again.");
+            : code === "PLAN_ALREADY_ACTIVE"
+              ? "This idea already has an active plan. Continue it in Building now; archive that plan first if you want to restore this one."
+              : "We could not restore this plan. Try again.");
         } finally { setPending(false); }
       }}>{pending ? "Restoring…" : "Restore plan"}<span className="sr-only"> {plan.title}</span></button>
     {error && <p role="alert" className="basis-full text-sm text-home-clay-ink">{error}</p>}

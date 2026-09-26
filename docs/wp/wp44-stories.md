@@ -262,3 +262,10 @@ S1 rulings
 - [x] WP44-R4 Independent final gate: reconcile each audit finding, standard checks, ownership/error journeys, schema/codegen evidence, browser evidence and limitations.
 
 Detailed file ownership is frozen in `program-manifest.md`; subscription activation and production operations remain out of scope.
+
+## PR review follow-up (2026-09-26, comment 5849896214)
+
+- [x] WP44-R5 Backend review repairs. Scope: subscription/email normalization helpers, dashboard offers, authz callers, associated Convex tests. Keep promos available when legacy kit-claim detection is uncertain; restore indexed lookup; provide bounded internal backfill without running production data changes; keep queries clock-free while retaining expiry validation for mutations and HTTP entry points. Verify legacy overflow, normalization, backfill idempotency and expired/revoked sessions.
+- [x] WP44-R6 Interaction review repairs. Scope: dashboard/public Save buttons, CollectionView, BuildsList, PendingSaveRunner/pending-save, NextStepCard and relevant UI tests. Preserve keyboard focus, durable dismiss/replacement feedback, accessible shortlist targets/names, stable draft completion, actionable restore conflicts.
+- [x] WP44-R7 Runtime evidence review repairs. Scope: canonical-idea-body and tests, local integration and trace scripts/tests, middleware request-header handoff and its regression. A successful session refresh must authenticate the same request. Missing idea fallback must tolerate backend failure; forged JWT must reach backend verification; traces must include canonical content. Verify using local production build and disposable backend.
+- [x] WP44-R8 Review gate and documentation. Scope: handoffs, rulings, reports/evidence. Correct remote branch pointers and table, sanitize machine paths, label local production-build evidence accurately, document backend-first release order. Run configured checks and review all feedback against final behavior.

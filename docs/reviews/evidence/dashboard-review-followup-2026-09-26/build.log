@@ -4,7 +4,7 @@
 
 ▲ Next.js 16.3.6 (Turbopack)
 - Environments: .env.local
-✓ Running next.config.ts took 18ms
+✓ Running next.config.ts took 16ms
 - Cache Components enabled
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
@@ -14,15 +14,15 @@
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 1593ms
+✓ Compiled successfully in 2.2s
   Running TypeScript ...
-  Finished TypeScript in 6.2s ...
+  Finished TypeScript in 5.8s ...
   Collecting page data using 14 workers ...
   Generating static pages using 14 workers (0/428) ...
   Generating static pages using 14 workers (107/428)
   Generating static pages using 14 workers (214/428)
   Generating static pages using 14 workers (321/428)
-✓ Generating static pages using 14 workers (428/428) in 9.2s
+✓ Generating static pages using 14 workers (428/428) in 9.1s
   Finalizing page optimization ...
 
 Route (app)                                             Revalidate  Expire
@@ -115,4 +115,3 @@ Route (app)                                             Revalidate  Expire
 ○  (Static)             prerendered as static content
 ◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
 ƒ  (Dynamic)            server-rendered on demand
-

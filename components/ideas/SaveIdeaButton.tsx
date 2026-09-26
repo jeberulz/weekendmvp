@@ -61,6 +61,7 @@ function SignedInSave({ slug, title }: { slug: string; title: string }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const queue = useRef<ReturnType<typeof createSaveQueue> | null>(null);
+  const saveButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -113,6 +114,7 @@ function SignedInSave({ slug, title }: { slug: string; title: string }) {
     <>
       <button
         type="button"
+        ref={saveButton}
         aria-pressed={pressed}
         disabled={state === "loading"}
         onClick={toggle}
@@ -149,8 +151,8 @@ function SignedInSave({ slug, title }: { slug: string; title: string }) {
         </Link>
       )}
       <span role="status" className="text-sm text-neutral-600">{error || (pending ? "Saving…" : message)}</span>
-      {error && !error.includes("Sign in") && <button type="button" disabled={pending} onClick={() => queue.current?.retry()} className="min-h-11 px-2 text-sm underline">Retry save</button>}
-      {error.includes("Sign in") && <Link href="/login" className="text-sm underline">Sign in</Link>}
+      {error && !error.includes("Sign in") && <button type="button" disabled={pending} onClick={() => { saveButton.current?.focus(); queue.current?.retry(); }} className="min-h-11 px-2 text-sm underline">Retry save</button>}
+      {error.includes("Sign in") && <Link href="/login" className="inline-flex min-h-11 items-center px-2 text-sm underline">Sign in</Link>}
     </>
   );
 }

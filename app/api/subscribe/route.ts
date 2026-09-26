@@ -17,6 +17,7 @@
  * truth for enrollment; a Convex failure never affects the user response.
  */
 
+import { normalizeEmail } from "@/convex/authEmail";
 import { after } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
     return json(400, { error: "Invalid JSON in request body" }, cors);
   }
 
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : body.email;
+  const email = typeof body.email === "string" ? normalizeEmail(body.email) : body.email;
   const firstName = typeof body.first_name === "string" ? body.first_name : undefined;
 
   if (!email) {

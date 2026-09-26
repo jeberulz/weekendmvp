@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createSaveQueue } from "../../components/platform/save-queue";
 import { createVersionedSave } from "../../components/platform/versioned-save";
-import { acknowledgePendingSave, readPendingSave, recordPendingSaveAttempt, stashPendingSave, PENDING_SAVE_MAX_ATTEMPTS, persistPendingSave } from "../../lib/pending-save";
+import { acknowledgePendingSave, dismissPendingSave, readPendingSave, recordPendingSaveAttempt, stashPendingSave, PENDING_SAVE_MAX_ATTEMPTS, persistPendingSave } from "../../lib/pending-save";
 
 const flush = () => new Promise<void>((resolve) => queueMicrotask(resolve));
 function deferred() {
@@ -134,6 +134,21 @@ function storage() {
 }
 
 describe("durable pending save", () => {
+  test("dismissal survives reload and cannot dismiss another tab's newer intent", () => {
+    const store = storage(); const save = { slug: "first", title: "First", at: 1000 };
+    stashPendingSave(store, save); recordPendingSaveAttempt(store, save, 1001);
+    dismissPendingSave(store, save, 1002);
+    expect(readPendingSave(store, 1003)).toBeNull();
+    stashPendingSave(store, { ...save, at: 1004 });
+    dismissPendingSave(store, save, 1005);
+    expect(readPendingSave(store, 1006)?.at).toBe(1004);
+  });
+  test("dismissal surfaces storage errors rather than claiming the request was cleared", () => {
+    const store = storage(); const save = { slug: "first", title: "First", at: 1000 };
+    stashPendingSave(store, save);
+    expect(() => dismissPendingSave({ ...store, removeItem: () => { throw new Error("blocked"); } }, save, 1001)).toThrow("blocked");
+    expect(readPendingSave(store, 1002)?.slug).toBe("first");
+  });
   test("failed attempts survive reload, remain bounded and clear only on acknowledgement", () => {
     const store = storage(); const save = { slug: "first", title: "First", at: 1000 };
     stashPendingSave(store, save);

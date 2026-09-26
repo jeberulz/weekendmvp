@@ -29,7 +29,7 @@ Browser fixture uses the installed internal auth store to create a one-use verif
 | A03 server trace size | Static content roots; CI trace spill/size gate; sampled trace-assembled artifacts approximately 8.5–8.7 MB, down from approximately 494 MB. Hosting-provider packaging remains separate. |
 | A04/A05 complete discovery | Native bounded pages, accumulated before global token-prefix search/filter/ranking/facets. 1,005-record tests; no hidden 240/1,000 record endpoint ceiling in the new UI. Old bounded endpoints remain compatibility-only. |
 | A06 stale plan replacement | Expected active plan identity, typed conflict, exact same-idea lookup and idempotent retry. |
-| A07 verified prompt membership | Real JWT verification plus current, unexpired session ownership; real anonymous/forged/revoked 401 and valid 200; outages 503. |
+| A07 verified prompt membership | Real JWT verification plus current, unexpired session ownership; anonymous/revoked 401 and valid 200 (original forged-token fixture lacked `iat`; see follow-up gate); outages 503. |
 | A08 existing drafts | Continue control remains even if a project page contains no resumable drafts. Own-idea creation and publishing remain parked. |
 | A09 Save ordering | Coalesced requests plus server compare-and-set revision. Even a no-op Unsave advances a revision and fences a delayed older Save. Lost responses reconcile, conflicts retry the latest choice within a fixed budget; visible deliberate recovery on failure. |
 | A10 meaningful privacy guard | Runtime exact output assertions plus deliberately injected unwanted-field rejection; removed vacuous source slice. |
@@ -39,7 +39,7 @@ Browser fixture uses the installed internal auth store to create a one-use verif
 | B04 lifecycle | Soft-delete collections, membership rows and notes, preserving records; no production migration. |
 | B05 paid activation | Intentionally separate subscription WP. Current resolver remains Free; UI flag remains disabled. |
 
-All four PR review comments are addressed: draft continuation, clearable radio choices, normalized subscription claims and honest Save outages. A discovered retired-content mismatch is addressed by deriving retirement from the existing canonical manifest: 228 stored/MDX ideas, 226 discoverable, two retired, no missing active bodies. Existing saves/history remain readable.
+The initial four PR review comments received repairs (the normalized-claim overflow issue was reopened in the follow-up below): draft continuation, clearable radio choices, normalized subscription claims and honest Save outages. A discovered retired-content mismatch is addressed by deriving retirement from the existing canonical manifest: 228 stored/MDX ideas, 226 discoverable, two retired, no missing active bodies. Existing saves/history remain readable.
 
 Independent reviewers checked the backend and runtime boundaries, then reviewed Save/UX behavior; their delayed-response and durable-intent findings were fixed before closeout. Final standard-gate results apply to implementation commit `19ed908`:
 
@@ -51,7 +51,7 @@ Independent reviewers checked the backend and runtime boundaries, then reviewed 
 | Production build | Passed, 428 pages; zero whole-project tracing warnings |
 | Full / production dependency audits | Zero vulnerabilities in both |
 | Lock consistency | npm 10 `ci --dry-run --ignore-scripts` passed |
-| Real backend + production Next server | Passed real code redemption, membership/session revocation, Save revision conflicts/persistence, private caching, public canonical/JSON-LD and sitemap exclusion |
+| Local Convex + local production Next server | Passed real code redemption, membership/session revocation, Save revision conflicts/persistence, private caching, public canonical/JSON-LD and sitemap exclusion |
 | Trace and corpus checks | Passed: no unintended docs/public/tests/scripts/secrets in sampled traces; 226 active bodies available |
 | Diff / workflow configuration | Clean diff checks and valid YAML |
 
@@ -68,7 +68,7 @@ Production activation is separate: deploy additive backend compatibility first, 
 
 - Complete global ranking currently loads the public catalogue through bounded pages into the member browser. This removes silent truncation and preserves truthful facets at the current catalogue size; catalogue growth should be measured before replacing it with a materialized search/ranking service. Queries still enforce owner-only personal overlays.
 - Search uses case-insensitive token prefixes across title and description, with title-only matches first, then selected sorting. It does not claim fuzzy or semantic search.
-- Old subscription rows have no normalized index value. A bounded compatibility scan detects mixed-case claims; when the legacy population is too large to establish absence, the offer is suppressed. A later authorized normalization migration can remove that conservative fallback.
+- Old subscription rows have no normalized index value. The initial repair suppressed all offers on scan overflow; [Claude review follow-up](2026-09-26-dashboard-review-followup.md) corrects this to suppress only the kit while preserving promos, restores the indexed fast path and adds an internal bounded backfill for separately authorized execution.
 - No production backfill, schema narrowing or destructive cleanup was performed.
 - Browser evidence covers the observed flows and responsive/focus checks; it is not a claim of a complete WCAG/screen-reader certification. Google OAuth, external email delivery, provider-packaged size, production rollout and rollback remain go-live checks.
 
@@ -98,3 +98,9 @@ npm audit
 ```
 
 Open the ignored fixture file’s confirmation URL in the browser and confirm the displayed synthetic account. The helper stores a real one-use code and exercises the actual sign-in route without external delivery. Do not commit fixture codes or local state. CLI seeding is safe only after the explicit local-target checks above; the existing general seed script also supports cloud targets and must not be used casually.
+
+## Claude review follow-up (PR comment 5849896214)
+
+The follow-up targets the three requested pre-merge fixes plus the smaller interaction and evidence findings. See WP44-R5–R8 for scope and acceptance criteria. The original forged-token evidence above did not establish backend verification: a missing `iat` could trigger middleware refresh rejection first. The corrected fixture and rerun evidence are recorded in [the follow-up report](2026-09-26-dashboard-review-followup.md). All backend/browser evidence in this report comes from local disposable services, including the production-mode Next build; none represents a production deployment. Evidence text uses `<workspace>`, `<repository>` and `<home>` in place of machine-specific paths.
+
+Release order is backend first, frontend second. `next build` does not publish Convex functions. Verify the new `requireMember` guard and versioned Save contract on the target backend before rolling out this frontend; preserve the compatibility functions for frontend rollback.

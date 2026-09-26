@@ -1,0 +1,29 @@
+{
+  "baseCommit": "19dd5b71b705b9d6f901037dc93c9ecaacc6c438",
+  "scope": "WP44-R5\u2013R8 / PR81 review follow-up",
+  "typecheck": "pass",
+  "lint": {
+    "errors": 0,
+    "existingWarnings": 35
+  },
+  "tests": {
+    "passed": 1133,
+    "node": 221,
+    "vitest": 912
+  },
+  "build": {
+    "pass": true,
+    "pages": 428
+  },
+  "traceRequiredContent": "pass: 228 MDX files per sampled route and sitemap manifest",
+  "ideaCorpus": "pass",
+  "ideaTags": "pass",
+  "codegen": "pass: disposable local backend",
+  "localProductionBuildIntegration": "pass",
+  "productionDeployment": false,
+  "productionBackfillExecuted": false,
+  "browser": "see browser.json for observations and limitations",
+  "fullAccessibilityCertification": false,
+  "externalEmailDeliveryTested": false,
+  "googleOAuthTested": false
+}

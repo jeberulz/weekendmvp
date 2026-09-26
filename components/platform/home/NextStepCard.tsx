@@ -146,11 +146,14 @@ function Shortlist({ home }: { home: HomeState }) {
       <h2 id="next-step-title" className={TITLE}>
         Pick one idea to build this weekend.
       </h2>
+      <fieldset className="min-w-0">
+      <legend className="sr-only">Choose an idea for your weekend plan</legend>
       <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">Your latest saved ideas, compared</caption>
         <thead>
           <tr className="border-b border-home-ink font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3">
+            <th scope="col" className="w-11 py-2 pr-3 font-normal"><span className="sr-only">Choose</span></th>
             <th scope="col" className="py-2 pr-3 font-normal">Idea</th>
             <th scope="col" className="w-16 py-2 pr-3 font-normal">Hours</th>
             <th scope="col" className="w-16 py-2 pr-3 font-normal">Score</th>
@@ -163,12 +166,14 @@ function Shortlist({ home }: { home: HomeState }) {
         <tbody>
           {rows.map((idea) => (
             <tr key={idea.ideaId} className="border-b border-home-rule align-top">
-              <th scope="row" className="py-3 pr-3 font-normal">
-                <label className="mb-2 flex min-h-8 items-center gap-2 text-sm text-home-ink">
+              <td className="py-1 pr-2">
+                <label className="flex min-h-11 min-w-11 items-center justify-center text-sm text-home-ink">
                   <input type="radio" name="weekend-shortlist" checked={selected?.slug === idea.slug}
                     onChange={() => setSelectedSlug(idea.slug)} className="size-4 accent-home-orange-ink" />
-                  Choose<span className="sr-only"> {idea.title}</span>
+                  <span className="sr-only">Choose {idea.title}</span>
                 </label>
+              </td>
+              <th scope="row" className="py-3 pr-3 font-normal">
                 <Link
                   href={`/ideas/${idea.slug}`}
                   className="text-[15px] font-medium text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
@@ -202,6 +207,7 @@ function Shortlist({ home }: { home: HomeState }) {
         </tbody>
       </table>
       </div>
+      </fieldset>
       <p className="text-xs text-home-ink-3">Scores average the four research ratings, out of 10. Open an idea to review its evidence.</p>
       <div className="flex flex-wrap items-center gap-2">
         {selected && <PlanLink slug={selected.slug} title={selected.title} source="home" />}

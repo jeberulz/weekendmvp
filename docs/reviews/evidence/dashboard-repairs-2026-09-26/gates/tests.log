@@ -617,9 +617,9 @@ ok 6 - the active campaign calendar has a valid category on every row
 > node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts tests/redirects/tenant-publish-check.test.ts
 
 TAP version 13
-# (node:87371) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/canonical-path.ts is not specified and it doesn't parse as CommonJS.
+# (node:87371) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/lib/canonical-path.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: cleanPath
     # Subtest: leaves clean paths alone
@@ -715,9 +715,9 @@ ok 4 - host helpers
   duration_ms: 2.806459
   type: 'suite'
   ...
-# (node:87372) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/idea-slugs.generated.ts is not specified and it doesn't parse as CommonJS.
+# (node:87372) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/lib/idea-slugs.generated.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: idea-slugs.generated
     # Subtest: matches ideas/manifest.json exactly (sorted)
@@ -770,9 +770,9 @@ ok 7 - robots.ts crawl-budget disallow
   duration_ms: 8.144083
   type: 'suite'
   ...
-# (node:87375) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/tenant-host.ts is not specified and it doesn't parse as CommonJS.
+# (node:87375) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/lib/tenant-host.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: normalizeHost
     # Subtest: lowercases and strips a port
@@ -961,7 +961,7 @@ ok 13 - WP28-S2 wiring
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  2 passed (2)
@@ -977,7 +977,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  5 passed (5)
@@ -1050,9 +1050,9 @@ ok 10 - WP25 does not implement the future preview route
   duration_ms: 2.162958
   type: 'test'
   ...
-# (node:87481) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
+# (node:87481) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: bridge secret must be present and long enough
 ok 11 - bridge secret must be present and long enough
@@ -1192,9 +1192,9 @@ ok 33 - a claimed preview reserves no tenant hostname
   duration_ms: 1.614
   type: 'test'
   ...
-# (node:87483) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
+# (node:87483) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: a preview response is never stored by a shared cache
 ok 34 - a preview response is never stored by a shared cache
@@ -1286,9 +1286,9 @@ ok 48 - the redaction covers both channels the token travels in
   duration_ms: 2.24
   type: 'test'
   ...
-# (node:87484) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/tenant/lead/_server.ts is not specified and it doesn't parse as CommonJS.
+# (node:87484) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/app/api/tenant/lead/_server.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: an empty body is the accepted shape
 ok 49 - an empty body is the accepted shape
@@ -1507,7 +1507,7 @@ ok 82 - the middleware gate and the route resolver cannot diverge
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  2 passed (2)
@@ -1520,9 +1520,9 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 > node --experimental-strip-types --test tests/sitemap/*.test.mjs
 
 TAP version 13
-# (node:87520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/sitemap-data.ts is not specified and it doesn't parse as CommonJS.
+# (node:87520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<workspace>/lib/sitemap-data.ts is not specified and it doesn't parse as CommonJS.
 # Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# To eliminate this warning, add "type": "module" to <workspace>/package.json.
 # (Use `node --trace-warnings ...` to show where the warning was created)
 # Subtest: parsePublishedAt
     # Subtest: parses ISO date strings to epoch ms
@@ -1579,7 +1579,7 @@ ok 2 - loadIdeaPublishedAtMap
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  28 passed (28)
@@ -1595,7 +1595,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  4 passed (4)
@@ -1611,7 +1611,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  5 passed (5)
@@ -1627,7 +1627,7 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
 
- RUN  v4.1.11 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+ RUN  v4.1.11 <workspace>
 
 
  Test Files  19 passed (19)

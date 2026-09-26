@@ -1,7 +1,8 @@
 <!-- BEGIN:active-handoff -->
 ## Active work — read before coding
 
-WP44 dashboard audit repairs are on branch `codex/wp44-audit-fixes` for PR #81.
+WP44 dashboard audit repairs are in PR #81 on remote branch
+`claude/wizardly-rubin-a6m2th`. The local repair branch is `codex/wp44-audit-fixes`.
 **Read `docs/wp/AGENT_HANDOFF.md` first.** Its current section links the repair
 report, remaining release gates, isolated local setup and prior platform traps.
 Publishing remains paused; Builder's Hub activation is a separate work package.

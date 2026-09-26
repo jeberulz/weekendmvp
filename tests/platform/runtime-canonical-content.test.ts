@@ -31,8 +31,10 @@ describe("canonical idea content shared by public research and dashboard", () =>
     expect(await getIdeaPrompts("fixture")).toBeNull();
   });
 
-  test("a backend outage is not mistaken for missing or empty content", async () => {
+  test("unknown compare slugs tolerate backend outage without weakening exports", async () => {
     state.query.mockRejectedValue(new Error("offline"));
-    await expect(getIdeaPackContent("fixture")).rejects.toThrow("offline");
+    expect(await getIdeaTiers("made-up-slug")).toEqual([]);
+    await expect(getIdeaPackContent("made-up-slug")).rejects.toThrow("offline");
+    await expect(getIdeaPrompts("made-up-slug")).rejects.toThrow("offline");
   });
 });

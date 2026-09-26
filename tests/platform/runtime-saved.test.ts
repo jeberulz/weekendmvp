@@ -19,6 +19,7 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "http://127.0.0.1:3310");
   state.token.mockResolvedValue("member-token");
   state.query.mockResolvedValue({ saved: true, version: 3 });
+  state.mutation.mockReset().mockResolvedValue(null);
 });
 
 describe("Save state HTTP responses", () => {
@@ -33,6 +34,8 @@ describe("Save state HTTP responses", () => {
     expect(await response.json()).toEqual({ signedIn: true, saved: true, version: 3 });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(state.setAuth).toHaveBeenCalledWith("member-token");
+    expect(state.mutation).toHaveBeenCalledWith(expect.anything(), {});
+    expect(state.mutation.mock.invocationCallOrder[0]).toBeLessThan(state.query.mock.invocationCallOrder[0]);
   });
 
   test("only an authentication rejection becomes signed out", async () => {
@@ -46,6 +49,20 @@ describe("Save state HTTP responses", () => {
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ code: "UNAVAILABLE" });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
+
+  test.each(["expired", "revoked"])("a %s session fails fresh membership before the saved query", async () => {
+    state.mutation.mockRejectedValue(new ConvexError({ code: "UNAUTHENTICATED" }));
+    expect(await (await GET(request())).json()).toEqual({ signedIn: false, saved: false });
+    expect(state.query).not.toHaveBeenCalled();
+  });
+
+  test("membership transport failure is unavailable rather than signed out", async () => {
+    state.mutation.mockRejectedValue(new Error("offline"));
+    const response = await GET(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ code: "UNAVAILABLE" });
+    expect(state.query).not.toHaveBeenCalled();
   });
 
   test("cross-origin writes fail before session lookup or mutation", async () => {

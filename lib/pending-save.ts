@@ -87,9 +87,14 @@ export const PENDING_SAVE_MAX_ATTEMPTS = 1;
 
 /** Never consume an idea saved in another tab while this request was pending. */
 export function acknowledgePendingSave(storage: Storage, save: PendingSave, now: number) {
-  const current = readPendingSave(storage, now);
+  try { dismissPendingSave(storage, save, now); } catch { /* Storage can be blocked. */ }
+}
+
+/** A dismissal is durable, but must never dismiss a newer request from another tab. */
+export function dismissPendingSave(storage: Storage, save: PendingSave, now: number) {
+  const current = parsePendingSave(storage.getItem(PENDING_SAVE_KEY), now);
   if (current?.slug !== save.slug || current.at !== save.at) return;
-  try { storage.removeItem(PENDING_SAVE_KEY); } catch { /* Storage can be blocked. */ }
+  storage.removeItem(PENDING_SAVE_KEY);
 }
 
 export function recordPendingSaveAttempt(storage: Storage, save: PendingSave, now: number): PendingSave | null {

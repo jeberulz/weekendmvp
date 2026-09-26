@@ -32,6 +32,7 @@ export async function GET(request: Request) {
 
   let idea;
   try {
+    await convex.mutation(api.platform.dashboard.requireMember, {});
     idea = await convex.query(api.platform.promptPack.source, { slug });
   } catch (error) {
     const data = error instanceof ConvexError ? (error.data as { code?: string; feature?: string }) : null;

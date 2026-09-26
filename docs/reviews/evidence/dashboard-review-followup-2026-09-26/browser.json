@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-26",
+  "scope": "WP44-R6 Chromium checks against local development server and disposable Convex backend",
+  "environment": {
+    "frontend": "http://localhost:3188",
+    "backend": "http://127.0.0.1:3310",
+    "realBackend": true,
+    "production": false
+  },
+  "observations": [
+    {
+      "journey": "Dashboard keyboard Save",
+      "observed": [
+        "Space on Save AI Code Reviewer set aria-pressed=true.",
+        "During request aria-busy=true, disabled=false, document.activeElement was the same BUTTON.",
+        "Subsequent raw Space toggled aria-pressed=false and focus stayed on Save AI Code Reviewer."
+      ]
+    },
+    {
+      "journey": "Shortlist keyboard selection and semantics",
+      "observed": [
+        "Accessibility tree group name: Choose an idea for your weekend plan.",
+        "Radio labels measured 44px high and 44px wide.",
+        "Radio controls are in table cells; rowheaders contain idea title/category without Choose.",
+        "ArrowUp moved focus and checked selection to previous radio; primary Plan my weekend link changed to that idea."
+      ]
+    },
+    {
+      "journey": "Builds without existing drafts",
+      "observed": [
+        "Completed status: All projects checked. No existing idea drafts found.",
+        "No Your idea drafts heading rendered for the empty account."
+      ]
+    },
+    {
+      "journey": "Public Save outage and Retry",
+      "observed": [
+        "After loading verified Save state, stopped disposable backend only; Next remained running.",
+        "Space produced visible Could not confirm your change to Saved. Retry your last choice. and Retry save button.",
+        "Focus stayed on original Save button after failure.",
+        "Restarted disposable backend and pressed Enter on Retry save.",
+        "During Saving status, focus was on surviving Save AdSpark button and aria-pressed=true.",
+        "After Saved AdSpark success status, focus remained on same Save button and aria-pressed=true."
+      ]
+    }
+  ],
+  "automatedChecks": {
+    "targetedSuites": "70 tests passed before two additional draft rendering tests; final behavior/render suites23 passed",
+    "scopedEslint": "passed",
+    "diffCheck": "passed"
+  },
+  "limitations": [
+    "No screen-reader speech or automated axe run.",
+    "Dormant collection delete failure focus inspected in code, not activated in browser.",
+    "Draft final-page focus preserved by retained aria-disabled button; sparse multi-page browser fixture not run.",
+    "Pending-save durable dismissal/newer-intent preservation/storage failure verified with runtime unit tests; browser replacement scenario not run.",
+    "PLAN_ALREADY_ACTIVE copy and public Sign in target sizing inspected in code."
+  ],
+  "cleanup": {
+    "browserTabClosed": true,
+    "viewportOverrideUsed": false,
+    "backendRestarted": true
+  }
+}

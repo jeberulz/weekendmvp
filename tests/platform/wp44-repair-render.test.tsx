@@ -25,14 +25,33 @@ test("an empty filtered project page still renders the continuation control", ()
 
 test("a complete empty draft scan has no misleading empty section", () => {
   state.status = "Exhausted";
-  expect(renderToStaticMarkup(<Drafts />)).toBe("");
+  const html = renderToStaticMarkup(<Drafts />);
+  expect(html).toContain("All projects checked. No existing idea drafts found.");
+  expect(html).not.toContain("<h2");
 });
 
-test("loading more keeps the draft continuation visible and disabled", () => {
+test("the initial draft scan keeps its announcement without flashing a heading", () => {
+  state.status = "LoadingFirstPage";
+  const html = renderToStaticMarkup(<Drafts />);
+  expect(html).toContain('role="status"');
+  expect(html).toContain("Checking your existing drafts");
+  expect(html).not.toContain("<h2");
+});
+
+test("a partial scan with a draft accurately announces found drafts", () => {
+  state.results = [{ projectId: "project-one", source: "own_idea", nextAction: "resume_brief", title: "First draft", updatedAt: 1000 } as Project];
+  const html = renderToStaticMarkup(<Drafts />);
+  expect(html).toContain("1 existing idea draft found; more projects remain to check.");
+  expect(html).not.toContain("No drafts in the projects checked so far.");
+  expect(html).toContain("Resume brief");
+});
+
+test("loading more keeps the draft continuation focusable and marked unavailable", () => {
   state.status = "LoadingMore";
   const html = renderToStaticMarkup(<Drafts />);
   expect(html).toContain("Checking your existing drafts");
-  expect(html).toMatch(/<button[^>]*disabled=""/);
+  expect(html).toMatch(/<button[^>]*aria-disabled="true"/);
+  expect(html).not.toMatch(/<button[^>]* disabled=""/);
 });
 
 test("optional setup questions offer real radio choices to clear existing answers", () => {
