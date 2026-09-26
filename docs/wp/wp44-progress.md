@@ -428,3 +428,21 @@ Append-only progress log. Do not rely on chat history for project state.
   - Screenshots: `docs/wp/evidence/wp44-s12-kit-1440.png`, `wp44-s12-promo-1440.png`, `wp44-s12-kit-390.png`
 - Not done here: a real check against a live Convex deployment. This environment cannot reach Convex
 - Next: S13 (package gate: verification only)
+
+## 2026-09-26 - WP44-S13 Package gate
+
+- `origin/main` had not moved since S12. Nothing to merge
+- Lane: gate (verification, then scoped fixes). Full record in `docs/wp/wave-gate-report.md` under "WP44 Package Gate"
+- Verified:
+  - Standard checks green on the final code (typecheck, lint 0 errors, `npm test`, build 428 pages, audit 0, secret scan clean)
+  - axe (wcag2a/aa, wcag21a/aa, plus best-practice): 0 violations on every `/dashboard/**` route at 390px and 1440px, 28 views with the flag off and 30 with it on
+  - Keyboard pass on nav, Save, setup, plan steps, the offer card, the upgrade sheet and the phone Account sheet. Accessibility-tree snapshots saved to `docs/wp/evidence/wp44-s13-aria-trees.txt`. No real screen reader was available: recorded as a pre-launch step
+  - No link to `/build/**`, `/preview/**`, `/dashboard/projects/**` or credit checkout from any live dashboard route or idea page
+  - `/ideas/{slug}` route rows, canonical, JSON-LD, robots and titles identical to `origin/main` on all 249 prerendered pages, built side by side in a temporary worktree (removed)
+  - Sitemap and robots identical to `origin/main`; private routes noindex and absent; anonymous requests redirected or refused
+- Independent review (separate agent, read-only): 0 critical, 0 high, 2 medium, 5 low. Fixed in this gate: library and Saved paging past 240, own-idea drafts on Builds (R4), token validation on `/api/ideas/prompts`, Save error codes, the parked card's `/build/` link, a silent Start button, and the download URL revoke. Accepted: plan archiving capped at 20 after a downgrade (subscription WP)
+- Found by the keyboard pass and fixed: the upgrade sheet and the phone Account sheet opened with focus on a destructive button (archive a plan, sign out). Both, and the finish, archive and delete confirms, now start on the safe choice
+- Files changed by the fixes: `convex/platform/{libraryFilters,ideas,dashboard}.ts`, `app/api/ideas/prompts/route.ts`, `app/api/platform/saved/route.ts`, `components/platform/{builds/BuildsList,builds/StartPlan,builds/PlanDetail,explore/SavedIdeas,hub/CollectionView,hub/ExportPromptPack,plan/UpgradeSheet,projects/ProjectCard,shell/WorkspaceShell}.tsx`. New tests: `convex/wp44Gate.test.ts` (2) and `tests/platform/wp44-gate.test.ts` (8). One older test updated for the prompts auth call
+- Evidence: `docs/wp/evidence/wp44-s13-aria-trees.txt`, `docs/wp/evidence/wp44-s13-builds-drafts-1440.png`
+- Result: pass. WP44-S2 to S13 complete. S1 keeps two evidence items (IdeaBrowser screenshots, canvas PNG export)
+- Next: owner decision to merge WP44 to `main`. Builder's Hub stays hidden until the subscription work package passes its gate

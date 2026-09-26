@@ -112,10 +112,11 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
-  const confirmButton = useRef<HTMLButtonElement>(null);
+  const cancelButton = useRef<HTMLButtonElement>(null);
 
+  // Deleting can't be undone, so focus starts on the safe choice.
   useEffect(() => {
-    if (confirming) confirmButton.current?.focus();
+    if (confirming) cancelButton.current?.focus();
   }, [confirming]);
 
   if (data === undefined) return <ModuleSkeleton label="Loading the collection" className="h-[320px]" />;
@@ -167,7 +168,6 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
               Delete {collection.name}? The ideas stay in Saved. This can’t be undone.
             </p>
             <button
-              ref={confirmButton}
               type="button"
               onClick={async () => {
                 await deleteCollection({ collectionId });
@@ -177,7 +177,7 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
             >
               Yes, delete
             </button>
-            <button type="button" onClick={() => setConfirming(false)} className={QUIET}>
+            <button ref={cancelButton} type="button" onClick={() => setConfirming(false)} className={QUIET}>
               Not now
             </button>
           </div>

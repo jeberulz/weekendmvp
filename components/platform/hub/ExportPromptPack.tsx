@@ -44,7 +44,8 @@ function LiveExport({ slug, title }: { slug: string; title: string }) {
       document.body.append(link);
       link.click();
       link.remove();
-      URL.revokeObjectURL(url);
+      // Revoking at once can cancel the download in Safari.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
       setStatus("Prompt pack downloaded.");
     } catch (error) {
       console.error("Prompt pack download failed", error);

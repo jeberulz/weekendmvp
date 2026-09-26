@@ -182,7 +182,7 @@ function LiveSaved() {
         />
       )}
       {gate.sheet}
-      {data.items.length < data.total && (
+      {data.hasMore && (
         <div className="flex justify-center py-2">
           <button
             type="button"

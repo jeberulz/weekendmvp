@@ -218,7 +218,7 @@ S1 rulings
     - `npm test` including offer choice with a fixed clock, and a two-user dismissal test
   - Model tier: mid
 
-- [ ] `WP44-S13` - Package gate
+- [x] `WP44-S13` - Package gate (passed 2026-09-26, see `docs/wp/wave-gate-report.md`)
   - Scope: verification only
   - Acceptance criteria:
     - Standard checks green

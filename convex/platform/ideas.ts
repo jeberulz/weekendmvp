@@ -23,7 +23,7 @@ import {
  * every filter, facet counts and sorting run over the whole library instead
  * of one page at a time (PRD finding A7). `truncated` says when the cap bites.
  */
-export const LIBRARY_READ_LIMIT = 1000;
+export const LIBRARY_READ_LIMIT = MAX_LIBRARY_LIMIT;
 /** Per search index. Convex caps one search at 1024 results. */
 const SEARCH_READ_LIMIT = 256;
 const AFFINITY_SAVED_LIMIT = 48;

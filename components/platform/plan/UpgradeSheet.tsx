@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Dialog } from "radix-ui";
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { PLANS, PLAN_COMPARISON, UPGRADE_LABEL, type GatedFeature } from "@/convex/platform/plans";
 import { newsreaderEditorial } from "@/lib/fonts";
 import { trackDashboardEvent } from "@/lib/track";
@@ -72,11 +72,18 @@ export function UpgradeSheet({
   }, [open, feature]);
 
   const copy = SHEET_COPY[feature];
+  const notNow = useRef<HTMLButtonElement>(null);
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-home-ink/45" />
         <Dialog.Content
+          // Radix would focus the first button, which can be the free way
+          // forward (archiving a plan). Start on "Not now", the safe choice.
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            notNow.current?.focus();
+          }}
           onCloseAutoFocus={(event) => {
             if (!returnFocusTo?.current) return;
             event.preventDefault();
@@ -149,7 +156,7 @@ export function UpgradeSheet({
               </button>
             )}
             <Dialog.Close asChild>
-              <button type="button" className={cn(BUTTON, "text-home-ink-2 hover:text-home-ink")}>
+              <button ref={notNow} type="button" className={cn(BUTTON, "text-home-ink-2 hover:text-home-ink")}>
                 Not now
               </button>
             </Dialog.Close>

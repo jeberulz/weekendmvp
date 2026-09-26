@@ -21,7 +21,8 @@ const LATEST_SAVED_READ = 8;
 const LATEST_SAVED_RESULT = 5;
 /** The Saved page reads at most this many saves. The library is smaller. */
 export const SAVED_LIST_CAP = 500;
-const MAX_SAVED_LIST_LIMIT = 240;
+/** The Saved page can page through every save it reads. */
+const MAX_SAVED_LIST_LIMIT = SAVED_LIST_CAP;
 
 const savedIdeaValidator = v.object({
   ideaId: v.id("ideas"),
@@ -206,6 +207,11 @@ export const savedList = query({
     ),
     total: v.number(),
     capped: v.boolean(),
+    /**
+     * More saves past this page. From the saves, not the rows returned, so a
+     * save whose idea is gone never leaves "Show more" doing nothing.
+     */
+    hasMore: v.boolean(),
   }),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
@@ -231,7 +237,7 @@ export const savedList = query({
         }),
       )
     ).filter((item) => item !== null);
-    return { items, total: rows.length, capped };
+    return { items, total: rows.length, capped, hasMore: rows.length > limit };
   },
 });
 

@@ -1,5 +1,6 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
+import { ConvexError } from "convex/values";
 import { api } from "@/convex/_generated/api";
 import { NO_STORE, isSameOriginWrite, parseSaveBody, parseSlugParam } from "./_server";
 
@@ -55,7 +56,11 @@ export async function POST(request: Request) {
   try {
     const result = await convex.mutation(api.platform.dashboard.setSaved, input);
     return json({ saved: result.saved });
-  } catch {
+  } catch (error) {
+    // A revoked session must read as signed out, so the island offers sign-up.
+    const code = error instanceof ConvexError ? (error.data as { code?: string } | null)?.code : undefined;
+    if (code === "UNAUTHENTICATED") return json({ code: "AUTHENTICATION_REQUIRED" }, 401);
+    if (code === "RESOURCE_NOT_FOUND") return json({ code: "RESOURCE_NOT_FOUND" }, 404);
     return json({ code: "UNAVAILABLE" }, 503);
   }
 }

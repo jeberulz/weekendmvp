@@ -1,4 +1,4 @@
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { isAuthenticatedNextjs } from "@convex-dev/auth/nextjs/server";
 import { getIdeaPrompts } from "@/lib/dashboard/idea-prompts";
 import { isIdeaSlug } from "@/lib/pending-save";
 
@@ -12,7 +12,8 @@ export async function GET(request: Request) {
   if (!isIdeaSlug(slug)) {
     return Response.json({ code: "INVALID_SLUG" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
-  if (!(await convexAuthNextjsToken())) {
+  // Validated by Convex, so a forged or expired token cookie is refused (WP44-S13).
+  if (!(await isAuthenticatedNextjs())) {
     return Response.json(
       { code: "AUTHENTICATION_REQUIRED" },
       { status: 401, headers: { "Cache-Control": "no-store" } },

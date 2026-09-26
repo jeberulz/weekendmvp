@@ -1,0 +1,157 @@
+## sidebar nav
+- navigation "Workspace":
+  - link "Weekend MVP home":
+    - /url: /dashboard
+    - img "Weekend MVP"
+  - button "Collapse sidebar" [expanded]
+  - link "Home":
+    - /url: /dashboard
+  - link "Ideas":
+    - /url: /dashboard/explore
+  - link "Saved , 3":
+    - /url: /dashboard/saved
+  - link "Builds , 2":
+    - /url: /dashboard/builds
+  - paragraph: Resources
+  - link "Starter Kit":
+    - /url: /starter-kit
+  - paragraph: Free plan
+  - paragraph: 1 of 1 weekend plan in use
+  - paragraph: Builder’s Hub adds collections, prompt packs and unlimited weekend plans.
+  - link "See Builder’s Hub":
+    - /url: /dashboard/billing#builders-hub
+  - button "Account Free plan"
+
+## first idea card
+- article:
+  - text: SaaS
+  - heading "AI RFP Response Assistant" [level=3]:
+    - link "AI RFP Response Assistant":
+      - /url: /ideas/engine-draft-ai-rfp-response-assistant
+  - paragraph: RallyRFP helps lean SaaS teams complete RFPs and security questionnaires with approved answers, source evidence, and coordinated review.
+  - term: Opportunity
+  - definition: 8 out of 10
+  - term: Pain
+  - definition: 9 out of 10
+  - term: Timing
+  - definition: 8 out of 10
+  - term: Buildable
+  - definition: 7 out of 10
+  - paragraph: 10 HRS · Cursor, Claude, Bolt.new
+  - link "Plan my weekend for AI RFP Response Assistant":
+    - /url: /dashboard/builds/new?idea=engine-draft-ai-rfp-response-assistant&from=ideas
+  - button "Save AI RFP Response Assistant"
+  - status: Removed AI RFP Response Assistant from Saved.
+
+## setup form
+- region "Tell us how you build, and we will pick ideas that fit.":
+  - paragraph: Start here
+  - paragraph: 3 questions, all optional
+  - heading "Tell us how you build, and we will pick ideas that fit." [level=2]
+  - group "Which AI tools do you build with?":
+    - text: Which AI tools do you build with?
+    - checkbox "Cursor"
+    - text: Cursor
+    - checkbox "Claude"
+    - text: Claude
+    - checkbox "Bolt"
+    - text: Bolt
+    - checkbox "v0"
+    - text: v0
+    - checkbox "Lovable"
+    - text: Lovable
+    - checkbox "Replit"
+    - text: Replit
+    - checkbox "Windsurf"
+    - text: Windsurf
+    - checkbox "No-code"
+    - text: No-code
+  - group "How much time do you have most weekends?":
+    - text: How much time do you have most weekends?
+    - radio "8 hrs"
+    - text: 8 hrs
+    - radio "12 hrs"
+    - text: 12 hrs
+    - radio "20 hrs"
+    - text: 20 hrs
+    - radio "More"
+    - text: More
+  - group "What do you want from it?":
+    - text: What do you want from it?
+    - radio "Side income"
+    - text: Side income
+    - radio "Learn by building"
+    - text: Learn by building
+    - radio "Portfolio piece"
+    - text: Portfolio piece
+    - radio "Replace my job one day"
+    - text: Replace my job one day
+  - button "Show my ideas"
+  - button "Skip for now"
+  - status
+
+## plan stage (Saturday)
+- region "Build the core":
+  - paragraph: "Stage 2 of 4: Saturday · 6 hrs"
+  - text: Now
+  - heading "Build the core" [level=2]
+  - paragraph: Paste the setup prompt. Build the one screen that does the job.
+  - list:
+    - listitem:
+      - checkbox "Paste the setup prompt into your AI tool" [checked]
+      - text: Paste the setup prompt into your AI tool
+    - listitem:
+      - checkbox "Build the one screen that does the job"
+      - text: Build the one screen that does the job
+  - heading "Build prompts from the research" [level=3]
+  - list:
+    - listitem:
+      - paragraph: Project Setup
+      - button "Copy prompt for Project Setup"
+      - status
+      - group: Show the prompt for Project Setup
+    - listitem:
+      - paragraph: Core Feature
+      - button "Copy prompt for Core Feature"
+      - status
+      - group: Show the prompt for Core Feature
+
+## offer card
+- region "Everything for your first weekend build":
+  - paragraph: Free · Starter Kit
+  - button "Dismiss"
+  - heading "Everything for your first weekend build" [level=2]
+  - list:
+    - listitem: The 15-second demo test
+  - paragraph: From an idea to a live link.
+  - link "Get the free kit":
+    - /url: /starter-kit
+
+## upgrade sheet
+- dialog "Start another weekend plan?":
+  - paragraph: Builder’s Hub
+  - heading "Start another weekend plan?" [level=2]
+  - paragraph: "Free includes one active plan, and you are building AdSpark: One-Click AI Ad Creative Generator."
+  - table "Free compared with Builder’s Hub":
+    - caption: Free compared with Builder’s Hub
+    - rowgroup:
+      - row "Free Builder’s Hub":
+        - columnheader "Free"
+        - columnheader "Builder’s Hub"
+    - rowgroup:
+      - row "1 active weekend plan Unlimited weekend plans":
+        - cell "1 active weekend plan"
+        - cell "Unlimited weekend plans"
+      - row "One saved list Collections and notes":
+        - cell "One saved list"
+        - cell "Collections and notes"
+      - row "Copy prompts Prompt pack export":
+        - cell "Copy prompts"
+        - cell "Prompt pack export"
+      - row "One idea at a time Compare up to 4 ideas":
+        - cell "One idea at a time"
+        - cell "Compare up to 4 ideas"
+  - link "Upgrade to Builder’s Hub · $29/mo":
+    - /url: /dashboard/billing#builders-hub
+  - button "Archive your current plan and start this one"
+  - button "Not now"

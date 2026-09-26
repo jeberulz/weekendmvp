@@ -245,12 +245,13 @@ function ConfirmAction({
 }) {
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const confirmRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
 
+  // Finishing and archiving can't be undone, so focus starts on the safe choice.
   useEffect(() => {
-    if (asking) confirmRef.current?.focus();
+    if (asking) cancelRef.current?.focus();
     else if (returnFocus.current) {
       returnFocus.current = false;
       triggerRef.current?.focus();
@@ -269,7 +270,6 @@ function ConfirmAction({
       <p className="text-sm text-home-ink">{question}</p>
       <div className="flex flex-wrap gap-2">
         <button
-          ref={confirmRef}
           type="button"
           disabled={busy}
           onClick={async () => {
@@ -282,6 +282,7 @@ function ConfirmAction({
           {confirm}
         </button>
         <button
+          ref={cancelRef}
           type="button"
           disabled={busy}
           onClick={() => {

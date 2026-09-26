@@ -87,8 +87,10 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
       setPending(false);
       const data = errorData(caught);
       if (data?.code === UPGRADE_REQUIRED) {
-        // Flag on: the point-of-intent sheet. Flag off: the limit card from the preview.
+        // Flag on: the point-of-intent sheet. Flag off: say so here, since the
+        // limit card only shows when the preview can name the running plan.
         if (BUILDERS_HUB_UI && entitlements?.plan !== "builders_hub") setSheet({ activeTitle: data.activeTitle });
+        else setError("You already have a weekend plan running. Finish or archive it in Builds first.");
         return;
       }
       console.error("Starting the plan failed", caught);

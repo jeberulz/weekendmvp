@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Logo } from "@/components/primitives/Logo";
 import {
   Sheet,
@@ -134,6 +134,13 @@ function MobileTab({
 }
 
 function AccountSheet() {
+  const firstLink = useRef<HTMLAnchorElement>(null);
+  // Radix skips links when it picks the first focus, which lands on Sign out.
+  // Start on the first link instead (WP44-S13).
+  function focusFirstLink(event: Event) {
+    event.preventDefault();
+    firstLink.current?.focus();
+  }
   const sheetLink =
     "flex min-h-12 items-center gap-3 rounded-lg px-3 text-sm text-home-ink hover:bg-home-sunk";
 
@@ -153,6 +160,7 @@ function AccountSheet() {
       </SheetTrigger>
       <SheetContent
         side="bottom"
+        onOpenAutoFocus={focusFirstLink}
         overlayClassName="motion-reduce:animate-none"
         className="rounded-t-2xl border-home-rule bg-home-card pb-[max(1rem,env(safe-area-inset-bottom))] text-home-ink shadow-none motion-reduce:animate-none motion-reduce:transition-none"
       >
@@ -164,7 +172,7 @@ function AccountSheet() {
         </SheetHeader>
         <div className="flex flex-col gap-1 px-3">
           <SheetClose asChild>
-            <Link href={BILLING_NAV.href} className={cn(sheetLink, focusRing)}>
+            <Link ref={firstLink} href={BILLING_NAV.href} className={cn(sheetLink, focusRing)}>
               <CreditCard className="size-[18px] text-home-ink-2" aria-hidden />
               {BILLING_NAV.label}
             </Link>

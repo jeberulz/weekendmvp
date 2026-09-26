@@ -1,11 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/convex/_generated/api";
 import { currentStage, nextStepLabel, progress } from "@/convex/platform/weekendSteps";
+import { QuietErrorBoundary } from "@/components/platform/client-gates";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { cn } from "@/lib/utils";
 import { dayName, displayUrl, planHref, progressLine, shortDate } from "./plan-copy";
@@ -131,6 +132,59 @@ function Finished({ plans }: { plans: Summary[] }) {
   );
 }
 
+/**
+ * Ruling R4: "Bring your own idea" is parked, but existing drafts stay
+ * reachable from Builds. Own-idea briefs still in progress link back to the
+ * intake route, which stays open by URL. Nothing here links to the parked
+ * project cockpit (R5). Absent when there are no drafts.
+ */
+function Drafts() {
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.platform.projects.listOwned,
+    {},
+    { initialNumItems: 20 },
+  );
+  const drafts = results.filter((project) => project.source === "own_idea" && project.nextAction === "resume_brief");
+  if (drafts.length === 0) return null;
+  return (
+    <section aria-labelledby="draft-plans" className="flex flex-col gap-3">
+      <h2
+        id="draft-plans"
+        className="font-editorial text-[24px] font-normal leading-[1.15] tracking-[-0.015em] text-home-ink"
+      >
+        Your idea drafts
+      </h2>
+      <p className="text-[15px] text-home-ink-2">
+        Bringing your own idea is paused until idea reports are ready. Your drafts are kept here.
+      </p>
+      <ul className="divide-y divide-home-rule border-y border-home-ink">
+        {drafts.map((draft) => (
+          <li key={draft.projectId} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-medium text-home-ink">{draft.title}</p>
+              <span className="mt-0.5 block text-[12px] text-home-ink-3">Updated {shortDate(draft.updatedAt)}</span>
+            </div>
+            <Link href={`/dashboard/new?project=${draft.projectId}`} className={cn("inline-flex min-h-11 items-center text-sm", LINK)}>
+              Resume brief<span className="sr-only"> for {draft.title}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {status === "CanLoadMore" && (
+        <div>
+          <button
+            type="button"
+            onClick={() => loadMore(20)}
+            className={cn(BUTTON, "border border-home-rule bg-home-card text-home-ink hover:border-home-ink-3")}
+          >
+            Show more drafts
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function LiveBuilds() {
   const data = useQuery(api.platform.weekendPlans.list);
   if (data === undefined) return <ModuleSkeleton label="Loading your builds" className="h-[360px]" />;
@@ -146,6 +200,9 @@ function LiveBuilds() {
         <NoActivePlan />
       )}
       <Finished plans={data.finished} />
+      <QuietErrorBoundary>
+        <Drafts />
+      </QuietErrorBoundary>
     </div>
   );
 }

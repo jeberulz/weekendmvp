@@ -28,8 +28,13 @@ export const NEW_WINDOW_DAYS = 30;
 /** Most tools a member can pick at once. */
 export const MAX_TOOL_FILTERS = 8;
 export const MAX_SEARCH_LENGTH = 80;
-/** Largest page the client may ask for. "Show more" grows toward it. */
-export const MAX_LIBRARY_LIMIT = 240;
+/**
+ * Largest page the client may ask for. "Show more" grows toward it. Equal to
+ * the library query's read limit (LIBRARY_READ_LIMIT in ideas.ts), so paging
+ * reaches every idea the query reads. It was 240, and a library past 240 ideas
+ * left "Show more" doing nothing (WP44-S13 review).
+ */
+export const MAX_LIBRARY_LIMIT = 1000;
 
 export function effectiveSort(
   view: LibraryView,

@@ -21,12 +21,20 @@ const STATUS_LABELS: Record<ProjectCardProps["status"], string> = {
   published: "Published",
 };
 
+/**
+ * Site publishing is parked (R5): no link into the preview builder. The same
+ * switch as `ProjectWorkspace`; flip both when publishing returns in v1.1.
+ */
+const SITE_PUBLISHING_PARKED = true;
+
 export function ProjectCard(project: ProjectCardProps) {
   const resumeHref =
     project.source === "own_idea"
       ? `/dashboard/new?project=${project.projectId}`
       : project.sourceSlug
-        ? `/build/${project.sourceSlug}`
+        ? SITE_PUBLISHING_PARKED
+          ? `/ideas/${project.sourceSlug}`
+          : `/build/${project.sourceSlug}`
         : `/dashboard/projects/${project.projectId}`;
   const href =
     project.nextAction === "resume_brief"
