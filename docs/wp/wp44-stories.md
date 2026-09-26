@@ -203,7 +203,7 @@ S1 rulings
     - `npm test` including ownership and entitlement tests
   - Model tier: mid (high for the schema part)
 
-- [ ] `WP44-S12` - Offer card: Starter Kit and promos (R6, R8)
+- [x] `WP44-S12` - Offer card: Starter Kit and promos (R6, R8) (done 2026-09-26, see progress log for what differs from the criteria below)
   - Scope: `lib/dashboard/offers.ts` (new), `convex/platform/dashboard.ts` (offer choice), `convex/platform/preferences.ts` (dismiss mutation), `components/platform/home/OfferCard.tsx` (new), tests
   - Acceptance criteria:
     - The Home rail shows at most one offer card, chosen by the PRD 6.2 rules: first 24 hours after signup shows only the Starter Kit card, later an active promo wins, else the Starter Kit card while the kit is unclaimed, else nothing

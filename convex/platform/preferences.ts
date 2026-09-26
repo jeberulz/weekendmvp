@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
+import { OFFER_IDS, withDismissed } from "../../lib/dashboard/offers";
 import { requireCurrentPlatformUser } from "./authz";
 import { MAX_SETUP_TOOLS, SETUP_TOOLS } from "./setupOptions";
 import {
@@ -113,6 +114,35 @@ export const skipSetup = mutation({
       });
     } else if (existing.skippedAt === undefined) {
       await ctx.db.patch("user_preferences", existing._id, { skippedAt: now, updatedAt: now });
+    }
+    return null;
+  },
+});
+
+/**
+ * WP44-S12. Hides an offer card for this member on every device. Only known
+ * offer ids are stored, and the list keeps the newest 50.
+ */
+export const dismissOffer = mutation({
+  args: { offerId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    if (!OFFER_IDS.has(args.offerId)) throw new ConvexError({ code: "INVALID_OFFER" });
+    const now = Date.now();
+    const existing = await readPreferences(ctx, user._id);
+    if (existing === null) {
+      await ctx.db.insert("user_preferences", {
+        ownerId: user._id,
+        tools: [],
+        dismissed: [args.offerId],
+        updatedAt: now,
+      });
+    } else if (!(existing.dismissed ?? []).includes(args.offerId)) {
+      await ctx.db.patch("user_preferences", existing._id, {
+        dismissed: withDismissed(existing.dismissed ?? [], args.offerId),
+        updatedAt: now,
+      });
     }
     return null;
   },

@@ -1,25 +1,19 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 
-// Interim, per-browser dismissals until WP44-S12 stores them on the member
-// (`user_preferences.dismissed`). Storage can be missing or blocked, so a
-// dismissal still holds for the page view through the in-memory set.
+// WP44-S4 kept offer dismissals in this browser. S12 stores them on the
+// member (`user_preferences.dismissed`). These helpers only read the old
+// keys, so a card closed before S12 stays closed and moves to the server.
 const PREFIX = "wmvp:dismissed:";
-const CHANGE_EVENT = "wmvp:dismissed-change";
-const memory = new Set<string>();
 
 function subscribe(onChange: () => void) {
   window.addEventListener("storage", onChange);
-  window.addEventListener(CHANGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(CHANGE_EVENT, onChange);
-  };
+  return () => window.removeEventListener("storage", onChange);
 }
 
-function isDismissed(id: string) {
-  if (memory.has(id)) return true;
+function read(id: string | null) {
+  if (id === null) return false;
   try {
     return window.localStorage.getItem(PREFIX + id) === "1";
   } catch {
@@ -27,23 +21,19 @@ function isDismissed(id: string) {
   }
 }
 
-/** `[dismissed, dismiss]` for one card id. Reads as not dismissed on the server. */
-export function useDismissed(id: string) {
-  const dismissed = useSyncExternalStore(
+/** Whether this browser dismissed `id` before S12. False on the server. */
+export function useLegacyDismissed(id: string | null) {
+  return useSyncExternalStore(
     subscribe,
-    () => isDismissed(id),
+    () => read(id),
     () => false,
   );
+}
 
-  const dismiss = useCallback(() => {
-    memory.add(id);
-    try {
-      window.localStorage.setItem(PREFIX + id, "1");
-    } catch {
-      // Blocked storage: the in-memory set keeps it hidden for this page view.
-    }
-    window.dispatchEvent(new Event(CHANGE_EVENT));
-  }, [id]);
-
-  return [dismissed, dismiss] as const;
+export function clearLegacyDismissal(id: string) {
+  try {
+    window.localStorage.removeItem(PREFIX + id);
+  } catch {
+    // Blocked storage: nothing to clear.
+  }
 }

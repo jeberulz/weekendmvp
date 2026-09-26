@@ -248,6 +248,11 @@ Saved.
   member.
 - Builder's Hub members see promos for other products. They never see the
   Builder's Hub upsell.
+- Built in S12: promos are dated entries in `lib/dashboard/offers.ts`, and the
+  server picks the card (`platform.dashboard.offer`). "Kit claimed" means the
+  member's email has a `/api/subscribe` event, which enrolls people in the
+  kit's welcome automation, other than the workshop waitlist. The email is
+  checked on the server and never sent to the browser.
 
 ### 6.3 Other screens
 

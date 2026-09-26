@@ -198,11 +198,10 @@ describe("WP44-S4 accessibility contracts", () => {
     expect(saveSource).toContain('fill={pressed ? "currentColor" : "none"}');
   });
 
-  test("the Starter Kit card is labelled and dismissible (R6)", () => {
-    expect(railSource).toContain('aria-labelledby="rail-kit-heading"');
-    expect(railSource).toContain('aria-label="Dismiss the Starter Kit card"');
-    expect(railSource).toContain('home.plan === "free"');
-    expect(railSource).toContain("savedHeading.current?.focus()");
+  test("the rail holds the offer card, and dismissing it moves focus to Saved (R6, S12)", () => {
+    // The card itself, and which offer shows, are covered in wp44-offers.test.ts.
+    expect(railSource).toContain("<OfferCard onDismissed={() => savedHeading.current?.focus()} />");
+    expect(railSource).not.toContain("StarterKitCard");
   });
 
   test("the rail is not a nested complementary landmark", () => {

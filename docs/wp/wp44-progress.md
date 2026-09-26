@@ -403,3 +403,28 @@ Append-only progress log. Do not rely on chat history for project state.
   - Screenshots: `docs/wp/evidence/wp44-s11-saved-1440.png`, `wp44-s11-saved-390.png`, `wp44-s11-compare-1440.png`, `wp44-s11-export-1440.png`
 - Not done here: a real check against a live Convex deployment and the schema push. This environment cannot reach Convex
 - Next: S12 (offer card: Starter Kit and promos)
+
+## 2026-09-26 - WP44-S12 Offer card: Starter Kit and promos (R6, R8)
+
+- `origin/main` had not moved since S11. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work. No schema change: dismissals use `user_preferences.dismissed`, added in S8
+- Actions taken:
+  - `lib/dashboard/offers.ts` (new, pure): the Starter Kit offer, a dated `PROMOS` list (empty until the owner adds one), `isKitClaim`, `withDismissed` (deduplicated, newest 50) and `chooseOffer`. The rule: in the first 24 hours only the Starter Kit, until claimed. After that a running promo wins (earliest end first), else the Starter Kit while unclaimed, else nothing. The kit is for Free members (R6). Promos are for everyone, Builder's Hub included, and never carry the Builder's Hub upsell
+  - `platform.dashboard.offer({ now })` (new): picks the card on the server. The client passes `now` because queries must not read the clock; it only chooses among public offers. "Kit claimed" looks up the member's email in `subscriptions` (exact and lowercased, bounded to 20 rows) and returns only the offer. The email never reaches the client
+  - `platform.preferences.dismissOffer({ offerId })` (new): stores the dismissal on the member, so it holds on every device. Unknown ids are refused. It does not count as answering the setup questions
+  - `components/platform/home/OfferCard.tsx` (new) replaces the S4 interim card: a region labelled by its heading, a real Dismiss button (`aria-label="Dismiss"`) that hides the card at once and moves focus to the rail's Saved heading, and a CTA that says when it opens a new tab. Promo cards use the ochre tint, the kit keeps its dashed card. Quiet on error, so the rest of the rail stays
+  - A card dismissed in this browser before S12 stays gone: the old `localStorage` key is read once, the dismissal moves to the member, and the key is cleared. Nothing writes the key any more
+  - Events: `offer_viewed`, `offer_clicked`, `offer_dismissed`, with the offer id and kind only
+  - Tests: `convex/wp44Offers.test.ts` (10: the choice with a fixed clock (first day, after, expired and future promos, earliest end, dismissals, Builder's Hub), kit claim rules, the catalog, sign-in, email case and no email in the response, the two-member dismissal, unknown ids) and `tests/platform/wp44-offers.test.ts` (6). The S4 rail test now checks the rail hands off to the offer card
+- Different from the written criteria, on purpose:
+  - "Kit claimed" is any `/api/subscribe` event for the email except the workshop waitlist, not literally any `subscriptions` row. `/api/subscribe` enrolls people in the kit's welcome automation by default. Daily-ideas sign-ups (`idea-page`) and the waitlist do not send the kit. Known edge: the dare page posts with a campaign the route does not allowlist, so its rows are logged as "starter-kit" and count as claimed
+  - No promo is running, so `PROMOS` is empty. The promo card is tested with fixtures and in the browser with a faked offer
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, unchanged)
+  - `npm test` pass (Convex WP44 suites 84 tests, platform 132)
+  - `npm run build` pass. Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket): the kit card shows at 1440px in the rail, Dismiss sends `dismissOffer`, hides the card and focuses "Saved". A promo shows its date line and an external link that opens a new tab. A browser with the old key sends the dismissal once, shows nothing and clears the key. No offer leaves the slot empty. At 390px the card sits under the modules with no page scroll. axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations with the kit card, the promo card and on the phone. The S9 harness passes unchanged
+  - Screenshots: `docs/wp/evidence/wp44-s12-kit-1440.png`, `wp44-s12-promo-1440.png`, `wp44-s12-kit-390.png`
+- Not done here: a real check against a live Convex deployment. This environment cannot reach Convex
+- Next: S13 (package gate: verification only)
