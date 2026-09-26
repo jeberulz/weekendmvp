@@ -1,0 +1,1616 @@
+
+> weekendmvp@1.0.0 test
+> npm run test:og && npm run test:links && npm run test:redirects && npm run test:auth && npm run test:security && npm run test:sitemap && npm run test:convex && npm run test:engine && npm run test:home && npm run test:platform
+
+
+> weekendmvp@1.0.0 test:og
+> node --test tests/og/*.test.mjs
+
+TAP version 13
+# Subtest: exits 0 by default when PNGs/JPGs missing (warn-only)
+ok 1 - exits 0 by default when PNGs/JPGs missing (warn-only)
+  ---
+  duration_ms: 128.116625
+  type: 'test'
+  ...
+# Subtest: exits 1 with STRICT=1 when any output missing across 4 surfaces
+ok 2 - exits 1 with STRICT=1 when any output missing across 4 surfaces
+  ---
+  duration_ms: 71.497125
+  type: 'test'
+  ...
+# Subtest: exits 0 with STRICT=1 when all outputs present across 4 surfaces
+ok 3 - exits 0 with STRICT=1 when all outputs present across 4 surfaces
+  ---
+  duration_ms: 51.393375
+  type: 'test'
+  ...
+# Subtest: reports missing slugs broken down by all 4 surfaces
+ok 4 - reports missing slugs broken down by all 4 surfaces
+  ---
+  duration_ms: 46.170458
+  type: 'test'
+  ...
+# Subtest: compose returns a 1200x630 PNG buffer for surface=idea
+ok 5 - compose returns a 1200x630 PNG buffer for surface=idea
+  ---
+  duration_ms: 3169.019041
+  type: 'test'
+  ...
+# Subtest: compose returns a 1200x630 PNG buffer for surface=article
+ok 6 - compose returns a 1200x630 PNG buffer for surface=article
+  ---
+  duration_ms: 204.647875
+  type: 'test'
+  ...
+# Subtest: compose throws on unknown surface
+ok 7 - compose throws on unknown surface
+  ---
+  duration_ms: 1.895459
+  type: 'test'
+  ...
+# Subtest: article composite places Recraft bg in the right 60% (left panel stays solid)
+ok 8 - article composite places Recraft bg in the right 60% (left panel stays solid)
+  ---
+  duration_ms: 244.499959
+  type: 'test'
+  ...
+# Subtest: compose returns 1200x630 PNG for surface=newsletter (with edition + publishedAt)
+ok 9 - compose returns 1200x630 PNG for surface=newsletter (with edition + publishedAt)
+  ---
+  duration_ms: 261.325791
+  type: 'test'
+  ...
+# Subtest: newsletter composite places Recraft bg in top 60% (bottom 40% stays solid)
+ok 10 - newsletter composite places Recraft bg in top 60% (bottom 40% stays solid)
+  ---
+  duration_ms: 204.265958
+  type: 'test'
+  ...
+# Subtest: compose returns a 600x400 JPEG buffer for surface=email-newsletter (no chrome)
+ok 11 - compose returns a 600x400 JPEG buffer for surface=email-newsletter (no chrome)
+  ---
+  duration_ms: 20.190334
+  type: 'test'
+  ...
+# Subtest: email-newsletter output has NO chrome — full-bleed Recraft scene
+ok 12 - email-newsletter output has NO chrome — full-bleed Recraft scene
+  ---
+  duration_ms: 22.37425
+  type: 'test'
+  ...
+# Subtest: compose throws on unknown surface (regression)
+ok 13 - compose throws on unknown surface (regression)
+  ---
+  duration_ms: 2.321333
+  type: 'test'
+  ...
+# Subtest: loadFonts returns Satori-compatible font array
+ok 14 - loadFonts returns Satori-compatible font array
+  ---
+  duration_ms: 21.422583
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --dry-run
+ok 15 - parseArgs handles --dry-run
+  ---
+  duration_ms: 0.9065
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --force --slug X --non-blocking together
+ok 16 - parseArgs handles --force --slug X --non-blocking together
+  ---
+  duration_ms: 0.25225
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --raw
+ok 17 - parseArgs handles --raw
+  ---
+  duration_ms: 0.183791
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --surface article
+ok 18 - parseArgs handles --surface article
+  ---
+  duration_ms: 0.088458
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --surface idea
+ok 19 - parseArgs handles --surface idea
+  ---
+  duration_ms: 0.07825
+  type: 'test'
+  ...
+# Subtest: updateManifestStatus writes to ideas/manifest.json for surface=idea
+ok 20 - updateManifestStatus writes to ideas/manifest.json for surface=idea
+  ---
+  duration_ms: 8.116792
+  type: 'test'
+  ...
+# Subtest: updateManifestStatus writes to articles/manifest.json for surface=article
+ok 21 - updateManifestStatus writes to articles/manifest.json for surface=article
+  ---
+  duration_ms: 2.610792
+  type: 'test'
+  ...
+# Subtest: updateManifestStatus writes to newsletter/manifest.json for surface=newsletter
+ok 22 - updateManifestStatus writes to newsletter/manifest.json for surface=newsletter
+  ---
+  duration_ms: 3.024166
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --surface newsletter
+ok 23 - parseArgs handles --surface newsletter
+  ---
+  duration_ms: 0.678125
+  type: 'test'
+  ...
+# Subtest: updateManifestStatus writes to og.emailStatus for surface=email-newsletter
+ok 24 - updateManifestStatus writes to og.emailStatus for surface=email-newsletter
+  ---
+  duration_ms: 3.317708
+  type: 'test'
+  ...
+# Subtest: updateManifestStatus surface=newsletter and surface=email-newsletter share manifest but use different fields
+ok 25 - updateManifestStatus surface=newsletter and surface=email-newsletter share manifest but use different fields
+  ---
+  duration_ms: 3.747417
+  type: 'test'
+  ...
+# Subtest: parseArgs handles --surface email-newsletter
+ok 26 - parseArgs handles --surface email-newsletter
+  ---
+  duration_ms: 0.123542
+  type: 'test'
+  ...
+# Subtest: generate returns Buffer on success
+ok 27 - generate returns Buffer on success
+  ---
+  duration_ms: 0.872875
+  type: 'test'
+  ...
+# Subtest: generate sends gpt-image-1 model and medium quality
+ok 28 - generate sends gpt-image-1 model and medium quality
+  ---
+  duration_ms: 0.192459
+  type: 'test'
+  ...
+# Subtest: generate throws on non-OK response
+ok 29 - generate throws on non-OK response
+  ---
+  duration_ms: 0.317208
+  type: 'test'
+  ...
+# Subtest: generate throws when apiKey is missing
+ok 30 - generate throws when apiKey is missing
+  ---
+  duration_ms: 2.021209
+  type: 'test'
+  ...
+# Subtest: generate returns a Buffer on success
+ok 31 - generate returns a Buffer on success
+  ---
+  duration_ms: 2.9105
+  type: 'test'
+  ...
+# Subtest: generate sends model + size + style_id when styleId provided
+ok 32 - generate sends model + size + style_id when styleId provided
+  ---
+  duration_ms: 0.235875
+  type: 'test'
+  ...
+# Subtest: generate falls back to style:realistic_image when no styleId
+ok 33 - generate falls back to style:realistic_image when no styleId
+  ---
+  duration_ms: 0.142917
+  type: 'test'
+  ...
+# Subtest: generate throws on non-OK response
+ok 34 - generate throws on non-OK response
+  ---
+  duration_ms: 4.165208
+  type: 'test'
+  ...
+# Subtest: generate throws when apiKey is missing
+ok 35 - generate throws when apiKey is missing
+  ---
+  duration_ms: 0.337916
+  type: 'test'
+  ...
+# Subtest: _shared.css contains the .slide-hero[data-has-hero] selector
+ok 36 - _shared.css contains the .slide-hero[data-has-hero] selector
+  ---
+  duration_ms: 9.744917
+  type: 'test'
+  ...
+# Subtest: _shared.css contains the bottom-anchored dark gradient overlay
+ok 37 - _shared.css contains the bottom-anchored dark gradient overlay
+  ---
+  duration_ms: 7.068791
+  type: 'test'
+  ...
+# Subtest: _shared.css declares background-image: url('hero.jpg') for the hero rule
+ok 38 - _shared.css declares background-image: url('hero.jpg') for the hero rule
+  ---
+  duration_ms: 6.302834
+  type: 'test'
+  ...
+# Subtest: listArticles returns one item per article
+ok 39 - listArticles returns one item per article
+  ---
+  duration_ms: 16.76375
+  type: 'test'
+  ...
+# Subtest: listArticles uses og.subject + og.accent when present
+ok 40 - listArticles uses og.subject + og.accent when present
+  ---
+  duration_ms: 9.699916
+  type: 'test'
+  ...
+# Subtest: listArticles falls back to description when og.subject missing
+ok 41 - listArticles falls back to description when og.subject missing
+  ---
+  duration_ms: 3.92975
+  type: 'test'
+  ...
+# Subtest: listArticles falls back to title when description missing
+ok 42 - listArticles falls back to title when description missing
+  ---
+  duration_ms: 7.311583
+  type: 'test'
+  ...
+# Subtest: listArticles sets surface and outputPath on every item
+ok 43 - listArticles sets surface and outputPath on every item
+  ---
+  duration_ms: 27.947458
+  type: 'test'
+  ...
+# Subtest: parseTable extracts key/value rows and stops at horizontal rule
+ok 44 - parseTable extracts key/value rows and stops at horizontal rule
+  ---
+  duration_ms: 4.0695
+  type: 'test'
+  ...
+# Subtest: listCarouselHero returns one item per carousel post directory
+ok 45 - listCarouselHero returns one item per carousel post directory
+  ---
+  duration_ms: 23.144166
+  type: 'test'
+  ...
+# Subtest: listCarouselHero sets surface=carousel-hero and uses dirname as slug
+ok 46 - listCarouselHero sets surface=carousel-hero and uses dirname as slug
+  ---
+  duration_ms: 47.054292
+  type: 'test'
+  ...
+# Subtest: listCarouselHero falls back to `${theme} — ${topic}` when slide_01_subject is missing
+ok 47 - listCarouselHero falls back to `${theme} — ${topic}` when slide_01_subject is missing
+  ---
+  duration_ms: 23.733541
+  type: 'test'
+  ...
+# Subtest: listCarouselHero uses slide_01_subject verbatim when present
+ok 48 - listCarouselHero uses slide_01_subject verbatim when present
+  ---
+  duration_ms: 6.750625
+  type: 'test'
+  ...
+# Subtest: listCarouselHero reads accent from accent_primary; defaults to lime when missing
+ok 49 - listCarouselHero reads accent from accent_primary; defaults to lime when missing
+  ---
+  duration_ms: 2.630917
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter returns one item per newsletter
+ok 50 - listEmailNewsletter returns one item per newsletter
+  ---
+  duration_ms: 15.774792
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter sets surface=email-newsletter on every item
+ok 51 - listEmailNewsletter sets surface=email-newsletter on every item
+  ---
+  duration_ms: 5.05325
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter outputPath uses image/email/newsletter/{slug}.jpg
+ok 52 - listEmailNewsletter outputPath uses image/email/newsletter/{slug}.jpg
+  ---
+  duration_ms: 6.928417
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter reuses og.subject from the same manifest entry as the OG card
+ok 53 - listEmailNewsletter reuses og.subject from the same manifest entry as the OG card
+  ---
+  duration_ms: 13.274292
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter reads status from og.emailStatus (NOT og.status)
+ok 54 - listEmailNewsletter reads status from og.emailStatus (NOT og.status)
+  ---
+  duration_ms: 56.120542
+  type: 'test'
+  ...
+# Subtest: listEmailNewsletter auto-derives accent from slug suffix (am→mint, pm→lavender)
+ok 55 - listEmailNewsletter auto-derives accent from slug suffix (am→mint, pm→lavender)
+  ---
+  duration_ms: 3.179584
+  type: 'test'
+  ...
+# Subtest: listIdeas returns one item per idea
+ok 56 - listIdeas returns one item per idea
+  ---
+  duration_ms: 13.959792
+  type: 'test'
+  ...
+# Subtest: listIdeas uses og.subject when present
+ok 57 - listIdeas uses og.subject when present
+  ---
+  duration_ms: 7.227917
+  type: 'test'
+  ...
+# Subtest: listIdeas falls back to description when og.subject is missing
+ok 58 - listIdeas falls back to description when og.subject is missing
+  ---
+  duration_ms: 4.823458
+  type: 'test'
+  ...
+# Subtest: listIdeas falls back to title when description is also missing
+ok 59 - listIdeas falls back to title when description is also missing
+  ---
+  duration_ms: 35.222792
+  type: 'test'
+  ...
+# Subtest: listIdeas sets surface and outputPath on every item
+ok 60 - listIdeas sets surface and outputPath on every item
+  ---
+  duration_ms: 13.797292
+  type: 'test'
+  ...
+# Subtest: deriveAccent maps slug suffix to brand accent
+ok 61 - deriveAccent maps slug suffix to brand accent
+  ---
+  duration_ms: 0.658875
+  type: 'test'
+  ...
+# Subtest: listNewsletter returns one item per newsletter
+ok 62 - listNewsletter returns one item per newsletter
+  ---
+  duration_ms: 13.141292
+  type: 'test'
+  ...
+# Subtest: listNewsletter uses og.subject when present, falls back through description→title
+ok 63 - listNewsletter uses og.subject when present, falls back through description→title
+  ---
+  duration_ms: 5.484125
+  type: 'test'
+  ...
+# Subtest: listNewsletter auto-derives accent from slug (am→mint, pm→lavender)
+ok 64 - listNewsletter auto-derives accent from slug (am→mint, pm→lavender)
+  ---
+  duration_ms: 5.801584
+  type: 'test'
+  ...
+# Subtest: listNewsletter respects og.accent override when present
+ok 65 - listNewsletter respects og.accent override when present
+  ---
+  duration_ms: 39.335708
+  type: 'test'
+  ...
+# Subtest: listNewsletter sets surface, edition, publishedAt, outputPath on every item
+ok 66 - listNewsletter sets surface, edition, publishedAt, outputPath on every item
+  ---
+  duration_ms: 1.44425
+  type: 'test'
+  ...
+# Subtest: STYLE_BLUEPRINT is a non-empty string
+ok 67 - STYLE_BLUEPRINT is a non-empty string
+  ---
+  duration_ms: 0.839792
+  type: 'test'
+  ...
+# Subtest: STYLE_BLUEPRINT contains terminal-photographic markers
+ok 68 - STYLE_BLUEPRINT contains terminal-photographic markers
+  ---
+  duration_ms: 0.38525
+  type: 'test'
+  ...
+# Subtest: STYLE_BLUEPRINT mentions all three accent colors
+ok 69 - STYLE_BLUEPRINT mentions all three accent colors
+  ---
+  duration_ms: 0.212167
+  type: 'test'
+  ...
+# Subtest: ACCENTS map mirrors the brand palette
+ok 70 - ACCENTS map mirrors the brand palette
+  ---
+  duration_ms: 0.781709
+  type: 'test'
+  ...
+# Subtest: pickTitleFontSize uses narrow-panel breakpoints (44/52/64)
+ok 71 - pickTitleFontSize uses narrow-panel breakpoints (44/52/64)
+  ---
+  duration_ms: 0.125708
+  type: 'test'
+  ...
+# Subtest: config has the right-60% bgRect and 1200x630 frame
+ok 72 - config has the right-60% bgRect and 1200x630 frame
+  ---
+  duration_ms: 0.4745
+  type: 'test'
+  ...
+# Subtest: buildElement returns 1200x630 element tree with title + ARTICLE label + read time
+ok 73 - buildElement returns 1200x630 element tree with title + ARTICLE label + read time
+  ---
+  duration_ms: 1.998334
+  type: 'test'
+  ...
+# Subtest: buildElement defaults to lime + 5 MIN READ when accent unknown / readMinutes missing
+ok 74 - buildElement defaults to lime + 5 MIN READ when accent unknown / readMinutes missing
+  ---
+  duration_ms: 0.28525
+  type: 'test'
+  ...
+# Subtest: carousel-hero template exports a config object with 1080x1350 full-bleed JPEG
+ok 75 - carousel-hero template exports a config object with 1080x1350 full-bleed JPEG
+  ---
+  duration_ms: 1.872041
+  type: 'test'
+  ...
+# Subtest: carousel-hero template has NO buildElement export (image-only surface)
+ok 76 - carousel-hero template has NO buildElement export (image-only surface)
+  ---
+  duration_ms: 0.501417
+  type: 'test'
+  ...
+# Subtest: email-newsletter template exports a config object with 600x400 full-bleed JPG
+ok 77 - email-newsletter template exports a config object with 600x400 full-bleed JPG
+  ---
+  duration_ms: 1.591625
+  type: 'test'
+  ...
+# Subtest: email-newsletter template has NO buildElement export (image-only surface)
+ok 78 - email-newsletter template has NO buildElement export (image-only surface)
+  ---
+  duration_ms: 0.141833
+  type: 'test'
+  ...
+# Subtest: ACCENTS map contains all five brand accents
+ok 79 - ACCENTS map contains all five brand accents
+  ---
+  duration_ms: 1.022708
+  type: 'test'
+  ...
+# Subtest: pickTitleFontSize shrinks for long titles
+ok 80 - pickTitleFontSize shrinks for long titles
+  ---
+  duration_ms: 0.154583
+  type: 'test'
+  ...
+# Subtest: buildElement returns an element tree with title and 1200x630 frame
+ok 81 - buildElement returns an element tree with title and 1200x630 frame
+  ---
+  duration_ms: 0.268083
+  type: 'test'
+  ...
+# Subtest: buildElement defaults to lime when accent is unknown
+ok 82 - buildElement defaults to lime when accent is unknown
+  ---
+  duration_ms: 1.116917
+  type: 'test'
+  ...
+# Subtest: config describes a full-bleed 1200x630 frame
+ok 83 - config describes a full-bleed 1200x630 frame
+  ---
+  duration_ms: 0.650458
+  type: 'test'
+  ...
+# Subtest: ACCENTS mirrors the brand palette
+ok 84 - ACCENTS mirrors the brand palette
+  ---
+  duration_ms: 1.500458
+  type: 'test'
+  ...
+# Subtest: pickTitleFontSize uses postcard breakpoints (40/48/60)
+ok 85 - pickTitleFontSize uses postcard breakpoints (40/48/60)
+  ---
+  duration_ms: 0.236667
+  type: 'test'
+  ...
+# Subtest: config has top-60% bgRect for horizontal split
+ok 86 - config has top-60% bgRect for horizontal split
+  ---
+  duration_ms: 2.339375
+  type: 'test'
+  ...
+# Subtest: formatPostmarkDate renders YYYY-MM-DD as MMM·DD·YY
+ok 87 - formatPostmarkDate renders YYYY-MM-DD as MMM·DD·YY
+  ---
+  duration_ms: 0.249459
+  type: 'test'
+  ...
+# Subtest: formatPostmarkDate falls back gracefully on missing/invalid input
+ok 88 - formatPostmarkDate falls back gracefully on missing/invalid input
+  ---
+  duration_ms: 0.094666
+  type: 'test'
+  ...
+# Subtest: buildElement returns 1200x630 element tree with postmark + meta + title
+ok 89 - buildElement returns 1200x630 element tree with postmark + meta + title
+  ---
+  duration_ms: 0.451417
+  type: 'test'
+  ...
+# Subtest: buildElement renders AM EDITION + mint accent for AM newsletters
+ok 90 - buildElement renders AM EDITION + mint accent for AM newsletters
+  ---
+  duration_ms: 0.221916
+  type: 'test'
+  ...
+# Subtest: buildElement falls back gracefully when edition/publishedAt missing
+ok 91 - buildElement falls back gracefully when edition/publishedAt missing
+  ---
+  duration_ms: 0.128084
+  type: 'test'
+  ...
+1..91
+# tests 91
+# suites 0
+# pass 91
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5219.80025
+
+> weekendmvp@1.0.0 test:links
+> node --test tests/links/*.test.mjs
+
+TAP version 13
+# Subtest: CSV parsing handles quoted titles and controlled categories
+ok 1 - CSV parsing handles quoted titles and controlled categories
+  ---
+  duration_ms: 1.294541
+  type: 'test'
+  ...
+# Subtest: released selection hides future rows and ignores operational status
+ok 2 - released selection hides future rows and ignores operational status
+  ---
+  duration_ms: 11.185167
+  type: 'test'
+  ...
+# Subtest: duplicate canonical destinations retain the newest release record
+ok 3 - duplicate canonical destinations retain the newest release record
+  ---
+  duration_ms: 0.409792
+  type: 'test'
+  ...
+# Subtest: search, category, and format filters combine
+ok 4 - search, category, and format filters combine
+  ---
+  duration_ms: 0.262917
+  type: 'test'
+  ...
+# Subtest: pagination reveals cumulative batches for boundary counts
+ok 5 - pagination reveals cumulative batches for boundary counts
+  ---
+  duration_ms: 0.473
+  type: 'test'
+  ...
+# Subtest: the active campaign calendar has a valid category on every row
+ok 6 - the active campaign calendar has a valid category on every row
+  ---
+  duration_ms: 6.653333
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 96.695333
+
+> weekendmvp@1.0.0 test:redirects
+> node --experimental-strip-types --test tests/redirects/*.test.mjs && vitest run tests/redirects/middleware.test.ts tests/redirects/tenant-publish-check.test.ts
+
+TAP version 13
+# (node:76776) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/canonical-path.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: cleanPath
+    # Subtest: leaves clean paths alone
+    ok 1 - leaves clean paths alone
+      ---
+      duration_ms: 0.624458
+      type: 'test'
+      ...
+    # Subtest: strips .html and .htm
+    ok 2 - strips .html and .htm
+      ---
+      duration_ms: 0.107833
+      type: 'test'
+      ...
+    # Subtest: strips trailing slash except root
+    ok 3 - strips trailing slash except root
+      ---
+      duration_ms: 0.155083
+      type: 'test'
+      ...
+    # Subtest: collapses .html + trailing slash in one pass
+    ok 4 - collapses .html + trailing slash in one pass
+      ---
+      duration_ms: 0.130708
+      type: 'test'
+      ...
+    # Subtest: maps /index.html to /
+    ok 5 - maps /index.html to /
+      ---
+      duration_ms: 0.078792
+      type: 'test'
+      ...
+    # Subtest: collapses nested …/index.html to the parent path
+    ok 6 - collapses nested …/index.html to the parent path
+      ---
+      duration_ms: 0.06975
+      type: 'test'
+      ...
+    1..6
+ok 1 - cleanPath
+  ---
+  duration_ms: 1.8045
+  type: 'suite'
+  ...
+# Subtest: pathNeedsCleaning
+    # Subtest: detects dirty paths
+    ok 1 - detects dirty paths
+      ---
+      duration_ms: 0.188375
+      type: 'test'
+      ...
+    1..1
+ok 2 - pathNeedsCleaning
+  ---
+  duration_ms: 0.522667
+  type: 'suite'
+  ...
+# Subtest: aliasPath + canonicalPath
+    # Subtest: aliases the bare ideas index to the live archive
+    ok 1 - aliases the bare ideas index to the live archive
+      ---
+      duration_ms: 0.223125
+      type: 'test'
+      ...
+    # Subtest: folds slash/.html cleaning into the ideas alias in one hop
+    ok 2 - folds slash/.html cleaning into the ideas alias in one hop
+      ---
+      duration_ms: 0.919459
+      type: 'test'
+      ...
+    # Subtest: flags alias-only paths as needing a redirect
+    ok 3 - flags alias-only paths as needing a redirect
+      ---
+      duration_ms: 1.109708
+      type: 'test'
+      ...
+    1..3
+ok 3 - aliasPath + canonicalPath
+  ---
+  duration_ms: 2.457625
+  type: 'suite'
+  ...
+# Subtest: host helpers
+    # Subtest: recognizes production hosts case-insensitively
+    ok 1 - recognizes production hosts case-insensitively
+      ---
+      duration_ms: 0.113417
+      type: 'test'
+      ...
+    1..1
+ok 4 - host helpers
+  ---
+  duration_ms: 0.166417
+  type: 'suite'
+  ...
+# (node:76777) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/idea-slugs.generated.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: idea-slugs.generated
+    # Subtest: matches ideas/manifest.json exactly (sorted)
+    ok 1 - matches ideas/manifest.json exactly (sorted)
+      ---
+      duration_ms: 4.967042
+      type: 'test'
+      ...
+    # Subtest: rejects unknown slugs used in GSC soft-404 samples
+    ok 2 - rejects unknown slugs used in GSC soft-404 samples
+      ---
+      duration_ms: 0.1385
+      type: 'test'
+      ...
+    # Subtest: accepts a real manifest slug
+    ok 3 - accepts a real manifest slug
+      ---
+      duration_ms: 0.13475
+      type: 'test'
+      ...
+    1..3
+ok 5 - idea-slugs.generated
+  ---
+  duration_ms: 6.062125
+  type: 'suite'
+  ...
+# Subtest: next.config legacy fallback
+    # Subtest: does not proxy unknown paths to a legacy origin
+    ok 1 - does not proxy unknown paths to a legacy origin
+      ---
+      duration_ms: 1.129458
+      type: 'test'
+      ...
+    1..1
+ok 6 - next.config legacy fallback
+  ---
+  duration_ms: 2.008458
+  type: 'suite'
+  ...
+# Subtest: robots.ts crawl-budget disallow
+    # Subtest: disallows private activation and auth surfaces
+    ok 1 - disallows private activation and auth surfaces
+      ---
+      duration_ms: 0.915125
+      type: 'test'
+      ...
+    1..1
+ok 7 - robots.ts crawl-budget disallow
+  ---
+  duration_ms: 1.468875
+  type: 'suite'
+  ...
+# (node:76780) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/tenant-host.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: normalizeHost
+    # Subtest: lowercases and strips a port
+    ok 1 - lowercases and strips a port
+      ---
+      duration_ms: 1.080167
+      type: 'test'
+      ...
+    # Subtest: rejects a trailing dot rather than normalizing it away
+    ok 2 - rejects a trailing dot rather than normalizing it away
+      ---
+      duration_ms: 0.123125
+      type: 'test'
+      ...
+    # Subtest: rejects credentials, paths, queries, and whitespace
+    ok 3 - rejects credentials, paths, queries, and whitespace
+      ---
+      duration_ms: 2.521208
+      type: 'test'
+      ...
+    # Subtest: rejects punycode labels anywhere in the host
+    ok 4 - rejects punycode labels anywhere in the host
+      ---
+      duration_ms: 0.102125
+      type: 'test'
+      ...
+    # Subtest: rejects malformed shapes
+    ok 5 - rejects malformed shapes
+      ---
+      duration_ms: 0.10475
+      type: 'test'
+      ...
+    # Subtest: accepts bracketed IPv6 loopback and rejects other literals
+    ok 6 - accepts bracketed IPv6 loopback and rejects other literals
+      ---
+      duration_ms: 0.068875
+      type: 'test'
+      ...
+    1..6
+ok 8 - normalizeHost
+  ---
+  duration_ms: 5.088291
+  type: 'suite'
+  ...
+# Subtest: classifyHost — platform hosts
+    # Subtest: classifies apex and www, with www winning over the reserved list
+    ok 1 - classifies apex and www, with www winning over the reserved list
+      ---
+      duration_ms: 0.315625
+      type: 'test'
+      ...
+    # Subtest: classifies local development hosts
+    ok 2 - classifies local development hosts
+      ---
+      duration_ms: 0.357541
+      type: 'test'
+      ...
+    # Subtest: classifies Vercel preview deployments as platform, never tenant
+    ok 3 - classifies Vercel preview deployments as platform, never tenant
+      ---
+      duration_ms: 0.245333
+      type: 'test'
+      ...
+    1..3
+ok 9 - classifyHost — platform hosts
+  ---
+  duration_ms: 1.277375
+  type: 'suite'
+  ...
+# Subtest: classifyHost — tenant hosts
+    # Subtest: accepts well-formed single-label slugs
+    ok 1 - accepts well-formed single-label slugs
+      ---
+      duration_ms: 0.5925
+      type: 'test'
+      ...
+    # Subtest: carries the slug through case and port variance
+    ok 2 - carries the slug through case and port variance
+      ---
+      duration_ms: 0.19425
+      type: 'test'
+      ...
+    # Subtest: never classifies a multi-label subdomain as a tenant
+    ok 3 - never classifies a multi-label subdomain as a tenant
+      ---
+      duration_ms: 0.103
+      type: 'test'
+      ...
+    # Subtest: never classifies a lookalike parent domain as a tenant
+    ok 4 - never classifies a lookalike parent domain as a tenant
+      ---
+      duration_ms: 0.081541
+      type: 'test'
+      ...
+    # Subtest: rejects malformed slugs
+    ok 5 - rejects malformed slugs
+      ---
+      duration_ms: 0.095125
+      type: 'test'
+      ...
+    # Subtest: treats the bare suffix as unknown
+    ok 6 - treats the bare suffix as unknown
+      ---
+      duration_ms: 0.043375
+      type: 'test'
+      ...
+    1..6
+ok 10 - classifyHost — tenant hosts
+  ---
+  duration_ms: 1.268959
+  type: 'suite'
+  ...
+# Subtest: classifyHost — reserved subdomains
+    # Subtest: reserves every name in the frozen list
+    ok 1 - reserves every name in the frozen list
+      ---
+      duration_ms: 0.226208
+      type: 'test'
+      ...
+    # Subtest: covers the names most useful for phishing our own users
+    ok 2 - covers the names most useful for phishing our own users
+      ---
+      duration_ms: 0.050917
+      type: 'test'
+      ...
+    # Subtest: refuses a reserved name through isValidTenantSlug too
+    ok 3 - refuses a reserved name through isValidTenantSlug too
+      ---
+      duration_ms: 0.147875
+      type: 'test'
+      ...
+    1..3
+ok 11 - classifyHost — reserved subdomains
+  ---
+  duration_ms: 0.48325
+  type: 'suite'
+  ...
+# Subtest: isTenantHost and tenantHostForSlug
+    # Subtest: agrees with classifyHost
+    ok 1 - agrees with classifyHost
+      ---
+      duration_ms: 0.080917
+      type: 'test'
+      ...
+    # Subtest: round-trips a valid slug and refuses an invalid one
+    ok 2 - round-trips a valid slug and refuses an invalid one
+      ---
+      duration_ms: 0.058583
+      type: 'test'
+      ...
+    1..2
+ok 12 - isTenantHost and tenantHostForSlug
+  ---
+  duration_ms: 0.185208
+  type: 'suite'
+  ...
+# Subtest: WP28-S2 wiring
+    # Subtest: classifies the host before canonicalizing the path
+    ok 1 - classifies the host before canonicalizing the path
+      ---
+      duration_ms: 15.541625
+      type: 'test'
+      ...
+    # Subtest: rejects a host with a real status, never notFound()
+    ok 2 - rejects a host with a real status, never notFound()
+      ---
+      duration_ms: 5.453833
+      type: 'test'
+      ...
+    1..2
+ok 13 - WP28-S2 wiring
+  ---
+  duration_ms: 21.19075
+  type: 'suite'
+  ...
+1..13
+# tests 38
+# suites 13
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 162.476625
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  2 passed (2)
+      Tests  76 passed (76)
+   Start at  21:11:47
+   Duration  1.27s (transform 176ms, setup 0ms, import 523ms, tests 63ms, environment 109ms)
+
+
+> weekendmvp@1.0.0 test:auth
+> vitest run tests/auth
+
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  5 passed (5)
+      Tests  73 passed (73)
+   Start at  21:11:48
+   Duration  523ms (transform 369ms, setup 0ms, import 585ms, tests 39ms, environment 296ms)
+
+
+> weekendmvp@1.0.0 test:security
+> node --experimental-strip-types --test tests/security/*.test.mjs && vitest run tests/security/wp27-templates.test.tsx tests/security/wp28-templates-tenant.test.tsx
+
+TAP version 13
+# Subtest: every statically referenced environment key is named in .env.example
+ok 1 - every statically referenced environment key is named in .env.example
+  ---
+  duration_ms: 632.623084
+  type: 'test'
+  ...
+# Subtest: environment documentation parsing retains names only
+ok 2 - environment documentation parsing retains names only
+  ---
+  duration_ms: 0.373375
+  type: 'test'
+  ...
+# Subtest: configured JSX accessibility rules are errors
+ok 3 - configured JSX accessibility rules are errors
+  ---
+  duration_ms: 1383.468667
+  type: 'test'
+  ...
+# Subtest: an image without alt text fails the lint gate
+ok 4 - an image without alt text fails the lint gate
+  ---
+  duration_ms: 174.08675
+  type: 'test'
+  ...
+# Subtest: platform and legacy Stripe handlers remain purpose-separated
+ok 5 - platform and legacy Stripe handlers remain purpose-separated
+  ---
+  duration_ms: 7.062416
+  type: 'test'
+  ...
+# Subtest: platform bridge secret is declared and read through typed Convex env
+ok 6 - platform bridge secret is declared and read through typed Convex env
+  ---
+  duration_ms: 1.808333
+  type: 'test'
+  ...
+# Subtest: billing UI is private, server-confirmed, and keyboard-operable
+ok 7 - billing UI is private, server-confirmed, and keyboard-operable
+  ---
+  duration_ms: 7.704167
+  type: 'test'
+  ...
+# Subtest: private WP25 routes remain noindex
+ok 8 - private WP25 routes remain noindex
+  ---
+  duration_ms: 7.535125
+  type: 'test'
+  ...
+# Subtest: idea renderer parks the preview link (R5) without changing metadata or JSON-LD
+ok 9 - idea renderer parks the preview link (R5) without changing metadata or JSON-LD
+  ---
+  duration_ms: 6.017083
+  type: 'test'
+  ...
+# Subtest: WP25 does not implement the future preview route
+ok 10 - WP25 does not implement the future preview route
+  ---
+  duration_ms: 2.115792
+  type: 'test'
+  ...
+# (node:76859) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: bridge secret must be present and long enough
+ok 11 - bridge secret must be present and long enough
+  ---
+  duration_ms: 1.214333
+  type: 'test'
+  ...
+# Subtest: signature covers the exact serialized payload and never leaks the secret
+ok 12 - signature covers the exact serialized payload and never leaks the secret
+  ---
+  duration_ms: 0.599709
+  type: 'test'
+  ...
+# Subtest: a genuine signature verifies
+ok 13 - a genuine signature verifies
+  ---
+  duration_ms: 8.171375
+  type: 'test'
+  ...
+# Subtest: a tampered payload fails verification
+ok 14 - a tampered payload fails verification
+  ---
+  duration_ms: 1.213708
+  type: 'test'
+  ...
+# Subtest: a signature made with the wrong secret fails verification
+ok 15 - a signature made with the wrong secret fails verification
+  ---
+  duration_ms: 0.629834
+  type: 'test'
+  ...
+# Subtest: malformed signatures fail verification rather than throwing
+ok 16 - malformed signatures fail verification rather than throwing
+  ---
+  duration_ms: 3.015375
+  type: 'test'
+  ...
+# Subtest: a different secret produces a different signature
+ok 17 - a different secret produces a different signature
+  ---
+  duration_ms: 0.464709
+  type: 'test'
+  ...
+# Subtest: the trusted Vercel header wins over client-settable x-forwarded-for
+ok 18 - the trusted Vercel header wins over client-settable x-forwarded-for
+  ---
+  duration_ms: 16.660125
+  type: 'test'
+  ...
+# Subtest: rate-limit key takes the first entry of a forwarded chain
+ok 19 - rate-limit key takes the first entry of a forwarded chain
+  ---
+  duration_ms: 0.59675
+  type: 'test'
+  ...
+# Subtest: rate-limit key falls back to x-real-ip, then to a shared bucket
+ok 20 - rate-limit key falls back to x-real-ip, then to a shared bucket
+  ---
+  duration_ms: 0.7115
+  type: 'test'
+  ...
+# Subtest: only real IP shapes become keys, bounding bucket cardinality
+ok 21 - only real IP shapes become keys, bounding bucket cardinality
+  ---
+  duration_ms: 0.702542
+  type: 'test'
+  ...
+# Subtest: request parser rejects unknown keys rather than dropping them
+ok 22 - request parser rejects unknown keys rather than dropping them
+  ---
+  duration_ms: 0.219583
+  type: 'test'
+  ...
+# Subtest: request parser constrains the slug shape
+ok 23 - request parser constrains the slug shape
+  ---
+  duration_ms: 0.316375
+  type: 'test'
+  ...
+# Subtest: request parser rejects a non-object body
+ok 24 - request parser rejects a non-object body
+  ---
+  duration_ms: 0.200709
+  type: 'test'
+  ...
+# Subtest: the capability is stashed per-session, never persistently
+ok 25 - the capability is stashed per-session, never persistently
+  ---
+  duration_ms: 12.514333
+  type: 'test'
+  ...
+# Subtest: the stash is cleared only after the server confirms
+ok 26 - the stash is cleared only after the server confirms
+  ---
+  duration_ms: 3.375709
+  type: 'test'
+  ...
+# Subtest: the token never reaches an analytics payload
+ok 27 - the token never reaches an analytics payload
+  ---
+  duration_ms: 14.228542
+  type: 'test'
+  ...
+# Subtest: login shape-checks the token with the server's own normalizer
+ok 28 - login shape-checks the token with the server's own normalizer
+  ---
+  duration_ms: 4.593792
+  type: 'test'
+  ...
+# Subtest: signup also shape-checks claimPreview before stashing
+ok 29 - signup also shape-checks claimPreview before stashing
+  ---
+  duration_ms: 5.140958
+  type: 'test'
+  ...
+# Subtest: /signin forwards claimPreview to /login without folding it into returnTo
+ok 30 - /signin forwards claimPreview to /login without folding it into returnTo
+  ---
+  duration_ms: 5.243917
+  type: 'test'
+  ...
+# Subtest: the claim derives identity server-side and takes no owner argument
+ok 31 - the claim derives identity server-side and takes no owner argument
+  ---
+  duration_ms: 5.859708
+  type: 'test'
+  ...
+# Subtest: every claim denial is the same generic not-found
+ok 32 - every claim denial is the same generic not-found
+  ---
+  duration_ms: 3.690625
+  type: 'test'
+  ...
+# Subtest: a claimed preview reserves no tenant hostname
+ok 33 - a claimed preview reserves no tenant hostname
+  ---
+  duration_ms: 2.623792
+  type: 'test'
+  ...
+# (node:76861) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/platform/preview/_server.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a preview response is never stored by a shared cache
+ok 34 - a preview response is never stored by a shared cache
+  ---
+  duration_ms: 14.663209
+  type: 'test'
+  ...
+# Subtest: a preview is non-indexable at the header level, not only in the document
+ok 35 - a preview is non-indexable at the header level, not only in the document
+  ---
+  duration_ms: 1.221292
+  type: 'test'
+  ...
+# Subtest: the header rule is path-scoped so it also covers the not-found response
+ok 36 - the header rule is path-scoped so it also covers the not-found response
+  ---
+  duration_ms: 6.92425
+  type: 'test'
+  ...
+# Subtest: every failure mode reaches one notFound call
+ok 37 - every failure mode reaches one notFound call
+  ---
+  duration_ms: 2.191375
+  type: 'test'
+  ...
+# Subtest: the generic page never says which failure happened
+ok 38 - the generic page never says which failure happened
+  ---
+  duration_ms: 1.415959
+  type: 'test'
+  ...
+# Subtest: the preview render is never cached by the framework
+ok 39 - the preview render is never cached by the framework
+  ---
+  duration_ms: 3.055917
+  type: 'test'
+  ...
+# Subtest: no lead-write path is reachable from the preview
+ok 40 - no lead-write path is reachable from the preview
+  ---
+  duration_ms: 1.44425
+  type: 'test'
+  ...
+# Subtest: the preview does not resolve or imply a tenant host
+ok 41 - the preview does not resolve or imply a tenant host
+  ---
+  duration_ms: 0.887167
+  type: 'test'
+  ...
+# Subtest: the preview route is absent from the sitemap
+ok 42 - the preview route is absent from the sitemap
+  ---
+  duration_ms: 1.422541
+  type: 'test'
+  ...
+# Subtest: the capability clock is server-sourced and not a public argument
+ok 43 - the capability clock is server-sourced and not a public argument
+  ---
+  duration_ms: 1.821583
+  type: 'test'
+  ...
+# Subtest: an Origin header is always compared against something
+ok 44 - an Origin header is always compared against something
+  ---
+  duration_ms: 18.777458
+  type: 'test'
+  ...
+# Subtest: the preview API no longer borrows the billing origin variable
+ok 45 - the preview API no longer borrows the billing origin variable
+  ---
+  duration_ms: 2.082125
+  type: 'test'
+  ...
+# Subtest: preview analytics carry no token and no visitor identity
+ok 46 - preview analytics carry no token and no visitor identity
+  ---
+  duration_ms: 1.0365
+  type: 'test'
+  ...
+# Subtest: no vendor ever receives a URL carrying a capability
+ok 47 - no vendor ever receives a URL carrying a capability
+  ---
+  duration_ms: 1.71475
+  type: 'test'
+  ...
+# Subtest: the redaction covers both channels the token travels in
+ok 48 - the redaction covers both channels the token travels in
+  ---
+  duration_ms: 2.619167
+  type: 'test'
+  ...
+# (node:76862) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/app/api/tenant/lead/_server.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: an empty body is the accepted shape
+ok 49 - an empty body is the accepted shape
+  ---
+  duration_ms: 2.026708
+  type: 'test'
+  ...
+# Subtest: a personal-data key is refused even when its value is empty
+ok 50 - a personal-data key is refused even when its value is empty
+  ---
+  duration_ms: 0.669625
+  type: 'test'
+  ...
+# Subtest: every personal-data field family is refused
+ok 51 - every personal-data field family is refused
+  ---
+  duration_ms: 0.359625
+  type: 'test'
+  ...
+# Subtest: an email-shaped value is refused under any key name
+ok 52 - an email-shaped value is refused under any key name
+  ---
+  duration_ms: 0.908791
+  type: 'test'
+  ...
+# Subtest: free text is refused however it is labelled
+ok 53 - free text is refused however it is labelled
+  ---
+  duration_ms: 0.369917
+  type: 'test'
+  ...
+# Subtest: nested objects and arrays are refused rather than walked
+ok 54 - nested objects and arrays are refused rather than walked
+  ---
+  duration_ms: 0.117292
+  type: 'test'
+  ...
+# Subtest: an oversized body is refused
+ok 55 - an oversized body is refused
+  ---
+  duration_ms: 0.238166
+  type: 'test'
+  ...
+# Subtest: the mutation derives every identifier from the hostname
+ok 56 - the mutation derives every identifier from the hostname
+  ---
+  duration_ms: 41.366083
+  type: 'test'
+  ...
+# Subtest: only a published site accepts a lead
+ok 57 - only a published site accepts a lead
+  ---
+  duration_ms: 1.423958
+  type: 'test'
+  ...
+# Subtest: no lead is ever stored with personal data
+ok 58 - no lead is ever stored with personal data
+  ---
+  duration_ms: 2.469709
+  type: 'test'
+  ...
+# Subtest: the rate limit is consumed before the write and throws
+ok 59 - the rate limit is consumed before the write and throws
+  ---
+  duration_ms: 1.592292
+  type: 'test'
+  ...
+# Subtest: leads are readable only through an owner-scoped query
+ok 60 - leads are readable only through an owner-scoped query
+  ---
+  duration_ms: 0.926042
+  type: 'test'
+  ...
+# Subtest: the route re-derives the host and never trusts the rewrite
+ok 61 - the route re-derives the host and never trusts the rewrite
+  ---
+  duration_ms: 1.284459
+  type: 'test'
+  ...
+# Subtest: the endpoint is unreachable from a platform host
+ok 62 - the endpoint is unreachable from a platform host
+  ---
+  duration_ms: 0.878333
+  type: 'test'
+  ...
+# Subtest: the response echoes nothing about the lead
+ok 63 - the response echoes nothing about the lead
+  ---
+  duration_ms: 0.763708
+  type: 'test'
+  ...
+# Subtest: the published templates stay inert — no form was added
+ok 64 - the published templates stay inert — no form was added
+  ---
+  duration_ms: 0.895292
+  type: 'test'
+  ...
+# Subtest: the tenant route is unreachable from a platform host
+ok 65 - the tenant route is unreachable from a platform host
+  ---
+  duration_ms: 18.561791
+  type: 'test'
+  ...
+# Subtest: a tenant host is rewritten, never redirected
+ok 66 - a tenant host is rewritten, never redirected
+  ---
+  duration_ms: 4.573542
+  type: 'test'
+  ...
+# Subtest: a tenant host serves exactly one path
+ok 67 - a tenant host serves exactly one path
+  ---
+  duration_ms: 4.50625
+  type: 'test'
+  ...
+# Subtest: the route renders without preview chrome
+ok 68 - the route renders without preview chrome
+  ---
+  duration_ms: 4.691459
+  type: 'test'
+  ...
+# Subtest: preview chrome is a required prop, so it cannot be defaulted on
+ok 69 - preview chrome is a required prop, so it cannot be defaulted on
+  ---
+  duration_ms: 9.149917
+  type: 'test'
+  ...
+# Subtest: the canonical is derived from the slug, never from the Host header
+ok 70 - the canonical is derived from the slug, never from the Host header
+  ---
+  duration_ms: 2.78475
+  type: 'test'
+  ...
+# Subtest: the route never points at the platform host
+ok 71 - the route never points at the platform host
+  ---
+  duration_ms: 1.731375
+  type: 'test'
+  ...
+# Subtest: a published customer site is indexable
+ok 72 - a published customer site is indexable
+  ---
+  duration_ms: 1.574083
+  type: 'test'
+  ...
+# Subtest: the route adds no lead-write path
+ok 73 - the route adds no lead-write path
+  ---
+  duration_ms: 5.890541
+  type: 'test'
+  ...
+# Subtest: the render spec is re-validated at the render boundary
+ok 74 - the render spec is re-validated at the render boundary
+  ---
+  duration_ms: 1.76525
+  type: 'test'
+  ...
+# Subtest: the route is never prerendered
+ok 75 - the route is never prerendered
+  ---
+  duration_ms: 2.542333
+  type: 'test'
+  ...
+# Subtest: platform chrome is suppressed on a tenant origin
+ok 76 - platform chrome is suppressed on a tenant origin
+  ---
+  duration_ms: 3.30225
+  type: 'test'
+  ...
+# Subtest: the public resolver exposes only the render spec
+ok 77 - the public resolver exposes only the render spec
+  ---
+  duration_ms: 1.007625
+  type: 'test'
+  ...
+# Subtest: the resolver cannot throw a 500 on duplicate hostnames
+ok 78 - the resolver cannot throw a 500 on duplicate hostnames
+  ---
+  duration_ms: 1.017959
+  type: 'test'
+  ...
+# Subtest: the tenant route has its own bare not-found boundary
+ok 79 - the tenant route has its own bare not-found boundary
+  ---
+  duration_ms: 2.145875
+  type: 'test'
+  ...
+# Subtest: llms.txt cannot be inherited by a tenant host
+ok 80 - llms.txt cannot be inherited by a tenant host
+  ---
+  duration_ms: 2.862791
+  type: 'test'
+  ...
+# Subtest: the render spec is read once per request
+ok 81 - the render spec is read once per request
+  ---
+  duration_ms: 2.215167
+  type: 'test'
+  ...
+# Subtest: the middleware gate and the route resolver cannot diverge
+ok 82 - the middleware gate and the route resolver cannot diverge
+  ---
+  duration_ms: 1.186916
+  type: 'test'
+  ...
+1..82
+# tests 82
+# suites 0
+# pass 82
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1851.665708
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  2 passed (2)
+      Tests  84 passed (84)
+   Start at  21:11:51
+   Duration  348ms (transform 116ms, setup 0ms, import 201ms, tests 92ms, environment 75ms)
+
+
+> weekendmvp@1.0.0 test:sitemap
+> node --experimental-strip-types --test tests/sitemap/*.test.mjs
+
+TAP version 13
+# (node:76911) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/lib/sitemap-data.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: parsePublishedAt
+    # Subtest: parses ISO date strings to epoch ms
+    ok 1 - parses ISO date strings to epoch ms
+      ---
+      duration_ms: 0.379375
+      type: 'test'
+      ...
+    # Subtest: passes through finite numbers
+    ok 2 - passes through finite numbers
+      ---
+      duration_ms: 0.057125
+      type: 'test'
+      ...
+    # Subtest: rejects junk
+    ok 3 - rejects junk
+      ---
+      duration_ms: 0.064875
+      type: 'test'
+      ...
+    1..3
+ok 1 - parsePublishedAt
+  ---
+  duration_ms: 0.968083
+  type: 'suite'
+  ...
+# Subtest: loadIdeaPublishedAtMap
+    # Subtest: loads real publish dates from ideas/manifest.json
+    ok 1 - loads real publish dates from ideas/manifest.json
+      ---
+      duration_ms: 5.370417
+      type: 'test'
+      ...
+    1..1
+ok 2 - loadIdeaPublishedAtMap
+  ---
+  duration_ms: 5.547541
+  type: 'suite'
+  ...
+1..2
+# tests 4
+# suites 2
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 109.892583
+
+> weekendmvp@1.0.0 test:convex
+> vitest run convex
+
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  26 passed (26)
+      Tests  348 passed (348)
+   Start at  21:11:52
+   Duration  2.39s (transform 11.64s, setup 0ms, import 18.50s, tests 2.91s, environment 2.43s)
+
+
+> weekendmvp@1.0.0 test:engine
+> vitest run lib/engine
+
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  4 passed (4)
+      Tests  62 passed (62)
+   Start at  21:11:55
+   Duration  309ms (transform 277ms, setup 0ms, import 340ms, tests 90ms, environment 118ms)
+
+
+> weekendmvp@1.0.0 test:home
+> vitest run tests/home
+
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  5 passed (5)
+      Tests  34 passed (34)
+   Start at  21:11:56
+   Duration  232ms (transform 161ms, setup 0ms, import 278ms, tests 39ms, environment 119ms)
+
+
+> weekendmvp@1.0.0 test:platform
+> vitest run tests/platform
+
+
+ RUN  v4.1.10 /Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926
+
+
+ Test Files  11 passed (11)
+      Tests  132 passed (132)
+   Start at  21:11:56
+   Duration  359ms (transform 1.22s, setup 0ms, import 1.54s, tests 74ms, environment 338ms)
+

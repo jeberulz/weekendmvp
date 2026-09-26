@@ -1,0 +1,118 @@
+
+> weekendmvp@1.0.0 build
+> next build
+
+▲ Next.js 16.3.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 18ms
+- Cache Components enabled
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 1593ms
+  Running TypeScript ...
+  Finished TypeScript in 6.2s ...
+  Collecting page data using 14 workers ...
+  Generating static pages using 14 workers (0/428) ...
+  Generating static pages using 14 workers (107/428) 
+  Generating static pages using 14 workers (214/428) 
+  Generating static pages using 14 workers (321/428) 
+✓ Generating static pages using 14 workers (428/428) in 9.2s
+  Finalizing page optimization ...
+
+Route (app)                                             Revalidate  Expire
+┌ ○ /                                                           1h      1d
+├ ○ /_not-found                                                 1d      1w
+├ ○ /about                                                      1d      1w
+├ ƒ /api/ideas-subscribe
+├ ƒ /api/ideas-verify
+├ ƒ /api/ideas/prompt-pack
+├ ƒ /api/ideas/prompts
+├ ƒ /api/platform/billing/checkout
+├ ƒ /api/platform/billing/webhook
+├ ƒ /api/platform/preview/generate
+├ ƒ /api/platform/saved
+├ ƒ /api/revalidate
+├ ƒ /api/stripe-webhook
+├ ƒ /api/subscribe
+├ ƒ /api/tenant/lead
+├ ○ /articles                                                   1h      1d
+├   /articles/[slug]                                            1d      1w
+│ ├ ◐ /articles/[slug]                                          1d      1w
+│ ├ ○ /articles/5-claude-code-skills-for-solo-founders          1h      1d
+│ ├ ○ /articles/5-side-projects-that-make-money                 1h      1d
+│ └ ◐ [+83 more paths]
+├ ◐ /auth/callback                                              1d      1w
+├   /build-with/[tool]                                          1d      1w
+│ ├ ◐ /build-with/[tool]                                        1d      1w
+│ ├ ○ /build-with/cursor                                        1h      1d
+│ ├ ○ /build-with/claude                                        1h      1d
+│ └ ◐ [+7 more paths]
+├   /build/[slug]                                               1d      1w
+│ └ ◐ /build/[slug]                                             1d      1w
+├ ○ /dare                                                       1d      1w
+├ ◐ /dashboard                                                  1h      1d
+├ ◐ /dashboard/billing                                          1h      1d
+├ ◐ /dashboard/builds                                           1h      1d
+├   /dashboard/builds/[planId]                                  1h      1d
+│ └ ◐ /dashboard/builds/[planId]                                1h      1d
+├ ◐ /dashboard/builds/new                                       1h      1d
+├ ◐ /dashboard/compare                                          1h      1d
+├ ◐ /dashboard/explore                                          1h      1d
+├ ◐ /dashboard/new                                              1h      1d
+├ ◐ /dashboard/projects                                         1h      1d
+├   /dashboard/projects/[projectId]                             1h      1d
+│ └ ◐ /dashboard/projects/[projectId]                           1h      1d
+├ ◐ /dashboard/saved                                            1h      1d
+├ ◐ /dashboard/settings                                         1h      1d
+├ ◐ /email-signin                                               1d      1w
+├   /ideas-for/[audience]                                       1d      1w
+│ ├ ◐ /ideas-for/[audience]                                     1d      1w
+│ ├ ○ /ideas-for/developers                                     1h      1d
+│ ├ ○ /ideas-for/designers                                      1h      1d
+│ └ ◐ [+8 more paths]
+├   /ideas/[slug]                                               1d      1w
+│ ├ ◐ /ideas/[slug]                                             1d      1w
+│ ├ ○ /ideas/abandoned-cart-recovery                            1h      1d
+│ ├ ○ /ideas/adspark                                            1h      1d
+│ └ ◐ [+246 more paths]
+├ ƒ /ideas/today
+├ ○ /john-iseghohi                                              1h      1d
+├ ◐ /links                                                      1d      1w
+├ ◐ /login                                                      1d      1w
+├ ○ /newsletter                                                 1h      1d
+├   /newsletter/[slug]                                          1d      1w
+│ ├ ◐ /newsletter/[slug]                                        1d      1w
+│ ├ ○ /newsletter/2026-04-20-am                                 1h      1d
+│ ├ ○ /newsletter/2026-04-20-pm                                 1h      1d
+│ └ ◐ [+13 more paths]
+├   /preview/[token]                                            1d      1w
+│ └ ◐ /preview/[token]                                          1d      1w
+├ ○ /privacy-policy                                             1d      1w
+├ ○ /robots.txt
+├ ○ /shipable                                                   1d      1w
+├ ◐ /signin                                                     1d      1w
+├ ◐ /signup                                                     1d      1w
+├   /site/[slug]                                                1d      1w
+│ └ ◐ /site/[slug]                                              1d      1w
+├ ƒ /sitemap.xml
+├   /solve/[problem]                                            1d      1w
+│ ├ ◐ /solve/[problem]                                          1d      1w
+│ ├ ○ /solve/customer-support                                   1h      1d
+│ ├ ○ /solve/lead-generation                                    1h      1d
+│ └ ◐ [+5 more paths]
+├ ○ /starter-kit                                                1d      1w
+└ ○ /startup-ideas                                              1h      1d
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)             prerendered as static content
+◐  (Partial Prerender)  prerendered as static HTML with dynamic server-streamed content
+ƒ  (Dynamic)            server-rendered on demand
+
