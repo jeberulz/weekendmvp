@@ -1,0 +1,24 @@
+import "server-only";
+
+import { fetchQuery } from "convex/nextjs";
+import { api } from "@/convex/_generated/api";
+import { readMdxFile, type MdxFile } from "@/lib/mdx";
+
+type StoredBody = { bodyMode?: string; body?: string };
+
+/** Public pages and member exports share this exact source precedence. */
+export function chooseIdeaBody(file: MdxFile | null, idea: StoredBody | null) {
+  if (file) return { source: "mdx" as const, content: file.content };
+  if (idea?.bodyMode === "convex" && idea.body) {
+    return { source: "convex" as const, content: idea.body };
+  }
+  return null;
+}
+
+/** Backend failures propagate; an unavailable body is not an empty export. */
+export async function readCanonicalIdeaBody(slug: string) {
+  const file = await readMdxFile("content/ideas", slug);
+  if (file) return chooseIdeaBody(file, null);
+  const idea = await fetchQuery(api.ideas.bySlug, { slug });
+  return chooseIdeaBody(null, idea);
+}

@@ -13,6 +13,7 @@ import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
 import { isEngineDraftSlug } from "@/lib/engine-drafts";
+import { chooseIdeaBody } from "@/lib/canonical-idea-body";
 import {
   SITE,
   articleSchema,
@@ -25,7 +26,7 @@ import {
 import { EmailGate } from "@/components/ideas/EmailGate";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
-import { PreviewIdeaCta } from "@/components/ideas/PreviewIdeaCta";
+import { SaveIdeaButton } from "@/components/ideas/SaveIdeaButton";
 import { ideaMdxComponents } from "@/components/ideas/mdx-light";
 import {
   CATEGORY_META,
@@ -184,31 +185,16 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
     ideaOgImage(slug),
   ]);
 
-  if (file) {
-    const fmTitle = file.frontmatter.title;
-    return {
-      source: "mdx",
-      title:
-        idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
-      description: idea?.description ?? excerpt(file.content),
-      content: file.content,
-      idea,
-      ogImage,
-    };
-  }
-
-  if (idea && idea.bodyMode === "convex" && idea.body) {
-    return {
-      source: "convex",
-      title: idea.title,
-      description: idea.description,
-      content: idea.body,
-      idea,
-      ogImage,
-    };
-  }
-
-  return null;
+  const body = chooseIdeaBody(file, idea);
+  if (!body) return null;
+  const fmTitle = file?.frontmatter.title;
+  return {
+    ...body,
+    title: idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
+    description: idea?.description ?? excerpt(body.content),
+    idea,
+    ogImage,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -532,6 +518,11 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                     ))}
                   </ul>
                 ) : null}
+                {/* WP44-S6 Save island. Empty in the server HTML. The fixed
+                    height keeps the layout still when it appears. */}
+                <div className="mt-6 flex min-h-10 flex-wrap items-center gap-x-3 gap-y-2">
+                  <SaveIdeaButton slug={slug} title={title} />
+                </div>
               </header>
 
               {/* Body — server-rendered MDX (or Convex-stored markdown) */}
@@ -541,7 +532,8 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                 codeTheme="github-light"
               />
 
-              <PreviewIdeaCta slug={slug} title={title} />
+              {/* R5: the landing page preview CTA is parked for v1.1.
+                  `PreviewIdeaCta` and `/build/{slug}` stay in the codebase. */}
 
               {/* Explore More (cross-linking) */}
               {idea ? (

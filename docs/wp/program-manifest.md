@@ -145,3 +145,17 @@ WP31 + WP37 -> Wave 6 closeout
 - Gate runners are read-only and findings-first. The worker that built a WP does not provide its only review.
 - Production changes, external sends, charges, DNS/domain mutation, key rotation/removal, and data backfills require the recorded approval and restore steps in `backup-restore.md`.
 - Canonical Weekend MVP content compilation, production activation, rollback, and Idea Engine/editorial access additionally require a server-verified `super_admin` and an immutable privileged-action audit record.
+
+
+## WP44 audit repairs — frozen 2026-09-26
+
+Owner authorized implementation and UX recommendations on PR #81. Lane: Program/Migration; candidate `6891d86d03289c3c57603b6424f5d7b03ce61a50`, base `90859fb2`; audit `7cf31dea`. Implementation branch `codex/wp44-audit-fixes` in the existing isolated audit worktree. Audit report and repair plan are in `docs/reviews/`. This scope supersedes proposal-only status, not the separate subscription/production gates.
+
+| Slice | Scope / writer | Acceptance / wave |
+|---|---|---|
+| R-backend | Backend worker: `convex/**` (sole schema/generated writer), `app/api/subscribe/route.ts`, backend tests; optional new pure helpers in `lib/dashboard/` by coordination | Complete paginated discovery/search/saves with truthful counts; old API compatibility; exact plan invariants and stale-confirmation contract; archive/restore; soft-delete collections/notes; normalized subscription claims. Runtime boundary tests. Reversible additive code wave. |
+| R-ux | UX worker: `components/platform/**`, `components/ideas/SaveIdeaButton.tsx`, `lib/pending-save.ts`, UI helpers/tests | Wire backend pagination/contracts; no lost draft pages; clear optional setup; reliable save retries; visible errors; explicit plan action; honest Finished copy; archive/restore; safe focus, short viewport/zoom, score context. Reversible code wave. |
+| R-runtime | Runtime worker: `app/api/**` except subscribe, `lib/mdx.tsx`, `lib/sitemap-data.ts`, canonical prompt resolver, `next.config.ts`, package/lock, scripts and route/build tests | Verified auth and honest outages; narrow file traces; canonical content/export; real guard assertions; scoped dependency fixes; disposable real-backend setup and repeatable browser harness. Reversible code wave. |
+| R-gate | Independent review and orchestration | Typecheck, lint, full tests, production build, production/full audits, trace inventory, actual local schema/codegen and browser journeys where environment permits. Record unavailable credential-backed gates honestly; do not deploy to production. |
+
+No production mutation, paid activation, publishing activation, merge or deployment. Existing data preserved. Legacy adapters remain through frontend rollback and retire only in a later gated cleanup. Subscription implementation remains a separate WP. Workers may not broaden shared file boundaries.

@@ -1,0 +1,29 @@
+{
+  "commit": "7cf31dea",
+  "server": "local production build on port 3188",
+  "publicIdea": {
+    "status": 200,
+    "canonical": "https://www.weekendmvp.app/ideas/ai-code-reviewer",
+    "jsonLdBlocks": 2
+  },
+  "anonymousDashboard": {
+    "status": 307,
+    "location": "/login?returnTo=%2Fdashboard"
+  },
+  "promptWithoutCookie": 401,
+  "promptPackWithoutCookie": 401,
+  "promptWithInventedJwtAndRefreshCookie": {
+    "status": 200,
+    "promptsReturned": 3,
+    "validAccountUsed": false
+  },
+  "sitemap": {
+    "urls": 384,
+    "privateDashboardUrls": []
+  },
+  "signup": {
+    "observedDestination": "/signup?returnTo=%2Fdashboard%2Fsaved",
+    "usable": false,
+    "reason": "Missing NEXT_PUBLIC_CONVEX_URL in isolated environment; streamed response status alone is insufficient"
+  }
+}

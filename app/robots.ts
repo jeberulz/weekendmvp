@@ -20,14 +20,33 @@ export default function robots(): MetadataRoute.Robots {
     "Bingbot",
     "Googlebot",
   ];
+  // Private / activation surfaces — keep out of the crawl budget. Trailing
+  // slash form matches the existing /api/ + /content/* Disallow style.
+  const privatePaths = [
+    "/api/",
+    "/content/social/",
+    "/content/video/",
+    "/preview/",
+    "/login/",
+    "/signup/",
+    "/dashboard/",
+    "/build/",
+  ];
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/content/social/", "/content/video/"],
+        disallow: privatePaths,
       },
-      ...ai.map((userAgent) => ({ userAgent, allow: "/" })),
+      // AI groups previously Allow:/ only, which overrode * Disallows for
+      // those bots. Mirror the private Disallow list so preview/auth/build
+      // stay out of AEO crawlers too.
+      ...ai.map((userAgent) => ({
+        userAgent,
+        allow: "/",
+        disallow: privatePaths,
+      })),
     ],
     sitemap: `${SITE}/sitemap.xml`,
     host: SITE,

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { FAQS } from "@/components/home/content";
+import { HomeMotion } from "@/components/home/motion/HomeMotion";
 import { BuildWithAI } from "@/components/home/sections/BuildWithAI";
 import { FinalCall } from "@/components/home/sections/FinalCall";
 import { FounderNote } from "@/components/home/sections/FounderNote";
@@ -10,6 +11,7 @@ import { IdeaOfTheWeek } from "@/components/home/sections/IdeaOfTheWeek";
 import { InsideEveryIdea } from "@/components/home/sections/InsideEveryIdea";
 import { StarterKit } from "@/components/home/sections/StarterKit";
 import { WeekendTest } from "@/components/home/sections/WeekendTest";
+import { WhatIs } from "@/components/home/sections/WhatIs";
 import { YourWeekend } from "@/components/home/sections/YourWeekend";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { newsreaderEditorial } from "@/lib/fonts";
@@ -18,26 +20,35 @@ import {
   SITE,
   buildGraph,
   faqPageSchema,
+  itemListSchema,
   organizationSchema,
   personSchema,
   softwareApplicationSchema,
+  webPageSchema,
   websiteSchema,
 } from "@/lib/seo";
 
-const TITLE = "Weekend MVP | Startup ideas you can build in a weekend";
+function homeTitle(ideaCount: number) {
+  return `Weekend MVP | ${ideaCount} Startup Ideas You Can Build in a Weekend`;
+}
+
+function homeDescription(ideaCount: number) {
+  return `${ideaCount} researched startup ideas sized for one weekend — each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job. Ship by Sunday.`;
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const { totals } = await getHomeData();
-  const description = `${totals.ideas} researched startup ideas sized for one weekend, each with copy-paste prompts for Cursor, Claude, and Lovable. Keep your job and ship by Sunday.`;
+  const title = homeTitle(totals.ideas);
+  const description = homeDescription(totals.ideas);
   return {
-    title: { absolute: TITLE },
+    title: { absolute: title },
     description,
     authors: [{ name: "John Iseghohi" }],
     alternates: { canonical: "/" },
     openGraph: {
       type: "website",
       url: `${SITE}/`,
-      title: TITLE,
+      title,
       description,
       images: [
         {
@@ -51,18 +62,22 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: TITLE,
+      title,
       description,
       images: [`${SITE}/image/og-image.png`],
     },
     verification: {
-      google: "google-site-verification=HCdXKcfa0MioAEpD-uVIkfFOjcb3CodPcmdc7yxAuRM",
+      google: "HCdXKcfa0MioAEpD-uVIkfFOjcb3CodPcmdc7yxAuRM",
     },
   };
 }
 
 export default async function HomePage() {
   const data = await getHomeData();
+  const title = homeTitle(data.totals.ideas);
+  const description = homeDescription(data.totals.ideas);
+  const pageUrl = `${SITE}/`;
+
   return (
     <main className={`${newsreaderEditorial.variable} bg-home-paper font-sans text-home-ink selection:bg-home-orange-light/40`}>
       <JsonLd
@@ -70,17 +85,31 @@ export default async function HomePage() {
           personSchema(),
           organizationSchema(),
           websiteSchema(),
+          webPageSchema({
+            name: title,
+            description,
+            url: pageUrl,
+            id: pageUrl,
+            speakableCssSelectors: ["#home-hero-title", "#home-what-is"],
+          }),
           softwareApplicationSchema({
+            id: `${SITE}/#starter-kit`,
             name: "Weekend MVP Starter Kit",
             applicationCategory: "DeveloperApplication",
+            url: `${SITE}/starter-kit`,
             description:
               "The checklist, templates, and prompts to build a 3-screen MVP and launch a waitlist in one weekend.",
             offers: { price: "0", priceCurrency: "USD" },
           }),
-          faqPageSchema(FAQS),
+          faqPageSchema(FAQS, { id: `${SITE}/#faq` }),
+          itemListSchema(
+            data.newest.map((row) => ({ slug: row.slug, title: row.title })),
+            { id: `${SITE}/#idea-index`, name: "Newest startup ideas on Weekend MVP" },
+          ),
         )}
       />
       <Hero idea={data.hero} total={data.totals.ideas} />
+      <WhatIs />
       <IdeaLibrary total={data.totals.ideas} categories={data.totals.categories} rows={data.newest} />
       <IdeaOfTheWeek idea={data.spotlight} weekLabel={data.week.label} total={data.totals.ideas} />
       <WeekendTest averageHours={data.totals.averageHours} />
@@ -90,6 +119,7 @@ export default async function HomePage() {
       <StarterKit />
       <FounderNote />
       <FinalCall total={data.totals.ideas} strip={data.strip} />
+      <HomeMotion />
     </main>
   );
 }

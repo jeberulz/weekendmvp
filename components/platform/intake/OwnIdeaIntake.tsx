@@ -418,10 +418,11 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
 
   if (loading) {
     return (
-      <div aria-label="Loading your draft" className="space-y-5 animate-pulse">
-        <div className="h-8 w-56 rounded-md bg-white/10" />
-        <div className="h-24 rounded-xl bg-white/5" />
-        <div className="h-24 rounded-xl bg-white/5" />
+      <div role="status" className="space-y-5 animate-pulse motion-reduce:animate-none">
+        <span className="sr-only">Loading your draft</span>
+        <div className="h-8 w-56 rounded-md bg-home-sunk" />
+        <div className="h-24 rounded-xl bg-home-card" />
+        <div className="h-24 rounded-xl bg-home-card" />
       </div>
     );
   }
@@ -445,11 +446,11 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
 
       {step === "shape" ? (
         <>
-          <div className="border-b border-white/10 pb-7">
-            <h1 className="text-3xl font-semibold tracking-[-0.03em] text-zinc-50 sm:text-4xl">
+          <div className="border-b border-home-rule pb-7">
+            <h1 className="font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.025em] text-home-ink sm:text-[42px]">
               Bring your own idea
             </h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-400">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-home-ink-3">
               Give us the problem, audience, and useful first outcome. We will keep this as a private draft until you review and confirm it.
             </p>
             {sourceDraft ? (
@@ -471,10 +472,10 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
               return (
                 <div key={name} className="grid gap-3 sm:grid-cols-[minmax(0,14rem)_1fr] sm:gap-8">
                   <div>
-                    <Label htmlFor={name} className="text-sm font-medium text-zinc-100">
+                    <Label htmlFor={name} className="text-sm font-medium text-home-ink">
                       {label}
                     </Label>
-                    <p id={`${name}-hint`} className="mt-1.5 text-sm leading-5 text-zinc-400">
+                    <p id={`${name}-hint`} className="mt-1.5 text-sm leading-5 text-home-ink-3">
                       {prompt}
                     </p>
                   </div>
@@ -488,7 +489,7 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
                         rows={name === "problem" ? 5 : 3}
                         aria-describedby={describedBy}
                         aria-invalid={Boolean(error)}
-                        className="min-h-24 w-full resize-y rounded-lg border border-input bg-white/[0.035] px-3 py-2.5 text-sm leading-6 text-zinc-100 outline-none transition-colors placeholder:text-zinc-400 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 aria-invalid:border-red-500"
+                        className="min-h-24 w-full resize-y rounded-lg border border-input bg-home-card px-3 py-2.5 text-sm leading-6 text-home-ink outline-none transition-colors placeholder:text-home-ink-3 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 aria-invalid:border-red-700"
                       />
                     ) : (
                       <Input
@@ -498,11 +499,11 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
                         placeholder={placeholder}
                         aria-describedby={describedBy}
                         aria-invalid={Boolean(error)}
-                        className="h-11 bg-white/[0.035] placeholder:text-zinc-400"
+                        className="h-11 bg-home-card placeholder:text-home-ink-3"
                       />
                     )}
                     {error ? (
-                      <p id={`${name}-error`} className="mt-2 text-sm text-red-300">
+                      <p id={`${name}-error`} className="mt-2 text-sm text-red-700">
                         {error}
                       </p>
                     ) : null}
@@ -511,7 +512,7 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
               );
             })}
 
-            <div className="flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-home-rule pt-6 sm:flex-row sm:items-center sm:justify-between">
               <SaveStatus status={status} />
               <Button type="submit" size="lg" disabled={status === "saving"}>
                 Review brief
@@ -522,24 +523,24 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
         </>
       ) : (
         <section aria-labelledby="brief-review-heading">
-          <div className="border-b border-white/10 pb-7">
+          <div className="border-b border-home-rule pb-7">
             <h1
               id="brief-review-heading"
               ref={headingRef}
               tabIndex={-1}
-              className="text-3xl font-semibold tracking-[-0.03em] text-zinc-50 outline-none sm:text-4xl"
+              className="font-editorial text-[34px] font-normal leading-[1.05] tracking-[-0.025em] text-home-ink outline-none sm:text-[42px]"
             >
               Confirm the brief
             </h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-400">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-home-ink-3">
               Check the evidence we should work from. Confirmation freezes this revision; future edits create a new one.
             </p>
           </div>
-          <dl className="divide-y divide-white/10">
+          <dl className="divide-y divide-home-rule">
             {FIELD_COPY.map(({ name, label }) => (
               <div key={name} className="grid gap-2 py-5 sm:grid-cols-[minmax(0,12rem)_1fr] sm:gap-8">
-                <dt className="text-sm text-zinc-400">{label}</dt>
-                <dd className="whitespace-pre-wrap text-sm leading-6 text-zinc-200">
+                <dt className="text-sm text-home-ink-3">{label}</dt>
+                <dd className="whitespace-pre-wrap text-sm leading-6 text-home-ink">
                   {input[name] || "Not provided"}
                 </dd>
               </div>
@@ -565,9 +566,9 @@ export function OwnIdeaIntake({ projectId }: { projectId?: string }) {
 
 export function DraftUnavailable({ onBack }: { onBack: () => void }) {
   return (
-    <div className="max-w-xl rounded-xl border border-white/10 bg-white/[0.025] p-6">
-      <h1 className="text-xl font-semibold text-zinc-100">Draft unavailable</h1>
-      <p className="mt-2 max-w-[65ch] text-sm leading-6 text-zinc-400">
+    <div className="max-w-xl rounded-xl border border-home-rule bg-home-card p-6">
+      <h1 className="font-editorial text-[26px] font-normal leading-[1.15] text-home-ink">Draft unavailable</h1>
+      <p className="mt-2 max-w-[65ch] text-sm leading-6 text-home-ink-3">
         This own-idea draft could not be opened. It may already be confirmed or unavailable to this account.
       </p>
       <Button className="mt-5" onClick={onBack}>

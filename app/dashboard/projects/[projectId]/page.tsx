@@ -18,7 +18,7 @@ export default async function ProjectPage({
 }) {
   const { projectId } = await params;
   return (
-    <section aria-label="Project workspace" className="min-h-full px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <section aria-label="Project workspace" className="mx-auto w-full max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <ProjectWorkspace projectId={projectId} />
     </section>
   );

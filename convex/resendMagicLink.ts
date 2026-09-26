@@ -1,3 +1,4 @@
+import { normalizeEmail } from "./authEmail";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { validatedSiteOrigin } from "./siteUrl";
 
@@ -23,7 +24,7 @@ export type ResendEmailPayload = {
 };
 
 export function normalizeMagicLinkEmail(identifier: string) {
-  const normalized = identifier.normalize("NFKC").trim().toLowerCase();
+  const normalized = normalizeEmail(identifier);
   if (
     normalized.length === 0 ||
     normalized.length > 254 ||

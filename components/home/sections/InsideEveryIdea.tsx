@@ -28,7 +28,7 @@ function Tile({
   }[tone];
   const label = { card: "text-home-ink-3", ink: "text-home-d3", orange: "text-[#ffe3cf]" }[tone];
   return (
-    <article className={cn("flex flex-col gap-3 rounded-[18px] border p-5 lg:gap-3.5 lg:rounded-[20px] lg:p-6", skin, className)}>
+    <article data-m="tile" className={cn("flex flex-col gap-3 rounded-[18px] border p-5 lg:gap-3.5 lg:rounded-[20px] lg:p-6", skin, className)}>
       <h3 className={cn("font-mono text-[10.5px] font-normal uppercase tracking-[0.08em] lg:text-[11px]", label)}>
         {num} · {name}
       </h3>
@@ -41,14 +41,17 @@ function Tile({
 export function InsideEveryIdea({ idea, weekLabel }: { idea: InsideIdea; weekLabel: string }) {
   const quote = leadSentences(idea.problem, 2, 190);
   return (
-    <section aria-labelledby="home-inside-title" className="bg-home-paper py-14 lg:py-24">
+    <section aria-labelledby="home-inside-title" data-scene="inside" className="bg-home-paper py-14 lg:py-24">
       <Container className="flex flex-col gap-7 lg:gap-11">
-        <div className="flex flex-col gap-3.5 lg:flex-row lg:items-end lg:justify-between">
+        <div data-m="head" className="flex flex-col gap-3.5 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex flex-col gap-3.5 lg:gap-4">
             <Eyebrow>Inside every idea · {weekLabel}</Eyebrow>
-            <h2 id="home-inside-title" className="font-editorial text-[40px] font-normal leading-[1.02] tracking-[-0.025em] text-home-ink lg:text-[72px] lg:leading-[1.06] lg:tracking-[-0.02em]">
-              Real research.
-              <br className="lg:hidden" /> <Em>Not a vibe.</Em>
+            <h2 id="home-inside-title" data-m="lines" className="font-editorial text-[40px] font-normal leading-[1.02] tracking-[-0.025em] text-home-ink lg:text-[72px] lg:leading-[1.06] lg:tracking-[-0.02em]">
+              Real research.{" "}
+              {/* Kept whole, and a block on phones instead of a hidden <br>: the line split in motion/scenes.ts breaks at every <br>. */}
+              <span className="whitespace-nowrap max-lg:block">
+                <Em>Not a vibe.</Em>
+              </span>
             </h2>
           </div>
           <p className="text-base leading-[1.55] text-home-ink-2 lg:max-w-[380px] lg:text-[17px]">
@@ -57,7 +60,7 @@ export function InsideEveryIdea({ idea, weekLabel }: { idea: InsideIdea; weekLab
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-5">
+        <div data-m="grid" className="grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-5">
           {quote && (
             <Tile num="01" name="The Problem" className="lg:col-span-2">
               <blockquote className={cn("font-editorial leading-[1.2] tracking-[-0.01em]", quote.length < 110 ? "text-[28px] lg:text-[34px]" : "text-[23px] lg:text-[26px]")}>
@@ -76,7 +79,7 @@ export function InsideEveryIdea({ idea, weekLabel }: { idea: InsideIdea; weekLab
                 {idea.market.map((m, i) => (
                   <div key={m.value + i} className={cn("flex flex-col-reverse gap-1.5 py-3.5", i > 0 && "border-t border-home-rule")}>
                     <dd className="text-sm leading-[1.45] text-home-ink-2">{clamp(leadSentences(m.text, 1, 400), 120)}</dd>
-                    <dt className={cn("font-editorial leading-[0.95] tracking-[-0.03em]", i === 0 ? "text-5xl lg:text-[56px]" : "text-[34px] lg:text-[40px]")}>
+                    <dt data-m="count" className={cn("font-editorial leading-[0.95] tracking-[-0.03em]", i === 0 ? "text-5xl lg:text-[56px]" : "text-[34px] lg:text-[40px]")}>
                       {shortNumber(m.value)}
                     </dt>
                   </div>
@@ -129,11 +132,14 @@ export function InsideEveryIdea({ idea, weekLabel }: { idea: InsideIdea; weekLab
           )}
           <div className="grid grid-cols-2 gap-3 lg:col-span-2 lg:gap-5">
             <Tile num="08" name="Sources" tone="orange">
-              <p className="font-editorial text-[60px] leading-[0.9] text-white lg:text-[72px]">{idea.sources}</p>
+              <p data-m="count" className="font-editorial text-[60px] leading-[0.9] text-white lg:text-[72px]">
+                {idea.sources}
+              </p>
               <p className="text-[13px] leading-[1.4] text-[#ffe9da] lg:text-sm">cited sources, linked on the page</p>
             </Tile>
             <Link
               href={`/ideas/${idea.slug}`}
+              data-m="tile"
               className="flex flex-col justify-between gap-3.5 rounded-[18px] border border-home-ink p-5 text-home-ink transition-colors hover:bg-home-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink lg:rounded-[20px] lg:p-6"
             >
               <span className="font-mono text-[10.5px] tracking-[0.08em] text-home-ink-3 lg:text-[11px]">THE FULL PAGE</span>

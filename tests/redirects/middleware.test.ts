@@ -4,6 +4,7 @@ import type { NextFetchEvent } from "next/server";
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import {
   applySensitiveAuthResponseHeaders,
+  buildIdeaSlug,
   canonicalRedirect,
   config,
   hostRoutingDecision,
@@ -11,6 +12,7 @@ import {
   syncSessionHintCookie,
 } from "../../middleware";
 import { SESSION_HINT_COOKIE } from "../../lib/auth-session-cookie";
+import { IDEA_SLUGS, isKnownIdeaSlug } from "../../lib/idea-slugs.generated";
 
 function request(url: string, host?: string) {
   return new NextRequest(url, {
@@ -96,6 +98,67 @@ describe("canonical host middleware", () => {
     );
 
     expect(response).toBeNull();
+  });
+
+  it.each([
+    ["https://www.weekendmvp.app/ideas", "www.weekendmvp.app"],
+    ["https://www.weekendmvp.app/ideas/", "www.weekendmvp.app"],
+    ["https://www.weekendmvp.app/ideas.html", "www.weekendmvp.app"],
+  ])("308s %s to /startup-ideas in one hop", async (url, host) => {
+    const response = await runMiddleware(request(url, host));
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/startup-ideas",
+    );
+  });
+
+  it("folds apex + trailing slash + ideas alias into one hop", async () => {
+    const response = await runMiddleware(
+      request("https://weekendmvp.app/ideas/", "weekendmvp.app"),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/startup-ideas",
+    );
+  });
+
+  it("308s nested index.html to the parent archive in one hop", async () => {
+    const response = await runMiddleware(
+      request(
+        "https://www.weekendmvp.app/startup-ideas/index.html",
+        "www.weekendmvp.app",
+      ),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://www.weekendmvp.app/startup-ideas",
+    );
+  });
+});
+
+describe("build soft-404 upgrade", () => {
+  it("parses a build slug from a clean path", () => {
+    expect(buildIdeaSlug("/build/foo")).toBe("foo");
+    expect(buildIdeaSlug("/build/foo/bar")).toBeNull();
+    expect(buildIdeaSlug("/build")).toBeNull();
+    expect(buildIdeaSlug("/ideas/foo")).toBeNull();
+  });
+
+  it("returns a genuine 404 for an unknown build slug", async () => {
+    const response = await runMiddleware(
+      request("https://www.weekendmvp.app/build/foo", "www.weekendmvp.app"),
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+  });
+
+  it("does not hard-404 a known idea slug on /build", () => {
+    const slug = IDEA_SLUGS[0];
+    expect(slug).toBeTruthy();
+    // Full middleware would continue into Convex Auth (needs a request
+    // scope). The gate itself is: parse slug + known-set membership.
+    expect(buildIdeaSlug(`/build/${slug}`)).toBe(slug);
+    expect(isKnownIdeaSlug(slug!)).toBe(true);
   });
 });
 

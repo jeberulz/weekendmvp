@@ -30,8 +30,8 @@ function FounderPhoto() {
 /** 07 · Built around your 9-to-5: founder photo with the four-step weekend plan. */
 export function YourWeekend({ total }: { total: number }) {
   return (
-    <section aria-labelledby="home-weekend-title" className="relative overflow-hidden bg-home-ink">
-      <div className="relative h-[520px] lg:absolute lg:inset-x-0 lg:top-0 lg:h-[1060px]">
+    <section aria-labelledby="home-weekend-title" data-scene="weekend" className="relative overflow-hidden bg-home-ink">
+      <div data-m="photo" className="relative h-[520px] overflow-hidden lg:absolute lg:inset-x-0 lg:top-0 lg:h-[1060px]">
         <FounderPhoto />
         <div
           aria-hidden
@@ -50,16 +50,18 @@ export function YourWeekend({ total }: { total: number }) {
           <span aria-hidden className="size-[7px] rounded-full bg-home-orange-light" />
           JOHN ISEGHOHI · FOUNDER, WEEKEND MVP
         </p>
-        <div className="flex flex-col gap-5 lg:ml-auto lg:mt-3 lg:w-[540px] lg:gap-[26px]">
+        <div data-m="head" className="flex flex-col gap-5 lg:ml-auto lg:mt-3 lg:w-[540px] lg:gap-[26px]">
           <Eyebrow dark>Keep your job</Eyebrow>
-          <h2 id="home-weekend-title" className="font-editorial text-[56px] font-normal leading-[0.95] tracking-[-0.035em] text-home-d1 lg:text-[100px]">
+          <h2 id="home-weekend-title" data-m="lines" className="font-editorial text-[56px] font-normal leading-[0.95] tracking-[-0.035em] text-home-d1 lg:text-[100px]">
             Built around your <Em dark>9-to-5.</Em>
           </h2>
           <p className="text-[17px] leading-[1.55] text-home-d2 lg:max-w-[500px] lg:text-xl">
             No sabbatical. No co-founder. About 12 hours across one weekend is enough to ship the first version.
           </p>
           <p className="flex items-baseline gap-3 lg:gap-3.5">
-            <span className="font-editorial text-[44px] leading-none tracking-[-0.02em] text-home-d1 lg:text-[56px]">12 hrs</span>
+            <span data-m="count" className="font-editorial text-[44px] leading-none tracking-[-0.02em] text-home-d1 lg:text-[56px]">
+              12 hrs
+            </span>
             <span className="font-mono text-[11px] tracking-[0.08em] text-home-d3 lg:text-xs">FRIDAY NIGHT TO SUNDAY</span>
           </p>
           <div className="flex flex-col gap-2.5 lg:flex-row lg:gap-3.5">
@@ -74,10 +76,11 @@ export function YourWeekend({ total }: { total: number }) {
         </div>
         </div>
 
-        <ol className="mt-3 border-t border-home-dr lg:mx-[-28px] lg:mt-0 lg:grid lg:grid-cols-4 lg:border-t-0">
+        <ol data-m="plan" className="mt-3 border-t border-home-dr lg:mx-[-28px] lg:mt-0 lg:grid lg:grid-cols-4 lg:border-t-0">
           {WEEKEND_PLAN.map((d, i) => (
             <li
               key={d.day}
+              data-m="day"
               className={cn(
                 "flex flex-col gap-3 py-[22px] lg:gap-[18px] lg:px-7 lg:py-0",
                 i < 3 && "border-b border-dashed border-home-panel-rule lg:border-b-0 lg:border-r",
@@ -90,7 +93,7 @@ export function YourWeekend({ total }: { total: number }) {
                   {d.hours} hrs
                 </span>
               </div>
-              <div aria-hidden className="flex gap-[3px]">
+              <div aria-hidden data-m="bar" data-hours={d.hours} className="flex gap-[3px]">
                 {d.hours ? (
                   Array.from({ length: d.hours }, (_, j) => <span key={j} className="block h-2 flex-1 rounded-[2px] bg-home-orange lg:h-2.5" />)
                 ) : (
@@ -104,7 +107,7 @@ export function YourWeekend({ total }: { total: number }) {
           ))}
         </ol>
 
-        <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-home-panel-rule bg-home-panel p-[18px] lg:mt-[54px] lg:flex-row lg:items-center lg:justify-between lg:px-7 lg:py-[22px]">
+        <div data-m="up" className="mt-2 flex flex-col gap-3 rounded-2xl border border-home-panel-rule bg-home-panel p-[18px] lg:mt-[54px] lg:flex-row lg:items-center lg:justify-between lg:px-7 lg:py-[22px]">
           <p className="flex items-start gap-2.5 text-[15px] leading-[1.45] text-home-d1 lg:items-center lg:gap-3 lg:text-base">
             <Icon name="kit" size={22} accent="var(--color-home-orange-light)" className="lg:size-6" />
             The Starter Kit has the full Friday-to-Sunday plan.

@@ -1,8 +1,5 @@
 import type { NextConfig } from "next";
 
-const LEGACY_ORIGIN =
-  process.env.LEGACY_ORIGIN ?? "https://legacy.weekendmvp.app";
-
 const nextConfig: NextConfig = {
   cacheComponents: true,
   // Own trailing-slash 308s in middleware so apex+slash collapses to www
@@ -13,6 +10,14 @@ const nextConfig: NextConfig = {
     // The homepage reads idea MDX + the manifest when its hourly cache
     // regenerates (WP42 weekly picks), so trace them into the `/` function.
     "/": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
+    // The dashboard layout reads the same cache for the library total, and
+    // Home shows the same weekly pick and newest ideas (WP44-S3).
+    "/dashboard": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
+    "/dashboard/**": ["./content/ideas/**/*.mdx", "./ideas/manifest.json"],
+    // Weekend plans read an idea's prompts from its MDX (WP44-S9).
+    "/api/ideas/prompts": ["./content/ideas/**/*.mdx"],
+    // Prompt packs are built from the same MDX (WP44-S11).
+    "/api/ideas/prompt-pack": ["./content/ideas/**/*.mdx"],
     "/links": ["./content/social/reels/campaigns/**/calendar.csv"],
     // sitemap.xml enumerates MDX at request time, so the content dirs must be
     // traced into its function bundle or it emits hub pages only.
@@ -28,20 +33,10 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
 
-  async rewrites() {
-    return {
-      beforeFiles: [],
-      afterFiles: [],
-      // Any path this app does not own is served by the legacy static site
-      // until its slice migrates. Removed at cutover (U14).
-      fallback: [
-        {
-          source: "/:path*",
-          destination: `${LEGACY_ORIGIN}/:path*`,
-        },
-      ],
-    };
-  },
+  // No fallback rewrite. The cutover-era legacy host is gone
+  // (DEPLOYMENT_NOT_FOUND); proxying unknown paths there burned crawl budget
+  // on a dead deployment. Unowned paths now hit the App Router not-found
+  // page instead.
 
   /**
    * WP27-S4. A generated preview is a private, expiring artifact.
@@ -69,6 +64,25 @@ const nextConfig: NextConfig = {
               "noindex, nofollow, noarchive, nocache, nosnippet, noimageindex",
           },
           { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      // Email deep-link redirectors — keep out of the index (P1 GSC note).
+      {
+        source: "/ideas/today",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/api/ideas-today",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
         ],
       },
     ];

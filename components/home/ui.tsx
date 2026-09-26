@@ -1,17 +1,36 @@
 /** Shared building blocks for the homepage sections. */
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type CSSProperties, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { Icon, type IconName } from "./icons";
 
-export function Container({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("mx-auto w-full max-w-[1200px] px-5 md:px-10 xl:px-0", className)}>{children}</div>;
+/** `m` is an optional motion role (`data-m`, see components/home/motion/scenes.ts). */
+export function Container({ className, children, m }: { className?: string; children: ReactNode; m?: string }) {
+  return (
+    <div data-m={m} className={cn("mx-auto w-full max-w-[1200px] px-5 md:px-10 xl:px-0", className)}>
+      {children}
+    </div>
+  );
 }
 
-export function Eyebrow({ children, dark = false, className }: { children: ReactNode; dark?: boolean; className?: string }) {
+/** `as="h2"` makes the eyebrow the section heading when the section has no other. */
+export function Eyebrow({
+  children,
+  dark = false,
+  className,
+  as: Tag = "p",
+  id,
+}: {
+  children: ReactNode;
+  dark?: boolean;
+  className?: string;
+  as?: "p" | "h2";
+  id?: string;
+}) {
   return (
-    <p
+    <Tag
+      id={id}
       className={cn(
         "font-mono text-[11px] font-medium uppercase leading-[14px] tracking-[0.08em] md:text-xs md:leading-4",
         dark ? "text-home-orange-light" : "text-home-orange-ink",
@@ -19,8 +38,23 @@ export function Eyebrow({ children, dark = false, className }: { children: React
       )}
     >
       {children}
-    </p>
+    </Tag>
   );
+}
+
+/** Delay for a hero intro element (`.home-intro`, `.home-word`, `.home-paste`, `.home-press` in globals.css). */
+export const introDelay = (seconds: number) => ({ "--d": `${seconds.toFixed(3)}s` }) as CSSProperties;
+
+/** Hero headline words that rise in turn. Text stays in the accessibility tree. */
+export function IntroWords({ text, start, step = 0.045 }: { text: string; start: number; step?: number }) {
+  return text.split(" ").map((word, i) => (
+    <Fragment key={i}>
+      {i > 0 && " "}
+      <span className="home-word" style={introDelay(start + i * step)}>
+        {word}
+      </span>
+    </Fragment>
+  ));
 }
 
 /** The italic accent phrase inside a serif heading. Large type only (24px+). */
@@ -89,7 +123,7 @@ export function WeekendMeter({
         {days.map(([day, filled]) => (
           <div key={day} className="flex flex-col gap-[5px]">
             <span className={cn("font-mono text-[10px] tracking-[0.08em]", dark ? "text-home-d2" : "text-home-ink-3", toInk)}>{day}</span>
-            <div className="flex" style={{ gap: cell > 9 ? 3 : 2 }}>
+            <div data-m="cells" className="flex" style={{ gap: cell > 9 ? 3 : 2 }}>
               {Array.from({ length: 8 }, (_, i) => (
                 <span
                   key={i}
@@ -131,12 +165,15 @@ const CATEGORY_TINT: Record<string, string> = {
   automation: "sage",
 };
 
+/** Background and ink classes for a category's tint (also used by dashboard cards). */
+export const categoryTintClass = (slug: string) => TINT[CATEGORY_TINT[slug] ?? "sky"];
+
 export function CategoryTag({ slug, name }: { slug: string; name: string }) {
   return (
     <span
       className={cn(
         "inline-flex h-[22px] items-center rounded-full px-[9px] font-mono text-[11px] font-medium uppercase tracking-[0.06em]",
-        TINT[CATEGORY_TINT[slug] ?? "sky"],
+        categoryTintClass(slug),
       )}
     >
       {name}
@@ -230,10 +267,23 @@ export function ButtonLink({
   );
 }
 
-export function TextLink({ href, dark = false, className, children }: { href: string; dark?: boolean; className?: string; children: ReactNode }) {
+export function TextLink({
+  href,
+  dark = false,
+  className,
+  m,
+  children,
+}: {
+  href: string;
+  dark?: boolean;
+  className?: string;
+  m?: string;
+  children: ReactNode;
+}) {
   return (
     <Link
       href={href}
+      data-m={m}
       className={cn(
         "inline-flex items-center gap-2 text-[15px] font-medium underline underline-offset-4 transition-colors",
         dark ? "text-home-d1 hover:text-home-orange-light" : "text-home-orange-ink hover:text-home-ink",
@@ -267,7 +317,7 @@ export function ScoreCell({ label, value, dark = false }: { label: string; value
     <div className={cn("flex flex-col gap-0.5 rounded-[10px] px-3 py-2.5", dark ? "bg-home-panel" : "bg-home-paper")}>
       <span className={cn("font-mono text-[10px] tracking-[0.06em]", dark ? "text-home-d3" : "text-home-ink-3")}>{label}</span>
       <span className={cn("font-mono text-base font-medium", dark ? "text-home-d1" : "text-home-ink")}>
-        {value}
+        <span data-m="count">{value}</span>
         <span className={cn("text-xs", dark ? "text-home-d3" : "text-home-ink-3")}>/10</span>
       </span>
     </div>

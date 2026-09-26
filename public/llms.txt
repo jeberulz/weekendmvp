@@ -1,6 +1,6 @@
 # Weekend MVP
 
-> Weekend MVP helps solo founders and non-technical builders validate startup ideas and ship MVPs in a weekend using AI coding tools.
+> Weekend MVP publishes researched startup ideas you can build in a weekend, each with AI build prompts, plus a free Starter Kit for a 3-screen MVP.
 
 ## About
 

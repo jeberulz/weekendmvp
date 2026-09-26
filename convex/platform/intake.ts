@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { mutation, query } from "../_generated/server";
-import { requireCurrentPlatformUser, requireOwnedProject } from "./authz";
+import { requireCurrentPlatformUser, requireCurrentPlatformUserForMutation, requireOwnedProjectForMutation } from "./authz";
 import {
   assertBriefPayloadSource,
   briefDisplayTitle,
@@ -217,7 +217,7 @@ function sameBriefInput(left: BriefInput, right: BriefInput): boolean {
 export const startOwnIdea = mutation({
   args: { idempotencyKey: v.string(), input: briefInputValidator },
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const input = normalizeDraftBriefInput(args.input);
     const projectKey = `wp25:own:${normalizeIdempotencyKey(args.idempotencyKey)}`;
     const existing = await ctx.db
@@ -245,7 +245,7 @@ export const startOwnIdea = mutation({
 export const startRepositoryIdea = mutation({
   args: { idempotencyKey: v.string(), slug: v.string() },
   handler: async (ctx, args) => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const slug = args.slug.trim();
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 160) {
       return denyNotFound();
@@ -306,7 +306,7 @@ export const saveDraft = mutation({
     input: briefInputValidator,
   },
   handler: async (ctx, args) => {
-    const project = await requireOwnedProject(ctx, args.projectId);
+    const project = await requireOwnedProjectForMutation(ctx, args.projectId);
     const brief = await briefByRevision(
       ctx,
       project.ownerId,
@@ -355,7 +355,7 @@ export const saveDraft = mutation({
 export const confirmBrief = mutation({
   args: { projectId: v.id("projects"), revision: v.int64() },
   handler: async (ctx, args) => {
-    const project = await requireOwnedProject(ctx, args.projectId);
+    const project = await requireOwnedProjectForMutation(ctx, args.projectId);
     const brief = await briefByRevision(
       ctx,
       project.ownerId,
@@ -419,7 +419,7 @@ export const confirmBrief = mutation({
 export const beginRevision = mutation({
   args: { projectId: v.id("projects"), confirmedRevision: v.int64() },
   handler: async (ctx, args) => {
-    const project = await requireOwnedProject(ctx, args.projectId);
+    const project = await requireOwnedProjectForMutation(ctx, args.projectId);
     const latest = await latestBrief(ctx, project.ownerId, project._id);
     if (!latest) return denyNotFound();
     if (

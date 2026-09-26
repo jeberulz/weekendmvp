@@ -3,8 +3,8 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { AuthConvexClientProvider } from "./AuthConvexClientProvider";
 
-function AuthPlatformFallback() {
-  return <div className="min-h-screen bg-black" aria-hidden="true" />;
+function AuthPlatformFallback({ className }: { className: string }) {
+  return <div className={`min-h-screen ${className}`} aria-hidden="true" />;
 }
 
 async function RequestTimeAuthProvider({
@@ -29,11 +29,14 @@ async function RequestTimeAuthProvider({
  */
 export function AuthPlatformProvider({
   children,
+  fallbackClassName = "bg-black",
 }: {
   children: React.ReactNode;
+  /** Background shown while auth resolves. The light dashboard passes paper. */
+  fallbackClassName?: string;
 }) {
   return (
-    <Suspense fallback={<AuthPlatformFallback />}>
+    <Suspense fallback={<AuthPlatformFallback className={fallbackClassName} />}>
       <RequestTimeAuthProvider>{children}</RequestTimeAuthProvider>
     </Suspense>
   );

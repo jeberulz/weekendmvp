@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "../authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
 import { assertSiteTransition, assertSiteVersionTransition } from "../transitions";
 import type { SiteStatus } from "../validators";
 import { isValidTenantSlug, tenantHostForSlug } from "../../../lib/tenant-host";
@@ -12,7 +12,7 @@ import { isValidTenantSlug, tenantHostForSlug } from "../../../lib/tenant-host";
  * This is where a private draft becomes a page on the public internet under a
  * hostname a stranger can reach, so the invariants are strict:
  *
- * 1. **Identity is derived server-side.** `requireCurrentPlatformUser` is the
+ * 1. **Identity is derived server-side.** `requireCurrentPlatformUserForMutation` is the
  *    only source of `ownerId`; no argument names an owner. Frozen WP22
  *    invariant.
  * 2. **Atomic.** Convex mutations are serializable transactions, so the
@@ -189,7 +189,7 @@ export const publish = mutation({
   args: { projectId: v.id("projects"), slug: v.string() },
   returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
 
     // Re-checked server-side. The client-side list is a UX affordance; this is
@@ -263,7 +263,7 @@ export const rollback = mutation({
   args: { projectId: v.id("projects"), toVersion: v.int64() },
   returns: publishResultValidator,
   handler: async (ctx, args): Promise<PublishResult> => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
 
     const site = await ownedSite(ctx, user._id, args.projectId);
@@ -325,7 +325,7 @@ export const unpublish = mutation({
   args: { projectId: v.id("projects") },
   returns: v.object({ changed: v.boolean() }),
   handler: async (ctx, args): Promise<{ changed: boolean }> => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     const now = Date.now();
     const site = await ownedSite(ctx, user._id, args.projectId);
     if (site.currentVersionId === undefined) {

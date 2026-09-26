@@ -63,8 +63,9 @@ export default async function BuildPreviewPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // Resolved server-side from the canonical record. An unknown slug is a
-  // normal 404 and never yields a generated preview.
+  // Resolved server-side from the canonical record. Unknown slugs are hard
+  // 404'd in middleware (cacheComponents makes route-level notFound() a soft
+  // 404). This guard remains for the Convex-miss / fail-open residual.
   const idea = await resolveIdea(slug);
   if (!idea) notFound();
 

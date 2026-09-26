@@ -46,6 +46,7 @@ function toSpotlight({ idea, extract }: Loaded): SpotlightIdea {
     sources: idea.provenance?.citations ?? 0,
     art: ogArtPath(idea.slug),
     prompts: extract.prompts.slice(0, 3),
+    tools: idea.tools ?? [],
   };
 }
 

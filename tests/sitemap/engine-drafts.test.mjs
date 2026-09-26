@@ -19,15 +19,17 @@ describe("engine drafts stay off the site", () => {
 
   it("listMdxFrontmatter skips engine-draft files", async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "engine-drafts-"));
-    fs.writeFileSync(path.join(tmp, "real-idea.mdx"), "---\nslug: real-idea\n---\n");
+    const ideas = path.join(tmp, "content", "ideas");
+    fs.mkdirSync(ideas, { recursive: true });
+    fs.writeFileSync(path.join(ideas, "real-idea.mdx"), "---\nslug: real-idea\n---\n");
     fs.writeFileSync(
-      path.join(tmp, "engine-draft-real-idea.mdx"),
+      path.join(ideas, "engine-draft-real-idea.mdx"),
       "---\nslug: engine-draft-real-idea\n---\n",
     );
     const cwd = process.cwd();
     try {
       process.chdir(tmp);
-      const rows = await listMdxFrontmatter(".");
+      const rows = await listMdxFrontmatter("content/ideas");
       assert.deepEqual(
         rows.map((r) => r.slug),
         ["real-idea"],
