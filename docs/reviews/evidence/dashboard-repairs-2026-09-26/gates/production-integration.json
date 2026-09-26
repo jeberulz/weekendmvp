@@ -1,0 +1,19 @@
+{
+  "backend": "http://127.0.0.1:3310",
+  "frontend": "http://localhost:3189",
+  "canonicalOrigin": "http://localhost:3188",
+  "realAuthRedemption": true,
+  "externalDelivery": false,
+  "realLogout": true,
+  "privateCacheHeaders": true,
+  "publicCanonicalAndJsonLd": true,
+  "privateRoutesExcludedFromSitemap": true,
+  "statuses": {
+    "anonymous": 401,
+    "valid": 200,
+    "staleSave": 409,
+    "forged": 401,
+    "revoked": 401
+  },
+  "passed": true
+}

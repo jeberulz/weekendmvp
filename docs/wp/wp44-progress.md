@@ -451,3 +451,10 @@ Append-only progress log. Do not rely on chat history for project state.
 ## 2026-09-26 — independent audit repairs begun
 
 Owner supplied PR #81 and authorized the repair plan including UX. Reconciled candidate `6891d86d` against audit `7cf31dea`: prompt verification, bounded-list honesty, existing draft UI and focus fixes landed upstream; each is being retested. Four new PR comments (draft pagination, optional radio clearing, email normalization, Save GET outages) join the repair scope. R1–R4 are open; production and paid activation remain blocked pending their separate gates.
+
+
+### Repair closeout — implementation `19ed908`
+
+WP44-R1–R4 engineering repairs and independent review are complete. Full gate: 1,106 tests pass, typecheck passes, lint zero errors/35 existing warnings, production build 428 pages, full/production audit zero vulnerabilities. Real anonymous Convex schema/codegen and real Next production-server auth/CAS/SEO tests pass. Trace-assembled prompt/export/sitemap artifacts are 8.49–8.74 MB, with no unintended project files.
+
+All A01–A11 and B01–B04 code repairs and all four PR comments are reconciled in `docs/reviews/2026-09-26-dashboard-implementation.md`; B05 paid activation stays separate. UX browser evidence covers preferences, saved intent, planning/completion/archive/restore, rapid Save, mobile and short-sheet focus/scrolling. Original S13 release gate is reopened to avoid claiming full accessibility/provider verification from incomplete evidence. No production deployment, data migration, external send or merge performed.

@@ -1,3 +1,20 @@
+# Current handoff — WP44 audit repairs (26 September 2026)
+
+PR #81 (`claude/wizardly-rubin-a6m2th`), repair branch `codex/wp44-audit-fixes`, based on `6891d86d`. The owner explicitly authorized implementation of the audit and UX plan. Frozen repair scope is in the tail of `program-manifest.md`; WP44-R1–R4 are tracked in the existing stories/progress.
+
+Read `docs/reviews/2026-09-26-dashboard-implementation.md` for the implemented behavior, reproducible checks, evidence and remaining release boundary. The audit report is historical evidence at `7cf31dea`; do not reapply its fixes blindly.
+
+- Use the isolated `.worktrees/audit-dashboard-20260926` checkout for this branch. Root checkout belongs to other work.
+- Local verification uses anonymous Convex 3310/3311 and Next 3188 (development), 3189 (production smoke). Do not target the shared 3210 backend or a cloud deployment.
+- Native catalogue pages replace capped discovery in the new UI; legacy APIs remain for backend-first rollout and frontend rollback.
+- Save requests use a server revision fence; all legacy and modern intent writes must advance it. Do not remove no-op Unsave writes: they fence delayed requests.
+- Plans use exact owner/idea lookup, expected active-plan identity on replacement and explicit restore. Downgrades never silently archive work. Collections/notes are soft-deleted.
+- Subscription/paid activation, publishing, production deployment/data mutation and merge remain separate. External provider auth and exhaustive accessibility/go-live checks are recorded honestly as outstanding.
+
+The following WP27 handoff is retained as historical context, not the current lane or branch selection. Its technical traps and permanent safety boundaries still apply.
+
+---
+
 # Agent Handoff — Build Platform Program (post-WP28 consolidation)
 
 > **Paused 2026-09-25.** Site publishing is parked for v1.1 and WP29, WP30 and

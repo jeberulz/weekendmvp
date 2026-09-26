@@ -189,3 +189,17 @@ A later wave cannot start until the prior gate is green or the owner records an 
   - The cookie banner's "Learn more" line contrast is pre-existing and site-wide; the harness dismisses the banner before axe, as in earlier gates (queued in S6)
 - **Next-wave authorization:** WP44 may merge to `main` on the owner's word. Builder's Hub stays hidden (`NEXT_PUBLIC_BUILDERS_HUB` empty) until the subscription work package (Stripe monthly subscription, webhooks, subscription record) passes its own gate; only then does `resolvePlan` read a real plan. WP29–WP31 stay paused (R5)
 - **Evidence:** `docs/wp/wp44-stories.md`, `docs/wp/wp44-progress.md`, `docs/wp/wp44-dashboard-prd.md`, `docs/wp/RULINGS.md` (R1–R9), `docs/wp/evidence/wp44-s9-*` to `wp44-s13-*` (screenshots and the accessibility-tree snapshots)
+
+
+## 2026-09-26 — WP44 repair scope gate
+
+Candidate `6891d86d`, frozen manifest commit `553bb30`. Independent backend reviewer found boundaries coherent and no production action authorized. `git diff --check` and workflow YAML parse passed. Implementation uses bounded native database pages; counts may expose an explicit lower bound/has-more instead of unbounded reads. Invariant checks remain exact. Catalogue search/filter/rank/facets wait for complete page exhaustion so a partial catalogue never masquerades as a final result. Full code/real-backend/browser gate remains open.
+
+
+## WP44 audit repair engineering gate — 26 September 2026
+
+**PASS at implementation `19ed908`; go-live activation remains separate.** Dependencies in `d484cca`; frozen scope `553bb30`. Independent backend/runtime/UX review findings addressed, including compare-and-set Save ordering, successful lost-response reconciliation, durable intent account confirmation, owner-keyed retained Saved rows and bounded sparse scan continuation.
+
+Typecheck passed; lint 0 errors/35 baseline warnings; 1,106 tests passed; production build 428 pages; both npm audits zero; npm10 lock dry-run valid; diff/config checks passed. Actual local backend and production Next server verified auth redemption, anonymous/forged/revoked denial, stale Save409, persistence, private caching and publicSEO/sitemap boundaries. Native pagination regression covers1,005 records. Trace-assembled samples8.49–8.74MB versus prior~494MB; no wide tracing warnings.
+
+Evidence and exact limitations: `docs/reviews/2026-09-26-dashboard-implementation.md`, `docs/reviews/evidence/dashboard-repairs-2026-09-26/gates/`. Not a claim of external delivery/OAuth, complete screen-reader/WCAG review or provider deployment packaging. No production mutation/deploy/merge.

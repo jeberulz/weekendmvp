@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    {
+      "route": "/api/ideas/prompts",
+      "files": 505,
+      "bytes": 8733199
+    },
+    {
+      "route": "/api/ideas/prompt-pack",
+      "files": 506,
+      "bytes": 8739639
+    },
+    {
+      "route": "/sitemap.xml",
+      "files": 480,
+      "bytes": 8490322
+    }
+  ],
+  "materializedDirectory": "/var/folders/9r/g5s3gx3547j7ckdgywlj3hm00000gn/T/weekendmvp-server-artifacts-fTO1gu",
+  "note": "Next traced server files, including route entry. Hosting-provider repackaging is not measured."
+}

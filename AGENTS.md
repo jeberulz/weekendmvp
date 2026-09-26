@@ -1,12 +1,10 @@
 <!-- BEGIN:active-handoff -->
 ## Active work — read before coding
 
-The Build Platform program is mid-flight on branch `codex/wp27-site-preview`.
-**Read `docs/wp/AGENT_HANDOFF.md` first.** It carries the current state, the
-two open items blocking the WP27 gate, the local environment setup, and a list
-of traps that have already cost real time (soft-404 under Cache Components,
-`convex-test` ignoring internal/public visibility, vacuous proxy assertions,
-root-absolute `import.meta.glob`, and tests that match their own comments).
+WP44 dashboard audit repairs are on branch `codex/wp44-audit-fixes` for PR #81.
+**Read `docs/wp/AGENT_HANDOFF.md` first.** Its current section links the repair
+report, remaining release gates, isolated local setup and prior platform traps.
+Publishing remains paused; Builder's Hub activation is a separate work package.
 <!-- END:active-handoff -->
 
 <!-- convex-ai-start -->

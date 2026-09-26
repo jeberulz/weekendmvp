@@ -112,3 +112,17 @@ Sizing is provisional: R3/R4 and the broken guard are small, bounded repairs; R1
 The implementation is complete only when every release-blocking finding is resolved or explicitly accepted with evidence, standard checks pass on the final SHA, the real free journey succeeds, deployment and rollback are demonstrated, and the documentation reflects the actual state. Paid activation has its own exit gate.
 
 **Authorized scope:** implement free-path repairs, runtime readiness, the UX recommendations and dormant Hub correctness fixes. Paid subscription implementation/activation and production operations remain separate. The frozen manifest and WP44-R1–R4 track execution.
+
+
+## Approved UX implementation details
+
+- Choosing cards get visible per-idea planning actions.
+- Finished copy is factual; shipped wording requires a live link.
+- Archived plans are discoverable and explicitly restorable under the active-plan limit. Downgrades preserve records and block additional starts/restores until the member archives excess plans.
+- Setup radio groups offer No preference; optional answers remain clearable.
+- Save state is serialized; errors are visible and pending signup intent is acknowledged only on success, with bounded lifetime and deliberate retries.
+- Scores explain their editorial nature and point readers to research, without invented freshness or outcome guarantees.
+- Destructive confirmations focus safe cancellation, restore to connected triggers, and recover from pending/errors. Short/zoomed sheet and sidebar layouts remain operable.
+- Existing draft pagination must remain reachable even when the first project page contains no drafts.
+
+The PR’s four additional review comments are included: empty-first-page drafts, clearable optional radio answers, normalized subscription claims, and Save-service outages reported separately from signed-out sessions.

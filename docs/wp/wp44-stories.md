@@ -218,7 +218,7 @@ S1 rulings
     - `npm test` including offer choice with a fixed clock, and a two-user dismissal test
   - Model tier: mid
 
-- [x] `WP44-S13` - Package gate (passed 2026-09-26, see `docs/wp/wave-gate-report.md`)
+- [ ] `WP44-S13` - Release gate (engineering repair gate passed at `19ed908`; original mocked-browser gate is superseded. External-provider and complete accessibility/go-live evidence remain open; see the implementation report)
   - Scope: verification only
   - Acceptance criteria:
     - Standard checks green
@@ -256,9 +256,9 @@ S1 rulings
 
 ## Audit repair stories (owner approved 2026-09-26, PR #81)
 
-- [ ] WP44-R1 Backend correctness and compatibility: A02/A04/A05/A06/B01/B04 and normalized kit claims; schema single writer; 1,001+ ideas, 241+ saves, 21+ active plans, stale replacement, ownership and soft-delete runtime regressions.
-- [ ] WP44-R2 UX reliability: A08/A09/B02/B03 plus all approved UX recommendations; draft pagination, clearable setup, save recovery, Finished language, explicit planning actions, archive recovery and safe focus. Meaningful interaction tests and responsive checks.
-- [ ] WP44-R3 Runtime readiness: A01/A03/A07/A10/A11; verified route auth, outage distinction, canonical prompts, trace sizing, scoped dependency audit, repeatable real-backend/browser setup.
-- [ ] WP44-R4 Independent final gate: reconcile each audit finding, standard checks, ownership/error journeys, schema/codegen evidence, browser evidence and limitations.
+- [x] WP44-R1 Backend correctness and compatibility: A02/A04/A05/A06/B01/B04 and normalized kit claims; schema single writer; 1,001+ ideas, 241+ saves, 21+ active plans, stale replacement, ownership and soft-delete runtime regressions.
+- [x] WP44-R2 UX reliability: A08/A09/B02/B03 plus all approved UX recommendations; draft pagination, clearable setup, save recovery, Finished language, explicit planning actions, archive recovery and safe focus. Meaningful interaction tests and responsive checks.
+- [x] WP44-R3 Runtime readiness: A01/A03/A07/A10/A11; verified route auth, outage distinction, canonical prompts, trace sizing, scoped dependency audit, repeatable real-backend/browser setup.
+- [x] WP44-R4 Independent final gate: reconcile each audit finding, standard checks, ownership/error journeys, schema/codegen evidence, browser evidence and limitations.
 
 Detailed file ownership is frozen in `program-manifest.md`; subscription activation and production operations remain out of scope.

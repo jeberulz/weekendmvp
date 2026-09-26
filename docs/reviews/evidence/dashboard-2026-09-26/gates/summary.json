@@ -1,0 +1,23 @@
+{
+  "commit": "7cf31dea",
+  "worktree": "/Users/jeberulz/Documents/AI-projects/weekendmvp/.worktrees/audit-dashboard-20260926",
+  "environment": {"node":"22.23.1","npm":"10.9.8","next":"16.3.6","envFilesCopied":false,"envOverrides":false},
+  "commands": [
+    {"command":"npm ci","exit":0,"packagesAdded":752},
+    {"command":"npm run typecheck","exit":0},
+    {"command":"npm run lint","exit":0,"warnings":35,"errors":0},
+    {"command":"npm test","exit":0,"tests":1030,"nodeTests":221,"vitestTests":809,"failed":0},
+    {"command":"npm run build","exit":0,"pages":428,"wholeProjectTracingWarnings":5,"middlewareDeprecationWarning":true},
+    {"command":"npm audit --omit=dev --audit-level=high","exit":0,"vulnerabilities":0},
+    {"command":"npm run validate:idea-tags","exit":0,"passed":228,"total":228},
+    {"command":"npm audit --json","exit":1,"vulnerabilities":{"high":1,"moderate":2},"allDevOnly":true},
+    {"command":"git diff --check","exit":0}
+  ],
+  "testGroups":{"og":91,"links":6,"redirectsNode":38,"redirectsVitest":76,"auth":73,"securityNode":82,"securityVitest":84,"sitemap":4,"convex":348,"engine":62,"home":34,"platform":132},
+  "traceMeasurements":[
+    {"route":"/api/ideas/prompts","files":1748,"bytes":494050166,"publicFiles":310,"docsFiles":136},
+    {"route":"/api/ideas/prompt-pack","files":1772,"bytes":494383594,"publicFiles":310,"docsFiles":136},
+    {"route":"/sitemap.xml","files":1846,"bytes":494921547,"publicFiles":310,"docsFiles":136}
+  ],
+  "limitations":["No production deployment or real external side effects","No live Convex integration or real auth/Stripe lifecycle checked","No committed browser E2E runner found","Trace bytes are summed input files, not a measured provider deployment bundle"]
+}
