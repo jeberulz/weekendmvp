@@ -23,19 +23,16 @@ test("an empty filtered project page still renders the continuation control", ()
   expect(html).not.toContain("/dashboard/projects");
 });
 
-test("a complete empty draft scan has no misleading empty section", () => {
+test("an untouched empty draft scan renders no region or live announcement", () => {
   state.status = "Exhausted";
   const html = renderToStaticMarkup(<Drafts />);
-  expect(html).toContain("All projects checked. No existing idea drafts found.");
-  expect(html).not.toContain("<h2");
+  expect(html).toBe("");
 });
 
-test("the initial draft scan keeps its announcement without flashing a heading", () => {
+test("the initial draft scan is silent while parked drafts are unknown", () => {
   state.status = "LoadingFirstPage";
   const html = renderToStaticMarkup(<Drafts />);
-  expect(html).toContain('role="status"');
-  expect(html).toContain("Checking your existing drafts");
-  expect(html).not.toContain("<h2");
+  expect(html).toBe("");
 });
 
 test("a partial scan with a draft accurately announces found drafts", () => {
@@ -60,4 +57,13 @@ test("optional setup questions offer real radio choices to clear existing answer
   // The two unselected clear choices belong to the native radio groups.
   expect(html).toMatch(/type="radio"[^>]*name="[^"]+-hours"[^>]*\/>No preference/);
   expect(html).toMatch(/type="radio"[^>]*name="[^"]+-goal"[^>]*\/>No preference/);
+});
+
+test("an exhausted first page with a draft still exposes the resume action", () => {
+  state.status = "Exhausted";
+  state.results = [{ projectId: "project-one", source: "own_idea", nextAction: "resume_brief", title: "First draft", updatedAt: 1000 } as Project];
+  const html = renderToStaticMarkup(<Drafts />);
+  expect(html).toContain("Your idea drafts");
+  expect(html).toContain("Resume brief");
+  expect(html).toContain("All projects checked for drafts.");
 });

@@ -11,7 +11,7 @@ Review each nudge against current code, repair confirmed defects, and rerun the 
 1. Deploy the additive Convex backend with legacy API adapters preserved. A Next build alone does not deploy it.
 2. Verify authenticated `platform/dashboard:requireMember`, query/session ownership, versioned Save and old-client compatibility on the deployment target.
 3. Deploy the matching frontend and perform target-environment authentication, Save, prompts and rollback smoke checks.
-4. Normalize legacy subscription rows only after the separate production-data inventory, restore point and owner authorization. The repair remains safe before that operation: uncertain claim state suppresses only the kit, preserving eligible promos.
+4. Run the legacy subscription normalization soon after the backend deployment, only after the separate production-data inventory, restore point and owner authorization. The repair remains safe before that operation: uncertain claim state suppresses only the kit, preserving eligible promos.
 
 Full WCAG/screen-reader coverage, external email/OAuth and production rollout remain the original WP44-S13 release gates. Local production-mode tests do not certify a production deployment.
 
@@ -60,3 +60,11 @@ The local production-build integration proves: real code redemption; valid membe
 Chromium verified dashboard Save retains focus during requests and accepts another Space toggle; public Save outage/Retry transfers focus to the persistent Save control during and after success; named shortlist grouping, separate row headers, 44px targets and arrow-key selection; no empty-draft heading flash. Dormant collection deletion, sparse final-page draft focus and replaced pending-save browser scenarios were not exercised end to end; their code/unit/SSR checks are documented separately. No axe or screen-reader speech certification is claimed.
 
 Evidence: [summary](evidence/dashboard-review-followup-2026-09-26/summary.json), [local integration](evidence/dashboard-review-followup-2026-09-26/local-production-integration.json), [browser observations and limits](evidence/dashboard-review-followup-2026-09-26/browser.json), and logs in the same directory. Two initial gate failures were stale source assertions; they now require the stricter mutation guard and updated focus effect. Final full run passed without skipped tests. Temporary local servers were stopped.
+
+## Latest review polish — WP44-R9
+
+[Claude’s review of `69c450b`](https://github.com/jeberulz/weekendmvp/pull/81#issuecomment-5850026986) confirms every earlier finding is fixed and CI is green. Its two remaining notes are non-blocking. The untouched Builds drafts section now renders nothing during the first load or when that first page is exhausted without drafts. A member who explicitly checks more pages still keeps the continuation control and completion announcement, preserving the earlier focus repair. Existing drafts still render their resume links.
+
+The subscription backfill remains an operator step soon after the backend deployment, following the inventory/authorization runbook above. It was not run on production. Until then, the conservative legacy lookup may hide the kit on overflow and read up to 501 legacy rows for members without a proven claim; eligible promos remain available.
+
+R9 validation: 1,134 tests passed (221 Node + 913 Vitest), including seven focused render checks. Typecheck, lint (zero errors; 35 baseline warnings), 428-page build and server-trace checks passed. This small rendering change did not rerun the earlier full browser/auth journeys.

@@ -207,3 +207,7 @@ Evidence and exact limitations: `docs/reviews/2026-09-26-dashboard-implementatio
 ## 2026-09-26 — WP44 Claude review follow-up gate
 
 **PASS, WP44-R5–R8.** 1,133 tests; typecheck pass; lint 0 errors/35 baseline warnings; 428-page production build; required-content traces, corpus and tags pass. Local production-build integration explicitly proves fresh forged JWT rejection by Convex and HTTP, successful same-request session refresh and revoked-session denial. This supersedes the prior forged-token evidence. Chromium observed Save/Retry retained focus and accessible shortlist controls. See `docs/reviews/2026-09-26-dashboard-review-followup.md` and `docs/reviews/evidence/dashboard-review-followup-2026-09-26/`. WP44-S13 remains open for complete accessibility, external providers and target-environment rollout. No production backfill/deploy/merge.
+
+## 2026-09-26 — WP44-R9 review polish gate
+
+**PASS.** Latest Claude review confirmed prior findings resolved; optional empty-drafts screen-reader noise removed without changing explicit pagination feedback. 1,134 tests (221 Node + 913 Vitest), typecheck, lint (0 errors/35 baseline warnings), 428-page build and trace checks passed. Production normalization is documented as a release-runbook step, not executed. Earlier WP44-S13 external-provider/accessibility/rollout limitations remain.

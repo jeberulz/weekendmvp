@@ -468,3 +468,9 @@ The corrected forged-token fixture exposed a same-request refresh defect: middle
 ### PR review follow-up — engineering gate complete
 
 WP44-R5–R8 complete. All Claude nudges reconciled in `docs/reviews/2026-09-26-dashboard-review-followup.md`, including new same-request session refresh repair. Verification: 1,133 tests (221 Node + 912 Vitest), typecheck, lint (0 errors/35 baseline warnings), build (428 pages), required trace content, corpus/tags, supported local Convex codegen and real local production-build auth integration. Chromium observed Save/Retry focus, shortlist semantics/44px targets and empty-draft rendering. Two stale source assertions were updated to assert the stricter mutation guard and post-delete focus effect; no assertions weakened or tests skipped. Logs and explicitly scoped browser observations are in `docs/reviews/evidence/dashboard-review-followup-2026-09-26/`. Production backfill/deploy/merge not performed. WP44-S13 external-provider/full accessibility/go-live gates remain open. Owned temporary local servers are stopped.
+
+### PR review polish — started
+
+Claude reviewed `69c450b` and confirmed all previous fixes and green CI; latest comment `5850026986` has two non-blocking notes. R9 removes the unused empty-drafts announcement while preserving explicit pagination feedback. The existing backfill runbook remains a production rollout step; no production operation is part of this code repair.
+
+R9 complete: untouched empty/loading first-page draft scans render nothing; explicit pagination retains completion feedback. Regression checks cover empty scans, initial loading, available continuation, and existing draft resume links. Standard gate passed: 1,134 tests (221 Node + 913 Vitest), typecheck, lint (0 errors/35 baseline warnings), 428-page build and server traces. Backend used only for the local build; no production deploy, backfill or merge.

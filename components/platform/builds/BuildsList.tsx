@@ -149,6 +149,9 @@ export function Drafts() {
   );
   const drafts = results.filter((project) => project.source === "own_idea" && project.nextAction === "resume_brief");
   const [checkedMore, setCheckedMore] = useState(false);
+  // Parked intake needs no empty announcement on an untouched visit. Once
+  // the member checks another page, keep the status and focused control.
+  if (!checkedMore && drafts.length === 0 && (status === "LoadingFirstPage" || status === "Exhausted")) return null;
   const checking = status === "LoadingFirstPage" || status === "LoadingMore";
   const draftStatus = checking ? "Checking your existing drafts…" : status === "Exhausted"
     ? (drafts.length ? "All projects checked for drafts." : "All projects checked. No existing idea drafts found.")
@@ -180,7 +183,7 @@ export function Drafts() {
           </li>
         ))}
       </ul>}
-      <p role="status" className={drafts.length === 0 && !checkedMore && (status === "LoadingFirstPage" || status === "Exhausted") ? "sr-only" : "text-sm text-home-ink-2"}>{draftStatus}</p>
+      <p role="status" className="text-sm text-home-ink-2">{draftStatus}</p>
       {(checkedMore || status === "CanLoadMore" || status === "LoadingMore") && (
         <div>
           <button

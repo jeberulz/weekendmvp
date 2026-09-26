@@ -10,6 +10,7 @@ Read `docs/reviews/2026-09-26-dashboard-implementation.md` for the implemented b
 - Save requests use a server revision fence; all legacy and modern intent writes must advance it. Do not remove no-op Unsave writes: they fence delayed requests.
 - Plans use exact owner/idea lookup, expected active-plan identity on replacement and explicit restore. Downgrades never silently archive work. Collections/notes are soft-deleted.
 - Claude review follow-up WP44-R5–R8 is complete: `docs/reviews/2026-09-26-dashboard-review-followup.md`. Gate: 1,133 tests; local production-build refresh/forgery/revocation checks pass. Clock-free read guards and expiry-aware mutation guards are distinct; HTTP member probes remain mutations. Legacy normalization backfill is internal, bounded and dry-run by default; not run in production.
+- R9 polish: untouched first-page empty/loading drafts render nothing; completion feedback remains after explicit pagination. Latest standard gate: 1,134 tests, typecheck/lint/build/traces passed. Backfill remains a post-backend-deploy operator step.
 - PR #81 remote branch: `claude/wizardly-rubin-a6m2th`; `codex/wp44-audit-fixes` is the local worktree branch.
 - Deploy the additive Convex backend before the frontend: frontend HTTP routes require `requireMember` and Save revision support. A frontend build does not deploy Convex.
 - Subscription/paid activation, publishing, production deployment/data mutation and merge remain separate. External provider auth and exhaustive accessibility/go-live checks are recorded honestly as outstanding.
