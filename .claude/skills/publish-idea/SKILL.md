@@ -230,10 +230,11 @@ Success → `og.status: "ready"`. Both providers fail → `"failed"`, exit 0, pu
 
 ### Step 7 — Deploy only when asked
 
-Commit + push MDX + OG PNG **only if the operator explicitly asks**. Do not push to `main` on your own.
+Commit + push MDX, research record + OG PNG **only if the operator explicitly asks**. Do not push to `main` on your own.
 
 ```bash
-git add content/ideas/{slug}.mdx ideas/manifest.json
+# The record is what audit:idea reads (Step 3.1); commit it so the audit can be re-run.
+git add content/ideas/{slug}.mdx ideas/manifest.json engine/records/{slug}.json
 # The OG card is non-blocking (Step 6): stage it only if it was generated.
 [ -f public/image/og/idea/{slug}.png ] && git add public/image/og/idea/{slug}.png
 git commit -m "content(idea): {title}"
