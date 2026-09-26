@@ -70,6 +70,8 @@ export type SpotlightIdea = {
   sources: number;
   art: string;
   prompts: Prompt[];
+  /** Tool slugs from the manifest (the dashboard's idea of the week shows them). */
+  tools: string[];
 };
 
 /** Section 06. */

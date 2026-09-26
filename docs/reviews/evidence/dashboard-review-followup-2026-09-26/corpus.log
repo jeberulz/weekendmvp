@@ -1,0 +1,14 @@
+
+> weekendmvp@1.0.0 check:idea-corpus
+> node scripts/check-idea-corpus.mjs
+
+{
+  "manifest": 228,
+  "active": 226,
+  "retired": [
+    "client-portal",
+    "expense-report-generator"
+  ],
+  "mdx": 228,
+  "activeMissingMdx": []
+}

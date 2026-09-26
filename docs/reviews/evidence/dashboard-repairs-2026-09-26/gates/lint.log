@@ -1,0 +1,234 @@
+
+> weekendmvp@1.0.0 lint
+> eslint .
+
+
+<workspace>/app/(marketing)/dare/dare-data.tsx
+  595:3  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+<workspace>/app/(marketing)/starter-kit/_sections.tsx
+  564:50  warning  Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+<workspace>/app/ConvexClientProvider.tsx
+  31:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/app/ConvexClientProvider.tsx:31:5
+  29 |     if (!url) return;
+  30 |     const c = new ConvexReactClient(url);
+> 31 |     setClient(c);
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |     return () => {
+  33 |       void c.close();
+  34 |     };  react-hooks/set-state-in-effect
+
+<workspace>/app/NotFoundContent.tsx
+  27:7   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/app/NotFoundContent.tsx:27:7
+  25 |     const attempted = pathname || window.location.pathname || "";
+  26 |     if (attempted && attempted !== "/" && attempted !== "/404") {
+> 27 |       setPath(attempted);
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  28 |     }
+  29 |   }, [pathname]);
+  30 |                                                                                                                                                                                 react-hooks/set-state-in-effect
+  67:37  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/app/NotFoundContent.tsx:67:37
+  65 |     // Prefer the broken URL the visitor tried; fall back to where they came from.
+  66 |     const ctxKey = pickContextKey(attemptedPath) ?? pickContextKey(referrerPath);
+> 67 |     if (ctxKey && CONTEXTS[ctxKey]) setCtx(CONTEXTS[ctxKey]);
+     |                                     ^^^^^^ Avoid calling setState() directly within an effect
+  68 |
+  69 |     // Track the 404 hit + the context we served, for analytics.
+  70 |     trackEvent("page_not_found", {  react-hooks/set-state-in-effect
+
+<workspace>/app/ideas-for/[audience]/page.tsx
+  2:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+<workspace>/app/startup-ideas/IdeasExplorer.tsx
+  156:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/app/startup-ideas/IdeasExplorer.tsx:156:5
+  154 |     };
+  155 |     apply();
+> 156 |     setReady(true);
+      |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  157 |     window.addEventListener("popstate", apply);
+  158 |     return () => window.removeEventListener("popstate", apply);
+  159 |   }, [categorySlugs]);  react-hooks/set-state-in-effect
+
+<workspace>/components/consent/ConsentBanner.tsx
+  22:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/consent/ConsentBanner.tsx:22:5
+  20 |
+  21 |   React.useEffect(() => {
+> 22 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |   }, []);
+  24 |
+  25 |   // WP28-S3. The root layout wraps every route, including a published  react-hooks/set-state-in-effect
+
+<workspace>/components/consent/ConsentCustomizeModal.tsx
+  39:7  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/consent/ConsentCustomizeModal.tsx:39:7
+  37 |   React.useEffect(() => {
+  38 |     if (open) {
+> 39 |       setAnalyticsEnabled(consent === true);
+     |       ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     }
+  41 |   }, [open, consent]);
+  42 |  react-hooks/set-state-in-effect
+
+<workspace>/components/consent/ConsentProvider.tsx
+  80:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/consent/ConsentProvider.tsx:80:5
+  78 |
+  79 |   React.useEffect(() => {
+> 80 |     setConsentState(readStoredConsent());
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  81 |
+  82 |     // Cross-tab sync: another tab changing (or clearing) consent updates us.
+  83 |     const onStorage = (event: StorageEvent) => {  react-hooks/set-state-in-effect
+
+<workspace>/components/ideas/PromptCopyButton.tsx
+  60:22  warning  '_ignored' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+<workspace>/components/layout/MegaNav.tsx
+  241:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/layout/MegaNav.tsx:241:5
+  239 |   // Close any open dropdown after navigation.
+  240 |   React.useEffect(() => {
+> 241 |     setOpenId(null);
+      |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  242 |   }, [pathname]);
+  243 |
+  244 |   const isActive = (href: string) =>  react-hooks/set-state-in-effect
+
+<workspace>/components/layout/MobileNav.tsx
+  118:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/layout/MobileNav.tsx:118:5
+  116 |   // Close the sheet (and collapse submenus) after navigation.
+  117 |   React.useEffect(() => {
+> 118 |     setOpen(false);
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  119 |     setOpenSection(null);
+  120 |   }, [pathname]);
+  121 |  react-hooks/set-state-in-effect
+
+<workspace>/components/layout/SignupModal.tsx
+  50:7  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+<workspace>/components/layout/SignupModal.tsx:50:7
+  48 |   React.useEffect(() => {
+  49 |     if (open) {
+> 50 |       setStatus("idle");
+     |       ^^^^^^^^^ Avoid calling setState() directly within an effect
+  51 |       setErrorMessage("");
+  52 |     }
+  53 |   }, [open]);  react-hooks/set-state-in-effect
+
+<workspace>/components/marketing/workshop/WorkshopTeacher.tsx
+  50:9  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+<workspace>/ideas/gate.js
+   34:18  warning  '_' is defined but never used                                          @typescript-eslint/no-unused-vars
+   49:18  warning  '_' is defined but never used                                          @typescript-eslint/no-unused-vars
+  146:17  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  150:17  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  155:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  156:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  157:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  201:17  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  205:17  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  210:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  211:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  212:9   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+<workspace>/lib/og/sources/email-newsletter.mjs
+  6:7  warning  'DEFAULT_ACCENT' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+<workspace>/scripts/check-og-cards.js
+  10:12  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  11:14  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+<workspace>/scripts/extract-articles-to-mdx.mjs
+  221:47  warning  'skippedCtas' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  296:22  warning  '_doc' is defined but never used                  @typescript-eslint/no-unused-vars
+
+<workspace>/scripts/extract-idea-bodies.mjs
+  30:3  warning  'isSkipped' is defined but never used  @typescript-eslint/no-unused-vars
+
+<workspace>/scripts/extract-newsletter-to-mdx.mjs
+  247:22  warning  '_doc' is defined but never used  @typescript-eslint/no-unused-vars
+
+<workspace>/scripts/newsletter-md-to-beehiiv.mjs
+  37:7  warning  'root' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 35 problems (0 errors, 35 warnings)
+

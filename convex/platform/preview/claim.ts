@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
-import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "../authz";
+import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
 import { resolveCapability } from "./capabilities";
 import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
@@ -12,7 +12,7 @@ import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
  * token — becomes a record owned by an authenticated user, so three rules
  * hold without exception.
  *
- * 1. **Identity is derived server-side.** `requireCurrentPlatformUser` is the
+ * 1. **Identity is derived server-side.** `requireCurrentPlatformUserForMutation` is the
  *    only source of `ownerId`. No argument here names an owner, which is the
  *    WP22 invariant the whole authorization model rests on.
  * 2. **Exactly once.** A capability yields one project graph no matter how
@@ -179,7 +179,7 @@ export const claim = mutation({
   args: { token: v.string() },
   returns: claimedGraphValidator,
   handler: async (ctx, args): Promise<ClaimedGraph> => {
-    const user = await requireCurrentPlatformUser(ctx);
+    const user = await requireCurrentPlatformUserForMutation(ctx);
     // Server clock. `Date.now()` is fine in a mutation, and a client-supplied
     // timestamp would let a caller claim a capability that has expired.
     const now = Date.now();

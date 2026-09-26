@@ -21,8 +21,10 @@ describe("auth platform request-time boundary", () => {
     expect(connectionBoundary).toBeGreaterThan(-1);
     expect(thirdPartyProvider).toBeGreaterThan(connectionBoundary);
     expect(providerSource).toContain(
-      "<Suspense fallback={<AuthPlatformFallback />}>",
+      "<Suspense fallback={<AuthPlatformFallback className={fallbackClassName} />}>",
     );
+    // Auth pages keep the black fallback. Only the light dashboard passes paper.
+    expect(providerSource).toContain('fallbackClassName = "bg-black"');
   });
 
   test("keeps login and signup searchParams routes explicitly non-instant", () => {

@@ -1,0 +1,27 @@
+{
+  "codeCommit": "19ed908",
+  "baseCandidate": "6891d86d",
+  "typecheck": "pass",
+  "lint": {
+    "errors": 0,
+    "existingWarnings": 35
+  },
+  "tests": {
+    "passed": 1106,
+    "node": 221,
+    "vitest": 885
+  },
+  "build": {
+    "pass": true,
+    "pages": 428,
+    "wholeProjectTracingWarnings": 0
+  },
+  "fullAuditVulnerabilities": 0,
+  "productionAuditVulnerabilities": 0,
+  "providerPackagedArtifactMeasured": false,
+  "externalEmailDeliveryTested": false,
+  "googleOAuthTested": false,
+  "fullAccessibilityCertification": false,
+  "localProductionBuildIntegration": "pass",
+  "forgedTokenEvidenceLimitation": "Original fixture omitted iat and could be rejected by middleware refresh. Superseded by the PR review follow-up integration gate."
+}

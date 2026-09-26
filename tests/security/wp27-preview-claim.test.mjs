@@ -89,7 +89,7 @@ test("/signin forwards claimPreview to /login without folding it into returnTo",
 
 test("the claim derives identity server-side and takes no owner argument", async () => {
   const source = await readCode("convex/platform/preview/claim.ts");
-  assert.match(source, /requireCurrentPlatformUser\(ctx\)/);
+  assert.match(source, /requireCurrentPlatformUserForMutation\(ctx\)/);
   assert.match(source, /args:\s*\{\s*token:\s*v\.string\(\)\s*\}/);
   assert.doesNotMatch(source, /args\.(ownerId|userId)/);
   // Server clock: a caller-supplied timestamp would let an expired

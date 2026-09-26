@@ -204,7 +204,7 @@ const platformAuthMiddleware = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
     const pathname = request.nextUrl.pathname;
     if (!isAuthManagedPath(pathname)) {
-      return NextResponse.next();
+      return NextResponse.next({ request: { headers: request.headers } });
     }
 
     const authenticated = await convexAuth.isAuthenticated();
@@ -213,7 +213,7 @@ const platformAuthMiddleware = convexAuthNextjsMiddleware(
       return NextResponse.redirect(new URL(decision.target, request.url));
     }
 
-    return NextResponse.next();
+    return NextResponse.next({ request: { headers: request.headers } });
   },
   {
     // OAuth codes are consumed only on the dedicated callback seam. Public

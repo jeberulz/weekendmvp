@@ -1,0 +1,66 @@
+import { convexTest } from 'convex-test';
+import { test, expect, vi } from 'vitest';
+import schema from '../convex/schema';
+import { api } from '../convex/_generated/api';
+const control = vi.hoisted(() => ({ plan: 'free' }));
+vi.mock('../convex/platform/planResolver', () => ({ resolvePlan: async () => control.plan }));
+const modules = import.meta.glob('/convex/**/*.ts');
+async function setup(count: number) {
+  const t = convexTest(schema, modules);
+  const data = await t.run(async ctx => {
+    const userId = await ctx.db.insert('users', {email:'audit@example.test'});
+    const sessionId = await ctx.db.insert('authSessions', {userId,expirationTime:9999999999999});
+    const ids = [];
+    for(let i=0;i<count;i++) {
+      const ideaId = await ctx.db.insert('ideas', {slug:`idea-${i}`,title:'Common',description:'Common',publishedAt:i,category:'saas',buildTime:'10',revenueGoal:'5k-month',applicationCategory:'BusinessApplication',tools:['cursor'],audiences:[],bodyMode:'mdx'});
+      ids.push(ideaId);
+      await ctx.db.insert('idea_intents', {ownerId:userId,ideaId,saved:true,interested:false,updatedAt:i});
+    }
+    return {userId,sessionId,ids};
+  });
+  const member = t.withIdentity({subject:`${data.userId}|${data.sessionId}`,issuer:'https://local.test',tokenIdentifier:`https://local.test|${data.userId}`});
+  return {t,member,...data};
+}
+test('reproduce 240 ceiling despite more records and larger limit', async () => {
+  control.plan='free';
+  const {member}=await setup(241);
+  const library=await member.query(api.platform.ideas.library,{view:'all',limit:264});
+  const saved=await member.query(api.platform.dashboard.savedList,{limit:288});
+  expect([library.items.length,library.total,saved.items.length,saved.total]).toEqual([240,241,240,241]);
+});
+test('reproduce silent search truncation and false-empty category filter', async () => {
+  control.plan='free';
+  const {t,member,ids}=await setup(260);
+  await t.run(async ctx => {
+    const hits=await ctx.db.query('ideas').withSearchIndex('search_title',q=>q.search('title','Common')).take(256);
+    const found=new Set(hits.map(x=>x._id));
+    const excluded=ids.find(id=>!found.has(id))!;
+    await ctx.db.patch('ideas',excluded,{category:'rare'});
+  });
+  const all=await member.query(api.platform.ideas.library,{view:'all',search:'Common',limit:240});
+  const rare=await member.query(api.platform.ideas.library,{view:'all',search:'Common',category:'rare',limit:24});
+  expect([all.total,all.truncated,rare.total,rare.truncated]).toEqual([256,false,0,false]);
+});
+test('reproduce hidden paid plans, duplicate same idea, and broken downgrade replacement', async () => {
+  control.plan='builders_hub';
+  const {t,member,userId}=await setup(23);
+  for(let i=0;i<21;i++) await member.mutation(api.platform.weekendPlans.start,{slug:`idea-${i}`});
+  const listed=await member.query(api.platform.weekendPlans.list,{});
+  expect(listed.active).toHaveLength(20);
+  const again=await member.mutation(api.platform.weekendPlans.start,{slug:'idea-0'});
+  expect(again.created).toBe(true);
+  control.plan='free';
+  await member.mutation(api.platform.weekendPlans.start,{slug:'idea-22',replaceActive:true});
+  const remaining=await t.run(ctx=>ctx.db.query('weekend_plans').withIndex('by_ownerId_and_status_and_updatedAt',q=>q.eq('ownerId',userId).eq('status','active')).collect());
+  expect(remaining).toHaveLength(3);
+});
+test('reproduce stale replace confirmation archiving a different active plan', async () => {
+  control.plan='free';
+  const {member}=await setup(3);
+  await member.mutation(api.platform.weekendPlans.start,{slug:'idea-0'});
+  const confirmed=await member.query(api.platform.weekendPlans.startPreview,{slug:'idea-1'});
+  expect(confirmed.active?.slug).toBe('idea-0');
+  const otherTab=await member.mutation(api.platform.weekendPlans.start,{slug:'idea-2',replaceActive:true});
+  await member.mutation(api.platform.weekendPlans.start,{slug:'idea-1',replaceActive:true});
+  expect((await member.query(api.platform.weekendPlans.get,{planId:otherTab.planId})).plan.status).toBe('archived');
+});

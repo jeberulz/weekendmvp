@@ -1,4 +1,29 @@
+# Current handoff — WP44 audit repairs (26 September 2026)
+
+PR #81 (`claude/wizardly-rubin-a6m2th`), repair branch `codex/wp44-audit-fixes`, based on `6891d86d`. The owner explicitly authorized implementation of the audit and UX plan. Frozen repair scope is in the tail of `program-manifest.md`; WP44-R1–R4 are tracked in the existing stories/progress.
+
+Read `docs/reviews/2026-09-26-dashboard-implementation.md` for the implemented behavior, reproducible checks, evidence and remaining release boundary. The audit report is historical evidence at `7cf31dea`; do not reapply its fixes blindly.
+
+- Use the isolated `.worktrees/audit-dashboard-20260926` checkout for this branch. Root checkout belongs to other work.
+- Local verification uses anonymous Convex 3310/3311 and Next 3188 (development), 3189 (local production-build smoke). Do not target the shared 3210 backend or a cloud deployment.
+- Native catalogue pages replace capped discovery in the new UI; legacy APIs remain for backend-first rollout and frontend rollback.
+- Save requests use a server revision fence; all legacy and modern intent writes must advance it. Do not remove no-op Unsave writes: they fence delayed requests.
+- Plans use exact owner/idea lookup, expected active-plan identity on replacement and explicit restore. Downgrades never silently archive work. Collections/notes are soft-deleted.
+- Claude review follow-up WP44-R5–R8 is complete: `docs/reviews/2026-09-26-dashboard-review-followup.md`. Gate: 1,133 tests; local production-build refresh/forgery/revocation checks pass. Clock-free read guards and expiry-aware mutation guards are distinct; HTTP member probes remain mutations. Legacy normalization backfill is internal, bounded and dry-run by default; not run in production.
+- R9 polish: untouched first-page empty/loading drafts render nothing; completion feedback remains after explicit pagination. Latest standard gate: 1,134 tests, typecheck/lint/build/traces passed. Backfill remains a post-backend-deploy operator step.
+- PR #81 remote branch: `claude/wizardly-rubin-a6m2th`; `codex/wp44-audit-fixes` is the local worktree branch.
+- Deploy the additive Convex backend before the frontend: frontend HTTP routes require `requireMember` and Save revision support. A frontend build does not deploy Convex.
+- Subscription/paid activation, publishing, production deployment/data mutation and merge remain separate. External provider auth and exhaustive accessibility/go-live checks are recorded honestly as outstanding.
+
+The following WP27 handoff is retained as historical context, not the current lane or branch selection. Its technical traps and permanent safety boundaries still apply.
+
+---
+
 # Agent Handoff — Build Platform Program (post-WP28 consolidation)
+
+> **Paused 2026-09-25.** Site publishing is parked for v1.1 and WP29, WP30 and
+> WP31 are paused (`docs/wp/RULINGS.md`). Do not start them. Current product work
+> is the WP44 dashboard: `docs/wp/wp44-dashboard-prd.md` and `docs/wp/wp44-stories.md`.
 
 Last updated: 2026-08-14 (UTC). Agent-agnostic. Supersedes prior handoff headers.
 

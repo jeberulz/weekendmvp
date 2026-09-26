@@ -45,3 +45,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Check server artifacts
+        run: npm run check:server-traces

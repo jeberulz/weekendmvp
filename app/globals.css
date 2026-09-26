@@ -104,6 +104,31 @@
   --ring: rgba(0, 0, 0, 0.3);
 }
 
+/* WP44-S7: shadcn/ui tokens on the research-desk palette, for the light
+   dashboard. Set on the workspace shell, so Button, Badge, Label and inputs
+   inside /dashboard/** read light without per-component overrides. `--input`
+   is ink-3 so field borders keep 3:1 non-text contrast. */
+.theme-desk {
+  --background: #f7f3ec;
+  --foreground: #1a1814;
+  --card: #fffdf9;
+  --card-foreground: #1a1814;
+  --popover: #fffdf9;
+  --popover-foreground: #1a1814;
+  --primary: #1a1814;
+  --primary-foreground: #fffdf9;
+  --secondary: #efe8dc;
+  --secondary-foreground: #1a1814;
+  --muted: #efe8dc;
+  --muted-foreground: #6b6457;
+  --accent: #efe8dc;
+  --accent-foreground: #1a1814;
+  --destructive: #b42318;
+  --border: #ddd4c4;
+  --input: #6b6457;
+  --ring: #a84a00;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

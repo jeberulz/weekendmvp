@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { contentDirectory } from "./content-directory.ts";
 
 /**
  * Sitemap lastmod helpers.
@@ -30,7 +31,7 @@ export async function listMdxFrontmatter(
   // Must be rooted at process.cwd() — a bare relative path resolves against
   // the serverless function's cwd in production, silently yielding zero
   // entries and dropping every MDX page from the sitemap.
-  const root = path.join(process.cwd(), dir);
+  const root = path.join(process.cwd(), "content", contentDirectory(dir));
   try {
     const files = await fs.readdir(root);
     const mdx = files.filter(
@@ -64,9 +65,8 @@ export async function listMdxFrontmatter(
 }
 
 /** slug → epoch ms from ideas/manifest.json (authoritative idea publish dates). */
-export async function loadIdeaPublishedAtMap(
-  manifestPath = path.join(process.cwd(), "ideas", "manifest.json"),
-): Promise<Map<string, number>> {
+export async function loadIdeaPublishedAtMap(): Promise<Map<string, number>> {
+  const manifestPath = path.join(process.cwd(), "ideas", "manifest.json");
   const map = new Map<string, number>();
   try {
     const raw = await fs.readFile(manifestPath, "utf8");

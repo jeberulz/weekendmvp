@@ -1,7 +1,7 @@
 import { getAuthSessionId, getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 
 type PlatformReadCtx = Pick<QueryCtx, "auth" | "db">;
 
@@ -250,8 +250,9 @@ async function nestedParentsMatch<TableName extends ProjectChildTable>(
   }
 }
 
-export async function requireCurrentPlatformUser(
+async function requirePlatformUser(
   ctx: PlatformReadCtx,
+  now?: number,
 ): Promise<Doc<"users">> {
   const [rawUserId, rawSessionId] = await Promise.all([
     getAuthUserId(ctx),
@@ -275,7 +276,8 @@ export async function requireCurrentPlatformUser(
     user === null ||
     user.isAnonymous === true ||
     session === null ||
-    session.userId !== userId
+    session.userId !== userId ||
+    (now !== undefined && session.expirationTime <= now)
   ) {
     return denyUnauthenticated();
   }
@@ -283,15 +285,42 @@ export async function requireCurrentPlatformUser(
   return user;
 }
 
+/** Reactive reads check session existence/ownership so revocation invalidates them.
+ * Token expiry is enforced by Convex Auth; queries must not read the clock. */
+export async function requireCurrentPlatformUser(ctx: PlatformReadCtx): Promise<Doc<"users">> {
+  return await requirePlatformUser(ctx);
+}
+
+/** Writes and HTTP membership probes additionally enforce stored session expiry. */
+export async function requireCurrentPlatformUserForMutation(ctx: MutationCtx): Promise<Doc<"users">> {
+  return await requirePlatformUser(ctx, Date.now());
+}
+
+export async function requireOwnedProjectForMutation(
+  ctx: MutationCtx,
+  projectId: Id<"projects">,
+): Promise<Doc<"projects">> {
+  const user = await requireCurrentPlatformUserForMutation(ctx);
+  return await ownedProjectForUser(ctx, user._id, projectId);
+}
+
 export async function requireOwnedProject(
   ctx: PlatformReadCtx,
   projectId: Id<"projects">,
 ): Promise<Doc<"projects">> {
   const user = await requireCurrentPlatformUser(ctx);
+  return await ownedProjectForUser(ctx, user._id, projectId);
+}
+
+async function ownedProjectForUser(
+  ctx: PlatformReadCtx,
+  ownerId: Id<"users">,
+  projectId: Id<"projects">,
+): Promise<Doc<"projects">> {
   const project = await ctx.db.get("projects", projectId);
   if (
     project === null ||
-    project.ownerId !== user._id ||
+    project.ownerId !== ownerId ||
     isArchived(project)
   ) {
     return denyNotFound();

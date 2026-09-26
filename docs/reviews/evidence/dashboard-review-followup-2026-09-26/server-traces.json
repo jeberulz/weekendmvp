@@ -1,0 +1,27 @@
+{
+  "artifacts": [
+    {
+      "route": "/api/ideas/prompts",
+      "files": 505,
+      "bytes": 8733199,
+      "canonicalIdeas": 228,
+      "manifestRequired": false
+    },
+    {
+      "route": "/api/ideas/prompt-pack",
+      "files": 506,
+      "bytes": 8739699,
+      "canonicalIdeas": 228,
+      "manifestRequired": false
+    },
+    {
+      "route": "/sitemap.xml",
+      "files": 480,
+      "bytes": 8490322,
+      "canonicalIdeas": 228,
+      "manifestRequired": true
+    }
+  ],
+  "materializedDirectory": "<temporary-artifact-directory>",
+  "note": "Next traced server files, including route entry. Hosting-provider repackaging is not measured."
+}

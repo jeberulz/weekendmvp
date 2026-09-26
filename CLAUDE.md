@@ -1,9 +1,10 @@
 # Weekend MVP — Claude Code guidelines
 
-> **Active Build Platform handoff:** Before continuing the current platform
-> program, read `docs/wp/AGENT_HANDOFF.md`. It records the active branch
-> (`codex/wp27-site-preview`), the two items blocking the WP27 gate, the local
-> environment setup, and the traps that have already cost real time.
+> **Active WP44 handoff:** Read `docs/wp/AGENT_HANDOFF.md` before coding.
+> PR #81 uses remote branch `claude/wizardly-rubin-a6m2th`; the local repair
+> branch is `codex/wp44-audit-fixes`. The handoff links the audit, review repairs,
+> remaining release gates and isolated local environment. Site publishing
+> remains paused; Builder's Hub activation is separate.
 > `docs/wp/CLAUDE_HANDOFF.md` is superseded and kept only for history.
 
 Next.js (App Router) + MDX + Convex site for startup idea validation and the

@@ -1,5 +1,12 @@
 # Build Platform v1 Scope Cut
 
+> **Paused 2026-09-25 (owner ruling, `docs/wp/RULINGS.md`).** Everything to do with
+> site publishing (preview, publish, hosting, tenant sites and the credits that pay
+> for them) is parked for v1.1, and WP29, WP30 and WP31 are paused. The v1.0
+> Repository Launch journey below does not ship now. The product leads with ideas
+> instead: the WP42 homepage and the WP44 dashboard (`docs/wp/wp44-dashboard-prd.md`).
+> Keep this document as the plan for when publishing resumes.
+
 **Status:** Owner-facing scope revision (2026-08-12)  
 **Supersedes:** The 2026-08-16 launch target in `docs/wp/program-manifest.md` for scheduling purposes only. Security, ownership, payment, preview-isolation, restore, and super-admin gates remain binding.  
 **Consolidation branch:** `codex/wp28-tenant-hosts` → `main` (draft PR)  

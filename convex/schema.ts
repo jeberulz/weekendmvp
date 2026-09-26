@@ -64,7 +64,13 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_publishedAt", ["publishedAt"])
     .index("by_category_publishedAt", ["category", "publishedAt"])
-    .index("by_revenueGoal_publishedAt", ["revenueGoal", "publishedAt"]),
+    .index("by_revenueGoal_publishedAt", ["revenueGoal", "publishedAt"])
+    // WP44-S5: full-library search on the dashboard Ideas page. Additive.
+    .searchIndex("search_title", { searchField: "title", filterFields: ["category"] })
+    .searchIndex("search_description", {
+      searchField: "description",
+      filterFields: ["category"],
+    }),
 
   articles: defineTable({
     slug: v.string(),
@@ -170,6 +176,7 @@ export default defineSchema({
 
   subscriptions: defineTable({
     email: v.string(),
+    normalizedEmail: v.optional(v.string()),
     source: v.string(),
     automationIds: v.array(v.string()),
     utm: v.optional(
@@ -183,6 +190,7 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_email", ["email"])
+    .index("by_normalizedEmail", ["normalizedEmail"])
     .index("by_createdAt", ["createdAt"]),
 
   stripe_events: defineTable({
@@ -289,6 +297,7 @@ export default defineSchema({
 
   idea_intents: defineTable({
     ownerId: v.id("users"),
+    saveVersion: v.optional(v.number()),
     ideaId: v.id("ideas"),
     saved: v.boolean(),
     interested: v.boolean(),
@@ -306,6 +315,79 @@ export default defineSchema({
       "interested",
       "updatedAt",
     ]),
+
+  // WP44-S8: setup answers, one row per member. Additive. `dismissed` holds
+  // offer card ids for WP44-S12, capped at 50 by the writer.
+  user_preferences: defineTable({
+    ownerId: v.id("users"),
+    tools: v.array(v.string()),
+    weeklyHours: v.optional(
+      v.union(v.literal("8"), v.literal("12"), v.literal("20"), v.literal("more")),
+    ),
+    goal: v.optional(
+      v.union(
+        v.literal("side-income"),
+        v.literal("learn"),
+        v.literal("portfolio"),
+        v.literal("replace-job"),
+      ),
+    ),
+    onboardedAt: v.optional(v.number()),
+    skippedAt: v.optional(v.number()),
+    dismissed: v.optional(v.array(v.string())),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
+
+  // WP44-S9: one row per weekend plan. Additive. `steps` lists checked
+  // steps only, bounded by the fixed step list in platform/weekendSteps.ts.
+  weekend_plans: defineTable({
+    ownerId: v.id("users"),
+    ideaId: v.id("ideas"),
+    status: v.union(v.literal("active"), v.literal("done"), v.literal("archived")),
+    steps: v.array(v.object({ key: v.string(), doneAt: v.number() })),
+    coreFeature: v.optional(v.string()),
+    liveUrl: v.optional(v.string()),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    archivedAt: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_status_and_updatedAt", ["ownerId", "status", "updatedAt"])
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"])
+    .index("by_ownerId_and_ideaId_and_status", ["ownerId", "ideaId", "status"]),
+
+  // WP44-S11 (schema writer #4, additive). Builder's Hub collections and
+  // private notes. Items live in their own table, never in an array field.
+  collections: defineTable({
+    deletedAt: v.optional(v.number()),
+    ownerId: v.id("users"),
+    name: v.string(),
+    /** Kept in step with collection_items by the mutations, so lists never count rows. */
+    itemCount: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
+    .index("by_ownerId_and_deletedAt_and_updatedAt", ["ownerId", "deletedAt", "updatedAt"]),
+
+  collection_items: defineTable({
+    deletedAt: v.optional(v.number()),
+    ownerId: v.id("users"),
+    collectionId: v.id("collections"),
+    ideaId: v.id("ideas"),
+    addedAt: v.number(),
+  })
+    .index("by_collectionId_and_addedAt", ["collectionId", "addedAt"])
+    .index("by_collectionId_and_deletedAt_and_addedAt", ["collectionId", "deletedAt", "addedAt"])
+    .index("by_collectionId_and_ideaId", ["collectionId", "ideaId"])
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
+
+  idea_notes: defineTable({
+    deletedAt: v.optional(v.number()),
+    ownerId: v.id("users"),
+    ideaId: v.id("ideas"),
+    body: v.string(),
+    updatedAt: v.number(),
+  }).index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
 
   tasks: defineTable({
     ownerId: v.id("users"),

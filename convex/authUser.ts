@@ -1,3 +1,4 @@
+import { normalizeEmail } from "./authEmail";
 import type { AuthProviderMaterializedConfig } from "@convex-dev/auth/server";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
@@ -30,7 +31,7 @@ function optionalString(value: unknown) {
  * keeping the legacy field optional still preserves compatibility on rollout.
  */
 export function normalizeAuthEmail(value: string) {
-  return value.normalize("NFKC").trim().toLowerCase();
+  return normalizeEmail(value);
 }
 
 /**
