@@ -191,7 +191,7 @@ S1 rulings
     - `npm test` including "client cannot bypass the limit" tests
   - Model tier: high (access control)
 
-- [ ] `WP44-S11` - Builder's Hub features (flagged)
+- [x] `WP44-S11` - Builder's Hub features (flagged) (done 2026-09-26, see progress log for what differs from the criteria below)
   - Scope: collections and notes (additive tables, schema writer #4, after S9), prompt pack export (`lib/prompt-pack/*`, deterministic, no AI calls), compare view (`app/dashboard/compare/*`)
   - Acceptance criteria:
     - Collections: create, rename, delete, add and remove ideas. Notes are private and owner-scoped

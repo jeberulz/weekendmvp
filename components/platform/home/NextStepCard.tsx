@@ -9,6 +9,7 @@ import { STAGES, currentStage, nextStepLabel, progress } from "@/convex/platform
 import { categoryName, toolName } from "@/components/ideas/idea-meta";
 import { CopyPrompt } from "@/components/platform/builds/CopyPrompt";
 import { PlanLink } from "@/components/platform/builds/PlanLink";
+import { ExportPromptPack } from "@/components/platform/hub/ExportPromptPack";
 import {
   STAGE_STATUS_LABEL,
   dayName,
@@ -263,6 +264,8 @@ function BuildingCard({ plan }: { plan: PlanSummary }) {
           Open plan
         </Link>
       </div>
+      {/* PRD 7.2: "Export prompt pack" next to Copy prompt. Flag on only. */}
+      <ExportPromptPack slug={plan.slug} title={plan.title} />
     </section>
   );
 }

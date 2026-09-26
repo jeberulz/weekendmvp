@@ -38,6 +38,21 @@ export async function requireFeature(
 
 const planValidator = v.union(v.literal("free"), v.literal("builders_hub"));
 
+/**
+ * The UI asks before it opens a Builder's Hub form or view, so a free member
+ * sees the sheet at the click, not after typing. It is only a courtesy: every
+ * gated mutation and query checks again on its own.
+ */
+export const check = query({
+  args: { feature: v.union(v.literal("collections"), v.literal("prompt_pack"), v.literal("compare")) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    await requireFeature(ctx, user._id, args.feature);
+    return null;
+  },
+});
+
 /** What the Plan card, the sheet and Plan and billing show. Mirrors, never grants. */
 export const mine = query({
   args: {},

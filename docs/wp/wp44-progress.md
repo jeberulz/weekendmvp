@@ -364,3 +364,42 @@ Append-only progress log. Do not rely on chat history for project state.
   - Screenshots: `docs/wp/evidence/wp44-s10-sheet-1440.png`, `wp44-s10-sheet-390.png`, `wp44-s10-billing-1440.png`, `wp44-s10-billing-390.png`
 - Not done here: a real check against a live Convex deployment. This environment cannot reach Convex
 - Next: S11 (Builder's Hub features, flagged)
+
+## 2026-09-26 - WP44-S11 Builder's Hub features (flagged)
+
+- `origin/main` had not moved since S10. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work
+- Actions taken:
+  - Schema (writer #4, additive): `collections` (`ownerId`, `name`, `itemCount`, `updatedAt`), `collection_items` (`ownerId`, `collectionId`, `ideaId`, `addedAt`) and `idea_notes` (`ownerId`, `ideaId`, `body`, `updatedAt`). Items live in their own table. The item count sits on the collection, kept by the mutations, so lists never count rows
+  - `convex/platform/collections.ts`: `list`, `create`, `rename`, `remove`, `addIdea`, `removeIdea`, `forIdea`, `items`. `convex/platform/notes.ts`: `get` and `save`. Owner-scoped, with missing and unowned ids answering the same. Bounds in `convex/platform/hubLimits.ts` (pure, shared with the forms): names 60 characters, 50 collections, 200 ideas each, notes 2,000 characters
+  - Gates: creating, renaming, adding ideas and writing notes need the `collections` entitlement. Reading, taking ideas out, deleting a collection and clearing a note never do, so a member who leaves Builder's Hub keeps their data and can tidy it
+  - `convex/platform/compare.ts`: `ideas({ slugs })` gated on `compare`, 2 to `compareMax` ideas in the order asked. `convex/platform/promptPack.ts`: `source({ slug })` gated on `prompt_pack`. `entitlements.check({ feature })` lets the UI ask before it opens a form
+  - Prompt pack (`lib/prompt-pack/*`): deterministic, no AI call, clock or random value. One brief (what, problem, how it works, stack, weekend scope, every prompt in order) shaped per tool: `CLAUDE.md`, a Cursor `.mdc` rule, a Windsurf rule, and Lovable, Bolt, v0 and Replit briefs. "All tools" is a zip with a README. The zip writer is ours (stored entries, fixed timestamp), so the same idea always gives the same bytes and there is no new dependency
+  - `/api/ideas/prompt-pack?slug=&format=` (new): checks the plan in Convex with the member's session before building, then returns the file with `private, no-store`. 401 without a session, 403 `UPGRADE_REQUIRED` on Free, 400 for a bad slug or format. MDX traced into the function
+  - Saved (flag on): a toolbar with the Collections nav, "New collection" and "Compare". Builder's Hub rows get a collections menu, a private note (shown under the row) and, in compare mode, a Compare checkbox with a sticky "Compare N ideas" bar. `/dashboard/saved?collection=…` shows one collection with rename, delete (with a confirm) and "Remove from …" per row
+  - Compare (`/dashboard/compare?ideas=…`, new): scores, build time, tools, revenue goal, pricing tiers and "Plan my weekend", side by side. The table scrolls sideways on phones inside a focusable, named region
+  - "Export prompt pack" on the plan page and on Home's Building card. The format picker is a radio group
+  - Sidebar: a Collections group for members who have collections
+  - Free members (flag on) see "New collection", "Compare" and "Export prompt pack" with the Builder's Hub tag. The click asks the server, which refuses, and the sheet opens with "Not now". A refused download also opens the sheet. Opening the compare URL directly shows "Compare is part of Builder's Hub" with a way to Saved
+  - Tests: `convex/wp44BuildersHub.test.ts` (8: every gate refuses Free on the server, anonymous callers refused, the full collections and notes flow, bounds, owner privacy across two members, keeping data after leaving Builder's Hub, compare size and order, the prompt pack source) and `tests/platform/wp44-hub.test.ts` (13: the zip parses with Node's CRC and matches byte for byte, each tool's file, fence escaping, a real idea, no clock or AI in the builder, the route's check order, flags, gates, tags, landmarks and URL validation)
+- Different from the written criteria, on purpose:
+  - Notes sit under the `collections` entitlement ("Collections and notes" on every plan table), not a feature of their own
+  - Free members get no per-row collection or note tools, since they cannot have collections. The toolbar buttons are their point of intent
+  - Reads and deletes stay open after a downgrade (see Gates above). Only writes need the plan
+  - Pricing on the compare page comes from each idea's public MDX; the rest of the table comes from the gated query
+  - `convex/_generated/api.d.ts` was edited by hand again (five new modules, generator order). `npm run convex:dev` was not run: no network to Convex
+- Found and fixed during the browser check: the compare table's screen-reader text escaped its scroll box (the region was not `position: relative`), which widened the phone page to 506px. Now 390px
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, unchanged)
+  - `npm test` pass (Convex WP44 suites 74 tests, platform 126)
+  - `npm run build` pass (flag off). `/dashboard/compare` and `/dashboard/saved` are partial-prerender routes, `/api/ideas/prompt-pack` is dynamic. Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket; the download route faked in the browser). The real route answers 401 without a session and 400 for a bad format:
+    - Flag on, Free: "New collection" and "Compare" carry the tag. Each click opens the sheet with no mutation sent, and Escape returns focus. The compare URL shows the locked card. "Export prompt pack" opens the prompt pack sheet
+    - Flag on, Builder's Hub (stubbed): the Collections nav and sidebar group, a note under its row, the collections menu adds an idea and announces it, a new note focuses its field, saves, and returns focus. Compare picks 2 ideas and opens the table. "New collection" creates one and opens it. Rename saves and returns focus to the heading. A wrong collection id shows "We can’t find that collection." Export opens 8 formats, downloads `adspark-prompt-pack.zip`, and a refused download opens the sheet
+    - 390px: Saved and compare have no page scroll. The compare table scrolls inside its region
+    - Flag off: no toolbar, row tools, sidebar group, export or collection view, compare says "not available yet", and no S11 query is subscribed. S9 (13 views) and S10 harnesses pass unchanged
+    - axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on all 12 S11 views, including the open collections menu, the note form and the export panel
+  - Screenshots: `docs/wp/evidence/wp44-s11-saved-1440.png`, `wp44-s11-saved-390.png`, `wp44-s11-compare-1440.png`, `wp44-s11-export-1440.png`
+- Not done here: a real check against a live Convex deployment and the schema push. This environment cannot reach Convex
+- Next: S12 (offer card: Starter Kit and promos)

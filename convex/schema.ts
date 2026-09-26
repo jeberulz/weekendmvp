@@ -352,6 +352,33 @@ export default defineSchema({
     .index("by_ownerId_and_status_and_updatedAt", ["ownerId", "status", "updatedAt"])
     .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
 
+  // WP44-S11 (schema writer #4, additive). Builder's Hub collections and
+  // private notes. Items live in their own table, never in an array field.
+  collections: defineTable({
+    ownerId: v.id("users"),
+    name: v.string(),
+    /** Kept in step with collection_items by the mutations, so lists never count rows. */
+    itemCount: v.number(),
+    updatedAt: v.number(),
+  }).index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"]),
+
+  collection_items: defineTable({
+    ownerId: v.id("users"),
+    collectionId: v.id("collections"),
+    ideaId: v.id("ideas"),
+    addedAt: v.number(),
+  })
+    .index("by_collectionId_and_addedAt", ["collectionId", "addedAt"])
+    .index("by_collectionId_and_ideaId", ["collectionId", "ideaId"])
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
+
+  idea_notes: defineTable({
+    ownerId: v.id("users"),
+    ideaId: v.id("ideas"),
+    body: v.string(),
+    updatedAt: v.number(),
+  }).index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
+
   tasks: defineTable({
     ownerId: v.id("users"),
     projectId: v.id("projects"),

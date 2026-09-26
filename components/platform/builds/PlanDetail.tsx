@@ -22,6 +22,7 @@ import { categoryName } from "@/components/ideas/idea-meta";
 import { stagePrompts } from "@/lib/dashboard/weekend-prompts";
 import { trackDashboardEvent } from "@/lib/track";
 import { cn } from "@/lib/utils";
+import { ExportPromptPack } from "@/components/platform/hub/ExportPromptPack";
 import { PromptList } from "./PromptList";
 import {
   BUILDS_PATH,
@@ -627,6 +628,8 @@ function LivePlan({ planId }: { planId: string }) {
             <p className="text-home-ink-2">You archived this plan. It is read only.</p>
           )}
         </div>
+        {/* WP44-S11: flag on only. Builder's Hub, with the sheet for Free members. */}
+        <ExportPromptPack slug={idea.slug} title={idea.title} />
       </header>
 
       {plan.status === "done" && <Shipped plan={plan} focusOnMount={justFinished} />}

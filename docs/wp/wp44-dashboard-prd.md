@@ -330,7 +330,7 @@ Why these lines:
   the signal that powers For you. A save cap would cut G1 and G2.
 - One active weekend plan is the natural free limit. It matches the promise
   ("one idea, one weekend") and only bites for users who are already building.
-- Prompt pack export is a deterministic file build from content we already
+- Prompt pack export (S11) is a deterministic file build from content we already
   have (for example a `CLAUDE.md`, a `.cursor/rules` file, a Lovable brief).
   It costs nothing to run and saves a builder real setup time.
 - Publishing, hosting and own-idea reports return in v1.1 (R4, R5). Hosting
@@ -644,6 +644,9 @@ Offers and parked features
 | `ideas` search indexes | `searchField: title` and `searchField: description`, both `filterFields: [category]` | `search_title`, `search_description` | S5 |
 | `user_preferences` | `ownerId`, `tools[]`, `weeklyHours?`, `goal?`, `onboardedAt?`, `skippedAt?`, `dismissed[]?` (offer card ids, capped at 50, written by S12), `updatedAt` | `by_ownerId` | S8 |
 | `weekend_plans` | `ownerId`, `ideaId`, `status` (active, done, archived), `steps[]` (`key`, `doneAt`), `coreFeature?`, `liveUrl?`, `startedAt`, `updatedAt`, `completedAt?`, `archivedAt?` | `by_ownerId_and_status_and_updatedAt`, `by_ownerId_and_ideaId` | S9 (functions in `convex/platform/weekendPlans.ts`, since `plans.ts` holds the S7 plan constant) |
+| `collections` | `ownerId`, `name` (60 chars), `itemCount` (kept by the mutations), `updatedAt`. At most 50 per member | `by_ownerId_and_updatedAt` | S11 |
+| `collection_items` | `ownerId`, `collectionId`, `ideaId`, `addedAt`. At most 200 per collection | `by_collectionId_and_addedAt`, `by_collectionId_and_ideaId`, `by_ownerId_and_ideaId` | S11 |
+| `idea_notes` | `ownerId`, `ideaId`, `body` (2,000 chars), `updatedAt`. One per idea per member | `by_ownerId_and_ideaId` | S11 |
 
 All additive. No existing table, field or index changes. Read
 `convex/_generated/ai/guidelines.md` before writing any of it.

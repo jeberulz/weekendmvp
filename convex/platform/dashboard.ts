@@ -5,6 +5,7 @@ import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
 import { ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
 import { getEntitlements } from "./entitlements";
+import { notesFor } from "./notes";
 import { activePlanOf, activePlansOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
 
 /**
@@ -194,7 +195,14 @@ export const setSaved = mutation({
 export const savedList = query({
   args: { limit: v.number() },
   returns: v.object({
-    items: v.array(v.object({ card: ideaCardValidator, savedAt: v.number() })),
+    items: v.array(
+      v.object({
+        card: ideaCardValidator,
+        savedAt: v.number(),
+        /** The member's private note (WP44-S11), or null. */
+        note: v.union(v.string(), v.null()),
+      }),
+    ),
     total: v.number(),
     capped: v.boolean(),
   }),
@@ -206,13 +214,19 @@ export const savedList = query({
       activePlansOf(ctx, user._id),
     ]);
     const building = new Set(active.map((plan) => plan.ideaId));
+    const page = rows.slice(0, limit);
+    const notes = await notesFor(
+      ctx,
+      user._id,
+      page.map((row) => row.ideaId),
+    );
     const items = (
       await Promise.all(
-        rows.slice(0, limit).map(async (row) => {
+        page.map(async (row) => {
           const idea = await ctx.db.get("ideas", row.ideaId);
           if (idea === null) return null;
           const card = toIdeaCard(idea, true, null, building.has(idea._id));
-          return { card, savedAt: row.updatedAt };
+          return { card, savedAt: row.updatedAt, note: notes.get(idea._id) ?? null };
         }),
       )
     ).filter((item) => item !== null);

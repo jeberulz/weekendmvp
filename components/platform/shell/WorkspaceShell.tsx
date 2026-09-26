@@ -32,6 +32,7 @@ import { AccountMenu } from "./AccountMenu";
 import { BuildsCount } from "./BuildsCount";
 import { WhenConvexReady } from "@/components/platform/client-gates";
 import { PlanCard } from "@/components/platform/plan/PlanCard";
+import { SidebarCollections } from "@/components/platform/hub/SidebarCollections";
 import { PendingSaveRunner } from "./PendingSaveRunner";
 import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
@@ -269,6 +270,8 @@ export function WorkspaceShell({
               />
             ))}
           </div>
+
+          <SidebarCollections collapsed={collapsed} pathname={pathname} />
 
           <div className="flex flex-col gap-1">
             <p

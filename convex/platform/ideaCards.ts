@@ -109,3 +109,19 @@ export async function readSavedIntents(
   const newestFirst = [...byIdea.values()].sort((a, b) => b.updatedAt - a.updatedAt);
   return { rows: newestFirst.slice(0, cap), capped: newestFirst.length > cap };
 }
+
+/**
+ * Saved (or interested, R3) for a short list of ideas, by point lookups. For
+ * views that show a few ideas, where reading the whole saved list would waste reads.
+ */
+export async function savedAmong(ctx: QueryCtx, ownerId: Id<"users">, ideaIds: readonly Id<"ideas">[]) {
+  const rows = await Promise.all(
+    ideaIds.map((ideaId) =>
+      ctx.db
+        .query("idea_intents")
+        .withIndex("by_ownerId_and_ideaId", (q) => q.eq("ownerId", ownerId).eq("ideaId", ideaId))
+        .unique(),
+    ),
+  );
+  return new Set(rows.flatMap((row) => (row && (row.saved || row.interested) ? [row.ideaId] : [])));
+}
