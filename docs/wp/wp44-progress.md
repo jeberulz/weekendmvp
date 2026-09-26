@@ -474,3 +474,19 @@ WP44-R5–R8 complete. All Claude nudges reconciled in `docs/reviews/2026-09-26-
 Claude reviewed `69c450b` and confirmed all previous fixes and green CI; latest comment `5850026986` has two non-blocking notes. R9 removes the unused empty-drafts announcement while preserving explicit pagination feedback. The existing backfill runbook remains a production rollout step; no production operation is part of this code repair.
 
 R9 complete: untouched empty/loading first-page draft scans render nothing; explicit pagination retains completion feedback. Regression checks cover empty scans, initial loading, available continuation, and existing draft resume links. Standard gate passed: 1,134 tests (221 Node + 913 Vitest), typecheck, lint (0 errors/35 baseline warnings), 428-page build and server traces. Backend used only for the local build; no production deploy, backfill or merge.
+
+### Convex backend deploy script — added
+
+`scripts/deploy-convex-backend.sh` deploys the backend ahead of the frontend:
+- It refuses to run unless the checkout is clean, matches origin, and contains `origin/main`.
+- It runs typecheck and the Convex tests.
+- It checks that the auth variables are named in production, without printing any values.
+- It tags `origin/main` and exports a full snapshot outside the repo.
+- It shows a dry run and asks before pushing.
+- After the deploy, it verifies the new and legacy functions and that anonymous calls are refused.
+
+`--backfill` runs the legacy subscription normalization: a dry run, a fresh snapshot, the write, then a re-check that expects zero remaining rows.
+
+Main's frontend only calls functions that still exist with the same arguments (the three legacy adapters are byte-identical), so the backend can go out first.
+
+Tested against a stubbed Convex CLI: the full deploy flow, the backfill flow (including the nothing-to-do rerun), a non-production deploy key, a missing auth variable, a declined confirmation, a tracked change and an untracked file in `convex/`. It has not run against a real deployment. The owner runs it.

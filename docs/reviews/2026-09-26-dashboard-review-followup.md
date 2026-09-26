@@ -13,6 +13,8 @@ Review each nudge against current code, repair confirmed defects, and rerun the 
 3. Deploy the matching frontend and perform target-environment authentication, Save, prompts and rollback smoke checks.
 4. Run the legacy subscription normalization soon after the backend deployment, only after the separate production-data inventory, restore point and owner authorization. The repair remains safe before that operation: uncertain claim state suppresses only the kit, preserving eligible promos.
 
+`scripts/deploy-convex-backend.sh` runs steps 1 and 2 with a restore tag and snapshot first, and `--backfill` runs step 4 (dry run, snapshot, write, re-verify). The operator runs it; it needs Convex production credentials.
+
 Full WCAG/screen-reader coverage, external email/OAuth and production rollout remain the original WP44-S13 release gates. Local production-mode tests do not certify a production deployment.
 
 ## Legacy subscription backfill runbook
