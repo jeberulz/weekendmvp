@@ -24,7 +24,7 @@ async function noteOf(ctx: QueryCtx, ownerId: Id<"users">, ideaId: Id<"ideas">) 
 export async function notesFor(ctx: QueryCtx, ownerId: Id<"users">, ideaIds: readonly Id<"ideas">[]) {
   const notes = await Promise.all(ideaIds.map((ideaId) => noteOf(ctx, ownerId, ideaId)));
   const byIdea = new Map<Id<"ideas">, string>();
-  for (const note of notes) if (note) byIdea.set(note.ideaId, note.body);
+  for (const note of notes) if (note && note.deletedAt === undefined) byIdea.set(note.ideaId, note.body);
   return byIdea;
 }
 
@@ -39,7 +39,7 @@ export const get = query({
       .unique();
     if (idea === null) return null;
     const note = await noteOf(ctx, user._id, idea._id);
-    return note ? { body: note.body, updatedAt: note.updatedAt } : null;
+    return note && note.deletedAt === undefined ? { body: note.body, updatedAt: note.updatedAt } : null;
   },
 });
 
@@ -56,13 +56,13 @@ export const save = mutation({
     const body = args.body.trim();
     const existing = await noteOf(ctx, user._id, idea._id);
     if (body === "") {
-      if (existing) await ctx.db.delete("idea_notes", existing._id);
+      if (existing) await ctx.db.patch("idea_notes", existing._id, { deletedAt: Date.now(), updatedAt: Date.now() });
       return null;
     }
     await requireFeature(ctx, user._id, "collections");
     if (body.length > NOTE_MAX) throw new ConvexError({ code: "NOTE_TOO_LONG" });
     const now = Date.now();
-    if (existing) await ctx.db.patch("idea_notes", existing._id, { body, updatedAt: now });
+    if (existing) await ctx.db.patch("idea_notes", existing._id, { body, updatedAt: now, deletedAt: undefined });
     else await ctx.db.insert("idea_notes", { ownerId: user._id, ideaId: idea._id, body, updatedAt: now });
     return null;
   },

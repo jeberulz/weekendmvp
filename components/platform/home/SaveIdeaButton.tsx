@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { Bookmark } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { QuietErrorBoundary, WhenConvexReady } from "@/components/platform/client-gates";
 import { trackDashboardEvent, type DashboardSource } from "@/lib/track";
@@ -103,7 +103,7 @@ function LiveSaveButton({
     (store, args) => {
       const current = store.getQuery(api.platform.dashboard.savedState, { slug: args.slug });
       if (current) {
-        store.setQuery(api.platform.dashboard.savedState, { slug: args.slug }, { saved: args.saved });
+        store.setQuery(api.platform.dashboard.savedState, { slug: args.slug }, { ...current, saved: args.saved });
       }
     },
   );
@@ -111,6 +111,9 @@ function LiveSaveButton({
   // mutation only after the list query carries it, so this clears cleanly.
   const [optimistic, setOptimistic] = useState<boolean | null>(null);
   const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+  const saving = useRef(false);
+  const [failed, setFailed] = useState(false);
 
   // Published but not seeded into Convex yet: there is nothing to save.
   if (saved === undefined && state === null) return null;
@@ -118,6 +121,10 @@ function LiveSaveButton({
   const pressed = optimistic ?? known ?? false;
 
   async function toggle() {
+    if (saving.current) return;
+    saving.current = true;
+    setPending(true);
+    setFailed(false);
     const next = !pressed;
     setOptimistic(next);
     try {
@@ -129,9 +136,12 @@ function LiveSaveButton({
       });
     } catch (error) {
       console.error("Save toggle failed", error);
+      setFailed(true);
       setMessage("Could not update Saved. Try again.");
     } finally {
       setOptimistic(null);
+      saving.current = false;
+      setPending(false);
     }
   }
 
@@ -139,14 +149,14 @@ function LiveSaveButton({
     <>
       <SaveButtonView
         pressed={pressed}
-        disabled={known === undefined}
+        disabled={known === undefined || pending}
         onClick={toggle}
         label={label}
         title={title}
         variant={variant}
         className={className}
       />
-      <span role="status" className="sr-only">
+      <span role="status" className={failed ? "text-sm text-home-clay-ink" : "sr-only"}>
         {message}
       </span>
     </>

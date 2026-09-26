@@ -83,12 +83,13 @@ describe("WP44-S5 library URL state", () => {
 });
 
 describe("WP44-S5 search and data", () => {
-  test("search runs over the whole library through search indexes", () => {
+  test("library uses native pagination and selects after complete catalogue loading", () => {
     expect(schemaSource).toContain('.searchIndex("search_title", { searchField: "title", filterFields: ["category"] })');
     expect(schemaSource).toContain('.searchIndex("search_description", {');
     expect(ideasQuerySource).toContain('.withSearchIndex("search_title"');
     expect(ideasQuerySource).toContain('.withSearchIndex("search_description"');
-    expect(ideasQuerySource).not.toContain(".paginate(");
+    expect(ideasQuerySource).toContain(".paginate(args.paginationOpts)");
+    expect(librarySource).toContain("catalogue.complete ? selectLibrary");
     expect(ideasQuerySource).not.toContain(".collect()");
   });
 
@@ -147,7 +148,7 @@ describe("WP44-S5 pages", () => {
 
   test("Save keeps its live announcements, with or without a known state", () => {
     expect(saveSource).toContain('saved === undefined ? { slug } : "skip"');
-    expect(saveSource).toContain('<span role="status" className="sr-only">');
+    expect(saveSource).toContain('<span role="status"');
     expect(savedSource).toContain("useKeptRows");
   });
 

@@ -135,7 +135,7 @@ describe("WP44-S9 weekend plans", () => {
     expect(preview.atLimit).toBe(true);
     expect((await member.query(api.platform.weekendPlans.startPreview, { slug: "gone" })).idea).toBeNull();
 
-    const second = await member.mutation(api.platform.weekendPlans.start, { slug: "second", replaceActive: true });
+    const second = await member.mutation(api.platform.weekendPlans.start, { slug: "second", replaceActive: true, expectedActivePlanId: first.planId });
     expect(second.created).toBe(true);
     const list = await member.query(api.platform.weekendPlans.list, {});
     expect(list.active.map((plan) => plan.slug)).toEqual(["second"]);

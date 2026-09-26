@@ -2,25 +2,24 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { FINISHED_LIST_LIMIT } from "@/convex/platform/weekendSteps";
 import { QuietErrorBoundary, WhenConvexReady } from "../client-gates";
 
 function BuildsCountValue() {
-  const builds = useQuery(api.platform.weekendPlans.list);
-  if (!builds) return null;
-  const count = builds.active.length + builds.finished.length;
+  const entitlements = useQuery(api.platform.entitlements.mine);
+  if (!entitlements) return null;
+  const count = entitlements.usage.activeWeekendPlans;
   if (count === 0) return null;
-  const capped = builds.finished.length >= FINISHED_LIST_LIMIT;
+  const capped = entitlements.usage.activeWeekendPlansCapped;
 
   return (
     <span className="ml-auto font-mono text-[11px] tabular-nums text-home-ink-3">
-      <span className="sr-only">, </span>
+      <span className="sr-only">, active plans: </span>
       {capped ? `${count}+` : count}
     </span>
   );
 }
 
-/** Builds count for the sidebar: active plans plus finished ones. Quiet on error. */
+/** Builds count for the sidebar: active plans (a bounded count is marked with +). Quiet on error. */
 export function BuildsCount() {
   return (
     <WhenConvexReady>

@@ -31,10 +31,8 @@ describe("WP44-S12 offer card", () => {
     const handler = dashboardSource.slice(dashboardSource.indexOf("export const offer = query"));
     expect(handler).toContain("args: { now: v.number() }");
     expect(handler).not.toContain("Date.now()");
-    expect(handler).toContain("kitClaimed: rows.flat().some(isKitClaim)");
-    // The email is read on the server and never returned.
+    // Response privacy is exercised against the real query in wp44Offers.test.ts.
     expect(handler).toContain("returns: v.union(offerValidator, v.null())");
-    expect(handler.slice(handler.indexOf("const offerValidator"))).not.toContain("email");
   });
 
   test("dismissals live on the member; the old browser key only migrates", () => {

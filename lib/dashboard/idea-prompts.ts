@@ -3,7 +3,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { extractIdea } from "@/lib/home/extract";
 import type { IdeaExtract, Prompt, Tier } from "@/lib/home/types";
-import { readMdxFile } from "@/lib/mdx";
+import { readCanonicalIdeaBody } from "@/lib/canonical-idea-body";
 
 /**
  * WP44-S9 and S11. Parts of an idea's MDX the dashboard needs: its build
@@ -14,16 +14,17 @@ async function extractOf(slug: string): Promise<IdeaExtract | null> {
   "use cache";
   cacheTag("ideas");
   cacheLife("hours");
-  const file = await readMdxFile("content/ideas", slug);
-  return file ? extractIdea(file.content) : null;
+  const body = await readCanonicalIdeaBody(slug);
+  return body ? extractIdea(body.content) : null;
 }
 
-export async function getIdeaPrompts(slug: string): Promise<Prompt[]> {
-  return (await extractOf(slug))?.prompts ?? [];
+export async function getIdeaPrompts(slug: string): Promise<Prompt[] | null> {
+  return (await extractOf(slug))?.prompts ?? null;
 }
 
 export async function getIdeaPackContent(slug: string) {
   const extract = await extractOf(slug);
+  if (!extract) return null;
   return {
     problem: extract?.problem ?? "",
     how: extract?.how ?? [],

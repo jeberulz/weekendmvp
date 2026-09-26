@@ -11,7 +11,7 @@ import { PLAN_LIMITS, UPGRADE_REQUIRED, type GatedFeature } from "./plans";
  * the client never decides access: the UI only mirrors what this returns.
  */
 
-/** Bounded read for the usage meter. Far above any real count. */
+/** Usage is exact through this count; the response explicitly flags any overflow. */
 const ACTIVE_COUNT_CAP = 50;
 
 export async function getEntitlements(ctx: QueryCtx, ownerId: Id<"users">) {
@@ -64,7 +64,7 @@ export const mine = query({
       promptPack: v.boolean(),
       compareMax: v.number(),
     }),
-    usage: v.object({ activeWeekendPlans: v.number() }),
+    usage: v.object({ activeWeekendPlans: v.number(), activeWeekendPlansCapped: v.boolean() }),
     /** Account creation time. The client applies the first-day quiet period with its own clock. */
     joinedAt: v.number(),
   }),
@@ -77,12 +77,12 @@ export const mine = query({
         .withIndex("by_ownerId_and_status_and_updatedAt", (q) =>
           q.eq("ownerId", user._id).eq("status", "active"),
         )
-        .take(ACTIVE_COUNT_CAP),
+        .take(ACTIVE_COUNT_CAP + 1),
     ]);
     return {
       plan,
       limits,
-      usage: { activeWeekendPlans: active.length },
+      usage: { activeWeekendPlans: Math.min(active.length, ACTIVE_COUNT_CAP), activeWeekendPlansCapped: active.length > ACTIVE_COUNT_CAP },
       joinedAt: user._creationTime,
     };
   },

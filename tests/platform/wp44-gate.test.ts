@@ -46,7 +46,7 @@ describe("WP44-S13 review fixes", () => {
 
   test("paging reaches every idea and every save", () => {
     expect(MAX_LIBRARY_LIMIT).toBe(1000);
-    expect(savedIdeasSource).toContain("{data.hasMore && (");
+    expect(savedIdeasSource).toContain('status !== "Exhausted"');
   });
 
   test("a revoked session on Save reads as signed out, not as an outage", () => {

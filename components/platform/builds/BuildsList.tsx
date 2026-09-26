@@ -1,12 +1,15 @@
 "use client";
 
-import { usePaginatedQuery, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
+import { useState } from "react";
+import { ConvexError } from "convex/values";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { currentStage, nextStepLabel, progress } from "@/convex/platform/weekendSteps";
-import { QuietErrorBoundary } from "@/components/platform/client-gates";
+import { ModuleErrorBoundary } from "@/components/platform/home/module-states";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { cn } from "@/lib/utils";
 import { dayName, displayUrl, planHref, progressLine, shortDate } from "./plan-copy";
@@ -138,14 +141,14 @@ function Finished({ plans }: { plans: Summary[] }) {
  * intake route, which stays open by URL. Nothing here links to the parked
  * project cockpit (R5). Absent when there are no drafts.
  */
-function Drafts() {
+export function Drafts() {
   const { results, status, loadMore } = usePaginatedQuery(
     api.platform.projects.listOwned,
     {},
     { initialNumItems: 20 },
   );
   const drafts = results.filter((project) => project.source === "own_idea" && project.nextAction === "resume_brief");
-  if (drafts.length === 0) return null;
+  if (drafts.length === 0 && status === "Exhausted") return null;
   return (
     <section aria-labelledby="draft-plans" className="flex flex-col gap-3">
       <h2
@@ -170,14 +173,16 @@ function Drafts() {
           </li>
         ))}
       </ul>
-      {status === "CanLoadMore" && (
+      {drafts.length === 0 && <p role="status" className="text-sm text-home-ink-2">{status === "LoadingFirstPage" || status === "LoadingMore" ? "Checking your existing drafts…" : "No drafts in the projects checked so far."}</p>}
+      {(status === "CanLoadMore" || status === "LoadingMore") && (
         <div>
           <button
             type="button"
             onClick={() => loadMore(20)}
+            disabled={status !== "CanLoadMore"}
             className={cn(BUTTON, "border border-home-rule bg-home-card text-home-ink hover:border-home-ink-3")}
           >
-            Show more drafts
+            {status === "LoadingMore" ? "Loading…" : "Check more projects for drafts"}
           </button>
         </div>
       )}
@@ -185,26 +190,53 @@ function Drafts() {
   );
 }
 
+function ArchivedPlan({ plan }: { plan: Summary }) {
+  const restore = useMutation(api.platform.weekendPlans.restore);
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  return <li className="flex flex-wrap items-center justify-between gap-3 py-3">
+    <Link href={planHref(plan.planId)} className={cn("text-sm", LINK)}>{plan.title}</Link>
+    <button type="button" disabled={pending} className={cn(BUTTON, "border border-home-rule")}
+      onClick={async () => {
+        setPending(true); setError("");
+        try { await restore({ planId: plan.planId }); router.push(planHref(plan.planId)); }
+        catch (caught) {
+          const code = caught instanceof ConvexError ? (caught.data as { code?: string }).code : null;
+          setError(code === "UPGRADE_REQUIRED" || code === "PLAN_LIMIT"
+            ? "Your active plan limit is reached. Finish or archive a plan first; nothing has been changed."
+            : "We could not restore this plan. Try again.");
+        } finally { setPending(false); }
+      }}>{pending ? "Restoring…" : "Restore plan"}<span className="sr-only"> {plan.title}</span></button>
+    {error && <p role="alert" className="basis-full text-sm text-home-clay-ink">{error}</p>}
+  </li>;
+}
+
+function PlanHistory({ kind }: { kind: "active" | "done" | "archived" }) {
+  const { results, status, loadMore } = usePaginatedQuery(api.platform.weekendPlans.history, { status: kind }, { initialNumItems: 20 });
+  if (status === "LoadingFirstPage") return <ModuleSkeleton label={`Loading ${kind} plans`} className="h-32" />;
+  return <div className="flex flex-col gap-3">
+    {kind === "active" ? (results.length ? results.map(plan => <ActivePlan key={plan.planId} plan={plan} />) : status === "Exhausted" ? <NoActivePlan /> : null)
+      : kind === "done" ? <Finished plans={results} />
+      : <section aria-labelledby="archived-plans" className="flex flex-col gap-3">
+          <h2 id="archived-plans" className="font-editorial text-2xl text-home-ink">Archived</h2>
+          <p className="text-sm text-home-ink-2">Archived plans keep your progress. Restore one when your plan has room; your other plans stay as they are.</p>
+          {results.length ? <ul className="divide-y divide-home-rule">{results.map(plan => <ArchivedPlan key={plan.planId} plan={plan} />)}</ul> : status === "Exhausted" && <p className="text-sm text-home-ink-3">No archived plans.</p>}
+        </section>}
+    {status !== "Exhausted" && <button type="button" disabled={status !== "CanLoadMore"} onClick={() => loadMore(20)}
+      className={cn(BUTTON, "self-start border border-home-rule bg-home-card text-home-ink")}>
+      {status === "LoadingMore" ? "Loading…" : `Show more ${kind === "done" ? "finished" : kind} plans`}
+    </button>}
+  </div>;
+}
+
 function LiveBuilds() {
-  const data = useQuery(api.platform.weekendPlans.list);
-  if (data === undefined) return <ModuleSkeleton label="Loading your builds" className="h-[360px]" />;
-  return (
-    <div className="flex flex-col gap-8">
-      {data.active.length > 0 ? (
-        <div className="flex flex-col gap-4">
-          {data.active.map((plan) => (
-            <ActivePlan key={plan.planId} plan={plan} />
-          ))}
-        </div>
-      ) : (
-        <NoActivePlan />
-      )}
-      <Finished plans={data.finished} />
-      <QuietErrorBoundary>
-        <Drafts />
-      </QuietErrorBoundary>
-    </div>
-  );
+  return <div className="flex flex-col gap-8">
+    <PlanHistory kind="active" />
+    <PlanHistory kind="done" />
+    <PlanHistory kind="archived" />
+    <ModuleErrorBoundary><Drafts /></ModuleErrorBoundary>
+  </div>;
 }
 
 /**

@@ -255,12 +255,12 @@ describe("WP44-S4 save toggle", () => {
     const member = asUser(t, owner);
 
     expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
-      saved: false,
+      saved: false, version: 0,
     });
 
     await member.mutation(api.platform.dashboard.setSaved, { slug: "idea-0", saved: true });
     expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
-      saved: true,
+      saved: true, version: 1,
     });
     const home = await member.query(api.platform.dashboard.home, {});
     expect(home.saved.count).toBe(1);
@@ -280,7 +280,7 @@ describe("WP44-S4 save toggle", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ saved: false, interested: false });
     expect(await member.query(api.platform.dashboard.savedState, { slug: "idea-0" })).toEqual({
-      saved: false,
+      saved: false, version: 2,
     });
   });
 
@@ -294,7 +294,7 @@ describe("WP44-S4 save toggle", () => {
       slug: "idea-0",
     });
 
-    expect(state).toEqual({ saved: true });
+    expect(state).toEqual({ saved: true, version: 0 });
   });
 
   test("saving keeps an existing Interested flag", async () => {
@@ -312,7 +312,7 @@ describe("WP44-S4 save toggle", () => {
     expect(rows[0]).toMatchObject({ saved: true, interested: true });
   });
 
-  test("removing an idea that was never saved writes nothing", async () => {
+  test("removing an idea that was never saved writes a version fence", async () => {
     const t = convexTest(schema, modules);
     const owner = await seedUser(t, "noop@example.test");
     await seedIdeas(t, 1);
@@ -322,8 +322,8 @@ describe("WP44-S4 save toggle", () => {
       saved: false,
     });
 
-    expect(result).toEqual({ saved: false });
-    expect(await intentRows(t, owner.userId)).toHaveLength(0);
+    expect(result).toEqual({ saved: false, version: 1 });
+    expect(await intentRows(t, owner.userId)).toHaveLength(1);
   });
 
   test("one member's save never changes another member's state", async () => {
@@ -339,7 +339,7 @@ describe("WP44-S4 save toggle", () => {
 
     expect(
       await asUser(t, bob).query(api.platform.dashboard.savedState, { slug: "idea-0" }),
-    ).toEqual({ saved: false });
+    ).toEqual({ saved: false, version: 0 });
     expect(await intentRows(t, bob.userId)).toHaveLength(0);
     expect(await intentRows(t, alice.userId)).toHaveLength(1);
   });

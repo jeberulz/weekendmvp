@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useState } from "react";
@@ -84,12 +84,8 @@ function CompareBar({ picked, max, onCancel }: { picked: string[]; max: number; 
 }
 
 function LiveSaved() {
-  const [limit, setLimit] = useState(PAGE);
-  const result = useQuery(api.platform.dashboard.savedList, { limit });
-  const [shown, setShown] = useState(result);
-  if (result !== undefined && result !== shown) setShown(result);
-  const data = result ?? shown;
-  const rows = useKeptRows(data?.items);
+  const { results, status, loadMore } = usePaginatedQuery(api.platform.dashboard.savedPage, {}, { initialNumItems: PAGE });
+  const rows = useKeptRows(status === "LoadingFirstPage" ? undefined : results);
   // WP44-S11. Row tools only for Builder's Hub; the mutations check again.
   const { entitlements } = useUpsell();
   const hub = entitlements?.plan === "builders_hub";
@@ -98,7 +94,7 @@ function LiveSaved() {
   const [picked, setPicked] = useState<string[]>([]);
   const compareMax = entitlements?.limits.compareMax ?? 0;
 
-  if (data === undefined) return <ModuleSkeleton label="Loading your saved ideas" className="h-[320px]" />;
+  if (status === "LoadingFirstPage") return <ModuleSkeleton label="Loading your saved ideas" className="h-[320px]" />;
   const toolbar = BUILDERS_HUB_UI ? (
     <SavedToolbar
       currentCollection={null}
@@ -112,7 +108,7 @@ function LiveSaved() {
     />
   ) : null;
 
-  if (rows.length === 0) {
+  if (rows.length === 0 && status === "Exhausted") {
     return (
       <div className="flex flex-col gap-4">
         {toolbar}
@@ -132,12 +128,12 @@ function LiveSaved() {
     );
   }
 
-  const total = `${data.total}${data.capped ? "+" : ""}`;
+  const total = results.length;
   return (
     <div className="flex flex-col gap-4">
       {toolbar}
       <p role="status" className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3">
-        {total} saved {data.total === 1 && !data.capped ? "idea" : "ideas"}
+        {total} saved {total === 1 ? "idea" : "ideas"}{status !== "Exhausted" ? " loaded; more available" : ""}
       </p>
       <ul className="divide-y divide-home-rule border-y border-home-ink">
         {rows.map((item) => (
@@ -182,23 +178,30 @@ function LiveSaved() {
         />
       )}
       {gate.sheet}
-      {data.hasMore && (
+      {status !== "Exhausted" && (
         <div className="flex justify-center py-2">
           <button
             type="button"
-            onClick={() => setLimit(limit + PAGE)}
-            disabled={result === undefined}
+            onClick={() => loadMore(PAGE)}
+            disabled={status !== "CanLoadMore"}
             className={cn(
               "inline-flex h-11 items-center rounded-[9px] border border-home-rule bg-home-card px-5 text-sm font-medium text-home-ink transition-colors hover:border-home-ink-3 disabled:cursor-wait disabled:opacity-60",
               FOCUS,
             )}
           >
-            Show more saved ideas
+            {status === "LoadingMore" ? "Loading…" : "Show more saved ideas"}
           </button>
         </div>
       )}
     </div>
   );
+}
+
+/** A new verified owner remounts every retained row and private note. */
+function OwnerSaved() {
+  const owner = useQuery(api.currentUser.requireCurrent, {});
+  if (!owner) return <ModuleSkeleton label="Loading your saved ideas" className="h-[320px]" />;
+  return <LiveSaved key={owner.id} />;
 }
 
 /**
@@ -209,7 +212,7 @@ export function SavedIdeas({ collectionId = null }: { collectionId?: string | nu
   if (BUILDERS_HUB_UI && collectionId) return <CollectionView collectionId={collectionId} />;
   return (
     <PersonalModule skeleton={<ModuleSkeleton label="Loading your saved ideas" className="h-[320px]" />}>
-      <LiveSaved />
+      <OwnerSaved />
     </PersonalModule>
   );
 }

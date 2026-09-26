@@ -275,7 +275,8 @@ export async function requireCurrentPlatformUser(
     user === null ||
     user.isAnonymous === true ||
     session === null ||
-    session.userId !== userId
+    session.userId !== userId ||
+    session.expirationTime <= Date.now()
   ) {
     return denyUnauthenticated();
   }

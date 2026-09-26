@@ -41,8 +41,8 @@ function StageOverview() {
   );
 }
 
-function errorData(error: unknown): { code?: string; activeTitle?: string } | null {
-  return error instanceof ConvexError ? (error.data as { code?: string; activeTitle?: string }) : null;
+function errorData(error: unknown): { code?: string; activeTitle?: string; activePlanId?: string } | null {
+  return error instanceof ConvexError ? (error.data as { code?: string; activeTitle?: string; activePlanId?: string }) : null;
 }
 
 function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) {
@@ -53,7 +53,7 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   // The server's refusal, turned into the sheet (flag on) with the plan it named.
-  const [sheet, setSheet] = useState<{ activeTitle?: string } | null>(null);
+  const [sheet, setSheet] = useState<{ activeTitle?: string; activePlanId?: string } | null>(null);
   const startButton = useRef<HTMLButtonElement>(null);
 
   if (preview === undefined) return <ModuleSkeleton label="Loading your plan" className="h-[320px]" />;
@@ -76,20 +76,30 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
     );
   }
 
-  async function begin(replaceActive: boolean) {
+  async function begin(replaceActive: boolean, expectedActivePlanId?: string) {
     setPending(true);
     setError("");
     try {
-      const result = await start({ slug, replaceActive });
+      const result = await start({ slug, replaceActive, expectedActivePlanId: replaceActive ? expectedActivePlanId : undefined });
       if (result.created) trackDashboardEvent({ name: "weekend_plan_started", props: { source } });
       router.push(planHref(result.planId));
     } catch (caught) {
       setPending(false);
       const data = errorData(caught);
+      if (data?.code === "PLAN_CHANGED") {
+        setSheet(null);
+        setError("Your active plan changed in another tab. Review the current plan below before choosing again.");
+        return;
+      }
+      if (data?.code === "PLAN_LIMIT") {
+        setSheet(null);
+        setError("You have more active plans than your current limit. Open Builds and choose which to finish or archive. Nothing was changed.");
+        return;
+      }
       if (data?.code === UPGRADE_REQUIRED) {
         // Flag on: the point-of-intent sheet. Flag off: say so here, since the
         // limit card only shows when the preview can name the running plan.
-        if (BUILDERS_HUB_UI && entitlements?.plan !== "builders_hub") setSheet({ activeTitle: data.activeTitle });
+        if (BUILDERS_HUB_UI && entitlements?.plan !== "builders_hub") setSheet({ activeTitle: data.activeTitle, activePlanId: data.activePlanId });
         else setError("You already have a weekend plan running. Finish or archive it in Builds first.");
         return;
       }
@@ -120,7 +130,7 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
         <h2 className={TITLE}>You are building {active.title} right now.</h2>
         <p className="max-w-[600px] text-[15px] leading-[1.55] text-home-ink-2">
           The free plan runs one weekend plan at a time. Finish it first, or archive it and start {idea.title}{" "}
-          instead. An archived plan leaves Builds.
+          instead. Its progress stays in Archived, where you can restore it later.
         </p>
         <div className="flex flex-wrap gap-2">
           <Link href={planHref(active.planId)} className={PRIMARY}>
@@ -128,13 +138,14 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
           </Link>
           <button
             type="button"
-            onClick={() => begin(true)}
+            onClick={() => begin(true, active.planId)}
             disabled={pending}
             className={cn(SECONDARY, "disabled:cursor-wait disabled:opacity-60")}
           >
             Archive it and start this idea
           </button>
         </div>
+        <Link href="/dashboard/builds" className={cn(BUTTON, "text-home-orange-ink underline")}>Manage all plans</Link>
         {error && (
           <p role="alert" className="text-sm text-home-clay-ink">
             {error}
@@ -188,7 +199,7 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
             pending,
             onSelect: () => {
               setSheet(null);
-              void begin(true);
+              void begin(true, sheet?.activePlanId);
             },
           }}
         />

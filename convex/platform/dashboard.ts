@@ -1,3 +1,4 @@
+import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
@@ -7,7 +8,7 @@ import { readPreferences } from "./preferences";
 import { getEntitlements } from "./entitlements";
 import { notesFor } from "./notes";
 import { OFFER_IDS, chooseOffer, isKitClaim } from "../../lib/dashboard/offers";
-import { activePlanOf, activePlansOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
+import { activePlanForIdea, activePlanOf, activePlansOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
 
 /**
  * WP44 dashboard data. Owner-scoped: identity always comes from the session,
@@ -144,14 +145,17 @@ async function ownerIntentFor(
  */
 export const savedState = query({
   args: { slug: v.string() },
-  returns: v.union(v.object({ saved: v.boolean() }), v.null()),
+  returns: v.union(v.object({ saved: v.boolean(), version: v.number() }), v.null()),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
     const idea = await ideaBySlug(ctx, args.slug);
     if (idea === null) return null;
     const intent = await ownerIntentFor(ctx, user._id, idea._id);
     // Ruling R3: Interested reads as Saved on screen.
-    return { saved: (intent?.saved ?? false) || (intent?.interested ?? false) };
+    return {
+      saved: (intent?.saved ?? false) || (intent?.interested ?? false),
+      version: intent?.saveVersion ?? 0,
+    };
   },
 });
 
@@ -160,8 +164,8 @@ export const savedState = query({
  * flags (ruling R3), so an idea never lingers in Saved as Interested.
  */
 export const setSaved = mutation({
-  args: { slug: v.string(), saved: v.boolean() },
-  returns: v.object({ saved: v.boolean() }),
+  args: { slug: v.string(), saved: v.boolean(), expectedVersion: v.optional(v.number()) },
+  returns: v.object({ saved: v.boolean(), version: v.number() }),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
     const idea = await ideaBySlug(ctx, args.slug);
@@ -169,24 +173,42 @@ export const setSaved = mutation({
       throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
     }
     const existing = await ownerIntentFor(ctx, user._id, idea._id);
+    const version = existing?.saveVersion ?? 0;
+    if (args.expectedVersion !== undefined) {
+      if (!Number.isSafeInteger(args.expectedVersion) || args.expectedVersion < 0)
+        throw new ConvexError({ code: "INVALID_VERSION" });
+      if (args.expectedVersion !== version) {
+        throw new ConvexError({
+          code: "SAVE_CONFLICT",
+          saved: Boolean(existing?.saved || existing?.interested),
+          version,
+        });
+      }
+    }
+    const nextVersion = version + 1;
     const updatedAt = Date.now();
     const next = args.saved
       ? { saved: true, interested: existing?.interested ?? false }
       : { saved: false, interested: false };
 
     if (existing === null) {
-      // Nothing to remove, and no row needed to say so.
-      if (!args.saved) return { saved: false };
+      // Even an unsave of an absent row writes a version fence: a delayed
+      // earlier Save carrying the old version must not resurrect it.
       await ctx.db.insert("idea_intents", {
         ownerId: user._id,
         ideaId: idea._id,
         ...next,
+        saveVersion: nextVersion,
         updatedAt,
       });
     } else {
-      await ctx.db.patch("idea_intents", existing._id, { ...next, updatedAt });
+      await ctx.db.patch("idea_intents", existing._id, {
+        ...next,
+        saveVersion: nextVersion,
+        updatedAt,
+      });
     }
-    return { saved: args.saved };
+    return { saved: args.saved, version: nextVersion };
   },
 });
 
@@ -253,6 +275,7 @@ const offerValidator = v.object({
 
 /** Bounded: a member's email appears in only a few subscription events. */
 const KIT_CLAIM_READ = 20;
+const LEGACY_CLAIM_READ = 500;
 
 /**
  * WP44-S12 offer card (PRD 6.2, R6 and R8): at most one, or none. Chosen on
@@ -265,27 +288,90 @@ export const offer = query({
   returns: v.union(offerValidator, v.null()),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const emails = [...new Set([user.email?.trim(), user.email?.trim().toLowerCase()])].filter(
-      (email): email is string => Boolean(email),
-    );
-    const [prefs, { plan }, rows] = await Promise.all([
+    const email = user.email?.trim().toLowerCase();
+    const [prefs, { plan }, normalized, legacy] = await Promise.all([
       readPreferences(ctx, user._id),
       getEntitlements(ctx, user._id),
-      Promise.all(
-        emails.map((email) =>
-          ctx.db
+      email
+        ? ctx.db
             .query("subscriptions")
-            .withIndex("by_email", (q) => q.eq("email", email))
-            .take(KIT_CLAIM_READ),
-        ),
-      ),
+            .withIndex("by_normalizedEmail", (q) => q.eq("normalizedEmail", email))
+            .take(KIT_CLAIM_READ + 1)
+        : [],
+      // Existing mixed-case rows predate normalizedEmail. No production
+      // backfill is performed here. If this compatibility scan is incomplete,
+      // conservatively suppress the offer instead of claiming the kit is new.
+      email
+        ? ctx.db
+            .query("subscriptions")
+            .withIndex("by_normalizedEmail", (q) => q.eq("normalizedEmail", undefined))
+            .take(LEGACY_CLAIM_READ + 1)
+        : [],
     ]);
+    const kitClaimed =
+      normalized.some(isKitClaim) ||
+      legacy.some((row) => row.email.trim().toLowerCase() === email && isKitClaim(row));
+    if (!kitClaimed && (normalized.length > KIT_CLAIM_READ || legacy.length > LEGACY_CLAIM_READ))
+      return null;
     return chooseOffer({
       now: args.now,
       joinedAt: user._creationTime,
       plan,
-      kitClaimed: rows.flat().some(isKitClaim),
+      kitClaimed,
       dismissed: (prefs?.dismissed ?? []).filter((id) => OFFER_IDS.has(id)),
     });
+  },
+});
+
+/** All saves, including legacy Interested, with stable native continuation. */
+export const savedPage = query({
+  args: { paginationOpts: paginationOptsValidator },
+  returns: paginationResultValidator(
+    v.object({ card: ideaCardValidator, savedAt: v.number(), note: v.union(v.string(), v.null()) }),
+  ),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const result = await ctx.db
+      .query("idea_intents")
+      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
+      .order("desc")
+      .filter((q) => q.or(q.eq(q.field("saved"), true), q.eq(q.field("interested"), true)))
+      // Bound the scan before the sparse Saved filter while preserving native
+      // cursor/endCursor options used by reactive page splitting.
+      .paginate({
+        ...args.paginationOpts,
+        maximumRowsRead: Math.min(args.paginationOpts.maximumRowsRead ?? 200, 200),
+      });
+    const notes = await notesFor(
+      ctx,
+      user._id,
+      result.page.map((row) => row.ideaId),
+    );
+    const page = (
+      await Promise.all(
+        result.page.map(async (row) => {
+          const idea = await ctx.db.get("ideas", row.ideaId);
+          if (!idea) return null;
+          const building = Boolean(await activePlanForIdea(ctx, user._id, idea._id));
+          return {
+            card: toIdeaCard(idea, true, null, building),
+            savedAt: row.updatedAt,
+            note: notes.get(idea._id) ?? null,
+          };
+        }),
+      )
+    ).filter((item) => item !== null);
+    return { ...result, page };
+  },
+});
+
+/** Fresh, server-verified membership for Next routes. A mutation avoids a
+ * cached time-dependent session-expiry decision; it does not write data. */
+export const requireMember = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    await requireCurrentPlatformUser(ctx);
+    return null;
   },
 });

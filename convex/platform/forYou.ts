@@ -108,5 +108,5 @@ export function rankForYou<T extends Idea>(ideas: readonly T[], inputs: ForYouIn
   const reasons = new Map<Id<"ideas">, PickReason | null>(
     scored.map(({ idea, reason }) => [idea._id, reason]),
   );
-  return { ordered: scored.map(({ idea }) => idea), reasons };
+  return { ordered: scored.map(({ idea }) => idea), reasons, ranks: new Map(scored.map(({ idea, rank }) => [idea._id, rank])) };
 }

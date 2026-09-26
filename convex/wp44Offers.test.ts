@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 import { convexTest, type TestConvex } from "convex-test";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
+import * as offers from "../lib/dashboard/offers";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import {
@@ -143,7 +144,7 @@ describe("WP44-S12 offer card on the server", () => {
     const later = claimed.joinedAt + 3 * DAY;
     expect(await asUser(t, claimed).query(api.platform.dashboard.offer, { now: later })).toBeNull();
     const offer = await asUser(t, fresh).query(api.platform.dashboard.offer, { now: fresh.joinedAt + HOUR });
-    expect(offer?.id).toBe("starter-kit");
+    expect(offer).toEqual(STARTER_KIT_OFFER);
     expect(JSON.stringify(offer)).not.toContain("@");
   });
 
@@ -176,4 +177,35 @@ describe("WP44-S12 offer card on the server", () => {
       "INVALID_OFFER",
     );
   });
+});
+
+
+test("legacy mixed-case claims and normalized new records agree without rewriting existing events", async () => {
+  const t = convexTest(schema, modules);
+  const member = await seedUser(t, "legacy@example.test");
+  await subscribe(t, "  LEGACY@Example.Test  ", "starter-kit");
+  expect(await asUser(t, member).query(api.platform.dashboard.offer, { now: member.joinedAt + HOUR })).toBeNull();
+  const id = await t.mutation(api.subscriptions.record, { email: " NEW@Example.Test ", source: "subscribe", automationIds: [], utm: { campaign: "starter-kit" } });
+  const recorded = await t.run(ctx => ctx.db.get("subscriptions", id));
+  expect(recorded).toMatchObject({ email: "new@example.test", normalizedEmail: "new@example.test" });
+  expect((await t.run(ctx => ctx.db.query("subscriptions").collect()))[0].email).toBe("  LEGACY@Example.Test  ");
+});
+
+test("an incomplete legacy claim scan suppresses an unverified offer", async () => {
+  const t = convexTest(schema, modules);
+  const member = await seedUser(t, "tail@example.test");
+  await t.run(async ctx => {
+    for (let i=0; i<501; i++) await ctx.db.insert("subscriptions", { email: `legacy-${i}@example.test`, source: "subscribe", automationIds: [], createdAt: i });
+  });
+  expect(await asUser(t, member).query(api.platform.dashboard.offer, { now: member.joinedAt + HOUR })).toBeNull();
+});
+
+test("privacy guard rejects a deliberately contaminated runtime offer", async () => {
+  const t = convexTest(schema, modules);
+  const member = await seedUser(t, "private@example.test");
+  const contaminated = { ...STARTER_KIT_OFFER, email: "private@example.test" };
+  const probe = vi.spyOn(offers, "chooseOffer").mockReturnValue(contaminated);
+  try {
+    await expect(asUser(t, member).query(api.platform.dashboard.offer, { now: member.joinedAt + HOUR })).rejects.toThrow(/email|extra|unexpected/i);
+  } finally { probe.mockRestore(); }
 });

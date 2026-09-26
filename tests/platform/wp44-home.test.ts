@@ -194,7 +194,7 @@ describe("WP44-S4 states and copy", () => {
 describe("WP44-S4 accessibility contracts", () => {
   test("Save is a toggle with a polite announcement (PRD 6.10)", () => {
     expect(saveSource).toContain("aria-pressed={pressed}");
-    expect(saveSource).toContain('<span role="status" className="sr-only">');
+    expect(saveSource).toContain('<span role="status"');
     expect(saveSource).toContain('fill={pressed ? "currentColor" : "none"}');
   });
 

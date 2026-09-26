@@ -1,6 +1,6 @@
 import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
-import { ConvexHttpClient } from "convex/browser";
 import { ConvexError } from "convex/values";
+import { memberClient } from "@/app/api/platform/_member-client";
 import { api } from "@/convex/_generated/api";
 import { getIdeaPackContent } from "@/lib/dashboard/idea-prompts";
 import { isIdeaSlug } from "@/lib/pending-save";
@@ -27,10 +27,8 @@ export async function GET(request: Request) {
 
   const token = await convexAuthNextjsToken();
   if (!token) return json({ code: "AUTHENTICATION_REQUIRED" }, 401);
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-  if (!url) return json({ code: "UNAVAILABLE" }, 503);
-  const convex = new ConvexHttpClient(url);
-  convex.setAuth(token);
+  const convex = memberClient(token);
+  if (!convex) return json({ code: "UNAVAILABLE" }, 503);
 
   let idea;
   try {
@@ -43,7 +41,14 @@ export async function GET(request: Request) {
     return json({ code: "UNAVAILABLE" }, 503);
   }
 
-  const content = await getIdeaPackContent(slug);
+  let content;
+  try {
+    content = await getIdeaPackContent(slug);
+  } catch {
+    return json({ code: "UNAVAILABLE" }, 503);
+  }
+  if (!content) return json({ code: "RESOURCE_NOT_FOUND" }, 404);
+  if (content.prompts.length === 0) return json({ code: "PROMPTS_UNAVAILABLE" }, 422);
   const pack = buildPromptPack(
     { slug, title: idea.title, description: idea.description, siteUrl: SITE, ...content },
     format,

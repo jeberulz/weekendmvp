@@ -159,7 +159,7 @@ describe("WP44-S6 idea page", () => {
 
   test("signed-in readers toggle, everyone else signs up first", () => {
     expect(islandSource).toContain("aria-pressed={pressed}");
-    expect(islandSource).toContain('<span role="status" className="sr-only">');
+    expect(islandSource).toContain('<span role="status"');
     expect(islandSource).toContain("signupForPendingSave()");
     expect(islandSource).toContain("stashPendingSave(window.localStorage");
     expect(islandSource).toContain('source: "idea_page"');
@@ -167,7 +167,7 @@ describe("WP44-S6 idea page", () => {
 
   test("the dashboard finishes a pending save behind the Convex gate", () => {
     expect(shellSource).toMatch(/<WhenConvexReady>\s*<PendingSaveRunner \/>\s*<\/WhenConvexReady>/);
-    expect(runnerSource).toContain("takePendingSave(window.localStorage, Date.now())");
+    expect(runnerSource).toContain("readPendingSave(window.localStorage, Date.now())");
     expect(runnerSource).toContain('<div aria-live="polite">');
     expect(runnerSource).toContain("Back to the idea");
   });

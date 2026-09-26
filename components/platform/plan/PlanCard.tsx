@@ -20,19 +20,20 @@ function LivePlanCard() {
 
   if (!entitlements || !showUpsell) return null;
   const limit = entitlements.limits.activeWeekendPlans ?? 0;
-  const used = Math.min(entitlements.usage.activeWeekendPlans, limit);
+  const used = entitlements.usage.activeWeekendPlans;
+  const capped = entitlements.usage.activeWeekendPlansCapped;
   const noun = limit === 1 ? "weekend plan" : "weekend plans";
 
   return (
     <div className="flex flex-col gap-2 rounded-[12px] bg-home-panel p-4 text-home-d1">
       <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-home-d2">{PLANS.free.name} plan</p>
       <p className="text-sm">
-        {used} of {limit} {noun} in use
+        {used}{capped ? "+" : ""} of {limit} {noun} in use
       </p>
       <div aria-hidden className="h-1 overflow-hidden rounded-full bg-home-dr">
         <div
           className="h-full rounded-full bg-home-orange-light"
-          style={{ width: `${limit > 0 ? (used / limit) * 100 : 0}%` }}
+          style={{ width: `${limit > 0 ? Math.min(used / limit, 1) * 100 : 0}%` }}
         />
       </div>
       <p className="text-[13px] leading-[1.45] text-home-d2">

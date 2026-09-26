@@ -176,6 +176,7 @@ export default defineSchema({
 
   subscriptions: defineTable({
     email: v.string(),
+    normalizedEmail: v.optional(v.string()),
     source: v.string(),
     automationIds: v.array(v.string()),
     utm: v.optional(
@@ -189,6 +190,7 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_email", ["email"])
+    .index("by_normalizedEmail", ["normalizedEmail"])
     .index("by_createdAt", ["createdAt"]),
 
   stripe_events: defineTable({
@@ -295,6 +297,7 @@ export default defineSchema({
 
   idea_intents: defineTable({
     ownerId: v.id("users"),
+    saveVersion: v.optional(v.number()),
     ideaId: v.id("ideas"),
     saved: v.boolean(),
     interested: v.boolean(),
@@ -350,29 +353,36 @@ export default defineSchema({
     archivedAt: v.optional(v.number()),
   })
     .index("by_ownerId_and_status_and_updatedAt", ["ownerId", "status", "updatedAt"])
-    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
+    .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"])
+    .index("by_ownerId_and_ideaId_and_status", ["ownerId", "ideaId", "status"]),
 
   // WP44-S11 (schema writer #4, additive). Builder's Hub collections and
   // private notes. Items live in their own table, never in an array field.
   collections: defineTable({
+    deletedAt: v.optional(v.number()),
     ownerId: v.id("users"),
     name: v.string(),
     /** Kept in step with collection_items by the mutations, so lists never count rows. */
     itemCount: v.number(),
     updatedAt: v.number(),
-  }).index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"]),
+  })
+    .index("by_ownerId_and_updatedAt", ["ownerId", "updatedAt"])
+    .index("by_ownerId_and_deletedAt_and_updatedAt", ["ownerId", "deletedAt", "updatedAt"]),
 
   collection_items: defineTable({
+    deletedAt: v.optional(v.number()),
     ownerId: v.id("users"),
     collectionId: v.id("collections"),
     ideaId: v.id("ideas"),
     addedAt: v.number(),
   })
     .index("by_collectionId_and_addedAt", ["collectionId", "addedAt"])
+    .index("by_collectionId_and_deletedAt_and_addedAt", ["collectionId", "deletedAt", "addedAt"])
     .index("by_collectionId_and_ideaId", ["collectionId", "ideaId"])
     .index("by_ownerId_and_ideaId", ["ownerId", "ideaId"]),
 
   idea_notes: defineTable({
+    deletedAt: v.optional(v.number()),
     ownerId: v.id("users"),
     ideaId: v.id("ideas"),
     body: v.string(),

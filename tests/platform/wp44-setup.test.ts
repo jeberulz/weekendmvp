@@ -21,7 +21,7 @@ describe("WP44-S8 setup questions on Home", () => {
     expect(setupFormSource).toContain('<Group legend="What do you want from it?">');
     expect(setupFormSource).toContain("<legend className={LEGEND}>{legend}</legend>");
     expect(setupFormSource).toContain('type="checkbox"');
-    expect(setupFormSource.match(/type="radio"/g)).toHaveLength(2);
+    expect(setupFormSource.match(/type="radio"/g)).toHaveLength(4);
     // The native control stays visible: the chosen state is not colour alone.
     expect(setupFormSource).not.toMatch(/className="[^"]*sr-only[^"]*"\s*\/>/);
   });
@@ -53,7 +53,7 @@ describe("WP44-S8 reasons", () => {
 
   test("new answers start the pinned picks over", () => {
     expect(picksSource).toContain("<LivePicks key={prefs.updatedAt ?? 0} exclude={exclude} />");
-    expect(picksSource).toContain("Answer the three questions above and these picks get personal.");
+    expect(picksSource).toContain("Set your tools, time and goal");
   });
 
   test("For you explains its inputs and links to edit them", () => {

@@ -113,10 +113,20 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
   const [message, setMessage] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
   const cancelButton = useRef<HTMLButtonElement>(null);
+  const deleteButton = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const deletingRef = useRef(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const deleteDescription = useId();
 
   // Deleting can't be undone, so focus starts on the safe choice.
   useEffect(() => {
     if (confirming) cancelButton.current?.focus();
+    else if (restoreFocus.current) {
+      restoreFocus.current = false;
+      deleteButton.current?.focus();
+    }
   }, [confirming]);
 
   if (data === undefined) return <ModuleSkeleton label="Loading the collection" className="h-[320px]" />;
@@ -159,27 +169,41 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
             }}
             onUpgrade={() => {
               setRenaming(false);
-              gate.openSheet("collections");
+              gate.openSheet("collections", heading.current);
             }}
           />
         ) : confirming ? (
-          <div className="flex flex-wrap items-center gap-2 rounded-[10px] border border-home-rule bg-home-paper p-3">
-            <p className="text-sm text-home-ink">
+          <div role="group" aria-describedby={deleteDescription} className="flex flex-wrap items-center gap-2 rounded-[10px] border border-home-rule bg-home-paper p-3">
+            <p id={deleteDescription} className="text-sm text-home-ink">
               Delete {collection.name}? The ideas stay in Saved. This can’t be undone.
             </p>
             <button
               type="button"
+              disabled={deleting}
               onClick={async () => {
-                await deleteCollection({ collectionId });
-                router.push(SAVED_PATH);
+                if (deletingRef.current) return;
+                deletingRef.current = true;
+                setDeleting(true); setDeleteError("");
+                try {
+                  await deleteCollection({ collectionId });
+                  router.push(SAVED_PATH);
+                } catch {
+                  setDeleteError("We could not delete this collection. It has not been confirmed. Try again.");
+                  deletingRef.current = false;
+                  setDeleting(false);
+                  cancelButton.current?.focus();
+                }
               }}
               className={cn(BUTTON, "bg-home-ink text-home-card hover:bg-home-panel")}
             >
-              Yes, delete
+              {deleting ? "Deleting…" : "Yes, delete"}
             </button>
-            <button ref={cancelButton} type="button" onClick={() => setConfirming(false)} className={QUIET}>
+            <button ref={cancelButton} aria-describedby={deleteDescription} disabled={deleting} type="button" onClick={() => {
+              restoreFocus.current = true; setConfirming(false); setDeleteError("");
+            }} className={QUIET}>
               Not now
             </button>
+            {deleteError && <p role="alert" className="basis-full text-sm text-home-clay-ink">{deleteError}</p>}
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -190,7 +214,7 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
             >
               Rename
             </button>
-            <button type="button" onClick={() => setConfirming(true)} className={QUIET}>
+            <button ref={deleteButton} type="button" onClick={() => setConfirming(true)} className={QUIET}>
               Delete collection
             </button>
           </div>
@@ -232,7 +256,7 @@ function LiveCollection({ collectionId }: { collectionId: string }) {
           ))}
         </ul>
       )}
-      <p role="status" className="sr-only">
+      <p role="status" className="text-sm text-home-ink-2">
         {message}
       </p>
       {gate.sheet}

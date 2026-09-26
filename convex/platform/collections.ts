@@ -6,7 +6,7 @@ import { requireFeature } from "./entitlements";
 import { COLLECTION_ITEMS_MAX, COLLECTION_NAME_MAX, COLLECTIONS_MAX } from "./hubLimits";
 import { ideaCardValidator, savedAmong, toIdeaCard } from "./ideaCards";
 import { notesFor } from "./notes";
-import { activePlansOf } from "./weekendPlans";
+import { activePlanForIdea } from "./weekendPlans";
 
 /**
  * WP44-S11 collections (Builder's Hub, PRD 6.3 Saved). Owner-scoped: identity
@@ -33,7 +33,7 @@ function cleanName(raw: string): string {
 async function ownedCollection(ctx: QueryCtx, ownerId: Id<"users">, rawId: string) {
   const collectionId = ctx.db.normalizeId("collections", rawId);
   const collection = collectionId ? await ctx.db.get("collections", collectionId) : null;
-  if (collection === null || collection.ownerId !== ownerId) {
+  if (collection === null || collection.ownerId !== ownerId || collection.deletedAt !== undefined) {
     throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
   }
   return collection;
@@ -67,7 +67,9 @@ export const list = query({
     const user = await requireCurrentPlatformUser(ctx);
     const rows = await ctx.db
       .query("collections")
-      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
+      .withIndex("by_ownerId_and_deletedAt_and_updatedAt", (q) =>
+        q.eq("ownerId", user._id).eq("deletedAt", undefined),
+      )
       .order("desc")
       .take(COLLECTIONS_MAX);
     return rows.map(summary);
@@ -83,7 +85,9 @@ export const create = mutation({
     const name = cleanName(args.name);
     const existing = await ctx.db
       .query("collections")
-      .withIndex("by_ownerId_and_updatedAt", (q) => q.eq("ownerId", user._id))
+      .withIndex("by_ownerId_and_deletedAt_and_updatedAt", (q) =>
+        q.eq("ownerId", user._id).eq("deletedAt", undefined),
+      )
       .take(COLLECTIONS_MAX);
     if (existing.length >= COLLECTIONS_MAX) throw new ConvexError({ code: "COLLECTION_LIMIT" });
     const collectionId = await ctx.db.insert("collections", {
@@ -115,13 +119,8 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
-    // Bounded: adding stops at COLLECTION_ITEMS_MAX.
-    const items = await ctx.db
-      .query("collection_items")
-      .withIndex("by_collectionId_and_addedAt", (q) => q.eq("collectionId", collection._id))
-      .take(COLLECTION_ITEMS_MAX);
-    for (const item of items) await ctx.db.delete("collection_items", item._id);
-    await ctx.db.delete("collections", collection._id);
+    // Retain the collection and its items under the v1 soft-delete policy.
+    await ctx.db.patch("collections", collection._id, { deletedAt: Date.now(), updatedAt: Date.now() });
     return null;
   },
 });
@@ -134,10 +133,12 @@ export const addIdea = mutation({
     await requireFeature(ctx, user._id, "collections");
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     const idea = await ideaBySlug(ctx, args.slug);
-    if (await itemFor(ctx, collection._id, idea._id)) return null;
+    const existing = await itemFor(ctx, collection._id, idea._id);
+    if (existing && existing.deletedAt === undefined) return null;
     if (collection.itemCount >= COLLECTION_ITEMS_MAX) throw new ConvexError({ code: "COLLECTION_FULL" });
     const now = Date.now();
-    await ctx.db.insert("collection_items", {
+    if (existing) await ctx.db.patch("collection_items", existing._id, { deletedAt: undefined, addedAt: now });
+    else await ctx.db.insert("collection_items", {
       ownerId: user._id,
       collectionId: collection._id,
       ideaId: idea._id,
@@ -157,8 +158,8 @@ export const removeIdea = mutation({
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
     const idea = await ideaBySlug(ctx, args.slug);
     const item = await itemFor(ctx, collection._id, idea._id);
-    if (item === null) return null;
-    await ctx.db.delete("collection_items", item._id);
+    if (item === null || item.deletedAt !== undefined) return null;
+    await ctx.db.patch("collection_items", item._id, { deletedAt: Date.now() });
     await ctx.db.patch("collections", collection._id, {
       itemCount: Math.max(collection.itemCount - 1, 0),
       updatedAt: Date.now(),
@@ -178,11 +179,19 @@ export const forIdea = query({
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
     if (idea === null) return [];
-    const items = await ctx.db
-      .query("collection_items")
-      .withIndex("by_ownerId_and_ideaId", (q) => q.eq("ownerId", user._id).eq("ideaId", idea._id))
+    const collections = await ctx.db
+      .query("collections")
+      .withIndex("by_ownerId_and_deletedAt_and_updatedAt", (q) =>
+        q.eq("ownerId", user._id).eq("deletedAt", undefined),
+      )
       .take(COLLECTIONS_MAX);
-    return items.map((item) => item.collectionId);
+    const live = await Promise.all(
+      collections.map(async (collection) => {
+        const item = await itemFor(ctx, collection._id, idea._id);
+        return item && item.deletedAt === undefined ? collection._id : null;
+      }),
+    );
+    return live.filter((id) => id !== null);
   },
 });
 
@@ -198,27 +207,30 @@ export const items = query({
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
     const collection = await ownedCollection(ctx, user._id, args.collectionId);
-    const [rows, active] = await Promise.all([
-      ctx.db
-        .query("collection_items")
-        .withIndex("by_collectionId_and_addedAt", (q) => q.eq("collectionId", collection._id))
-        .order("desc")
-        .take(COLLECTION_ITEMS_MAX),
-      activePlansOf(ctx, user._id),
-    ]);
+    const rows = await ctx.db
+      .query("collection_items")
+      .withIndex("by_collectionId_and_deletedAt_and_addedAt", (q) =>
+        q.eq("collectionId", collection._id).eq("deletedAt", undefined),
+      )
+      .order("desc")
+      .take(COLLECTION_ITEMS_MAX);
     const ideaIds = rows.map((row) => row.ideaId);
     const [savedIds, notes] = await Promise.all([
       savedAmong(ctx, user._id, ideaIds),
       notesFor(ctx, user._id, ideaIds),
     ]);
-    const building = new Set(active.map((plan) => plan.ideaId));
     const items = (
       await Promise.all(
         rows.map(async (row) => {
           const idea = await ctx.db.get("ideas", row.ideaId);
           if (idea === null) return null;
           return {
-            card: toIdeaCard(idea, savedIds.has(idea._id), null, building.has(idea._id)),
+            card: toIdeaCard(
+              idea,
+              savedIds.has(idea._id),
+              null,
+              Boolean(await activePlanForIdea(ctx, user._id, idea._id)),
+            ),
             addedAt: row.addedAt,
             note: notes.get(idea._id) ?? null,
           };

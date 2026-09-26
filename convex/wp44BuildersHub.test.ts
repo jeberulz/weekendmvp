@@ -149,7 +149,9 @@ describe("WP44-S11 collections and notes (Builder's Hub)", () => {
     await hub.as.mutation(api.platform.collections.remove, { collectionId });
     expect(await hub.as.query(api.platform.collections.list, {})).toEqual([]);
     const leftovers = await t.run((ctx) => ctx.db.query("collection_items").collect());
-    expect(leftovers).toEqual([]);
+    expect(leftovers).toHaveLength(2);
+    expect((await t.run(ctx => ctx.db.get("collections", collectionId)))?.deletedAt).toEqual(expect.any(Number));
+    expect(await hub.as.query(api.platform.collections.forIdea, { slug: "a" })).toEqual([]);
   });
 
   test("names, sizes and notes are bounded", async () => {

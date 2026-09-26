@@ -1,14 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import {
   loadIdeaPublishedAtMap,
   parsePublishedAt,
 } from "../../lib/sitemap-data.ts";
-
-const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 describe("parsePublishedAt", () => {
   it("parses ISO date strings to epoch ms", () => {
@@ -29,9 +25,7 @@ describe("parsePublishedAt", () => {
 
 describe("loadIdeaPublishedAtMap", () => {
   it("loads real publish dates from ideas/manifest.json", async () => {
-    const map = await loadIdeaPublishedAtMap(
-      path.join(root, "ideas", "manifest.json"),
-    );
+    const map = await loadIdeaPublishedAtMap();
     assert.ok(map.size >= 100, `expected many idea dates, got ${map.size}`);
     const waitlist = map.get("waitlist-manager");
     assert.ok(typeof waitlist === "number" && waitlist > 0);

@@ -85,9 +85,10 @@ export function UpgradeSheet({
             notNow.current?.focus();
           }}
           onCloseAutoFocus={(event) => {
-            if (!returnFocusTo?.current) return;
             event.preventDefault();
-            returnFocusTo.current.focus();
+            const trigger = returnFocusTo?.current;
+            if (trigger?.isConnected && !trigger.matches(":disabled")) trigger.focus();
+            else document.getElementById("workspace-main")?.focus();
           }}
           className={cn(
             // Portalled to <body>, outside the dashboard layout, so it brings the serif and the palette.

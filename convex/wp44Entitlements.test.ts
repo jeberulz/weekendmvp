@@ -144,7 +144,7 @@ describe("WP44-S10 entitlements on Free", () => {
     await seedIdea(t, "first");
     await seedIdea(t, "second");
     await seedIdea(t, "third");
-    await member.mutation(api.platform.weekendPlans.start, { slug: "first" });
+    const first = await member.mutation(api.platform.weekendPlans.start, { slug: "first" });
 
     // No argument can name a plan or a limit: the validator refuses extras.
     const extras: Record<string, unknown>[] = [
@@ -157,8 +157,8 @@ describe("WP44-S10 entitlements on Free", () => {
       await expect(member.mutation(api.platform.weekendPlans.start, args)).rejects.toThrow(/Unexpected field/);
     }
     // The free way forward archives, so the count never goes above 1.
-    await member.mutation(api.platform.weekendPlans.start, { slug: "second", replaceActive: true });
-    await member.mutation(api.platform.weekendPlans.start, { slug: "third", replaceActive: true });
+    const second = await member.mutation(api.platform.weekendPlans.start, { slug: "second", replaceActive: true, expectedActivePlanId: first.planId });
+    await member.mutation(api.platform.weekendPlans.start, { slug: "third", replaceActive: true, expectedActivePlanId: second.planId });
     const mine = await member.query(api.platform.entitlements.mine, {});
     expect(mine.usage.activeWeekendPlans).toBe(1);
     expect((await member.query(api.platform.weekendPlans.list, {})).active.map((plan) => plan.slug)).toEqual(["third"]);

@@ -1,11 +1,15 @@
+import { isRetiredIdea } from "./catalogPolicy";
+import { paginationOptsValidator, paginationResultValidator } from "convex/server";
+// Compatibility window: retain pre-WP44 clients and frontend rollback. Remove only in a later gated release.
+export { dashboardSummary, explore, setIntent } from "./legacyIdeas";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { requireCurrentPlatformUser } from "./authz";
 import { rankForYou } from "./forYou";
-import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
+import { hoursOf, ideaCardValidator, meanScore, readSavedIntents, savedAmong, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
-import { activePlansOf } from "./weekendPlans";
+import { activePlansOf, activePlanForIdea } from "./weekendPlans";
 import { SETUP_TOOLS, type PickReason } from "./setupOptions";
 import {
   HOURS_BUCKETS,
@@ -18,10 +22,9 @@ import {
 } from "./libraryFilters";
 
 /**
- * The idea library is a bounded catalog (226 ideas in September 2026). One
- * read of the newest LIBRARY_READ_LIMIT rows covers all of it, so search,
- * every filter, facet counts and sorting run over the whole library instead
- * of one page at a time (PRD finding A7). `truncated` says when the cap bites.
+ * Compatibility snapshot for earlier WP44 clients. New discovery exhausts
+ * libraryPage cursors, then uses selectLibrary for complete filters/ranking.
+ * This legacy snapshot remains bounded and explicitly flags incomplete reads.
  */
 export const LIBRARY_READ_LIMIT = MAX_LIBRARY_LIMIT;
 /** Per search index. Convex caps one search at 1024 results. */
@@ -118,6 +121,7 @@ export const library = query({
           .withSearchIndex("search_description", (q) => q.search("description", search))
           .take(SEARCH_READ_LIMIT),
       ]);
+      truncated = byTitle.length === SEARCH_READ_LIMIT || byDescription.length === SEARCH_READ_LIMIT;
       const seen = new Set<Id<"ideas">>();
       candidates = [];
       for (const idea of [...byTitle, ...byDescription]) {
@@ -144,6 +148,7 @@ export const library = query({
 
     const base = candidates.filter(
       (idea) =>
+        !isRetiredIdea(idea.slug) &&
         (args.view !== "new" ||
           args.publishedAfter === undefined ||
           idea.publishedAt >= args.publishedAfter) &&
@@ -214,5 +219,56 @@ export const library = query({
       truncated,
       facets,
     };
+  },
+});
+
+/**
+ * Bounded complete discovery: callers exhaust native pages before global
+ * filtering/ranking with selectLibrary. No top-N search or catalog cutoff.
+ * Every card includes all tools (display-only cards may abbreviate them).
+ */
+export const libraryPage = query({
+  args: { paginationOpts: paginationOptsValidator },
+  returns: paginationResultValidator(ideaCardValidator.extend({ recommendationRank: v.number() })),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const result = await ctx.db
+      .query("ideas")
+      .withIndex("by_publishedAt")
+      .order("desc")
+      .paginate(args.paginationOpts);
+    const [savedIds, prefs, recent] = await Promise.all([
+      savedAmong(
+        ctx,
+        user._id,
+        result.page.map((idea) => idea._id),
+      ),
+      readPreferences(ctx, user._id),
+      readSavedIntents(ctx, user._id, AFFINITY_SAVED_LIMIT),
+    ]);
+    const savedIdeas = (
+      await Promise.all(recent.rows.map((row) => ctx.db.get("ideas", row.ideaId)))
+    ).filter((idea) => idea !== null);
+    const ranked = rankForYou(result.page, {
+      tools: SETUP_TOOLS.filter((tool) => prefs?.tools.includes(tool)),
+      weeklyHours: prefs?.weeklyHours,
+      goal: prefs?.goal,
+      savedNewestFirst: savedIdeas,
+    });
+    const page = await Promise.all(
+      result.page
+        .filter((idea) => !isRetiredIdea(idea.slug))
+        .map(async (idea) => ({
+          ...toIdeaCard(
+            idea,
+            savedIds.has(idea._id),
+            ranked.reasons.get(idea._id),
+            Boolean(await activePlanForIdea(ctx, user._id, idea._id)),
+          ),
+          tools: idea.tools,
+          recommendationRank: ranked.ranks.get(idea._id) ?? 0,
+        })),
+    );
+    return { ...result, page };
   },
 });

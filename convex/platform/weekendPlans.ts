@@ -1,3 +1,5 @@
+import { isRetiredIdea } from "./catalogPolicy";
+import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
@@ -13,7 +15,7 @@ import { CORE_FEATURE_MAX, FINISHED_LIST_LIMIT, isStepKey, normalizeLiveUrl } fr
  * may run at once comes from entitlements (S10): 1 on Free (ruling R2).
  */
 
-/** Active plans read at once. Free holds 1; Builder's Hub has no limit, so bound the read. */
+/** Legacy snapshot size. Integrity uses exact lookups; current UI uses history cursors. */
 export const ACTIVE_LIST_LIMIT = 20;
 // Writing the core feature and saving the live link are steps in themselves,
 // so saving either one checks its step.
@@ -48,6 +50,24 @@ export async function activePlansOf(ctx: QueryCtx, ownerId: Id<"users">) {
     )
     .order("desc")
     .take(ACTIVE_LIST_LIMIT);
+}
+
+/** Exact existence lookup, independent of list page size and history length. */
+export async function activePlanForIdea(ctx: QueryCtx, ownerId: Id<"users">, ideaId: Id<"ideas">) {
+  return ctx.db
+    .query("weekend_plans")
+    .withIndex("by_ownerId_and_ideaId_and_status", (q) =>
+      q.eq("ownerId", ownerId).eq("ideaId", ideaId).eq("status", "active"),
+    )
+    .first();
+}
+
+async function activeAtLimit(ctx: QueryCtx, ownerId: Id<"users">, limit: number) {
+  return ctx.db
+    .query("weekend_plans")
+    .withIndex("by_ownerId_and_status_and_updatedAt", (q) => q.eq("ownerId", ownerId).eq("status", "active"))
+    .order("desc")
+    .take(limit + 1);
 }
 
 export async function activePlanOf(ctx: QueryCtx, ownerId: Id<"users">) {
@@ -111,6 +131,7 @@ export const start = mutation({
      * this one. It never raises the limit, so it grants nothing.
      */
     replaceActive: v.optional(v.boolean()),
+    expectedActivePlanId: v.optional(v.string()),
   },
   returns: v.object({ planId: v.id("weekend_plans"), created: v.boolean() }),
   handler: async (ctx, args) => {
@@ -119,29 +140,40 @@ export const start = mutation({
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
-    if (idea === null) throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
+    if (idea === null || isRetiredIdea(idea.slug))
+      throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
 
     const now = Date.now();
-    const [active, { limits }] = await Promise.all([
-      activePlansOf(ctx, user._id),
+    const [{ limits }, same] = await Promise.all([
       getEntitlements(ctx, user._id),
+      activePlanForIdea(ctx, user._id, idea._id),
     ]);
-    const same = active.find((plan) => plan.ideaId === idea._id);
+    // Retried starts are idempotent even after the replacement already happened.
     if (same) return { planId: same._id, created: false };
-
     const limit = limits.activeWeekendPlans;
-    if (limit !== null && active.length >= limit) {
-      if (!args.replaceActive) {
-        // The sheet names the plan to archive, the free way forward.
-        const current = await ctx.db.get("ideas", active[0].ideaId);
-        throw upgradeRequired("weekend_plan", {
-          activePlanId: active[0]._id,
-          activeTitle: current?.title ?? "your current idea",
+    if (limit !== null) {
+      const active = await activeAtLimit(ctx, user._id, limit);
+      if (active.length >= limit) {
+        if (!args.replaceActive) {
+          const current = await ctx.db.get("ideas", active[0].ideaId);
+          throw upgradeRequired("weekend_plan", {
+            activePlanId: active[0]._id,
+            activeTitle: current?.title ?? "your current idea",
+          });
+        }
+        // A downgrade preserves all work. The member must explicitly archive
+        // excess plans rather than a replacement silently archiving many.
+        if (active.length > limit) throw new ConvexError({ code: "PLAN_LIMIT" });
+        if (!args.expectedActivePlanId || active[0]._id !== args.expectedActivePlanId) {
+          throw new ConvexError({ code: "PLAN_CHANGED" });
+        }
+        await ctx.db.patch("weekend_plans", active[0]._id, {
+          status: "archived",
+          archivedAt: now,
+          updatedAt: now,
         });
-      }
-      // Archive the least recently touched plans until the new one fits.
-      for (const plan of active.slice(Math.max(limit - 1, 0))) {
-        await ctx.db.patch("weekend_plans", plan._id, { status: "archived", archivedAt: now, updatedAt: now });
+      } else if (args.replaceActive) {
+        throw new ConvexError({ code: "PLAN_CHANGED" });
       }
     }
     const planId = await ctx.db.insert("weekend_plans", {
@@ -249,19 +281,27 @@ export const startPreview = query({
   }),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const [idea, active, { limits }] = await Promise.all([
+    const [idea, { limits }] = await Promise.all([
       ctx.db
         .query("ideas")
         .withIndex("by_slug", (q) => q.eq("slug", args.slug))
         .unique(),
-      activePlansOf(ctx, user._id),
       getEntitlements(ctx, user._id),
     ]);
-    const same = idea ? active.find((plan) => plan.ideaId === idea._id) : undefined;
-    const shown = same ?? active[0];
+    const same = idea ? await activePlanForIdea(ctx, user._id, idea._id) : null;
     const limit = limits.activeWeekendPlans;
+    const active = limit === null ? [] : await activeAtLimit(ctx, user._id, limit);
+    const shown = same ?? active[0];
     return {
-      idea: idea ? { slug: idea.slug, title: idea.title, category: idea.category, buildTime: hoursOf(idea) } : null,
+      idea:
+        idea && !isRetiredIdea(idea.slug)
+          ? {
+              slug: idea.slug,
+              title: idea.title,
+              category: idea.category,
+              buildTime: hoursOf(idea),
+            }
+          : null,
       active: shown ? await summarize(ctx, shown) : null,
       atLimit: !same && limit !== null && active.length >= limit,
     };
@@ -310,5 +350,54 @@ export const list = query({
     const summaries = async (plans: Doc<"weekend_plans">[]) =>
       (await Promise.all(plans.map((plan) => summarize(ctx, plan)))).filter((plan) => plan !== null);
     return { active: await summaries(active), finished: await summaries(done) };
+  },
+});
+
+/** Complete owner history with native cursors; no arbitrary history ceiling. */
+export const history = query({
+  args: { status: planStatusValidator, paginationOpts: paginationOptsValidator },
+  returns: paginationResultValidator(planSummaryValidator),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const result = await ctx.db
+      .query("weekend_plans")
+      .withIndex("by_ownerId_and_status_and_updatedAt", (q) =>
+        q.eq("ownerId", user._id).eq("status", args.status),
+      )
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...result,
+      page: (await Promise.all(result.page.map((plan) => summarize(ctx, plan)))).filter(
+        (plan) => plan !== null,
+      ),
+    };
+  },
+});
+
+/** Restore is explicit, owner-only and never archives another plan. */
+export const restore = mutation({
+  args: { planId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const user = await requireCurrentPlatformUser(ctx);
+    const plan = await ownedPlan(ctx, user._id, args.planId);
+    if (plan.status === "active") return null;
+    if (plan.status !== "archived") throw new ConvexError({ code: "PLAN_NOT_ARCHIVED" });
+    if (await activePlanForIdea(ctx, user._id, plan.ideaId))
+      throw new ConvexError({ code: "PLAN_ALREADY_ACTIVE" });
+    const { limits } = await getEntitlements(ctx, user._id);
+    if (
+      limits.activeWeekendPlans !== null &&
+      (await activeAtLimit(ctx, user._id, limits.activeWeekendPlans)).length >= limits.activeWeekendPlans
+    ) {
+      throw new ConvexError({ code: "PLAN_LIMIT" });
+    }
+    await ctx.db.patch("weekend_plans", plan._id, {
+      status: "active",
+      archivedAt: undefined,
+      updatedAt: Date.now(),
+    });
+    return null;
   },
 });

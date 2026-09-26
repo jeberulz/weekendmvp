@@ -34,9 +34,10 @@ export function parseSlugParam(url: string): string | null {
   }
 }
 
-export function parseSaveBody(body: unknown): { slug: string; saved: boolean } | null {
+export function parseSaveBody(body: unknown): { slug: string; saved: boolean; expectedVersion?: number } | null {
   if (typeof body !== "object" || body === null || Array.isArray(body)) return null;
-  const { slug, saved } = body as Record<string, unknown>;
+  const { slug, saved, expectedVersion } = body as Record<string, unknown>;
   if (!isIdeaSlug(slug) || typeof saved !== "boolean") return null;
-  return { slug, saved };
+  if (expectedVersion !== undefined && (typeof expectedVersion !== "number" || !Number.isSafeInteger(expectedVersion) || expectedVersion < 0)) return null;
+  return { slug, saved, ...(expectedVersion === undefined ? {} : { expectedVersion }) };
 }

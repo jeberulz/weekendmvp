@@ -162,7 +162,7 @@ function AccountSheet() {
         side="bottom"
         onOpenAutoFocus={focusFirstLink}
         overlayClassName="motion-reduce:animate-none"
-        className="rounded-t-2xl border-home-rule bg-home-card pb-[max(1rem,env(safe-area-inset-bottom))] text-home-ink shadow-none motion-reduce:animate-none motion-reduce:transition-none"
+        className="theme-desk max-h-[90dvh] overflow-y-auto rounded-t-2xl border-home-rule bg-home-card pb-[max(1rem,env(safe-area-inset-bottom))] text-home-ink shadow-none motion-reduce:animate-none motion-reduce:transition-none"
       >
         <SheetHeader className="border-b border-home-rule px-5 pb-4 pt-5 text-left">
           <SheetTitle className="text-base text-home-ink">Account</SheetTitle>

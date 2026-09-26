@@ -24,6 +24,8 @@ export const record = mutation({
   handler: async (ctx, args) => {
     return await ctx.db.insert("subscriptions", {
       ...args,
+      email: args.email.trim().toLowerCase(),
+      normalizedEmail: args.email.trim().toLowerCase(),
       createdAt: Date.now(),
     });
   },

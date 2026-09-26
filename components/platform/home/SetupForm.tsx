@@ -132,6 +132,11 @@ export function SetupForm({
             {HOURS_LABEL[hours]}
           </label>
         ))}
+        <label className={CHIP}>
+          <input type="radio" name={`${id}-hours`} checked={answers.weeklyHours === null}
+            onChange={() => setAnswers((current) => ({ ...current, weeklyHours: null }))} className={INPUT} />
+          No preference
+        </label>
       </Group>
       <Group legend="What do you want from it?">
         {SETUP_GOALS.map((goal) => (
@@ -147,6 +152,11 @@ export function SetupForm({
             {GOAL_LABEL[goal]}
           </label>
         ))}
+        <label className={CHIP}>
+          <input type="radio" name={`${id}-goal`} checked={answers.goal === null}
+            onChange={() => setAnswers((current) => ({ ...current, goal: null }))} className={INPUT} />
+          No preference
+        </label>
       </Group>
       <div className="flex flex-wrap items-center gap-2">
         <button

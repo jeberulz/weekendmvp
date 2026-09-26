@@ -12,6 +12,7 @@ import type { Doc } from "@/convex/_generated/dataModel";
 import { JsonLd } from "@/components/primitives/JsonLd";
 import { NavExternalLink } from "@/components/primitives/NavExternalLink";
 import { Mdx, listMdxSlugs, readMdxFile } from "@/lib/mdx";
+import { chooseIdeaBody } from "@/lib/canonical-idea-body";
 import {
   SITE,
   articleSchema,
@@ -181,31 +182,16 @@ async function resolveIdea(slug: string): Promise<ResolvedIdea | null> {
     ideaOgImage(slug),
   ]);
 
-  if (file) {
-    const fmTitle = file.frontmatter.title;
-    return {
-      source: "mdx",
-      title:
-        idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
-      description: idea?.description ?? excerpt(file.content),
-      content: file.content,
-      idea,
-      ogImage,
-    };
-  }
-
-  if (idea && idea.bodyMode === "convex" && idea.body) {
-    return {
-      source: "convex",
-      title: idea.title,
-      description: idea.description,
-      content: idea.body,
-      idea,
-      ogImage,
-    };
-  }
-
-  return null;
+  const body = chooseIdeaBody(file, idea);
+  if (!body) return null;
+  const fmTitle = file?.frontmatter.title;
+  return {
+    ...body,
+    title: idea?.title ?? (typeof fmTitle === "string" ? fmTitle : slug),
+    description: idea?.description ?? excerpt(body.content),
+    idea,
+    ogImage,
+  };
 }
 
 /* ------------------------------------------------------------------ */

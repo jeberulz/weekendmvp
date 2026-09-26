@@ -42,9 +42,11 @@ const LINK =
 function SetupCard({ onDone }: { onDone: (message: string) => void }) {
   const skipSetup = useMutation(api.platform.preferences.skipSetup);
   const [skipping, setSkipping] = useState(false);
+  const [error, setError] = useState("");
 
   async function skip() {
     setSkipping(true);
+    setError("");
     try {
       await skipSetup({});
       trackDashboardEvent({ name: "setup_skipped", props: {} });
@@ -52,6 +54,7 @@ function SetupCard({ onDone }: { onDone: (message: string) => void }) {
     } catch (error) {
       console.error("Skipping setup failed", error);
       setSkipping(false);
+      setError("We could not skip setup. Try again.");
     }
   }
 
@@ -79,6 +82,7 @@ function SetupCard({ onDone }: { onDone: (message: string) => void }) {
           </button>
         }
       />
+      {error && <p role="alert" className="text-sm text-home-clay-ink">{error}</p>}
     </section>
   );
 }
@@ -130,6 +134,8 @@ function StartHere({
 
 function Shortlist({ home }: { home: HomeState }) {
   const rows = home.saved.latest.slice(0, 3);
+  const [selectedSlug, setSelectedSlug] = useState(rows[0]?.slug ?? "");
+  const selected = rows.find((idea) => idea.slug === selectedSlug) ?? rows[0];
   const count = `${home.saved.count}${home.saved.capped ? "+" : ""}`;
   return (
     <section aria-labelledby="next-step-title" className={CARD}>
@@ -140,6 +146,7 @@ function Shortlist({ home }: { home: HomeState }) {
       <h2 id="next-step-title" className={TITLE}>
         Pick one idea to build this weekend.
       </h2>
+      <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">Your latest saved ideas, compared</caption>
         <thead>
@@ -157,6 +164,11 @@ function Shortlist({ home }: { home: HomeState }) {
           {rows.map((idea) => (
             <tr key={idea.ideaId} className="border-b border-home-rule align-top">
               <th scope="row" className="py-3 pr-3 font-normal">
+                <label className="mb-2 flex min-h-8 items-center gap-2 text-sm text-home-ink">
+                  <input type="radio" name="weekend-shortlist" checked={selected?.slug === idea.slug}
+                    onChange={() => setSelectedSlug(idea.slug)} className="size-4 accent-home-orange-ink" />
+                  Choose<span className="sr-only"> {idea.title}</span>
+                </label>
                 <Link
                   href={`/ideas/${idea.slug}`}
                   className="text-[15px] font-medium text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
@@ -189,8 +201,11 @@ function Shortlist({ home }: { home: HomeState }) {
           ))}
         </tbody>
       </table>
+      </div>
+      <p className="text-xs text-home-ink-3">Scores average the four research ratings, out of 10. Open an idea to review its evidence.</p>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href="/dashboard/saved" className={`${LINK} bg-home-ink text-home-card hover:bg-home-panel`}>
+        {selected && <PlanLink slug={selected.slug} title={selected.title} source="home" />}
+        <Link href="/dashboard/saved" className={`${LINK} border border-home-rule text-home-ink`}>
           See all saved
         </Link>
         <Link href="/dashboard/explore" className={`${LINK} text-home-ink-2 hover:text-home-ink`}>
@@ -276,13 +291,13 @@ function FinishedCard({ plan }: { plan: PlanSummary }) {
     <section aria-labelledby="next-step-title" className={CARD}>
       <p className={EYEBROW}>Finished{plan.completedAt ? ` ${shortDate(plan.completedAt)}` : ""}</p>
       <h2 id="next-step-title" className={TITLE}>
-        You shipped.
+        {plan.liveUrl ? "You shipped." : "Plan finished."}
       </h2>
       <p className="text-[15px] leading-[1.55] text-home-ink-2">
         {plan.title}
         {plan.liveUrl ? (
           <>
-            {" is live at "}
+            {" has a saved launch link: "}
             <a
               href={plan.liveUrl}
               target="_blank"

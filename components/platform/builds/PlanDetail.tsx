@@ -248,6 +248,7 @@ function ConfirmAction({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
+  const descriptionId = useId();
 
   // Finishing and archiving can't be undone, so focus starts on the safe choice.
   useEffect(() => {
@@ -266,8 +267,8 @@ function ConfirmAction({
     );
   }
   return (
-    <div className="flex flex-col gap-3 rounded-[10px] border border-home-rule bg-home-paper p-4">
-      <p className="text-sm text-home-ink">{question}</p>
+    <div role="group" aria-describedby={descriptionId} className="flex flex-col gap-3 rounded-[10px] border border-home-rule bg-home-paper p-4">
+      <p id={descriptionId} className="text-sm text-home-ink">{question}</p>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
@@ -283,6 +284,7 @@ function ConfirmAction({
         </button>
         <button
           ref={cancelRef}
+          aria-describedby={descriptionId}
           type="button"
           disabled={busy}
           onClick={() => {
@@ -513,7 +515,7 @@ function Shipped({ plan, focusOnMount }: { plan: Plan; focusOnMount: boolean }) 
         tabIndex={-1}
         className="font-editorial text-[28px] font-normal leading-[1.1] text-home-ink outline-none"
       >
-        You shipped.
+        {plan.liveUrl ? "You shipped." : "Plan finished."}
       </h2>
       {plan.liveUrl ? (
         <ExternalAnchor href={plan.liveUrl} className={cn("min-h-11 self-start text-[15px]", LINK)}>
@@ -650,7 +652,7 @@ function LivePlan({ planId }: { planId: string }) {
           <div>
             <ConfirmAction
               trigger="Archive this plan"
-              question={`Archive ${idea.title}? It leaves Builds and frees your plan slot. This can’t be undone.`}
+              question={`Archive ${idea.title}? It moves to Archived and frees your plan slot. You can restore it when a slot is available.`}
               confirm="Yes, archive"
               onConfirm={onArchive}
               triggerClassName={QUIET}

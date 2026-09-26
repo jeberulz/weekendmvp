@@ -96,7 +96,7 @@ describe("WP44-S9 screens", () => {
   test("prompts are members only, cached privately, and traced into the function", () => {
     expect(promptsRouteSource).toContain("isIdeaSlug(slug)");
     // S13: the session is validated by Convex, not just present.
-    expect(promptsRouteSource).toContain("await isAuthenticatedNextjs()");
+    expect(promptsRouteSource).toContain("await convex.mutation(api.platform.dashboard.requireMember, {})");
     expect(promptsRouteSource).toContain("status: 401");
     expect(promptsRouteSource).toContain('"private, max-age=300"');
     expect(nextConfigSource).toContain('"/api/ideas/prompts": ["./content/ideas/**/*.mdx"]');
@@ -135,7 +135,7 @@ describe("WP44-S9 screens", () => {
     expect(startPlanSource).toContain("api.platform.weekendPlans.startPreview");
     expect(startPlanSource).toContain('name: "weekend_plan_started", props: { source }');
     expect(startPlanSource).toContain("data?.code === UPGRADE_REQUIRED");
-    expect(startPlanSource).toContain("begin(true)");
+    expect(startPlanSource).toContain("begin(true, active.planId)");
     expect(startPlanSource).toContain("Archive it and start");
     expect(newPlanPageSource).toContain("isIdeaSlug(idea)");
     expect(newPlanPageSource).toContain("planSource(from)");

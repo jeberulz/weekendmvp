@@ -71,7 +71,7 @@ describe("WP44-S10 surfaces follow PRD 6.6", () => {
     expect(startPlanSource).toContain("data?.code === UPGRADE_REQUIRED");
     expect(startPlanSource).toContain('entitlements?.plan !== "builders_hub"');
     expect(startPlanSource).toContain("Archive your current plan and start this one");
-    expect(startPlanSource).toContain("void begin(true)");
+    expect(startPlanSource).toContain("void begin(true, sheet?.activePlanId)");
   });
 
   test("tags sit only on the locked action, and only when upsells may show", () => {

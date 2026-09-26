@@ -72,12 +72,14 @@ export async function POST(request: Request) {
 
   let body: Record<string, unknown>;
   try {
-    body = (await request.json()) as Record<string, unknown>;
+    const parsed: unknown = await request.json();
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return json(400, { error: "Invalid request body" }, cors);
+    body = parsed as Record<string, unknown>;
   } catch {
     return json(400, { error: "Invalid JSON in request body" }, cors);
   }
 
-  const email = body.email;
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : body.email;
   const firstName = typeof body.first_name === "string" ? body.first_name : undefined;
 
   if (!email) {

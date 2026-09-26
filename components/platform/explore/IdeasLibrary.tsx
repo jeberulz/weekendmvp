@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { api } from "@/convex/_generated/api";
+import { selectLibrary } from "@/convex/platform/libraryResults";
+import { useLibraryCatalogue } from "./useLibraryCatalogue";
 import { LIBRARY_VIEWS } from "@/convex/platform/libraryFilters";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
 import { cn } from "@/lib/utils";
@@ -76,7 +76,8 @@ function LiveLibrary() {
   if (page.key !== key) setPage({ key, limit: PAGE });
   const limit = page.key === key ? page.limit : PAGE;
 
-  const result = useQuery(api.platform.ideas.library, {
+  const catalogue = useLibraryCatalogue();
+  const data = catalogue.complete ? selectLibrary(catalogue.cards, {
     view: params.view,
     search: params.q || undefined,
     category: params.category,
@@ -86,11 +87,7 @@ function LiveLibrary() {
     sort: params.sort,
     publishedAfter: params.view === "new" ? since : undefined,
     limit,
-  });
-  // Keep the last results on screen while the next ones load.
-  const [shown, setShown] = useState(result);
-  if (result !== undefined && result !== shown) setShown(result);
-  const data = result ?? shown;
+  }) : undefined;
 
   function update(patch: Partial<LibraryParams>) {
     router.replace(libraryHref(params, patch), { scroll: false });
@@ -165,10 +162,10 @@ function LiveLibrary() {
         </div>
       ) : (
         <ul
-          aria-busy={result === undefined}
+          aria-busy={!catalogue.complete}
           className={cn(
             "transition-opacity",
-            result === undefined && "opacity-60",
+            !catalogue.complete && "opacity-60",
             layout === "grid"
               ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
               : "divide-y divide-home-rule border-y border-home-ink",
@@ -191,7 +188,7 @@ function LiveLibrary() {
             <button
               type="button"
               onClick={() => setPage({ key, limit: limit + PAGE })}
-              disabled={result === undefined}
+              disabled={!catalogue.complete}
               className={cn(
                 "inline-flex h-11 items-center rounded-[9px] border border-home-rule bg-home-card px-5 text-sm font-medium text-home-ink transition-colors hover:border-home-ink-3 disabled:cursor-wait disabled:opacity-60",
                 FOCUS,
@@ -200,9 +197,7 @@ function LiveLibrary() {
               Show more ideas
             </button>
           )}
-          {data.truncated && (
-            <p className="text-[12px] text-home-ink-3">Browsing covers the newest 1,000 ideas. Search reaches the rest.</p>
-          )}
+
         </div>
       )}
     </div>
