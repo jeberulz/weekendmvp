@@ -10,7 +10,7 @@ import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/modul
 import { cn } from "@/lib/utils";
 import { dayName, displayUrl, planHref, progressLine, shortDate } from "./plan-copy";
 
-type Summary = NonNullable<FunctionReturnType<typeof api.platform.weekendPlans.list>["active"]>;
+type Summary = FunctionReturnType<typeof api.platform.weekendPlans.list>["finished"][number];
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 const EYEBROW = "font-mono text-[11px] uppercase tracking-[0.08em] text-home-ink-3";
@@ -21,14 +21,15 @@ const LINK = cn("font-medium text-home-orange-ink underline underline-offset-4 h
 function ActivePlan({ plan }: { plan: Summary }) {
   const count = progress(plan.doneKeys);
   const next = nextStepLabel(plan.doneKeys);
+  const headingId = `active-plan-${plan.planId}`;
   return (
-    <section aria-labelledby="active-plan" className={cn(CARD, "border-home-ink")}>
+    <section aria-labelledby={headingId} className={cn(CARD, "border-home-ink")}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className={EYEBROW}>Building now · {dayName(currentStage(plan.doneKeys))}</p>
         <p className={EYEBROW}>Started {shortDate(plan.startedAt)}</p>
       </div>
       <h2
-        id="active-plan"
+        id={headingId}
         className="font-editorial text-[26px] font-normal leading-[1.15] tracking-[-0.015em] text-home-ink"
       >
         {plan.title}
@@ -135,13 +136,24 @@ function LiveBuilds() {
   if (data === undefined) return <ModuleSkeleton label="Loading your builds" className="h-[360px]" />;
   return (
     <div className="flex flex-col gap-8">
-      {data.active ? <ActivePlan plan={data.active} /> : <NoActivePlan />}
+      {data.active.length > 0 ? (
+        <div className="flex flex-col gap-4">
+          {data.active.map((plan) => (
+            <ActivePlan key={plan.planId} plan={plan} />
+          ))}
+        </div>
+      ) : (
+        <NoActivePlan />
+      )}
       <Finished plans={data.finished} />
     </div>
   );
 }
 
-/** Builds (PRD 6.3): the active plan on top, finished plans below. Site projects are parked (R5). */
+/**
+ * Builds (PRD 6.3): active plans on top (one on Free, any number on
+ * Builder's Hub), finished plans below. Site projects are parked (R5).
+ */
 export function BuildsList() {
   return (
     <PersonalModule skeleton={<ModuleSkeleton label="Loading your builds" className="h-[360px]" />}>

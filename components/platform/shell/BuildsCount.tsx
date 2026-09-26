@@ -8,7 +8,7 @@ import { QuietErrorBoundary, WhenConvexReady } from "../client-gates";
 function BuildsCountValue() {
   const builds = useQuery(api.platform.weekendPlans.list);
   if (!builds) return null;
-  const count = (builds.active ? 1 : 0) + builds.finished.length;
+  const count = builds.active.length + builds.finished.length;
   if (count === 0) return null;
   const capped = builds.finished.length >= FINISHED_LIST_LIMIT;
 
@@ -20,7 +20,7 @@ function BuildsCountValue() {
   );
 }
 
-/** Builds count for the sidebar: the active plan plus finished ones. Quiet on error. */
+/** Builds count for the sidebar: active plans plus finished ones. Quiet on error. */
 export function BuildsCount() {
   return (
     <WhenConvexReady>

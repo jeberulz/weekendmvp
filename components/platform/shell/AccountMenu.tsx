@@ -4,6 +4,7 @@ import { ChevronsUpDown, CreditCard, LogOut, Settings2, UserRound } from "lucide
 import Link from "next/link";
 import { DropdownMenu } from "radix-ui";
 import { useSignOut } from "@/app/dashboard/SignOutButton";
+import { PlanName } from "@/components/platform/plan/PlanCard";
 import { cn } from "@/lib/utils";
 import { BILLING_NAV, SETTINGS_NAV } from "./workspace-current";
 
@@ -36,7 +37,10 @@ export function AccountMenu({ collapsed }: { collapsed: boolean }) {
           </span>
           {!collapsed && (
             <>
-              <span className="flex-1 font-medium text-home-ink">Account</span>
+              <span className="flex-1 font-medium text-home-ink">
+                Account
+                <PlanName />
+              </span>
               <ChevronsUpDown className="size-4 shrink-0" aria-hidden />
             </>
           )}

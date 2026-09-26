@@ -69,7 +69,9 @@ describe("WP44-S7 Plan and billing", () => {
 
   test("shows the Free plan, and Builder's Hub only behind its flag (S10)", () => {
     expect(planSource).toContain("Current plan");
-    expect(planSource).toContain("{showBuildersHub && (");
+    // S10: flag on swaps the Free card for the comparison table.
+    expect(planSource).toContain("{showBuildersHub ? (");
+    expect(planSource).toContain("<PlanComparison />");
     expect(billingPageSource).toContain("buildersHubUiEnabled(process.env.NEXT_PUBLIC_BUILDERS_HUB)");
     expect(buildersHubUiEnabled(undefined)).toBe(false);
     expect(buildersHubUiEnabled("true")).toBe(false);

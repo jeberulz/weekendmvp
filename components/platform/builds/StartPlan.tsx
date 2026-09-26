@@ -4,10 +4,15 @@ import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
+import { UPGRADE_REQUIRED } from "@/convex/platform/plans";
 import { STAGES } from "@/convex/platform/weekendSteps";
 import { ModuleSkeleton, PersonalModule } from "@/components/platform/home/module-states";
+import { BuildersHubTag } from "@/components/platform/plan/BuildersHubTag";
+import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
+import { UpgradeSheet } from "@/components/platform/plan/UpgradeSheet";
+import { useUpsell } from "@/components/platform/plan/useUpsell";
 import { trackDashboardEvent, type DashboardSource } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { STAGE_COPY, dayName, planHref } from "./plan-copy";
@@ -36,12 +41,20 @@ function StageOverview() {
   );
 }
 
+function errorData(error: unknown): { code?: string; activeTitle?: string } | null {
+  return error instanceof ConvexError ? (error.data as { code?: string; activeTitle?: string }) : null;
+}
+
 function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) {
   const preview = useQuery(api.platform.weekendPlans.startPreview, { slug });
   const start = useMutation(api.platform.weekendPlans.start);
+  const { entitlements, showUpsell } = useUpsell();
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  // The server's refusal, turned into the sheet (flag on) with the plan it named.
+  const [sheet, setSheet] = useState<{ activeTitle?: string } | null>(null);
+  const startButton = useRef<HTMLButtonElement>(null);
 
   if (preview === undefined) return <ModuleSkeleton label="Loading your plan" className="h-[320px]" />;
 
@@ -72,8 +85,12 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
       router.push(planHref(result.planId));
     } catch (caught) {
       setPending(false);
-      // The limit shows as its own card once the preview updates.
-      if (caught instanceof ConvexError && (caught.data as { code?: string })?.code === "ACTIVE_PLAN_LIMIT") return;
+      const data = errorData(caught);
+      if (data?.code === UPGRADE_REQUIRED) {
+        // Flag on: the point-of-intent sheet. Flag off: the limit card from the preview.
+        if (BUILDERS_HUB_UI && entitlements?.plan !== "builders_hub") setSheet({ activeTitle: data.activeTitle });
+        return;
+      }
       console.error("Starting the plan failed", caught);
       setError("We could not start the plan. Try again.");
     }
@@ -93,7 +110,7 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
     );
   }
 
-  if (active) {
+  if (preview.atLimit && active && !BUILDERS_HUB_UI) {
     // Ruling R2: one active plan on the free plan. Archiving is the free way forward.
     return (
       <div className={CARD}>
@@ -133,10 +150,17 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
         Four stages, from Friday night to Monday. Each has a short checklist and the prompts from the research.
         {idea.buildTime > 0 && ` The research puts the build at about ${idea.buildTime} hours.`}
       </p>
+      {preview.atLimit && active && (
+        <p className="max-w-[600px] rounded-[10px] bg-home-sunk px-4 py-3 text-sm leading-[1.5] text-home-ink-2">
+          You are building {active.title}. The free plan runs one weekend plan at a time.
+        </p>
+      )}
       <StageOverview />
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => begin(false)} disabled={pending} className={PRIMARY}>
+        <button ref={startButton} type="button" onClick={() => begin(false)} disabled={pending} className={PRIMARY}>
           {pending ? "Starting…" : "Start my weekend plan"}
+          {/* PRD 6.6 surface 3: the tag sits on the locked action itself. */}
+          {preview.atLimit && showUpsell && <BuildersHubTag className="text-home-d2" />}
         </button>
         <Link href={`/ideas/${idea.slug}`} className={cn(BUTTON, "text-home-ink-2 hover:text-home-ink")}>
           Read the research
@@ -146,6 +170,26 @@ function LiveStart({ slug, source }: { slug: string; source: DashboardSource }) 
         <p role="alert" className="text-sm text-home-clay-ink">
           {error}
         </p>
+      )}
+      {BUILDERS_HUB_UI && (
+        <UpgradeSheet
+          open={sheet !== null}
+          onOpenChange={(open) => {
+            if (!open) setSheet(null);
+          }}
+          feature="weekend_plan"
+          activeTitle={sheet?.activeTitle}
+          returnFocusTo={startButton}
+          freeWayForward={{
+            // The description names the plan; long titles would make a two-line button.
+            label: "Archive your current plan and start this one",
+            pending,
+            onSelect: () => {
+              setSheet(null);
+              void begin(true);
+            },
+          }}
+        />
       )}
     </div>
   );

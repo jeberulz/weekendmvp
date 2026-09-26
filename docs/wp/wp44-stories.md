@@ -175,7 +175,7 @@ S1 rulings
     - Screenshots of the plan detail at 390px and 1440px
   - Model tier: high (schema writer #3, state machine)
 
-- [ ] `WP44-S10` - Entitlements and upgrade surfaces (flagged)
+- [x] `WP44-S10` - Entitlements and upgrade surfaces (flagged) (done 2026-09-26, see progress log for what differs from the criteria below)
   - Scope: `convex/platform/entitlements.ts` (new), gated mutations from S9 and S11, `components/platform/plan/*` (new: Plan card, upgrade sheet, comparison table), Plan and billing page
   - Acceptance criteria:
     - `getEntitlements(ctx, ownerId)` returns `{ plan, limits }` and returns Free until the subscription WP ships

@@ -125,19 +125,20 @@ describe("WP44-S9 weekend plans", () => {
 
     const first = await member.mutation(api.platform.weekendPlans.start, { slug: "first" });
     await expect(member.mutation(api.platform.weekendPlans.start, { slug: "second" })).rejects.toThrow(
-      "ACTIVE_PLAN_LIMIT",
+      "UPGRADE_REQUIRED",
     );
 
     // The confirm page sees the plan the new one would replace.
     const preview = await member.query(api.platform.weekendPlans.startPreview, { slug: "second" });
     expect(preview.idea?.title).toBe("Second Idea");
     expect(preview.active).toMatchObject({ planId: first.planId, title: "First Idea" });
+    expect(preview.atLimit).toBe(true);
     expect((await member.query(api.platform.weekendPlans.startPreview, { slug: "gone" })).idea).toBeNull();
 
     const second = await member.mutation(api.platform.weekendPlans.start, { slug: "second", replaceActive: true });
     expect(second.created).toBe(true);
     const list = await member.query(api.platform.weekendPlans.list, {});
-    expect(list.active?.slug).toBe("second");
+    expect(list.active.map((plan) => plan.slug)).toEqual(["second"]);
     // The replaced plan is archived: out of Builds, and frozen.
     expect(list.finished).toEqual([]);
     await expect(
@@ -163,7 +164,7 @@ describe("WP44-S9 weekend plans", () => {
     await member.mutation(api.platform.weekendPlans.finish, { planId });
 
     const list = await member.query(api.platform.weekendPlans.list, {});
-    expect(list.active).toBeNull();
+    expect(list.active).toEqual([]);
     expect(list.finished).toHaveLength(1);
     expect(list.finished[0]).toMatchObject({ status: "done", liveUrl: "https://shipped.app/" });
     expect(list.finished[0].completedAt).not.toBeNull();
@@ -184,7 +185,7 @@ describe("WP44-S9 weekend plans", () => {
     const { planId } = await member.mutation(api.platform.weekendPlans.start, { slug: "a" });
     await member.mutation(api.platform.weekendPlans.archive, { planId });
     const list = await member.query(api.platform.weekendPlans.list, {});
-    expect(list).toEqual({ active: null, finished: [] });
+    expect(list).toEqual({ active: [], finished: [] });
     await expect(member.mutation(api.platform.weekendPlans.finish, { planId })).rejects.toThrow("PLAN_NOT_ACTIVE");
   });
 
@@ -203,7 +204,7 @@ describe("WP44-S9 weekend plans", () => {
     await expect(alice.query(api.platform.weekendPlans.get, { planId: "not-an-id" })).rejects.toThrow(
       "RESOURCE_NOT_FOUND",
     );
-    expect((await bob.query(api.platform.weekendPlans.list, {})).active).toBeNull();
+    expect((await bob.query(api.platform.weekendPlans.list, {})).active).toEqual([]);
     // Bob's own start is not blocked by Alice's plan.
     expect((await bob.mutation(api.platform.weekendPlans.start, { slug: "a" })).created).toBe(true);
   });

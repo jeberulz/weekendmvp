@@ -326,3 +326,41 @@ Append-only progress log. Do not rely on chat history for project state.
   - Screenshots: `docs/wp/evidence/wp44-s9-plan-1440.png` and `docs/wp/evidence/wp44-s9-plan-390.png`
 - Not done here: a real signed-in check against a live Convex deployment, and the schema push. This environment cannot reach Convex
 - Next: S10 (entitlements and upgrade surfaces, flagged)
+
+## 2026-09-26 - WP44-S10 Entitlements and upgrade surfaces (flagged)
+
+- `origin/main` had not moved since S9. Nothing to merge
+- Read `convex/_generated/ai/guidelines.md` before the Convex work. No schema change
+- Actions taken:
+  - `convex/platform/plans.ts` (the one plan constant): limits per plan (Free: 1 active weekend plan, no collections, no prompt pack, no compare; Builder's Hub: no limits, compare up to 4), the four gated features, the sheet's comparison rows, Plan and billing's rows, the upgrade label built from the name and price, and two pure rules: `upsellVisible` (flag on, Free, past the first day) and `upgradeSheetAllowed` (flag on, Free)
+  - `convex/platform/planResolver.ts` (new): `resolvePlan` returns Free for everyone (FR-22). The subscription WP changes only this. It is its own module so tests can stand in a Builder's Hub member
+  - `convex/platform/entitlements.ts` (new): `getEntitlements(ctx, ownerId)` returns `{ plan, limits }`. `upgradeRequired(feature)` builds `ConvexError({ code: "UPGRADE_REQUIRED", feature })`. `requireFeature` refuses the on/off features for S11. `mine` gives the UI the plan, limits, active plan count and join time
+  - Weekend plans now take their limit from entitlements. A second plan on Free throws `UPGRADE_REQUIRED` for `weekend_plan`, naming the plan to archive. `replaceActive` archives rather than raising the limit. `startPreview` reports `atLimit`. `list` returns every active plan, and the Building badge marks every idea with one, so Builder's Hub can run several. `dashboard.home` reads `plan` from entitlements
+  - Flag: `components/platform/plan/flag.ts` reads `NEXT_PUBLIC_BUILDERS_HUB`. With it off, nothing below renders and the entitlements query is skipped
+  - Plan card (sidebar footer): "Free plan", "1 of 1 weekend plan in use" with a meter, one line on Builder's Hub, "See Builder's Hub". The one dark element. Free members only, not in the first day, not in the collapsed rail. The account chip shows the plan name
+  - Upgrade sheet: a Radix dialog (focus trap, Escape, focus back to the button that asked). Title and line per feature, the Free against Builder's Hub table with the feature's row marked, "Upgrade to Builder's Hub · $29/mo", a free way forward and "Not now". It opens when the server refuses, not before
+  - Start page, flag on: at the limit it shows a note and the "Builder's Hub" tag on "Start my weekend plan". Clicking still calls the server; `UPGRADE_REQUIRED` opens the sheet with "Archive your current plan and start this one". Flag off: the S9 limit card, unchanged
+  - Plan and billing, flag on: the Free against Builder's Hub table with "Current plan" on the member's column, then "Not open yet" for Free members, and no upsell for Builder's Hub members. Wraps on phones instead of scrolling sideways
+  - Events: `upgrade_prompt_viewed` (sidebar, sheet, billing) and `upgrade_clicked` (sidebar, sheet)
+  - Tests: `convex/wp44Entitlements.test.ts` (10: the real resolver says Free, the plan constant, upsell rules, sign-in, `mine`, the error and its data, the client cannot bypass the limit (extra arguments refused, archiving keeps the count at 1, closed plans stay closed), on/off features refused on Free, a stubbed Builder's Hub member runs three plans with no refusal and every Building badge, and the plan is per member) and `tests/platform/wp44-upgrade.test.ts` (9). S7 and S9 tests updated for the new error code and the table
+- Different from the written criteria, on purpose:
+  - The upgrade button goes to Plan and billing, which says "Not open yet". There is nothing to buy until the subscription WP, which points `UPGRADE_HREF` at checkout
+  - Tags sit only on "Start my weekend plan" at the limit. Collections, prompt packs and compare get theirs with S11, when those actions exist
+  - Plan and billing shows the table in the first day too, since the member opened it. The Plan card and tags wait a day
+  - The free way forward reads "Archive your current plan and start this one". Long idea titles made a two-line button, and the sheet's description already names the plan
+  - The stubbed resolver is a `vi.mock` of `planResolver.ts` in the test file, not a runtime switch, so nothing in production can turn a member into Builder's Hub
+  - `convex/_generated/api.d.ts` was edited by hand again (two new modules, generator order). `npm run convex:dev` was not run: no network to Convex
+- Checks run:
+  - `npm run typecheck` pass
+  - `npm run lint` 0 errors (35 warnings, unchanged)
+  - `npm test` pass (Convex WP44 suites 66 tests, platform 113)
+  - `npm run build` pass (flag off, as in production). Same 5 Turbopack warnings
+  - Browser (local-only auth bypass in `middleware.ts`, removed before commit, file verified clean; fake Convex websocket):
+    - Flag off: the S9 harness passes unchanged (14 views, axe 0). No Plan card, no entitlements subscription, no table on Plan and billing, the S9 limit card, no tags
+    - Flag on, Free member a month in: the Plan card reads "1 of 1 weekend plan in use", and hides in the collapsed rail. Day one: no Plan card and no tag, but the sheet still opens on request
+    - Start page at the limit: "Start my weekend plan, Builder's Hub". The click sends `start`, the server refuses, the sheet opens with focus inside, Tab stays inside, Escape closes it and focus returns to the button. "Archive your current plan and start this one" sends `start` with `replaceActive` and opens the new plan. Same at 390px, where the sheet rises from the bottom
+    - Builder's Hub member (stubbed): no Plan card, the chip reads "Builder's Hub", no note or tag, a second plan starts with no sheet, and Plan and billing marks Builder's Hub as current with no upsell
+    - axe 4 (wcag2a/aa, wcag21a/aa and best-practice): 0 violations on Home with the Plan card, the start page, the sheet (both widths) and Plan and billing (Free, Builder's Hub, phone)
+  - Screenshots: `docs/wp/evidence/wp44-s10-sheet-1440.png`, `wp44-s10-sheet-390.png`, `wp44-s10-billing-1440.png`, `wp44-s10-billing-390.png`
+- Not done here: a real check against a live Convex deployment. This environment cannot reach Convex
+- Next: S11 (Builder's Hub features, flagged)

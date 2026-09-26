@@ -2,17 +2,19 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
+import { getEntitlements, upgradeRequired } from "./entitlements";
 import { hoursOf } from "./ideaCards";
 import { CORE_FEATURE_MAX, FINISHED_LIST_LIMIT, isStepKey, normalizeLiveUrl } from "./weekendSteps";
 
 /**
  * WP44-S9 weekend plans (PRD 6.3, FR-15 to FR-20). Owner-scoped: identity
  * comes from the session and every plan read checks its owner. A plan is
- * active, done or archived. Only an active plan can change. Free members
- * hold one active plan (ruling R2); S10 moves the limit into entitlements.
+ * active, done or archived. Only an active plan can change. How many plans
+ * may run at once comes from entitlements (S10): 1 on Free (ruling R2).
  */
 
-export const ACTIVE_PLAN_LIMIT_ERROR = "ACTIVE_PLAN_LIMIT";
+/** Active plans read at once. Free holds 1; Builder's Hub has no limit, so bound the read. */
+export const ACTIVE_LIST_LIMIT = 20;
 // Writing the core feature and saving the live link are steps in themselves,
 // so saving either one checks its step.
 const SCOPE_STEP = "fri-scope";
@@ -36,6 +38,17 @@ export const planSummaryValidator = v.object({
   startedAt: v.number(),
   completedAt: v.union(v.number(), v.null()),
 });
+
+/** Active plans, most recently touched first. */
+export async function activePlansOf(ctx: QueryCtx, ownerId: Id<"users">) {
+  return await ctx.db
+    .query("weekend_plans")
+    .withIndex("by_ownerId_and_status_and_updatedAt", (q) =>
+      q.eq("ownerId", ownerId).eq("status", "active"),
+    )
+    .order("desc")
+    .take(ACTIVE_LIST_LIMIT);
+}
 
 export async function activePlanOf(ctx: QueryCtx, ownerId: Id<"users">) {
   return await ctx.db
@@ -93,7 +106,10 @@ async function ownedActivePlan(ctx: MutationCtx, ownerId: Id<"users">, rawId: st
 export const start = mutation({
   args: {
     slug: v.string(),
-    /** The free way forward: archive the current plan and start this one. */
+    /**
+     * The free way forward at the limit: archive the current plan and start
+     * this one. It never raises the limit, so it grants nothing.
+     */
     replaceActive: v.optional(v.boolean()),
   },
   returns: v.object({ planId: v.id("weekend_plans"), created: v.boolean() }),
@@ -106,23 +122,27 @@ export const start = mutation({
     if (idea === null) throw new ConvexError({ code: PLATFORM_AUTH_ERROR.notFound });
 
     const now = Date.now();
-    const active = await activePlanOf(ctx, user._id);
-    if (active !== null) {
-      if (active.ideaId === idea._id) return { planId: active._id, created: false };
-      // FREE_ACTIVE_PLAN_LIMIT is 1: a second idea needs the current plan archived.
+    const [active, { limits }] = await Promise.all([
+      activePlansOf(ctx, user._id),
+      getEntitlements(ctx, user._id),
+    ]);
+    const same = active.find((plan) => plan.ideaId === idea._id);
+    if (same) return { planId: same._id, created: false };
+
+    const limit = limits.activeWeekendPlans;
+    if (limit !== null && active.length >= limit) {
       if (!args.replaceActive) {
-        const current = await ctx.db.get("ideas", active.ideaId);
-        throw new ConvexError({
-          code: ACTIVE_PLAN_LIMIT_ERROR,
-          activePlanId: active._id,
+        // The sheet names the plan to archive, the free way forward.
+        const current = await ctx.db.get("ideas", active[0].ideaId);
+        throw upgradeRequired("weekend_plan", {
+          activePlanId: active[0]._id,
           activeTitle: current?.title ?? "your current idea",
         });
       }
-      await ctx.db.patch("weekend_plans", active._id, {
-        status: "archived",
-        archivedAt: now,
-        updatedAt: now,
-      });
+      // Archive the least recently touched plans until the new one fits.
+      for (const plan of active.slice(Math.max(limit - 1, 0))) {
+        await ctx.db.patch("weekend_plans", plan._id, { status: "archived", archivedAt: now, updatedAt: now });
+      }
     }
     const planId = await ctx.db.insert("weekend_plans", {
       ownerId: user._id,
@@ -218,25 +238,32 @@ const planIdeaValidator = v.object({
   buildTime: v.number(),
 });
 
-/** The confirm page: the idea about to start, and the plan it would replace. */
+/** The start page: the idea about to start, the plan it would replace, and whether the limit bites. */
 export const startPreview = query({
   args: { slug: v.string() },
   returns: v.object({
     idea: v.union(planIdeaValidator, v.null()),
     active: v.union(planSummaryValidator, v.null()),
+    /** Starting another idea now would throw UPGRADE_REQUIRED. */
+    atLimit: v.boolean(),
   }),
   handler: async (ctx, args) => {
     const user = await requireCurrentPlatformUser(ctx);
-    const [idea, active] = await Promise.all([
+    const [idea, active, { limits }] = await Promise.all([
       ctx.db
         .query("ideas")
         .withIndex("by_slug", (q) => q.eq("slug", args.slug))
         .unique(),
-      activePlanOf(ctx, user._id),
+      activePlansOf(ctx, user._id),
+      getEntitlements(ctx, user._id),
     ]);
+    const same = idea ? active.find((plan) => plan.ideaId === idea._id) : undefined;
+    const shown = same ?? active[0];
+    const limit = limits.activeWeekendPlans;
     return {
       idea: idea ? { slug: idea.slug, title: idea.title, category: idea.category, buildTime: hoursOf(idea) } : null,
-      active: active ? await summarize(ctx, active) : null,
+      active: shown ? await summarize(ctx, shown) : null,
+      atLimit: !same && limit !== null && active.length >= limit,
     };
   },
 });
@@ -261,17 +288,17 @@ export const get = query({
   },
 });
 
-/** Builds: the active plan and the most recent finished ones. Archived plans stay out. */
+/** Builds: active plans and the most recent finished ones. Archived plans stay out. */
 export const list = query({
   args: {},
   returns: v.object({
-    active: v.union(planSummaryValidator, v.null()),
+    active: v.array(planSummaryValidator),
     finished: v.array(planSummaryValidator),
   }),
   handler: async (ctx) => {
     const user = await requireCurrentPlatformUser(ctx);
     const [active, done] = await Promise.all([
-      activePlanOf(ctx, user._id),
+      activePlansOf(ctx, user._id),
       ctx.db
         .query("weekend_plans")
         .withIndex("by_ownerId_and_status_and_updatedAt", (q) =>
@@ -280,9 +307,8 @@ export const list = query({
         .order("desc")
         .take(FINISHED_LIST_LIMIT),
     ]);
-    const finished = (await Promise.all(done.map((plan) => summarize(ctx, plan)))).filter(
-      (plan) => plan !== null,
-    );
-    return { active: active ? await summarize(ctx, active) : null, finished };
+    const summaries = async (plans: Doc<"weekend_plans">[]) =>
+      (await Promise.all(plans.map((plan) => summarize(ctx, plan)))).filter((plan) => plan !== null);
+    return { active: await summaries(active), finished: await summaries(done) };
   },
 });

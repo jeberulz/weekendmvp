@@ -590,7 +590,7 @@ Weekend plans
 | FR-16 | Steps can be checked and unchecked. Progress persists across devices |
 | FR-17 | Each stage shows the idea's matching prompts with a copy button that announces "Prompt copied" |
 | FR-18 | The Sunday stage shows the idea's Landing Page prompt and saves the live link the member ships. It links to no Weekend MVP preview or publish flow (R5) |
-| FR-19 | Free members can hold 1 active plan. Starting another opens the upgrade sheet with an archive option (enforced server-side once entitlements exist). Until S10, the start page (`/dashboard/builds/new`) explains the limit and offers "Archive it and start this idea" |
+| FR-19 | Free members can hold 1 active plan, enforced by the server through entitlements. With the Builder's Hub flag on, starting another opens the upgrade sheet with "Archive your current plan and start this one". With the flag off, the start page (`/dashboard/builds/new`) explains the limit and offers "Archive it and start this idea" |
 | FR-20 | Ideas with an active plan show "Building" in Ideas and Saved |
 
 Plans and entitlements
@@ -652,11 +652,15 @@ All additive. No existing table, field or index changes. Read
 
 `convex/platform/entitlements.ts` exports one internal helper,
 `getEntitlements(ctx, ownerId)`, returning `{ plan: "free" | "builders_hub", limits }`.
-The display name ("Builder's Hub") and price ($29 a month) live in one plan
-constant beside it. For now it returns Free. Gated mutations (start plan, create collection,
-export pack, compare) call it and throw a typed `ConvexError` with
-`code: "UPGRADE_REQUIRED"` and the feature name, which the UI turns into the
-upgrade sheet.
+The display name ("Builder's Hub"), price ($29 a month) and limits live in one
+plan constant beside it (`convex/platform/plans.ts`). For now it returns Free:
+the plan comes from `resolvePlan` in `convex/platform/planResolver.ts`, which
+the subscription WP changes to read its subscription record. Gated mutations
+(start plan, create collection, export pack, compare) call it and throw a typed
+`ConvexError` with `code: "UPGRADE_REQUIRED"` and the feature name, which the
+UI turns into the upgrade sheet. `requireFeature` covers the on/off features
+for S11. `platform.entitlements.mine` gives the UI the plan, limits, usage and
+join time, and only mirrors what the server enforces.
 
 ### 9.4 Payments
 

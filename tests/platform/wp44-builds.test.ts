@@ -133,7 +133,7 @@ describe("WP44-S9 screens", () => {
   test("one start page handles the limit, and nothing starts on a card", () => {
     expect(startPlanSource).toContain("api.platform.weekendPlans.startPreview");
     expect(startPlanSource).toContain('name: "weekend_plan_started", props: { source }');
-    expect(startPlanSource).toContain('"ACTIVE_PLAN_LIMIT"');
+    expect(startPlanSource).toContain("data?.code === UPGRADE_REQUIRED");
     expect(startPlanSource).toContain("begin(true)");
     expect(startPlanSource).toContain("Archive it and start");
     expect(newPlanPageSource).toContain("isIdeaSlug(idea)");

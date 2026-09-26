@@ -65,8 +65,6 @@ export function progress(done: readonly string[]) {
   return { done: doneCount, total: STEP_KEYS.length };
 }
 
-/** Free members run one weekend plan at a time (ruling R2). S10 reads it from entitlements. */
-export const FREE_ACTIVE_PLAN_LIMIT = 1;
 export const CORE_FEATURE_MAX = 140;
 /** Builds lists this many finished plans, newest first. */
 export const FINISHED_LIST_LIMIT = 20;

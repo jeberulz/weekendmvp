@@ -31,6 +31,7 @@ import { SignOutButton } from "@/app/dashboard/SignOutButton";
 import { AccountMenu } from "./AccountMenu";
 import { BuildsCount } from "./BuildsCount";
 import { WhenConvexReady } from "@/components/platform/client-gates";
+import { PlanCard } from "@/components/platform/plan/PlanCard";
 import { PendingSaveRunner } from "./PendingSaveRunner";
 import { SavedCount } from "./SavedCount";
 import { useSidebarCollapsed } from "./sidebar-state";
@@ -287,7 +288,9 @@ export function WorkspaceShell({
             />
           </div>
 
-          <div className="mt-auto">
+          <div className="mt-auto flex flex-col gap-3">
+            {/* WP44-S10: free members, flag on, after the first day. */}
+            <PlanCard collapsed={collapsed} />
             <AccountMenu collapsed={collapsed} />
           </div>
         </div>

@@ -4,7 +4,8 @@ import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser } from "./authz";
 import { ideaCardValidator, meanScore, readSavedIntents, toIdeaCard } from "./ideaCards";
 import { readPreferences } from "./preferences";
-import { activePlanOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
+import { getEntitlements } from "./entitlements";
+import { activePlanOf, activePlansOf, latestDonePlanOf, planSummaryValidator, summarize } from "./weekendPlans";
 
 /**
  * WP44 dashboard data. Owner-scoped: identity always comes from the session,
@@ -50,7 +51,7 @@ const homeValidator = v.object({
   activePlan: v.union(planSummaryValidator, v.null()),
   /** The most recently finished plan. Home shows "You shipped" for a week. */
   lastFinished: v.union(planSummaryValidator, v.null()),
-  /** WP44-S10 resolves this from entitlements. Free until then. */
+  /** From entitlements (WP44-S10). Free for everyone until the subscription WP. */
   plan: v.union(v.literal("free"), v.literal("builders_hub")),
 });
 
@@ -67,11 +68,12 @@ export const home = query({
     const user = await requireCurrentPlatformUser(ctx);
 
     // Ruling R3: Saved shows ideas marked saved or interested.
-    const [{ rows: newestFirst, capped }, prefs, active, lastDone] = await Promise.all([
+    const [{ rows: newestFirst, capped }, prefs, active, lastDone, { plan }] = await Promise.all([
       readSavedIntents(ctx, user._id, SAVED_COUNT_CAP),
       readPreferences(ctx, user._id),
       activePlanOf(ctx, user._id),
       latestDonePlanOf(ctx, user._id),
+      getEntitlements(ctx, user._id),
     ]);
 
     const latest = (
@@ -107,7 +109,7 @@ export const home = query({
       setupSkipped: prefs?.skippedAt !== undefined,
       activePlan: active ? await summarize(ctx, active) : null,
       lastFinished: lastDone ? await summarize(ctx, lastDone) : null,
-      plan: "free" as const,
+      plan,
     };
   },
 });
@@ -201,14 +203,15 @@ export const savedList = query({
     const limit = Math.max(1, Math.min(Math.floor(args.limit) || 1, MAX_SAVED_LIST_LIMIT));
     const [{ rows, capped }, active] = await Promise.all([
       readSavedIntents(ctx, user._id, SAVED_LIST_CAP),
-      activePlanOf(ctx, user._id),
+      activePlansOf(ctx, user._id),
     ]);
+    const building = new Set(active.map((plan) => plan.ideaId));
     const items = (
       await Promise.all(
         rows.slice(0, limit).map(async (row) => {
           const idea = await ctx.db.get("ideas", row.ideaId);
           if (idea === null) return null;
-          const card = toIdeaCard(idea, true, null, active?.ideaId === idea._id);
+          const card = toIdeaCard(idea, true, null, building.has(idea._id));
           return { card, savedAt: row.updatedAt };
         }),
       )
