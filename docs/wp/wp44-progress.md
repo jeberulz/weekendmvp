@@ -446,3 +446,8 @@ Append-only progress log. Do not rely on chat history for project state.
 - Evidence: `docs/wp/evidence/wp44-s13-aria-trees.txt`, `docs/wp/evidence/wp44-s13-builds-drafts-1440.png`
 - Result: pass. WP44-S2 to S13 complete. S1 keeps two evidence items (IdeaBrowser screenshots, canvas PNG export)
 - Next: owner decision to merge WP44 to `main`. Builder's Hub stays hidden until the subscription work package passes its gate
+
+
+## 2026-09-26 — independent audit repairs begun
+
+Owner supplied PR #81 and authorized the repair plan including UX. Reconciled candidate `6891d86d` against audit `7cf31dea`: prompt verification, bounded-list honesty, existing draft UI and focus fixes landed upstream; each is being retested. Four new PR comments (draft pagination, optional radio clearing, email normalization, Save GET outages) join the repair scope. R1–R4 are open; production and paid activation remain blocked pending their separate gates.

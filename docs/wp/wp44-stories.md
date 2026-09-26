@@ -252,3 +252,13 @@ S1 rulings
 - `.agentic-workflow.yml` prefers `codex/` branches. This session is pinned to `claude/wizardly-rubin-a6m2th`, so the PRD and plan live here. Build phases should branch from `main` (for example `codex/wp44-dashboard-a`).
 - Read `convex/_generated/ai/guidelines.md` before S3, S5, S8, S9, S10, S11 and S12.
 - Site projects and the WP29 cockpit are parked for v1.1 (R5). WP29 to WP31 are paused (ruling 2026-09-25).
+
+
+## Audit repair stories (owner approved 2026-09-26, PR #81)
+
+- [ ] WP44-R1 Backend correctness and compatibility: A02/A04/A05/A06/B01/B04 and normalized kit claims; schema single writer; 1,001+ ideas, 241+ saves, 21+ active plans, stale replacement, ownership and soft-delete runtime regressions.
+- [ ] WP44-R2 UX reliability: A08/A09/B02/B03 plus all approved UX recommendations; draft pagination, clearable setup, save recovery, Finished language, explicit planning actions, archive recovery and safe focus. Meaningful interaction tests and responsive checks.
+- [ ] WP44-R3 Runtime readiness: A01/A03/A07/A10/A11; verified route auth, outage distinction, canonical prompts, trace sizing, scoped dependency audit, repeatable real-backend/browser setup.
+- [ ] WP44-R4 Independent final gate: reconcile each audit finding, standard checks, ownership/error journeys, schema/codegen evidence, browser evidence and limitations.
+
+Detailed file ownership is frozen in `program-manifest.md`; subscription activation and production operations remain out of scope.
