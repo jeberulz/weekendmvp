@@ -490,3 +490,21 @@ R9 complete: untouched empty/loading first-page draft scans render nothing; expl
 Main's frontend only calls functions that still exist with the same arguments (the three legacy adapters are byte-identical), so the backend can go out first.
 
 Tested against a stubbed Convex CLI: the full deploy flow, the backfill flow (including the nothing-to-do rerun), a non-production deploy key, a missing auth variable, a declined confirmation, a tracked change and an untracked file in `convex/`. It has not run against a real deployment. The owner runs it.
+
+### Deploy script — target check after the first production deploy
+
+The first backend deploy (2026-09-26, after PR #81 merged) went to the wrong place. It reached `vibrant-jackal-308`, the production deployment of the Convex project linked in the operator's `.env.local`. The live site uses `first-squirrel-244` (eu-west-1) through Vercel's `NEXT_PUBLIC_CONVEX_URL`, so every member query on `/dashboard` returned "Server Error".
+
+`scripts/deploy-convex-backend.sh` now guards against this:
+- **Target check.** It asks the CLI which deployment it will act on and compares the name with `SITE_CONVEX_URL`, prompting for it when unset. On a mismatch it stops, before the local checks, snapshot or deploy. The backfill mode does the same check.
+- **Branch.** It runs from `main` after a merge: any clean branch that matches origin and contains `origin/main`.
+- **Tagging.** It tags the deployed commit after a successful deploy. The snapshot taken before the deploy is the restore point.
+
+Tested against a stubbed CLI and a throwaway git remote:
+- the wrong-project deploy, stopped with no side effects
+- a mismatched URL pasted at the prompt
+- the correct deploy from `main`
+- the backfill with the correct target and with the wrong one
+- the old pre-squash branch, refused
+
+Production fix pending: deploy the backend to `first-squirrel-244` with a production deploy key from that project.
