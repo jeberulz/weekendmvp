@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchQuery } from "convex/nextjs";
-import { ArrowLeft, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
@@ -23,6 +23,8 @@ import {
   softwareApplicationSchema,
 } from "@/lib/seo";
 import { EmailGate } from "@/components/ideas/EmailGate";
+import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
+import { IdeaBreadcrumbs } from "@/components/ideas/IdeaBreadcrumbs";
 import { IdeaSidebar } from "@/components/ideas/IdeaSidebar";
 import { RelatedIdeas } from "@/components/ideas/RelatedIdeas";
 import { SaveIdeaButton } from "@/components/ideas/SaveIdeaButton";
@@ -431,24 +433,8 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
 
             {/* Main Content */}
             <main className="flex-1 max-w-2xl min-w-0">
-              {/* Breadcrumb */}
-              <nav
-                className="mb-8 text-xs text-neutral-400"
-                aria-label="Breadcrumb"
-              >
-                <Link href="/" className="hover:text-black transition-colors">
-                  Home
-                </Link>
-                <span className="mx-2">/</span>
-                <Link
-                  href="/startup-ideas"
-                  className="hover:text-black transition-colors"
-                >
-                  Startup Ideas
-                </Link>
-                <span className="mx-2">/</span>
-                <span className="text-neutral-600">{title}</span>
-              </nav>
+              {/* Breadcrumb — member crumbs swap client-side via session hint */}
+              <IdeaBreadcrumbs title={title} />
 
               {/* Header */}
               <header className="mb-12">
@@ -646,15 +632,12 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
                 </NavExternalLink>
               </div>
 
-              {/* Back to all ideas */}
+              {/* Return control — members get Back to Home/Explore/Builds */}
               <div className="mt-12 text-center">
-                <Link
-                  href="/startup-ideas"
-                  className="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"
-                >
-                  <ArrowLeft size={16} aria-hidden="true" />
-                  See all startup ideas
-                </Link>
+                <IdeaBackLink
+                  anonymousLabel="See all startup ideas"
+                  className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-black"
+                />
               </div>
             </main>
           </div>
