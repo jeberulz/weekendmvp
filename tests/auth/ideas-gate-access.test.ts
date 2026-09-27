@@ -17,9 +17,19 @@ function stubBrowser(opts: {
   cookie: string;
   storedEmail?: string | null;
   search?: string;
+  hash?: string;
 }) {
   const store = new Map<string, string>();
   if (opts.storedEmail) store.set(STORAGE_KEY, opts.storedEmail);
+
+  const location = {
+    hostname: opts.hostname,
+    search: opts.search ?? "",
+    pathname: "/ideas/example",
+    hash: opts.hash ?? "",
+    href: "",
+  };
+  location.href = `https://${location.hostname}${location.pathname}${location.search}${location.hash}`;
 
   vi.stubGlobal("localStorage", {
     getItem: (key: string) => store.get(key) ?? null,
@@ -29,14 +39,16 @@ function stubBrowser(opts: {
   });
   vi.stubGlobal("document", { cookie: opts.cookie });
   vi.stubGlobal("window", {
-    location: {
-      hostname: opts.hostname,
-      search: opts.search ?? "",
-      href: `https://${opts.hostname}/ideas/example${opts.search ?? ""}`,
-      pathname: "/ideas/example",
-      hash: "",
+    location,
+    history: {
+      replaceState: (_state: unknown, _title: string, url: string) => {
+        const next = new URL(url, `https://${location.hostname}`);
+        location.pathname = next.pathname;
+        location.search = next.search;
+        location.hash = next.hash;
+        location.href = next.href;
+      },
     },
-    history: { replaceState: () => {} },
   });
 }
 
@@ -121,11 +133,34 @@ describe("idea email gate — signed-in members skip lead capture", () => {
     await expect(resolveAccess()).resolves.toBe(false);
   });
 
+  test("signed-in member with ?e= strips email, skips verify, keeps other params/hash", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    stubBrowser({
+      hostname: "www.weekendmvp.app",
+      cookie: `${SESSION_HINT_COOKIE}=1`,
+      storedEmail: null,
+      search: "?e=person@example.com&utm_source=newsletter&utm_campaign=week",
+      hash: "#section-market",
+    });
+
+    await expect(resolveAccess()).resolves.toBe(true);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(window.location.search).toBe(
+      "?utm_source=newsletter&utm_campaign=week",
+    );
+    expect(window.location.hash).toBe("#section-market");
+    expect(window.location.href).not.toContain("person@example.com");
+    expect(window.location.href).not.toMatch(/[?&]e=/);
+  });
+
   test("EmailGate and shared entry points stay on canonical /ideas/{slug}", () => {
     expect(gateAccessSource).toContain('from "@/lib/auth-session-cookie"');
     expect(gateAccessSource).toContain("hasSessionHintCookie");
     expect(gateAccessSource).toContain("hasImmediateGateAccess");
     expect(gateAccessSource).toContain("cookieSource: document.cookie");
+    expect(gateAccessSource).toContain('stripParam("e")');
     expect(emailGateSource).toContain("resolveAccess()");
     expect(emailGateSource).toContain("session hint");
     expect(ideaPageSource).toContain("<EmailGate");

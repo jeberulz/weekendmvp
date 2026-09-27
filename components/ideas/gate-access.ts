@@ -8,17 +8,17 @@
  * called from client-component effects/handlers, never during render.
  *
  * Access resolution order (gate.js `resolveAccess`, + member session +
- * localhost bypass):
+ * localhost bypass). `?e=` is always stripped first (privacy), then:
  *   1. localStorage 'ideas_email' present            → unlocked
  *   2. WP44 session hint cookie (signed-in member)   → unlocked
- *   3. ?e=<email> → POST /api/ideas-verify, ok       → store + unlock
- *      (the ?e param is stripped via history.replaceState either way)
+ *   3. captured ?e=<email> → POST /api/ideas-verify  → store + unlock
  *   4. ?utm_source=beehiiv                           → store '__newsletter__' + unlock
  *   5. hostname localhost / 127.0.0.1                → unlocked (dev bypass)
  *   6. otherwise                                     → locked (overlay + form)
  *
- * Signed-in members keep the public `/ideas/{slug}` URL (canonical research);
- * they skip lead-capture only. Anonymous visitors still see Unlock Idea.
+ * Immediate access (1/2/5) never calls /api/ideas-verify. Signed-in members
+ * keep the public `/ideas/{slug}` URL; they skip lead-capture only.
+ * Anonymous visitors still see Unlock Idea.
  */
 
 import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
@@ -84,6 +84,16 @@ export async function verifyEmailWithBeehiiv(email: string): Promise<boolean> {
 }
 
 export async function resolveAccess(): Promise<boolean> {
+  // Capture and strip `e` before any early return so a signed-in member (or
+  // localhost bypass) never leaves an email in history / GA page_location /
+  // outgoing referrers. Other query params and the hash are preserved.
+  const params = new URLSearchParams(window.location.search);
+  const emailParam = params.get("e");
+  const isBeehiivClick = params.get("utm_source") === "beehiiv";
+  if (emailParam !== null) {
+    stripParam("e");
+  }
+
   if (
     hasImmediateGateAccess({
       storedEmail: localStorage.getItem(STORAGE_KEY),
@@ -94,14 +104,10 @@ export async function resolveAccess(): Promise<boolean> {
     return true;
   }
 
-  const params = new URLSearchParams(window.location.search);
-  const emailParam = params.get("e");
-  const isBeehiivClick = params.get("utm_source") === "beehiiv";
-
-  // Newsletter deep link with ?e=<email> — verify against Beehiiv.
+  // Newsletter deep link with ?e=<email> — verify against Beehiiv using the
+  // captured value (already removed from the address bar).
   if (emailParam && isValidEmail(emailParam)) {
     const ok = await verifyEmailWithBeehiiv(emailParam);
-    stripParam("e");
     if (ok) {
       localStorage.setItem(STORAGE_KEY, emailParam);
       return true;
