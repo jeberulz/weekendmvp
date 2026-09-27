@@ -76,3 +76,20 @@ Append-only progress log. Do not rely on chat history for project state.
 - Checks run: `npm run test:engine` 125 pass; `npm run typecheck` pass; `npm run lint` 0 errors; `npm test` pass; `npm run build` pass; `node --check scripts/audit-idea-mdx.mjs` pass; fixture `engine:research` → v2 with 7 sources / 0 dangling → `engine:compile` → `audit:idea --record` (word-count floor only, expected for short fixture).
 - Result: Reviewed S1/S2 defects fixed. S3–S6 still open. Draft PR stays draft. No merge/live activation.
 - Next: S3 conservative cost reservations/timeouts/bounded alternative-source discovery.
+
+## 2026-09-27 — PR83 final review repair started
+
+- Lane: existing WP45 Work Package, S2 repair; isolated `codex/review-pr83` worktree at `3100f29`, targeted push to PR83 authorized by owner.
+- Remaining findings: lexical claim verification combines unrelated/negated facts; quote extraction truncates at hyphens and dashes.
+- Boundaries: evidence helper/regressions, quote helper/regressions and WP45 documentation. Provider/model implementation stays with concurrent S3–S6; model routing and verification recommendations will be documented here.
+
+## 2026-09-27 — PR83 final review repair completed
+
+- Subject/value corroboration now operates inside source statements, rejects negation/uncertainty before clause splitting, retains substantive subject tokens, refuses ambiguous extra values and preserves the actual supporting statement. Successful claim reasons explicitly identify lexical corroboration and the remaining semantic-review requirement. This is not a general-purpose truth or entailment verifier.
+- Quote extraction preserves dash/ranges, soft/hard breaks and multiple paragraphs. Only a distinct final attribution paragraph supplies the URL; multiple destinations or unsupported block children (lists, nested quotations, code) cannot silently bind a partial quote.
+- Regression evidence: initial claim suite had 13 of 14 failing tests; initial quote suite had 7 of 9 failing tests; three additional unsupported-block regressions also failed before their fix. No existing fixture, test expectation or quality threshold was weakened.
+- Independent review ran 34 focused tests and found no blocking regression; its additional unsupported-block finding was fixed and tested. Final engine suite includes both regression files.
+- Verification: full `npm test`, typecheck, lint (0 errors, 36 warnings), build, server traces and tagging (225/225) passed. Final focused engine (155 tests) and typecheck reruns passed after quote hardening. `git diff --check` passed.
+- Fixture research and compilation succeeded to `/tmp`; deep audit has exactly the existing 1538 < 2200 word-count failure. It is not a publishable fixture. No quality floor was lowered. No live provider calls, public content changes, deployment or merge.
+- Added `docs/plans/idea-engine/2026-09-27-model-verification-handoff.md`: retain current writer baseline, evaluate Astra as an independent verifier, add per-role accounting and held-out evaluation on the S3–S6 branch. Provider implementation was not changed here. A more capable model alone cannot establish production readiness.
+- Release boundary remains S3–S6 plus the documented live-smoke and hash-bound human publication gates. This repair does not authorize go-live.

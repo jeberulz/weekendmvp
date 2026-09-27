@@ -139,3 +139,7 @@ Definition of done: S1 through S6 from `docs/plans/idea-engine/2026-09-27-comple
 - The quality policy in the completion plan is the implementation scope for this package. It is not an existing ruling in `docs/wp/RULINGS.md`.
 - Unresolved evidence-policy or security choices stop and escalate. Do not invent a ruling.
 - Base revalidation on 2026-09-27. `origin/cursor/phase-7-skill-flip-d6b7` is still `85d1db483a38802e483c1187ceafa81c66ab9343`. Line-level F1 through F10 revalidation is recorded in `docs/wp/wp45-progress.md` before S1 code.
+
+### PR83 final review repair (2026-09-27)
+
+Owner authorized focused code fixes and pushing them to PR83. S3–S6 continue on another branch. Reopen S2 verification for subject/value association and quote punctuation: add adversarial regressions, require one supporting statement, preserve all quote text and bind the attribution structurally. Do not expand provider or promotion implementation in this repair. Record model-role recommendations as an integration handoff for S3–S6.

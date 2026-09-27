@@ -70,14 +70,9 @@ const QUAL_STOP = new Set([
   "what",
   "much",
   "this",
-  "spent",
-  "spend",
-  "market",
   "estimate",
   "pricing",
   "price",
-  "users",
-  "user",
   "directional",
   "estimated",
   "approximate",
@@ -88,9 +83,6 @@ const QUAL_STOP = new Set([
   "overall",
   "approximately",
   "indicative",
-  "software",
-  "market",
-  "size",
 ]);
 
 const GEO: Array<[RegExp, string]> = [
@@ -197,14 +189,14 @@ function qualitativeSupported(figure: string, haystack: string): boolean {
   const wanted = subjectWords(figure);
   if (wanted.length === 0) return false;
   const hay = haystack.toLowerCase();
-  return wanted.every((word) => hay.includes(word));
+  return wanted.every((word) => new RegExp(`\\b${word}\\b`, "i").test(hay));
 }
 
 /**
  * True when one relevant passage supports the complete typed claim.
  * Magnitude, currency, period, year, geography and subject must agree.
  */
-export function figureSupported(figure: string, haystack: string): boolean {
+function statementMatches(figure: string, haystack: string): boolean {
   const claimed = moneyMentions(figure);
   if (claimed.length > 0) {
     const evidence = moneyMentions(haystack);
@@ -234,7 +226,7 @@ export function figureSupported(figure: string, haystack: string): boolean {
   const subjects = subjectWords(figure);
   if (subjects.length > 0) {
     const hay = haystack.toLowerCase();
-    if (!subjects.every((word) => hay.includes(word))) return false;
+    if (!subjects.every((word) => new RegExp(`\\b${word}\\b`, "i").test(hay))) return false;
   }
   const tokens = figureTokens(figure);
   if (tokens.length === 0) {
@@ -245,6 +237,55 @@ export function figureSupported(figure: string, haystack: string): boolean {
   return tokens.every((token) =>
     new RegExp(`(?<![\\d.])${token.replace(".", "\\.")}(?![\\d]|\\.\\d)`).test(hay),
   );
+}
+
+// These checks are a conservative lexical corroboration gate, not semantic
+// entailment. Anything ambiguous stays unresolved for independent verification.
+const UNSAFE_ASSERTION = /\b(?:not|no|never|neither|without|false|incorrect|denied|denies|deny|disputed|dispute|unconfirmed|unverified|alleged|allegedly|claim(?:s|ed)?|may|might|could|would|should|if|unless|hypothetical|suppose|assuming|projected|forecast|expected|prediction|predicts|falsely|rumou?r(?:ed)?|trial)\b|n[’']t\b|\?/i;
+
+function statements(text: string): string[] {
+  // Do not split decimal points or thousands separators. Conjoined clauses
+  // cannot lend one another their subject, date, or amount.
+  return text.split(/(?<=[.!?])\s+|[;\n]+|\s+(?:and|but|while|whereas|or)\s+|,(?!\d{3}\b)/i)
+    .map((part) => part.trim()).filter(Boolean);
+}
+
+function matchingStatements(figure: string, page: string): string[] | null {
+  const wanted = statements(figure);
+  if (wanted.length === 0) return null;
+  // Reject unsafe context before clause splitting: a comma must never erase
+  // "it is not true that" or an uncertainty qualifier from the assertion.
+  const candidates = page.split(/(?<=[.!?])\s+|\n+/)
+    .filter((sentence) => !UNSAFE_ASSERTION.test(sentence))
+    .flatMap(statements);
+  const matches: string[] = [];
+  for (const claim of wanted) {
+    const found = candidates.find((statement) => {
+      if (UNSAFE_ASSERTION.test(statement) || UNSAFE_ASSERTION.test(claim)) return false;
+      if (!statementMatches(claim, statement)) return false;
+      if (/^free$/i.test(claim.trim()) && !/^(?:(?:the|this) product is )?free[.!]?$/i.test(statement.trim())) return false;
+      // A subject-bearing statement with extra values is ambiguous: the right
+      // number may belong to another subject or time period in the same clause.
+      if (subjectWords(claim).length > 0) {
+        const amounts = moneyMentions(claim);
+        if (amounts.length > 0 && moneyMentions(statement).some((value) => !amounts.some((amount) => sameMoney(amount, value)))) return false;
+        const claimSubjects = amounts.length > 0 ? subjectWords(claim) : [];
+        const sourceSubjects = subjectWords(statement);
+        if (claimSubjects.length > 0 && !sourceSubjects.some((_, index) =>
+          claimSubjects.every((word, offset) => sourceSubjects[index + offset] === word)
+        )) return false;
+      }
+      return true;
+    });
+    if (!found) return null;
+    matches.push(found);
+  }
+  return matches;
+}
+
+/** Lexical corroboration within statements; never combines unrelated facts. */
+export function figureSupported(figure: string, haystack: string): boolean {
+  return matchingStatements(figure, haystack) !== null;
 }
 
 export function boundExcerpt(text: string): string {
@@ -282,48 +323,27 @@ export function evidenceIsStale(
   return (now - retrieved) / 86_400_000 > FRESHNESS_DAYS[kind];
 }
 
-function evidenceIndex(figure: string, page: string): number {
-  const claimed = moneyMentions(figure);
-  if (claimed.length > 0) {
-    const evidence = moneyMentions(page);
-    const hit = evidence.find((found) => sameMoney(claimed[0]!, found));
-    if (hit) return hit.index;
-  }
-  for (const year of years(figure)) {
-    const at = page.search(new RegExp(`\\b${year}\\b`));
-    if (at >= 0) return at;
-  }
-  for (const word of subjectWords(figure)) {
-    const at = page.toLowerCase().indexOf(word);
-    if (at >= 0) return at;
-  }
-  const tokens = figureTokens(figure);
-  for (const token of tokens) {
-    const at = page.search(
-      new RegExp(`(?<![\\d.])${token.replace(".", "\\.")}(?![\\d]|\\.\\d)`),
-    );
-    if (at >= 0) return at;
-  }
-  return -1;
-}
-
-/**
- * Bounded context around the matched claim. The saved passage itself must
- * support the figure, or verification stays unresolved.
- */
+/** Retain the statement that actually matched; never select the first number. */
 export function supportingPassage(
   figure: string,
   page: string,
   radius = PASSAGE_RADIUS,
 ): string | null {
-  if (!figureSupported(figure, page)) return null;
-  const at = evidenceIndex(figure, page);
-  if (at < 0) return null;
-  const start = Math.max(0, at - radius);
-  const end = Math.min(page.length, at + radius);
-  const passage = boundExcerpt(page.slice(start, end));
-  if (!figureSupported(figure, passage)) return null;
-  return passage;
+  const matches = matchingStatements(figure, page);
+  if (!matches) return null;
+  const passage = matches.join("; ");
+  const limit = Math.min(MAX_EXCERPT_CHARS, Math.max(1, radius * 2));
+  let retained = passage.replace(/\s+/g, " ").trim();
+  if (retained.length > limit) {
+    // Long navigation can precede the assertion without punctuation. Trim at
+    // a complete subject token, never through a word or the assertion itself.
+    const subject = subjectWords(figure)[0];
+    const start = subject ? retained.search(new RegExp(`\\b${subject}\\b`, "i")) : -1;
+    if (start < 0) return null;
+    retained = retained.slice(start);
+  }
+  if (retained.length > limit) return null;
+  return figureSupported(figure, retained) ? retained : null;
 }
 
 export function mergeEvidenceSources(
@@ -421,7 +441,7 @@ export async function filterFiguresByPage(input: {
       verdict: verified ? "verified" : "unresolved",
       excerpt: passage ?? "",
       reason: verified
-        ? "typed claim matched a supporting passage"
+        ? "claim lexically corroborated within a source statement; semantic review still required"
         : text === null
           ? "cited page could not be read"
           : "fetched page does not support the typed claim",
@@ -442,7 +462,7 @@ export async function filterFiguresByPage(input: {
       verdict: verified ? "verified" : "unresolved",
       excerpt: passage ?? "",
       reason: verified
-        ? "typed price matched a supporting passage"
+        ? "price lexically corroborated within a source statement; semantic review still required"
         : text === null
           ? "cited page could not be read"
           : "fetched page does not support the typed price",
