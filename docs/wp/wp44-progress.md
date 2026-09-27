@@ -490,3 +490,11 @@ R9 complete: untouched empty/loading first-page draft scans render nothing; expl
 Main's frontend only calls functions that still exist with the same arguments (the three legacy adapters are byte-identical), so the backend can go out first.
 
 Tested against a stubbed Convex CLI: the full deploy flow, the backfill flow (including the nothing-to-do rerun), a non-production deploy key, a missing auth variable, a declined confirmation, a tracked change and an untracked file in `convex/`. It has not run against a real deployment. The owner runs it.
+
+### WP44-S14 — signed-in member chrome on idea pages
+
+After #82 unlocked EmailGate for `wmvp_signed_in`, signed-in members still saw public IdeaNav on `/ideas/{slug}` and had no product path back to the dashboard. S14 swaps chrome client-side via the same session-hint pattern as Save/EmailGate:
+
+- `IdeaPageNav` → `IdeaMemberNav` (PRIMARY_NAV + account menu) when hinted; else `IdeaNav`
+- `IdeaBreadcrumbs` / `IdeaBackLink` for member crumbs and ← Back to Home/Explore/Builds/Saved
+- Collection hubs unchanged; JSON-LD crumbs stay public; page.tsx stays static

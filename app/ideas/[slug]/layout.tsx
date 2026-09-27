@@ -1,4 +1,4 @@
-import { IdeaNav } from "@/components/layout/IdeaNav";
+import { IdeaPageNav } from "@/components/ideas/IdeaPageNav";
 import { IdeaFooter } from "@/components/ideas/IdeaFooter";
 import { COLLECTION_SLUGS } from "./collection";
 
@@ -7,6 +7,8 @@ import { COLLECTION_SLUGS } from "./collection";
  *
  *  - Individual idea pages — cream theme + sticky light IdeaNav + light
  *    footer, mirroring the legacy ideas/_template.html body chrome.
+ *    Signed-in members (session hint) swap to PRIMARY_NAV member chrome
+ *    via IdeaPageNav; collection hubs are unchanged.
  *  - Collection hubs (/ideas/saas, /ideas/education, …) — dark-themed. They
  *    render their own dark MegaNav + SiteFooter via <HubShell>, so the layout
  *    renders them bare; wrapping them in the cream chrome is what produced the
@@ -27,7 +29,7 @@ export default async function IdeaSlugLayout({
 
   return (
     <div className="theme-cream min-h-screen bg-[#fcfaf7] text-[#1a1a1a] selection:bg-black/10 selection:text-black">
-      <IdeaNav withSidebar />
+      <IdeaPageNav withSidebar />
       {children}
       <IdeaFooter />
     </div>
