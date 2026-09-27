@@ -67,7 +67,13 @@ export function WorkspaceTitleBar({
       </p>
       <div className="mt-2 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0 flex-1 basis-80">
-          <h1 className="break-words text-[1.75rem] font-semibold leading-tight tracking-tight">{title.trim() || "Untitled idea"}</h1>
+          <h1
+            id="workspace-heading"
+            tabIndex={-1}
+            className="break-words rounded text-[1.75rem] font-semibold leading-tight tracking-tight outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)"
+          >
+            {title.trim() || "Untitled idea"}
+          </h1>
           <ul aria-label="Revision status" className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
             <li className="font-mono">{live}</li>
             <li aria-hidden="true" className="text-(--ed-text-2)">

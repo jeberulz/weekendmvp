@@ -154,6 +154,57 @@ const ACTION_INPUTS = {
   discardRevisionAction: { ideaId: "idea_0318", revisionId: "rev_0001", expectedVersion: 1, reason: "Probe" },
   runChecksAction: { ideaId: "idea_0318", revisionId: "rev_0001", expectedArtifactHash: "0".repeat(64) },
   getRevisionAction: { ideaId: "idea_0318", revisionId: "rev_0001" },
+  // Review
+  decideCandidateAction: {
+    ideaId: "idea_0318",
+    revisionId: "rev_0001",
+    expectedVersion: 1,
+    input: { decision: "accepted", rationale: "Probe" },
+  },
+  markReviewedAction: { ideaId: "idea_0318", revisionId: "rev_0001", itemId: "section:problem", dependencyHash: "x", note: null },
+  retractReviewAction: { ideaId: "idea_0318", revisionId: "rev_0001", itemId: "section:problem" },
+  flagReviewItemAction: {
+    ideaId: "idea_0318",
+    revisionId: "rev_0001",
+    itemId: "section:problem",
+    dependencyHash: "x",
+    input: { severity: "low", note: "Probe" },
+  },
+  resolveIssueAction: { ideaId: "idea_0318", revisionId: "rev_0001", issueId: "issue", dependencyHash: "x", note: "Probe" },
+  addNoteAction: { ideaId: "idea_0318", revisionId: "rev_0001", target: { kind: "section", id: "problem" }, note: "Probe" },
+  requestChangesAction: { ideaId: "idea_0318", revisionId: "rev_0001", note: "Probe" },
+  resumeReviewAction: { ideaId: "idea_0318", revisionId: "rev_0001" },
+  approveRevisionAction: {
+    ideaId: "idea_0318",
+    revisionId: "rev_0001",
+    artifactHash: "0".repeat(64),
+    input: { attest: true, note: null },
+  },
+  // Releases and lifecycle
+  prepareReleaseAction: { revisionId: "rev_0001", expectedLiveReleaseId: null, idempotencyKey: "probe-key-0003" },
+  publishReleaseAction: { releaseId: "rel_0001", expectedState: "preview_ready", approvalId: "apr_0001", idempotencyKey: "probe-key-0004" },
+  cancelReleaseAction: { releaseId: "rel_0001", expectedState: "preview_ready", reason: "Probe" },
+  retryReleaseAction: { releaseId: "rel_0001", expectedState: "failed", idempotencyKey: "probe-key-0005" },
+  reconcileReleaseAction: { releaseId: "rel_0001" },
+  requestRollbackAction: {
+    ideaId: "idea_0318",
+    targetReleaseId: "rel_0001",
+    expectedLiveReleaseId: "rel_0002",
+    reason: "Probe",
+    idempotencyKey: "probe-key-0006",
+  },
+  unpublishIdeaAction: { ideaId: "idea_0318", expectedLiveReleaseId: "rel_0001", reason: "Probe", idempotencyKey: "probe-key-0007" },
+  trashIdeaAction: { ideaId: "idea_0318", expectedVersion: 1, reason: "Probe" },
+  restoreIdeaAction: { ideaId: "idea_0318", expectedVersion: 1, reason: "Probe" },
+  // Local demo controls (must be unavailable in production too)
+  demoConfirmStrongAuthAction: {},
+  demoExpireStrongAuthAction: {},
+  demoSetKillSwitchAction: { engaged: true },
+  demoFailNextDeployAction: {},
+  demoLoseNextAckAction: {},
+  demoBumpPolicyAction: {},
+  demoRunWorkerAction: {},
+  demoResetAction: {},
 };
 
 /**
@@ -179,7 +230,11 @@ async function probeActions(base) {
       continue;
     }
     const origin = new URL(base).origin;
-    const response = await fetch(new URL("/admin/editorial/ideas/idea_0318", base), {
+    // Post to a page that bundles the action (its first worker), e.g.
+    // "app/admin/editorial/ideas/[ideaId]/page" -> "/admin/editorial/ideas/idea_0318".
+    const worker = Object.keys(entry.workers ?? {})[0] ?? "app/admin/editorial/page";
+    const route = worker.replace(/^app/, "").replace(/\/page$/, "").replace("[ideaId]", "idea_0318") || "/";
+    const response = await fetch(new URL(route, base), {
       method: "POST",
       redirect: "manual",
       headers: {
@@ -198,7 +253,7 @@ async function probeActions(base) {
     const passed = leaked.length === 0 && (unavailable || refused);
     ok &&= passed;
     console.log(
-      `${passed ? "PASS" : "FAIL"} ${response.status} action ${entry.exportedName}` +
+      `${passed ? "PASS" : "FAIL"} ${response.status} action ${entry.exportedName} via ${route}` +
         `${unavailable ? " → WORKSPACE_UNAVAILABLE" : refused ? " → refused" : " → ran without refusing"}` +
         `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}`,
     );

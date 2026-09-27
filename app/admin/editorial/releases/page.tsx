@@ -6,6 +6,8 @@ import { GatedPageHeader } from "@/components/admin/editorial/common/GatedPageHe
 import { ListSkeleton } from "@/components/admin/editorial/common/ListSkeleton";
 import { EmptyState, ErrorState, PageBody, Pagination } from "@/components/admin/editorial/common/primitives";
 import { ReleaseCard } from "@/components/admin/editorial/releases/ReleaseCard";
+import { ReleaseCardActions } from "@/components/admin/editorial/releases/ReleaseCardActions";
+import { SimulatedWorkerTicker } from "@/components/admin/editorial/releases/SimulatedWorkerTicker";
 import { EDITORIAL_BASE } from "@/components/admin/editorial/shell/nav-items";
 import type { ReleaseFilter } from "@/lib/editorial/contracts/commands";
 import { parseCursor, parseReleaseFilter, parseStart, type SearchParamsRecord } from "@/lib/editorial/presentation/filters";
@@ -57,10 +59,14 @@ async function ReleasesContent({ searchParams }: { searchParams: Promise<SearchP
     );
   }
   const nowMs = workspace.nowMs;
+  const running = await workspace.repository.listReleases({ group: "in_flight", ideaId: null }, null, 1);
+  const settings = await workspace.repository.getSettings();
+  const authMechanism = settings.ok ? settings.value.strongAuth.mechanism : "Unavailable";
   const group = GROUPS.find((entry) => entry.key === filter.group) ?? GROUPS[0];
   const base = filter.group === "all" ? RELEASES : `${RELEASES}?group=${filter.group}`;
   return (
     <>
+      <SimulatedWorkerTicker active={running.ok && running.value.total > 0} />
       <nav aria-label="Release groups">
         <ul className="flex flex-wrap gap-1.5">
           {GROUPS.map((entry) => {
@@ -90,7 +96,14 @@ async function ReleasesContent({ searchParams }: { searchParams: Promise<SearchP
         <ul className="flex flex-col gap-3" aria-label={`${group.label} releases`}>
           {page.value.items.map((release) => (
             <li key={release.id}>
-              <ReleaseCard release={release} nowMs={nowMs} />
+              <ReleaseCard
+                release={release}
+                nowMs={nowMs}
+                liveRegion
+                actions={
+                  release.availableActions.length > 0 ? <ReleaseCardActions release={release} authMechanism={authMechanism} /> : undefined
+                }
+              />
             </li>
           ))}
         </ul>

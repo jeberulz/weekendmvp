@@ -27,14 +27,20 @@ export function ReviewPanel({
   view,
   itemActions,
   onGoTo,
+  decision,
   approval,
+  release,
 }: {
   view: RevisionView;
-  /** Per-item attestation controls (WP46-E3). */
+  /** Per-item attestation controls. */
   itemActions?: (item: ReviewItemView) => ReactNode;
   onGoTo(target: EditorialTarget): void;
-  /** Approve controls (WP46-E3). */
+  /** The idea-level editorial decision, shown first. */
+  decision?: ReactNode;
+  /** Request changes and approve. */
   approval?: ReactNode;
+  /** Release and lifecycle controls, shown last. */
+  release?: ReactNode;
 }) {
   const total = view.reviewItems.length;
   const reviewed = view.reviewItems.filter((item) => item.status === "reviewed").length;
@@ -45,7 +51,13 @@ export function ReviewPanel({
 
   return (
     <div className="flex flex-col gap-5">
-      <section aria-labelledby="review-summary" className="flex flex-col gap-2 rounded-lg border border-(--ed-border) bg-(--ed-surface) px-3 py-3">
+      {decision}
+      <section
+        id="review-checklist"
+        tabIndex={-1}
+        aria-labelledby="review-summary"
+        className="flex flex-col gap-2 rounded-lg border border-(--ed-border) bg-(--ed-surface) px-3 py-3 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)"
+      >
         <h2 id="review-summary" className="text-sm font-semibold">
           Review checklist
         </h2>
@@ -64,7 +76,7 @@ export function ReviewPanel({
         ) : (
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium">Approval is unavailable because:</p>
-            <ul className="flex flex-col gap-1 text-sm">
+            <ul id="approval-blockers" className="flex flex-col gap-1 text-sm">
               {view.eligibility.blockers.map((blocker, index) => (
                 <li key={`${blocker.code}-${index}`} className="flex flex-col items-start">
                   <span>{blocker.message}</span>
@@ -91,7 +103,12 @@ export function ReviewPanel({
           </h2>
           <ul className="flex flex-col gap-1.5">
             {group.items.map((item) => (
-              <li key={item.id} className="flex flex-col gap-1.5 rounded-lg border border-(--ed-border) bg-(--ed-surface) px-3 py-2.5">
+              <li
+                key={item.id}
+                id={`review-item-${item.id}`}
+                tabIndex={-1}
+                className="flex flex-col gap-1.5 rounded-lg border border-(--ed-border) bg-(--ed-surface) px-3 py-2.5 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="min-w-0 flex-1 text-sm">{item.label}</p>
                   <StatusBadge tone={STATUS_TONES[item.status]}>{REVIEW_STATUS_LABELS[item.status]}</StatusBadge>
@@ -122,6 +139,7 @@ export function ReviewPanel({
           </ul>
         </section>
       ))}
+      {release}
     </div>
   );
 }

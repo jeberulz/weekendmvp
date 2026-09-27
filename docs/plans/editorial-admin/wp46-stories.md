@@ -63,8 +63,8 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
     - Details edits metadata and highlights with validation. History lists revisions; Compare shows a line diff against the live and previous revisions.
   - Verification: save-controller tests with fake timers, hostile Markdown tests, diff tests, render tests, browser keyboard pass at three widths, axe scan.
 
-- [ ] `WP46-E3` - Human workflow, releases, trash and activity (fixture/dry-run)
-  - Scope: `components/admin/editorial/{workspace,releases,trash,activity,settings}/**`, remaining `app/admin/editorial/**` routes, fixture simulated worker.
+- [x] `WP46-E3` - Human workflow, releases, trash and activity (fixture/dry-run)
+  - Scope: `components/admin/editorial/{workspace,releases,trash,activity,settings}/**`, remaining `app/admin/editorial/**` routes, fixture simulated worker. Also: review, release and demo server actions in `app/admin/editorial/_actions/**` and shared dialogs in `components/admin/editorial/common/**` (see progress).
   - Acceptance criteria:
     - Candidate decisions: accept (rationale), needs research (precise question), reject (reason category + note) and reopen, with the engine recommendation shown separately. Reject never unpublishes; reopening invalidates decision-dependent approvals.
     - Review attestation is explicit per item and bound to its dependency hash. There is no "mark everything" action. Edits invalidate only affected items. The checklist lists exactly what remains, and Approve stays disabled with linked reasons. Approval binds the artifact hash, policy version and current checks; later edits fork a new draft.

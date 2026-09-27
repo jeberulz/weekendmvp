@@ -43,6 +43,7 @@ async function props(ideaId: string, options: { revisionId?: string; tab?: Works
     initialInspector: "evidence",
     notice: null,
     baseHref: `/admin/editorial/ideas/${ideaId}`,
+    publishing: { strongAuthFresh: false, strongAuthMechanism: "simulated confirmation", killSwitchEngaged: false },
   };
 }
 

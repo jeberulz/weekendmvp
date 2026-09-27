@@ -110,6 +110,14 @@ The live adapter (E4) plugs in behind `withWorkspace`: resolve the super-admin p
 
 Draft actions (E2): `saveDraftAction` (returns the acknowledgement and the fresh revision view), `createRevisionAction` (fork a snapshot, optionally carrying unsaved editor text into the new draft), `discardRevisionAction` (needs the current version and a reason), `runChecksAction` (bound to the saved artifact hash; a stale hash is `STALE_REVIEW_TARGET`) and `getRevisionAction` ("use theirs" after a conflict).
 
+Review actions (E3, `review.ts`): `decideCandidateAction` (idea version fence), `markReviewedAction` / `retractReviewAction` / `flagReviewItemAction` (one item, bound to its dependency hash), `resolveIssueAction` (warnings and flags only, with a note), `addNoteAction`, `requestChangesAction`, `resumeReviewAction` and `approveRevisionAction` (`attest: true`, bound to the artifact hash). Each returns the fresh revision view. There is no bulk review, approve or publish action.
+
+Release and lifecycle actions (E3, `release.ts`): prepare, publish, cancel, retry, reconcile, rollback, unpublish, trash and restore. Each names the state it expects (release state, live release or idea version). Publish, retry, rollback, unpublish and trash need recent strong authentication.
+
+Local demo controls (E3, `demo.ts`): confirm or expire the simulated sign-in, kill switch, fail the next deployment, lose the next activation acknowledgement, bump the policy version, one simulated worker tick, and reset. They only exist on the fixture workspace.
+
+For E4: `components/admin/editorial/common/StrongAuthStep.tsx` calls the demo sign-in confirmation. The live adapter must replace that call with the real step-up flow (and the demo actions must not be reachable in live mode); the dialogs that show the step do not change.
+
 ## Fixture boundary
 
 `lib/editorial/adapters/fixture/**` and `lib/editorial/fixtures/**` are demo-only: fictional content on `.example` domains, simulated checks (`producer: "fixture_simulated"`), a simulated worker and simulated re-authentication. `assertFixtureModeAllowed()` throws in production builds, and the runtime selector only reaches this code behind a `NODE_ENV !== "production"` branch. Fixture tests serialise commands in one process: they prove the rules, not real concurrency or deployment.

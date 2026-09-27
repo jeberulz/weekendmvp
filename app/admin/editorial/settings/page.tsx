@@ -7,6 +7,7 @@ import { ErrorState, PageBody, StatusBadge } from "@/components/admin/editorial/
 import { formatAbsolute } from "@/lib/editorial/presentation/format";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
 import { requireEditorialWorkspace } from "@/lib/editorial/runtime/workspace";
+import { DemoControls } from "@/components/admin/editorial/settings/DemoControls";
 
 export async function generateMetadata(): Promise<Metadata> {
   assertEditorialRoutesEnabled();
@@ -151,6 +152,10 @@ async function SettingsContent() {
           </dd>
         </dl>
       </section>
+
+      {view.mode === "fixture" ? (
+        <DemoControls strongAuthFresh={view.strongAuth.fresh} killSwitchEngaged={view.publishing.killSwitchEngaged} />
+      ) : null}
     </>
   );
 }

@@ -6,6 +6,7 @@ import { GatedPageHeader } from "@/components/admin/editorial/common/GatedPageHe
 import { ListSkeleton } from "@/components/admin/editorial/common/ListSkeleton";
 import { EmptyState, ErrorState, PageBody, Pagination, Time, linkClass } from "@/components/admin/editorial/common/primitives";
 import { EDITORIAL_BASE } from "@/components/admin/editorial/shell/nav-items";
+import { RestoreButton } from "@/components/admin/editorial/trash/RestoreButton";
 import { CANDIDATE_LABELS, PUBLICATION_LABELS } from "@/lib/editorial/contracts/states";
 import { parseCursor, parseStart, type SearchParamsRecord } from "@/lib/editorial/presentation/filters";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
@@ -65,6 +66,9 @@ async function TrashContent({ searchParams }: { searchParams: Promise<SearchPara
               <th scope="col" className="px-3 py-2.5 text-xs font-semibold text-(--ed-text-2)">Reason</th>
               <th scope="col" className="px-3 py-2.5 text-xs font-semibold text-(--ed-text-2)">Before Trash</th>
               <th scope="col" className="px-3 py-2.5 text-xs font-semibold text-(--ed-text-2)">Moved</th>
+              <th scope="col" className="px-3 py-2.5 text-xs font-semibold text-(--ed-text-2)">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -83,6 +87,9 @@ async function TrashContent({ searchParams }: { searchParams: Promise<SearchPara
                 <td className="px-3 py-3">
                   <Time iso={item.trashedAt} nowMs={nowMs} />
                   <p className="text-xs text-(--ed-text-2)">by {item.trashedBy.label}</p>
+                </td>
+                <td className="px-3 py-3 text-right">
+                  <RestoreButton ideaId={item.ideaId} title={item.title} version={item.version} />
                 </td>
               </tr>
             ))}

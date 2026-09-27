@@ -12,6 +12,7 @@ import {
   getRevisionAction,
   runChecksAction,
 } from "@/app/admin/editorial/_actions/draft";
+import { resolveIssueAction } from "@/app/admin/editorial/_actions/review";
 import type { EditorialTarget } from "@/lib/editorial/contracts/errors";
 import type { EditorialMetadata } from "@/lib/editorial/contracts/metadata";
 import type { IdeaDetail, RevisionView } from "@/lib/editorial/contracts/views";
@@ -22,6 +23,7 @@ import { formatAbsolute } from "@/lib/editorial/presentation/format";
 import type { InspectorTab, WorkspaceTab } from "@/lib/editorial/presentation/filters";
 import { cn } from "@/lib/utils";
 import { buttonClass } from "../common/primitives";
+import { SimulatedWorkerTicker } from "../releases/SimulatedWorkerTicker";
 import { ComparePane, type CompareTarget } from "./ComparePane";
 import { ConflictPanel } from "./ConflictPanel";
 import { DetailsPanel } from "./DetailsPanel";
@@ -30,8 +32,10 @@ import { EvidencePanel } from "./EvidencePanel";
 import { HistoryPane } from "./HistoryPane";
 import { MarkdownEditor, type MarkdownEditorHandle } from "./MarkdownEditor";
 import { PREVIEW_ID_PREFIX, PreviewPane } from "./PreviewPane";
+import { useLifecycleControls } from "./LifecycleControls";
 import { QualityPanel } from "./QualityPanel";
-import { ReviewPanel } from "./ReviewPanel";
+import type { PublishingContext } from "./ReleasePanel";
+import { ReviewInspector } from "./ReviewInspector";
 import { describeSaveState } from "./SaveStatus";
 import { SectionOutline } from "./SectionOutline";
 import { WorkspaceTitleBar, type MenuAction } from "./WorkspaceTitleBar";
@@ -48,6 +52,7 @@ export type IdeaWorkspaceProps = {
   initialInspector: InspectorTab;
   notice: string | null;
   baseHref: string;
+  publishing: PublishingContext;
 };
 
 /** Focus (and reveal) an element once React has committed the current update. */
@@ -64,6 +69,9 @@ function newKey(): string {
   return crypto.randomUUID();
 }
 
+/** Release states the (simulated) worker advances. */
+const WORKER_STATES = new Set(["preparing", "publish_requested", "deploying", "verifying", "activating"]);
+
 /** Four inspector tabs must fit a 320px column without wrapping. */
 const inspectorTriggerClass = cn(tabTriggerClass, "px-2 sm:px-2");
 
@@ -76,9 +84,17 @@ export function IdeaWorkspace({
   initialInspector,
   notice,
   baseHref,
+  publishing,
 }: IdeaWorkspaceProps) {
   const router = useRouter();
   const [view, setView] = useState(revision);
+  // Refreshed page data (after a release, a decision or a change elsewhere)
+  // replaces the displayed revision view. The editor's own text is untouched.
+  const [viewSource, setViewSource] = useState(revision);
+  if (revision !== viewSource) {
+    setViewSource(revision);
+    setView(revision);
+  }
   const { state, controller, reset } = useDraftSaver(revision, setView);
   /** Bumped when the editor restarts from a server copy, so local forms re-initialise. */
   const [generation, setGeneration] = useState(0);
@@ -306,6 +322,17 @@ export function IdeaWorkspace({
     router.push(`${baseHref}?revision=${result.value.revisionId}&tab=write`);
   }, [state.conflict, metadataInvalid, view.ideaId, current, baseHref, router]);
 
+  /** Start the editor over from a server view (conflict resolved, or the draft was approved). */
+  const restartFrom = useCallback(
+    (next: RevisionView) => {
+      setView(next);
+      reset(next);
+      setMetadataInvalid(false);
+      setGeneration((value) => value + 1);
+    },
+    [reset],
+  );
+
   /** Conflict: take the newer server copy. This editor's unsaved text is dropped on purpose. */
   const takeTheirs = useCallback(async () => {
     setBusy(true);
@@ -316,21 +343,14 @@ export function IdeaWorkspace({
       setCommandError(result ? result.error.message : "The server could not be reached. Your text is still here; try again.");
       return;
     }
-    setView(result.value);
-    reset(result.value);
-    setMetadataInvalid(false);
-    setGeneration((value) => value + 1);
+    if (!result.value.isWorking) {
+      // Discarded or replaced elsewhere: open the idea's current working revision.
+      router.replace(baseHref);
+      return;
+    }
+    restartFrom(result.value);
     setAnnouncement("Loaded the newer saved copy. Your unsaved text was discarded.");
-  }, [view.ideaId, view.id, reset]);
-
-  const reloadFromServer = useCallback(
-    (href: string) => {
-      const here = `${window.location.pathname}${window.location.search}`;
-      if (here === href) router.refresh();
-      else router.replace(href);
-    },
-    [router],
-  );
+  }, [view.ideaId, view.id, restartFrom, router, baseHref]);
 
   const discard = useCallback(
     async (reason: string): Promise<string | null> => {
@@ -350,7 +370,16 @@ export function IdeaWorkspace({
   );
 
   /* Title bar actions -------------------------------------------------- */
-  const primaryAction = editable ? (
+  const lifecycle = useLifecycleControls({
+    detail,
+    view,
+    unsaved,
+    moreRef,
+    onAnnounce: setAnnouncement,
+    onRestart: restartFrom,
+    strongAuth: { fresh: publishing.strongAuthFresh, mechanism: publishing.strongAuthMechanism },
+  });
+  const primaryAction = lifecycle.primaryAction ?? (editable ? (
     <button type="button" className={buttonClass.primary} aria-keyshortcuts="Control+S Meta+S" onClick={() => void save()}>
       Save
     </button>
@@ -362,7 +391,7 @@ export function IdeaWorkspace({
     <Link href={`${baseHref}?revision=${workingDraft.id}&tab=write`} className={buttonClass.primary}>
       Open working draft v{workingDraft.number}
     </Link>
-  ) : null;
+  ) : null);
 
   const runChecksBlocked =
     state.status === "saved" || state.status === "read_only" ? null : "Save first: checks run on the saved copy.";
@@ -393,7 +422,34 @@ export function IdeaWorkspace({
     ...(canDiscard
       ? [{ key: "discard", label: `Discard draft v${view.number}…`, destructive: true, onSelect: () => setDiscardOpen(true) }]
       : []),
+    ...lifecycle.menuActions,
   ];
+
+  /** Why review commands are unavailable, if they are. The server re-checks all of it. */
+  const reviewDisabledReason =
+    idea.lifecycle === "trashed"
+      ? "restore the idea first."
+      : !view.isWorking
+        ? "only the working revision can be reviewed. Open it from History."
+        : unsaved
+          ? "save your edits first. A review attests the saved copy, not your screen."
+          : null;
+  const liveMarkdown =
+    idea.liveRevision?.id === view.id
+      ? view.markdown
+      : (compareTargets.find((target) => target.key === idea.liveRevision?.id)?.markdown ?? null);
+
+  const resolveIssue = useCallback(
+    async (issueId: string, dependencyHash: string, note: string): Promise<string | null> => {
+      const result = await resolveIssueAction({ ideaId: view.ideaId, revisionId: view.id, issueId, dependencyHash, note }).catch(() => null);
+      if (!result) return "The server could not be reached. Nothing changed; try again.";
+      if (!result.ok) return result.error.message;
+      setView(result.value.view);
+      setAnnouncement("Issue resolved with your note.");
+      return null;
+    },
+    [view.ideaId, view.id],
+  );
 
   const conflictTargets: CompareTarget[] = state.conflict
     ? [{ key: "theirs", label: "Newer saved copy", title: state.conflict.title, markdown: state.conflict.markdown }, ...compareTargets]
@@ -427,6 +483,11 @@ export function IdeaWorkspace({
       />
 
       <WorkspaceBanners detail={detail} view={view} notice={notice} commandError={state.conflict ? null : commandError} />
+      {detail.releases.some((release) => WORKER_STATES.has(release.state)) ? (
+        <div className="px-4 pt-4 sm:px-6">
+          <SimulatedWorkerTicker active />
+        </div>
+      ) : null}
 
       {state.conflict ? (
         <ConflictPanel
@@ -441,7 +502,7 @@ export function IdeaWorkspace({
           onKeepMine={() => void controller.keepMine()}
           onUseTheirs={() => void takeTheirs()}
           onForkWithMine={() => void forkWithMine()}
-          onDiscardMine={() => reloadFromServer(baseHref)}
+          onDiscardMine={() => void takeTheirs()}
         />
       ) : null}
 
@@ -609,12 +670,25 @@ export function IdeaWorkspace({
               <QualityPanel
                 view={view}
                 nowMs={nowMs}
+                resolve={{ disabledReason: reviewDisabledReason, onResolve: resolveIssue }}
                 runChecks={{ disabledReason: runChecksBlocked, running: checks.running, error: checks.error, onRun: () => void runChecks() }}
                 onGoTo={goTo}
               />
             </Tabs.Content>
             <Tabs.Content value="review" className={cn(tabPanelClass, "pt-4")}>
-              <ReviewPanel view={view} onGoTo={goTo} />
+              <ReviewInspector
+                detail={detail}
+                view={view}
+                onView={setView}
+                disabledReason={reviewDisabledReason}
+                liveMarkdown={liveMarkdown}
+                publishing={publishing}
+                baseHref={baseHref}
+                nowMs={nowMs}
+                onGoTo={goTo}
+                onAnnounce={setAnnouncement}
+                onRestart={restartFrom}
+              />
             </Tabs.Content>
             <Tabs.Content value="details" className={cn(tabPanelClass, "pt-4")}>
               <DetailsPanel
@@ -649,7 +723,7 @@ export function IdeaWorkspace({
             setInspectorOpen(true);
             setPane("inspector");
             changeInspector("review");
-            focusSoon("#review-summary");
+            focusSoon("#review-checklist");
           }}
         >
           Open review checklist
@@ -663,6 +737,7 @@ export function IdeaWorkspace({
         {alertText}
       </p>
 
+      {lifecycle.dialogs}
       {canDiscard ? (
         <DiscardDraftDialog
           open={discardOpen}
@@ -678,6 +753,12 @@ export function IdeaWorkspace({
       ) : null}
     </div>
   );
+}
+
+/** End free text with exactly one full stop. */
+function sentence(text: string): string {
+  const trimmed = text.trim();
+  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
 function WorkspaceBanners({
@@ -697,7 +778,7 @@ function WorkspaceBanners({
     banners.push({
       key: "trash",
       tone: "warning",
-      text: `In Trash since ${formatAbsolute(detail.trash.trashedAt)}: ${detail.trash.reason}. Restore it to edit.`,
+      text: `In Trash since ${formatAbsolute(detail.trash.trashedAt)}. Reason: ${sentence(detail.trash.reason)} Restore it to edit or review.`,
     });
   }
   if (view.quarantine) {
@@ -714,7 +795,7 @@ function WorkspaceBanners({
     banners.push({
       key: "revoked",
       tone: "warning",
-      text: `Approval revoked${view.approval.revokedAt ? ` ${formatAbsolute(view.approval.revokedAt)}` : ""}: ${view.approval.revokedReason ?? "the approved content or policy changed"}.`,
+      text: `Approval revoked${view.approval.revokedAt ? ` ${formatAbsolute(view.approval.revokedAt)}` : ""}: ${sentence(view.approval.revokedReason ?? "the approved content or policy changed")}`,
     });
   }
   if (banners.length === 0 && !commandError) return null;

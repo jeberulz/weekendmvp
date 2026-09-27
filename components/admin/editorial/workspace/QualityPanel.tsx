@@ -8,8 +8,15 @@ import type { CheckView, IssueView, RevisionView } from "@/lib/editorial/contrac
 import { formatAbsolute } from "@/lib/editorial/presentation/format";
 import { CHECK_OUTCOME_LABELS, CHECK_SEVERITY_LABELS } from "@/lib/editorial/presentation/review";
 import { cn } from "@/lib/utils";
+import { EDITORIAL_LIMITS } from "@/lib/editorial/contracts/limits";
+import { ReasonDialog } from "../common/ReasonDialog";
 import { StatusBadge, Time } from "../common/primitives";
 import { smallButtonClass, textButtonClass } from "./ui";
+
+type Resolve = {
+  disabledReason: string | null;
+  onResolve(issueId: string, dependencyHash: string, note: string): Promise<string | null>;
+};
 
 const OUTCOME_ICONS: Record<CheckOutcome, { icon: typeof CheckCircle2; className: string }> = {
   pass: { icon: CheckCircle2, className: "text-(--ed-success)" },
@@ -27,11 +34,14 @@ export function QualityPanel({
   view,
   nowMs,
   runChecks,
+  resolve,
   onGoTo,
 }: {
   view: RevisionView;
   nowMs: number;
   runChecks: { disabledReason: string | null; running: boolean; error: string | null; onRun(): void };
+  /** Warnings and flags can be resolved with a written reason; blockers cannot. */
+  resolve?: Resolve;
   onGoTo(target: EditorialTarget): void;
 }) {
   const blockers = view.issues.filter((issue) => issue.severity === "blocker");
@@ -63,9 +73,12 @@ export function QualityPanel({
           <button
             type="button"
             className={smallButtonClass}
-            disabled={runChecks.disabledReason !== null || runChecks.running}
+            disabled={runChecks.disabledReason !== null}
+            aria-disabled={runChecks.running || undefined}
             aria-describedby={runChecks.disabledReason ? "run-checks-reason" : undefined}
-            onClick={runChecks.onRun}
+            onClick={() => {
+              if (!runChecks.running) runChecks.onRun();
+            }}
           >
             {runChecks.running ? "Running checks…" : "Run checks"}
           </button>
@@ -82,8 +95,8 @@ export function QualityPanel({
         ) : null}
       </section>
 
-      <IssueList title="Blockers" tone="danger" issues={blockers} empty="No blockers." onGoTo={onGoTo} />
-      <IssueList title="Warnings" tone="warning" issues={warnings} empty="No warnings." onGoTo={onGoTo} />
+      <IssueList title="Blockers" tone="danger" issues={blockers} empty="No blockers." onGoTo={onGoTo} resolve={resolve} />
+      <IssueList title="Warnings" tone="warning" issues={warnings} empty="No warnings." onGoTo={onGoTo} resolve={resolve} />
 
       <details className="rounded-lg border border-(--ed-border) bg-(--ed-surface) px-3 py-2">
         <summary className="min-h-9 cursor-pointer rounded py-1.5 text-sm font-semibold outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)">
@@ -105,12 +118,14 @@ function IssueList({
   issues,
   empty,
   onGoTo,
+  resolve,
 }: {
   title: string;
   tone: "danger" | "warning";
   issues: IssueView[];
   empty: string;
   onGoTo(target: EditorialTarget): void;
+  resolve?: Resolve;
 }) {
   const headingId = `issues-${title.toLowerCase()}`;
   return (
@@ -139,12 +154,29 @@ function IssueList({
                   Resolved {formatAbsolute(issue.resolution.at)}: {issue.resolution.note}
                 </p>
               ) : null}
-              {issue.target ? (
-                <button type="button" className={`${textButtonClass} self-start text-xs`} onClick={() => issue.target && onGoTo(issue.target)}>
-                  Go to {issue.target.kind === "section" ? "section" : issue.target.kind}
-                  <span className="sr-only">: {issue.message}</span>
-                </button>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-3">
+                {issue.target ? (
+                  <button type="button" className={`${textButtonClass} text-xs`} onClick={() => issue.target && onGoTo(issue.target)}>
+                    Go to {issue.target.kind === "section" ? "section" : issue.target.kind}
+                    <span className="sr-only">: {issue.message}</span>
+                  </button>
+                ) : null}
+                {resolve && issue.resolvable && !issue.resolution ? (
+                  <ReasonDialog
+                    title="Resolve with a reason"
+                    description={`Write down why this is acceptable. The note stays with the revision's history. Issue: ${issue.message}`}
+                    label="Reason"
+                    maxLength={EDITORIAL_LIMITS.noteChars}
+                    confirmLabel="Resolve"
+                    trigger={
+                      <button type="button" className={`${textButtonClass} text-xs`} disabled={resolve.disabledReason !== null}>
+                        Resolve with a reason…<span className="sr-only"> {issue.message}</span>
+                      </button>
+                    }
+                    onConfirm={(note) => resolve.onResolve(issue.id, issue.dependencyHash, note)}
+                  />
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

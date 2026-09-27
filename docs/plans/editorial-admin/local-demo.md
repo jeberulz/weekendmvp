@@ -26,6 +26,15 @@ Open any idea from the queue or library (the flagship "Invoice follow-up for fre
 - **Preview** is labelled "Editorial preview — public rendering not yet verified". Raw HTML, MDX and scripts are shown as text, links keep only public http(s)/mailto targets, and images are never fetched. Claim markers open their evidence.
 - Read-only revisions (submitted, approved, legacy or older ones) offer **Edit in a new revision**, or a link to the existing working draft.
 
+## The review and release journey (simulated)
+
+A full run on the flagship: in Compare, see that v3 edited a verified claim; restore that sentence in Write and save; **Run checks** (More actions or Quality); in the Review tab, mark each remaining item reviewed (one click per item, bound to what you saw); **Approve v3** with the explicit statement; **Prepare preview**; **Publish v3** (the confirmation lists the exact revision, what it replaces, changed sections and claims, checks and approval, and asks for the simulated sign-in confirmation); watch the stages. Then **Roll back** (diff and re-run checks shown first), **Unpublish** (lists every affected surface, stays pending until removal is verified), **Move to Trash** and **Restore**.
+
+- Every command is explicit and one item at a time: there is no "mark all", bulk approve or bulk publish.
+- The **simulated release worker** appears while a release is in flight. It advances one stage every few seconds while the page is open, and can be paused or stepped. Nothing is deployed.
+- **Settings → Demo controls** flip the simulated situations: sign-in confirmation, the kill switch, a failing deployment, a lost activation acknowledgement (to try Reconcile), a new policy version (to watch checks and approvals lapse), and a reset.
+- Publish, retry, rollback, unpublish and trash need a sign-in confirmation from the last 10 minutes. The demo simulates it with a button and never asks for a password or code.
+
 ## Tests
 
 ```bash

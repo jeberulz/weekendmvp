@@ -2,14 +2,14 @@
 
 import type { ComponentProps, ReactNode } from "react";
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import styles from "../editorial.module.css";
 
 /**
  * A confirmation dialog on the editorial palette. Radix traps focus, closes
- * on Escape and returns focus; callers that open it from a menu pass
- * `onCloseAutoFocus` to send focus back to a stable control.
+ * on Escape and returns focus to the trigger. Dialogs opened from a menu
+ * (no trigger) pass `onCloseAutoFocus` to send focus back to a stable control.
  */
 export function EditorialDialog({
   open,
@@ -17,6 +17,7 @@ export function EditorialDialog({
   title,
   description,
   children,
+  trigger,
   onCloseAutoFocus,
   className,
 }: {
@@ -25,11 +26,14 @@ export function EditorialDialog({
   title: string;
   description: ReactNode;
   children: ReactNode;
+  /** A button that opens the dialog; focus returns to it on close. */
+  trigger?: ReactNode;
   onCloseAutoFocus?: ComponentProps<typeof DialogContent>["onCloseAutoFocus"];
   className?: string;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent
         className={cn(
           styles.theme,

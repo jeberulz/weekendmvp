@@ -104,12 +104,22 @@ async function WorkspaceContent({ params, searchParams }: { params: Params; sear
     await Promise.all(candidates.map(([id, label]) => compareTarget(repository, ideaId, id, label)))
   ).filter((target): target is CompareTarget => target !== null);
 
+  // Publishing context for the confirmation dialog; the server re-checks both on publish.
+  const settings = await repository.getSettings();
+  const publishing = settings.ok
+    ? {
+        strongAuthFresh: settings.value.strongAuth.fresh,
+        strongAuthMechanism: settings.value.strongAuth.mechanism,
+        killSwitchEngaged: settings.value.publishing.killSwitchEngaged,
+      }
+    : { strongAuthFresh: false, strongAuthMechanism: "unavailable", killSwitchEngaged: true };
+
   return (
     <IdeaWorkspace
-      // Another revision (or the same one after it was approved) starts a fresh
-      // editor. Server versions are deliberately not part of the key, so a
-      // refresh can never remount the editor and drop unsaved text.
-      key={`${revision.id}:${revision.kind}`}
+      // Only another revision starts a fresh editor. A refresh must never
+      // remount it and drop unsaved text; approval, trash and restore restart
+      // the editor in place from the server's view instead.
+      key={revision.id}
       detail={detail.value}
       revision={revision}
       compareTargets={compareTargets}
@@ -118,6 +128,7 @@ async function WorkspaceContent({ params, searchParams }: { params: Params; sear
       initialInspector={query.inspector ?? "evidence"}
       notice={notice}
       baseHref={`${EDITORIAL_BASE}/ideas/${idea.id}`}
+      publishing={publishing}
     />
   );
 }

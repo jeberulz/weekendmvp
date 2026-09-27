@@ -33,17 +33,25 @@ export function ReleaseCard({
   nowMs,
   actions,
   headingLevel = "h2",
+  liveRegion = false,
 }: {
   release: ReleaseView;
   nowMs: number;
   actions?: ReactNode;
   headingLevel?: "h2" | "h3";
+  /** Announce state changes politely (while a simulated release advances). */
+  liveRegion?: boolean;
 }) {
   const Heading = headingLevel;
   const expanded = release.state === "failed" || release.state === "needs_reconciliation" || release.availableActions.length > 0;
   const currentLabel = releaseStateLabel(release.operation, release.state);
   return (
-    <article className="flex flex-col gap-3 rounded-lg border border-(--ed-border) bg-(--ed-surface) p-4">
+    <article
+      id={`release-card-${release.id}`}
+      tabIndex={-1}
+      aria-label={`${release.ideaTitle}: ${RELEASE_OPERATION_LABELS[release.operation].toLowerCase()}`}
+      className="flex flex-col gap-3 rounded-lg border border-(--ed-border) bg-(--ed-surface) p-4 outline-hidden focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-(--ed-focus)"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <Heading className="text-base font-semibold">
@@ -63,7 +71,7 @@ export function ReleaseCard({
             <Time iso={release.createdAt} nowMs={nowMs} />
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5" aria-live={liveRegion ? "polite" : undefined} aria-atomic={liveRegion ? true : undefined}>
           <ReleaseStateBadge operation={release.operation} state={release.state} label={currentLabel} />
           {release.simulated && release.operation !== "legacy_baseline" ? <StatusBadge>Simulated</StatusBadge> : null}
         </div>
@@ -83,10 +91,14 @@ export function ReleaseCard({
       ) : null}
       {release.preview ? (
         <p className="text-sm">
-          <Link href={release.preview.href ?? "#"} className={linkClass}>
-            Open preview
-          </Link>{" "}
-          <span className="text-xs text-(--ed-text-2)">— {release.preview.label}</span>
+          {release.preview.href ? (
+            <>
+              <Link href={release.preview.href} className={linkClass}>
+                Open preview
+              </Link>{" "}
+            </>
+          ) : null}
+          <span className="text-xs text-(--ed-text-2)">{release.preview.href ? "— " : ""}{release.preview.label}</span>
         </p>
       ) : null}
       {expanded ? (
