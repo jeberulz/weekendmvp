@@ -1,0 +1,17 @@
+# WP46 Progress - Editorial Admin
+
+Append-only. Treat entries as claims backed by the commands recorded beside them.
+
+## 2026-09-27 - Lane, branch and WP number
+
+- Lane: Work Package. Branch `codex/editorial-admin-ui` in the contained worktree `.worktrees/editorial-admin-ui`, created from main `359ad428` (equal to `origin/main` at start). The shared root checkout was not switched.
+- WP number: **WP46** reserved for Editorial Admin. `main` registers WP01–WP44 plus the Build Platform range; WP45 is claimed by the active `codex/wp45-idea-engine-completion` worktree (uncommitted registry row). No worktree or `main` document claims WP46. Two stale, unmerged membership branches (`codex/wp41-membership-adoption`, `codex/wp42-membership-baseline`, 2026-09-12) list WP46–WP53 as reserved, but their numbering already collides with `main`'s WP41–WP44, so they are not treated as binding. The registry row is left for a coordinated update so this branch does not race the WP45 agent editing `docs/PROJECT_STRATEGY.md`.
+- Read before code: `CLAUDE.md`, `AGENTS.md`, `AGENTS.workflow.md`, `.agentic-workflow.yml`, `docs/wp/RULINGS.md`, `docs/wp/AGENT_HANDOFF.md`, `docs/wp/wp38-stories.md`/`wp38-progress.md`, WP45's stories and completion plan (read-only, from its worktree), the three plan documents, installed Next.js 16.3 docs (Cache Components authentication, `notFound`, `forbidden`, `connection`, `instant`).
+- Findings that shape the build:
+  - WP38 is planned only: no `super_admin`, `requireSuperAdmin` or admin audit code exists on `main`. E4 therefore needs its editorial-only WP38 subset built in an assigned window.
+  - WP45's v2 record, evidence and MDX-safety modules are uncommitted in another worktree. Nothing here imports them; E5 maps them later through the Editorial DTO.
+  - `middleware.ts` does not auth-manage or add no-store headers to `/admin/**`, and consented analytics would load there. Both are shared-seam E4 items; meanwhile editorial pages keep generic document titles.
+  - `forbidden()` needs `experimental.authInterrupts` (shared config). Production denial uses `notFound()` from the editorial layout; its real status is verified against a production build, not `next dev`.
+  - No DOM test library or diff library is installed and no dependency may be added, so interaction logic lives in pure, tested modules, rendering is tested with `renderToStaticMarkup`, and browser behaviour is verified manually in the in-app browser.
+- Plan docs copied unchanged from `.worktrees/editorial-admin-plan` (SHA-256 verified identical).
+- Next: E0.
