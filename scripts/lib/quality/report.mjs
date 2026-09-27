@@ -35,16 +35,20 @@ function pageRows(results, key) {
     .join("\n");
 }
 
-export function renderReport(results, { generatedOn }) {
+export function renderReport(results, { generatedOn, layers = 0, mode = null }) {
   const sorted = results.slice().sort(rank);
   const count = (s) => results.filter((r) => r.status === s).length;
   const failing = sorted.filter((r) => r.status === "fail");
   const warning = sorted.filter((r) => r.status === "warn");
 
   const lines = [
-    "# Idea content quality report (Layer 0)",
+    "# Idea content quality report",
     "",
     `Generated ${generatedOn} by \`npm run evals:run -- --all --report\`. Do not edit by hand.`,
+    "",
+    layers > 0
+      ? `Layers run: 0-${layers} (${mode}). Layer 1 extracts factual claims; Layer 2 checks them against each page's cited sources.`
+      : "Layers run: 0 only.",
     "",
     "Layer 0 is the free, deterministic layer: structure, slop phrases, verbosity, unsourced numbers, source hygiene, placeholders, and cross-page duplication. Thresholds live in `evals/config.json`.",
     "",

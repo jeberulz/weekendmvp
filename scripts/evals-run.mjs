@@ -2,13 +2,20 @@
 /**
  * Content quality gate for content/ideas/{slug}.mdx (WP41).
  *
- * Layer 0 only for now: free, deterministic checks with no network and no
- * API key. See docs/wp/wp41-stories.md for the later LLM layers.
+ * Layer 0 (default) is free and deterministic: no network, no API key. CI
+ * runs only Layer 0.
+ *
+ * Layers 1-2 (--layers 1|2) extract factual claims with an LLM and check
+ * them against the sources each page cites. They need an explicit mode:
+ *   --fixture   no key, no network, canned replies (for wiring checks)
+ *   --live      OpenRouter (OPENROUTER_API_KEY) under the EVALS_MAX_USD cap
+ * --estimate prints the worst-case cost of the planned run and stops.
  *
  * Usage:
- *   node scripts/evals-run.mjs --slug phone-neck-score-app   # exit 1 on fail
- *   node scripts/evals-run.mjs --changed [--base origin/main] # exit 1 on fail
- *   node scripts/evals-run.mjs --all [--report] [--strict]    # report only
+ *   npm run evals:run -- --slug phone-neck-score-app   # exit 1 on fail
+ *   npm run evals:run -- --changed [--base origin/main] # exit 1 on fail
+ *   npm run evals:run -- --all [--report] [--strict]    # report only
+ *   npm run evals:run -- --slug <slug> --layers 2 --live [--estimate]
  *   add --json for machine-readable output
  *
  * --changed checks idea MDX added, modified, or renamed since --base,
@@ -19,8 +26,9 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { listIdeaSlugs } from "./audit-idea-mdx.mjs";
+import { SOURCES_TITLE } from "./lib/idea-sections.mjs";
 import { buildShingleIndex } from "./lib/quality/dupes.mjs";
 import { parseIdea } from "./lib/quality/parse.mjs";
 import { renderReport } from "./lib/quality/report.mjs";
@@ -87,6 +95,9 @@ function parseArgs(argv) {
     json: false,
     report: false,
     strict: false,
+    layers: 0,
+    mode: null,
+    estimate: false,
     help: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -98,6 +109,14 @@ function parseArgs(argv) {
     else if (a === "--json") args.json = true;
     else if (a === "--report") args.report = true;
     else if (a === "--strict") args.strict = true;
+    else if (a === "--layers") args.layers = Number(argv[++i]);
+    else if (a === "--fixture" || a === "--live") {
+      if (args.mode) {
+        console.error("pass only one of --fixture or --live");
+        process.exit(2);
+      }
+      args.mode = a.slice(2);
+    } else if (a === "--estimate") args.estimate = true;
     else if (a === "--help" || a === "-h") args.help = true;
     else {
       console.error(`unknown arg: ${a}`);
@@ -119,16 +138,152 @@ function printResult(r) {
         ` sources=${m.sources?.links ?? 0} domains=${m.sources?.distinctDomains ?? 0}`,
     );
   }
+  const c = r.claimLayer?.metrics;
+  if (c) {
+    console.log(
+      `  claims (layer ${r.claimLayer.layers}): ${c.claims} checked: ${c.supported} supported, ${c.contradicted} contradicted,` +
+        ` ${c.notFound} not found, ${c.unsourced} unsourced, ${c.unverifiable} unverifiable` +
+        ` | dropped ${c.dropped} | sources read ${c.sourcesChecked - c.sourcesUnreachable}/${c.sourcesChecked}` +
+        ` | $${c.costUsd.toFixed(4)}${c.cachedExtract ? " (cached)" : ""}`,
+    );
+  }
 }
 
-function main() {
+/** Standalone Node does not read env files. Shell, then .env.local, then .env. */
+function loadLocalEnv() {
+  for (const name of [".env.local", ".env"]) {
+    const envPath = path.join(root, name);
+    if (fs.existsSync(envPath)) process.loadEnvFile(envPath);
+  }
+}
+
+const statusOf = (r) => (r.fails.length > 0 ? "fail" : r.warns.length > 0 ? "warn" : "pass");
+
+/**
+ * Layers 1-2 for every target page, merged into the Layer 0 results.
+ * Returns the number of pages whose layers could not finish.
+ */
+async function runClaimLayersForPages({ args, config, corpus, results }) {
+  const load = (rel) => import(pathToFileURL(path.join(root, rel)).href);
+  const [llmMod, layersMod, cacheMod, fixtureReplies, fixtures] = await Promise.all([
+    load("lib/evals/llm.ts"),
+    load("lib/evals/layers.ts"),
+    load("lib/evals/cache.ts"),
+    load("lib/evals/fixture-replies.ts"),
+    load("lib/evals/providers/fixtures.ts"),
+  ]);
+  const { createEvalLlm, BudgetExceededError, EvalConfigError } = llmMod;
+
+  if (args.mode === "live") loadLocalEnv();
+  const cc = config.claims;
+  const models = {
+    extractor: config.llm.extractor ?? (args.mode === "fixture" ? fixtures.FIXTURE_MODELS[0] : null),
+    verifier: config.llm.verifier ?? (args.mode === "fixture" ? fixtures.FIXTURE_MODELS[1] : null),
+  };
+  if (!models.extractor || (args.layers === 2 && !models.verifier)) {
+    console.error(
+      "evals-run: llm.extractor / llm.verifier are not pinned in evals/config.json. Pick them with npm run evals:ping -- --live --list <filter>.",
+    );
+    process.exit(2);
+  }
+
+  const llm = createEvalLlm({
+    mode: args.mode,
+    timeoutMs: config.llm.requestTimeoutMs,
+    fixture: { models: [models.extractor, models.verifier], reply: fixtureReplies.claimsFixtureReply },
+  });
+  // Fixture runs never touch the disk cache: a fixture source doc must not
+  // be served to a later live run.
+  const cache =
+    args.mode === "live"
+      ? cacheMod.createDiskCache(path.join(evalsDir, "cache"), { ttlMs: cc.cacheTtlDays * 86_400_000 })
+      : cacheMod.createMemoryCache();
+  const sourceFetch = args.mode === "fixture" ? fixtureReplies.fixtureSourceFetch() : undefined;
+  const pages = results.filter((r) => corpus.has(r.slug));
+  const shared = {
+    layers: args.layers,
+    llm,
+    models,
+    config: cc,
+    factualSections: config.factualSections,
+    sourcesTitle: SOURCES_TITLE,
+  };
+
+  try {
+    if (args.estimate) {
+      const rates = {
+        extractor: await llm.rates(models.extractor),
+        verifier: await llm.rates(models.verifier ?? models.extractor),
+      };
+      const total = pages.reduce(
+        (sum, r) => sum + layersMod.estimatePageWorstCaseUsd({ ...shared, sections: corpus.get(r.slug).page.sections, rates }),
+        0,
+      );
+      console.log(
+        `evals-run: worst case for ${args.layers === 1 ? "layer 1" : "layers 1-2"} on ${pages.length} page(s): $${total.toFixed(4)}` +
+          ` ($${(total / Math.max(1, pages.length)).toFixed(4)}/page, ignoring cache). Cap: $${llm.capUsd().toFixed(2)}.` +
+          (total > llm.capUsd() ? " Over the cap: the run would stop part-way." : ""),
+      );
+      process.exit(0);
+    }
+  } catch (error) {
+    console.error(`evals-run: ${error.message}`);
+    process.exit(2);
+  }
+
+  let errors = 0;
+  let stopped = false;
+  let next = 0;
+  const worker = async () => {
+    while (!stopped && next < pages.length) {
+      const r = pages[next++];
+      try {
+        const layer = await layersMod.runClaimLayers({ ...shared, slug: r.slug, sections: corpus.get(r.slug).page.sections, cache, sourceFetch });
+        r.fails.push(...layer.fails);
+        r.warns.push(...layer.warns);
+        r.claimLayer = layer;
+      } catch (error) {
+        if (error instanceof EvalConfigError) {
+          console.error(`evals-run: ${error.message}`);
+          process.exit(2);
+        }
+        if (error instanceof BudgetExceededError) stopped = true;
+        errors += 1;
+        r.warns.push({ check: "claims.error", message: `claim layers did not finish: ${error.message}` });
+      }
+      r.status = statusOf(r);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, cc.pageConcurrency) }, worker));
+
+  const notRun = pages.filter((r) => !r.claimLayer && !r.warns.some((w) => w.check === "claims.error"));
+  for (const r of notRun) {
+    errors += 1;
+    r.warns.push({ check: "claims.error", message: "skipped: the run hit the EVALS_MAX_USD cap" });
+    r.status = statusOf(r);
+  }
+
+  const ledger = llm.ledger();
+  console.error(
+    `evals-run: ${args.layers === 1 ? "layer 1" : "layers 1-2"} (${args.mode}): ${ledger.length} model call(s), ${ledger.filter((e) => !e.ok).length} failed,` +
+      ` spent $${llm.spentUsd().toFixed(4)} of $${llm.capUsd().toFixed(2)} cap` +
+      (errors > 0 ? `, ${errors} page(s) incomplete` : ""),
+  );
+  return errors;
+}
+
+async function main() {
   const args = parseArgs(process.argv.slice(2));
   const modes = [args.all, args.changed, args.slugs.length > 0].filter(Boolean);
-  if (args.help || modes.length !== 1 || (args.report && !args.all)) {
+  const badLayers = ![0, 1, 2].includes(args.layers);
+  const needsMode = args.layers > 0 && !args.mode;
+  const strayMode = args.layers === 0 && (args.mode || args.estimate);
+  if (args.help || modes.length !== 1 || (args.report && !args.all) || badLayers || needsMode || strayMode) {
     console.log(`Usage:
-  node scripts/evals-run.mjs --slug <slug> [--slug <slug>...]
-  node scripts/evals-run.mjs --changed [--base <ref>]   (default base: origin/main)
-  node scripts/evals-run.mjs --all [--report] [--strict]
+  npm run evals:run -- --slug <slug> [--slug <slug>...]
+  npm run evals:run -- --changed [--base <ref>]   (default base: origin/main)
+  npm run evals:run -- --all [--report] [--strict]
+  add --layers 1|2 --fixture|--live [--estimate] for claim extraction and source checks
   add --json for machine-readable output`);
     process.exit(args.help ? 0 : 2);
   }
@@ -184,6 +339,9 @@ function main() {
     });
   });
 
+  const layerErrors =
+    args.layers > 0 ? await runClaimLayersForPages({ args, config, corpus, results }) : 0;
+
   if (args.json) console.log(JSON.stringify(results, null, 2));
   else results.forEach(printResult);
 
@@ -200,22 +358,28 @@ function main() {
     fs.mkdirSync(resultsDir, { recursive: true });
     fs.writeFileSync(
       path.join(resultsDir, "latest.json"),
-      `${JSON.stringify({ generatedOn, layer: 0, results }, null, 2)}\n`,
+      `${JSON.stringify({ generatedOn, layers: args.layers, mode: args.mode, results }, null, 2)}\n`,
     );
     fs.writeFileSync(
       path.join(resultsDir, "report.md"),
-      renderReport(results, { generatedOn }),
+      renderReport(results, { generatedOn, layers: args.layers, mode: args.mode }),
     );
     if (!args.json) console.log("evals-run: wrote evals/results/latest.json and report.md");
   }
 
   // The full corpus is report-only (existing debt). Targeted runs gate.
   const gating = !args.all || args.strict;
-  process.exit(gating && failed > 0 ? 1 : 0);
+  // An unfinished layer run is not a pass: the gate could not complete.
+  process.exit(gating && (failed > 0 || layerErrors > 0) ? 1 : 0);
 }
 
 const isMain =
   process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (isMain) main();
+if (isMain) {
+  main().catch((error) => {
+    console.error(`evals-run: ${error.stack ?? error}`);
+    process.exit(1);
+  });
+}

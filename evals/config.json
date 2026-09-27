@@ -35,6 +35,26 @@
   "llm": {
     "$comment": "WP41-S2. LLM layers (claim extraction, verification, judges) call OpenRouter through lib/evals/llm.ts under a hard cap: EVALS_MAX_USD, default and maximum $10. Prices are read live from OpenRouter, never hard-coded. Pin exact model IDs (never openrouter/auto) in judges; check them with npm run evals:ping -- --live.",
     "requestTimeoutMs": 120000,
+    "extractor": null,
+    "verifier": null,
     "judges": []
+  },
+  "claims": {
+    "$comment": "WP41-S3. Layer 1 (extract claims) and Layer 2 (verify against cited sources). Run with npm run evals:run -- --layers 2 --live. Worst-case output tokens are priced into every reservation, so keep the output caps tight.",
+    "maxPerPage": 25,
+    "extractMaxOutputTokens": 3000,
+    "verifyMaxOutputTokens": 1500,
+    "windowChars": 600,
+    "passagesPerClaim": 3,
+    "maxPassageCharsPerCall": 6000,
+    "maxVerifyCallsPerPage": 8,
+    "fetchTimeoutMs": 15000,
+    "maxSourceBytes": 2000000,
+    "maxSourceTextChars": 200000,
+    "cacheTtlDays": 30,
+    "minClaimsForShareWarn": 3,
+    "unsupportedShareWarn": 0.5,
+    "unreachableShareWarn": 0.4,
+    "pageConcurrency": 4
   }
 }

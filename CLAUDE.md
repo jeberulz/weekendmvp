@@ -43,7 +43,9 @@ hygiene, copied text). Existing pages are report-only: the ranked backlog is
 `evals/slop-lexicon.json`. The LLM layers (WIP) call OpenRouter only through
 `lib/evals/llm.ts`, which enforces a hard cap (`EVALS_MAX_USD`, max $10) and
 reads prices live. Check wiring with `npm run evals:ping -- --fixture`
-(no key) or `-- --live` (`OPENROUTER_API_KEY`).
+(no key) or `-- --live` (`OPENROUTER_API_KEY`). Claim checks:
+`npm run evals:run -- --slug {slug} --layers 2 --live` (add `--estimate`
+first for the worst-case cost); results cache in `evals/cache/` (gitignored).
 
 ## Accessibility
 

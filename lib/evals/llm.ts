@@ -225,4 +225,21 @@ export function createEvalLlm(options: EvalLlmOptions) {
 
 export type EvalLlm = ReturnType<typeof createEvalLlm>;
 
+/**
+ * One retry for a retryable call failure (429, 5xx, empty or non-JSON
+ * reply). Budget and config errors are never retried: the budget refusal
+ * would repeat, and a config error is ours to fix. The retry goes through
+ * the same cap, so it can be refused too.
+ */
+export async function callWithRetry(llm: EvalLlm, request: LlmCall): Promise<LlmResult> {
+  try {
+    return await llm.call(request);
+  } catch (error) {
+    if (error instanceof EvalCallError && error.retryable) {
+      return llm.call({ ...request, label: `${request.label} (retry)` });
+    }
+    throw error;
+  }
+}
+
 export { BudgetExceededError, EvalCallError, EvalConfigError };

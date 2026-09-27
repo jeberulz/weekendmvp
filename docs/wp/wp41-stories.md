@@ -37,6 +37,18 @@ Definition of done: every new or edited idea page is scored by a layered quality
     - `npm run evals:ping -- --fixture`
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 - [ ] `WP41-S3` - Layer 1 claim extraction + Layer 2 source verification with an on-disk URL cache
+  - Scope: `lib/evals/` (`claims.ts`, `verify.ts`, `fetch-source.ts`, `cache.ts`, `text.ts`, `layers.ts`, `fixture-replies.ts`, `llm.ts` retry helper, tests), `scripts/evals-run.mjs`, `scripts/lib/quality/report.mjs`, `evals/config.json`, `.gitignore`, `package.json`, docs
+  - Acceptance criteria:
+    - Layer 1: one call per page lists factual claims with verbatim quotes and the numbered sources that back them. Quotes not found verbatim in the page are dropped and counted.
+    - Layer 2: each cited source is fetched once (text only, gitignored cache), and one call per (page, source) checks the claims mapped to it against the nearest excerpts. `supported` and `contradicted` need evidence found verbatim in the source, or they become `not_found`.
+    - Findings: fail `claims.contradicted`; warn `claims.unsupported`, `sources.unreachable`, `claims.error`.
+    - Unchanged pages re-run from cache for $0. `--estimate` prints the worst case before any spend. CI stays Layer 0.
+    - `--fixture` runs the full pipeline with no key and no network.
+    - Live: extractor and verifier models picked from live prices, tested on the 3 reference pages plus `phone-neck-score-app`, pinned in `evals/config.json`, recorded in RULINGS.
+  - Verification:
+    - `npm run test:evals`, `npm run evals:run -- --slug phone-neck-score-app --layers 2 --fixture`
+    - Live run on 4 pages, a repeat run at $0, `--estimate --all` ≤ $3
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build'
 - [ ] `WP41-S4` - Layer 3 judge panel (3 model families via OpenRouter), rubric, median aggregation, disagreement flag
 - [ ] `WP41-S5` - Gold set (3 reference pages + seeded bad copies) and `evals:calibrate`
 - [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate

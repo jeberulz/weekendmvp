@@ -73,3 +73,23 @@ Takeaways: the corpus is light on stock AI phrasing and has no copied pages. The
   - This cloud container's network policy denies `openrouter.ai` (proxy 403), so live mode could not be exercised here. It failed closed as designed: "OpenRouter model list returned 403", $0 spent. Live verification needs `openrouter.ai` allowed and `OPENROUTER_API_KEY` set.
   - Judge model IDs are not pinned. Pick them with `npm run evals:ping -- --live --list <filter>` and record a RULINGS row at S4.
 - Next: `WP41-S3` claim extraction + source verification.
+
+## 2026-09-27 - WP41-S3 Layers 1-2 (built in fixture mode; live pick pending)
+
+- Actions taken:
+  - `lib/evals/claims.ts`: extraction prompt (factual sections + numbered Sources), JSON validation, verbatim-quote guard, 25-claim cap, cache.
+  - `lib/evals/fetch-source.ts`: fetch with UA, 15 s timeout, 2 MB cap, cheerio text extraction (nav, header, footer, scripts dropped), `ok` / `http_error` / `unreadable` / `network_error`. Near-empty pages (script-rendered, bot walls) count as unreadable. Transient failures are not cached.
+  - `lib/evals/verify.ts`: 600-char windows scored by shared figures and content words, top 3 per claim, 6k chars per call. No matching passage means `not_found` with no call. Evidence guard downgrades invented support or contradictions. Output allowance sized to the batch (150 + 120 per claim, capped at 1,500).
+  - `lib/evals/layers.ts`: orchestration, busiest sources first up to 8 verify calls per page, per-claim combination (supported > contradicted > not_found > unverifiable), findings, per-page cost from the ledger, `estimatePageWorstCaseUsd`.
+  - `lib/evals/cache.ts` (sha256, TTL, atomic writes), `lib/evals/text.ts` (normalisation shared by both guards), `lib/evals/fixture-replies.ts`, `callWithRetry` (one retry, never for budget or config errors).
+  - `scripts/evals-run.mjs`: `--layers 1|2`, `--fixture|--live` (required above layer 0), `--estimate`, page concurrency 4, an incomplete layer run exits 1 on gating runs. Fixture runs use a memory cache so fixture source text never reaches a live run.
+  - `evals/config.json`: `llm.extractor`, `llm.verifier` (null until the live pick) and a `claims` section. `evals/cache/` gitignored. `evals:run` and `evals:changed` now run with `--experimental-strip-types` so the TS layers can load; Layer 0 still imports no TS.
+- Decisions made:
+  - Not found is a warning, contradicted is a failure. Excerpts are a sample, and a figure may sit in a table the extraction missed. A contradiction carries quoted evidence.
+  - A claim checked against several sources takes the best result: one supporting source outweighs a contradicting one.
+  - Unreachable sources warn, not fail: many sites block bots.
+- Checks run: `npm run typecheck` pass; `npm run lint` 0 errors; `npm test` pass (20 new vitest cases, 54 in `lib/evals`); `npm run build` pass; `git diff --check` clean. Fixture run on `phone-neck-score-app`: 5 claims, 1 source read, $0.0015 fixture spend. Fixture layer 1 across all 225 pages: 225 calls, 0 failures.
+- Cost: `--estimate --all --layers 2` at fixture prices ($0.50 / $1.50 per 1M) is $5.60 worst case for all 225 pages, $0.025 per page. The ≤ $3 target needs a model near $0.25 per 1M input or less. Real runs cost less (outputs are shorter than the allowance), and warm runs cost $0.
+- Gotchas:
+  - This container still has no `OPENROUTER_API_KEY` and blocks outbound HTTPS. Source sites (e.g. grandviewresearch.com) are blocked too, not only openrouter.ai, so Layer 2 needs a broad network policy, not one allowed domain.
+- Next: once the environment has the key and network access, pick and pin the extractor and verifier models, run the 4-page live check, record RULINGS, tick S3.

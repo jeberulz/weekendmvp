@@ -79,3 +79,4 @@ tsconfig.tsbuildinfo
 
 # WP41 content evals: machine output is regenerated; report.md is the committed baseline
 evals/results/latest.json
+evals/cache/
