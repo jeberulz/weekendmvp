@@ -5,12 +5,19 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   compileResearchRecord,
   type CompileOptions,
   type CompileResult,
 } from "./compile.ts";
+import { assertNotPublicIdeaOutput } from "./compile-destination.ts";
 import type { ResearchRecord } from "./research-record.ts";
+
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../..",
+);
 
 export type WriteCompileOptions = CompileOptions & {
   ideasDir: string;
@@ -49,6 +56,7 @@ export function writeCompiledIdea(
 ): WriteCompileResult {
   const compiled = compileResearchRecord(options);
   const ideasDir = path.resolve(options.ideasDir);
+  assertNotPublicIdeaOutput(repoRoot, ideasDir, options.manifestPath);
   const mdxPath = path.resolve(ideasDir, `${compiled.slug}.mdx`);
 
   // compile.ts already rejects unsafe slugs; this is the backstop.

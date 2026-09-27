@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 /**
- * Compile CLI: ResearchRecord JSON → content/ideas/{slug}.mdx (+ manifest stub)
+ * Compile CLI: ResearchRecord JSON → engine/drafts/{slug}.mdx (+ draft manifest)
  *
  * Usage:
  *   npm run engine:compile -- --record /tmp/record.json
- *   npm run engine:compile -- --record path.json --slug _engine-fixture-draft --force
+ *   npm run engine:compile -- --record path.json --slug fresh-public-slug --force
  *   npm run engine:compile -- --record path.json --ideas-dir /tmp/ideas --no-manifest
  *
- * Slugs starting with engine-draft- are spot-check drafts: they default to
- * engine/drafts/{slug}.mdx + engine/drafts/manifest.json and are refused in
- * content/ideas/, so a draft can never reach the live site.
+ * Every compile lands in engine/drafts/, whatever the slug is. content/ideas/
+ * and ideas/manifest.json are refused. Promotion is a separate command.
  *
  * Refuses to overwrite existing MDX unless --force.
  * Does not seed Convex, generate OG, or push git.
@@ -20,7 +19,6 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const ENGINE_DRAFT_PREFIX = "engine-draft-";
 
 function usage(exit = 1) {
   console.error(`Usage:
@@ -29,10 +27,9 @@ function usage(exit = 1) {
 Flags:
   --record path       ResearchRecord JSON from engine:research
   --slug name         Override output slug (throwaway compiles)
-  --ideas-dir path    MDX output directory (default: content/ideas;
-                      engine/drafts for engine-draft-* slugs)
-  --manifest path     Manifest JSON (default: ideas/manifest.json;
-                      engine/drafts/manifest.json for engine-draft-* slugs)
+  --root path         Repository root used to place engine/drafts (tests)
+  --ideas-dir path    MDX output directory (default: <root>/engine/drafts)
+  --manifest path     Manifest JSON (default: <root>/engine/drafts/manifest.json)
   --no-manifest       Do not write/update the manifest
   --force             Overwrite existing MDX / manifest row
 `);
@@ -43,6 +40,7 @@ function parseArgs(argv) {
   const out = {
     recordPath: null,
     slug: null,
+    rootDir: null,
     ideasDir: null,
     manifestPath: null,
     noManifest: false,
@@ -53,6 +51,7 @@ function parseArgs(argv) {
     if (a === "--help" || a === "-h") usage(0);
     else if (a === "--record") out.recordPath = argv[++i];
     else if (a === "--slug") out.slug = argv[++i];
+    else if (a === "--root") out.rootDir = path.resolve(argv[++i]);
     else if (a === "--ideas-dir") out.ideasDir = path.resolve(argv[++i]);
     else if (a === "--manifest") out.manifestPath = path.resolve(argv[++i]);
     else if (a === "--no-manifest") out.noManifest = true;
@@ -76,6 +75,7 @@ async function main() {
   const [
     { parseResearchRecord },
     { writeCompiledIdea },
+    { resolveCompilePaths },
   ] = await Promise.all([
     import(
       pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href
@@ -83,32 +83,28 @@ async function main() {
     import(
       pathToFileURL(path.join(root, "lib/engine/compile-write.ts")).href
     ),
+    import(
+      pathToFileURL(path.join(root, "lib/engine/compile-destination.ts")).href
+    ),
   ]);
 
   const raw = JSON.parse(fs.readFileSync(args.recordPath, "utf8"));
   const record = parseResearchRecord(raw);
 
-  const slug = (args.slug ?? record.brief.slug).trim().toLowerCase();
-  const isDraft = slug.startsWith(ENGINE_DRAFT_PREFIX);
-  const publicIdeasDir = path.join(root, "content", "ideas");
-  const draftsDir = path.join(root, "engine", "drafts");
-  const ideasDir = args.ideasDir ?? (isDraft ? draftsDir : publicIdeasDir);
-  const manifestPath =
-    args.manifestPath ??
-    (isDraft
-      ? path.join(draftsDir, "manifest.json")
-      : path.join(root, "ideas", "manifest.json"));
-  const publicManifest = path.join(root, "ideas", "manifest.json");
-  if (
-    isDraft &&
-    (path.resolve(ideasDir) === publicIdeasDir ||
-      (!args.noManifest && path.resolve(manifestPath) === publicManifest))
-  ) {
-    console.error(
-      `refusing to write draft ${slug} into content/ideas/ or ideas/manifest.json (drafts live in engine/drafts/)`,
-    );
+  const base = args.rootDir ?? root;
+  let paths;
+  try {
+    paths = resolveCompilePaths({
+      root: base,
+      ideasDir: args.ideasDir,
+      manifestPath: args.manifestPath,
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
+  const ideasDir = paths.ideasDir;
+  const manifestPath = args.noManifest ? undefined : paths.manifestPath;
 
   const result = writeCompiledIdea({
     record,

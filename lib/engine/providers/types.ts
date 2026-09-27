@@ -201,6 +201,7 @@ export interface KeywordDataProvider {
 // ---------------------------------------------------------------------------
 
 export type EngineProviders = {
+  mode?: "fixture" | "live";
   synthesis: SynthesisProvider;
   search: SearchProvider;
   keywordData: KeywordDataProvider;

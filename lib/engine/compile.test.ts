@@ -47,7 +47,7 @@ async function loadAuditor() {
 describe("compileResearchRecord", () => {
   it("escapes MDX JSX traps", () => {
     expect(escapeMdxProse("use <div> and {foo}")).toBe(
-      "use \\<div> and \\{foo}",
+      "use &lt;div&gt; and &#123;foo&#125;",
     );
   });
 

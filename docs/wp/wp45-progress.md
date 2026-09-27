@@ -1,0 +1,70 @@
+# WP45 Progress - Operator idea engine completion
+
+Append-only progress log. Do not rely on chat history for project state.
+
+## 2026-09-27 - Setup
+
+- Branch/worktree: `codex/wp45-idea-engine-completion` in `.worktrees/idea-engine-audit-20260927`. Created from `85d1db483a38802e483c1187ceafa81c66ab9343`.
+- Assignment: Complete the operator idea engine per `docs/plans/idea-engine/2026-09-27-completion-plan.md`. Stories run S1, then S2, then S3, then S4, then S5, then S6.
+- File boundaries: `lib/engine/**`, engine scripts, engine tests, `engine/eval/**`, `engine/drafts/**` for private output, `ideas/SECTIONS.md`, tracked publish-idea skill copies, `.github/workflows/ci.yml`, `docs/plans/idea-engine/2026-09-27-completion-plan.md`, `docs/wp/wp45-stories.md`, `docs/wp/wp45-progress.md`, and the WP45 row in `docs/PROJECT_STRATEGY.md`.
+- Required checks: per story, `npm run test:engine` after the story's regression tests. Final gate is `npm run typecheck`, `npm run lint`, `npm test`, `npm run validate:idea-tags`, the new engine eval, `npm run build`, `npm run check:server-traces`, and `git diff --check`.
+- Initial risks: F1 through F10 are the audit's confirmed defects. Line numbers are revalidated before S1 code because the plan cites the reviewed commit. Reddit approval is unresolved, so Reddit stays optional. Evidence-policy choices that the plan does not already state get escalated, not invented.
+- Base check: `git fetch origin cursor/phase-7-skill-flip-d6b7` on 2026-09-27. The remote tip equals `85d1db483a38802e483c1187ceafa81c66ab9343`. No successor commit. The audit findings stay in force pending line-level revalidation.
+- Docs: this log, `docs/wp/wp45-stories.md`, the WP45 registry row, and the existing completion plan. Product code unchanged.
+
+## 2026-09-27 - Revalidation, providers
+
+- Source: read-only map of `lib/engine/providers/**`, `cost.ts`, and the ledger in `pipeline.ts` at `85d1db4`.
+- F8 still true. `send` in `lib/engine/providers/sourceText.ts` (289–306) reuses the full `RequestInit` on every redirect hop. The Reddit OAuth GET at 349–354 sends `authorization: bearer`. There is no origin check and no header strip. Existing SSRF tests refuse private redirects. They do not assert that the bearer stays on `oauth.reddit.com`.
+- F9 still true, with one narrower edge. `settleFailure` in `pipeline.ts` (935–961) records cost only when the error is a `ProviderCallError` that already carries `cost`. Missing OpenAI usage becomes zero at `openai.ts` 125–128. `publicOnlyFetch` buffers the whole body at `sourceText.ts` 249–260. OpenAI, Perplexity, and DataForSEO fetches have no deadline. Source fetches already use `AbortSignal.timeout` at 15 seconds per hop.
+- Product code unchanged. S2 and S3 stay blocked on S1.
+
+## 2026-09-27 - WP45-S1
+
+- Actions taken: Failing tests in `lib/engine/compile-safety.test.ts` went red on backslash-brace execution, line-start import/export, unsafe URLs, oversized fields, and a non-draft slug writing outside `engine/drafts`. The fix encodes prose braces and angle brackets as HTML entities, leaves compiler fences literal, parses the body with the installed MDX parser, refuses non-HTTP and credential URLs, bounds fields at 100000 characters, and defaults compilation to `engine/drafts`. `assertPromotionAllowed` throws for every current record.
+- Decisions made: HTML entities replace backslash escapes. A preceding backslash cannot reopen `&#123;`. Line-start `>` stays a blockquote so verified quotes still match the auditor. v1 promotion has no success path.
+- Checks run: `npx vitest run lib/engine` — 112 passed, 6 files.
+- Result: S1 green. Public `content/ideas` and `ideas/manifest.json` were not left modified.
+- Gotchas: `URL.href` leaves `(` and `{` raw, so link destinations are percent-encoded after the HTTP check. Prose escaping masks `](url)` so an ampersand in a URL is not turned into `&amp;`.
+- Next: S2 failing tests for grounding, quote identity, v2 records, and authenticated redirects.
+
+## 2026-09-27 - Revalidation, compile
+
+- Source: read-only map of `lib/engine/compile.ts`, `compile-write.ts`, `scripts/engine-compile.mjs`, and `lib/mdx.tsx` at `85d1db4`.
+- F1 still true. `escapeMdxProse` at `lib/engine/compile.ts` 93–95 prefixes every `{` and ignores a preceding backslash. A one-backslash or three-backslash prefix becomes an executable addition in `@mdx-js/mdx` 3.1.1 output (`children: ["\\", 12345 + 67890]`). A plain `{expr}` is escaped into text. `import` and `export` at the start of a line pass through as ESM. `Mdx` renders through `MDXRemote` at `lib/mdx.tsx` 195–199.
+- F2 still true, with a narrower line cite. Public writes are the CLI default at `scripts/engine-compile.mjs` 91–100 for any slug that does not start with `engine-draft-`. `compile.ts` 654 stores `auditPassed: false` and nothing reads it. There is no promotion command. Seed exclusion at `scripts/seed-convex.mjs` 191–197 is prefix-only.
+
+## 2026-09-27 - WP45-S1
+
+- Actions taken: Failing tests in `lib/engine/compile-safety.test.ts` went red first (7 failed, 2 already held). The fix encodes braces and angle brackets as character references, keeps blockquote markers, parses the body with `@mdx-js/mdx`, and refuses expression, JSX, and ESM nodes. `scripts/engine-compile.mjs` now defaults every slug to `engine/drafts/` and refuses `content/ideas` plus `ideas/manifest.json`. `assertPromotionAllowed` refuses every current record. Prose fields over 100000 characters throw.
+- Decisions made: Character references instead of adding backslashes. A second backslash was the F1 bug. Line-start `>` stays a blockquote so the deep auditor can still see quotes. 100000 characters is the field cap. It sits above the current drafts, which are about 25KB.
+- Checks run: `npx vitest run lib/engine/compile-safety.test.ts lib/engine/compile.test.ts` passed 22. `npm run test:engine` passed 112.
+- Result: S1 checks passed. Public idea files were not modified.
+- Gotchas: Escaping every `>` removed blockquotes and the quote auditor reported zero verified quotes. The encoder now leaves a `>` that starts a line.
+- Next: S2, replayable evidence and source-safe fetches.
+
+## 2026-09-27 - WP45-S2 partial
+
+- Actions taken: `isGroundedFigure` now compares money amount, scale, and billing period. `$20 billion` no longer matches `$20 per seat`. `$20 per year` no longer matches `$20 per month`. `$0`, `Free`, and `Custom quote` no longer pass when the source does not say them. `send` refuses an authenticated cross-origin redirect and an HTTPS downgrade, after the private-address check. The deep auditor matches a quote only when the normalized text is equal and the displayed URL has the same canonical source key. Two Reddit URLs for one thread share `reddit:<id>`. Source reads stop at 1048576 bytes.
+- Checks run: `npx vitest run lib/engine` — 117 passed, 6 files. The copied-quote auditor test failed first with only the word-count error, then passed after the URL check.
+- Result: S2 is not done. v2 records, freshness windows, percent versus count, date and geography, deleted-page invalidation, and provider deadlines are still open. S2 stays unchecked.
+- Decisions made: Authenticated cross-origin redirects are refused, not stripped and followed. The 2200-word floor stays. Freshness durations are not in the plan, so none were invented.
+- Next: v2 record with a v1 read adapter that still cannot be promoted, then the remaining typed-claim cases.
+
+## 2026-09-27 - Revalidation, evidence and eval
+
+- F3 still true before the typed-claim check. Digit tokens, an empty token list, and search-answer text were the grounding inputs. `$20` matched `$20 billion`.
+- F4 still true. There is no `accept`, `needs_research`, or `reject` outcome in `lib/engine/`. That is S4.
+- F5 still true, and narrower. `engine:eval` checks four metrics on three legacy gold pages. It does not measure generated research. A 3/3 gold result is not engine quality. All three current drafts fail the deep audit.
+- F6 still true before the quote bind. The auditor matched quote text in either direction and did not bind the displayed URL. Two rows from one thread could satisfy the verified count.
+- F7 still true before the v2 record. Provenance was provider calls, cost, and `ranAt`. On-disk records are still contract v1.
+- F10 still true. Generic tiers and the 2200-word floor are unchanged on purpose. S4 owns that policy change. The floor was not lowered.
+
+## 2026-09-27 - WP45-S2
+
+- Actions taken: Typed claims compare money scale, billing period, percent, year, and geography. A scale letter must be a whole word, so `$20 by Friday` is not `$20 billion`. Quotes match the full normalised text and the canonical source key. One Reddit thread is one evidence unit. A fetched page that does not contain the figure is dropped. A page that cannot be read does not verify the figure. New fixture runs write contract v2 with `run`, `sources`, and `claims`. v1 records still parse. Promotion still refuses both. Source reads stop at 1048576 bytes. Authenticated cross-origin redirects and HTTPS downgrades are refused.
+- Decisions made: Freshness windows are an implementation choice, not a ruling. Prices 90 days, community quotes 365 days, market stats 540 days, keywords 30 days. Reverse with the word freshness. Authenticated cross-origin redirects are refused rather than followed without the bearer.
+- Checks run: `npx vitest run lib/engine` passed 119 tests in 7 files.
+- Result: S2 checks passed. No live provider call. Public idea files were not modified.
+- Gotchas: A partial page map used by older tests hid market URLs, so those tests now spread `fixturePageMap()` and override only the community pages.
+- Next: S3, provider cost reservations and non-Reddit discovery.

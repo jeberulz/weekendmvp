@@ -39,6 +39,7 @@ export function createProviders(
 ): EngineProviders {
   if (options.mode === "fixture") {
     return {
+      mode: "fixture",
       synthesis: createSynthesisProvider({
         fetchImpl: fixtureSynthesisFetch(),
         apiKey: "fixture-mode",
@@ -59,6 +60,7 @@ export function createProviders(
   }
 
   return {
+    mode: "live",
     synthesis: createSynthesisProvider(),
     search: createSearchProvider(),
     keywordData: createKeywordDataProvider(),

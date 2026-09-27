@@ -15,6 +15,13 @@
  */
 
 import {
+  figureSupported,
+  filterFiguresByPage,
+  PIPELINE_VERSION,
+  PROMPT_VERSION,
+  contentHash,
+} from "./evidence.ts";
+import {
   assertWithinCap,
   CostCapExceededError,
   fromMicroUsd,
@@ -23,6 +30,7 @@ import {
 } from "./cost.ts";
 import { PIPELINE, stepAt } from "./pipeline-steps.ts";
 import {
+  canonicalSourceKey,
   quoteAppearsIn,
   type SourceTextProvider,
 } from "./providers/sourceText.ts";
@@ -34,8 +42,11 @@ import {
   MIN_HOW_IT_WORKS_STEPS,
   MIN_MARKET_STATS,
   parseResearchRecord,
-  RESEARCH_RECORD_CONTRACT_VERSION,
+  RESEARCH_RECORD_V2,
   type Competitor,
+  type RecordedClaim,
+  type EvidenceSource,
+  type RunIdentity,
   type KeywordRow,
   type MarketStat,
   type ProviderCall,
@@ -477,18 +488,9 @@ export function figureTokens(text: string): string[] {
     .filter((n) => n !== "0");
 }
 
-/**
- * True when every number in `figure` appears in the research text the model
- * was given. A stat or price whose numbers are nowhere in the search results
- * was invented by the model, so it never reaches a page.
- */
+/** Typed claim check. Search text can screen a figure. Only a fetched page verifies it. */
 export function isGroundedFigure(figure: string, haystack: string): boolean {
-  const tokens = figureTokens(figure);
-  if (tokens.length === 0) return true;
-  const hay = haystack.replace(/(\d),(?=\d{3}\b)/g, "$1");
-  return tokens.every((t) =>
-    new RegExp(`(?<![\\d.])${t.replace(".", "\\.")}(?![\\d]|\\.\\d)`).test(hay),
-  );
+  return figureSupported(figure, haystack);
 }
 
 /** Community quotes that must be found verbatim before a record is kept. */
@@ -1071,16 +1073,33 @@ export async function runResearch(
     community,
     brief,
   );
+  const ranAt = options.ranAt ?? new Date().toISOString();
+  let stats = synth.stats;
+  let competitors = synth.competitors;
+  let pageSources: EvidenceSource[] = [];
+  let pageClaims: RecordedClaim[] = [];
+  if (providers.sourceText) {
+    const filtered = await filterFiguresByPage({
+      stats: synth.stats,
+      competitors: synth.competitors,
+      fetchText: (url) => providers.sourceText!.fetchText(url),
+      retrievedAt: ranAt,
+    });
+    stats = filtered.stats;
+    competitors = filtered.competitors;
+    pageSources = filtered.sources;
+    pageClaims = filtered.claims;
+  }
 
   const shortfalls: string[] = [];
-  if (synth.stats.length < MIN_MARKET_STATS) {
+  if (stats.length < MIN_MARKET_STATS) {
     shortfalls.push(
-      `need ≥${MIN_MARKET_STATS} market stats citing a search result (got ${synth.stats.length}; ${synth.dropped.stats} dropped because their numbers are not in the search results)`,
+      `need ≥${MIN_MARKET_STATS} market stats citing a search result (got ${stats.length}; ${synth.dropped.stats} dropped because their numbers are not in the search results; ${synth.stats.length - stats.length} were not on the fetched page)`,
     );
   }
-  if (synth.competitors.length < MIN_COMPETITORS) {
+  if (competitors.length < MIN_COMPETITORS) {
     shortfalls.push(
-      `need ≥${MIN_COMPETITORS} priced competitors citing a search result (got ${synth.competitors.length}; ${synth.dropped.competitors} dropped because their prices are not in the search results)`,
+      `need ≥${MIN_COMPETITORS} priced competitors citing a search result (got ${competitors.length}; ${synth.dropped.competitors} dropped because their prices are not in the search results; ${synth.competitors.length - competitors.length} were not on the fetched page)`,
     );
   }
   if (synth.goToMarket.channels.length < MIN_CHANNELS) {
@@ -1109,6 +1128,18 @@ export async function runResearch(
     : synth.signals;
   if (providers.sourceText) {
     const verified = signals.filter((s) => s.verified).length;
+    const units = new Set(
+      signals
+        .filter((s) => s.verified)
+        .map((s) => canonicalSourceKey(s.citation.url))
+        .filter((key): key is string => key !== null),
+    ).size;
+    if (verified >= MIN_VERIFIED_SIGNALS && units < MIN_VERIFIED_SIGNALS) {
+      throw new PipelineError(
+        "provenance_parse",
+        `quote verification: ${units} independent evidence units from ${verified} verified quotes; need ≥${MIN_VERIFIED_SIGNALS}. Two excerpts from one discussion count once.`,
+      );
+    }
     if (verified < MIN_VERIFIED_SIGNALS) {
       const missed = signals
         .filter((s) => !s.verified)
@@ -1121,8 +1152,36 @@ export async function runResearch(
     }
   }
 
+  const quoteClaims: RecordedClaim[] = signals.map((signal) => ({
+    text: signal.quote,
+    evidenceIds: [
+      contentHash(canonicalSourceKey(signal.citation.url) ?? signal.citation.url).slice(0, 16),
+    ],
+    stance: "observed" as const,
+    verdict: signal.verified ? ("verified" as const) : ("unresolved" as const),
+    excerpt: signal.quote.slice(0, 400),
+    reason: signal.verified
+      ? "exact quote on the cited page"
+      : "quote was not found on the fetched page",
+  }));
+  const runIdentity: RunIdentity | undefined = providers.mode
+    ? {
+        id: contentHash(`${brief.slug}|${ranAt}`).slice(0, 16),
+        mode: providers.mode,
+        pipelineVersion: PIPELINE_VERSION,
+        promptVersion: PROMPT_VERSION,
+        status: "completed",
+      }
+    : undefined;
   const draft = {
-    contractVersion: RESEARCH_RECORD_CONTRACT_VERSION,
+    contractVersion: runIdentity ? RESEARCH_RECORD_V2 : 1,
+    ...(runIdentity
+      ? {
+          run: runIdentity,
+          sources: pageSources,
+          claims: [...pageClaims, ...quoteClaims],
+        }
+      : {}),
     brief: {
       title: brief.title,
       slug: brief.slug,
@@ -1131,9 +1190,9 @@ export async function runResearch(
     },
     market: {
       summary: synth.marketSummary,
-      stats: synth.stats,
+      stats,
     },
-    competitors: synth.competitors,
+    competitors,
     community: {
       summary: synth.communitySummary,
       signals,
@@ -1147,7 +1206,7 @@ export async function runResearch(
     provenance: {
       providerCalls,
       costUsd: fromMicroUsd(spentMicroUsd),
-      ranAt: options.ranAt ?? new Date().toISOString(),
+      ranAt,
     },
   };
 

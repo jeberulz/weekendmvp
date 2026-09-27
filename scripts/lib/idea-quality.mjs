@@ -392,6 +392,45 @@ export function extractBlockquotes(body) {
   return quotes;
 }
 
+/**
+ * Quote plus the attribution URL the compiler prints on the next blockquote line.
+ * A quote without that URL is not a bound citation.
+ */
+export function extractAttributedQuotes(body) {
+  const quotes = [];
+  const re =
+    /^> "([^"\n]+)"\r?\n>\r?\n> — \[[^\]]*\]\((https?:\/\/[^)\s]+)\)/gm;
+  for (const match of body.matchAll(re)) {
+    quotes.push({ quote: match[1], url: match[2] });
+  }
+  return quotes;
+}
+
+/** One discussion is one evidence unit, even when the URL spelling differs. */
+export function canonicalSourceKey(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (host === "reddit.com" || host.endsWith(".reddit.com")) {
+    const thread = parsed.pathname.match(/\/comments\/([a-z0-9]+)/i);
+    if (thread) return `reddit:${thread[1].toLowerCase()}`;
+  }
+  if (host === "news.ycombinator.com") {
+    const id = parsed.searchParams.get("id");
+    if (id && /^\d+$/.test(id)) return `hn:${id}`;
+  }
+  parsed.hash = "";
+  for (const key of [...parsed.searchParams.keys()]) {
+    if (key.startsWith("utm_")) parsed.searchParams.delete(key);
+  }
+  const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+  return `${parsed.protocol}//${host}${pathname}${parsed.search}`;
+}
+
 /** Tables every engine Setup prompt carries; the idea's own tables are extra. */
 export const GENERIC_SETUP_TABLES = new Set([
   "workspaces",

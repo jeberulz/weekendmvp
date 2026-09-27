@@ -14,6 +14,14 @@ import type {
   UnitEconRow,
   YearOnePlan,
 } from "./research-record.ts";
+import {
+  assertFieldSizes,
+  assertSafeMdx,
+  escapeMdxProse,
+  publicHttpUrl,
+} from "./mdx-safety.ts";
+
+export { escapeMdxProse };
 
 /** Keep in sync with scripts/lib/idea-sections.mjs */
 const CANONICAL_SECTION_TITLES = [
@@ -90,10 +98,6 @@ export type CompileOptions = {
   publishedAt?: string;
 };
 
-export function escapeMdxProse(text: string): string {
-  return text.replace(/</g, "\\<").replace(/\{/g, "\\{");
-}
-
 function escapeOutsideFences(text: string): string {
   return text
     .split(/(```[\s\S]*?```)/g)
@@ -102,10 +106,11 @@ function escapeOutsideFences(text: string): string {
 }
 
 export function mdLink(text: string, url: string): string {
-  const safeText = text.replace(/[\\[\]]/g, (ch) => `\\${ch}`);
-  const safeUrl = url.replace(
-    /[()\s<>{}]/g,
-    (ch) => `%${ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
+  const safeText = text.replace(/[[\]]/g, (ch) => `\\${ch}`);
+  const destination = publicHttpUrl(url);
+  if (!destination) return safeText;
+  const safeUrl = destination.replace(/[()\s<>{}]/g, (ch) =>
+    `%${ch.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
   );
   return `[${safeText}](${safeUrl})`;
 }
@@ -368,6 +373,7 @@ export function collapseDuplicateSentences(text: string): string {
  */
 export function compileResearchRecord(options: CompileOptions): CompileResult {
   const record = options.record;
+  assertFieldSizes(record, "record");
   const slug = (options.slug ?? record.brief.slug).trim().toLowerCase();
   if (!COMPILE_SLUG_PATTERN.test(slug)) {
     throw new Error(`slug '${slug}' must match ${COMPILE_SLUG_PATTERN}`);
@@ -606,6 +612,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     "",
     body,
   ].join("\n");
+  assertSafeMdx(mdx);
 
   const wordCount = countWords(body);
   const publishedAt =

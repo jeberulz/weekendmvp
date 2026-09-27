@@ -30,6 +30,8 @@ import {
   auditHowItWorksNaming,
   countPhrase,
   extractBlockquotes,
+  extractAttributedQuotes,
+  canonicalSourceKey,
   findBrokenLinkLines,
   GENERIC_SETUP_TABLES,
   promptBlocks,
@@ -49,6 +51,10 @@ import {
   normalizeQuote,
   proseParagraphs,
 } from "./lib/idea-quality.mjs";
+import {
+  canonicalSourceKey,
+  extractAttributedQuotes,
+} from "../lib/engine/quote-binding.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ideasDir = path.join(root, "content", "ideas");
@@ -497,18 +503,30 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
       if (record) {
         const signals = record?.community?.signals || [];
         const mdxQuotes = extractBlockquotes(body);
+        const attributed = extractAttributedQuotes(body);
         let verifiedOnPage = 0;
         for (const quote of mdxQuotes) {
           const q = normalizeQuote(quote);
+          const shown = attributed.find(
+            (item) => normalizeQuote(item.quote) === q,
+          );
           const match = signals.find((sig) => {
             const rq = normalizeQuote(sig.quote || "");
-            return rq && (rq.includes(q) || q.includes(rq));
+            return rq === q;
           });
           if (!match) {
             errors.push(`quote not in the research record: "${quote.slice(0, 80)}"`);
           } else if (match.verified !== true) {
             errors.push(
               `quote not verified against its cited page (re-run engine:research): "${quote.slice(0, 80)}"`,
+            );
+          } else if (
+            !shown ||
+            canonicalSourceKey(shown.url) !==
+              canonicalSourceKey(match.citation?.url || "")
+          ) {
+            errors.push(
+              `quote citation does not match the research record: "${quote.slice(0, 80)}"`,
             );
           } else {
             verifiedOnPage += 1;
@@ -523,7 +541,13 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
         for (const sig of signals) {
           if (sig.verified !== true) continue;
           const q = normalizeQuote(sig.quote || "");
-          if (q && !mdxQuotes.some((mq) => normalizeQuote(mq).includes(q) || q.includes(normalizeQuote(mq)))) {
+          const key = canonicalSourceKey(sig.citation?.url || "");
+          const shown = attributed.some(
+            (item) =>
+              normalizeQuote(item.quote) === q &&
+              canonicalSourceKey(item.url) === key,
+          );
+          if (q && !shown) {
             errors.push(
               `quote fidelity: verified research quote missing or rewritten in MDX: "${(sig.quote || "").slice(0, 80)}"`,
             );

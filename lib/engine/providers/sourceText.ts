@@ -41,6 +41,34 @@ export type CreateSourceTextOptions = {
 };
 
 const MAX_REDIRECTS = 5;
+export const MAX_SOURCE_BYTES = 1_048_576;
+
+export async function readBoundedBody(
+  body: ReadableStream<Uint8Array> | null,
+  maxBytes = MAX_SOURCE_BYTES,
+): Promise<Uint8Array> {
+  if (!body) return new Uint8Array(0);
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Error(`response exceeds ${maxBytes} bytes`);
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out;
+}
 
 const DEFAULT_UA =
   "weekendmvp-idea-engine/1.0 (quote verification; +https://www.weekendmvp.app)";
@@ -90,6 +118,31 @@ export function redditJsonUrl(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** One discussion is one evidence unit, even when the URL spelling differs. */
+export function canonicalSourceKey(url: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  if (host === "reddit.com" || host.endsWith(".reddit.com")) {
+    const thread = parsed.pathname.match(/\/comments\/([a-z0-9]+)/i);
+    if (thread?.[1]) return `reddit:${thread[1].toLowerCase()}`;
+  }
+  if (host === "news.ycombinator.com") {
+    const id = parsed.searchParams.get("id");
+    if (id && /^\d+$/.test(id)) return `hn:${id}`;
+  }
+  parsed.hash = "";
+  for (const key of [...parsed.searchParams.keys()]) {
+    if (key.startsWith("utm_")) parsed.searchParams.delete(key);
+  }
+  const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+  return `${parsed.protocol}//${host}${pathname}${parsed.search}`;
 }
 
 /** Reddit thread path (`/r/x/comments/id/slug`) for the OAuth host, or null. */
@@ -231,6 +284,12 @@ const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
  */
 export const publicOnlyFetch: FetchLike = (input, init = {}) =>
   new Promise<Response>((resolve, reject) => {
+    let settled = false;
+    const fail = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
     const u = new URL(input);
     const client = u.protocol === "https:" ? https : http;
     const headers: Record<string, string> = {};
@@ -247,9 +306,22 @@ export const publicOnlyFetch: FetchLike = (input, init = {}) =>
       },
       (res) => {
         const chunks: Buffer[] = [];
-        res.on("data", (c: Buffer) => chunks.push(c));
-        res.on("error", reject);
+        let total = 0;
+        res.on("data", (c: Buffer) => {
+          if (settled) return;
+          total += c.length;
+          if (total > MAX_SOURCE_BYTES) {
+            res.destroy();
+            req.destroy();
+            fail(new Error(`response exceeds ${MAX_SOURCE_BYTES} bytes`));
+            return;
+          }
+          chunks.push(c);
+        });
+        res.on("error", fail);
         res.on("end", () => {
+          if (settled) return;
+          settled = true;
           const status = res.statusCode ?? 0;
           const outHeaders = new Headers();
           for (const [k, v] of Object.entries(res.headers)) {
@@ -261,7 +333,7 @@ export const publicOnlyFetch: FetchLike = (input, init = {}) =>
         });
       },
     );
-    req.on("error", reject);
+    req.on("error", fail);
     if (typeof init.body === "string") req.write(init.body);
     req.end();
   });
@@ -300,7 +372,21 @@ export function createSourceTextProvider(
       if ((init.method ?? "GET") !== "GET") {
         throw new Error(`Unexpected redirect for ${init.method} ${current}`);
       }
-      current = new URL(location, current).toString();
+      const next = new URL(location, current);
+      const from = new URL(current);
+      await assertPublicUrl(next.toString(), resolveHost);
+      const headers = new Headers(init.headers);
+      const authenticated =
+        headers.has("authorization") || headers.has("cookie");
+      if (from.protocol === "https:" && next.protocol !== "https:") {
+        throw new Error(`refusing HTTPS downgrade redirect to ${next.origin}`);
+      }
+      if (authenticated && from.origin !== next.origin) {
+        throw new Error(
+          `refusing authenticated cross-origin redirect from ${from.origin} to ${next.origin}`,
+        );
+      }
+      current = next.toString();
     }
     throw new Error(`Too many redirects for ${url}`);
   };
@@ -321,7 +407,9 @@ export function createSourceTextProvider(
         if (!res.ok) {
           throw new Error(`Reddit OAuth token request failed: HTTP ${res.status}`);
         }
-        const json = (await res.json()) as { access_token?: unknown };
+        const json = JSON.parse(new TextDecoder().decode(await readBoundedBody(res.body))) as {
+          access_token?: unknown;
+        };
         if (typeof json.access_token !== "string") {
           throw new Error("Reddit OAuth token response had no access_token");
         }
@@ -354,7 +442,11 @@ export function createSourceTextProvider(
         );
         if (!res.ok) throw new Error(`HTTP ${res.status} for Reddit API ${threadPath}`);
         const parts: string[] = [];
-        collectStrings(await res.json(), new Set(["title", "selftext", "body"]), parts);
+        collectStrings(
+          JSON.parse(new TextDecoder().decode(await readBoundedBody(res.body))),
+          new Set(["title", "selftext", "body"]),
+          parts,
+        );
         return parts.join("\n");
       }
       const reddit = redditJsonUrl(url);
@@ -367,19 +459,25 @@ export function createSourceTextProvider(
             `HTTP ${res.status} for ${reddit}${res.status === 403 ? " (Reddit blocks this network; set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET)" : ""}`,
           );
         }
-        const json: unknown = await res.json();
+        const json: unknown = JSON.parse(
+          new TextDecoder().decode(await readBoundedBody(res.body)),
+        );
         const parts: string[] = [];
         collectStrings(json, new Set(["title", "selftext", "body"]), parts);
         return parts.join("\n");
       }
       const hn = hnApiUrl(url);
       if (hn) {
-        const json: unknown = await (await get(hn)).json();
+        const hnResponse = await get(hn);
+        const json: unknown = JSON.parse(
+          new TextDecoder().decode(await readBoundedBody(hnResponse.body)),
+        );
         const parts: string[] = [];
         collectStrings(json, new Set(["title", "text"]), parts);
         return htmlToText(parts.join("\n"));
       }
-      return htmlToText(await (await get(url)).text());
+      const page = await get(url);
+      return htmlToText(new TextDecoder().decode(await readBoundedBody(page.body)));
     },
   };
 }

@@ -64,7 +64,7 @@ export const SYNTHESIS_SCORE_FIXTURE = {
     stats: [
       {
         claim: "RFP software market CAGR",
-        value: "high-teens through mid-2030s",
+        value: "high-teens CAGR",
         citationUrl:
           "https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348",
         citationTitle: "Industry Research Biz — RFP software market",
@@ -91,7 +91,7 @@ export const SYNTHESIS_SCORE_FIXTURE = {
       },
       {
         name: "Qvidian",
-        pricing: "Enterprise contracts, typically 5-figure annual minimums",
+        pricing: "Enterprise contracts, typically 5-figure minimums",
         url: "https://uplandsoftware.com/qvidian/",
         notes: "Long-standing player for large proposal shops",
       },
@@ -453,10 +453,17 @@ export function unreachableFetch(): Fetcher {
  * Fixture page text for quote verification: the community snippets stand in
  * for the cited threads, so fixture quotes verify with no network.
  */
+export function fixturePageMap(): Record<string, string> {
+  const rows = [
+    ...SEARCH_COMMUNITY_FIXTURE.search_results,
+    ...SEARCH_MARKET_FIXTURE.search_results,
+    ...SEARCH_COMPETITORS_FIXTURE.search_results,
+  ];
+  return Object.fromEntries(rows.map((row) => [row.url, row.snippet]));
+}
+
 export function fixtureSourceText(
-  pages: Record<string, string> = Object.fromEntries(
-    SEARCH_COMMUNITY_FIXTURE.search_results.map((r) => [r.url, r.snippet]),
-  ),
+  pages: Record<string, string> = fixturePageMap(),
 ): SourceTextProvider {
   return {
     async fetchText(url: string): Promise<string> {

@@ -7,6 +7,7 @@
  */
 
 export const RESEARCH_RECORD_CONTRACT_VERSION = 1 as const;
+export const RESEARCH_RECORD_V2 = 2 as const;
 
 export type Citation = {
   url: string;
@@ -150,8 +151,40 @@ export type ResearchProvenance = {
   ranAt: string;
 };
 
+export type EvidenceOutcome = "read" | "missing" | "blocked";
+
+export type EvidenceSource = {
+  id: string;
+  canonicalUrl: string;
+  family: string;
+  retrievedAt: string;
+  excerpt: string;
+  contentHash: string;
+  outcome: EvidenceOutcome;
+};
+
+export type RecordedClaim = {
+  text: string;
+  evidenceIds: string[];
+  stance: "observed" | "derived" | "assumed";
+  verdict: "verified" | "unresolved";
+  excerpt: string;
+  reason: string;
+};
+
+export type RunIdentity = {
+  id: string;
+  mode: "fixture" | "live";
+  pipelineVersion: string;
+  promptVersion: string;
+  status: "completed" | "failed";
+};
+
 export type ResearchRecord = {
-  contractVersion: typeof RESEARCH_RECORD_CONTRACT_VERSION;
+  contractVersion: 1 | 2;
+  run?: RunIdentity;
+  sources?: EvidenceSource[];
+  claims?: RecordedClaim[];
   brief: ResearchBrief;
   market: {
     stats: MarketStat[];
@@ -353,9 +386,9 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     throw new ResearchRecordParseError(["root: expected object"]);
   }
 
-  if (input.contractVersion !== RESEARCH_RECORD_CONTRACT_VERSION) {
+  if (input.contractVersion !== 1 && input.contractVersion !== RESEARCH_RECORD_V2) {
     throw new ResearchRecordParseError([
-      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected ${RESEARCH_RECORD_CONTRACT_VERSION})`,
+      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected 1 or ${RESEARCH_RECORD_V2})`,
     ]);
   }
 
@@ -763,6 +796,10 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     }
   }
 
+  const v2 = input.contractVersion === RESEARCH_RECORD_V2
+    ? parseV2Evidence(input, issues)
+    : undefined;
+
   if (issues.length > 0) {
     throw new ResearchRecordParseError(issues);
   }
@@ -772,7 +809,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
   const community = input.community as Record<string, unknown>;
 
   const record: ResearchRecord = {
-    contractVersion: RESEARCH_RECORD_CONTRACT_VERSION,
+    contractVersion: input.contractVersion === RESEARCH_RECORD_V2 ? 2 : 1,
     brief: {
       title: brief.title.trim(),
       slug: brief.slug.trim(),
@@ -797,6 +834,111 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
   if (howItWorks) record.howItWorks = howItWorks;
   if (scores) record.scores = scores;
   if (editorial) record.editorial = editorial;
+  if (v2) {
+    record.run = v2.run;
+    record.sources = v2.sources;
+    record.claims = v2.claims;
+  }
 
   return record;
+}
+
+function parseV2Evidence(
+  input: Record<string, unknown>,
+  issues: string[],
+): { run: RunIdentity; sources: EvidenceSource[]; claims: RecordedClaim[] } | undefined {
+  if (!isPlainObject(input.run)) {
+    issues.push("run: required object");
+  }
+  if (!Array.isArray(input.sources)) issues.push("sources: required array");
+  if (!Array.isArray(input.claims)) issues.push("claims: required array");
+  if (!isPlainObject(input.run) || !Array.isArray(input.sources) || !Array.isArray(input.claims)) {
+    return undefined;
+  }
+  const runRaw = input.run;
+  const mode = runRaw.mode;
+  const status = runRaw.status;
+  if (mode !== "fixture" && mode !== "live") issues.push("run.mode: fixture or live");
+  if (status !== "completed" && status !== "failed") {
+    issues.push("run.status: completed or failed");
+  }
+  for (const key of ["id", "pipelineVersion", "promptVersion"] as const) {
+    if (!isNonEmptyString(runRaw[key])) issues.push(`run.${key}: required non-empty string`);
+  }
+  const sources: EvidenceSource[] = [];
+  input.sources.forEach((row, index) => {
+    if (!isPlainObject(row)) {
+      issues.push(`sources[${index}]: expected object`);
+      return;
+    }
+    const outcome = row.outcome;
+    if (outcome !== "read" && outcome !== "missing" && outcome !== "blocked") {
+      issues.push(`sources[${index}].outcome: read, missing, or blocked`);
+      return;
+    }
+    for (const key of ["id", "canonicalUrl", "family", "retrievedAt", "excerpt", "contentHash"] as const) {
+      if (typeof row[key] !== "string") {
+        issues.push(`sources[${index}].${key}: required string`);
+        return;
+      }
+    }
+    sources.push({
+      id: String(row.id),
+      canonicalUrl: String(row.canonicalUrl),
+      family: String(row.family),
+      retrievedAt: String(row.retrievedAt),
+      excerpt: String(row.excerpt),
+      contentHash: String(row.contentHash),
+      outcome,
+    });
+  });
+  const claims: RecordedClaim[] = [];
+  input.claims.forEach((row, index) => {
+    if (!isPlainObject(row)) {
+      issues.push(`claims[${index}]: expected object`);
+      return;
+    }
+    const stance = row.stance;
+    const verdict = row.verdict;
+    if (stance !== "observed" && stance !== "derived" && stance !== "assumed") {
+      issues.push(`claims[${index}].stance: observed, derived, or assumed`);
+      return;
+    }
+    if (verdict !== "verified" && verdict !== "unresolved") {
+      issues.push(`claims[${index}].verdict: verified or unresolved`);
+      return;
+    }
+    if (!Array.isArray(row.evidenceIds) || !row.evidenceIds.every((id) => typeof id === "string")) {
+      issues.push(`claims[${index}].evidenceIds: string array`);
+      return;
+    }
+    for (const key of ["text", "excerpt", "reason"] as const) {
+      if (typeof row[key] !== "string") {
+        issues.push(`claims[${index}].${key}: required string`);
+        return;
+      }
+    }
+    claims.push({
+      text: String(row.text),
+      evidenceIds: row.evidenceIds as string[],
+      stance,
+      verdict,
+      excerpt: String(row.excerpt),
+      reason: String(row.reason),
+    });
+  });
+  if (issues.some((issue) => issue.startsWith("run.") || issue.startsWith("sources") || issue.startsWith("claims"))) {
+    return undefined;
+  }
+  return {
+    run: {
+      id: String(runRaw.id),
+      mode,
+      pipelineVersion: String(runRaw.pipelineVersion),
+      promptVersion: String(runRaw.promptVersion),
+      status,
+    },
+    sources,
+    claims,
+  };
 }
