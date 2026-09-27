@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createProviders } from "./providers.ts";
-import { createSynthesisProvider } from "./providers/openai.ts";
+import { createSynthesisProvider, type Fetcher } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
 import { createKeywordDataProvider } from "./providers/keywordData.ts";
 import { ProviderCallError, ProviderConfigError, requireSecret } from "./providers/types.ts";
@@ -217,6 +217,45 @@ describe("synthesis adapter", () => {
     ).rejects.toMatchObject({ retryable });
   });
 
+  it("holds a reserved cost when usage is negative", async () => {
+    const provider = createSynthesisProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: fixtureSynthesisFetch({
+        payload: {
+          output_text: "ok",
+          usage: { input_tokens: -3, output_tokens: 10 },
+        },
+      }),
+    });
+    const result = await provider.complete({
+      instructions: "x",
+      input: "y",
+      maxOutputTokens: 10,
+    });
+    expect(result.cost.units.reserved).toBe(1);
+  });
+
+  it("attaches reserved cost when HTTP 200 returns JSON null", async () => {
+    const provider = createSynthesisProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: (async () =>
+        new Response("null", {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        })) as Fetcher,
+    });
+    await expect(
+      provider.complete({
+        instructions: "x",
+        input: "y",
+        maxOutputTokens: 10,
+      }),
+    ).rejects.toMatchObject({
+      name: "ProviderCallError",
+      cost: { units: { reserved: 1 } },
+    });
+  });
+
   it("holds a reserved cost when usage is missing instead of billing $0", async () => {
     const provider = createSynthesisProvider({
       apiKey: "fixture-mode",
@@ -260,6 +299,92 @@ describe("search adapter (citation-only)", () => {
     // Default SEARCH_FIXTURE when no override — but smart router may still
     // pick SEARCH_FIXTURE for unmatched queries.
     expect(result.value.citations.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("bills the reserved search cost when usage is missing on a 200 with citations", async () => {
+    const provider = createSearchProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: fixtureSearchFetch({
+        payload: {
+          choices: [{ message: { content: "ok" } }],
+          search_results: [
+            { url: "https://news.ycombinator.com/item?id=1", title: "hn" },
+          ],
+        },
+      }),
+    });
+    const result = await provider.search({
+      query: "q",
+      searchContextSize: "high",
+      maxOutputTokens: 2_000,
+    });
+    const requestOnly = estimateSearchUsd({
+      inputTokens: 0,
+      outputTokens: 0,
+      requests: 1,
+      searchContextSize: "high",
+    });
+    expect(result.value.citations).toHaveLength(1);
+    expect(result.cost.units.reserved).toBe(1);
+    expect(result.cost.usd).toBeGreaterThan(requestOnly);
+  });
+
+  it("bills reserved search cost when usage is partial or negative", async () => {
+    const provider = createSearchProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: fixtureSearchFetch({
+        payload: {
+          choices: [{ message: { content: "ok" } }],
+          citations: ["https://community.example.com/a"],
+          usage: { prompt_tokens: 12 },
+        },
+      }),
+    });
+    const result = await provider.search({
+      query: "q",
+      searchContextSize: "high",
+      maxOutputTokens: 2_000,
+    });
+    expect(result.cost.units.reserved).toBe(1);
+
+    const negative = createSearchProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: fixtureSearchFetch({
+        payload: {
+          choices: [{ message: { content: "ok" } }],
+          citations: ["https://community.example.com/b"],
+          usage: { prompt_tokens: -1, completion_tokens: 4 },
+        },
+      }),
+    });
+    await expect(
+      negative.search({
+        query: "q",
+        searchContextSize: "high",
+        maxOutputTokens: 2_000,
+      }),
+    ).resolves.toMatchObject({ cost: { units: { reserved: 1 } } });
+  });
+
+  it("fails closed on a JSON null search body and still carries reserved cost", async () => {
+    const provider = createSearchProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: (async () =>
+        new Response("null", {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        })) as Fetcher,
+    });
+    await expect(
+      provider.search({
+        query: "q",
+        searchContextSize: "high",
+        maxOutputTokens: 2_000,
+      }),
+    ).rejects.toMatchObject({
+      name: "ProviderCallError",
+      cost: { units: { reserved: 1 } },
+    });
   });
 
   it("fails closed when no usable citation comes back", async () => {

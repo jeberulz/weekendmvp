@@ -118,8 +118,9 @@ async function main() {
     { runResearch },
     { createProviders },
     { parseResearchRecord },
-    { preflightLiveConfig, writeFailureReport, readBatchSpentMicroUsd, addBatchSpentMicroUsd },
-    { assertBatchWithinCap, CAP_MICRO_USD, toMicroUsd },
+    { preflightLiveConfig, writeFailureReport },
+    { CAP_MICRO_USD, toMicroUsd },
+    { reserveBatchRun, settleBatchRun },
   ] = await Promise.all([
     import(pathToFileURL(path.join(root, "lib/engine/pipeline.ts")).href),
     import(pathToFileURL(path.join(root, "lib/engine/providers.ts")).href),
@@ -128,6 +129,7 @@ async function main() {
     ),
     import(pathToFileURL(path.join(root, "lib/engine/resilience.ts")).href),
     import(pathToFileURL(path.join(root, "lib/engine/cost.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/batch-ledger.ts")).href),
   ]);
 
   const slugGuess =
@@ -141,27 +143,10 @@ async function main() {
     `${slugGuess}.failure.json`,
   );
   const batchPath = path.join(root, "engine", "reports", "batch-spend.json");
+  const runId = `${slugGuess}-${process.pid}-${Date.now()}`;
+  let reserved = false;
 
   if (resolvedMode === "live") {
-    try {
-      assertBatchWithinCap({
-        batchSpentMicroUsd: readBatchSpentMicroUsd(batchPath),
-        nextReservationMicroUsd: CAP_MICRO_USD,
-      });
-    } catch (error) {
-      writeFailureReport(reportPath, {
-        slug: slugGuess,
-        stepId: "preflight",
-        message: error instanceof Error ? error.message : String(error),
-        spentMicroUsd: 0,
-        reservedUnknownMicroUsd: 0,
-        providerCalls: [],
-        capabilities: preflightLiveConfig().capabilities,
-      });
-      console.error(`wrote ${reportPath}`);
-      console.error(error instanceof Error ? error.message : error);
-      process.exit(1);
-    }
     const preflight = preflightLiveConfig();
     console.error(
       `preflight configured=${preflight.present.join(",") || "(none)"} missing=${preflight.missing.join(",") || "(none)"}`,
@@ -179,6 +164,27 @@ async function main() {
       console.error(`wrote ${reportPath}`);
       process.exit(1);
     }
+    try {
+      await reserveBatchRun({
+        filePath: batchPath,
+        runId,
+        microUsd: CAP_MICRO_USD,
+      });
+      reserved = true;
+    } catch (error) {
+      writeFailureReport(reportPath, {
+        slug: slugGuess,
+        stepId: "preflight",
+        message: error instanceof Error ? error.message : String(error),
+        spentMicroUsd: 0,
+        reservedUnknownMicroUsd: 0,
+        providerCalls: [],
+        capabilities: preflight.capabilities,
+      });
+      console.error(`wrote ${reportPath}`);
+      console.error(error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
   }
 
   try {
@@ -194,8 +200,12 @@ async function main() {
     console.log(
       `wrote ${outPath} (slug=${validated.brief.slug} costUsd=${validated.provenance.costUsd.toFixed(4)} mode=${resolvedMode})`,
     );
-    if (resolvedMode === "live") {
-      addBatchSpentMicroUsd(batchPath, toMicroUsd(validated.provenance.costUsd));
+    if (reserved) {
+      await settleBatchRun({
+        filePath: batchPath,
+        runId,
+        actualMicroUsd: toMicroUsd(validated.provenance.costUsd),
+      });
     }
   } catch (err) {
     const report = err && typeof err === "object" ? err.failureReport : null;
@@ -212,9 +222,13 @@ async function main() {
       console.error(
         `wrote engine/reports/${report.slug ?? slugGuess}.failure.json`,
       );
-      if (resolvedMode === "live") {
-        addBatchSpentMicroUsd(batchPath, report.spentMicroUsd);
-      }
+    }
+    if (reserved) {
+      await settleBatchRun({
+        filePath: batchPath,
+        runId,
+        actualMicroUsd: report?.spentMicroUsd ?? CAP_MICRO_USD,
+      });
     }
     console.error(err instanceof Error ? err.stack || err.message : err);
     process.exit(1);

@@ -149,6 +149,7 @@ export type ResearchProvenance = {
   providerCalls: ProviderCall[];
   costUsd: number;
   ranAt: string;
+  reservedUnknownMicroUsd?: number;
 };
 
 export type EvidenceOutcome = "read" | "missing" | "blocked";
@@ -792,6 +793,11 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         costUsd: input.provenance.costUsd,
         ranAt: input.provenance.ranAt.trim(),
         providerCalls,
+        ...(typeof input.provenance.reservedUnknownMicroUsd === "number" &&
+        Number.isFinite(input.provenance.reservedUnknownMicroUsd) &&
+        input.provenance.reservedUnknownMicroUsd >= 0
+          ? { reservedUnknownMicroUsd: input.provenance.reservedUnknownMicroUsd }
+          : {}),
       };
     }
   }

@@ -11,8 +11,10 @@ import {
 import { estimateSearchUsd, SEARCH_MODEL } from "./pricing.ts";
 import type { Fetcher } from "./openai.ts";
 import {
+  asJsonObject,
   fetchInitWithTimeout,
   isRetryableHttpStatus,
+  knownNonNegative,
 } from "../resilience.ts";
 
 /**
@@ -162,7 +164,9 @@ export function createSearchProvider(
 
       let payload: PerplexityPayload;
       try {
-        payload = (await response.json()) as PerplexityPayload;
+        const raw = asJsonObject(await response.json());
+        if (!raw) throw new Error("expected JSON object");
+        payload = raw as PerplexityPayload;
       } catch {
         throw new ProviderCallError("search", "unparseable response", {
           retryable: true,
@@ -173,21 +177,24 @@ export function createSearchProvider(
       const text = payload.choices?.[0]?.message?.content ?? "";
       const citations = readCitations(payload);
 
-      const inputTokens = payload.usage?.prompt_tokens ?? 0;
-      const outputTokens = payload.usage?.completion_tokens ?? 0;
-      const cost: ProviderCost = {
-        role: "search",
-        provider: "perplexity",
-        billedAs: SEARCH_MODEL,
-        usd: estimateSearchUsd({
-          inputTokens,
-          outputTokens,
-          requests: 1,
-          searchContextSize: request.searchContextSize,
-        }),
-        estimated: true,
-        units: { inputTokens, outputTokens, requests: 1 },
-      };
+      const inputTokens = knownNonNegative(payload.usage?.prompt_tokens);
+      const outputTokens = knownNonNegative(payload.usage?.completion_tokens);
+      const usageKnown = inputTokens !== null && outputTokens !== null;
+      const cost: ProviderCost = usageKnown
+        ? {
+            role: "search",
+            provider: "perplexity",
+            billedAs: SEARCH_MODEL,
+            usd: estimateSearchUsd({
+              inputTokens,
+              outputTokens,
+              requests: 1,
+              searchContextSize: request.searchContextSize,
+            }),
+            estimated: true,
+            units: { inputTokens, outputTokens, requests: 1 },
+          }
+        : reserved;
 
       // A search result with no usable citation cannot support a cited claim,
       // and the report contract fails closed on uncited scored sections. Fail
@@ -201,7 +208,13 @@ export function createSearchProvider(
       }
 
       return {
-        value: { text, citations, inputTokens, outputTokens, requests: 1 },
+        value: {
+          text,
+          citations,
+          inputTokens: inputTokens ?? 0,
+          outputTokens: outputTokens ?? 0,
+          requests: 1,
+        },
         cost,
       };
     },

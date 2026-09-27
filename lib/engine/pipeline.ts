@@ -210,19 +210,53 @@ function stepError(stepId: string, fallback: string, error: unknown): Error {
 }
 
 function costToCall(cost: ProviderCost, failed = false): ProviderCall {
+  const reserved = costIsReserved(cost) ? ":reserved" : "";
+  const failedMark = failed ? ":failed" : "";
   return {
     provider: cost.provider,
-    operation: `${cost.role}:${cost.billedAs}${failed ? ":failed" : ""}`,
+    operation: `${cost.role}:${cost.billedAs}${reserved}${failedMark}`,
     costUsd: cost.usd,
   };
 }
 
-function mergeSearchPacks(primary: SearchPack, extra: SearchPack): SearchPack {
-  const seen = new Set(primary.citations.map((citation) => citation.url));
-  const added = extra.citations.filter((citation) => !seen.has(citation.url));
+function mergeSearchPacks(
+  primary: SearchPack,
+  extra: SearchPack,
+  pages?: Map<string, { text: string | null }>,
+): SearchPack {
+  const extraUrls = new Set(extra.citations.map((citation) => citation.url));
+  const readablePrimary = primary.citations.filter(
+    (citation) => pages?.get(citation.url)?.text,
+  );
+  const unreadPrimary = primary.citations.filter(
+    (citation) =>
+      !extraUrls.has(citation.url) &&
+      !readablePrimary.some((row) => row.url === citation.url),
+  );
+  const citations: Citation[] = [];
+  const seen = new Set<string>();
+  const push = (citation: Citation) => {
+    if (seen.has(citation.url) || citations.length >= MAX_CITATIONS_PER_SEARCH) {
+      return;
+    }
+    seen.add(citation.url);
+    citations.push(citation);
+  };
+  for (const citation of extra.citations) push(citation);
+  for (const citation of readablePrimary) push(citation);
+  for (const citation of unreadPrimary) push(citation);
+
+  const retainedPrimary = citations.filter((citation) => !extraUrls.has(citation.url));
+  const primaryBits = retainedPrimary
+    .map((citation) => citation.snippet)
+    .filter((snippet): snippet is string => typeof snippet === "string" && snippet.length > 0);
+  const text = [extra.text, ...primaryBits]
+    .filter((part) => part.trim().length > 0)
+    .join("\n\n")
+    .slice(0, MAX_SEARCH_TEXT_CHARS);
   return {
-    text: `${primary.text}\n\n${extra.text}`.slice(0, MAX_SEARCH_TEXT_CHARS),
-    citations: [...primary.citations, ...added].slice(0, MAX_CITATIONS_PER_SEARCH),
+    text: text.length > 0 ? text : extra.text.slice(0, MAX_SEARCH_TEXT_CHARS),
+    citations,
   };
 }
 
@@ -539,10 +573,13 @@ type PageRead = { text: string | null; error?: string };
 export async function readCommunityPages(
   citations: Array<{ url: string }>,
   sourceText: SourceTextProvider,
+  prior?: Map<string, PageRead>,
 ): Promise<Map<string, PageRead>> {
   const urls = [...new Set(citations.map((c) => c.url))];
   const reads = await Promise.all(
     urls.map(async (url): Promise<[string, PageRead]> => {
+      const cached = prior?.get(url);
+      if (cached) return [url, cached];
       try {
         const text = await sourceText.fetchText(url);
         return [url, text.trim() ? { text } : { text: null, error: "empty page" }];
@@ -965,13 +1002,9 @@ export async function runResearch(
   let briefSlug: string | undefined;
 
   const attachFailureReport = (error: unknown): never => {
-    const cause =
-      error instanceof PipelineError && error.causeError !== undefined
-        ? error.causeError
-        : error;
     const report = buildFailureReport({
       ...(briefSlug ? { slug: briefSlug } : {}),
-      error: cause,
+      error,
       spentMicroUsd,
       reservedUnknownMicroUsd,
       providerCalls,
@@ -1125,10 +1158,11 @@ export async function runResearch(
         3,
         alternativeCommunityQuery(brief),
       );
-      community = mergeSearchPacks(community, alt);
+      community = mergeSearchPacks(community, alt, communityPages);
       communityPages = await readCommunityPages(
         community.citations,
         providers.sourceText,
+        communityPages,
       );
       readable = [...communityPages.values()].filter((p) => p.text !== null);
     }
@@ -1353,6 +1387,7 @@ export async function runResearch(
       providerCalls,
       costUsd: fromMicroUsd(spentMicroUsd),
       ranAt,
+      ...(reservedUnknownMicroUsd > 0 ? { reservedUnknownMicroUsd } : {}),
     },
   };
 

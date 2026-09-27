@@ -22,6 +22,8 @@ export type SourceCapabilityState =
 export type SourceCapability = {
   state: SourceCapabilityState;
   reason: string;
+  configured: boolean;
+  authorised: boolean;
 };
 
 export type PreflightReport = {
@@ -55,16 +57,31 @@ export function isRetryableHttpStatus(status: number): boolean {
 }
 
 export function capabilityFromHttp(status: number): SourceCapability {
+  const observed = { configured: true, authorised: false };
   if (status === 429) {
-    return { state: "rate_limited", reason: "HTTP 429" };
+    return { state: "rate_limited", reason: "HTTP 429", ...observed };
   }
   if (status === 403) {
-    return { state: "approval_required", reason: "HTTP 403" };
+    return { state: "approval_required", reason: "HTTP 403", ...observed };
   }
   if (status === 401 || status === 402 || status >= 500) {
-    return { state: "unavailable", reason: `HTTP ${status}` };
+    return { state: "unavailable", reason: `HTTP ${status}`, ...observed };
   }
-  return { state: "unavailable", reason: `HTTP ${status}` };
+  return { state: "unavailable", reason: `HTTP ${status}`, ...observed };
+}
+
+export function asJsonObject(value: unknown): Record<string, unknown> | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+}
+
+export function knownNonNegative(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return null;
+  }
+  return value;
 }
 
 export function redactSecrets(text: string): string {
@@ -84,25 +101,57 @@ export function sourceCapabilities(
     return typeof value === "string" && value.trim().length > 0;
   };
   const redditReady = has("REDDIT_CLIENT_ID") && has("REDDIT_CLIENT_SECRET");
-  return {
-    synthesis: has("OPENAI_API_KEY")
-      ? { state: "ready", reason: "OPENAI_API_KEY configured" }
-      : { state: "unconfigured", reason: "OPENAI_API_KEY missing" },
-    search: has("PERPLEXITY_API_KEY")
-      ? { state: "ready", reason: "PERPLEXITY_API_KEY configured" }
-      : { state: "unconfigured", reason: "PERPLEXITY_API_KEY missing" },
-    keywordData:
-      has("DATAFORSEO_LOGIN") && has("DATAFORSEO_PASSWORD")
-        ? { state: "ready", reason: "DATAFORSEO credentials configured" }
-        : { state: "unconfigured", reason: "DATAFORSEO credentials missing" },
-    reddit: redditReady
-      ? { state: "ready", reason: "Reddit OAuth credentials configured" }
+  const configured = (
+    present: boolean,
+    missingReason: string,
+    configuredReason: string,
+  ): SourceCapability =>
+    present
+      ? {
+          state: "ready",
+          reason: configuredReason,
+          configured: true,
+          authorised: false,
+        }
       : {
           state: "unconfigured",
-          reason: "REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET missing",
-        },
-    hackernews: { state: "ready", reason: "HN API needs no secret" },
-    web: { state: "ready", reason: "public HTTP(S) page reads" },
+          reason: missingReason,
+          configured: false,
+          authorised: false,
+        };
+  return {
+    synthesis: configured(
+      has("OPENAI_API_KEY"),
+      "OPENAI_API_KEY missing",
+      "OPENAI_API_KEY configured; authorisation not observed",
+    ),
+    search: configured(
+      has("PERPLEXITY_API_KEY"),
+      "PERPLEXITY_API_KEY missing",
+      "PERPLEXITY_API_KEY configured; authorisation not observed",
+    ),
+    keywordData: configured(
+      has("DATAFORSEO_LOGIN") && has("DATAFORSEO_PASSWORD"),
+      "DATAFORSEO credentials missing",
+      "DATAFORSEO credentials configured; authorisation not observed",
+    ),
+    reddit: configured(
+      redditReady,
+      "REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET missing",
+      "Reddit OAuth credentials configured; authorisation not observed",
+    ),
+    hackernews: {
+      state: "ready",
+      reason: "HN API needs no secret",
+      configured: true,
+      authorised: true,
+    },
+    web: {
+      state: "ready",
+      reason: "public HTTP(S) page reads",
+      configured: true,
+      authorised: true,
+    },
   };
 }
 
@@ -134,6 +183,26 @@ function stepIdFromError(error: unknown): string {
   return "run";
 }
 
+function providerFailureFrom(error: unknown): {
+  role?: string;
+  status?: number;
+} {
+  if (!error || typeof error !== "object") return {};
+  const row = error as {
+    role?: unknown;
+    status?: unknown;
+    causeError?: unknown;
+  };
+  if (typeof row.role === "string" && typeof row.status === "number") {
+    return { role: row.role, status: row.status };
+  }
+  if ("causeError" in row) return providerFailureFrom(row.causeError);
+  if (error instanceof Error && error.cause !== undefined) {
+    return providerFailureFrom(error.cause);
+  }
+  return {};
+}
+
 export function buildFailureReport(input: {
   slug?: string;
   error: unknown;
@@ -145,17 +214,9 @@ export function buildFailureReport(input: {
   const message =
     input.error instanceof Error ? input.error.message : String(input.error);
   const capabilities = { ...(input.capabilities ?? sourceCapabilities()) };
-  if (
-    input.error &&
-    typeof input.error === "object" &&
-    "status" in input.error &&
-    "role" in input.error &&
-    typeof (input.error as { status?: unknown }).status === "number" &&
-    typeof (input.error as { role?: unknown }).role === "string"
-  ) {
-    const role = (input.error as { role: string }).role;
-    const status = (input.error as { status: number }).status;
-    capabilities[role] = capabilityFromHttp(status);
+  const provider = providerFailureFrom(input.error);
+  if (provider.role && provider.status !== undefined) {
+    capabilities[provider.role] = capabilityFromHttp(provider.status);
   }
   return {
     ...(input.slug ? { slug: input.slug } : {}),
@@ -171,53 +232,6 @@ export function buildFailureReport(input: {
 export function writeFailureReport(filePath: string, report: FailureReport): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(report, null, 2)}\n`);
-}
-
-export type BatchSpendFile = {
-  spentMicroUsd: number;
-  runs: number;
-};
-
-export function readBatchSpentMicroUsd(filePath: string): number {
-  if (!fs.existsSync(filePath)) return 0;
-  try {
-    const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as {
-      spentMicroUsd?: unknown;
-    };
-    return typeof parsed.spentMicroUsd === "number" &&
-      Number.isFinite(parsed.spentMicroUsd) &&
-      parsed.spentMicroUsd >= 0
-      ? Math.ceil(parsed.spentMicroUsd)
-      : 0;
-  } catch {
-    return 0;
-  }
-}
-
-export function addBatchSpentMicroUsd(filePath: string, deltaMicroUsd: number): void {
-  if (!Number.isFinite(deltaMicroUsd) || deltaMicroUsd <= 0) return;
-  const next: BatchSpendFile = {
-    spentMicroUsd: readBatchSpentMicroUsd(filePath) + Math.ceil(deltaMicroUsd),
-    runs: 0,
-  };
-  if (fs.existsSync(filePath)) {
-    try {
-      const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as {
-        runs?: unknown;
-      };
-      if (typeof parsed.runs === "number" && parsed.runs >= 0) {
-        next.runs = Math.floor(parsed.runs) + 1;
-      } else {
-        next.runs = 1;
-      }
-    } catch {
-      next.runs = 1;
-    }
-  } else {
-    next.runs = 1;
-  }
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, `${JSON.stringify(next, null, 2)}\n`);
 }
 
 export function alternativeCommunityQuery(brief: {

@@ -11,6 +11,7 @@ import {
 import { estimateKeywordUsd, KEYWORD_PROVIDER } from "./pricing.ts";
 import type { Fetcher } from "./openai.ts";
 import {
+  asJsonObject,
   fetchInitWithTimeout,
   isRetryableHttpStatus,
 } from "../resilience.ts";
@@ -162,7 +163,9 @@ export function createKeywordDataProvider(
 
       let payload: DataForSeoPayload;
       try {
-        payload = (await response.json()) as DataForSeoPayload;
+        const raw = asJsonObject(await response.json());
+        if (!raw) throw new Error("expected JSON object");
+        payload = raw as DataForSeoPayload;
       } catch {
         throw new ProviderCallError("keywordData", "unparseable response", {
           retryable: true,

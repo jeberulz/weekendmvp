@@ -109,3 +109,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Checks run: `npx vitest run lib/engine/resilience.test.ts lib/engine/pipeline.test.ts` plus `npm run typecheck`.
 - Result: The batch cap is enforced on the operator path, not only in a helper.
 - Next: S4. Do not merge #83.
+
+## 2026-09-27 - WP45-S3 review repair (PR #83 `5399710`)
+
+- Source: human NO-GO on S3 commit `5399710` vs `5e7f7f7`. Four required findings plus named accounting/diagnostic follow-ups. S4–S6 stay closed.
+- Actions taken: Batch ledger is now versioned JSON with exclusive file lock, durable `$4` holds written before live dispatch, and settle after the run. Unresolved holds stay committed. Missing file is empty. Truncated or invalid JSON throws `LedgerCorruptError` instead of reading as `$0`. Perplexity and OpenAI treat missing, partial, negative, or non-object usage as reserved. Community merge keeps fallback citations ahead of unread primary URLs and reuses already-read pages. Successful records keep `:reserved` and `reservedUnknownMicroUsd`. Failure reports keep the pipeline step id and walk the inner provider status. Preflight marks paid sources configured, not authorised.
+- Checks run: `npm run test:engine` 189 pass. `npm run typecheck` pass. No live provider calls.
+- Result: Review gaps are closed in product code. Still NO-GO for production. No live spend. No commit unless asked. Draft PR stays draft.
+- Next: keep S4–S6 off this slice. Do not merge #83.

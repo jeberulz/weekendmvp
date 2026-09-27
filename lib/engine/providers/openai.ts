@@ -9,8 +9,10 @@ import {
 } from "./types.ts";
 import { estimateSynthesisUsd, SYNTHESIS_MODEL } from "./pricing.ts";
 import {
+  asJsonObject,
   fetchInitWithTimeout,
   isRetryableHttpStatus,
+  knownNonNegative,
 } from "../resilience.ts";
 
 /**
@@ -136,7 +138,9 @@ export function createSynthesisProvider(
 
       let payload: ResponsesPayload;
       try {
-        payload = (await response.json()) as ResponsesPayload;
+        const raw = asJsonObject(await response.json());
+        if (!raw) throw new Error("expected JSON object");
+        payload = raw as ResponsesPayload;
       } catch {
         throw new ProviderCallError("synthesis", "unparseable response", {
           retryable: true,
@@ -144,14 +148,15 @@ export function createSynthesisProvider(
         });
       }
 
+      const inputTokens = knownNonNegative(payload.usage?.input_tokens);
+      const outputTokens = knownNonNegative(payload.usage?.output_tokens);
+      const cachedRaw = payload.usage?.input_tokens_details?.cached_tokens;
+      const cachedInputTokens =
+        cachedRaw === undefined ? 0 : knownNonNegative(cachedRaw);
       const usageKnown =
-        typeof payload.usage?.input_tokens === "number" &&
-        typeof payload.usage?.output_tokens === "number";
-      const inputTokens = usageKnown ? payload.usage!.input_tokens! : 0;
-      const outputTokens = usageKnown ? payload.usage!.output_tokens! : 0;
-      const cachedInputTokens = usageKnown
-        ? (payload.usage?.input_tokens_details?.cached_tokens ?? 0)
-        : 0;
+        inputTokens !== null &&
+        outputTokens !== null &&
+        cachedInputTokens !== null;
       const cost: ProviderCost = usageKnown
         ? {
             role: "synthesis",
@@ -169,7 +174,12 @@ export function createSynthesisProvider(
       const text = readText(payload, cost);
 
       return {
-        value: { text, inputTokens, outputTokens, cachedInputTokens },
+        value: {
+          text,
+          inputTokens: inputTokens ?? 0,
+          outputTokens: outputTokens ?? 0,
+          cachedInputTokens: cachedInputTokens ?? 0,
+        },
         cost,
       };
     },

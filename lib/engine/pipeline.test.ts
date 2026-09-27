@@ -324,6 +324,62 @@ describe("runResearch S3 resilience", () => {
       .filter((call) => call.provider === "openai")
       .at(-1);
     expect(scoring?.costUsd).toBeCloseTo(0.6, 5);
+    expect(scoring?.operation).toMatch(/:reserved/);
+    expect(record.provenance.reservedUnknownMicroUsd).toBe(600_000);
+  });
+
+  it("fetches fallback citations after an 8-url primary pack of blocked pages", async () => {
+    const fetched: string[] = [];
+    const providers = createProviders({ mode: "fixture" });
+    const pages = { ...fixturePageMap() };
+    providers.sourceText = {
+      async fetchText(url: string) {
+        fetched.push(url);
+        if (url.includes("blocked.example")) throw new Error("blocked");
+        const text = pages[url];
+        if (!text) throw new Error(`missing ${url}`);
+        return text;
+      },
+    };
+    const fallback = fixtureSearchFetch();
+    const fetchImpl = (async (input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        messages?: Array<{ content?: string }>;
+      };
+      const query = body.messages?.[0]?.content ?? "";
+      if (/pain evidence/i.test(query) && !/do not use reddit/i.test(query)) {
+        return jsonResponse({
+          choices: [{ message: { content: "blocked pack" } }],
+          search_results: Array.from({ length: 8 }, (_, i) => ({
+            url: `https://blocked.example/${i + 1}`,
+            title: `blocked ${i + 1}`,
+            snippet: "blocked",
+          })),
+          usage: { prompt_tokens: 10, completion_tokens: 10 },
+        });
+      }
+      return fallback(input, init);
+    }) as Fetcher;
+    providers.search = createSearchProvider({ fetchImpl, apiKey: "fixture-mode" });
+
+    const error = await runResearch({ brief: RFP_BRIEF, providers }).then(
+      () => null,
+      (caught: unknown) => caught,
+    );
+    expect(fetched).toEqual(
+      expect.arrayContaining([
+        "https://news.ycombinator.com/item?id=42420001",
+        "https://community.example.com/threads/rfp-pain",
+      ]),
+    );
+    const blocked = fetched.filter((url) => url.includes("blocked.example"));
+    expect(blocked).toHaveLength(new Set(blocked).size);
+    expect(fetched.filter((url) => url.includes("42420001"))).toHaveLength(1);
+    expect(fetched.filter((url) => url.includes("community.example.com"))).toHaveLength(1);
+    if (error instanceof PipelineError) {
+      expect(error.stepId).not.toBe("community_signals");
+      expect(error.message).not.toMatch(/could be read/);
+    }
   });
 
   it("runs one non-Reddit discovery search when the first community pages fail", async () => {

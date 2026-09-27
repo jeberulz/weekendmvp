@@ -11,6 +11,11 @@ import {
 } from "./cost.ts";
 import { ProviderCallError } from "./providers/types.ts";
 import {
+  LedgerCorruptError,
+  readBatchCommittedMicroUsd,
+  reserveBatchRun,
+} from "./batch-ledger.ts";
+import {
   buildFailureReport,
   capabilityFromHttp,
   isRetryableHttpStatus,
@@ -18,9 +23,8 @@ import {
   redactSecrets,
   sourceCapabilities,
   writeFailureReport,
-  addBatchSpentMicroUsd,
-  readBatchSpentMicroUsd,
 } from "./resilience.ts";
+import { PipelineError } from "./pipeline.ts";
 
 describe("HTTP retry classes", () => {
   it.each([
@@ -56,33 +60,57 @@ describe("preflight and capabilities", () => {
     expect(dumped).not.toContain("hunter2");
   });
 
-  it("marks reddit unconfigured without oauth and ready with it", () => {
+  it("marks reddit unconfigured without oauth and configured-not-authorised with it", () => {
     expect(sourceCapabilities({}).reddit).toEqual({
       state: "unconfigured",
       reason: "REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET missing",
+      configured: false,
+      authorised: false,
     });
     expect(
       sourceCapabilities({
         REDDIT_CLIENT_ID: "id",
         REDDIT_CLIENT_SECRET: "secret",
-      }).reddit.state,
-    ).toBe("ready");
-    expect(sourceCapabilities({}).hackernews.state).toBe("ready");
-    expect(sourceCapabilities({}).web.state).toBe("ready");
+      }).reddit,
+    ).toEqual({
+      state: "ready",
+      reason: "Reddit OAuth credentials configured; authorisation not observed",
+      configured: true,
+      authorised: false,
+    });
+    expect(
+      sourceCapabilities({ OPENAI_API_KEY: "sk-present" }).synthesis,
+    ).toMatchObject({ configured: true, authorised: false, state: "ready" });
+    expect(sourceCapabilities({}).hackernews).toMatchObject({
+      state: "ready",
+      configured: true,
+      authorised: true,
+    });
+    expect(sourceCapabilities({}).web).toMatchObject({
+      state: "ready",
+      configured: true,
+      authorised: true,
+    });
   });
 
   it("maps provider HTTP status onto capability states", () => {
     expect(capabilityFromHttp(429)).toEqual({
       state: "rate_limited",
       reason: "HTTP 429",
+      configured: true,
+      authorised: false,
     });
     expect(capabilityFromHttp(403)).toEqual({
       state: "approval_required",
       reason: "HTTP 403",
+      configured: true,
+      authorised: false,
     });
     expect(capabilityFromHttp(503)).toEqual({
       state: "unavailable",
       reason: "HTTP 503",
+      configured: true,
+      authorised: false,
     });
   });
 });
@@ -108,6 +136,7 @@ describe("failure report", () => {
     expect(report.capabilities.synthesis.state).toBe("unavailable");
     expect(report.spentMicroUsd).toBe(12_000);
     expect(report.reservedUnknownMicroUsd).toBe(12_000);
+    expect(report.stepId).toBe("run");
 
     const filePath = path.join(os.tmpdir(), `wmvp-s3-${Date.now()}.failure.json`);
     writeFailureReport(filePath, report);
@@ -115,6 +144,24 @@ describe("failure report", () => {
     expect(saved.message).toBe(report.message);
     expect(JSON.stringify(saved)).not.toContain("sk-abc123");
     fs.unlinkSync(filePath);
+  });
+
+  it("keeps the pipeline step id and walks the inner provider status", () => {
+    const report = buildFailureReport({
+      error: new PipelineError(
+        "market_stats",
+        "market search failed",
+        new ProviderCallError("search", "provider returned 401", {
+          retryable: false,
+          status: 401,
+        }),
+      ),
+      spentMicroUsd: 0,
+      reservedUnknownMicroUsd: 0,
+      providerCalls: [],
+    });
+    expect(report.stepId).toBe("market_stats");
+    expect(report.capabilities.search.state).toBe("unavailable");
   });
 
   it("redacts basic auth blobs in free text", () => {
@@ -140,19 +187,26 @@ describe("caps and reserved cost", () => {
     ).not.toThrow();
   });
 
-  it("persists batch spend and refuses the next $4 reservation at the ceiling", () => {
+  it("persists a reservation and refuses the next $4 hold at the ceiling", async () => {
     const filePath = path.join(os.tmpdir(), `wmvp-batch-${Date.now()}.json`);
-    expect(readBatchSpentMicroUsd(filePath)).toBe(0);
-    addBatchSpentMicroUsd(filePath, 31_000_000);
-    expect(readBatchSpentMicroUsd(filePath)).toBe(31_000_000);
+    expect(readBatchCommittedMicroUsd(filePath)).toBe(0);
+    await reserveBatchRun({
+      filePath,
+      runId: "held-31",
+      microUsd: 31_000_000,
+    });
+    expect(readBatchCommittedMicroUsd(filePath)).toBe(31_000_000);
     expect(() =>
       assertBatchWithinCap({
-        batchSpentMicroUsd: readBatchSpentMicroUsd(filePath),
+        batchSpentMicroUsd: readBatchCommittedMicroUsd(filePath),
         nextReservationMicroUsd: 4_000_000,
       }),
     ).toThrow(BatchCapExceededError);
-    addBatchSpentMicroUsd(filePath, 0);
-    expect(readBatchSpentMicroUsd(filePath)).toBe(31_000_000);
+    await expect(
+      reserveBatchRun({ filePath, runId: "held-4", microUsd: 4_000_000 }),
+    ).rejects.toThrow(BatchCapExceededError);
+    fs.writeFileSync(filePath, "{");
+    expect(() => readBatchCommittedMicroUsd(filePath)).toThrow(LedgerCorruptError);
     fs.unlinkSync(filePath);
   });
 
