@@ -114,30 +114,111 @@ async function main() {
 
   if (resolvedMode === "live") loadLocalEnv();
 
-  const [{ runResearch }, { createProviders }, { parseResearchRecord }] =
-    await Promise.all([
-      import(pathToFileURL(path.join(root, "lib/engine/pipeline.ts")).href),
-      import(pathToFileURL(path.join(root, "lib/engine/providers.ts")).href),
-      import(
-        pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href
-      ),
-    ]);
+  const [
+    { runResearch },
+    { createProviders },
+    { parseResearchRecord },
+    { preflightLiveConfig, writeFailureReport, readBatchSpentMicroUsd, addBatchSpentMicroUsd },
+    { assertBatchWithinCap, CAP_MICRO_USD, toMicroUsd },
+  ] = await Promise.all([
+    import(pathToFileURL(path.join(root, "lib/engine/pipeline.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/providers.ts")).href),
+    import(
+      pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href
+    ),
+    import(pathToFileURL(path.join(root, "lib/engine/resilience.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/cost.ts")).href),
+  ]);
 
-  const providers = createProviders({ mode: resolvedMode });
-  const result = await runResearch({ brief, providers });
-  const validated = parseResearchRecord(result);
-
-  const outPath =
-    args.outPath ||
-    path.join(root, "engine", "records", `${validated.brief.slug}.json`);
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, `${JSON.stringify(validated, null, 2)}\n`);
-  console.log(
-    `wrote ${outPath} (slug=${validated.brief.slug} costUsd=${validated.provenance.costUsd.toFixed(4)} mode=${resolvedMode})`,
+  const slugGuess =
+    typeof brief.slug === "string" && brief.slug
+      ? brief.slug
+      : "untitled-idea";
+  const reportPath = path.join(
+    root,
+    "engine",
+    "reports",
+    `${slugGuess}.failure.json`,
   );
+  const batchPath = path.join(root, "engine", "reports", "batch-spend.json");
+
+  if (resolvedMode === "live") {
+    try {
+      assertBatchWithinCap({
+        batchSpentMicroUsd: readBatchSpentMicroUsd(batchPath),
+        nextReservationMicroUsd: CAP_MICRO_USD,
+      });
+    } catch (error) {
+      writeFailureReport(reportPath, {
+        slug: slugGuess,
+        stepId: "preflight",
+        message: error instanceof Error ? error.message : String(error),
+        spentMicroUsd: 0,
+        reservedUnknownMicroUsd: 0,
+        providerCalls: [],
+        capabilities: preflightLiveConfig().capabilities,
+      });
+      console.error(`wrote ${reportPath}`);
+      console.error(error instanceof Error ? error.message : error);
+      process.exit(1);
+    }
+    const preflight = preflightLiveConfig();
+    console.error(
+      `preflight configured=${preflight.present.join(",") || "(none)"} missing=${preflight.missing.join(",") || "(none)"}`,
+    );
+    if (preflight.missing.length > 0) {
+      writeFailureReport(reportPath, {
+        slug: slugGuess,
+        stepId: "preflight",
+        message: `missing configuration: ${preflight.missing.join(", ")}`,
+        spentMicroUsd: 0,
+        reservedUnknownMicroUsd: 0,
+        providerCalls: [],
+        capabilities: preflight.capabilities,
+      });
+      console.error(`wrote ${reportPath}`);
+      process.exit(1);
+    }
+  }
+
+  try {
+    const providers = createProviders({ mode: resolvedMode });
+    const result = await runResearch({ brief, providers });
+    const validated = parseResearchRecord(result);
+
+    const outPath =
+      args.outPath ||
+      path.join(root, "engine", "records", `${validated.brief.slug}.json`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, `${JSON.stringify(validated, null, 2)}\n`);
+    console.log(
+      `wrote ${outPath} (slug=${validated.brief.slug} costUsd=${validated.provenance.costUsd.toFixed(4)} mode=${resolvedMode})`,
+    );
+    if (resolvedMode === "live") {
+      addBatchSpentMicroUsd(batchPath, toMicroUsd(validated.provenance.costUsd));
+    }
+  } catch (err) {
+    const report = err && typeof err === "object" ? err.failureReport : null;
+    if (report) {
+      writeFailureReport(
+        path.join(
+          root,
+          "engine",
+          "reports",
+          `${report.slug ?? slugGuess}.failure.json`,
+        ),
+        report,
+      );
+      console.error(
+        `wrote engine/reports/${report.slug ?? slugGuess}.failure.json`,
+      );
+      if (resolvedMode === "live") {
+        addBatchSpentMicroUsd(batchPath, report.spentMicroUsd);
+      }
+    }
+    console.error(err instanceof Error ? err.stack || err.message : err);
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.stack || err.message : err);
-  process.exit(1);
-});
+main();

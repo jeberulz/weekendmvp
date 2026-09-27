@@ -10,6 +10,10 @@ import {
 } from "./types.ts";
 import { estimateKeywordUsd, KEYWORD_PROVIDER } from "./pricing.ts";
 import type { Fetcher } from "./openai.ts";
+import {
+  fetchInitWithTimeout,
+  isRetryableHttpStatus,
+} from "../resilience.ts";
 
 /**
  * WP26-S2. Keyword/demand adapter (DataForSEO).
@@ -109,32 +113,50 @@ export function createKeywordDataProvider(
       }
 
       const authorization = `Basic ${btoa(`${login}:${password}`)}`;
+      const reserved: ProviderCost = {
+        role: "keywordData",
+        provider: KEYWORD_PROVIDER,
+        billedAs: "google_ads/search_volume/live",
+        usd: estimateKeywordUsd({
+          tasks: 1,
+          items: request.keywords.length,
+        }),
+        estimated: true,
+        units: { reserved: 1 },
+      };
 
       let response: Response;
       try {
-        response = await fetchImpl(ENDPOINT, {
-          method: "POST",
-          headers: { authorization, "content-type": "application/json" },
-          body: JSON.stringify([
-            {
-              keywords: request.keywords,
-              location_code: request.locationCode,
-              language_code: request.languageCode,
-            },
-          ]),
-        });
+        response = await fetchImpl(
+          ENDPOINT,
+          fetchInitWithTimeout({
+            method: "POST",
+            headers: { authorization, "content-type": "application/json" },
+            body: JSON.stringify([
+              {
+                keywords: request.keywords,
+                location_code: request.locationCode,
+                language_code: request.languageCode,
+              },
+            ]),
+          }),
+        );
       } catch {
         throw new ProviderCallError("keywordData", "request failed", {
           retryable: true,
+          cost: reserved,
         });
       }
 
       if (!response.ok) {
-        const retryable = response.status === 429 || response.status >= 500;
         throw new ProviderCallError(
           "keywordData",
           `provider returned ${response.status}`,
-          { retryable, status: response.status },
+          {
+            retryable: isRetryableHttpStatus(response.status),
+            status: response.status,
+            cost: reserved,
+          },
         );
       }
 
@@ -144,6 +166,7 @@ export function createKeywordDataProvider(
       } catch {
         throw new ProviderCallError("keywordData", "unparseable response", {
           retryable: true,
+          cost: reserved,
         });
       }
 
@@ -153,7 +176,7 @@ export function createKeywordDataProvider(
         throw new ProviderCallError(
           "keywordData",
           `provider status ${payload.status_code ?? "unknown"}`,
-          { retryable: true },
+          { retryable: true, cost: reserved },
         );
       }
 

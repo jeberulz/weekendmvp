@@ -524,7 +524,7 @@ describe("community page reads", () => {
     expect(error).toBeInstanceOf(PipelineError);
     expect((error as PipelineError).stepId).toBe("community_signals");
     expect((error as PipelineError).message).toMatch(
-      /only 0\/2 cited community pages could be read.*Stopped before keyword and synthesis spend/,
+      /only 0\/4 cited community pages could be read.*Stopped before keyword and synthesis spend/,
     );
     expect(keywordLookups).toBe(0);
     // Only the brief-normalization call ran; the paid synthesis never did.

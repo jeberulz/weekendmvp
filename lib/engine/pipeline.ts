@@ -28,10 +28,19 @@ import {
 import {
   assertWithinCap,
   CostCapExceededError,
+  costIsReserved,
   fromMicroUsd,
+  reservedCostForBudget,
   toMicroUsd,
   worstCaseMicroUsd,
 } from "./cost.ts";
+import {
+  alternativeCommunityQuery,
+  buildFailureReport,
+  MAX_ALTERNATIVE_SEARCHES,
+  RETRY_BACKOFF_MS,
+  type FailureReport,
+} from "./resilience.ts";
 import { PIPELINE, stepAt } from "./pipeline-steps.ts";
 import {
   canonicalSourceKey,
@@ -156,6 +165,7 @@ type Runner = <T>(
 export class PipelineError extends Error {
   readonly stepId: string;
   readonly causeError?: unknown;
+  failureReport?: FailureReport;
 
   constructor(stepId: string, message: string, cause?: unknown) {
     super(`[${stepId}] ${message}`);
@@ -205,6 +215,19 @@ function costToCall(cost: ProviderCost, failed = false): ProviderCall {
     operation: `${cost.role}:${cost.billedAs}${failed ? ":failed" : ""}`,
     costUsd: cost.usd,
   };
+}
+
+function mergeSearchPacks(primary: SearchPack, extra: SearchPack): SearchPack {
+  const seen = new Set(primary.citations.map((citation) => citation.url));
+  const added = extra.citations.filter((citation) => !seen.has(citation.url));
+  return {
+    text: `${primary.text}\n\n${extra.text}`.slice(0, MAX_SEARCH_TEXT_CHARS),
+    citations: [...primary.citations, ...added].slice(0, MAX_CITATIONS_PER_SEARCH),
+  };
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -938,6 +961,45 @@ export async function runResearch(
   const checkCap = options.assertCap ?? assertWithinCap;
   const providerCalls: ProviderCall[] = [];
   let spentMicroUsd = 0;
+  let reservedUnknownMicroUsd = 0;
+  let briefSlug: string | undefined;
+
+  const attachFailureReport = (error: unknown): never => {
+    const cause =
+      error instanceof PipelineError && error.causeError !== undefined
+        ? error.causeError
+        : error;
+    const report = buildFailureReport({
+      ...(briefSlug ? { slug: briefSlug } : {}),
+      error: cause,
+      spentMicroUsd,
+      reservedUnknownMicroUsd,
+      providerCalls,
+    });
+    if (error instanceof PipelineError) {
+      error.failureReport = report;
+      throw error;
+    }
+    if (error instanceof CostCapExceededError) {
+      (error as CostCapExceededError & { failureReport?: FailureReport }).failureReport =
+        report;
+      throw error;
+    }
+    const wrapped = new PipelineError(
+      "run",
+      error instanceof Error ? error.message : "research failed",
+      error,
+    );
+    wrapped.failureReport = report;
+    throw wrapped;
+  };
+
+  const billedCost = (position: number, cost: ProviderCost): ProviderCost => {
+    if (!costIsReserved(cost)) return cost;
+    return (
+      reservedCostForBudget(stepAt(position).budget, cost.provider) ?? cost
+    );
+  };
 
   const reserve = (position: number) => {
     const step = stepAt(position);
@@ -949,13 +1011,23 @@ export async function runResearch(
 
   const settle = (cost: ProviderCost, failed = false) => {
     providerCalls.push(costToCall(cost, failed));
-    spentMicroUsd += toMicroUsd(cost.usd);
+    const micro = toMicroUsd(cost.usd);
+    spentMicroUsd += micro;
+    if (costIsReserved(cost)) reservedUnknownMicroUsd += micro;
   };
 
-  const settleFailure = (error: unknown) => {
-    if (error instanceof ProviderCallError && error.cost) {
+  const settleFailure = (error: unknown, position: number) => {
+    if (error instanceof ProviderConfigError) return;
+    if (!(error instanceof ProviderCallError)) return;
+    if (error.cost && !costIsReserved(error.cost)) {
       settle(error.cost, true);
+      return;
     }
+    const reserved = reservedCostForBudget(
+      stepAt(position).budget,
+      error.cost?.provider ?? error.role,
+    );
+    if (reserved) settle(reserved, true);
   };
 
   // Reserve before every attempt (the retry is a second billable call) and
@@ -966,24 +1038,29 @@ export async function runResearch(
     try {
       result = await fn();
     } catch (error) {
-      settleFailure(error);
+      settleFailure(error, position);
       if (!isRetryable(error)) throw error;
+      if (error instanceof ProviderCallError && error.status === 429) {
+        await sleep(RETRY_BACKOFF_MS);
+      }
       reserve(position);
       try {
         result = await fn();
       } catch (retryError) {
-        settleFailure(retryError);
+        settleFailure(retryError, position);
         throw retryError;
       }
     }
-    settle(result.cost);
+    settle(billedCost(position, result.cost));
     return result;
   };
 
+  try {
   // --- 0 brief_normalization ---
   let brief: NormalizedBrief;
   try {
     brief = await stepBriefNormalization(providers, run, options.brief);
+    briefSlug = brief.slug;
   } catch (error) {
     throw stepError("brief_normalization", "brief normalization failed", error);
   }
@@ -1035,7 +1112,26 @@ export async function runResearch(
       community.citations,
       providers.sourceText,
     );
-    const readable = [...communityPages.values()].filter((p) => p.text !== null);
+    let readable = [...communityPages.values()].filter((p) => p.text !== null);
+    let alternativeSearches = 0;
+    if (
+      readable.length < MIN_READABLE_SOURCES &&
+      alternativeSearches < MAX_ALTERNATIVE_SEARCHES
+    ) {
+      alternativeSearches += 1;
+      const alt = await stepSearch(
+        providers,
+        run,
+        3,
+        alternativeCommunityQuery(brief),
+      );
+      community = mergeSearchPacks(community, alt);
+      communityPages = await readCommunityPages(
+        community.citations,
+        providers.sourceText,
+      );
+      readable = [...communityPages.values()].filter((p) => p.text !== null);
+    }
     if (readable.length < MIN_READABLE_SOURCES) {
       const reasons = [...communityPages]
         .filter(([, p]) => p.text === null)
@@ -1264,6 +1360,9 @@ export async function runResearch(
     return parseResearchRecord(draft);
   } catch (error) {
     throw stepError("provenance_parse", "ResearchRecord parse failed", error);
+  }
+  } catch (error) {
+    return attachFailureReport(error);
   }
 }
 

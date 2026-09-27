@@ -55,6 +55,9 @@ pnpm-debug.log*
 ideas/drafts/
 ideas/manifest.draft.json
 
+# Live research failure reports (may include redacted spend, never secrets)
+engine/reports/
+
 # Internal testers / documentation snippets
 test-api.html
 .analytics-snippet.html

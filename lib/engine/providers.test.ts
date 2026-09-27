@@ -202,6 +202,7 @@ describe("synthesis adapter", () => {
     [503, true],
     [400, false],
     [401, false],
+    [402, false],
     [403, false],
   ])("classifies HTTP %s as retryable=%s", async (status, retryable) => {
     const provider = createSynthesisProvider({
@@ -214,6 +215,23 @@ describe("synthesis adapter", () => {
         maxOutputTokens: 10,
       }),
     ).rejects.toMatchObject({ retryable });
+  });
+
+  it("holds a reserved cost when usage is missing instead of billing $0", async () => {
+    const provider = createSynthesisProvider({
+      apiKey: "fixture-mode",
+      fetchImpl: fixtureSynthesisFetch({
+        payload: { output_text: "ok", usage: {} },
+      }),
+    });
+    const result = await provider.complete({
+      instructions: "x",
+      input: "y",
+      maxOutputTokens: 10,
+    });
+    expect(result.value.text).toBe("ok");
+    expect(result.cost.units.reserved).toBe(1);
+    expect(result.cost.usd).toBeGreaterThan(0);
   });
 
   it("treats a network failure as retryable", async () => {

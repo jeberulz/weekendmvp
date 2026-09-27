@@ -41,7 +41,7 @@ Definition of done: S1 through S6 from `docs/plans/idea-engine/2026-09-27-comple
     - Failing regression tests for F3, F6, F7, and F8 land before the fix
     - `npm run test:engine`
 
-- [ ] `WP45-S3` - Provider resilience and source availability
+- [x] `WP45-S3` - Provider resilience and source availability
   - Scope: `lib/engine/providers.ts`, provider adapters, `lib/engine/cost.ts`, `lib/engine/pipeline-steps.ts`, run accounting, CLI diagnostics, engine tests
   - Acceptance criteria:
     - Preflight reports missing configuration without printing secret values

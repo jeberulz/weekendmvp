@@ -140,6 +140,9 @@ export function estimateKeywordUsd(usage: {
 /** The owner-ruled hard cap for one report. `S4` enforces it pre-call. */
 export const REPORT_COST_CAP_USD = 4.0;
 
+/** Eight-run live batch ceiling from the completion plan. Not a per-report cap. */
+export const BATCH_COST_CAP_USD = 32.0;
+
 /**
  * The ruling's reference budget: roughly $0.52 for a clean run and $1.04 if
  * every step takes its one allowed retry. Exported so `S6`'s eval can assert

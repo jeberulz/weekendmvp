@@ -323,6 +323,30 @@ export const SEARCH_COMPETITORS_FIXTURE = {
   usage: { prompt_tokens: 1_000, completion_tokens: 400 },
 };
 
+export const SEARCH_ALTERNATIVE_FIXTURE = {
+  choices: [
+    {
+      message: {
+        content:
+          "HN users describe weekend SOC2 work without a proposal hire [1]. Forum operators say the same questionnaire repeats every quarter [2].",
+      },
+    },
+  ],
+  search_results: [
+    {
+      url: "https://news.ycombinator.com/item?id=42420001",
+      title: "Hacker News: proposal ops",
+      snippet: "We burn weekends answering the same SOC2 questionnaire.",
+    },
+    {
+      url: "https://community.example.com/threads/rfp-pain",
+      title: "Vendor forum thread",
+      snippet: "Loopio is great if you have a proposal team; we do not.",
+    },
+  ],
+  usage: { prompt_tokens: 900, completion_tokens: 300 },
+};
+
 export const SEARCH_COMMUNITY_FIXTURE = {
   choices: [
     {
@@ -366,6 +390,9 @@ export function fixtureSearchFetch(
       query = "";
     }
     if (/competitor/i.test(query)) return jsonResponse(SEARCH_COMPETITORS_FIXTURE);
+    if (/do not use reddit/i.test(query)) {
+      return jsonResponse(SEARCH_ALTERNATIVE_FIXTURE);
+    }
     if (/pain|reddit|community|quote/i.test(query)) {
       return jsonResponse(SEARCH_COMMUNITY_FIXTURE);
     }
@@ -458,6 +485,7 @@ export function unreachableFetch(): Fetcher {
 export function fixturePageMap(): Record<string, string> {
   const rows = [
     ...SEARCH_COMMUNITY_FIXTURE.search_results,
+    ...SEARCH_ALTERNATIVE_FIXTURE.search_results,
     ...SEARCH_MARKET_FIXTURE.search_results,
     ...SEARCH_COMPETITORS_FIXTURE.search_results,
   ];

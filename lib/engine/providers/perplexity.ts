@@ -10,6 +10,10 @@ import {
 } from "./types.ts";
 import { estimateSearchUsd, SEARCH_MODEL } from "./pricing.ts";
 import type { Fetcher } from "./openai.ts";
+import {
+  fetchInitWithTimeout,
+  isRetryableHttpStatus,
+} from "../resilience.ts";
 
 /**
  * WP26-S2. Search adapter (Perplexity Sonar Pro), citation-only.
@@ -103,35 +107,56 @@ export function createSearchProvider(
           ? options.apiKey
           : requireSecret("search", "PERPLEXITY_API_KEY");
 
+      const reserved: ProviderCost = {
+        role: "search",
+        provider: "perplexity",
+        billedAs: SEARCH_MODEL,
+        usd: estimateSearchUsd({
+          inputTokens: 2_000,
+          outputTokens: request.maxOutputTokens,
+          requests: 1,
+          searchContextSize: request.searchContextSize,
+        }),
+        estimated: true,
+        units: { reserved: 1 },
+      };
+
       let response: Response;
       try {
-        response = await fetchImpl(ENDPOINT, {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${apiKey}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            model: SEARCH_MODEL,
-            messages: [{ role: "user", content: request.query }],
-            max_tokens: request.maxOutputTokens,
-            web_search_options: {
-              search_context_size: request.searchContextSize,
+        response = await fetchImpl(
+          ENDPOINT,
+          fetchInitWithTimeout({
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${apiKey}`,
+              "content-type": "application/json",
             },
+            body: JSON.stringify({
+              model: SEARCH_MODEL,
+              messages: [{ role: "user", content: request.query }],
+              max_tokens: request.maxOutputTokens,
+              web_search_options: {
+                search_context_size: request.searchContextSize,
+              },
+            }),
           }),
-        });
+        );
       } catch {
         throw new ProviderCallError("search", "request failed", {
           retryable: true,
+          cost: reserved,
         });
       }
 
       if (!response.ok) {
-        const retryable = response.status === 429 || response.status >= 500;
         throw new ProviderCallError(
           "search",
           `provider returned ${response.status}`,
-          { retryable, status: response.status },
+          {
+            retryable: isRetryableHttpStatus(response.status),
+            status: response.status,
+            cost: reserved,
+          },
         );
       }
 
@@ -141,6 +166,7 @@ export function createSearchProvider(
       } catch {
         throw new ProviderCallError("search", "unparseable response", {
           retryable: true,
+          cost: reserved,
         });
       }
 

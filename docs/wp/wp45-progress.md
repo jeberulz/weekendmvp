@@ -93,3 +93,19 @@ Append-only progress log. Do not rely on chat history for project state.
 - Fixture research and compilation succeeded to `/tmp`; deep audit has exactly the existing 1538 < 2200 word-count failure. It is not a publishable fixture. No quality floor was lowered. No live provider calls, public content changes, deployment or merge.
 - Added `docs/plans/idea-engine/2026-09-27-model-verification-handoff.md`: retain current writer baseline, evaluate Astra as an independent verifier, add per-role accounting and held-out evaluation on the S3–S6 branch. Provider implementation was not changed here. A more capable model alone cannot establish production readiness.
 - Release boundary remains S3–S6 plus the documented live-smoke and hash-bound human publication gates. This repair does not authorize go-live.
+
+## 2026-09-27 - WP45-S3
+
+- Actions taken: Reservation ledger now bills step worst-case when usage is missing or a paid call fails without a parseable charge. `401`/`402`/`403` do not retry. Paid provider fetches use a 30s abort. Live CLI preflight prints key names only. A failed run writes `engine/reports/{slug}.failure.json` after redacting Bearer/Basic/`sk-`/`pplx-`/`ib_`. Community reads that miss the 2-page floor get one extra search that excludes Reddit. Batch cap is `$32`.
+- Decisions made: Design A. Pipeline `settleFailure` is the ledger. Adapters attach a reserved marker. The step budget overwrites the dollar amount so a scoring call cannot be billed as a 4k-token brief. Discovery does not lower the quote bar. Reddit stays optional (`unconfigured` without OAuth).
+- Checks run: `npm run test:engine` 145 pass. `npm run typecheck` after the `never`/env-map fixes.
+- Result: S3 checks passed. No live spend. No commit. Draft PR #83 still draft.
+- Gotchas: The old unreadable-source test expected `0/2` cited pages. Discovery adds two HN/forum citations, so the fail message is now `0/4`.
+- Next: S4 outcomes (`accept` / `needs_research` / `reject`) and editorial policy. Do not merge #83.
+
+## 2026-09-27 - WP45-S3 batch ledger
+
+- Actions taken: Live CLI now reads `engine/reports/batch-spend.json`, refuses a run whose $4 reservation would pass $32, and adds actual or failed-run spend after the call. Fixture mode does not touch the file.
+- Checks run: `npx vitest run lib/engine/resilience.test.ts lib/engine/pipeline.test.ts` plus `npm run typecheck`.
+- Result: The batch cap is enforced on the operator path, not only in a helper.
+- Next: S4. Do not merge #83.

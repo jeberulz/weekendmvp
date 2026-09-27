@@ -11,7 +11,10 @@ import { createSynthesisProvider } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
 import {
   fixtureKeywordFetch,
+  fixturePageMap,
   fixtureSearchFetch,
+  fixtureSourceText,
+  fixtureSynthesisFetch,
   SEARCH_MARKET_FIXTURE,
   SYNTHESIS_BRIEF_FIXTURE,
   SYNTHESIS_SCORE_FIXTURE,
@@ -112,9 +115,9 @@ describe("runResearch (fixture)", () => {
   });
 });
 
-function jsonResponse(body: unknown): Response {
+function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
-    status: 200,
+    status,
     headers: { "content-type": "application/json" },
   });
 }
@@ -293,6 +296,124 @@ describe("runResearch cost accounting", () => {
       "brief_normalization",
       /exceeds the .*-token budget/,
     );
+  });
+});
+
+describe("runResearch S3 resilience", () => {
+  it("bills the step reservation when synthesis usage is missing", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const fallback = fixtureSynthesisFetch();
+    const fetchImpl = (async (input, init) => {
+      const response = await fallback(input, init);
+      const payload = (await response.json()) as Record<string, unknown>;
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        instructions?: string;
+      };
+      if (/score|synthesis|research/i.test(body.instructions ?? "")) {
+        delete payload.usage;
+      }
+      return jsonResponse(payload);
+    }) as Fetcher;
+    providers.synthesis = createSynthesisProvider({
+      fetchImpl,
+      apiKey: "fixture-mode",
+    });
+
+    const record = await runResearch({ brief: RFP_BRIEF, providers });
+    const scoring = record.provenance.providerCalls
+      .filter((call) => call.provider === "openai")
+      .at(-1);
+    expect(scoring?.costUsd).toBeCloseTo(0.6, 5);
+  });
+
+  it("runs one non-Reddit discovery search when the first community pages fail", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const pages = { ...fixturePageMap() };
+    delete pages["https://www.reddit.com/r/sales/"];
+    providers.sourceText = fixtureSourceText(pages);
+    const queries: string[] = [];
+    const fallback = fixtureSearchFetch();
+    const fetchImpl = (async (input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        messages?: Array<{ content?: string }>;
+      };
+      queries.push(body.messages?.[0]?.content ?? "");
+      return fallback(input, init);
+    }) as Fetcher;
+    providers.search = createSearchProvider({ fetchImpl, apiKey: "fixture-mode" });
+
+    const error = await runResearch({ brief: RFP_BRIEF, providers }).then(
+      () => null,
+      (caught: unknown) => caught,
+    );
+    expect(error).toBeInstanceOf(PipelineError);
+    expect((error as PipelineError).stepId).toBe("provenance_parse");
+    expect((error as PipelineError).message).toMatch(/quote verification/);
+    const communityQueries = queries.filter(
+      (query) => /pain evidence/i.test(query) || /do not use reddit/i.test(query),
+    );
+    expect(communityQueries).toHaveLength(2);
+    expect(communityQueries[1]).toMatch(/Do not use Reddit/);
+    expect(communityQueries[1]).not.toMatch(/on Reddit/);
+  });
+
+  it("does not loop search after a failed Reddit read", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    providers.sourceText = {
+      async fetchText() {
+        throw new Error("blocked");
+      },
+    };
+    const communityQueries: string[] = [];
+    const fallback = fixtureSearchFetch();
+    const fetchImpl = (async (input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        messages?: Array<{ content?: string }>;
+      };
+      const query = body.messages?.[0]?.content ?? "";
+      if (/pain evidence/i.test(query) || /do not use reddit/i.test(query)) {
+        communityQueries.push(query);
+      }
+      return fallback(input, init);
+    }) as Fetcher;
+    providers.search = createSearchProvider({ fetchImpl, apiKey: "fixture-mode" });
+
+    const error = await runResearch({ brief: RFP_BRIEF, providers }).then(
+      () => null,
+      (caught: unknown) => caught,
+    );
+    expect(error).toBeInstanceOf(PipelineError);
+    expect((error as PipelineError).stepId).toBe("community_signals");
+    expect(communityQueries).toHaveLength(2);
+    expect((error as PipelineError).failureReport?.spentMicroUsd).toBeGreaterThan(0);
+  });
+
+  it("does not retry HTTP 402", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    let marketCalls = 0;
+    const fallback = fixtureSearchFetch();
+    const fetchImpl = (async (input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        messages?: Array<{ content?: string }>;
+      };
+      if (/market statistics/i.test(body.messages?.[0]?.content ?? "")) {
+        marketCalls += 1;
+        return jsonResponse({}, 402);
+      }
+      return fallback(input, init);
+    }) as Fetcher;
+    providers.search = createSearchProvider({ fetchImpl, apiKey: "fixture-mode" });
+
+    const error = await runResearch({ brief: RFP_BRIEF, providers }).then(
+      () => null,
+      (caught: unknown) => caught,
+    );
+    expect(error).toBeInstanceOf(PipelineError);
+    expect((error as PipelineError).stepId).toBe("market_stats");
+    expect(marketCalls).toBe(1);
+    expect(
+      (error as PipelineError).failureReport?.reservedUnknownMicroUsd,
+    ).toBeGreaterThan(0);
   });
 });
 
