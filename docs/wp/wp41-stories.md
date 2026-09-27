@@ -48,7 +48,7 @@ Definition of done: every new or edited idea page is scored by a layered quality
   - Verification:
     - `npm run test:evals`, `npm run evals:run -- --slug phone-neck-score-app --layers 2 --fixture`
     - Live run on 4 pages, a repeat run at $0, `--estimate --all` ≤ $3
-    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build'
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 - [ ] `WP41-S4` - Layer 3 judge panel (3 model families via OpenRouter), rubric, median aggregation, disagreement flag
 - [ ] `WP41-S5` - Gold set (3 reference pages + seeded bad copies) and `evals:calibrate`
 - [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
