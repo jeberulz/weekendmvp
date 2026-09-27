@@ -15,3 +15,17 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
   - No DOM test library or diff library is installed and no dependency may be added, so interaction logic lives in pure, tested modules, rendering is tested with `renderToStaticMarkup`, and browser behaviour is verified manually in the in-app browser.
 - Plan docs copied unchanged from `.worktrees/editorial-admin-plan` (SHA-256 verified identical).
 - Next: E0.
+
+## 2026-09-27 - WP46-E0 contract and fixtures
+
+- Built Editorial DTO v1 (`lib/editorial/contracts/**`): strict validators, bounds, UTC timestamps, public-URL rules, evidence consistency, closed metadata mirroring `validate-idea-tags`, error codes, principals, read models, command schemas and the repository interface. Documented in [contract-v1.md](contract-v1.md).
+- Contract additions beyond the plan's minimum envelope, recorded in the contract doc: a `legacy` block (first publication date, body origin); the artifact hash covers content only, with verification tracked as a separate assessment digest; `legacy` as a candidate marker that is not a human decision.
+- Domain rules (`lib/editorial/domain/**`): hashing, fence-aware section split, measured counts, review items with dependency hashes, issues and approval blockers (one function drives both the UI reasons and the server refusal).
+- Fixture adapter (`lib/editorial/adapters/fixture/**`): in-memory repository, simulated checks and worker, demo controls, production guard. Fixtures (`lib/editorial/fixtures/**`): fictional articles on `.example` domains; the seed drives every scenario through the public repository interface (no hand-built records). Seeding takes about 1.1 s.
+- Scenario coverage: new candidate (plus an executable-markup blocker), accepted awaiting review, duplicate rejection with slug conflict, evidence unavailable, changed source, live legacy with no record, quarantined legacy markup, live v2 with an edited v3 draft, conflicting autosave, stale approval, failed deployment, uncertain activation, unpublished, trash, preview ready, changes requested.
+- Checks run:
+  - `npx vitest run tests/editorial`: 6 files, 84 tests passed (repository contract 32, validators 10, states 13, domain 10, fixtures and scenarios 16, drift 3).
+  - Mutation check of the security guards (principal guard, save version fence, review hash check, approval artifact binding, producer check, generation fence): each mutation turned the contract suite red; restored and green again.
+  - `npm run typecheck`: pass. `npm run lint`: 0 errors, 35 warnings (the existing baseline; none in new files). Staged whitespace check (`diff --cached --check`): pass.
+- Limitation, stated honestly: fixture tests serialise commands in one process. They prove the rules, not real concurrency, deployment or authentication.
+- Integration note for a later lockfile window: the Markdown parser packages (`mdast-util-from-markdown`, `mdast-util-gfm`, `micromark-extension-gfm`) are resolved through `remark-gfm`'s dependency tree and should become direct dependencies.

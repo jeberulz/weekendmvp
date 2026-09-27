@@ -25,7 +25,7 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
 
 ## Stories
 
-- [ ] `WP46-E0` - Contract and fixtures
+- [x] `WP46-E0` - Contract and fixtures
   - Scope: `lib/editorial/contracts/**`, `lib/editorial/domain/**`, `lib/editorial/fixtures/**`, `lib/editorial/adapters/fixture/**`, `tests/editorial/**`, feature docs.
   - Acceptance criteria:
     - Editorial DTO v1 (`EditorialSubmission`, metadata, sources, claims, quality checks) has explicit validators: unknown keys rejected, bounded strings/arrays/bodies, UTC timestamp rules, explicit unknown values, tag/highlight allowlists matching `validate-idea-tags`, no `any` and no free-form metadata bag.
