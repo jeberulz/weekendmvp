@@ -1,0 +1,18 @@
+{
+  "$comment": "WP41-S5 gold set. 'good' pages are published pages we stand behind: no Layer 0 or judge check may fail them. 'bad' pages are seeded copies of ai-code-reviewer, each breaking one thing; every check in expect must fail them. Run: npm run evals:calibrate -- --live. Change a threshold, prompt or judge model only if calibration still passes.",
+  "ignoreChecks": ["duplication"],
+  "pages": [
+    { "slug": "ai-code-reviewer", "path": "content/ideas/ai-code-reviewer.mdx", "label": "good" },
+    { "slug": "ai-rfp-response-assistant", "path": "content/ideas/ai-rfp-response-assistant.mdx", "label": "good" },
+    { "slug": "ai-landing-page-generator-ecommerce", "path": "content/ideas/ai-landing-page-generator-ecommerce.mdx", "label": "good" },
+    { "slug": "phone-neck-score-app", "path": "content/ideas/phone-neck-score-app.mdx", "label": "good" },
+    { "slug": "contractor-ai-receptionist", "path": "content/ideas/contractor-ai-receptionist.mdx", "label": "good" },
+    { "slug": "bad-slop", "path": "evals/gold/pages/bad-slop.mdx", "label": "bad", "flaw": "Stock AI voice in Problem and Solution, no banned phrases", "expect": ["judges.slop"] },
+    { "slug": "bad-fake-data", "path": "evals/gold/pages/bad-fake-data.mdx", "label": "bad", "flaw": "Invented precise figures and a fake testimonial", "expect": ["judges.fake_data"] },
+    { "slug": "bad-verbose", "path": "evals/gold/pages/bad-verbose.mdx", "label": "bad", "flaw": "The same points restated in six padding paragraphs", "expect": ["judges.verbosity"] },
+    { "slug": "bad-inconsistent", "path": "evals/gold/pages/bad-inconsistent.mdx", "label": "bad", "flaw": "Pro price differs across sections; MRR and margin math wrong", "expect": ["judges.consistency"] },
+    { "slug": "bad-vague", "path": "evals/gold/pages/bad-vague.mdx", "label": "bad", "flaw": "No names or numbers in Problem, Market, Competitive", "expect": ["judges.specificity"] },
+    { "slug": "bad-not-actionable", "path": "evals/gold/pages/bad-not-actionable.mdx", "label": "bad", "flaw": "No steps, no stack, no business model", "expect": ["judges.actionability"] },
+    { "slug": "bad-placeholder", "path": "evals/gold/pages/bad-placeholder.mdx", "label": "bad", "flaw": "TBD price, [insert ...] placeholder, banned phrase", "expect": ["integrity.placeholder", "slop.banned"] }
+  ]
+}

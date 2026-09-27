@@ -6,7 +6,7 @@
  * re-scores every page instead of serving stale scores.
  */
 
-export const RUBRIC_VERSION = "rubric-v1";
+export const RUBRIC_VERSION = "rubric-v2";
 /** Marker the fixture transport uses to route judge calls. */
 export const JUDGE_MARKER = "TASK: JUDGE_PAGE";
 
@@ -20,13 +20,14 @@ export const DIMENSIONS = [
 ] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
 
-type Anchors = { question: string; 1: string; 3: string; 5: string };
+type Anchors = { question: string; 1: string; 2?: string; 3: string; 5: string };
 
 export const RUBRIC: Record<Dimension, Anchors> = {
   specificity: {
     question: "Does the page name real things (competitors, prices, tools, audiences, numbers, steps), or speak in generalities?",
     1: "Generic throughout: 'many businesses struggle', 'various tools exist', no names, no numbers.",
-    3: "Some named competitors or figures, but key sections (market, business model) stay vague.",
+    2: "Competitive Landscape names no real competitors or prices, or Market Research gives no real figures, even if other sections are concrete. Our page contract requires both.",
+    3: "Real competitors with prices and real market figures, but some sections (problem, business model) stay generic.",
     5: "Named competitors with prices, named communities and tools, concrete numbers and steps in every section.",
   },
   slop: {
@@ -64,6 +65,7 @@ export const RUBRIC: Record<Dimension, Anchors> = {
 export function renderRubric(): string {
   return DIMENSIONS.map((d) => {
     const r = RUBRIC[d];
-    return `${d}: ${r.question}\n  1 = ${r[1]}\n  3 = ${r[3]}\n  5 = ${r[5]}`;
+    const two = r[2] ? `\n  2 = ${r[2]}` : "";
+    return `${d}: ${r.question}\n  1 = ${r[1]}${two}\n  3 = ${r[3]}\n  5 = ${r[5]}`;
   }).join("\n\n");
 }

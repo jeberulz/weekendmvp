@@ -36,6 +36,7 @@
     "engine:eval": "node scripts/engine-eval.mjs",
     "evals:run": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/evals-run.mjs",
     "evals:changed": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/evals-run.mjs --changed",
+    "evals:calibrate": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/evals-calibrate.mjs",
     "evals:ping": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/evals-ping.mjs",
     "engine:research": "node --experimental-strip-types scripts/engine-research.mjs",
     "engine:compile": "node --experimental-strip-types scripts/engine-compile.mjs",

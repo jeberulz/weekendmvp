@@ -1,5 +1,7 @@
 # Idea page judge rubric (WP41 Layer 3)
 
+Rubric version: `rubric-v2` (2026-09-27: specificity gained a 2 anchor tied to the page contract, after calibration showed a page with unnamed competitors scoring 3).
+
 Three judges from different model families score every idea page on six dimensions, 1 to 5. The page score per dimension is the median of the judges. The prompt is built from `lib/evals/rubric.ts`; keep this file and that one in sync and bump `RUBRIC_VERSION` when either changes (it invalidates cached scores).
 
 Rules the judges follow:
@@ -12,7 +14,7 @@ Findings: median 2 or lower fails the page, median 3 warns, and judges that diff
 
 | Dimension | Question | 1 | 3 | 5 |
 |---|---|---|---|---|
-| `specificity` | Does the page name real things, or speak in generalities? | Generic throughout: no names, no numbers | Some named competitors or figures; market or business model stays vague | Named competitors with prices, named communities and tools, concrete numbers and steps everywhere |
+| `specificity` | Does the page name real things, or speak in generalities? | Generic throughout: no names, no numbers. **2:** Competitive Landscape names no real competitors or prices, or Market Research has no real figures, even if other sections are concrete (the page contract in `ideas/SECTIONS.md` requires both) | Real competitors with prices and real market figures; some other sections generic | Named competitors with prices, named communities and tools, concrete numbers and steps everywhere |
 | `slop` | Does it read like someone who knows the market, or stock AI output? | "In today's fast-paced world", "unlock", "game-changer", listicle rhythm | Mostly plain, several stock phrases | Plain, direct, specific. No filler, no hype |
 | `verbosity` | Does every paragraph earn its place? | Could lose 40%+ with no loss | Could lose 15-25% | Every paragraph adds a fact, argument or step |
 | `fake_data` | Do the figures look real and honestly sourced? | Unattributed precise or round figures, invented quotes, guesses stated as fact | Mostly attributed; some unattributed precise numbers or "inferred" values shown as data | Figures attributed, estimates labelled, nothing looks made up |

@@ -113,3 +113,16 @@ Takeaways: the corpus is light on stock AI phrasing and has no copied pages. The
 - Checks run: `npm run typecheck` pass; `npm run lint` 0 errors (35 pre-existing warnings); `npm test` pass (73 vitest cases in `lib/evals`, 19 node tests); `npm run build` pass; `git diff --check` clean.
 - Live spend this session: about $0.08.
 - Next: `WP41-S5` gold set and calibration, then `WP41-S6` weekly sweep.
+
+## 2026-09-27 - WP41-S5 gold set and calibration
+
+- Actions taken:
+  - `evals/gold/manifest.json`: 5 good published pages and 7 seeded bad copies of `ai-code-reviewer` in `evals/gold/pages/`. Each bad page breaks one thing and keeps the structure valid: slop (stock AI voice, no banned phrases, so only the judges can catch it), fake data (invented precise figures, fake testimonial), verbosity (six restating paragraphs), inconsistency (Pro price differs across sections, wrong MRR and margin math), vague (no names or numbers in Problem, Market, Competitive), not actionable (no steps, stack or business model), and a Layer 0 page (TBD price, `[insert ...]`, banned phrase).
+  - `lib/evals/calibrate.ts` (scoring + report) with tests, `scripts/evals-calibrate.mjs` (`npm run evals:calibrate -- --fixture|--live [--report] [--json]`). Runs Layer 0 without the duplication index (seeded pages are copies by design) and the judge panel. Claim checks are excluded: they depend on live sources, not the rubric.
+- First live run: 6/7 caught (86%), 0/5 false fails. The miss was `bad-vague`: specificity median 3. The judges followed the rubric, whose 3 anchor described exactly that page ("market, business model stay vague"). The page contract (`ideas/SECTIONS.md`) requires named competitors with pricing and cited market figures, so the rubric was wrong, not the judges.
+- Decision: `rubric-v2` adds a specificity 2 anchor ("Competitive Landscape names no real competitors or prices, or Market Research gives no real figures, even if other sections are concrete") and moves 3 to "real competitors and figures, some sections generic". Recorded in `evals/rubric.md`.
+- Second live run: **PASS**, 7/7 caught, 0/5 false fails, $0.12. Judges: Gemini 3.8 Flash 6/6 target hits, GPT-5.6 Luna 5/6, Claude Haiku 4.5 4/6 with 3 low scores discarded for missing verbatim quotes. No judge scored a good page at the fail threshold. The panel median carried the weaker judges, which is the reason for a three-model panel.
+- Limitation: one calibration run per rubric version. Repeat runs hit the cache ($0) and return the same scores, so they do not measure run-to-run variance. A variance check needs a cache bypass and costs about $0.12 per run.
+- Checks run: `npm run typecheck` pass; `npm run lint` 0 errors (35 pre-existing warnings); `npm test` pass (78 vitest cases in `lib/evals`); `npm run build` pass; `git diff --check` clean.
+- Rule going forward: change a threshold, the rubric, a prompt or a judge model only if `npm run evals:calibrate -- --live` still passes, and commit the new `evals/results/calibration.md`.
+- Next: `WP41-S6` weekly sweep.

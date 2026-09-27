@@ -46,7 +46,10 @@ reads prices live. Check wiring with `npm run evals:ping -- --fixture`
 (no key) or `-- --live` (`OPENROUTER_API_KEY`). Claim checks and
 the 3-model judge panel: `npm run evals:run -- --slug {slug} --layers 3 --live`
 (`--layers 2` for claims only; `--estimate` for the worst-case cost). Rubric:
-`evals/rubric.md`. Results cache in `evals/cache/` (gitignored).
+`evals/rubric.md`. Before changing a threshold, the rubric, a prompt or a
+judge model, run `npm run evals:calibrate -- --live --report` (gold set in
+`evals/gold/`, ~$0.12) and commit `evals/results/calibration.md` only if it
+passes. Results cache in `evals/cache/` (gitignored).
 
 ## Accessibility
 

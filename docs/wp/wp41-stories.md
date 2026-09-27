@@ -60,7 +60,15 @@ Definition of done: every new or edited idea page is scored by a layered quality
   - Verification:
     - `npm run test:evals`, fixture and live runs on the 3 reference pages plus `phone-neck-score-app`, seeded bad page
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
-- [ ] `WP41-S5` - Gold set (3 reference pages + seeded bad copies) and `evals:calibrate`
+- [x] `WP41-S5` - Gold set (3 reference pages + seeded bad copies) and `evals:calibrate`
+  - Scope: `evals/gold/` (manifest + 7 seeded pages), `lib/evals/calibrate.ts` + tests, `scripts/evals-calibrate.mjs`, `evals/results/calibration.md`, rubric (`rubric-v2`), `package.json`, docs
+  - Acceptance criteria:
+    - Gold set: 5 good published pages (the 3 SECTIONS.md reference pages, `phone-neck-score-app`, `contractor-ai-receptionist`) and 7 seeded bad copies of `ai-code-reviewer`, one per judge dimension plus one Layer 0 page.
+    - `npm run evals:calibrate -- --live` runs Layer 0 and the judges on every gold page and passes only when at least 90% of bad pages fail with their expected checks and no good page fails. Per-judge target hits, good-page alarms, discarded scores and distance from the median are reported.
+    - Live run passes; `evals/results/calibration.md` committed as the baseline.
+  - Verification:
+    - `npm run test:evals`, `npm run evals:calibrate -- --fixture`, `npm run evals:calibrate -- --live --report`
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 - [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
 
 ## Out Of Scope

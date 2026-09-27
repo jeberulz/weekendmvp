@@ -1,0 +1,119 @@
+---
+slug: "bad-vague"
+title: "Gold: vague"
+---
+
+## The Problem
+
+Many teams find that some parts of their development process could be better. Reviews can sometimes take a while, and there may be various issues that come up from time to time. Different people have different experiences, and outcomes vary depending on the situation.
+
+## The Solution
+
+A GitHub bot that automatically reviews every PR using AI. It catches common bugs, security issues, and code smells instantly—before human reviewers even look at the code. Humans focus on architecture and logic; the bot handles the tedious stuff.
+
+**How it works:**
+
+1. **Install GitHub App** — One-click install on your repos
+2. **Open a PR** — Bot reviews automatically
+3. **Get inline comments** — Suggestions right on the diff
+
+## Market Research
+
+The market for tools in this area appears to be growing, according to various reports. Many developers use some kind of tooling, and interest seems to be rising. There are opportunities for new entrants who can offer something useful to certain kinds of teams.
+
+- Some developers say reviews take time.
+- Several companies have raised money in related areas.
+- The overall market is expected to grow in the coming years.
+
+## Competitive Landscape
+
+There are a number of existing solutions in this space, offered at a range of price points. Some are larger and some are smaller. Each has strengths and weaknesses depending on the use case.
+
+- **Existing tool A** — A popular option with various features. Pricing varies.
+- **Existing tool B** — Another option that some teams use. Pricing varies.
+- **Existing tool C** — A tool with a different approach. Pricing varies.
+
+**Your Opportunity**
+
+There may be room for a product that does things somewhat differently and appeals to some users.
+
+## Business Model
+
+Per-developer SaaS with a generous OSS tier to seed GitHub App discovery and word-of-mouth inside engineering Slacks. Pro priced below CodeRabbit’s $15 floor; Team tier adds governance and dashboards for sub-50-dev teams who don’t want to evaluate enterprise suites.
+
+- **OSS / Free** ($0) — Public repos, unlimited PRs, standard review depth; personal Pro trial on private repos for 14 days
+- **Pro** ($9/dev/mo) — Private repos, inline PR comments, custom style guide, security and secret scanning, PR summaries
+- **Team** ($19/dev/mo) — Org-wide style rules, review analytics, SSO, required-review policies, Slack/Linear hooks
+
+**Unit Economics (illustrative)**
+
+- **$0.05–0.25** — LLM cost per PR
+- **~70%** — Gross margin Pro
+- **$30–60** — Target CAC
+- **115%+** — Net retention
+
+## Recommended Tech Stack
+
+This is a GitHub App with an LLM behind it. The hard parts are webhook durability, diff context selection (keep token cost sane), and caching repo style guides. Ship Node + Octokit on Fly.io, store reviews in Postgres, use BullMQ for the review queue, and keep the frontend minimal—the product surface is GitHub, not your dashboard.
+
+- **GitHub App + Octokit** — Install-once GitHub App with pull_request and pull_request_review_comment webhooks. Octokit for scoped API calls; signed webhook validation is non-negotiable.
+- **Claude + GPT-4o fallback** — Claude for primary PR review with prompt caching on style guides (huge margin win); GPT-4o fallback for rate-limit or incident failover. Model-agnostic router from day one.
+- **Postgres (Neon or Supabase)** — Installations, repos, reviews, token-usage-per-review for billing. pgvector optional for repo style-guide retrieval on larger plans.
+- **BullMQ + Redis** — Review queue with retry and backoff so a GitHub outage or LLM hiccup doesn’t drop a PR. Per-install concurrency caps for fairness.
+- **Fly.io (Node + TypeScript)** — Multi-region deploy for low-latency webhook acknowledgement, long-running worker processes for review generation, simple Dockerfile, cheap at small scale.
+- **Stripe + Next.js dashboard** — Per-seat metered billing via Stripe Billing. Minimal Next.js dashboard for install status, review history, and style-guide config—keep the product surface inside GitHub.
+
+## AI Prompts to Build This
+
+Copy and paste these into Claude, Cursor, or your favorite AI tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js app for an AI Code Reviewer GitHub App.
+
+The app needs:
+- GitHub App OAuth flow for installation
+- Webhook endpoint to receive PR events
+- Dashboard showing: installed repos, recent reviews, settings
+- Landing page explaining the product with "Install" CTA
+
+Use Probot library to simplify GitHub App development.
+Set up webhook handling for pull_request.opened and pull_request.synchronize events.
+```
+
+**2. Core Feature**
+
+```text
+When a PR webhook is received:
+
+1. Fetch the PR diff using GitHub API
+2. For each changed file, send to Claude/GPT-4 with this prompt:
+   "Review this code diff. Identify: bugs, security issues, performance problems, and style issues. For each issue, specify the line number and provide a suggested fix."
+3. Parse the AI response and create GitHub review comments on specific lines
+4. Post a summary comment with overall assessment
+
+Handle rate limits and large PRs by chunking files.
+```
+
+**3. Configuration**
+
+```text
+Add per-repo configuration via .ai-reviewer.yml file:
+
+- review_focus: ["security", "performance", "style"] - what to check
+- ignore_patterns: ["*.test.js", "vendor/*"] - files to skip
+- severity_threshold: "warning" - minimum severity to comment
+- auto_approve: false - whether to approve clean PRs
+
+Parse this config on each review and adjust AI prompt accordingly.
+```
+
+## Sources
+
+Market and competitive signals collated from public reports and vendor pages (verify before citing in investor materials).
+
+- [GitHub Octoverse — developer population](https://github.blog/news-insights/octoverse/the-state-of-open-source-and-ai/)
+- [TechCrunch — CodeRabbit Series A](https://techcrunch.com/2024/08/14/coderabbit-raises-16m-series-a/)
+- [Stack Overflow Developer Survey](https://survey.stackoverflow.co/)
+- [CodeRabbit pricing](https://www.coderabbit.ai/pricing)
