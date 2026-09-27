@@ -27,7 +27,7 @@ export const noteSchema = multiLineText(L.noteChars);
 /* ------------------------------------------------------------------ */
 
 export const IDEA_SORTS = ["updated_desc", "updated_asc", "title_asc"] as const;
-export const SEVERITY_FILTERS = ["blocking", "warnings", "clean"] as const;
+export const SEVERITY_FILTERS = ["blocking", "evidence", "warnings", "clean"] as const;
 export const COVERAGE_FILTERS = ["complete", "partial", "none"] as const;
 export const FRESHNESS_FILTERS = ["fresh", "aging", "stale", "unknown"] as const;
 

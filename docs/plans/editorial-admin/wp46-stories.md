@@ -38,10 +38,10 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
     - The fixture adapter refuses to construct when `NODE_ENV` is `production`.
   - Verification: `npx vitest run tests/editorial`, `npm run typecheck`, `npm run lint`, `git diff --check`.
 
-- [ ] `WP46-E1` - Private shell, review queue and library
+- [x] `WP46-E1` - Private shell, review queue and library
   - Scope: `app/admin/editorial/**` (layout, queue, library), `components/admin/editorial/{shell,queue,library,common}/**`, `lib/editorial/runtime/**`.
   - Acceptance criteria:
-    - Production builds answer every editorial path with the site's standard 404 and contain no fixture module or fixture text (checked by a production build scan). Development and test need the explicit `EDITORIAL_FIXTURE_MODE=local-demo` opt-in. No query parameter, cookie, browser storage or production environment variable enables the workspace. Every server action re-checks the mode.
+    - Production builds answer every editorial path with HTTP 404 and `noindex`, with no editorial copy, data, fixture module or fixture text (production build scan plus live probe). Byte-identical responses to an unknown path need the proxy seam and are an E4 item. Development and test need the explicit `EDITORIAL_FIXTURE_MODE=local-demo` opt-in. No query parameter, cookie, browser storage or production environment variable enables the workspace. Every page, metadata function and server action re-checks access.
     - A conspicuous "Local demo — fictional data" banner appears on every fixture screen; simulated approvals and releases are labelled as simulated.
     - A separate editorial shell: 216px sidebar (Review queue, Library, Releases, Trash, Activity, Settings) and a header reading "Weekend MVP / Editorial" with environment, connection state and account. No member-dashboard navigation; no member or public UI changes.
     - The review queue is the default landing page. Its summary line is derived from data. A semantic table shows title + buyer, candidate decision, working revision, publication state, blockers, reviewed sections, evidence freshness and updated time. Server-side filters (decision/bucket, issue severity, source age, engine run, buyer/category) and cursor pagination.

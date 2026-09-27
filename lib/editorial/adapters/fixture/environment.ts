@@ -47,7 +47,6 @@ export function createSeedClock(): SeedClock & { followRealTime(): void } {
   };
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function createFixtureEnvironment(options: { nowMs?: number } = {}): Promise<FixtureEnvironment> {
   assertFixtureModeAllowed();
@@ -62,7 +61,7 @@ export async function createFixtureEnvironment(options: { nowMs?: number } = {})
     demo,
     clock,
     // Seed history over the fortnight before "now".
-    startMs: referenceNow - 14 * DAY_MS,
+    nowMs: referenceNow,
   });
   if (options.nowMs === undefined) clock.followRealTime();
   else clock.set(Math.max(clock.now(), referenceNow));

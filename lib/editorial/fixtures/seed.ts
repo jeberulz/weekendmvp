@@ -52,9 +52,15 @@ export type FixtureScenarioIds = Record<FixtureScenario, string>;
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
 
 function must<T>(result: CommandResult<T>, step: string): T {
-  if (!result.ok) throw new Error(`Fixture seed failed at "${step}": ${result.error.code} ${result.error.message}`);
+  if (!result.ok) {
+    const blockers = result.error.blockers?.map((blocker) => `${blocker.code}: ${blocker.message}`).join("; ");
+    throw new Error(
+      `Fixture seed failed at "${step}": ${result.error.code} ${result.error.message}${blockers ? ` [${blockers}]` : ""}`,
+    );
+  }
   return result.value;
 }
 
@@ -219,7 +225,7 @@ export async function seedFixtureScenarios(input: {
   editor: EditorialRepository;
   demo: FixtureDemoControls;
   clock: SeedClock;
-  startMs: number;
+  nowMs: number;
 }): Promise<FixtureScenarioIds> {
   const ctx: Context = {
     ...input,
@@ -228,9 +234,15 @@ export async function seedFixtureScenarios(input: {
     counter: 0,
   };
   const { clock, demo } = ctx;
-  clock.set(input.startMs);
+  /** Place steps on a readable timeline. Time only moves forward. */
+  const daysAgo = (days: number) => {
+    const target = input.nowMs - days * DAY;
+    if (target < clock.now()) throw new Error(`Seed timeline moved backwards at ${days} days ago`);
+    clock.set(target);
+  };
 
-  /* Legacy pages that were live before the workspace ------------------ */
+  /* 14 days ago: legacy pages that were live before the workspace ------------ */
+  clock.set(input.nowMs - 14 * DAY);
   for (const filler of legacyFillers) {
     await importLegacy(ctx, filler);
     clock.advance(7 * MINUTE);
@@ -238,159 +250,13 @@ export async function seedFixtureScenarios(input: {
   const legacyNoRecord = (await importLegacy(ctx, menuCostCalculator)).ideaId;
   const legacyQuarantined = (await importLegacy(ctx, podcastShowNotes)).ideaId;
   const unpublished = (await importLegacy(ctx, listingCaptionWriter)).ideaId;
-  clock.advance(6 * HOUR);
 
-  /* Stale approval: approved under the old policy, then the policy moves on. */
-  const staleApproval = (await importEngine(ctx, coldChainLogger)).ideaId;
-  await accept(ctx, staleApproval, "Clear buyer and a proof-of-care wedge florists already ask for.");
-  const coldRevision = await workingRevisionId(ctx, staleApproval);
-  await reviewEverything(ctx, staleApproval, coldRevision);
-  await approve(ctx, staleApproval, coldRevision, "Evidence is thin but specific.");
-  clock.advance(2 * HOUR);
-  await demo.bumpPolicyVersion();
-  clock.advance(HOUR);
-
-  /* Flagship: live v2 with an edited v3 draft ------------------------------ */
-  const flagship = (
-    await importEngine(ctx, invoiceFollowUp, {
-      reasons: ["Two independent pain sources", "First-party competitor pricing", "Narrow approval-first wedge"],
-    })
-  ).ideaId;
-  await accept(ctx, flagship, "Specific buyer, measurable pain and a wedge incumbents ignore.");
-  const flagshipV2 = await fork(ctx, flagship);
-  await edit(ctx, flagship, flagshipV2, (markdown) =>
-    markdown.replace("It is a drafting and timing tool, not a collections agency.", "It drafts and times reminders; it is not a collections agency."),
-  );
-  await runChecks(ctx, flagship, flagshipV2);
-  await reviewEverything(ctx, flagship, flagshipV2);
-  const flagshipApproval = await approve(ctx, flagship, flagshipV2, "Reviewed every claim against its excerpt.");
-  await prepareAndPublish(ctx, flagship, flagshipV2, flagshipApproval, ["succeeded"]);
-  clock.advance(3 * HOUR);
-  const flagshipV3 = await fork(ctx, flagship);
-  await edit(ctx, flagship, flagshipV3, (markdown) =>
-    markdown
-      .replace(
-        "sizes the freelance invoicing software market at $1.8 billion in 2025",
-        "puts spending on freelance invoicing tools near $2 billion",
-      )
-      .replace("Charge a flat monthly fee rather than a share of recovered money", "Charge a flat monthly fee, never a share of recovered money"),
-  );
-  await runChecks(ctx, flagship, flagshipV3);
-  clock.advance(HOUR);
-
-  /* New engine candidate awaiting your decision ------------------------------ */
-  const newCandidate = (
-    await importEngine(ctx, shiftSwapBoard, {
-      reasons: ["Licence rule is a real constraint", "Owner covers shifts personally", "Cheap to reach through associations"],
-    })
-  ).ideaId;
-  clock.advance(40 * MINUTE);
-
-  /* Accepted, awaiting copy review (3 items reviewed) -------------------------- */
-  const acceptedAwaitingReview = (await importEngine(ctx, allergenLabelChecker)).ideaId;
-  await accept(ctx, acceptedAwaitingReview, "Regulated pain with a clear, bounded weekend build.");
-  await reviewEverything(ctx, acceptedAwaitingReview, await workingRevisionId(ctx, acceptedAwaitingReview), 3);
-  clock.advance(50 * MINUTE);
-
-  /* Duplicate rejected ------------------------------------------------------------ */
-  const duplicateRejected = (
-    await importEngine(ctx, paymentRemindersDuplicate, {
-      recommendation: "accept",
-      reasons: ["High search volume for payment reminders"],
-      proposedSlug: invoiceFollowUp.slug,
-    })
-  ).ideaId;
-  must(
-    await ctx.editor.setCandidateDecision(duplicateRejected, await ideaVersion(ctx, duplicateRejected), {
-      decision: "rejected",
-      reasonCategory: "duplicate",
-      note: "Same buyer and job as Invoice follow-up for freelancers, with a weaker wedge.",
-    }),
-    "reject duplicate",
-  );
-  clock.advance(30 * MINUTE);
-
-  /* Evidence unavailable → needs research ------------------------------------------ */
-  const evidenceUnavailable = (
-    await importEngine(ctx, grantDeadlineTracker, {
-      recommendation: "needs_research",
-      reasons: ["Key sources unreadable", "Market size unverified"],
-    })
-  ).ideaId;
-  must(
-    await ctx.editor.setCandidateDecision(evidenceUnavailable, await ideaVersion(ctx, evidenceUnavailable), {
-      decision: "needs_research",
-      question: "Find a readable primary source for missed grant reports, and a count of small charities we can cite.",
-    }),
-    "needs research",
-  );
-  clock.advance(45 * MINUTE);
-
-  /* Changed source after review ------------------------------------------------------- */
-  const changedSource = (await importEngine(ctx, warrantyTracker)).ideaId;
-  await accept(ctx, changedSource, "Recoverable money with a simple capture flow.");
-  const warrantyRevision = await workingRevisionId(ctx, changedSource);
-  await reviewEverything(ctx, changedSource, warrantyRevision);
-  clock.advance(2 * HOUR);
-  await demo.simulateSourceChange(warrantyRevision, "src-homeledger-pricing");
-  clock.advance(30 * MINUTE);
-
-  /* Conflicting autosave ------------------------------------------------------------------ */
-  const conflictingAutosave = (await importEngine(ctx, lessonScheduler)).ideaId;
-  await accept(ctx, conflictingAutosave, "Lost lessons are lost income; the fix is narrow.");
-  const lessonDraft = await fork(ctx, conflictingAutosave);
-  demo.simulateConcurrentEdit(lessonDraft);
-  clock.advance(35 * MINUTE);
-
-  /* Failed deployment of a republication (v1 stays live) ----------------------------------- */
-  const failedDeployment = (await importEngine(ctx, bikePartsLookup)).ideaId;
-  await accept(ctx, failedDeployment, "Counter-side pain with measurable minutes saved.");
-  const bikeV1 = await workingRevisionId(ctx, failedDeployment);
-  await reviewEverything(ctx, failedDeployment, bikeV1);
-  const bikeApprovalV1 = await approve(ctx, failedDeployment, bikeV1);
-  await prepareAndPublish(ctx, failedDeployment, bikeV1, bikeApprovalV1, ["succeeded"]);
-  clock.advance(2 * HOUR);
-  const bikeV2 = await fork(ctx, failedDeployment);
-  await edit(ctx, failedDeployment, bikeV2, (markdown) =>
-    markdown.replace("Scan the frame or type the model;", "Scan the frame, or type the model,"),
-  );
-  await runChecks(ctx, failedDeployment, bikeV2);
-  await reviewEverything(ctx, failedDeployment, bikeV2);
-  const bikeApprovalV2 = await approve(ctx, failedDeployment, bikeV2);
-  demo.failNextDeploy();
-  await prepareAndPublish(ctx, failedDeployment, bikeV2, bikeApprovalV2, ["failed"]);
-  clock.advance(HOUR);
-
-  /* Uncertain activation (acknowledgement lost) ---------------------------------------------- */
-  const uncertainActivation = (await importEngine(ctx, groomerWaitlist)).ideaId;
-  await accept(ctx, uncertainActivation, "Route-aware offers are a real wedge for mobile groomers.");
-  const groomerRevision = await workingRevisionId(ctx, uncertainActivation);
-  await reviewEverything(ctx, uncertainActivation, groomerRevision);
-  const groomerApproval = await approve(ctx, uncertainActivation, groomerRevision);
-  demo.loseNextActivationAck();
-  await prepareAndPublish(ctx, uncertainActivation, groomerRevision, groomerApproval, ["needs_reconciliation"]);
-  clock.advance(HOUR);
-
-  /* Unpublished legacy idea ------------------------------------------------------------------- */
-  demo.confirmStrongAuth();
-  const liveRelease = currentLive(ctx, unpublished);
-  if (!liveRelease) throw new Error("Legacy idea is not live");
-  const { releaseId: unpublishRelease } = must(
-    await ctx.editor.unpublishIdea(
-      unpublished,
-      liveRelease,
-      "Advertising-wording claims need a legal review before this stays public.",
-      "seed-unpublish-1",
-    ),
-    "unpublish",
-  );
-  await runWorkerUntil(ctx, unpublishRelease, ["succeeded"]);
-  clock.advance(40 * MINUTE);
-
-  /* Rejected, then moved to Trash ---------------------------------------------------------------- */
+  /* Rejected, then moved to Trash ---------------------------------------------- */
+  daysAgo(12.5);
   const trashed = (
     await importEngine(ctx, cryptoTaxBot, { recommendation: "reject", reasons: ["Regulated trading activity"] })
   ).ideaId;
+  clock.advance(3 * HOUR);
   must(
     await ctx.editor.setCandidateDecision(trashed, await ideaVersion(ctx, trashed), {
       decision: "rejected",
@@ -404,18 +270,147 @@ export async function seedFixtureScenarios(input: {
     await ctx.editor.trashIdea(trashed, await ideaVersion(ctx, trashed), "Out of scope for Weekend MVP: regulated activity."),
     "trash",
   );
-  clock.advance(30 * MINUTE);
+
+  /* Unpublished legacy idea --------------------------------------------------------- */
+  daysAgo(10.1);
+  demo.confirmStrongAuth();
+  const liveRelease = currentLive(ctx, unpublished);
+  if (!liveRelease) throw new Error("Legacy idea is not live");
+  const { releaseId: unpublishRelease } = must(
+    await ctx.editor.unpublishIdea(
+      unpublished,
+      liveRelease,
+      "Advertising-wording claims need a legal review before this stays public.",
+      "seed-unpublish-1",
+    ),
+    "unpublish",
+  );
+  await runWorkerUntil(ctx, unpublishRelease, ["succeeded"]);
+
+  /* Bike parts v1 goes live (its republication fails later) -------------------------- */
+  daysAgo(9.4);
+  const failedDeployment = (await importEngine(ctx, bikePartsLookup)).ideaId;
+  await accept(ctx, failedDeployment, "Counter-side pain with measurable minutes saved.");
+  const bikeV1 = await workingRevisionId(ctx, failedDeployment);
+  await reviewEverything(ctx, failedDeployment, bikeV1);
+  const bikeApprovalV1 = await approve(ctx, failedDeployment, bikeV1);
+  await prepareAndPublish(ctx, failedDeployment, bikeV1, bikeApprovalV1, ["succeeded"]);
+
+  /* Evidence unavailable → needs research ------------------------------------------ */
+  daysAgo(8.6);
+  const evidenceUnavailable = (
+    await importEngine(ctx, grantDeadlineTracker, {
+      recommendation: "needs_research",
+      reasons: ["Key sources unreadable", "Market size unverified"],
+    })
+  ).ideaId;
+  clock.advance(5 * HOUR);
+  must(
+    await ctx.editor.setCandidateDecision(evidenceUnavailable, await ideaVersion(ctx, evidenceUnavailable), {
+      decision: "needs_research",
+      question: "Find a readable primary source for missed grant reports, and a count of small charities we can cite.",
+    }),
+    "needs research",
+  );
+
+  /* Cold chain approved (its source changes later: stale approval) ------------------- */
+  daysAgo(7.3);
+  const staleApproval = (await importEngine(ctx, coldChainLogger)).ideaId;
+  await accept(ctx, staleApproval, "Clear buyer and a proof-of-care wedge florists already ask for.");
+  const coldRevision = await workingRevisionId(ctx, staleApproval);
+  await reviewEverything(ctx, staleApproval, coldRevision);
+  await approve(ctx, staleApproval, coldRevision, "Evidence is thin but specific.");
+
+  /* Warranty reviewed (its source changes later) ----------------------------------- */
+  daysAgo(6.5);
+  const changedSource = (await importEngine(ctx, warrantyTracker)).ideaId;
+  await accept(ctx, changedSource, "Recoverable money with a simple capture flow.");
+  const warrantyRevision = await workingRevisionId(ctx, changedSource);
+  await reviewEverything(ctx, changedSource, warrantyRevision);
+
+  /* Flagship imported, edited to v2 and approved -------------------------------------- */
+  daysAgo(6);
+  const flagship = (
+    await importEngine(ctx, invoiceFollowUp, {
+      reasons: ["Two independent pain sources", "First-party competitor pricing", "Narrow approval-first wedge"],
+    })
+  ).ideaId;
+  await accept(ctx, flagship, "Specific buyer, measurable pain and a wedge incumbents ignore.");
+  const flagshipV2 = await fork(ctx, flagship);
+  await edit(ctx, flagship, flagshipV2, (markdown) =>
+    markdown.replace("It is a drafting and timing tool, not a collections agency.", "It drafts and times reminders; it is not a collections agency."),
+  );
+  await runChecks(ctx, flagship, flagshipV2);
+  await reviewEverything(ctx, flagship, flagshipV2);
+  const flagshipApproval = await approve(ctx, flagship, flagshipV2, "Reviewed every claim against its excerpt.");
+
+  /* Duplicate rejected ------------------------------------------------------------ */
+  daysAgo(5.6);
+  const duplicateRejected = (
+    await importEngine(ctx, paymentRemindersDuplicate, {
+      recommendation: "accept",
+      reasons: ["High search volume for payment reminders"],
+      proposedSlug: invoiceFollowUp.slug,
+    })
+  ).ideaId;
+  clock.advance(2 * HOUR);
+  must(
+    await ctx.editor.setCandidateDecision(duplicateRejected, await ideaVersion(ctx, duplicateRejected), {
+      decision: "rejected",
+      reasonCategory: "duplicate",
+      note: "Same buyer and job as Invoice follow-up for freelancers, with a weaker wedge.",
+    }),
+    "reject duplicate",
+  );
+
+  /* Groomer waitlist approved (published later) ---------------------------------------- */
+  daysAgo(5.2);
+  const uncertainActivation = (await importEngine(ctx, groomerWaitlist)).ideaId;
+  await accept(ctx, uncertainActivation, "Route-aware offers are a real wedge for mobile groomers.");
+  const groomerRevision = await workingRevisionId(ctx, uncertainActivation);
+  await reviewEverything(ctx, uncertainActivation, groomerRevision);
+  const groomerApproval = await approve(ctx, uncertainActivation, groomerRevision);
+
+  /* Conflicting autosave ------------------------------------------------------------------ */
+  daysAgo(4.6);
+  const conflictingAutosave = (await importEngine(ctx, lessonScheduler)).ideaId;
+  await accept(ctx, conflictingAutosave, "Lost lessons are lost income; the fix is narrow.");
+  const lessonDraft = await fork(ctx, conflictingAutosave);
+  demo.simulateConcurrentEdit(lessonDraft);
+
+  /* Bike parts v2 republication fails; v1 stays live ------------------------------------- */
+  daysAgo(4.2);
+  const bikeV2 = await fork(ctx, failedDeployment);
+  await edit(ctx, failedDeployment, bikeV2, (markdown) =>
+    markdown.replace("Scan the frame or type the model;", "Scan the frame, or type the model,"),
+  );
+  await runChecks(ctx, failedDeployment, bikeV2);
+  await reviewEverything(ctx, failedDeployment, bikeV2);
+  const bikeApprovalV2 = await approve(ctx, failedDeployment, bikeV2);
+  demo.failNextDeploy();
+  await prepareAndPublish(ctx, failedDeployment, bikeV2, bikeApprovalV2, ["failed"]);
+
+  /* Accepted, awaiting copy review (3 items reviewed) -------------------------- */
+  daysAgo(3.7);
+  const acceptedAwaitingReview = (await importEngine(ctx, allergenLabelChecker)).ideaId;
+  await accept(ctx, acceptedAwaitingReview, "Regulated pain with a clear, bounded weekend build.");
+  await reviewEverything(ctx, acceptedAwaitingReview, await workingRevisionId(ctx, acceptedAwaitingReview), 3);
 
   /* Approved with a protected preview ready to publish ------------------------------------------ */
+  daysAgo(3.1);
   const previewReady = (await importEngine(ctx, receiptSplitter)).ideaId;
   await accept(ctx, previewReady, "Itemised splitting is the gap competitors leave.");
   const receiptRevision = await workingRevisionId(ctx, previewReady);
   await reviewEverything(ctx, previewReady, receiptRevision);
   const receiptApproval = await approve(ctx, previewReady, receiptRevision, "Short but complete.");
   await prepareAndPublish(ctx, previewReady, receiptRevision, receiptApproval, ["preview_ready"]);
-  clock.advance(25 * MINUTE);
+
+  /* Cold chain: a supporting source changes after approval ------------------------------ */
+  daysAgo(2.4);
+  await demo.simulateSourceChange(coldRevision, "src-frosttrail-pricing");
 
   /* Changes requested ----------------------------------------------------------------------------- */
+  daysAgo(2.2);
   const changesRequested = (await importEngine(ctx, shopifyOnboarding)).ideaId;
   await accept(ctx, changesRequested, "Launch mistakes are costly and easy to detect.");
   const shopifyRevision = await workingRevisionId(ctx, changesRequested);
@@ -427,7 +422,40 @@ export async function seedFixtureScenarios(input: {
     ),
     "request changes",
   );
-  clock.advance(20 * MINUTE);
+
+  /* Warranty: a reviewed source changes on recheck ------------------------------------------ */
+  daysAgo(1.8);
+  await demo.simulateSourceChange(warrantyRevision, "src-homeledger-pricing");
+
+  /* Flagship v2 goes live ------------------------------------------------------------------------ */
+  daysAgo(1.6);
+  await prepareAndPublish(ctx, flagship, flagshipV2, flagshipApproval, ["succeeded"]);
+
+  /* Groomer waitlist: activation acknowledgement lost ------------------------------------------- */
+  daysAgo(0.9);
+  demo.loseNextActivationAck();
+  await prepareAndPublish(ctx, uncertainActivation, groomerRevision, groomerApproval, ["needs_reconciliation"]);
+
+  /* Flagship v3 edited this morning -------------------------------------------------------------- */
+  daysAgo(0.2);
+  const flagshipV3 = await fork(ctx, flagship);
+  await edit(ctx, flagship, flagshipV3, (markdown) =>
+    markdown
+      .replace(
+        "sizes the freelance invoicing software market at $1.8 billion in 2025",
+        "puts spending on freelance invoicing tools near $2 billion",
+      )
+      .replace("Charge a flat monthly fee rather than a share of recovered money", "Charge a flat monthly fee, never a share of recovered money"),
+  );
+  await runChecks(ctx, flagship, flagshipV3);
+
+  /* New engine candidate awaiting your decision ------------------------------ */
+  daysAgo(0.1);
+  const newCandidate = (
+    await importEngine(ctx, shiftSwapBoard, {
+      reasons: ["Licence rule is a real constraint", "Owner covers shifts personally", "Cheap to reach through associations"],
+    })
+  ).ideaId;
 
   demo.expireStrongAuth();
   return {

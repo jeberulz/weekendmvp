@@ -91,7 +91,8 @@ describe("seeded scenarios", () => {
     const summary = await env.editor().getQueueSummary();
     expect(summary.ok && summary.value).toEqual({
       needReview: 7,
-      blockedByEvidence: 3,
+      // Flagship re-worded claim, unreadable grant sources, warranty source change, cold-chain source change.
+      blockedByEvidence: 4,
       releasesNeedingAttention: 2,
       buckets: { new: 1, awaiting_review: 5, needs_research: 1, changes_requested: 1, rejected: 1 },
     });
@@ -157,10 +158,18 @@ describe("seeded scenarios", () => {
     expect(result.ok ? "OK" : result.error.code).toBe("VERSION_CONFLICT");
   });
 
-  test("stale approval: revoked when the quality policy changed", async () => {
+  test("stale approval: revoked when a supporting source changed after approval", async () => {
     const view = await working("staleApproval");
     expect(view.approval?.status).toBe("revoked");
-    expect(view.approval?.revokedReason).toMatch(/Quality policy changed/);
+    expect(view.approval?.revokedReason).toMatch(/source changed after approval/);
+    expect(view.eligibility.blockers.map((blocker) => blocker.code)).toContain("UNSUPPORTED_CLAIM");
+  });
+
+  test("the seeded history is chronological", async () => {
+    const activity = await env.editor().listActivity({ ideaId: null, outcome: null }, null, 100);
+    if (!activity.ok) throw new Error(activity.error.message);
+    const times = activity.value.items.map((entry) => entry.at);
+    expect([...times].sort().reverse()).toEqual(times);
   });
 
   test("failed deployment: v1 stays live and the failure needs attention", async () => {

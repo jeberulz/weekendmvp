@@ -320,7 +320,8 @@ export class FixtureEditorialRepository implements EditorialRepository {
       const bucket = queueBucketFor(item);
       if (!bucket) continue;
       buckets[bucket] += 1;
-      if (bucket !== "rejected" && item.blockers.evidence > 0) blockedByEvidence += 1;
+      // Counts exactly what the queue lists under the "Evidence blockers" filter.
+      if (item.blockers.evidence > 0) blockedByEvidence += 1;
     }
     let releasesNeedingAttention = 0;
     for (const idea of this.state.ideas.values()) {
@@ -358,6 +359,7 @@ export class FixtureEditorialRepository implements EditorialRepository {
       }
       if (f.decision && item.candidate.state !== f.decision) continue;
       if (f.severity === "blocking" && item.blockers.blocking === 0) continue;
+      if (f.severity === "evidence" && item.blockers.evidence === 0) continue;
       if (f.severity === "warnings" && (item.blockers.warnings === 0 || item.blockers.blocking > 0)) continue;
       if (f.severity === "clean" && (item.blockers.blocking > 0 || item.blockers.warnings > 0)) continue;
       if (f.sourceAge && item.evidence.freshness !== f.sourceAge) continue;

@@ -29,3 +29,20 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
   - `npm run typecheck`: pass. `npm run lint`: 0 errors, 35 warnings (the existing baseline; none in new files). Staged whitespace check (`diff --cached --check`): pass.
 - Limitation, stated honestly: fixture tests serialise commands in one process. They prove the rules, not real concurrency, deployment or authentication.
 - Integration note for a later lockfile window: the Markdown parser packages (`mdast-util-from-markdown`, `mdast-util-gfm`, `micromark-extension-gfm`) are resolved through `remark-gfm`'s dependency tree and should become direct dependencies.
+
+## 2026-09-27 - WP46-E1 private shell, review queue and library
+
+- Routes under `app/admin/editorial/**`: review queue (default landing), library, releases, trash, activity and settings, with their own shell (216px sidebar at 1280px and wider, a menu sheet below that), the always-on "Local demo — fictional data" banner, and a header showing environment, data source and account. Releases, trash, activity and settings are read views here; their commands arrive in E3.
+- Access: `lib/editorial/runtime/workspace.ts` is the only door. Production never reaches fixture code (the branch is compiled out); development needs the exact `EDITORIAL_FIXTURE_MODE=local-demo`. Every page and metadata function calls `assertEditorialRoutesEnabled()` first and checks access itself; page headings render only after access is confirmed.
+- Production finding and fix: the first production probe showed each page's static header serialised into the 404 response (layouts render in parallel with pages) and a missing `<title>`. Guarding every page and `generateMetadata`, and gating headings, removed all editorial copy from denied responses. Residual, documented rather than hidden: the denial is Next's static error shell (real 404, `noindex`, visitors see the normal 404 page) but it is distinguishable from an unknown path until the proxy seam is used (E4).
+- Accessibility finding and fix: the keyboard pass showed invisible focus rings. In Tailwind v4, `outline-none`/`outline-hidden` set `--tw-outline-style: none`, which `focus-visible:outline-2` inherits. Every editorial focus ring now adds `focus-visible:outline-solid`, verified in the browser (`solid 2px`), and a guard test enforces it. The same pattern in the member dashboard's `WorkspaceSearch.tsx` was flagged as a separate task, not changed here.
+- Seed timeline: scenarios now run on a strictly forward timeline over the last fortnight; "stale approval" comes from a source changing after approval (the seed caught a duplicate reserving the original's slug when ordered wrongly — the state machine refused the approval, as it should).
+- Checks run:
+  - `npx vitest run tests/editorial`: 10 files, 111 tests passed.
+  - `npm run typecheck`: pass. `npx eslint` on the editorial paths: clean.
+  - `npm run build`: pass; editorial routes are static 404s (○).
+  - `node tests/editorial/scripts/verify-production-build.mjs --probe http://localhost:3247` with `EDITORIAL_FIXTURE_MODE=local-demo` set on the production server: 4,143 build files contain no fixture sentinels (positive control: the dev bundle does); all 10 probed paths return 404 with `noindex` and no editorial or fixture text, including query-string and cookie attempts to enable fixture mode.
+  - axe-core 4.12.1 (WCAG 2.0/2.1 A and AA) in the browser: 0 violations on the queue, library, releases, trash, activity and settings at 1440px, and on the queue at 375px with the menu sheet open.
+  - Keyboard: logical tab order (skip link, banner, navigation, summary, buckets, filters, table); menu sheet traps focus, opens on the current page's link, closes on Escape and returns focus to its trigger.
+  - Layout checked in the browser at 1440, 1024 and 375px.
+- Not done: screen-reader (VoiceOver) spot check; gstack `browse` needs its Playwright browser installed (a download), so the in-app browser was used instead.
