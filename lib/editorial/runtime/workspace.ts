@@ -23,7 +23,7 @@ export type EditorialWorkspace =
   | {
       status: "fixture";
       repository: EditorialRepository;
-      /** Request time, read once per request (after `connection()`). */
+      /** Request time, read once per request. */
       nowMs: number;
       demo: FixtureDemoControls;
       reset(): Promise<void>;
@@ -33,8 +33,6 @@ export type EditorialWorkspace =
 export const FIXTURE_MODE_VALUE = "local-demo";
 
 async function resolveWorkspace(): Promise<EditorialWorkspace> {
-  // Request-time only: the demo store is mutable and must never be prerendered.
-  await connection();
   if (process.env.NODE_ENV !== "production") {
     if (process.env.EDITORIAL_FIXTURE_MODE !== FIXTURE_MODE_VALUE) {
       return { status: "unavailable", reason: "fixture_not_enabled" };
@@ -54,8 +52,16 @@ async function resolveWorkspace(): Promise<EditorialWorkspace> {
   return { status: "unavailable", reason: "live_adapter_not_built" };
 }
 
-/** Deduplicated per request. */
-export const getEditorialWorkspace = cache(resolveWorkspace);
+/** For rendering: request-time only (the demo store is mutable), deduplicated per request. */
+export const getEditorialWorkspace = cache(async (): Promise<EditorialWorkspace> => {
+  await connection();
+  return resolveWorkspace();
+});
+
+/** For server actions, which already run per request and must not call `connection()`. */
+export function getEditorialWorkspaceForAction(): Promise<EditorialWorkspace> {
+  return resolveWorkspace();
+}
 
 /** For pages: an unavailable workspace is indistinguishable from a missing page. */
 export async function requireEditorialWorkspace() {

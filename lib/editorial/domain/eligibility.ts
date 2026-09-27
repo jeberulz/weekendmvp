@@ -127,7 +127,7 @@ export function deriveIssues(input: {
         id: `claim:${claim.id}:wording`,
         severity: "blocker",
         category: "evidence",
-        message: `Verified wording was edited: “${label}”. Restore it or request re-verification.`,
+        message: `The verified wording of “${label}” was edited — restore it or request re-verification.`,
         target: { kind: "claim", id: claim.id },
         resolvable: false,
         resolution: null,

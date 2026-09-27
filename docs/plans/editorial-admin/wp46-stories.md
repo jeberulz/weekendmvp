@@ -50,8 +50,8 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
     - Loading, empty, filtered-empty and unavailable states are truthful. Layouts work at 1440, 1024 and 390px; keyboard-only operation, visible focus and an automated axe scan pass.
   - Verification: render/unit tests, production build + status probe + bundle scan, browser checks at three widths, keyboard pass, axe scan.
 
-- [ ] `WP46-E2` - Review workspace
-  - Scope: `app/admin/editorial/ideas/**`, `components/admin/editorial/workspace/**`, `lib/editorial/markdown/**`, `lib/editorial/editor/**`, `lib/editorial/domain/diff.ts`.
+- [x] `WP46-E2` - Review workspace
+  - Scope: `app/admin/editorial/ideas/**`, `components/admin/editorial/workspace/**`, `lib/editorial/markdown/**`, `lib/editorial/editor/**`, `lib/editorial/domain/diff.ts`. Also, inside the editorial slice: draft server actions in `app/admin/editorial/_actions/**` behind `lib/editorial/runtime/action-support.ts`, presentation labels, a shared dialog and the production probe (see progress).
   - Acceptance criteria:
     - The title bar always shows the selected revision, current live revision, origin, save state and review state.
     - Main tabs Write, Preview, Compare and History; inspector tabs Evidence, Quality, Review and Details; one section outline for the eight headings with per-section review status.

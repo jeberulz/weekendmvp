@@ -11,7 +11,9 @@
  *    production builds must not contain the fixture adapter or its content.
  * 2. With --probe, requests every editorial path (plus attempts to switch
  *    fixture mode on through the URL) from a production server and requires
- *    a real 404 whose body carries no editorial or fixture content.
+ *    a real 404 whose body carries no editorial or fixture content. It then
+ *    calls every editorial server action directly and requires a refusal or
+ *    WORKSPACE_UNAVAILABLE, never fixture data.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -75,6 +77,9 @@ const PATHS = [
   "/admin/editorial/activity",
   "/admin/editorial/settings",
   "/admin/editorial/ideas/idea_0001",
+  "/admin/editorial/ideas/idea_0318",
+  "/admin/editorial/ideas/idea_0318?revision=rev_0001&tab=preview&inspector=details",
+  "/admin/editorial/ideas/not-an-idea",
   "/admin/editorial?fixture=local-demo",
   "/admin/editorial?EDITORIAL_FIXTURE_MODE=local-demo",
   "/admin/editorial/library?mode=fixture",
@@ -133,6 +138,72 @@ async function probe(base) {
         "Identical responses need the proxy seam (E4).",
     );
   }
+  return ok && (await probeActions(base));
+}
+
+/** Benign, well-formed inputs for each editorial server action. */
+const ACTION_INPUTS = {
+  saveDraftAction: {
+    ideaId: "idea_0318",
+    revisionId: "rev_0001",
+    baseVersion: 1,
+    patch: { title: "Probe" },
+    idempotencyKey: "probe-key-0001",
+  },
+  createRevisionAction: { ideaId: "idea_0318", fromRevisionId: null, idempotencyKey: "probe-key-0002", carry: null },
+  discardRevisionAction: { ideaId: "idea_0318", revisionId: "rev_0001", expectedVersion: 1, reason: "Probe" },
+  runChecksAction: { ideaId: "idea_0318", revisionId: "rev_0001", expectedArtifactHash: "0".repeat(64) },
+  getRevisionAction: { ideaId: "idea_0318", revisionId: "rev_0001" },
+};
+
+/**
+ * Server actions are POST endpoints that exist in the production build even
+ * though every editorial page is a 404. Call each one directly (as an
+ * attacker could) and require that it either refuses before running or
+ * reports the workspace unavailable, with no fixture data in the response.
+ */
+async function probeActions(base) {
+  const manifestPath = path.join(NEXT_DIR, "server", "server-reference-manifest.json");
+  if (!fs.existsSync(manifestPath)) {
+    console.log("NOTE no server action manifest found; skipping the action probe.");
+    return true;
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const actions = Object.entries(manifest.node ?? {}).filter(([, entry]) => entry.filename?.startsWith("app/admin/editorial/"));
+  let ok = true;
+  for (const [id, entry] of actions) {
+    const input = ACTION_INPUTS[entry.exportedName];
+    if (!input) {
+      console.log(`FAIL action ${entry.exportedName} has no probe input; add one.`);
+      ok = false;
+      continue;
+    }
+    const origin = new URL(base).origin;
+    const response = await fetch(new URL("/admin/editorial/ideas/idea_0318", base), {
+      method: "POST",
+      redirect: "manual",
+      headers: {
+        "Next-Action": id,
+        Accept: "text/x-component",
+        "Content-Type": "text/plain;charset=UTF-8",
+        Origin: origin,
+        cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture",
+      },
+      body: JSON.stringify([input]),
+    });
+    const body = await response.text();
+    const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
+    const unavailable = body.includes("WORKSPACE_UNAVAILABLE");
+    const refused = response.status >= 400;
+    const passed = leaked.length === 0 && (unavailable || refused);
+    ok &&= passed;
+    console.log(
+      `${passed ? "PASS" : "FAIL"} ${response.status} action ${entry.exportedName}` +
+        `${unavailable ? " → WORKSPACE_UNAVAILABLE" : refused ? " → refused" : " → ran without refusing"}` +
+        `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}`,
+    );
+  }
+  if (actions.length === 0) console.log("NOTE no editorial server actions in the build.");
   return ok;
 }
 

@@ -136,3 +136,30 @@ describe("private route metadata", () => {
     }
   });
 });
+
+describe("server actions", () => {
+  const actionFiles = UI_FILES.filter((file) => file.startsWith("app/admin/editorial/_actions/"));
+
+  test("live in a private folder and are all server actions", () => {
+    expect(actionFiles.length).toBeGreaterThan(0);
+    // No other editorial file declares actions or route handlers.
+    for (const file of UI_FILES.filter((name) => !actionFiles.includes(name))) {
+      expect(read(file), file).not.toMatch(/^["']use server["']/m);
+      expect(file).not.toMatch(/route\.tsx?$/);
+    }
+    for (const file of actionFiles) expect(read(file), file).toMatch(/^"use server";/);
+  });
+
+  test("every exported action re-resolves the workspace and validates its input", () => {
+    for (const file of actionFiles) {
+      const source = stripComments(read(file));
+      const exported = [...source.matchAll(/export async function (\w+)\([^)]*\)[^{]*\{([\s\S]*?)\n\}/g)];
+      expect(exported.length, file).toBeGreaterThan(0);
+      for (const [, name, body] of exported) {
+        expect(body, `${file}: ${name}`).toMatch(/return withWorkspace\(\w+Schema, input,/);
+      }
+      // Nothing else is exported from a "use server" module.
+      expect(source.match(/^export /gm)?.length, file).toBe(exported.length);
+    }
+  });
+});

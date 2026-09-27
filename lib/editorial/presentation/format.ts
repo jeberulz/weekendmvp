@@ -105,3 +105,14 @@ export function pluralize(count: number, singular: string, plural = `${singular}
 export function shortHash(hash: string): string {
   return hash.slice(0, 10);
 }
+
+/** "12:42 UTC" for the save status; the full date belongs in a title attribute. */
+export function formatClock(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "unknown time";
+  return `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")} UTC`;
+}
+
+export function formatCount(value: number): string {
+  return value.toLocaleString("en-GB");
+}

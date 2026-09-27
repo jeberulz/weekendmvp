@@ -96,6 +96,20 @@ Shown with text, never colour alone: **Machine verified**, **Reviewed by you**, 
 - Rollback targets an earlier successful release of the same idea, requires a reason, and re-runs safety checks on the target.
 - Unpublish needs no passing checks (emergency removal).
 
+## Server actions (the UI's only write path)
+
+Editorial commands reach the repository only through server actions in `app/admin/editorial/_actions/**` (a private folder, never a route). Server actions are public POST endpoints, so each one:
+
+1. calls `withWorkspace(schema, input, run)` (`lib/editorial/runtime/action-support.ts`), which re-resolves the workspace on every call. Production is always `WORKSPACE_UNAVAILABLE` until the live adapter lands, and the input is not parsed at all when the workspace is unavailable;
+2. validates its untrusted input with a strict Zod schema built from the DTO v1 primitives (`INVALID_INPUT`, first issue only, no echoed values);
+3. leaves identity, state and version fences to the repository, which re-checks them.
+
+Actions return `CommandResult`s and never refresh or redirect: navigation is the client's job, so a background refresh can never replace text the editor has not saved. A structure test fails if an exported action skips `withWorkspace`; the production probe calls every action directly and requires `WORKSPACE_UNAVAILABLE` with no fixture data.
+
+The live adapter (E4) plugs in behind `withWorkspace`: resolve the super-admin principal, deny with a generic error, audit the attempt, and require recent strong authentication for publish-class commands. The action signatures and schemas do not change.
+
+Draft actions (E2): `saveDraftAction` (returns the acknowledgement and the fresh revision view), `createRevisionAction` (fork a snapshot, optionally carrying unsaved editor text into the new draft), `discardRevisionAction` (needs the current version and a reason), `runChecksAction` (bound to the saved artifact hash; a stale hash is `STALE_REVIEW_TARGET`) and `getRevisionAction` ("use theirs" after a conflict).
+
 ## Fixture boundary
 
 `lib/editorial/adapters/fixture/**` and `lib/editorial/fixtures/**` are demo-only: fictional content on `.example` domains, simulated checks (`producer: "fixture_simulated"`), a simulated worker and simulated re-authentication. `assertFixtureModeAllowed()` throws in production builds, and the runtime selector only reaches this code behind a `NODE_ENV !== "production"` branch. Fixture tests serialise commands in one process: they prove the rules, not real concurrency or deployment.

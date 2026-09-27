@@ -106,3 +106,22 @@ export function activeFilterCount(filter: IdeaFilter): number {
     filter.staleEvidence ? "stale" : null,
   ].filter((value) => value !== null && value !== "").length;
 }
+
+export const WORKSPACE_TABS = ["write", "preview", "compare", "history"] as const;
+export type WorkspaceTab = (typeof WORKSPACE_TABS)[number];
+export const INSPECTOR_TABS = ["evidence", "quality", "review", "details"] as const;
+export type InspectorTab = (typeof INSPECTOR_TABS)[number];
+
+/** Idea workspace URL state. Unknown values fall back to defaults. */
+export function parseWorkspaceParams(params: SearchParamsRecord): {
+  revisionId: string | null;
+  tab: WorkspaceTab | null;
+  inspector: InspectorTab | null;
+} {
+  const revision = first(params, "revision");
+  return {
+    revisionId: revision !== null && ID_PATTERN.test(revision) ? revision : null,
+    tab: oneOf(WORKSPACE_TABS, first(params, "tab")),
+    inspector: oneOf(INSPECTOR_TABS, first(params, "inspector")),
+  };
+}
