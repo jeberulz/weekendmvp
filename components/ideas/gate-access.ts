@@ -7,15 +7,21 @@
  * Browser-only: every function here touches window/localStorage and must be
  * called from client-component effects/handlers, never during render.
  *
- * Access resolution order (gate.js `resolveAccess`, + explicit localhost
- * bypass):
+ * Access resolution order (gate.js `resolveAccess`, + member session +
+ * localhost bypass):
  *   1. localStorage 'ideas_email' present            → unlocked
- *   2. ?e=<email> → POST /api/ideas-verify, ok       → store + unlock
+ *   2. WP44 session hint cookie (signed-in member)   → unlocked
+ *   3. ?e=<email> → POST /api/ideas-verify, ok       → store + unlock
  *      (the ?e param is stripped via history.replaceState either way)
- *   3. ?utm_source=beehiiv                           → store '__newsletter__' + unlock
- *   4. hostname localhost / 127.0.0.1                → unlocked (dev bypass)
- *   5. otherwise                                     → locked (overlay + form)
+ *   4. ?utm_source=beehiiv                           → store '__newsletter__' + unlock
+ *   5. hostname localhost / 127.0.0.1                → unlocked (dev bypass)
+ *   6. otherwise                                     → locked (overlay + form)
+ *
+ * Signed-in members keep the public `/ideas/{slug}` URL (canonical research);
+ * they skip lead-capture only. Anonymous visitors still see Unlock Idea.
  */
+
+import { hasSessionHintCookie } from "@/lib/auth-session-cookie";
 
 export const STORAGE_KEY = "ideas_email";
 export const NEWSLETTER_PLACEHOLDER = "__newsletter__";
@@ -29,6 +35,20 @@ export function isLocalhost(): boolean {
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
   );
+}
+
+/**
+ * Pure sync checks that unlock without a network round-trip.
+ * Used by resolveAccess and unit-tested without a browser DOM.
+ */
+export function hasImmediateGateAccess(input: {
+  storedEmail: string | null;
+  cookieSource: string;
+  hostname: string;
+}): boolean {
+  if (input.storedEmail) return true;
+  if (hasSessionHintCookie(input.cookieSource)) return true;
+  return input.hostname === "localhost" || input.hostname === "127.0.0.1";
 }
 
 /** Remove a query param without reloading (gate.js stripParam). */
@@ -64,15 +84,21 @@ export async function verifyEmailWithBeehiiv(email: string): Promise<boolean> {
 }
 
 export async function resolveAccess(): Promise<boolean> {
-  // 1. Already unlocked on this device.
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) return true;
+  if (
+    hasImmediateGateAccess({
+      storedEmail: localStorage.getItem(STORAGE_KEY),
+      cookieSource: document.cookie,
+      hostname: window.location.hostname,
+    })
+  ) {
+    return true;
+  }
 
   const params = new URLSearchParams(window.location.search);
   const emailParam = params.get("e");
   const isBeehiivClick = params.get("utm_source") === "beehiiv";
 
-  // 2. Newsletter deep link with ?e=<email> — verify against Beehiiv.
+  // Newsletter deep link with ?e=<email> — verify against Beehiiv.
   if (emailParam && isValidEmail(emailParam)) {
     const ok = await verifyEmailWithBeehiiv(emailParam);
     stripParam("e");
@@ -82,16 +108,12 @@ export async function resolveAccess(): Promise<boolean> {
     }
   }
 
-  // 3. Trusted Beehiiv click without the email param.
+  // Trusted Beehiiv click without the email param.
   if (isBeehiivClick) {
     localStorage.setItem(STORAGE_KEY, NEWSLETTER_PLACEHOLDER);
     return true;
   }
 
-  // 4. Local development bypass.
-  if (isLocalhost()) return true;
-
-  // 5. Locked.
   return false;
 }
 
