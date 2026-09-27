@@ -7,6 +7,7 @@
  */
 
 export const RESEARCH_RECORD_CONTRACT_VERSION = 1 as const;
+export const RESEARCH_RECORD_V2 = 2 as const;
 
 export type Citation = {
   url: string;
@@ -36,6 +37,12 @@ export type Competitor = {
 export type CommunitySignal = {
   quote: string;
   citation: Citation;
+  /**
+   * True when the pipeline fetched the cited page and found the quote in it
+   * verbatim (after whitespace/punctuation normalization). False when it
+   * checked and did not find it. Absent on records made before the check.
+   */
+  verified?: boolean;
 };
 
 export type KeywordRow = {
@@ -65,6 +72,33 @@ export type UnitEconRow = {
   value: string;
 };
 
+/** One stage of the year-one acquisition funnel, e.g. 500 prospects. */
+export type FunnelStage = {
+  stage: string;
+  count: number;
+};
+
+/**
+ * Year-one revenue math. The compiler does the arithmetic (ARR and the
+ * half-close-rate downside) so the page never carries model-invented totals.
+ */
+export type YearOnePlan = {
+  funnel: FunnelStage[];
+  /** Tier the paying accounts land on (must match a pricing tier name). */
+  tier: string;
+  payingAccounts: number;
+  /** Monthly revenue per paying account in USD (seats already included). */
+  monthlyRevenuePerAccount: number;
+  /** Why the funnel numbers are plausible (sources, channel, cadence). */
+  assumptions?: string;
+};
+
+/** One idea-specific table for the Project Setup prompt. */
+export type DataTable = {
+  table: string;
+  columns: string;
+};
+
 /**
  * Optional editorial fields produced by synthesis for the MDX compiler.
  * Older records omit them; the compiler derives sensible fallbacks.
@@ -84,6 +118,16 @@ export type EditorialFields = {
   unitEconomics?: UnitEconRow[];
   /** Stack guidance specific to this idea. */
   stackNotes?: string;
+  /**
+   * Short audience label for mid-sentence use (e.g. "small GitHub teams").
+   * The full brief audience appears once, in the problem narrative.
+   */
+  audienceShort?: string;
+  /** Visual direction + voice for the Branding prompt, specific to the buyer. */
+  brandBrief?: string;
+  yearOne?: YearOnePlan;
+  /** Idea-specific tables (beyond workspaces/members/usage_events). */
+  dataModel?: DataTable[];
 };
 
 export type ResearchScores = {
@@ -105,10 +149,43 @@ export type ResearchProvenance = {
   providerCalls: ProviderCall[];
   costUsd: number;
   ranAt: string;
+  reservedUnknownMicroUsd?: number;
+};
+
+export type EvidenceOutcome = "read" | "missing" | "blocked";
+
+export type EvidenceSource = {
+  id: string;
+  canonicalUrl: string;
+  family: string;
+  retrievedAt: string;
+  excerpt: string;
+  contentHash: string;
+  outcome: EvidenceOutcome;
+};
+
+export type RecordedClaim = {
+  text: string;
+  evidenceIds: string[];
+  stance: "observed" | "derived" | "assumed";
+  verdict: "verified" | "unresolved";
+  excerpt: string;
+  reason: string;
+};
+
+export type RunIdentity = {
+  id: string;
+  mode: "fixture" | "live";
+  pipelineVersion: string;
+  promptVersion: string;
+  status: "completed" | "failed";
 };
 
 export type ResearchRecord = {
-  contractVersion: typeof RESEARCH_RECORD_CONTRACT_VERSION;
+  contractVersion: 1 | 2;
+  run?: RunIdentity;
+  sources?: EvidenceSource[];
+  claims?: RecordedClaim[];
   brief: ResearchBrief;
   market: {
     stats: MarketStat[];
@@ -151,6 +228,112 @@ export class ResearchRecordParseError extends Error {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isPositiveNum(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/** SQL identifier the Setup prompt can use as a table name. */
+const TABLE_NAME_RE = /^[a-z][a-z0-9_]{1,40}$/;
+
+export function parseYearOne(
+  value: unknown,
+  issues: string[],
+): YearOnePlan | undefined {
+  const path = "editorial.yearOne";
+  const issuesBefore = issues.length;
+  if (!isPlainObject(value)) {
+    issues.push(`${path}: expected object`);
+    return undefined;
+  }
+  const funnel: FunnelStage[] = [];
+  if (!Array.isArray(value.funnel) || value.funnel.length < 2) {
+    issues.push(`${path}.funnel: need ≥2 stages`);
+  } else {
+    value.funnel.forEach((row, i) => {
+      if (
+        !isPlainObject(row) ||
+        !isNonEmptyString(row.stage) ||
+        !isPositiveNum(row.count)
+      ) {
+        issues.push(`${path}.funnel[${i}]: need stage string and count > 0`);
+        return;
+      }
+      funnel.push({ stage: row.stage.trim(), count: Math.round(row.count) });
+    });
+    for (let i = 1; i < funnel.length; i++) {
+      if (funnel[i]!.count > funnel[i - 1]!.count) {
+        issues.push(`${path}.funnel: stage counts must not grow (stage ${i})`);
+        break;
+      }
+    }
+  }
+  if (!isNonEmptyString(value.tier)) issues.push(`${path}.tier: required`);
+  if (!isPositiveNum(value.payingAccounts)) {
+    issues.push(`${path}.payingAccounts: required number > 0`);
+  }
+  if (!isPositiveNum(value.monthlyRevenuePerAccount)) {
+    issues.push(`${path}.monthlyRevenuePerAccount: required number > 0`);
+  }
+  const last = funnel[funnel.length - 1];
+  if (
+    last &&
+    isPositiveNum(value.payingAccounts) &&
+    Math.round(value.payingAccounts) > last.count
+  ) {
+    issues.push(`${path}.payingAccounts: exceeds the last funnel stage`);
+  }
+  // Any issue (a growing funnel, more payers than the last stage) means the
+  // plan is dropped, never half-kept: callers that swallow issues must not
+  // pass an invalid plan on to the final record parse.
+  if (
+    issues.length > issuesBefore ||
+    funnel.length < 2 ||
+    !isNonEmptyString(value.tier) ||
+    !isPositiveNum(value.payingAccounts) ||
+    !isPositiveNum(value.monthlyRevenuePerAccount)
+  ) {
+    return undefined;
+  }
+  return {
+    funnel,
+    tier: value.tier.trim(),
+    payingAccounts: Math.round(value.payingAccounts),
+    monthlyRevenuePerAccount: value.monthlyRevenuePerAccount,
+    ...(isNonEmptyString(value.assumptions)
+      ? { assumptions: value.assumptions.trim() }
+      : {}),
+  };
+}
+
+export function parseDataModel(
+  value: unknown,
+  issues: string[],
+): DataTable[] | undefined {
+  const path = "editorial.dataModel";
+  if (!Array.isArray(value)) {
+    issues.push(`${path}: must be an array when present`);
+    return undefined;
+  }
+  const tables: DataTable[] = [];
+  value.forEach((row, i) => {
+    if (
+      !isPlainObject(row) ||
+      !isNonEmptyString(row.table) ||
+      !isNonEmptyString(row.columns)
+    ) {
+      issues.push(`${path}[${i}]: need table and columns strings`);
+      return;
+    }
+    const table = row.table.trim().toLowerCase();
+    if (!TABLE_NAME_RE.test(table)) {
+      issues.push(`${path}[${i}].table: '${table}' is not a SQL identifier`);
+      return;
+    }
+    tables.push({ table, columns: row.columns.trim() });
+  });
+  return tables.length > 0 ? tables : undefined;
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -204,9 +387,9 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
     throw new ResearchRecordParseError(["root: expected object"]);
   }
 
-  if (input.contractVersion !== RESEARCH_RECORD_CONTRACT_VERSION) {
+  if (input.contractVersion !== 1 && input.contractVersion !== RESEARCH_RECORD_V2) {
     throw new ResearchRecordParseError([
-      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected ${RESEARCH_RECORD_CONTRACT_VERSION})`,
+      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected 1 or ${RESEARCH_RECORD_V2})`,
     ]);
   }
 
@@ -324,10 +507,16 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         }
         if (!isNonEmptyString(sig.quote)) issues.push(`${path}.quote: required`);
         const citation = parseCitation(sig.citation, `${path}.citation`, issues);
+        if (sig.verified !== undefined && typeof sig.verified !== "boolean") {
+          issues.push(`${path}.verified: must be boolean when present`);
+        }
         if (citation && isNonEmptyString(sig.quote)) {
           communitySignals.push({
             quote: sig.quote.trim(),
             citation,
+            ...(typeof sig.verified === "boolean"
+              ? { verified: sig.verified }
+              : {}),
           });
         }
       });
@@ -451,6 +640,8 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         "solutionNarrative",
         "competitiveNarrative",
         "stackNotes",
+        "audienceShort",
+        "brandBrief",
       ] as const) {
         const v = input.editorial[key];
         if (v !== undefined) {
@@ -508,6 +699,14 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
           });
           if (rows.length > 0) ed.unitEconomics = rows;
         }
+      }
+      if (input.editorial.yearOne !== undefined) {
+        const yearOne = parseYearOne(input.editorial.yearOne, issues);
+        if (yearOne) ed.yearOne = yearOne;
+      }
+      if (input.editorial.dataModel !== undefined) {
+        const dataModel = parseDataModel(input.editorial.dataModel, issues);
+        if (dataModel) ed.dataModel = dataModel;
       }
       if (Object.keys(ed).length > 0) editorial = ed;
     }
@@ -594,9 +793,18 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
         costUsd: input.provenance.costUsd,
         ranAt: input.provenance.ranAt.trim(),
         providerCalls,
+        ...(typeof input.provenance.reservedUnknownMicroUsd === "number" &&
+        Number.isFinite(input.provenance.reservedUnknownMicroUsd) &&
+        input.provenance.reservedUnknownMicroUsd >= 0
+          ? { reservedUnknownMicroUsd: input.provenance.reservedUnknownMicroUsd }
+          : {}),
       };
     }
   }
+
+  const v2 = input.contractVersion === RESEARCH_RECORD_V2
+    ? parseV2Evidence(input, issues)
+    : undefined;
 
   if (issues.length > 0) {
     throw new ResearchRecordParseError(issues);
@@ -607,7 +815,7 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
   const community = input.community as Record<string, unknown>;
 
   const record: ResearchRecord = {
-    contractVersion: RESEARCH_RECORD_CONTRACT_VERSION,
+    contractVersion: input.contractVersion === RESEARCH_RECORD_V2 ? 2 : 1,
     brief: {
       title: brief.title.trim(),
       slug: brief.slug.trim(),
@@ -632,6 +840,149 @@ export function parseResearchRecord(input: unknown): ResearchRecord {
   if (howItWorks) record.howItWorks = howItWorks;
   if (scores) record.scores = scores;
   if (editorial) record.editorial = editorial;
+  if (v2) {
+    record.run = v2.run;
+    record.sources = v2.sources;
+    record.claims = v2.claims;
+  }
 
   return record;
+}
+
+function parseV2Evidence(
+  input: Record<string, unknown>,
+  issues: string[],
+): { run: RunIdentity; sources: EvidenceSource[]; claims: RecordedClaim[] } | undefined {
+  if (!isPlainObject(input.run)) {
+    issues.push("run: required object");
+  }
+  if (!Array.isArray(input.sources)) issues.push("sources: required array");
+  if (!Array.isArray(input.claims)) issues.push("claims: required array");
+  if (!isPlainObject(input.run) || !Array.isArray(input.sources) || !Array.isArray(input.claims)) {
+    return undefined;
+  }
+  const runRaw = input.run;
+  const mode =
+    runRaw.mode === "fixture" || runRaw.mode === "live" ? runRaw.mode : null;
+  const status =
+    runRaw.status === "completed" || runRaw.status === "failed"
+      ? runRaw.status
+      : null;
+  if (!mode) issues.push("run.mode: fixture or live");
+  if (!status) issues.push("run.status: completed or failed");
+  for (const key of ["id", "pipelineVersion", "promptVersion"] as const) {
+    if (!isNonEmptyString(runRaw[key])) issues.push(`run.${key}: required non-empty string`);
+  }
+  const sources: EvidenceSource[] = [];
+  const seenSourceIds = new Set<string>();
+  input.sources.forEach((row, index) => {
+    if (!isPlainObject(row)) {
+      issues.push(`sources[${index}]: expected object`);
+      return;
+    }
+    const outcome = row.outcome;
+    if (outcome !== "read" && outcome !== "missing" && outcome !== "blocked") {
+      issues.push(`sources[${index}].outcome: read, missing, or blocked`);
+      return;
+    }
+    for (const key of ["id", "canonicalUrl", "family", "retrievedAt", "excerpt", "contentHash"] as const) {
+      if (typeof row[key] !== "string") {
+        issues.push(`sources[${index}].${key}: required string`);
+        return;
+      }
+    }
+    const id = String(row.id);
+    if (seenSourceIds.has(id)) {
+      issues.push(`sources[${index}].id: duplicate ${id}`);
+      return;
+    }
+    seenSourceIds.add(id);
+    sources.push({
+      id,
+      canonicalUrl: String(row.canonicalUrl),
+      family: String(row.family),
+      retrievedAt: String(row.retrievedAt),
+      excerpt: String(row.excerpt),
+      contentHash: String(row.contentHash),
+      outcome,
+    });
+  });
+  const claims: RecordedClaim[] = [];
+  input.claims.forEach((row, index) => {
+    if (!isPlainObject(row)) {
+      issues.push(`claims[${index}]: expected object`);
+      return;
+    }
+    const stance = row.stance;
+    const verdict = row.verdict;
+    if (stance !== "observed" && stance !== "derived" && stance !== "assumed") {
+      issues.push(`claims[${index}].stance: observed, derived, or assumed`);
+      return;
+    }
+    if (verdict !== "verified" && verdict !== "unresolved") {
+      issues.push(`claims[${index}].verdict: verified or unresolved`);
+      return;
+    }
+    if (!Array.isArray(row.evidenceIds) || !row.evidenceIds.every((id) => typeof id === "string")) {
+      issues.push(`claims[${index}].evidenceIds: string array`);
+      return;
+    }
+    for (const key of ["text", "excerpt", "reason"] as const) {
+      if (typeof row[key] !== "string") {
+        issues.push(`claims[${index}].${key}: required string`);
+        return;
+      }
+    }
+    const evidenceIds = row.evidenceIds as string[];
+    if (verdict === "verified") {
+      if (evidenceIds.length === 0) {
+        issues.push(`claims[${index}].evidenceIds: verified claim needs evidence`);
+        return;
+      }
+      for (const id of evidenceIds) {
+        if (!seenSourceIds.has(id)) {
+          issues.push(`claims[${index}].evidenceIds: unknown source ${id}`);
+          return;
+        }
+      }
+      if (!String(row.excerpt).trim()) {
+        issues.push(`claims[${index}].excerpt: verified claim needs a supporting passage`);
+        return;
+      }
+    }
+    claims.push({
+      text: String(row.text),
+      evidenceIds,
+      stance,
+      verdict,
+      excerpt: String(row.excerpt),
+      reason: String(row.reason),
+    });
+  });
+  if (
+    !mode ||
+    !status ||
+    !isNonEmptyString(runRaw.id) ||
+    !isNonEmptyString(runRaw.pipelineVersion) ||
+    !isNonEmptyString(runRaw.promptVersion) ||
+    issues.some(
+      (issue) =>
+        issue.startsWith("run.") ||
+        issue.startsWith("sources") ||
+        issue.startsWith("claims"),
+    )
+  ) {
+    return undefined;
+  }
+  return {
+    run: {
+      id: String(runRaw.id),
+      mode,
+      pipelineVersion: String(runRaw.pipelineVersion),
+      promptVersion: String(runRaw.promptVersion),
+      status,
+    },
+    sources,
+    claims,
+  };
 }

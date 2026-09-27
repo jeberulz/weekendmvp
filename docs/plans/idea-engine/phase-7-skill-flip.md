@@ -11,7 +11,7 @@ If `engine:eval` plus one live compile cannot clear the auditor, stop. Switch th
 ## Changes
 
 - Rewrite `.claude/skills/publish-idea/SKILL.md` with Cursor `create-skill`. Default usage becomes `/publish-idea {title or --from-draft folder}`. Steps call `npm run engine:research` then `npm run engine:compile`, then `npm run audit:idea` and `npm run validate:idea-tags`. Remove every `mcp__ideabrowser__*` instruction. Fix the preview host to `http://localhost:3000`. Count eight headings (Sources included).
-- Copy the same file to `.agents/skills/publish-idea/SKILL.md` in the same change. Those two copies are identical today. Do not update `~/.codex/skills/publish-idea/SKILL.md`. That home copy is stale and outside the repo.
+- Copy the same file to `.agents/skills/publish-idea/SKILL.md` in the same change. (`.agents/` is gitignored, so that copy is local-only: `.claude/skills/publish-idea/SKILL.md` is the source of truth; re-copy it after pulling.) Those two copies are identical today. Do not update `~/.codex/skills/publish-idea/SKILL.md`. That home copy is stale and outside the repo.
 - Strip Mode A checklists that name MCP. Keep STOP-rule numbers (3 competitors, 2 cited stats) as auditor failures, not chat-only rules.
 
 Do not delete `.cursor/mcp.json` in this phase.

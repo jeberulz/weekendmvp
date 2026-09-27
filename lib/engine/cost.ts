@@ -11,11 +11,16 @@ import {
   estimateKeywordUsd,
   estimateSearchUsd,
   estimateSynthesisUsd,
+  BATCH_COST_CAP_USD,
   REPORT_COST_CAP_USD,
+  SEARCH_MODEL,
+  SYNTHESIS_MODEL,
 } from "./providers/pricing.ts";
+import type { ProviderCost, ProviderRole } from "./providers/types.ts";
 
 /** Cap in whole millionths of a dollar. Floats are never compared to the cap. */
 export const CAP_MICRO_USD = Math.round(REPORT_COST_CAP_USD * 1_000_000);
+export const BATCH_CAP_MICRO_USD = Math.round(BATCH_COST_CAP_USD * 1_000_000);
 
 /** Rounds up: an under-stated cost is the only rounding error that can overspend. */
 export function toMicroUsd(usd: number): number {
@@ -88,4 +93,55 @@ export function assertWithinCap(args: {
       args.worstCaseMicroUsd,
     );
   }
+}
+
+export class BatchCapExceededError extends Error {
+  readonly code = "BATCH_CAP_EXCEEDED";
+  readonly spentMicroUsd: number;
+
+  constructor(spentMicroUsd: number) {
+    super(
+      `batch spend ${spentMicroUsd}µ$ would exceed the ${BATCH_CAP_MICRO_USD}µ$ cap`,
+    );
+    this.name = "BatchCapExceededError";
+    this.spentMicroUsd = spentMicroUsd;
+  }
+}
+
+export function assertBatchWithinCap(args: {
+  batchSpentMicroUsd: number;
+  nextReservationMicroUsd: number;
+}): void {
+  if (args.batchSpentMicroUsd + args.nextReservationMicroUsd > BATCH_CAP_MICRO_USD) {
+    throw new BatchCapExceededError(
+      args.batchSpentMicroUsd + args.nextReservationMicroUsd,
+    );
+  }
+}
+
+/** Worst-case cost for a step whose usage never arrived. */
+export function reservedCostForBudget(
+  budget: StepBudget,
+  provider: string,
+): ProviderCost | null {
+  if (budget.role === null) return null;
+  const role: ProviderRole = budget.role;
+  const billedAs =
+    role === "synthesis"
+      ? SYNTHESIS_MODEL
+      : role === "search"
+        ? SEARCH_MODEL
+        : "google_ads/search_volume/live";
+  return {
+    role,
+    provider,
+    billedAs,
+    usd: fromMicroUsd(worstCaseMicroUsd(budget)),
+    estimated: true,
+    units: { reserved: 1 },
+  };
+}
+
+export function costIsReserved(cost: ProviderCost): boolean {
+  return cost.units.reserved === 1;
 }

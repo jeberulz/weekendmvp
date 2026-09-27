@@ -10,6 +10,12 @@ import {
 } from "./types.ts";
 import { estimateSearchUsd, SEARCH_MODEL } from "./pricing.ts";
 import type { Fetcher } from "./openai.ts";
+import {
+  asJsonObject,
+  fetchInitWithTimeout,
+  isRetryableHttpStatus,
+  knownNonNegative,
+} from "../resilience.ts";
 
 /**
  * WP26-S2. Search adapter (Perplexity Sonar Pro), citation-only.
@@ -103,65 +109,92 @@ export function createSearchProvider(
           ? options.apiKey
           : requireSecret("search", "PERPLEXITY_API_KEY");
 
+      const reserved: ProviderCost = {
+        role: "search",
+        provider: "perplexity",
+        billedAs: SEARCH_MODEL,
+        usd: estimateSearchUsd({
+          inputTokens: 2_000,
+          outputTokens: request.maxOutputTokens,
+          requests: 1,
+          searchContextSize: request.searchContextSize,
+        }),
+        estimated: true,
+        units: { reserved: 1 },
+      };
+
       let response: Response;
       try {
-        response = await fetchImpl(ENDPOINT, {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${apiKey}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            model: SEARCH_MODEL,
-            messages: [{ role: "user", content: request.query }],
-            max_tokens: request.maxOutputTokens,
-            web_search_options: {
-              search_context_size: request.searchContextSize,
+        response = await fetchImpl(
+          ENDPOINT,
+          fetchInitWithTimeout({
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${apiKey}`,
+              "content-type": "application/json",
             },
+            body: JSON.stringify({
+              model: SEARCH_MODEL,
+              messages: [{ role: "user", content: request.query }],
+              max_tokens: request.maxOutputTokens,
+              web_search_options: {
+                search_context_size: request.searchContextSize,
+              },
+            }),
           }),
-        });
+        );
       } catch {
         throw new ProviderCallError("search", "request failed", {
           retryable: true,
+          cost: reserved,
         });
       }
 
       if (!response.ok) {
-        const retryable = response.status === 429 || response.status >= 500;
         throw new ProviderCallError(
           "search",
           `provider returned ${response.status}`,
-          { retryable, status: response.status },
+          {
+            retryable: isRetryableHttpStatus(response.status),
+            status: response.status,
+            cost: reserved,
+          },
         );
       }
 
       let payload: PerplexityPayload;
       try {
-        payload = (await response.json()) as PerplexityPayload;
+        const raw = asJsonObject(await response.json());
+        if (!raw) throw new Error("expected JSON object");
+        payload = raw as PerplexityPayload;
       } catch {
         throw new ProviderCallError("search", "unparseable response", {
           retryable: true,
+          cost: reserved,
         });
       }
 
       const text = payload.choices?.[0]?.message?.content ?? "";
       const citations = readCitations(payload);
 
-      const inputTokens = payload.usage?.prompt_tokens ?? 0;
-      const outputTokens = payload.usage?.completion_tokens ?? 0;
-      const cost: ProviderCost = {
-        role: "search",
-        provider: "perplexity",
-        billedAs: SEARCH_MODEL,
-        usd: estimateSearchUsd({
-          inputTokens,
-          outputTokens,
-          requests: 1,
-          searchContextSize: request.searchContextSize,
-        }),
-        estimated: true,
-        units: { inputTokens, outputTokens, requests: 1 },
-      };
+      const inputTokens = knownNonNegative(payload.usage?.prompt_tokens);
+      const outputTokens = knownNonNegative(payload.usage?.completion_tokens);
+      const usageKnown = inputTokens !== null && outputTokens !== null;
+      const cost: ProviderCost = usageKnown
+        ? {
+            role: "search",
+            provider: "perplexity",
+            billedAs: SEARCH_MODEL,
+            usd: estimateSearchUsd({
+              inputTokens,
+              outputTokens,
+              requests: 1,
+              searchContextSize: request.searchContextSize,
+            }),
+            estimated: true,
+            units: { inputTokens, outputTokens, requests: 1 },
+          }
+        : reserved;
 
       // A search result with no usable citation cannot support a cited claim,
       // and the report contract fails closed on uncited scored sections. Fail
@@ -175,7 +208,13 @@ export function createSearchProvider(
       }
 
       return {
-        value: { text, citations, inputTokens, outputTokens, requests: 1 },
+        value: {
+          text,
+          citations,
+          inputTokens: inputTokens ?? 0,
+          outputTokens: outputTokens ?? 0,
+          requests: 1,
+        },
         cost,
       };
     },

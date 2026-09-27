@@ -8,6 +8,12 @@ import {
   type SynthesisResponse,
 } from "./types.ts";
 import { estimateSynthesisUsd, SYNTHESIS_MODEL } from "./pricing.ts";
+import {
+  asJsonObject,
+  fetchInitWithTimeout,
+  isRetryableHttpStatus,
+  knownNonNegative,
+} from "../resilience.ts";
 
 /**
  * WP26-S2. Synthesis adapter (OpenAI).
@@ -80,68 +86,100 @@ export function createSynthesisProvider(
           ? options.apiKey
           : requireSecret("synthesis", "OPENAI_API_KEY");
 
+      const reserved: ProviderCost = {
+        role: "synthesis",
+        provider: "openai",
+        billedAs: SYNTHESIS_MODEL,
+        usd: estimateSynthesisUsd({
+          inputTokens: 4_000,
+          cachedInputTokens: 0,
+          outputTokens: request.maxOutputTokens,
+        }),
+        estimated: true,
+        units: { reserved: 1 },
+      };
+
       let response: Response;
       try {
-        response = await fetchImpl(ENDPOINT, {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${apiKey}`,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            model: SYNTHESIS_MODEL,
-            instructions: request.instructions,
-            input: request.input,
-            max_output_tokens: request.maxOutputTokens,
+        response = await fetchImpl(
+          ENDPOINT,
+          fetchInitWithTimeout({
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${apiKey}`,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              model: SYNTHESIS_MODEL,
+              instructions: request.instructions,
+              input: request.input,
+              max_output_tokens: request.maxOutputTokens,
+            }),
           }),
-        });
-      } catch (cause) {
+        );
+      } catch {
         throw new ProviderCallError("synthesis", "request failed", {
           retryable: true,
-          ...(cause instanceof Error ? {} : {}),
+          cost: reserved,
         });
       }
 
       if (!response.ok) {
-        // 4xx other than 429 is our bug — a bad request or a rejected key —
-        // and retrying spends budget to fail again.
-        const retryable = response.status === 429 || response.status >= 500;
         throw new ProviderCallError(
           "synthesis",
           `provider returned ${response.status}`,
-          { retryable, status: response.status },
+          {
+            retryable: isRetryableHttpStatus(response.status),
+            status: response.status,
+            cost: reserved,
+          },
         );
       }
 
       let payload: ResponsesPayload;
       try {
-        payload = (await response.json()) as ResponsesPayload;
+        const raw = asJsonObject(await response.json());
+        if (!raw) throw new Error("expected JSON object");
+        payload = raw as ResponsesPayload;
       } catch {
         throw new ProviderCallError("synthesis", "unparseable response", {
           retryable: true,
+          cost: reserved,
         });
       }
 
-      const inputTokens = payload.usage?.input_tokens ?? 0;
-      const outputTokens = payload.usage?.output_tokens ?? 0;
+      const inputTokens = knownNonNegative(payload.usage?.input_tokens);
+      const outputTokens = knownNonNegative(payload.usage?.output_tokens);
+      const cachedRaw = payload.usage?.input_tokens_details?.cached_tokens;
       const cachedInputTokens =
-        payload.usage?.input_tokens_details?.cached_tokens ?? 0;
-      const cost: ProviderCost = {
-        role: "synthesis",
-        provider: "openai",
-        billedAs: SYNTHESIS_MODEL,
-        usd: estimateSynthesisUsd({
-          inputTokens,
-          cachedInputTokens,
-          outputTokens,
-        }),
-        estimated: true,
-        units: { inputTokens, cachedInputTokens, outputTokens },
-      };
+        cachedRaw === undefined ? 0 : knownNonNegative(cachedRaw);
+      const usageKnown =
+        inputTokens !== null &&
+        outputTokens !== null &&
+        cachedInputTokens !== null;
+      const cost: ProviderCost = usageKnown
+        ? {
+            role: "synthesis",
+            provider: "openai",
+            billedAs: SYNTHESIS_MODEL,
+            usd: estimateSynthesisUsd({
+              inputTokens,
+              cachedInputTokens,
+              outputTokens,
+            }),
+            estimated: true,
+            units: { inputTokens, cachedInputTokens, outputTokens },
+          }
+        : reserved;
       const text = readText(payload, cost);
 
       return {
-        value: { text, inputTokens, outputTokens, cachedInputTokens },
+        value: {
+          text,
+          inputTokens: inputTokens ?? 0,
+          outputTokens: outputTokens ?? 0,
+          cachedInputTokens: cachedInputTokens ?? 0,
+        },
         cost,
       };
     },
