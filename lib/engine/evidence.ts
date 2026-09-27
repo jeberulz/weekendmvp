@@ -11,6 +11,7 @@ import type {
 export const PIPELINE_VERSION = "wp45-s2";
 export const PROMPT_VERSION = "synthesis-v1";
 export const MAX_EXCERPT_CHARS = 2_000;
+export const PASSAGE_RADIUS = 240;
 
 /** Implementation windows, not a research ruling. Reverse with the word freshness. */
 export const FRESHNESS_DAYS = {
@@ -67,25 +68,55 @@ const QUAL_STOP = new Set([
   "them",
   "were",
   "what",
+  "much",
+  "this",
+  "spent",
+  "spend",
+  "market",
+  "estimate",
+  "pricing",
+  "price",
+  "users",
+  "user",
+  "directional",
+  "estimated",
+  "approximate",
+  "approx",
+  "roughly",
+  "nearly",
+  "circa",
+  "overall",
+  "approximately",
+  "indicative",
+  "software",
+  "market",
+  "size",
 ]);
 
 const GEO: Array<[RegExp, string]> = [
   [/\bunited states\b|\bu\.s\.a?\b|\bus\b/i, "us"],
-  [/\beurope\b|\beu\b/i, "eu"],
+  [/\beurope\b|\beu\b|\beuropean\b/i, "eu"],
   [/\bunited kingdom\b|\buk\b/i, "uk"],
   [/\bindia\b/i, "in"],
 ];
 
-type MoneyMention = { value: number; period: "month" | "year" | null };
+type MoneyMention = {
+  value: number;
+  period: "month" | "year" | null;
+  currency: "usd" | "gbp" | "eur" | "none";
+  hasScale: boolean;
+  index: number;
+};
 
 function moneyMentions(text: string): MoneyMention[] {
   const out: MoneyMention[] = [];
   const re =
-    /\$\s*(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(?:\s*(billion|million|thousand|bn|b|m|k)\b)?/gi;
+    /([£$€])?\s*(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(?:\s*(billion|million|thousand|bn|b|m|k)\b)?/gi;
   for (const match of text.matchAll(re)) {
     const index = match.index ?? 0;
-    const amount = Number(match[1]!.replace(/,/g, ""));
-    const scaleWord = match[2]?.toLowerCase() ?? "";
+    const symbol = match[1] ?? "";
+    const amount = Number(match[2]!.replace(/,/g, ""));
+    const scaleWord = match[3]?.toLowerCase() ?? "";
     const scale = scaleWord ? (MONEY_SCALE[scaleWord] ?? 1) : 1;
     const window = text.slice(index, index + match[0].length + 24).toLowerCase();
     const period = /per year|\/yr|\/year|annual/.test(window)
@@ -93,14 +124,36 @@ function moneyMentions(text: string): MoneyMention[] {
       : /per month|\/mo|\/month|monthly/.test(window)
         ? "month"
         : null;
-    if (Number.isFinite(amount)) out.push({ value: amount * scale, period });
+    const currency =
+      symbol === "$"
+        ? "usd"
+        : symbol === "£"
+          ? "gbp"
+          : symbol === "€"
+            ? "eur"
+            : "none";
+    if (Number.isFinite(amount)) {
+      out.push({
+        value: amount * scale,
+        period,
+        currency,
+        hasScale: Boolean(scaleWord),
+        index,
+      });
+    }
   }
   return out;
 }
 
 function sameMoney(claimed: MoneyMention, evidence: MoneyMention): boolean {
   const diff = Math.abs(claimed.value - evidence.value);
-  return diff <= Math.max(0.01, claimed.value * 1e-9);
+  if (diff > Math.max(0.01, claimed.value * 1e-9)) return false;
+  if (claimed.period !== null && claimed.period !== evidence.period) return false;
+  if (claimed.currency !== "none" && claimed.currency !== evidence.currency) {
+    return false;
+  }
+  if (claimed.hasScale && !evidence.hasScale) return false;
+  return true;
 }
 
 function percentValues(text: string): number[] {
@@ -115,6 +168,10 @@ function figureTokens(text: string): string[] {
   );
 }
 
+function years(text: string): number[] {
+  return [...text.matchAll(/\b(?:19|20)\d{2}\b/g)].map((match) => Number(match[0]));
+}
+
 function geos(text: string): Set<string> {
   const found = new Set<string>();
   for (const [re, id] of GEO) {
@@ -123,36 +180,61 @@ function geos(text: string): Set<string> {
   return found;
 }
 
+function scaleWords(text: string): string[] {
+  return [
+    ...text
+      .toLowerCase()
+      .matchAll(/\b(billion|million|thousand|bn|b|m|k)\b/g),
+  ].map((match) => match[1]!);
+}
+
+function subjectWords(text: string): string[] {
+  const words = text.toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) ?? [];
+  return [...new Set(words.filter((word) => !QUAL_STOP.has(word)))];
+}
+
 function qualitativeSupported(figure: string, haystack: string): boolean {
-  const words = figure.toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) ?? [];
-  const wanted = [...new Set(words.filter((word) => !QUAL_STOP.has(word)))];
+  const wanted = subjectWords(figure);
   if (wanted.length === 0) return false;
   const hay = haystack.toLowerCase();
   return wanted.every((word) => hay.includes(word));
 }
 
+/**
+ * True when one relevant passage supports the complete typed claim.
+ * Magnitude, currency, period, year, geography and subject must agree.
+ */
 export function figureSupported(figure: string, haystack: string): boolean {
   const claimed = moneyMentions(figure);
   if (claimed.length > 0) {
     const evidence = moneyMentions(haystack);
-    const moneyOk = claimed.every((item) =>
-      evidence.some(
-        (found) =>
-          sameMoney(item, found) &&
-          (item.period === null || item.period === found.period),
-      ),
-    );
+    const moneyOk = claimed.every((item) => evidence.some((found) => sameMoney(item, found)));
     if (!moneyOk) return false;
+  }
+  const claimedScales = scaleWords(figure);
+  if (claimedScales.length > 0) {
+    const foundScales = new Set(scaleWords(haystack));
+    if (!claimedScales.every((word) => foundScales.has(word))) return false;
   }
   const claimedPercents = percentValues(figure);
   if (claimedPercents.length > 0) {
     const foundPercents = percentValues(haystack);
     if (!claimedPercents.every((value) => foundPercents.includes(value))) return false;
   }
+  const claimedYears = years(figure);
+  if (claimedYears.length > 0) {
+    const foundYears = new Set(years(haystack));
+    if (!claimedYears.every((year) => foundYears.has(year))) return false;
+  }
   const claimedGeo = geos(figure);
   if (claimedGeo.size > 0) {
     const foundGeo = geos(haystack);
     if (![...claimedGeo].every((place) => foundGeo.has(place))) return false;
+  }
+  const subjects = subjectWords(figure);
+  if (subjects.length > 0) {
+    const hay = haystack.toLowerCase();
+    if (!subjects.every((word) => hay.includes(word))) return false;
   }
   const tokens = figureTokens(figure);
   if (tokens.length === 0) {
@@ -171,6 +253,10 @@ export function boundExcerpt(text: string): string {
 
 export function contentHash(text: string): string {
   return createHash("sha256").update(text).digest("hex");
+}
+
+export function evidenceSourceId(url: string): string {
+  return contentHash(canonicalSourceKey(url) ?? url).slice(0, 16);
 }
 
 export function sourceFamily(url: string): string {
@@ -196,8 +282,90 @@ export function evidenceIsStale(
   return (now - retrieved) / 86_400_000 > FRESHNESS_DAYS[kind];
 }
 
-function sourceId(url: string): string {
-  return contentHash(canonicalSourceKey(url) ?? url).slice(0, 16);
+function evidenceIndex(figure: string, page: string): number {
+  const claimed = moneyMentions(figure);
+  if (claimed.length > 0) {
+    const evidence = moneyMentions(page);
+    const hit = evidence.find((found) => sameMoney(claimed[0]!, found));
+    if (hit) return hit.index;
+  }
+  for (const year of years(figure)) {
+    const at = page.search(new RegExp(`\\b${year}\\b`));
+    if (at >= 0) return at;
+  }
+  for (const word of subjectWords(figure)) {
+    const at = page.toLowerCase().indexOf(word);
+    if (at >= 0) return at;
+  }
+  const tokens = figureTokens(figure);
+  for (const token of tokens) {
+    const at = page.search(
+      new RegExp(`(?<![\\d.])${token.replace(".", "\\.")}(?![\\d]|\\.\\d)`),
+    );
+    if (at >= 0) return at;
+  }
+  return -1;
+}
+
+/**
+ * Bounded context around the matched claim. The saved passage itself must
+ * support the figure, or verification stays unresolved.
+ */
+export function supportingPassage(
+  figure: string,
+  page: string,
+  radius = PASSAGE_RADIUS,
+): string | null {
+  if (!figureSupported(figure, page)) return null;
+  const at = evidenceIndex(figure, page);
+  if (at < 0) return null;
+  const start = Math.max(0, at - radius);
+  const end = Math.min(page.length, at + radius);
+  const passage = boundExcerpt(page.slice(start, end));
+  if (!figureSupported(figure, passage)) return null;
+  return passage;
+}
+
+export function mergeEvidenceSources(
+  ...lists: EvidenceSource[][]
+): EvidenceSource[] {
+  const byId = new Map<string, EvidenceSource>();
+  for (const list of lists) {
+    for (const source of list) {
+      const prior = byId.get(source.id);
+      if (!prior) {
+        byId.set(source.id, source);
+        continue;
+      }
+      if (prior.outcome !== "read" && source.outcome === "read") {
+        byId.set(source.id, source);
+      } else if (
+        prior.outcome === source.outcome &&
+        source.excerpt.length > prior.excerpt.length
+      ) {
+        byId.set(source.id, source);
+      }
+    }
+  }
+  return [...byId.values()];
+}
+
+export function pageToEvidenceSource(
+  url: string,
+  text: string | null,
+  retrievedAt: string,
+  excerpt = "",
+): EvidenceSource {
+  const retained = excerpt || (text ? boundExcerpt(text) : "");
+  return {
+    id: evidenceSourceId(url),
+    canonicalUrl: canonicalSourceKey(url) ?? url,
+    family: sourceFamily(url),
+    retrievedAt,
+    excerpt: retained,
+    contentHash: contentHash(retained),
+    outcome: text ? "read" : "missing",
+  };
 }
 
 export async function filterFiguresByPage(input: {
@@ -226,61 +394,65 @@ export async function filterFiguresByPage(input: {
       pages.set(url, { missing: true });
     }
   }
-  const sources: EvidenceSource[] = urls.map((url) => {
-    const page = pages.get(url);
-    const text = page && "text" in page ? page.text : "";
-    const excerpt = text ? boundExcerpt(text) : "";
-    return {
-      id: sourceId(url),
-      canonicalUrl: canonicalSourceKey(url) ?? url,
-      family: sourceFamily(url),
-      retrievedAt: input.retrievedAt,
-      excerpt,
-      contentHash: contentHash(excerpt),
-      outcome: text ? "read" : "missing",
-    };
-  });
+  const sources: EvidenceSource[] = [];
   const claims: RecordedClaim[] = [];
-  const supported = (figure: string, url: string): boolean | null => {
+  const pageText = (url: string): string | null => {
     const page = pages.get(url);
-    if (!page || !("text" in page)) return null;
-    return figureSupported(figure, page.text);
+    return page && "text" in page ? page.text : null;
   };
+
   const stats = input.stats.filter((stat) => {
-    const verdict = supported(stat.value, stat.citation.url);
-    const page = pages.get(stat.citation.url);
-    const text = page && "text" in page ? page.text : "";
+    const figure = `${stat.claim} ${stat.value}`.trim();
+    const text = pageText(stat.citation.url);
+    const passage = text ? supportingPassage(figure, text) : null;
+    const verified = passage !== null;
+    sources.push(
+      pageToEvidenceSource(
+        stat.citation.url,
+        text,
+        input.retrievedAt,
+        passage ?? "",
+      ),
+    );
     claims.push({
       text: `${stat.claim}: ${stat.value}`,
-      evidenceIds: [sourceId(stat.citation.url)],
+      evidenceIds: [evidenceSourceId(stat.citation.url)],
       stance: "observed",
-      verdict: verdict ? "verified" : "unresolved",
-      excerpt: text ? boundExcerpt(text).slice(0, 400) : "",
-      reason: verdict
-        ? "typed claim matched the fetched page"
-        : verdict === null
+      verdict: verified ? "verified" : "unresolved",
+      excerpt: passage ?? "",
+      reason: verified
+        ? "typed claim matched a supporting passage"
+        : text === null
           ? "cited page could not be read"
           : "fetched page does not support the typed claim",
     });
-    return verdict === true;
+    return verified;
   });
   const competitors = input.competitors.filter((row) => {
-    const verdict = supported(row.pricing, row.url);
-    const page = pages.get(row.url);
-    const text = page && "text" in page ? page.text : "";
+    const text = pageText(row.url);
+    const passage = text ? supportingPassage(row.pricing, text) : null;
+    const verified = passage !== null;
+    sources.push(
+      pageToEvidenceSource(row.url, text, input.retrievedAt, passage ?? ""),
+    );
     claims.push({
       text: `${row.name} pricing: ${row.pricing}`,
-      evidenceIds: [sourceId(row.url)],
+      evidenceIds: [evidenceSourceId(row.url)],
       stance: "observed",
-      verdict: verdict ? "verified" : "unresolved",
-      excerpt: text ? boundExcerpt(text).slice(0, 400) : "",
-      reason: verdict
-        ? "typed price matched the fetched page"
-        : verdict === null
+      verdict: verified ? "verified" : "unresolved",
+      excerpt: passage ?? "",
+      reason: verified
+        ? "typed price matched a supporting passage"
+        : text === null
           ? "cited page could not be read"
           : "fetched page does not support the typed price",
     });
-    return verdict === true;
+    return verified;
   });
-  return { stats, competitors, sources, claims };
+  return {
+    stats,
+    competitors,
+    sources: mergeEvidenceSources(sources),
+    claims,
+  };
 }

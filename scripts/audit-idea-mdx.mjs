@@ -51,10 +51,6 @@ import {
   normalizeQuote,
   proseParagraphs,
 } from "./lib/idea-quality.mjs";
-import {
-  canonicalSourceKey,
-  extractAttributedQuotes,
-} from "../lib/engine/quote-binding.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ideasDir = path.join(root, "content", "ideas");

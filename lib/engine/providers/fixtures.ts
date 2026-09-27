@@ -281,12 +281,14 @@ export const SEARCH_MARKET_FIXTURE = {
     {
       url: "https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348",
       title: "Industry Research Biz — RFP software market",
-      snippet: "High-teens CAGR for RFP / proposal-automation software.",
+      snippet:
+        "RFP software market shows high-teens CAGR for RFP / proposal-automation software through the mid-2030s.",
     },
     {
       url: "https://dataintelo.com/report/rfp-response-automation-ai-market",
       title: "DataIntelo — RFP response automation AI",
-      snippet: "Low single-digit billions USD market size in the 2024 window.",
+      snippet:
+        "AI RFP response automation market size is low single-digit billions USD in the 2024 window with double-digit growth.",
     },
   ],
   usage: { prompt_tokens: 1_100, completion_tokens: 420 },

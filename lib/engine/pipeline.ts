@@ -19,7 +19,11 @@ import {
   filterFiguresByPage,
   PIPELINE_VERSION,
   PROMPT_VERSION,
+  boundExcerpt,
   contentHash,
+  evidenceSourceId,
+  mergeEvidenceSources,
+  pageToEvidenceSource,
 } from "./evidence.ts";
 import {
   assertWithinCap,
@@ -637,6 +641,20 @@ export async function verifySignals(
   );
 }
 
+/** Bounded page context around a verified quote, or the quote itself. */
+export function quoteSupportingPassage(quote: string, page: string): string {
+  if (!quoteAppearsIn(quote, page)) return "";
+  const needle = quote.replace(/\s*[.…]+\s*/g, " ").trim().slice(0, 48);
+  const at =
+    needle.length >= 12
+      ? page.toLowerCase().indexOf(needle.toLowerCase())
+      : -1;
+  if (at < 0) return boundExcerpt(quote);
+  return boundExcerpt(
+    page.slice(Math.max(0, at - 120), Math.min(page.length, at + quote.length + 120)),
+  );
+}
+
 /**
  * Evidence text per cited URL: the result's own snippet plus every sentence
  * of the search answer tagged with that result's `[n]` marker. A figure is
@@ -1152,18 +1170,49 @@ export async function runResearch(
     }
   }
 
-  const quoteClaims: RecordedClaim[] = signals.map((signal) => ({
-    text: signal.quote,
-    evidenceIds: [
-      contentHash(canonicalSourceKey(signal.citation.url) ?? signal.citation.url).slice(0, 16),
-    ],
-    stance: "observed" as const,
-    verdict: signal.verified ? ("verified" as const) : ("unresolved" as const),
-    excerpt: signal.quote.slice(0, 400),
-    reason: signal.verified
-      ? "exact quote on the cited page"
-      : "quote was not found on the fetched page",
-  }));
+  const quoteClaims: RecordedClaim[] = [];
+  const communitySources: EvidenceSource[] = [];
+  for (const signal of signals) {
+    const page = communityPages.get(signal.citation.url);
+    const text = page?.text ?? null;
+    const excerpt =
+      signal.verified && text
+        ? quoteSupportingPassage(signal.quote, text) || boundExcerpt(signal.quote)
+        : "";
+    communitySources.push(
+      pageToEvidenceSource(
+        signal.citation.url,
+        text,
+        ranAt,
+        excerpt || undefined,
+      ),
+    );
+    quoteClaims.push({
+      text: signal.quote,
+      evidenceIds: [evidenceSourceId(signal.citation.url)],
+      stance: "observed",
+      verdict: signal.verified && excerpt ? "verified" : "unresolved",
+      excerpt,
+      reason:
+        signal.verified && excerpt
+          ? "exact quote on the cited page"
+          : "quote was not found on the fetched page",
+    });
+  }
+  const signalsForRecord = signals.map((signal, index) => {
+    const claim = quoteClaims[index];
+    if (!providers.sourceText) {
+      // Source text was skipped: leave verification unset so compile keeps quotes.
+      const { verified: _ignored, ...rest } = signal as typeof signal & {
+        verified?: boolean;
+      };
+      return rest;
+    }
+    return {
+      ...signal,
+      verified: claim?.verdict === "verified",
+    };
+  });
   const runIdentity: RunIdentity | undefined = providers.mode
     ? {
         id: contentHash(`${brief.slug}|${ranAt}`).slice(0, 16),
@@ -1173,12 +1222,13 @@ export async function runResearch(
         status: "completed",
       }
     : undefined;
+  const allSources = mergeEvidenceSources(pageSources, communitySources);
   const draft = {
     contractVersion: runIdentity ? RESEARCH_RECORD_V2 : 1,
     ...(runIdentity
       ? {
           run: runIdentity,
-          sources: pageSources,
+          sources: allSources,
           claims: [...pageClaims, ...quoteClaims],
         }
       : {}),
@@ -1195,7 +1245,7 @@ export async function runResearch(
     competitors,
     community: {
       summary: synth.communitySummary,
-      signals,
+      signals: signalsForRecord,
     },
     keywords,
     goToMarket: synth.goToMarket,

@@ -856,16 +856,19 @@ function parseV2Evidence(
     return undefined;
   }
   const runRaw = input.run;
-  const mode = runRaw.mode;
-  const status = runRaw.status;
-  if (mode !== "fixture" && mode !== "live") issues.push("run.mode: fixture or live");
-  if (status !== "completed" && status !== "failed") {
-    issues.push("run.status: completed or failed");
-  }
+  const mode =
+    runRaw.mode === "fixture" || runRaw.mode === "live" ? runRaw.mode : null;
+  const status =
+    runRaw.status === "completed" || runRaw.status === "failed"
+      ? runRaw.status
+      : null;
+  if (!mode) issues.push("run.mode: fixture or live");
+  if (!status) issues.push("run.status: completed or failed");
   for (const key of ["id", "pipelineVersion", "promptVersion"] as const) {
     if (!isNonEmptyString(runRaw[key])) issues.push(`run.${key}: required non-empty string`);
   }
   const sources: EvidenceSource[] = [];
+  const seenSourceIds = new Set<string>();
   input.sources.forEach((row, index) => {
     if (!isPlainObject(row)) {
       issues.push(`sources[${index}]: expected object`);
@@ -882,8 +885,14 @@ function parseV2Evidence(
         return;
       }
     }
+    const id = String(row.id);
+    if (seenSourceIds.has(id)) {
+      issues.push(`sources[${index}].id: duplicate ${id}`);
+      return;
+    }
+    seenSourceIds.add(id);
     sources.push({
-      id: String(row.id),
+      id,
       canonicalUrl: String(row.canonicalUrl),
       family: String(row.family),
       retrievedAt: String(row.retrievedAt),
@@ -918,16 +927,45 @@ function parseV2Evidence(
         return;
       }
     }
+    const evidenceIds = row.evidenceIds as string[];
+    if (verdict === "verified") {
+      if (evidenceIds.length === 0) {
+        issues.push(`claims[${index}].evidenceIds: verified claim needs evidence`);
+        return;
+      }
+      for (const id of evidenceIds) {
+        if (!seenSourceIds.has(id)) {
+          issues.push(`claims[${index}].evidenceIds: unknown source ${id}`);
+          return;
+        }
+      }
+      if (!String(row.excerpt).trim()) {
+        issues.push(`claims[${index}].excerpt: verified claim needs a supporting passage`);
+        return;
+      }
+    }
     claims.push({
       text: String(row.text),
-      evidenceIds: row.evidenceIds as string[],
+      evidenceIds,
       stance,
       verdict,
       excerpt: String(row.excerpt),
       reason: String(row.reason),
     });
   });
-  if (issues.some((issue) => issue.startsWith("run.") || issue.startsWith("sources") || issue.startsWith("claims"))) {
+  if (
+    !mode ||
+    !status ||
+    !isNonEmptyString(runRaw.id) ||
+    !isNonEmptyString(runRaw.pipelineVersion) ||
+    !isNonEmptyString(runRaw.promptVersion) ||
+    issues.some(
+      (issue) =>
+        issue.startsWith("run.") ||
+        issue.startsWith("sources") ||
+        issue.startsWith("claims"),
+    )
+  ) {
     return undefined;
   }
   return {

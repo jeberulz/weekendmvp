@@ -79,7 +79,7 @@ async function executableFindings(source: string): Promise<string[]> {
   const ast = acorn.parse(js, {
     ecmaVersion: "latest",
     sourceType: "module",
-  }) as AstNode;
+  }) as unknown as AstNode;
   const findings: string[] = [];
   const walk = (node: AstNode): void => {
     if (node.type === "ImportDeclaration") {
@@ -182,6 +182,15 @@ describe("executable MDX regression", () => {
       slug: "engine-draft-link-probe",
     }).mdx;
     expect(await executableFindings(mdx)).toEqual([]);
+  });
+
+  it("refuses javascript and credential links in narrative prose", async () => {
+    await expect(
+      compiledWith("[source](javascript:alert%281%29)"),
+    ).rejects.toThrow(/non-public Markdown destinations|refusing/);
+    await expect(
+      compiledWith("[pricing](https://user:pass@example.com)"),
+    ).rejects.toThrow(/non-public Markdown destinations|refusing/);
   });
 
   it("rejects a prose field above 100000 characters", async () => {

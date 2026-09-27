@@ -68,3 +68,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Result: S2 checks passed. No live provider call. Public idea files were not modified.
 - Gotchas: A partial page map used by older tests hid market URLs, so those tests now spread `fixturePageMap()` and override only the community pages.
 - Next: S3, provider cost reservations and non-Reddit discovery.
+
+## 2026-09-27 - PR #83 review fixes (S1/S2 defects)
+
+- Source: human NO-GO on `b1ab02a` (PR #83). Seven inline findings.
+- Actions taken: Removed duplicate `canonicalSourceKey`/`extractAttributedQuotes` imports so `node --check scripts/audit-idea-mdx.mjs` starts; `idea-quality.mjs` re-exports from `quote-binding.mjs`. Narrowed `run.mode`/`run.status` before the typed v2 result; `Program` cast goes through `unknown`. Claim verification uses claim+value with currency, scale, year, geography and subject words; supporting passages are sliced around the match and must themselves support the figure. Community page evidence is merged into `sources`; v2 parse rejects duplicate/dangling evidence IDs and verified claims without excerpts. `assertSafeMdx` validates every link/image/definition URL. Quote extraction uses the MDX AST so `R&amp;D` decodes. Fixture market snippets include claim subject language.
+- Checks run: `npm run test:engine` 125 pass; `npm run typecheck` pass; `npm run lint` 0 errors; `npm test` pass; `npm run build` pass; `node --check scripts/audit-idea-mdx.mjs` pass; fixture `engine:research` → v2 with 7 sources / 0 dangling → `engine:compile` → `audit:idea --record` (word-count floor only, expected for short fixture).
+- Result: Reviewed S1/S2 defects fixed. S3–S6 still open. Draft PR stays draft. No merge/live activation.
+- Next: S3 conservative cost reservations/timeouts/bounded alternative-source discovery.

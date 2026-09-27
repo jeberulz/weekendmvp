@@ -70,14 +70,33 @@ export function assertSafeMdx(source: string): void {
   const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
   const tree = processor.parse(body);
   const found: string[] = [];
+  const badUrls: string[] = [];
   const walk = (node: unknown): void => {
     if (!node || typeof node !== "object") return;
-    const record = node as { type?: string; children?: unknown[] };
+    const record = node as {
+      type?: string;
+      url?: unknown;
+      children?: unknown[];
+    };
     if (record.type && executable.has(record.type)) found.push(record.type);
+    if (
+      (record.type === "link" ||
+        record.type === "image" ||
+        record.type === "definition") &&
+      typeof record.url === "string" &&
+      record.url.length > 0
+    ) {
+      if (!publicHttpUrl(record.url)) badUrls.push(record.url);
+    }
     for (const child of record.children ?? []) walk(child);
   };
   walk(tree);
   if (found.length > 0) {
     throw new Error(`refusing executable MDX nodes: ${found.join(", ")}`);
+  }
+  if (badUrls.length > 0) {
+    throw new Error(
+      `refusing non-public Markdown destinations: ${badUrls.slice(0, 3).join(", ")}`,
+    );
   }
 }
