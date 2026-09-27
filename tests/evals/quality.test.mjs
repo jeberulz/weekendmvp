@@ -288,3 +288,19 @@ test("renderReport ranks failing pages first", () => {
   assert.ok(md.indexOf("`bad`") < md.indexOf("`meh`"));
   assert.ok(md.includes("missing \\| Sources"), "pipes are escaped in table cells");
 });
+
+test("renderReport adds a judge table when Layer 3 ran", () => {
+  const judged = (slug, slop) => ({
+    slug,
+    status: "pass",
+    fails: [],
+    warns: [],
+    judgeLayer: { metrics: { medians: { slop, fake_data: 4 } } },
+  });
+  const md = renderReport([judged("a", 2), judged("b", 4), judged("c", 5)], { generatedOn: "2026-09-27", layers: 3, mode: "live" });
+  assert.ok(md.includes("## Judge scores (3 page(s))"));
+  assert.ok(md.includes("| `slop` | 4 | 1 |"));
+  assert.ok(md.includes("Layers run: 0-3 (live)"));
+  const unjudged = { slug: "a", status: "pass", fails: [], warns: [] };
+  assert.ok(!renderReport([unjudged], { generatedOn: "x" }).includes("Judge scores"));
+});

@@ -35,6 +35,34 @@ function pageRows(results, key) {
     .join("\n");
 }
 
+/** Corpus median per judge dimension, from pages that ran Layer 3. */
+function judgeTable(results) {
+  const judged = results.filter((r) => r.judgeLayer?.metrics?.medians);
+  if (judged.length === 0) return [];
+  const dims = Object.keys(judged[0].judgeLayer.metrics.medians);
+  const rows = dims.map((d) => {
+    const values = judged
+      .map((r) => r.judgeLayer.metrics.medians[d])
+      .filter((v) => typeof v === "number")
+      .sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    const median =
+      values.length === 0 ? "-" : values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+    const low = values.filter((v) => v <= 2).length;
+    return `| \`${d}\` | ${median} | ${low} |`;
+  });
+  return [
+    `## Judge scores (${judged.length} page(s))`,
+    "",
+    "Median of each page's judge median, 1-5. Rubric: `evals/rubric.md`.",
+    "",
+    "| Dimension | Corpus median | Pages at 2 or below |",
+    "|---|---|---|",
+    ...rows,
+    "",
+  ];
+}
+
 export function renderReport(results, { generatedOn, layers = 0, mode = null }) {
   const sorted = results.slice().sort(rank);
   const count = (s) => results.filter((r) => r.status === s).length;
@@ -47,7 +75,7 @@ export function renderReport(results, { generatedOn, layers = 0, mode = null }) 
     `Generated ${generatedOn} by \`npm run evals:run -- --all --report\`. Do not edit by hand.`,
     "",
     layers > 0
-      ? `Layers run: 0-${layers} (${mode}). Layer 1 extracts factual claims; Layer 2 checks them against each page's cited sources.`
+      ? `Layers run: 0-${layers} (${mode}). Layer 1 extracts factual claims; Layer 2 checks them against each page's cited sources. Layer 3 is the judge panel.`
       : "Layers run: 0 only.",
     "",
     "Layer 0 is the free, deterministic layer: structure, slop phrases, verbosity, unsourced numbers, source hygiene, placeholders, and cross-page duplication. Thresholds live in `evals/config.json`.",
@@ -69,6 +97,7 @@ export function renderReport(results, { generatedOn, layers = 0, mode = null }) 
     "|---|---|---|",
     ...tallyChecks(results).map((t) => `| \`${t.check}\` | ${t.fail} | ${t.warn} |`),
     "",
+    ...judgeTable(results),
     `## Fix first: failing pages (${failing.length})`,
     "",
   ];

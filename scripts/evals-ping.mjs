@@ -103,7 +103,7 @@ async function main() {
   }
 
   const config = JSON.parse(fs.readFileSync(path.join(root, "evals", "config.json"), "utf8"));
-  let models = args.models ?? config.llm.judges;
+  let models = args.models ?? config.llm.judges.map((j) => (typeof j === "string" ? j : j.model));
   if (models.length === 0) {
     if (args.mode === "live") {
       console.error(

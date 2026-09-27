@@ -36,7 +36,7 @@ Definition of done: every new or edited idea page is scored by a layered quality
     - `npm run test:evals`
     - `npm run evals:ping -- --fixture`
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
-- [ ] `WP41-S3` - Layer 1 claim extraction + Layer 2 source verification with an on-disk URL cache
+- [x] `WP41-S3` - Layer 1 claim extraction + Layer 2 source verification with an on-disk URL cache
   - Scope: `lib/evals/` (`claims.ts`, `verify.ts`, `fetch-source.ts`, `cache.ts`, `text.ts`, `layers.ts`, `fixture-replies.ts`, `llm.ts` retry helper, tests), `scripts/evals-run.mjs`, `scripts/lib/quality/report.mjs`, `evals/config.json`, `.gitignore`, `package.json`, docs
   - Acceptance criteria:
     - Layer 1: one call per page lists factual claims with verbatim quotes and the numbered sources that back them. Quotes not found verbatim in the page are dropped and counted.
@@ -49,7 +49,17 @@ Definition of done: every new or edited idea page is scored by a layered quality
     - `npm run test:evals`, `npm run evals:run -- --slug phone-neck-score-app --layers 2 --fixture`
     - Live run on 4 pages, a repeat run at $0, `--estimate --all` ≤ $3
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
-- [ ] `WP41-S4` - Layer 3 judge panel (3 model families via OpenRouter), rubric, median aggregation, disagreement flag
+- [x] `WP41-S4` - Layer 3 judge panel (3 model families via OpenRouter), rubric, median aggregation, disagreement flag
+  - Scope: `lib/evals/rubric.ts`, `lib/evals/judges.ts`, `evals/rubric.md`, `lib/evals/providers/openrouter.ts` (supported-parameter filtering, reasoning effort), `lib/evals/llm.ts`, `lib/evals/fixture-replies.ts`, `scripts/evals-run.mjs`, `scripts/evals-ping.mjs`, `scripts/lib/quality/report.mjs`, `evals/config.json`, tests, docs
+  - Acceptance criteria:
+    - Three judges from different families score six anchored dimensions (specificity, slop, verbosity, fake_data, consistency, actionability). A score of 3 or lower needs a verbatim page quote or it is discarded.
+    - Page score per dimension is the median of valid scores. Fail at 2 or below, warn at 3, flag a spread of 2 or more for human review, warn when fewer than 2 judges scored.
+    - One failing judge does not stop the panel. Judgements cache on page text + rubric version + model + reasoning.
+    - `--layers 3` runs Layers 1-3; `--estimate` includes judges; the report gains a judge-score table.
+    - Live: reference pages score 3 or higher on every dimension; a seeded bad page fails.
+  - Verification:
+    - `npm run test:evals`, fixture and live runs on the 3 reference pages plus `phone-neck-score-app`, seeded bad page
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 - [ ] `WP41-S5` - Gold set (3 reference pages + seeded bad copies) and `evals:calibrate`
 - [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
 

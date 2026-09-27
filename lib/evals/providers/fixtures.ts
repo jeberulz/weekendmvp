@@ -61,6 +61,7 @@ export function createFixtureFetch(options: FixtureOptions = {}): Fetcher {
           id,
           name: `Fixture ${id}`,
           context_length: 128_000,
+          supported_parameters: ["max_tokens", "temperature", "response_format", "reasoning"],
           pricing: FIXTURE_PRICING,
         })),
       });

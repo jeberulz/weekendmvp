@@ -93,3 +93,23 @@ Takeaways: the corpus is light on stock AI phrasing and has no copied pages. The
 - Gotchas:
   - This container still has no `OPENROUTER_API_KEY` and blocks outbound HTTPS. Source sites (e.g. grandviewresearch.com) are blocked too, not only openrouter.ai, so Layer 2 needs a broad network policy, not one allowed domain.
 - Next: once the environment has the key and network access, pick and pin the extractor and verifier models, run the 4-page live check, record RULINGS, tick S3.
+
+## 2026-09-27 - WP41-S3 live finish and WP41-S4 judge panel
+
+- Environment: this session has `OPENROUTER_API_KEY` and outbound HTTPS. The account balance was briefly negative ($40.20 used of $40), then topped up to $49.80; live work resumed after that.
+- S3 live:
+  - `gpt-4.1-nano` trial: 47% of extracted quotes failed the verbatim guard. Switched to `gpt-4.1-mini` (the planned fallback): 18% after prompt tightening (`extract-v2`: one unbroken span, competitor name in `value`), mostly stitched competitor bullets. Dropped claims do not affect page status.
+  - Guard fixes found live: leading and trailing punctuation is ignored (models close a clause with "."), and an ellipsis counts as elision when the parts sit in order within 400 characters.
+  - Caches now hold the raw model reply, not the validated result, so guard fixes re-apply to cached replies for $0.
+  - Mini called rounding and date-range differences "contradicted". Added a confirmer (`gemini-3.8-flash`): a contradiction stands only if the confirmer repeats it with verbatim evidence.
+  - Real finding: `ai-landing-page-generator-ecommerce` (a reference page) cites "$715.5M → $2.7B ... 2025 to 2035, 14.3% CAGR" to Future Market Insights. The source now says $0.8B (2026) → $3.1B (2036), 14.3% for 2026-2036. Both verifier and confirmer flag it: the page is stale.
+  - Also found: the page says CodeRabbit Pro is $15/dev/mo; CodeRabbit's pricing page shows $30 (the confirmer then did not repeat that one).
+- S4:
+  - `lib/evals/rubric.ts` + `evals/rubric.md` (`rubric-v1`), `lib/evals/judges.ts` (prompt, evidence guard, median, spread, findings, per-judge cache, estimate), fixture judge, runner `--layers 3`, report judge table.
+  - Adapter fix found live: `gpt-5.6-luna` rejected the request because we always sent `temperature` and required every parameter. The client now sends only parameters the model list says the model accepts (temperature, JSON mode, reasoning effort) and still parses JSON from the reply.
+- Measured live cost (4 pages: 3 reference + `phone-neck-score-app`): Layers 1-2 about $0.003 per page, judges about $0.010 per page. Projected cold full sweep of Layers 1-3: about $3. Repeat runs on unchanged pages: $0.
+- Worst-case estimates (`--estimate --all`): Layers 1-2 $6.40, Layers 1-3 $12.15. Every call is reserved at its full output allowance, so these run far above real cost. The cap is per call, so a real sweep completes; the estimate message now says so. Allowances trimmed: 20 claims per page, extract 2,500 tokens, 6 verify calls per page, confirmer 1,000.
+- Live judge results (median per dimension): `ai-rfp-response-assistant` fake_data 3 (warn), consistency spread 3 (review); `ai-code-reviewer` all 4-5; `ai-landing-page-generator-ecommerce` fake_data 3 with spread 2; `phone-neck-score-app` all 4-5. Seeded bad page (temporary, deleted): FAIL on Layer 0 (5 banned phrases, slop density, 88% duplication) and judges (slop 2, verbosity 2, fake_data 1, naming the invented "87.3%", "$4.2 trillion" and the fake testimonial).
+- Checks run: `npm run typecheck` pass; `npm run lint` 0 errors (35 pre-existing warnings); `npm test` pass (73 vitest cases in `lib/evals`, 19 node tests); `npm run build` pass; `git diff --check` clean.
+- Live spend this session: about $0.08.
+- Next: `WP41-S5` gold set and calibration, then `WP41-S6` weekly sweep.

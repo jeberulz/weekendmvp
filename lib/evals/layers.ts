@@ -22,6 +22,7 @@ import {
   type ModelRates,
 } from "./providers/openrouter.ts";
 import {
+  type ConfirmerSpec,
   verifyAgainstSource,
   verifyOutputTokens,
   VERIFY_TOKENS_BASE,
@@ -79,7 +80,7 @@ export type RunClaimLayersArgs = {
   sections: Section[];
   layers: 1 | 2;
   llm: EvalLlm;
-  models: { extractor: string; verifier: string };
+  models: { extractor: string; verifier: string; confirmer?: ConfirmerSpec };
   config: ClaimsConfig;
   factualSections: string[];
   sourcesTitle: string;
@@ -192,6 +193,7 @@ export async function runClaimLayers(args: RunClaimLayersArgs): Promise<ClaimLay
           },
           maxOutputTokens: config.verifyMaxOutputTokens,
           cache: args.cache,
+          confirmer: args.models.confirmer,
         });
         if (verified.called) verifyCalls += 1;
         for (const check of verified.checks) add(check.claimId, check);
@@ -276,13 +278,16 @@ export async function runClaimLayers(args: RunClaimLayersArgs): Promise<ClaimLay
  * plus one verify call per source up to the per-page limit, every call at
  * its full output allowance. Ignores the cache, so a warm run costs less.
  */
+const CONFIRMS_PER_PAGE = 2;
+
 export function estimatePageWorstCaseUsd(args: {
   sections: Section[];
   layers: 1 | 2;
   config: ClaimsConfig;
   factualSections: string[];
   sourcesTitle: string;
-  rates: { extractor: ModelRates; verifier: ModelRates };
+  rates: { extractor: ModelRates; verifier: ModelRates; confirmer?: ModelRates };
+  confirmer?: ConfirmerSpec;
 }): number {
   const text = factualText(args.sections, args.factualSections);
   const sources = listSources(args.sections.find((s) => s.title === args.sourcesTitle)?.content);
@@ -310,6 +315,16 @@ export function estimatePageWorstCaseUsd(args: {
         calls * args.rates.verifier.requestUsd +
         inputTokens * args.rates.verifier.promptUsd +
         outputTokens * args.rates.verifier.completionUsd;
+    }
+    // Contradictions are rare; allow two confirmations per page.
+    if (args.confirmer && args.rates.confirmer && calls > 0) {
+      const c = args.config;
+      usd +=
+        CONFIRMS_PER_PAGE *
+        worstCaseUsd(args.rates.confirmer, {
+          inputTokens: estimateInputTokens(["x".repeat(PROMPT_CHARS + c.passagesPerClaim * c.windowChars + 400)]),
+          maxOutputTokens: args.confirmer.maxOutputTokens,
+        });
     }
   }
   return usd;

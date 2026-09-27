@@ -23,12 +23,35 @@ export function normaliseForMatch(text: string): string {
     .toLowerCase();
 }
 
-/** True when `quote` appears in `haystack` after normalisation. */
+/**
+ * True when `quote` appears in `haystack` after normalisation. Leading and
+ * trailing punctuation and quote marks are ignored: models close a clause
+ * with "." where the page's sentence carries on.
+ */
 export function containsVerbatim(haystack: string, quote: string, minChars = 8): boolean {
-  const q = normaliseForMatch(quote);
+  const trim = (s: string) => s.replace(/^[\s"'(\[.,;:!?…-]+|[\s"')\].,;:!?…-]+$/g, "");
+  const hay = normaliseForMatch(haystack);
+  const q = trim(normaliseForMatch(quote));
   if (q.length < minChars) return false;
-  return normaliseForMatch(haystack).includes(q);
+  if (hay.includes(q)) return true;
+
+  // An ellipsis marks an elision: accept when every part appears in order,
+  // each within MAX_GAP characters of the previous one.
+  const parts = q.split(/\s*(?:\.\.\.|…)\s*/).map(trim).filter(Boolean);
+  if (parts.length < 2 || parts.some((p) => p.length < 4)) return false;
+  let from = 0;
+  let prevEnd = -1;
+  for (const part of parts) {
+    const at = hay.indexOf(part, from);
+    if (at === -1 || (prevEnd !== -1 && at - prevEnd > MAX_GAP)) return false;
+    prevEnd = at + part.length;
+    from = prevEnd;
+  }
+  return true;
 }
+
+/** Longest elision an ellipsis in a quote may stand for. */
+const MAX_GAP = 400;
 
 /**
  * Numeric tokens in a claim, in the forms a source may print them:

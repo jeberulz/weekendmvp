@@ -155,7 +155,7 @@ describe("createOpenRouterClient", () => {
   it("sends a pinned model, temperature 0, JSON mode, and auth", async () => {
     const spy = spyFetch(createFixtureFetch());
     const client = createOpenRouterClient({ fetchImpl: spy.fetchImpl, apiKey: "k" });
-    await client.chat({ ...REQUEST, json: true });
+    await client.chat({ ...REQUEST, json: true, temperature: 0 });
     const { init } = spy.chats()[0];
     const body = JSON.parse(String(init?.body));
     expect(body).toMatchObject({
@@ -290,6 +290,33 @@ describe("createEvalLlm", () => {
     const llm = createEvalLlm({ mode: "live", apiKey: "k", fetchImpl: spy.fetchImpl });
     await expect(llm.call({ ...REQUEST, model: "made-up/model" })).rejects.toThrow(EvalConfigError);
     expect(spy.chats()).toHaveLength(0);
+  });
+
+  it("omits temperature, JSON mode and reasoning a model does not accept", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const catalog = new Response(
+      JSON.stringify({
+        data: [
+          { id: "r/thinker", pricing: { prompt: "0.0000002", completion: "0.0000012" }, supported_parameters: ["max_tokens", "reasoning"] },
+          { id: "p/plain", pricing: { prompt: "0.0000001", completion: "0.0000004" }, supported_parameters: ["max_tokens", "temperature", "response_format"] },
+        ],
+      }),
+    );
+    const inner = createFixtureFetch({ models: ["r/thinker", "p/plain"] });
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith("/models")) return catalog.clone();
+      bodies.push(JSON.parse(String(init?.body)));
+      return inner(input, init);
+    }) as Fetcher;
+    const llm = createEvalLlm({ mode: "live", apiKey: "k", fetchImpl });
+    const thinker = await llm.call({ ...REQUEST, model: "r/thinker", json: true, reasoning: "low" });
+    await llm.call({ ...REQUEST, model: "p/plain", json: true, reasoning: "low" });
+    expect(thinker.json).toEqual({ ok: true }); // still parsed without JSON mode
+    expect(bodies[0]).not.toHaveProperty("temperature");
+    expect(bodies[0]).not.toHaveProperty("response_format");
+    expect(bodies[0].reasoning).toEqual({ effort: "low" });
+    expect(bodies[1]).toMatchObject({ temperature: 0, response_format: { type: "json_object" } });
+    expect(bodies[1]).not.toHaveProperty("reasoning");
   });
 
   it("reads the model catalog once per run", async () => {

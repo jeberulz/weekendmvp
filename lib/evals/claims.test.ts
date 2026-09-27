@@ -298,7 +298,7 @@ describe("runClaimLayers", () => {
   });
 
   it("estimates a positive worst case that grows with layer 2", () => {
-    const rates: ModelRates = { id: "m", name: "m", promptUsd: 0.0000005, completionUsd: 0.0000015, requestUsd: 0, contextLength: null };
+    const rates: ModelRates = { id: "m", name: "m", promptUsd: 0.0000005, completionUsd: 0.0000015, requestUsd: 0, contextLength: null, supportedParameters: null };
     const args = { sections: SECTIONS, config: CONFIG, factualSections: FACTUAL, sourcesTitle: "Sources", rates: { extractor: rates, verifier: rates } };
     const l1 = estimatePageWorstCaseUsd({ ...args, layers: 1 });
     const l2 = estimatePageWorstCaseUsd({ ...args, layers: 2 });
@@ -330,5 +330,60 @@ describe("verify output allowance", () => {
     expect(verifyOutputTokens(1, 1500)).toBe(270);
     expect(verifyOutputTokens(3, 1500)).toBe(510);
     expect(verifyOutputTokens(25, 1500)).toBe(1500);
+  });
+});
+
+describe("verbatim guard edges", () => {
+  it("ignores punctuation a model adds at either end of a quote", () => {
+    const page = "**High-teens CAGR** appears in forecasts through the mid-2030s (Industry Research Biz).";
+    expect(containsVerbatim(page, "High-teens CAGR appears in forecasts through the mid-2030s.")).toBe(true);
+    expect(containsVerbatim(page, '"High-teens CAGR appears in forecasts"')).toBe(true);
+    expect(containsVerbatim(page, "Low-teens CAGR appears in forecasts.")).toBe(false);
+  });
+});
+
+describe("contradiction confirmer", () => {
+  const base = {
+    slug: "test-idea",
+    sections: SECTIONS,
+    config: CONFIG,
+    factualSections: FACTUAL,
+    sourcesTitle: "Sources",
+    layers: 2 as const,
+    sourceFetch: fixtureSourceFetch({
+      [GV]: longPage("The invoicing software market was valued at USD 1.1 billion in 2025, Grand View says."),
+    }),
+  };
+  const confirmer = { model: FIXTURE_MODELS[2], maxOutputTokens: 500 };
+  const contradict = (body: FixtureChatBody): FixtureReply | undefined =>
+    body.messages[0].content.includes("VERIFY_CLAIMS")
+      ? { text: JSON.stringify({ results: [{ id: "c1", verdict: "contradicted", evidence: "market was valued at USD 1.1 billion in 2025" }] }) }
+      : undefined;
+
+  it("keeps a contradiction the confirmer agrees with", async () => {
+    const llm = fixtureLlm(contradict);
+    const result = await runClaimLayers({ ...base, llm, models: { ...MODELS, confirmer } });
+    expect(result.metrics.contradicted).toBe(1);
+    expect(result.claims[0].note).toBe(`confirmed by ${confirmer.model}`);
+    expect(llm.ledger().some((e) => e.label.startsWith("confirm test-idea"))).toBe(true);
+  });
+
+  it("downgrades a contradiction the confirmer does not repeat", async () => {
+    const llm = fixtureLlm((body) =>
+      body.model === confirmer.model
+        ? { text: JSON.stringify({ results: [{ id: "c1", verdict: "not_found", evidence: "" }] }) }
+        : contradict(body),
+    );
+    const result = await runClaimLayers({ ...base, llm, models: { ...MODELS, confirmer } });
+    expect(result.metrics.contradicted).toBe(0);
+    expect(result.fails).toEqual([]);
+    expect(result.claims[0]).toMatchObject({ status: "not_found", note: `contradiction not confirmed by ${confirmer.model}` });
+  });
+
+  it("accepts an ellipsis only when the parts sit close together in order", () => {
+    const page = "SiteKick — Speed-first AI builder with one-click creation. Pricing: ~$20-$99/month for teams.";
+    expect(containsVerbatim(page, "SiteKick — Speed-first AI builder... Pricing: ~$20-$99/month")).toBe(true);
+    expect(containsVerbatim(page, "Pricing: ~$20-$99/month... SiteKick — Speed-first")).toBe(false);
+    expect(containsVerbatim(page, "SiteKick... $5/month")).toBe(false);
   });
 });

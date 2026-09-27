@@ -25,6 +25,7 @@ import {
   estimateUsd,
   fetchModelCatalog,
   ratesFor,
+  supportsParameter,
   worstCaseUsd,
   type ChatReply,
   type ChatRequest,
@@ -116,6 +117,18 @@ export function createEvalLlm(options: EvalLlmOptions) {
       );
     }
     const modelRates = await rates(request.model);
+    // Send only what the model accepts: temperature 0 where allowed, JSON
+    // mode where offered (the prompt still asks for JSON, and the reply is
+    // parsed either way), reasoning effort for models that think.
+    const wire: ChatRequest = {
+      model: request.model,
+      system: request.system,
+      user: request.user,
+      maxOutputTokens: request.maxOutputTokens,
+      temperature: supportsParameter(modelRates, "temperature") ? (request.temperature ?? 0) : undefined,
+      json: request.json === true && supportsParameter(modelRates, "response_format"),
+      reasoning: supportsParameter(modelRates, "reasoning") ? request.reasoning : undefined,
+    };
     const worstCase = worstCaseUsd(modelRates, {
       inputTokens: estimateInputTokens([request.system, request.user]),
       maxOutputTokens: request.maxOutputTokens,
@@ -129,7 +142,7 @@ export function createEvalLlm(options: EvalLlmOptions) {
 
     let reply: ChatReply;
     try {
-      reply = await client.chat(request);
+      reply = await client.chat(wire);
     } catch (error) {
       if (!(error instanceof EvalCallError)) {
         // Config errors (no key) happen before any request.

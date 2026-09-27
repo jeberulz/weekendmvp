@@ -168,6 +168,12 @@ export async function verifyAgainstSource(args: {
   passages: PassageOptions;
   maxOutputTokens: number;
   cache?: JsonCache;
+  /**
+   * Second model that must agree before a contradiction stands. A
+   * contradiction fails the page, so one cheap model's misread (rounding,
+   * a different year range) must not be enough.
+   */
+  confirmer?: ConfirmerSpec;
 }): Promise<{ checks: ClaimCheck[]; cached: boolean; called: boolean }> {
   const passages = selectPassages(args.sourceText, args.claims, args.passages);
   if (passages.length === 0) {
@@ -190,9 +196,13 @@ export async function verifyAgainstSource(args: {
     args.model,
     JSON.stringify(args.claims.map((c) => [c.id, c.quote, c.value])),
     hashKey(args.sourceText),
+    JSON.stringify(args.passages),
   );
-  const hit = args.cache?.get<ClaimCheck[]>("verify", key);
-  if (hit) return { checks: hit, cached: true, called: false };
+  // Evidence must be in the excerpts sent, which are all source text. The
+  // raw reply is cached so a guard fix re-applies without new calls.
+  const validate = (json: unknown) => validateVerdicts(json, args.claims, args.source, passages.join("\n"));
+  const hit = args.cache?.get<{ raw: unknown }>("verify", key);
+  if (hit) return { checks: await confirmContradictions(args, validate(hit.raw)), cached: true, called: false };
 
   const { system, user } = buildVerifyMessages({ source: args.source, claims: args.claims, passages });
   const result = await callWithRetry(args.llm, {
@@ -203,8 +213,66 @@ export async function verifyAgainstSource(args: {
     maxOutputTokens: verifyOutputTokens(args.claims.length, args.maxOutputTokens),
     json: true,
   });
-  // Evidence must be in the excerpts we sent, which are all source text.
-  const checks = validateVerdicts(result.json, args.claims, args.source, passages.join("\n"));
-  args.cache?.set("verify", key, checks);
-  return { checks, cached: false, called: true };
+  args.cache?.set("verify", key, { raw: result.json });
+  return { checks: await confirmContradictions(args, validate(result.json)), cached: false, called: true };
+}
+
+export type ConfirmerSpec = {
+  model: string;
+  maxOutputTokens: number;
+  reasoning?: "minimal" | "low" | "medium" | "high";
+};
+
+/**
+ * Re-check each contradicted claim alone with the confirmer, on the
+ * excerpts nearest that claim. Unconfirmed contradictions become not_found.
+ */
+async function confirmContradictions(
+  args: Parameters<typeof verifyAgainstSource>[0],
+  checks: ClaimCheck[],
+): Promise<ClaimCheck[]> {
+  const confirmer = args.confirmer;
+  if (!confirmer) return checks;
+  return Promise.all(
+    checks.map(async (check) => {
+      if (check.status !== "contradicted") return check;
+      const claim = args.claims.find((c) => c.id === check.claimId);
+      if (!claim) return check;
+      const passages = selectPassages(args.sourceText, [claim], args.passages);
+      const unconfirmed: ClaimCheck = {
+        claimId: check.claimId,
+        status: "not_found",
+        sourceId: check.sourceId,
+        note: `contradiction not confirmed by ${confirmer.model}`,
+      };
+      if (passages.length === 0) return unconfirmed;
+
+      const key = hashKey(
+        VERIFY_PROMPT_VERSION,
+        "confirm",
+        confirmer.model,
+        claim.quote,
+        claim.value,
+        hashKey(args.sourceText),
+        JSON.stringify(args.passages),
+      );
+      let raw = args.cache?.get<{ raw: unknown }>("confirm", key)?.raw;
+      if (raw === undefined) {
+        const { system, user } = buildVerifyMessages({ source: args.source, claims: [claim], passages });
+        const result = await callWithRetry(args.llm, {
+          label: `confirm ${args.slug} [${args.source.id}] ${claim.id}`,
+          model: confirmer.model,
+          system,
+          user,
+          maxOutputTokens: confirmer.maxOutputTokens,
+          reasoning: confirmer.reasoning,
+          json: true,
+        });
+        raw = result.json;
+        args.cache?.set("confirm", key, { raw });
+      }
+      const [second] = validateVerdicts(raw, [claim], args.source, passages.join("\n"));
+      return second.status === "contradicted" ? { ...check, note: `confirmed by ${confirmer.model}` } : unconfirmed;
+    }),
+  );
 }

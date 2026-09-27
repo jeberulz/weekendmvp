@@ -1,5 +1,5 @@
 /**
- * WP41-S3. Deterministic fixture replies for Layers 1-2, and a fixture
+ * WP41-S3/S4. Deterministic fixture replies for Layers 1-3, and a fixture
  * source website. Used by `--fixture` runs and tests: no key, no network,
  * no spend, and the real extraction, verification and guard code runs.
  *
@@ -13,6 +13,7 @@
 import { EXTRACT_MARKER } from "./claims.ts";
 import type { FixtureChatBody, FixtureReply } from "./providers/fixtures.ts";
 import type { Fetcher } from "./providers/openrouter.ts";
+import { DIMENSIONS, JUDGE_MARKER } from "./rubric.ts";
 import { normaliseForMatch } from "./text.ts";
 import { VERIFY_MARKER } from "./verify.ts";
 
@@ -57,12 +58,28 @@ function fixtureVerify(user: string): FixtureReply {
   return { text: JSON.stringify({ results }) };
 }
 
-/** Routes a fixture chat call to the extract or verify fixture. */
+/** Every dimension 4/5, quoting the page's first full sentence. */
+function fixtureJudge(user: string): FixtureReply {
+  const page = user.replace(/^PAGE:\n/, "");
+  const quote =
+    page
+      .split("\n")
+      .filter((l) => l.trim() && !l.startsWith("#"))
+      .flatMap((l) => l.split(/(?<=[.!?])\s+/))
+      .find((s) => s.length >= 20 && s.length <= 300) ?? "";
+  const scores = Object.fromEntries(
+    DIMENSIONS.map((d) => [d, { score: 4, quote, reason: "Fixture judge: solid but not flawless." }]),
+  );
+  return { text: JSON.stringify(scores) };
+}
+
+/** Routes a fixture chat call to the extract, verify or judge fixture. */
 export function claimsFixtureReply(body: FixtureChatBody): FixtureReply {
   const system = body.messages.find((m) => m.role === "system")?.content ?? "";
   const user = body.messages.find((m) => m.role === "user")?.content ?? "";
   if (system.startsWith(EXTRACT_MARKER)) return fixtureExtract(user);
   if (system.startsWith(VERIFY_MARKER)) return fixtureVerify(user);
+  if (system.startsWith(JUDGE_MARKER)) return fixtureJudge(user);
   return { text: '{"ok":true}' };
 }
 

@@ -6,7 +6,9 @@
  * runs only Layer 0.
  *
  * Layers 1-2 (--layers 1|2) extract factual claims with an LLM and check
- * them against the sources each page cites. They need an explicit mode:
+ * them against the sources each page cites. Layer 3 (--layers 3) adds a
+ * panel of judges scoring the rubric in evals/rubric.md. Each layer
+ * includes the ones below it. They need an explicit mode:
  *   --fixture   no key, no network, canned replies (for wiring checks)
  *   --live      OpenRouter (OPENROUTER_API_KEY) under the EVALS_MAX_USD cap
  * --estimate prints the worst-case cost of the planned run and stops.
@@ -15,7 +17,7 @@
  *   npm run evals:run -- --slug phone-neck-score-app   # exit 1 on fail
  *   npm run evals:run -- --changed [--base origin/main] # exit 1 on fail
  *   npm run evals:run -- --all [--report] [--strict]    # report only
- *   npm run evals:run -- --slug <slug> --layers 2 --live [--estimate]
+ *   npm run evals:run -- --slug <slug> --layers 3 --live [--estimate]
  *   add --json for machine-readable output
  *
  * --changed checks idea MDX added, modified, or renamed since --base,
@@ -147,6 +149,16 @@ function printResult(r) {
         ` | $${c.costUsd.toFixed(4)}${c.cachedExtract ? " (cached)" : ""}`,
     );
   }
+  const j = r.judgeLayer?.metrics;
+  if (j) {
+    const medians = Object.entries(j.medians)
+      .map(([d, v]) => `${d} ${v ?? "-"}`)
+      .join(", ");
+    console.log(
+      `  judges (median of ${r.judgeLayer.judgements.length - j.judgesFailed}): ${medians}` +
+        ` | $${j.costUsd.toFixed(4)}${j.cached > 0 ? ` (${j.cached} cached)` : ""}`,
+    );
+  }
 }
 
 /** Standalone Node does not read env files. Shell, then .env.local, then .env. */
@@ -158,16 +170,19 @@ function loadLocalEnv() {
 }
 
 const statusOf = (r) => (r.fails.length > 0 ? "fail" : r.warns.length > 0 ? "warn" : "pass");
+const layerName = (n) => (n === 1 ? "layer 1" : `layers 1-${n}`);
 
 /**
- * Layers 1-2 for every target page, merged into the Layer 0 results.
- * Returns the number of pages whose layers could not finish.
+ * Layers 1-3 for every target page, merged into the Layer 0 results.
+ * Layers 1-2 (claims) and 3 (judges) are independent: one failing on a page
+ * does not stop the other. Returns the number of incomplete pages.
  */
-async function runClaimLayersForPages({ args, config, corpus, results }) {
+async function runModelLayersForPages({ args, config, corpus, results }) {
   const load = (rel) => import(pathToFileURL(path.join(root, rel)).href);
-  const [llmMod, layersMod, cacheMod, fixtureReplies, fixtures] = await Promise.all([
+  const [llmMod, layersMod, judgesMod, cacheMod, fixtureReplies, fixtures] = await Promise.all([
     load("lib/evals/llm.ts"),
     load("lib/evals/layers.ts"),
+    load("lib/evals/judges.ts"),
     load("lib/evals/cache.ts"),
     load("lib/evals/fixture-replies.ts"),
     load("lib/evals/providers/fixtures.ts"),
@@ -179,10 +194,12 @@ async function runClaimLayersForPages({ args, config, corpus, results }) {
   const models = {
     extractor: config.llm.extractor ?? (args.mode === "fixture" ? fixtures.FIXTURE_MODELS[0] : null),
     verifier: config.llm.verifier ?? (args.mode === "fixture" ? fixtures.FIXTURE_MODELS[1] : null),
+    confirmer: config.llm.confirmer ?? undefined,
   };
-  if (!models.extractor || (args.layers === 2 && !models.verifier)) {
+  const judges = args.layers >= 3 ? config.llm.judges : [];
+  if (!models.extractor || (args.layers >= 2 && !models.verifier) || (args.layers >= 3 && judges.length === 0)) {
     console.error(
-      "evals-run: llm.extractor / llm.verifier are not pinned in evals/config.json. Pick them with npm run evals:ping -- --live --list <filter>.",
+      "evals-run: llm.extractor / llm.verifier / llm.judges are not pinned in evals/config.json. Pick them with npm run evals:ping -- --live --list <filter>.",
     );
     process.exit(2);
   }
@@ -190,82 +207,124 @@ async function runClaimLayersForPages({ args, config, corpus, results }) {
   const llm = createEvalLlm({
     mode: args.mode,
     timeoutMs: config.llm.requestTimeoutMs,
-    fixture: { models: [models.extractor, models.verifier], reply: fixtureReplies.claimsFixtureReply },
+    fixture: {
+      models: [models.extractor, models.verifier, models.confirmer?.model, ...judges.map((spec) => spec.model)].filter(Boolean),
+      reply: fixtureReplies.claimsFixtureReply,
+    },
   });
-  // Fixture runs never touch the disk cache: a fixture source doc must not
-  // be served to a later live run.
+  // Fixture runs never touch the disk cache: a fixture source doc or score
+  // must not be served to a later live run.
   const cache =
     args.mode === "live"
       ? cacheMod.createDiskCache(path.join(evalsDir, "cache"), { ttlMs: cc.cacheTtlDays * 86_400_000 })
       : cacheMod.createMemoryCache();
   const sourceFetch = args.mode === "fixture" ? fixtureReplies.fixtureSourceFetch() : undefined;
   const pages = results.filter((r) => corpus.has(r.slug));
-  const shared = {
-    layers: args.layers,
+  const claimLayers = Math.min(args.layers, 2);
+  const claimArgs = {
+    layers: claimLayers,
     llm,
     models,
     config: cc,
     factualSections: config.factualSections,
     sourcesTitle: SOURCES_TITLE,
   };
+  const judgeArgs = {
+    llm,
+    judges,
+    thresholds: config.judges,
+    excludeSections: config.excludeFromProseSections,
+    sourcesTitle: SOURCES_TITLE,
+  };
 
-  try {
-    if (args.estimate) {
+  if (args.estimate) {
+    try {
       const rates = {
         extractor: await llm.rates(models.extractor),
         verifier: await llm.rates(models.verifier ?? models.extractor),
+        ...(models.confirmer ? { confirmer: await llm.rates(models.confirmer.model) } : {}),
       };
-      const total = pages.reduce(
-        (sum, r) => sum + layersMod.estimatePageWorstCaseUsd({ ...shared, sections: corpus.get(r.slug).page.sections, rates }),
-        0,
-      );
+      const judgeRates = new Map();
+      for (const spec of judges) judgeRates.set(spec.model, await llm.rates(spec.model));
+      let claimsUsd = 0;
+      let judgesUsd = 0;
+      for (const r of pages) {
+        const sections = corpus.get(r.slug).page.sections;
+        claimsUsd += layersMod.estimatePageWorstCaseUsd({ ...claimArgs, sections, rates, confirmer: models.confirmer });
+        if (judges.length > 0) {
+          judgesUsd += judgesMod.estimateJudgeWorstCaseUsd({ ...judgeArgs, sections, rates: judgeRates });
+        }
+      }
+      const total = claimsUsd + judgesUsd;
       console.log(
-        `evals-run: worst case for ${args.layers === 1 ? "layer 1" : "layers 1-2"} on ${pages.length} page(s): $${total.toFixed(4)}` +
-          ` ($${(total / Math.max(1, pages.length)).toFixed(4)}/page, ignoring cache). Cap: $${llm.capUsd().toFixed(2)}.` +
-          (total > llm.capUsd() ? " Over the cap: the run would stop part-way." : ""),
+        `evals-run: worst case for ${layerName(args.layers)} on ${pages.length} page(s): $${total.toFixed(4)}` +
+          ` (claims $${claimsUsd.toFixed(4)}${judges.length > 0 ? `, judges $${judgesUsd.toFixed(4)}` : ""};` +
+          ` $${(total / Math.max(1, pages.length)).toFixed(4)}/page, ignoring cache). Cap: $${llm.capUsd().toFixed(2)}.` +
+          (total > llm.capUsd()
+            ? " The worst case is above the cap: every call is reserved at its full output allowance, so the cap will refuse calls before overspending. Real runs cost far less (see docs/wp/wp41-progress.md)."
+            : ""),
       );
       process.exit(0);
+    } catch (error) {
+      console.error(`evals-run: ${error.message}`);
+      process.exit(2);
     }
-  } catch (error) {
-    console.error(`evals-run: ${error.message}`);
-    process.exit(2);
   }
 
   let errors = 0;
   let stopped = false;
   let next = 0;
+  const fail = (r, what, error) => {
+    if (error instanceof EvalConfigError) {
+      console.error(`evals-run: ${error.message}`);
+      process.exit(2);
+    }
+    if (error instanceof BudgetExceededError) stopped = true;
+    r.incomplete = true;
+    r.warns.push({ check: "layers.error", message: `${what} did not finish: ${error.message}` });
+  };
   const worker = async () => {
     while (!stopped && next < pages.length) {
       const r = pages[next++];
+      const sections = corpus.get(r.slug).page.sections;
       try {
-        const layer = await layersMod.runClaimLayers({ ...shared, slug: r.slug, sections: corpus.get(r.slug).page.sections, cache, sourceFetch });
+        const layer = await layersMod.runClaimLayers({ ...claimArgs, slug: r.slug, sections, cache, sourceFetch });
         r.fails.push(...layer.fails);
         r.warns.push(...layer.warns);
         r.claimLayer = layer;
       } catch (error) {
-        if (error instanceof EvalConfigError) {
-          console.error(`evals-run: ${error.message}`);
-          process.exit(2);
+        fail(r, "claim layers", error);
+      }
+      if (judges.length > 0 && !stopped) {
+        try {
+          const layer = await judgesMod.runJudgeLayer({ ...judgeArgs, slug: r.slug, sections, cache });
+          r.fails.push(...layer.fails);
+          r.warns.push(...layer.warns);
+          r.judgeLayer = layer;
+        } catch (error) {
+          fail(r, "judges", error);
         }
-        if (error instanceof BudgetExceededError) stopped = true;
-        errors += 1;
-        r.warns.push({ check: "claims.error", message: `claim layers did not finish: ${error.message}` });
       }
       r.status = statusOf(r);
+      r.visited = true;
     }
   };
   await Promise.all(Array.from({ length: Math.max(1, cc.pageConcurrency) }, worker));
 
-  const notRun = pages.filter((r) => !r.claimLayer && !r.warns.some((w) => w.check === "claims.error"));
-  for (const r of notRun) {
-    errors += 1;
-    r.warns.push({ check: "claims.error", message: "skipped: the run hit the EVALS_MAX_USD cap" });
-    r.status = statusOf(r);
+  for (const r of pages) {
+    if (!r.visited) {
+      r.incomplete = true;
+      r.warns.push({ check: "layers.error", message: "skipped: the run hit the EVALS_MAX_USD cap" });
+      r.status = statusOf(r);
+    }
+    if (r.incomplete) errors += 1;
+    delete r.visited;
+    delete r.incomplete;
   }
 
   const ledger = llm.ledger();
   console.error(
-    `evals-run: ${args.layers === 1 ? "layer 1" : "layers 1-2"} (${args.mode}): ${ledger.length} model call(s), ${ledger.filter((e) => !e.ok).length} failed,` +
+    `evals-run: ${layerName(args.layers)} (${args.mode}): ${ledger.length} model call(s), ${ledger.filter((e) => !e.ok).length} failed,` +
       ` spent $${llm.spentUsd().toFixed(4)} of $${llm.capUsd().toFixed(2)} cap` +
       (errors > 0 ? `, ${errors} page(s) incomplete` : ""),
   );
@@ -275,7 +334,7 @@ async function runClaimLayersForPages({ args, config, corpus, results }) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const modes = [args.all, args.changed, args.slugs.length > 0].filter(Boolean);
-  const badLayers = ![0, 1, 2].includes(args.layers);
+  const badLayers = ![0, 1, 2, 3].includes(args.layers);
   const needsMode = args.layers > 0 && !args.mode;
   const strayMode = args.layers === 0 && (args.mode || args.estimate);
   if (args.help || modes.length !== 1 || (args.report && !args.all) || badLayers || needsMode || strayMode) {
@@ -283,7 +342,8 @@ async function main() {
   npm run evals:run -- --slug <slug> [--slug <slug>...]
   npm run evals:run -- --changed [--base <ref>]   (default base: origin/main)
   npm run evals:run -- --all [--report] [--strict]
-  add --layers 1|2 --fixture|--live [--estimate] for claim extraction and source checks
+  add --layers 1|2|3 --fixture|--live [--estimate]: 1 extracts claims, 2 checks them
+  against cited sources, 3 adds the judge panel (each layer includes the ones below)
   add --json for machine-readable output`);
     process.exit(args.help ? 0 : 2);
   }
@@ -340,7 +400,7 @@ async function main() {
   });
 
   const layerErrors =
-    args.layers > 0 ? await runClaimLayersForPages({ args, config, corpus, results }) : 0;
+    args.layers > 0 ? await runModelLayersForPages({ args, config, corpus, results }) : 0;
 
   if (args.json) console.log(JSON.stringify(results, null, 2));
   else results.forEach(printResult);

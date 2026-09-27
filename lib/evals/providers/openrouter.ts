@@ -45,6 +45,11 @@ export type ModelRates = {
   /** Flat USD per request, usually 0. */
   requestUsd: number;
   contextLength: number | null;
+  /**
+   * Request parameters the model's providers accept, from the model list.
+   * `null` when the list does not say, in which case every parameter is sent.
+   */
+  supportedParameters: string[] | null;
 };
 
 type CatalogPayload = {
@@ -53,6 +58,7 @@ type CatalogPayload = {
     name?: string;
     context_length?: number;
     pricing?: { prompt?: string; completion?: string; request?: string };
+    supported_parameters?: string[];
   }>;
 };
 
@@ -114,6 +120,7 @@ export async function fetchModelCatalog(
       completionUsd,
       requestUsd,
       contextLength: model.context_length ?? null,
+      supportedParameters: Array.isArray(model.supported_parameters) ? model.supported_parameters : null,
     });
   }
   return catalog;
@@ -128,6 +135,11 @@ export function ratesFor(catalog: Map<string, ModelRates>, model: string): Model
     );
   }
   return rates;
+}
+
+/** True when the model accepts `param`, or when the model list is silent. */
+export function supportsParameter(rates: ModelRates, param: string): boolean {
+  return rates.supportedParameters === null || rates.supportedParameters.includes(param);
 }
 
 /**
@@ -171,8 +183,14 @@ export type ChatRequest = {
   user: string;
   /** Hard ceiling on output (reasoning included). Priced into the reservation. */
   maxOutputTokens: number;
-  /** Defaults to 0: judges should be as repeatable as the model allows. */
+  /**
+   * Sent only when set. Reasoning models (gpt-5.x) reject it, and with
+   * require_parameters an unsupported parameter means no provider at all.
+   * lib/evals/llm.ts defaults it to 0 for models that accept it.
+   */
   temperature?: number;
+  /** Reasoning effort for models that think before answering. */
+  reasoning?: "minimal" | "low" | "medium" | "high";
   /** Ask for a JSON object reply. */
   json?: boolean;
 };
@@ -269,7 +287,8 @@ export function createOpenRouterClient(
           { role: "user", content: request.user },
         ],
         max_tokens: request.maxOutputTokens,
-        temperature: request.temperature ?? 0,
+        ...(request.temperature === undefined ? {} : { temperature: request.temperature }),
+        ...(request.reasoning ? { reasoning: { effort: request.reasoning } } : {}),
         ...(request.json
           ? {
               response_format: { type: "json_object" },

@@ -14,7 +14,7 @@ import { hashKey, type JsonCache } from "./cache.ts";
 import { callWithRetry, type EvalLlm } from "./llm.ts";
 import { containsVerbatim } from "./text.ts";
 
-export const EXTRACT_PROMPT_VERSION = "extract-v1";
+export const EXTRACT_PROMPT_VERSION = "extract-v2";
 /** Marker the fixture transport uses to route replies. */
 export const EXTRACT_MARKER = "TASK: EXTRACT_CLAIMS";
 
@@ -67,7 +67,8 @@ You audit startup idea pages for factual accuracy. List the checkable factual cl
 
 Rules:
 - Only claims about the world that a source could confirm or refute. Skip opinions, advice, and the page's own proposed pricing or plans.
-- "quote" must be copied exactly from the page text: one sentence or clause, 8 to 300 characters, no ellipses, no paraphrase.
+- "quote" must be ONE unbroken span copied character for character from the page text, 8 to 300 characters. Never skip words, join separate parts, retype a number, or add a full stop the page does not have. Copy symbols such as → and — exactly.
+- In competitor bullets, quote only the part that holds the fact (for example "Pricing: free with ads") and put the competitor's name in "value" (for example "SmartPosture: free with ads").
 - "sourceIds" lists the numbered sources whose title or URL suggests they back the claim. Use [] when none plausibly does. Never guess a source for a claim it does not cover.
 - Numbers and pricing first. At most ${args.maxClaims} claims.
 - Reply with JSON only: {"claims":[{"quote":"...","type":"${CLAIM_TYPES.join("|")}","value":"the figure or fact, short","sourceIds":[1]}]}`;
@@ -148,8 +149,16 @@ export async function extractClaims(args: {
     args.factualText,
     JSON.stringify(args.sources),
   );
-  const hit = args.cache?.get<{ claims: Claim[]; dropped: DroppedClaim[] }>("extract", key);
-  if (hit) return { ...hit, costUsd: 0, cached: true };
+  const validate = (json: unknown) =>
+    validateClaims(json, {
+      factualText: args.factualText,
+      sourceCount: args.sources.length,
+      maxClaims: args.maxClaims,
+    });
+  // The raw reply is cached, not the validated result, so a guard fix
+  // re-applies to cached replies without paying for new calls.
+  const hit = args.cache?.get<{ raw: unknown }>("extract", key);
+  if (hit) return { ...validate(hit.raw), costUsd: 0, cached: true };
 
   const { system, user } = buildExtractMessages(args);
   const result = await callWithRetry(args.llm, {
@@ -160,11 +169,6 @@ export async function extractClaims(args: {
     maxOutputTokens: args.maxOutputTokens,
     json: true,
   });
-  const validated = validateClaims(result.json, {
-    factualText: args.factualText,
-    sourceCount: args.sources.length,
-    maxClaims: args.maxClaims,
-  });
-  args.cache?.set("extract", key, validated);
-  return { ...validated, costUsd: result.costUsd, cached: false };
+  args.cache?.set("extract", key, { raw: result.json });
+  return { ...validate(result.json), costUsd: result.costUsd, cached: false };
 }
