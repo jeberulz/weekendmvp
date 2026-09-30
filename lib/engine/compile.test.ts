@@ -322,3 +322,43 @@ describe("compile review fixes (Codex)", () => {
     expect(manifestEntry.scores).toBeUndefined();
   });
 });
+
+describe("citation links survive sentence dedupe", () => {
+  async function loadLinkCheck() {
+    const mod = await import(
+      pathToFileURL(path.join(root, "scripts/validate-idea-tags.mjs")).href
+    );
+    return mod.findOrphanedLinkTails as (text: string) => string[];
+  }
+
+  it("keeps a repeated citation whose title and URL contain sentence breaks", async () => {
+    const record = await fixtureRecord();
+    const signal = record.community.signals[0]!;
+    signal.citation.title =
+      "my ai code reviewer was useless until i made it earn the right to comment. what changed";
+    signal.citation.url =
+      "https://www.reddit.com/r/LLMDevs/comments/1v5dveb/my_ai_code_reviewer_was_useless/";
+    const { mdx } = compileResearchRecord({ record });
+    const findOrphanedLinkTails = await loadLinkCheck();
+    expect(findOrphanedLinkTails(mdx)).toEqual([]);
+    const sources = mdx.slice(mdx.indexOf("## Sources"));
+    expect(sources).toContain(
+      `- [${signal.citation.title}](${signal.citation.url})`,
+    );
+  });
+
+  it("recompiles every committed research record without orphaned link tails", async () => {
+    const findOrphanedLinkTails = await loadLinkCheck();
+    const dir = path.join(root, "engine/records");
+    for (const file of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
+      const record = parseResearchRecord(
+        JSON.parse(fs.readFileSync(path.join(dir, file), "utf8")),
+      );
+      const { mdx } = compileResearchRecord({
+        record,
+        slug: `engine-draft-${file.replace(/\.json$/, "")}`,
+      });
+      expect(findOrphanedLinkTails(mdx), file).toEqual([]);
+    }
+  });
+});

@@ -9,6 +9,11 @@
  *   app/build-with/[tool]/page.tsx → TOOL_PAGES (minus claude-code alias)
  *   app/ideas-for/[audience]/page.tsx → AUDIENCE_PAGES
  *
+ * Also scans content/ideas/*.mdx for orphaned markdown-link tails — a line
+ * holding `…](https://…)` with no opening `[`, or ending in a `domain.tld/path)`
+ * with no `(` before it, left after part of a link was dropped (the
+ * engine-draft sentence-dedupe bug).
+ *
  * Usage:
  *   node scripts/validate-idea-tags.mjs
  *   node scripts/validate-idea-tags.mjs --slug ai-slide-deck-maker
@@ -131,6 +136,28 @@ export function validateHighlights(highlights) {
   return errors;
 }
 
+const IDEAS_CONTENT_DIR = path.join(root, "content/ideas");
+const URL_TAIL_RE = /[a-z0-9-]+\.[a-z]{2,}\/[^\s()]*\)\s*$/i;
+
+/** Lines of one MDX body that hold a broken markdown link tail. */
+export function findOrphanedLinkTails(text) {
+  const errors = [];
+  let inFence = false;
+  text.split("\n").forEach((line, i) => {
+    if (/^\s*```/.test(line)) inFence = !inFence;
+    if (inFence) return;
+    const linkEnd = line.search(/\]\(https?:\/\//);
+    const orphanedTitle = linkEnd !== -1 && !line.slice(0, linkEnd).includes("[");
+    const tail = line.match(URL_TAIL_RE);
+    const orphanedUrl =
+      tail !== null && !line.slice(0, tail.index).includes("(");
+    if (orphanedTitle || orphanedUrl) {
+      errors.push(`line ${i + 1}: orphaned link tail: ${line.trim().slice(0, 80)}`);
+    }
+  });
+  return errors;
+}
+
 const argv = process.argv.slice(2);
 const slugIdx = argv.indexOf("--slug");
 const onlySlug = slugIdx !== -1 ? argv[slugIdx + 1] : null;
@@ -193,7 +220,26 @@ function main() {
   console.log(
     `\n${passed}/${total} ideas pass tagging contract (${failed} fail)`,
   );
-  process.exit(failed ? 1 : 0);
+
+  const mdxFiles = fs
+    .readdirSync(IDEAS_CONTENT_DIR)
+    .filter((f) => f.endsWith(".mdx"))
+    .filter((f) => !onlySlug || f === `${onlySlug}.mdx`);
+  let brokenFiles = 0;
+  for (const file of mdxFiles) {
+    const errors = findOrphanedLinkTails(
+      fs.readFileSync(path.join(IDEAS_CONTENT_DIR, file), "utf8"),
+    );
+    if (errors.length) {
+      brokenFiles++;
+      console.log(`FAIL content/ideas/${file}`);
+      for (const e of errors) console.log(`  - ${e}`);
+    }
+  }
+  console.log(
+    `${mdxFiles.length - brokenFiles}/${mdxFiles.length} idea MDX files have intact links (${brokenFiles} fail)`,
+  );
+  process.exit(failed || brokenFiles ? 1 : 0);
 }
 
 const isMain =
