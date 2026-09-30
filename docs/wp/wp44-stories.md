@@ -235,6 +235,22 @@ S1 rulings
     - `npm run build`
   - Model tier: high (final review)
 
+- [x] `WP44-S14` - Signed-in member chrome on individual idea pages (post-#82)
+  - Scope: `app/ideas/[slug]/layout.tsx`, `app/ideas/[slug]/page.tsx`, `components/ideas/IdeaPageNav.tsx`, `IdeaMemberNav.tsx`, `IdeaAccountMenu.tsx`, `IdeaBreadcrumbs.tsx`, `IdeaBackLink.tsx`, `IdeaSidebar.tsx`, `lib/idea-member-return.ts`, `tests/platform/wp44-idea-member-chrome.test.ts`
+  - Acceptance criteria:
+    - Signed-in members on `/ideas/{slug}` see PRIMARY_NAV chrome (logo → `/dashboard`; Home / Ideas / Saved / Builds) plus account / sign out
+    - Explicit return control: ← Back to Home by default, or Explore / Builds / Saved when `?from=` or a same-origin dashboard referrer is known
+    - Member breadcrumbs: Home > Ideas > {title} (visual only; JSON-LD stays public)
+    - Anonymous visitors keep IdeaNav, marketing crumbs, and EmailGate / #82 unlock behavior
+    - Collection hubs stay HubShell / MegaNav; public URL `/ideas/{slug}` unchanged
+    - Idea page remains static (no cookies/headers/`AuthPlatformProvider` in `page.tsx`)
+  - Verification:
+    - `npm run typecheck`
+    - `npm test` (includes `wp44-idea-member-chrome`)
+    - `npm run lint`
+    - `npm run build`
+  - Model tier: mid
+
 ## Out Of Scope
 
 - Stripe subscription checkout, webhooks and the subscription record (its own high-risk WP: Builder's Hub, $29 a month, monthly only)

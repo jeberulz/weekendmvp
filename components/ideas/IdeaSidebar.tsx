@@ -10,11 +10,11 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { TocSection } from "@/components/ideas/idea-meta";
+import { IdeaBackLink } from "@/components/ideas/IdeaBackLink";
 
 export function IdeaSidebar({
   sections,
@@ -102,13 +102,7 @@ export function IdeaSidebar({
     <aside className="lg:w-56 lg:flex-shrink-0">
       <div className="lg:sticky lg:top-[7.5rem]">
         <div className="mb-6">
-          <Link
-            href="/startup-ideas"
-            className="inline-flex items-center gap-2 text-neutral-500 text-sm hover:text-black transition-colors"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            All Ideas
-          </Link>
+          <IdeaBackLink />
         </div>
 
         {/* Mobile: collapsible "On this page" */}
