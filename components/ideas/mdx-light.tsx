@@ -56,7 +56,7 @@ export const ideaMdxComponents: MDXComponents = {
   ),
   a: (props: ElProps<"a">) => (
     <a
-      className="text-black underline underline-offset-2 hover:text-neutral-600 transition-colors"
+      className="text-black underline underline-offset-2 break-words hover:text-neutral-600 transition-colors"
       {...props}
     />
   ),
@@ -92,7 +92,7 @@ export const ideaMdxComponents: MDXComponents = {
       <code {...props} />
     ) : (
       <code
-        className="font-mono text-[0.85em] text-neutral-800 bg-black/5 border border-black/10 rounded px-1.5 py-0.5"
+        className="font-mono text-[0.85em] break-words text-neutral-800 bg-black/5 border border-black/10 rounded px-1.5 py-0.5"
         {...props}
       />
     ),

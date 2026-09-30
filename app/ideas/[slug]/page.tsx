@@ -424,13 +424,13 @@ async function CachedIdeaPage({ slug }: { slug: string }) {
           EmailGate is a client overlay applied only after hydration. */}
       <EmailGate slug={slug} title={title} description={description}>
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-[7.5rem] pb-16">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 pt-24 sm:pt-[7.5rem] pb-16">
             <IdeaSidebar sections={toc}>
               {idea ? <IdeaMetaCard idea={idea} /> : null}
             </IdeaSidebar>
 
             {/* Main Content */}
-            <main className="flex-1 max-w-2xl min-w-0">
+            <main className="flex-1 max-w-2xl min-w-0 break-words">
               {/* Breadcrumb */}
               <nav
                 className="mb-8 text-xs text-neutral-400"
