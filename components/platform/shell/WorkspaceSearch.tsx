@@ -66,7 +66,7 @@ export function WorkspaceSearch({ ideaCount }: { ideaCount: number | null }) {
         autoComplete="off"
         placeholder={ideaCount ? `Search ${ideaCount} ideas` : "Search ideas"}
         aria-keyshortcuts="/"
-        className="h-10 w-full rounded-lg border border-home-rule bg-home-card pl-9 pr-10 text-sm text-home-ink outline-none transition-colors placeholder:text-home-ink-3 hover:border-home-ink-3 focus-visible:border-home-orange-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-home-orange-ink"
+        className="h-10 w-full rounded-lg border border-home-rule bg-home-card pl-9 pr-10 text-sm text-home-ink outline-none transition-colors placeholder:text-home-ink-3 hover:border-home-ink-3 focus-visible:border-home-orange-ink focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-1 focus-visible:outline-home-orange-ink"
       />
       {carried.map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
