@@ -102,7 +102,7 @@
   },
   "overrides": {
     "cheerio": {
-      "undici": "7.29.0"
+      "undici": "7.30.0"
     },
     "gray-matter": {
       "js-yaml": "3.15.2"

@@ -163,6 +163,14 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link
+                  href="/newsletter"
+                  className="text-neutral-500 hover:text-white transition-colors"
+                >
+                  Newsletter
+                </Link>
+              </li>
+              <li>
                 <NavExternalLink
                   href="https://cal.com/switchtoux/mvp-sprint"
                   className="text-neutral-500 hover:text-white transition-colors"
