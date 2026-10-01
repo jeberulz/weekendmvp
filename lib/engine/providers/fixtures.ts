@@ -293,65 +293,83 @@ export const FIXTURE_EXTRACTION: ExtractionCandidates = {
  * economics) hold the product's own assumptions. It selects exactly the
  * evidence minimums (2 stats, 3 priced competitors, 2 quotes), so it
  * resolves in every scenario that meets them.
+ *
+ * The prose follows the lengths EDITORIAL_INSTRUCTIONS asks a live writer
+ * for (problem 300–420 words, solution 220–320, competition 120–180, market
+ * 180–280, ...), so the compiled fixture page clears the deep audit's
+ * 2,200-word floor on its own content (the replay gate in
+ * lib/engine/replay.test.ts checks this). It is written for this fictional
+ * idea: no stock filler, no repeated sentences, and no figures in
+ * fact-bearing fields outside evidence tokens.
  */
 export const FIXTURE_EDITORIAL_TEMPLATE = {
   oneLiner: "Cited first drafts of RFPs and security questionnaires for SaaS sales teams without a proposal team.",
-  marketSummary:
-    "Response software for RFPs and security questionnaires is a measurable niche rather than a slice of the whole SaaS market. The category was valued at {{tok:stat:0}}, and analysts project it to reach {{tok:stat:1}}. The opening is the small team that answers the same questions every quarter without a proposal manager, a buyer the enterprise suites price out.",
+  marketSummary: [
+    "Response software for RFPs and security questionnaires is a measurable niche rather than a slice of the whole SaaS market. The category was valued at {{tok:stat:0}}, and analysts project it to reach {{tok:stat:1}}. Both figures describe the category as a whole and neither is split by company size, so they show that buyers already pay for this work, not how many small teams a new product can reach.",
+    "The established suites are built around a dedicated proposal function: a content owner who curates the library, reviewers assigned by section and a renewal negotiated by procurement. The opening is the small team that answers the same questions every quarter without a proposal manager, a buyer the enterprise suites price out. Those teams meet questionnaires as soon as they sell upmarket, and the job lands on whoever knows the product best, usually a sales or solutions engineer. They do not need a broader library. They need approved answers they can trust, with the source attached, in the format of the buyer's own portal.",
+  ].join("\n\n"),
   marketStatIds: ["{{id:stat:0}}", "{{id:stat:1}}"],
   competitors: [
     {
       name: "{{vendor:price:0}}",
       priceIds: ["{{id:price:0}}"],
       notes:
-        "Per-seat pricing at {{tok:price:0}} suits companies that already run a formal proposal process with several contributors and a curated library.",
+        "Per-seat pricing at {{tok:price:0}} suits companies that already run a formal proposal process with several contributors and a curated library, and an annual commitment is a large first step for a team answering its first enterprise questionnaire.",
     },
     {
       name: "{{vendor:price:1}}",
       priceIds: ["{{id:price:1}}"],
       notes:
-        "A flat team price of {{tok:price:1}} with unlimited users favors larger response teams over a single sales engineer answering questionnaires between calls.",
+        "A flat team price of {{tok:price:1}} with unlimited users favors larger response teams over a single sales engineer answering questionnaires between calls, and it only pays off once several people share and maintain the library.",
     },
     {
       name: "{{vendor:price:2}}",
       priceIds: ["{{id:price:2}}"],
       notes:
-        "Its team seat at {{tok:price:2}} is the cheapest entry point, but the library is a shared document store rather than cited, approved answers.",
+        "Its team seat at {{tok:price:2}} is the cheapest entry point, but the library is a shared document store rather than cited, approved answers, so a reviewer still checks every draft against the original policy by hand.",
     },
   ],
   communitySummary:
-    "Sales engineers describe the same loop: answers live in scattered spreadsheets, legal cannot tell which version was approved, and generic chat tools invent controls. One put the time cost plainly: {{tok:quote:0}} Another described the version problem: {{tok:quote:1}}",
+    "Sales engineers describe the same loop: answers live in scattered spreadsheets, legal cannot tell which version was approved, and generic chat tools invent controls. One put the time cost plainly: {{tok:quote:0}} Another described the version problem: {{tok:quote:1}} The threads read less like requests for automation than complaints about trust. People are not asking for a tool that writes faster; they want to know which answer was approved, by whom and where it came from, because a wrong answer about encryption or data retention can stall a deal or commit the company to a promise nobody can keep. The work also arrives with each enterprise deal rather than on a schedule, which makes it hard to justify a dedicated hire.",
   quoteIds: ["{{id:quote:0}}", "{{id:quote:1}}"],
   goToMarket: {
     positioning:
-      "Cited first drafts for SaaS sales teams that outgrew spreadsheets but will never staff a proposal team, sold on trust and setup time rather than feature breadth.",
+      "Cited first drafts for SaaS sales teams that outgrew spreadsheets but will never staff a proposal team, sold on trust and setup time rather than feature breadth. The promise is narrow on purpose: every answer shows its approved source, and anything without one waits for a person to approve it.",
     channels: [
       "Founder-led outreach to sales engineers on LinkedIn",
       "Search pages for security questionnaire automation",
       "Answer templates shared in RevOps communities",
     ],
     pricingNotes:
-      "Price below the per-seat incumbents, such as {{tok:price:0}}, and offer a flat solo plan so a single sales engineer can start without procurement or a proposal manager.",
+      "Price below the per-seat incumbents, such as {{tok:price:0}}, and offer a flat solo plan so a single sales engineer can start without procurement or a proposal manager. Keep the team plan per seat and monthly, because the first purchase tends to happen in the middle of a live deal, when the buyer's questionnaire is already overdue and nobody wants to negotiate an annual contract.",
   },
   whyNow:
     "Enterprise buyers now send security questionnaires earlier in the sales cycle, and legal teams increasingly reject answers that cannot be traced to an approved source. Retrieval with citations is newly practical on a weekend-sized stack.",
   howItWorks: [
-    "Ingest — Upload past RFPs, questionnaires and approved policy documents into one answer library.",
-    "Retrieve — Import a new questionnaire and match each question to approved answers with their sources.",
-    "Review — Edit the cited drafts; answers without a source stay blocked until a reviewer approves them.",
-    "Export — Send the completed questionnaire as a document with a review trail for legal.",
+    "Ingest — Upload past RFPs, questionnaires and approved policy documents into one answer library. CiteDraft splits each document into citable paragraphs, records who approved it and when, and flags documents without an approver so they cannot back an answer until someone signs off.",
+    "Retrieve — Import a new questionnaire and match each question to approved answers with their sources. Spreadsheet and document questionnaires keep their original order, and each question gets the closest approved paragraphs, ranked by how directly they answer it, with the source title and approval date beside every match.",
+    "Review — Edit the cited drafts; answers without a source stay blocked until a reviewer approves them. Reviewers see each draft next to its source paragraph, accept or rewrite it, and every edit is stored with the reviewer's name, so the next questionnaire reuses the approved wording.",
+    "Export — Send the completed questionnaire as a document with a review trail for legal. The export keeps the buyer's original layout and attaches an appendix that lists each answer's source document and approver, which legal can file together with the signed contract.",
   ],
   scores: { opportunity: 8, pain: 9, timing: 8, builderConfidence: 7, execution: 7 },
   editorial: {
     productName: "CiteDraft",
     dontBuildYet:
       "Do not build a full content library, an SSO portal or CRM sync before ten paying teams finish one questionnaire end to end.",
-    problemNarrative:
+    problemNarrative: [
       "Sales engineers at small SaaS companies are the people who answer RFPs and security questionnaires, usually on top of their quota. Every enterprise deal brings a new portal, a new spreadsheet and the same questions about access control, encryption and incident response. The answers already exist, but they are scattered across old questionnaires, policy documents and chat threads, and nobody can tell which version legal approved. Generic chat assistants make the problem worse because they invent controls the company does not have, so legal rejects the draft and the deadline slips. The enterprise response suites solve this for companies with a proposal team, but their pricing and setup assume a dedicated owner the small team does not have. The work that hurts is not typing; it is finding approved language, proving where it came from and getting it past legal before the deal stalls.",
-    solutionNarrative:
+      "The buyer is specific. SMB SaaS sales and solutions engineers own the technical side of a deal, from the first demo to the security review, and they inherit the questionnaire because nobody else can answer it. When a portal asks how backups are encrypted or how access is revoked when an employee leaves, the engineer has to find the latest policy, check that it still matches what the company actually does and phrase it so legal will sign off. Each answer is quick on its own. A long questionnaire is not, and it gets finished in the evenings around customer calls.",
+      "The cost lands in several places at once. Deals wait while a questionnaire sits half-finished, and a buyer's security team reads a slow response as a weak security program. Answers drift between versions, so the company can end up promising different things to different customers. And the engineer who should be preparing the next technical evaluation spends the week copying text between portals. None of this shows up as a budget line, which is why small teams tolerate it until a large deal forces the issue.",
+    ].join("\n\n"),
+    solutionNarrative: [
       "CiteDraft is a cited drafting assistant for RFPs and security questionnaires. A team uploads its past answers and approved policy documents once; for every new questionnaire, CiteDraft matches each question to approved language and drafts an answer that links to its source paragraph. Answers without a source stay blocked until a reviewer approves them, so nothing invented reaches the buyer. The first version is deliberately narrow: one answer library per workspace, cited drafts, a review queue and a clean export with a review trail for legal.",
-    competitiveNarrative:
+      "Its edge is provenance rather than generation. Every drafted answer carries the paragraph it came from, that document's approval date and the person who approved it, so a reviewer can accept or reject an answer without opening another tab. When the source language is out of date, CiteDraft says so instead of filling the gap, and the question goes to the review queue with a note about what is missing. Legal reads a short list of exceptions instead of the whole questionnaire.",
+      "The library improves as the team works. An answer that a reviewer edits and approves becomes approved language for the next questionnaire, with the edit recorded against its source. Over a few deals the team builds the curated library the enterprise suites assume it already has, without a separate content project and without hiring a proposal manager to maintain it.",
+    ].join("\n\n"),
+    competitiveNarrative: [
       "Bidwell, AnswerDeck and RFPForge sell broad response platforms priced per seat or per team, built around a proposal manager who curates a large library. CiteDraft competes for the team that has no such role: it starts from documents the team already trusts, cites every answer and refuses to send anything it cannot source. The wedge is trust and setup time rather than breadth.",
+      "None of these platforms is a bad product for its own buyer. A company with a proposal desk gets real value from a shared library and section assignments. The gap is the first enterprise questionnaire at a company that has never needed one: buying a platform, migrating content and training reviewers is a project, while CiteDraft needs only the documents the team already has and a reviewer who can say yes or no.",
+    ].join("\n\n"),
     pricingTiers: [
       { name: "Solo", price: "$39/month", includes: "One seat, one answer library and cited drafts." },
       { name: "Team", price: "$25/seat/month", includes: "Shared library, review workflow and export packs for up to 10 seats." },
@@ -362,7 +380,7 @@ export const FIXTURE_EDITORIAL_TEMPLATE = {
       { label: "Payback on founder-led sales", value: "under 3 months" },
     ],
     stackNotes:
-      "Next.js App Router with Postgres and pgvector for the answer library, a background queue for document parsing, and Stripe seats for the Team plan. Keep every draft answer linked to its source paragraph id so the review trail and the export come from the same data.",
+      "Next.js App Router with Postgres and pgvector for the answer library, a background queue for document parsing, and Stripe seats for the Team plan. Keep every draft answer linked to its source paragraph id so the review trail and the export come from the same data. Parse each upload into paragraphs once and store an embedding per paragraph, so retrieval is a single query rather than a pipeline. Treat approval as data: a paragraph without an approver is never offered as a source, which keeps the blocking rule in the database instead of in a prompt.",
     audienceShort: "SaaS sales teams",
     brandBrief:
       "CiteDraft should read like a careful sales engineer: calm, exact and a little dry. The mark signals a footnote or a checked source, never a sparkle or a chat bubble. Use one ink-blue accent on paper white, and let copy name the questionnaire, the deadline and the approved document rather than promising that AI writes the answer.",

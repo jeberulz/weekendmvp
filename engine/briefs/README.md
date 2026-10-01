@@ -13,3 +13,6 @@
     every community page is unreadable, so acceptance finds no quote and the
     run stops before keyword and editorial spend (a failure with a report).
 - `fixtureScenario` is fixture-only; a live run refuses a brief that has it.
+- `npm run engine:replay` runs the `rfp-assistant` fixture through the real
+  research, compile and deep-audit CLIs in a temp dir (no keys, nothing
+  written to the repo); `npm test` runs the same flow with adversarial cases.

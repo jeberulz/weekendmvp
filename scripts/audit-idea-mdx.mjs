@@ -232,7 +232,7 @@ export function countCompetitorMentions(competitiveContent) {
 }
 
 /**
- * Resolve the ResearchRecord behind an engine page: explicit --record, else
+ * Resolve the research record behind an engine page: explicit --record, else
  * engine/records/{slug}.json, else engine/records/{gold}.json for
  * engine-draft-{gold}.
  */

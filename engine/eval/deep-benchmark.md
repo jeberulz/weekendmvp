@@ -16,6 +16,17 @@ Reference page in-repo: [`content/ideas/course-translation-resale-network.mdx`](
 
 ## Measurable gates (every engine page)
 
+> **2026-10-01 — partly superseded by WP46.** Items 1–6, 10 and 11 still hold.
+> Items 7–9 describe the pre-WP46 research and quote gate, which was removed:
+> research no longer drops figures by matching numbers against search results
+> (evidence is accepted against the cited page before writing); quotes are no
+> longer marked `verified` after writing (the page audit requires each
+> blockquote to equal an accepted quote and link to that quote's own source);
+> and a pricing URL may be shared only by separately bound secondary prices
+> labelled "(via host)". Current rules: `.claude/skills/publish-idea/SKILL.md`
+> Step 3.1 and `docs/plans/idea-engine/pr71-evidence-contract.md`. The list
+> below is kept as written.
+
 Enforced by `npm run audit:idea -- --slug {slug}` on every page whose manifest
 `source` is `engine:*` and on `engine-draft-*` spot checks in `engine/drafts/`.
 The research record is found at `engine/records/{slug}.json` (or `--record`).

@@ -11,7 +11,7 @@
  * no network, and only briefs the fixture describes. --live spends against the
  * real providers (mode "live"). There is no implicit mode.
  *
- * The record is validated with parseResearchRecordV2 before it is written,
+ * The record is validated with parseResearchRecord before it is written,
  * and an existing record is never overwritten without --force. The run report
  * is written on success AND failure. Output never includes secrets, page
  * bodies, stack traces or absolute local paths.
@@ -170,7 +170,7 @@ async function main() {
     import(pathToFileURL(path.join(root, "lib/engine/providers/sourceText.ts")).href),
   ]);
   const { runResearch, normalizeBriefInput, PipelineError } = pipeline;
-  const { parseResearchRecordV2 } = recordModule;
+  const { parseResearchRecord } = recordModule;
   const { redactText } = sourceText;
 
   // A fixture brief may name a synthetic page set; a live brief never may.
@@ -223,7 +223,7 @@ async function main() {
   // CLI boundary: validate exactly the bytes that will be written.
   const text = `${JSON.stringify(result.record, null, 2)}\n`;
   try {
-    parseResearchRecordV2(JSON.parse(text));
+    parseResearchRecord(JSON.parse(text));
   } catch (error) {
     const report = {
       ...result.report,

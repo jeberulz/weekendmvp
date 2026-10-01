@@ -61,7 +61,7 @@ import {
   yearOneFunnelLine,
 } from "./page-format.ts";
 import {
-  parseResearchRecordV2,
+  parseResearchRecord,
   type DataTable,
   type PricingTier,
   type UnitEconRow,
@@ -534,12 +534,12 @@ function fence(lines: string[]): string {
 
 /**
  * Compile a contract v2 research record into the MDX body and a manifest
- * stub. The record is re-validated with parseResearchRecordV2 first (a v1
+ * stub. The record is re-validated with parseResearchRecord first (a v1
  * record throws LegacyResearchRecordError); a record that cannot become a
  * publishable page throws CompileError.
  */
 export function compileResearchRecord(options: CompileOptions): CompileResult {
-  const record = parseResearchRecordV2(options.record);
+  const record = parseResearchRecord(options.record);
   const slug = (options.slug ?? record.brief.slug).trim().toLowerCase();
   if (!COMPILE_SLUG_PATTERN.test(slug)) {
     throw new Error(`slug '${slug}' must match ${COMPILE_SLUG_PATTERN}`);

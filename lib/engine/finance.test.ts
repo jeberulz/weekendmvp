@@ -228,19 +228,19 @@ describe("validateYearOnePlan", () => {
     expect(issues).toEqual(["editorial.yearOne: ARR $10,798,920,000 is above the $10,000,000,000 cap"]);
   });
 
-  it("rejects an inconsistent legacy revenue-per-account and never uses it", () => {
-    expect(validateYearOnePlan(rawPlan({ tier: "Crew", seatsPerAccount: 5, monthlyRevenuePerAccount: 90 }), TIERS).issues).toEqual([
-      "editorial.yearOne.monthlyRevenuePerAccount: $90 is not $20 × 5 seats = $100",
-    ]);
-    const consistent = validateYearOnePlan(rawPlan({ tier: "Crew", seatsPerAccount: 5, monthlyRevenuePerAccount: 100 }), TIERS);
-    expect(consistent.issues).toEqual([]);
-    expect(consistent.plan).not.toHaveProperty("monthlyRevenuePerAccount");
-    expect(validateYearOnePlan(rawPlan({ tier: "Annual", monthlyRevenuePerAccount: 99.99 }), TIERS).issues).toEqual([
-      "editorial.yearOne.monthlyRevenuePerAccount: does not apply to an annually priced tier; remove it",
-    ]);
-    expect(validateYearOnePlan(rawPlan({ monthlyRevenuePerAccount: 0.1 + 0.2 }), TIERS).issues[0]).toContain(
-      "must be a whole-cent USD amount",
-    );
+  // WP46 integration: the v1 revenue-per-account cross-check that used to
+  // live here was unreachable (parseResearchRecord's closed schema refuses
+  // editorial.yearOne.monthlyRevenuePerAccount before the finance rules run;
+  // research-record.v2.test.ts "rejects the legacy monthlyRevenuePerAccount
+  // field"), so it was removed. This test pins that the math never reads it.
+  it("never reads a v1 revenue-per-account: revenue comes from the tier price × seats", () => {
+    const result = validateYearOnePlan(rawPlan({ tier: "Crew", seatsPerAccount: 5, monthlyRevenuePerAccount: 90 }), TIERS);
+    expect(result.issues).toEqual([]);
+    const validated = must(result.plan);
+    expect(validated).not.toHaveProperty("monthlyRevenuePerAccount");
+    const math = computeYearOne(validated, terms("$20/developer/month"));
+    expect(math.perAccountCents).toBe(10_000);
+    expect(math.arrCents).toBe(45 * 10_000 * 12);
   });
 
   it("rejects a plan that is not an object", () => {

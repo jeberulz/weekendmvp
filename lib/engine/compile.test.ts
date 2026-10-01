@@ -2,7 +2,7 @@
  * Compiler tests (WP46-S4, evidence contract §9): contract v2 records only.
  *
  * Records come from lib/engine/__fixtures__/recordV2.ts (synthetic sources →
- * acceptEvidence → parseResearchRecordV2); no test calls runResearch, hits
+ * acceptEvidence → parseResearchRecord); no test calls runResearch, hits
  * the network or writes outside a temp dir.
  */
 

@@ -1,15 +1,20 @@
 /**
  * Operator research record for the idea engine (Mode A2).
  *
- * Two contracts live here:
- *   v1 (legacy)  writer output checked after the fact: ≥2 cited market
- *                stats, ≥3 competitors with pricing + URL, provider-only
- *                keyword metrics. Readable for history only
- *                (readLegacyResearchRecordV1).
- *   v2           evidence accepted before writing (WP46, evidence contract
- *                §8): parseResearchRecordV2 is a closed schema that
- *                re-validates every accepted item offline and binds the
- *                prose to it. A v1 record throws LegacyResearchRecordError.
+ * One parser on the publish path: parseResearchRecord reads contract v2
+ * (evidence accepted before writing; WP46, evidence contract §8) into a
+ * ResearchRecordV2. It is a closed schema that re-validates every accepted
+ * item offline and binds the prose to it. A contract v1 record throws
+ * LegacyResearchRecordError: nothing upgrades it, the operator re-researches.
+ * The research CLI, pipeline, compiler, compile CLI and artifact auditor all
+ * read records through it.
+ *
+ * Contract v1 (legacy) checked the writer's output after the fact (≥2 cited
+ * market stats, ≥3 competitors with pricing + URL, provider-only keyword
+ * metrics). readLegacyResearchRecordV1 still reads that shape
+ * (LegacyResearchRecordV1) for history only; no publish-path module imports
+ * it, and nothing it returns may be compiled, audited or published.
+ *
  * Neither is ValidationReportPayload (Convex citation indices).
  */
 
@@ -38,42 +43,15 @@ import { normalizeExcerptForCompare } from "./evidence/quote.ts";
 import { evidenceRefs, validateEditorialText } from "./evidence/tokens.ts";
 import { validateYearOnePlan } from "./finance.ts";
 
-export const RESEARCH_RECORD_CONTRACT_VERSION = 1 as const;
-
-export type Citation = {
-  url: string;
-  title: string;
-};
+// ===========================================================================
+// Shared by both contracts
+// ===========================================================================
 
 export type ResearchBrief = {
   title: string;
   slug: string;
   oneLiner: string;
   targetCustomer: string;
-};
-
-export type MarketStat = {
-  claim: string;
-  value: string;
-  citation: Citation;
-};
-
-export type Competitor = {
-  name: string;
-  pricing: string;
-  url: string;
-  notes?: string;
-};
-
-export type CommunitySignal = {
-  quote: string;
-  citation: Citation;
-  /**
-   * True when the pipeline fetched the cited page and found the quote in it
-   * verbatim (after whitespace/punctuation normalization). False when it
-   * checked and did not find it. Absent on records made before the check.
-   */
-  verified?: boolean;
 };
 
 export type KeywordRow = {
@@ -103,62 +81,10 @@ export type UnitEconRow = {
   value: string;
 };
 
-/** One stage of the year-one acquisition funnel, e.g. 500 prospects. */
-export type FunnelStage = {
-  stage: string;
-  count: number;
-};
-
-/**
- * Year-one revenue math. The compiler does the arithmetic (ARR and the
- * half-close-rate downside) so the page never carries model-invented totals.
- */
-export type YearOnePlan = {
-  funnel: FunnelStage[];
-  /** Tier the paying accounts land on (must match a pricing tier name). */
-  tier: string;
-  payingAccounts: number;
-  /** Monthly revenue per paying account in USD (seats already included). */
-  monthlyRevenuePerAccount: number;
-  /** Why the funnel numbers are plausible (sources, channel, cadence). */
-  assumptions?: string;
-};
-
 /** One idea-specific table for the Project Setup prompt. */
 export type DataTable = {
   table: string;
   columns: string;
-};
-
-/**
- * Optional editorial fields produced by synthesis for the MDX compiler.
- * Older records omit them; the compiler derives sensible fallbacks.
- */
-export type EditorialFields = {
-  /** Short product name (e.g. "CiteDraft"), not "an AI tool". */
-  productName?: string;
-  /** Explicit deferral: what NOT to build yet. */
-  dontBuildYet?: string;
-  /** Dense problem prose (≥280 words preferred). */
-  problemNarrative?: string;
-  /** Dense solution prose (≥200 words preferred). */
-  solutionNarrative?: string;
-  /** Competitive contrast prose (≥100 words preferred). */
-  competitiveNarrative?: string;
-  pricingTiers?: PricingTier[];
-  unitEconomics?: UnitEconRow[];
-  /** Stack guidance specific to this idea. */
-  stackNotes?: string;
-  /**
-   * Short audience label for mid-sentence use (e.g. "small GitHub teams").
-   * The full brief audience appears once, in the problem narrative.
-   */
-  audienceShort?: string;
-  /** Visual direction + voice for the Branding prompt, specific to the buyer. */
-  brandBrief?: string;
-  yearOne?: YearOnePlan;
-  /** Idea-specific tables (beyond workspaces/members/usage_events). */
-  dataModel?: DataTable[];
 };
 
 export type ResearchScores = {
@@ -176,43 +102,7 @@ export type ProviderCall = {
   costUsd: number;
 };
 
-export type ResearchProvenance = {
-  providerCalls: ProviderCall[];
-  costUsd: number;
-  ranAt: string;
-};
-
-export type ResearchRecord = {
-  contractVersion: typeof RESEARCH_RECORD_CONTRACT_VERSION;
-  brief: ResearchBrief;
-  market: {
-    stats: MarketStat[];
-    summary: string;
-  };
-  competitors: Competitor[];
-  community: {
-    signals: CommunitySignal[];
-    summary: string;
-  };
-  keywords: KeywordRow[];
-  goToMarket: GoToMarket;
-  whyNow: string;
-  /**
-   * Product workflow steps for the page's "How it works" list (HowTo schema).
-   * Prefer `Title — description` so the compiler can emit named steps.
-   * Optional for older records; the compiler refuses a record without it
-   * rather than guessing steps.
-   */
-  howItWorks?: string[];
-  scores?: ResearchScores;
-  editorial?: EditorialFields;
-  provenance: ResearchProvenance;
-};
-
 export const MIN_HOW_IT_WORKS_STEPS = 2;
-
-export const MIN_MARKET_STATS = 2;
-export const MIN_COMPETITORS = 3;
 
 export class ResearchRecordParseError extends Error {
   readonly issues: string[];
@@ -224,6 +114,101 @@ export class ResearchRecordParseError extends Error {
   }
 }
 
+// ===========================================================================
+// Contract v1 (legacy): history only
+// ===========================================================================
+
+/** contractVersion of a legacy record; parseResearchRecord refuses it. */
+export const LEGACY_RESEARCH_RECORD_CONTRACT_VERSION = 1 as const;
+
+const LEGACY_MIN_MARKET_STATS = 2;
+const LEGACY_MIN_COMPETITORS = 3;
+
+type LegacyCitationV1 = {
+  url: string;
+  title: string;
+};
+
+type LegacyMarketStatV1 = {
+  claim: string;
+  value: string;
+  citation: LegacyCitationV1;
+};
+
+type LegacyCompetitorV1 = {
+  name: string;
+  pricing: string;
+  url: string;
+  notes?: string;
+};
+
+type LegacyCommunitySignalV1 = {
+  quote: string;
+  citation: LegacyCitationV1;
+  /**
+   * The v1 pipeline's own verdict on the quote (absent on the oldest
+   * records). History only: v2 never trusts a stored flag.
+   */
+  verified?: boolean;
+};
+
+/** v1 year-one plan: revenue per account was a model-stated number. */
+type LegacyYearOnePlanV1 = {
+  funnel: Array<{ stage: string; count: number }>;
+  tier: string;
+  payingAccounts: number;
+  monthlyRevenuePerAccount: number;
+  assumptions?: string;
+};
+
+type LegacyEditorialFieldsV1 = {
+  productName?: string;
+  dontBuildYet?: string;
+  problemNarrative?: string;
+  solutionNarrative?: string;
+  competitiveNarrative?: string;
+  pricingTiers?: PricingTier[];
+  unitEconomics?: UnitEconRow[];
+  stackNotes?: string;
+  audienceShort?: string;
+  brandBrief?: string;
+  yearOne?: LegacyYearOnePlanV1;
+  dataModel?: DataTable[];
+};
+
+type LegacyProvenanceV1 = {
+  providerCalls: ProviderCall[];
+  costUsd: number;
+  ranAt: string;
+};
+
+/**
+ * A contract v1 research record as readLegacyResearchRecordV1 returns it.
+ * HISTORY ONLY and not a ResearchRecordV2: its narrative was written before
+ * (or without) accepting evidence, so nothing compiles, audits or publishes
+ * it.
+ */
+export type LegacyResearchRecordV1 = {
+  contractVersion: typeof LEGACY_RESEARCH_RECORD_CONTRACT_VERSION;
+  brief: ResearchBrief;
+  market: {
+    stats: LegacyMarketStatV1[];
+    summary: string;
+  };
+  competitors: LegacyCompetitorV1[];
+  community: {
+    signals: LegacyCommunitySignalV1[];
+    summary: string;
+  };
+  keywords: KeywordRow[];
+  goToMarket: GoToMarket;
+  whyNow: string;
+  howItWorks?: string[];
+  scores?: ResearchScores;
+  editorial?: LegacyEditorialFieldsV1;
+  provenance: LegacyProvenanceV1;
+};
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -232,79 +217,18 @@ function isPositiveNum(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isFiniteNum(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
 /** SQL identifier the Setup prompt can use as a table name. */
 const TABLE_NAME_RE = /^[a-z][a-z0-9_]{1,40}$/;
 
-export function parseYearOne(
-  value: unknown,
-  issues: string[],
-): YearOnePlan | undefined {
-  const path = "editorial.yearOne";
-  const issuesBefore = issues.length;
-  if (!isPlainObject(value)) {
-    issues.push(`${path}: expected object`);
-    return undefined;
-  }
-  const funnel: FunnelStage[] = [];
-  if (!Array.isArray(value.funnel) || value.funnel.length < 2) {
-    issues.push(`${path}.funnel: need ≥2 stages`);
-  } else {
-    value.funnel.forEach((row, i) => {
-      if (
-        !isPlainObject(row) ||
-        !isNonEmptyString(row.stage) ||
-        !isPositiveNum(row.count)
-      ) {
-        issues.push(`${path}.funnel[${i}]: need stage string and count > 0`);
-        return;
-      }
-      funnel.push({ stage: row.stage.trim(), count: Math.round(row.count) });
-    });
-    for (let i = 1; i < funnel.length; i++) {
-      if (funnel[i]!.count > funnel[i - 1]!.count) {
-        issues.push(`${path}.funnel: stage counts must not grow (stage ${i})`);
-        break;
-      }
-    }
-  }
-  if (!isNonEmptyString(value.tier)) issues.push(`${path}.tier: required`);
-  if (!isPositiveNum(value.payingAccounts)) {
-    issues.push(`${path}.payingAccounts: required number > 0`);
-  }
-  if (!isPositiveNum(value.monthlyRevenuePerAccount)) {
-    issues.push(`${path}.monthlyRevenuePerAccount: required number > 0`);
-  }
-  const last = funnel[funnel.length - 1];
-  if (
-    last &&
-    isPositiveNum(value.payingAccounts) &&
-    Math.round(value.payingAccounts) > last.count
-  ) {
-    issues.push(`${path}.payingAccounts: exceeds the last funnel stage`);
-  }
-  // Any issue (a growing funnel, more payers than the last stage) means the
-  // plan is dropped, never half-kept: callers that swallow issues must not
-  // pass an invalid plan on to the final record parse.
-  if (
-    issues.length > issuesBefore ||
-    funnel.length < 2 ||
-    !isNonEmptyString(value.tier) ||
-    !isPositiveNum(value.payingAccounts) ||
-    !isPositiveNum(value.monthlyRevenuePerAccount)
-  ) {
-    return undefined;
-  }
-  return {
-    funnel,
-    tier: value.tier.trim(),
-    payingAccounts: Math.round(value.payingAccounts),
-    monthlyRevenuePerAccount: value.monthlyRevenuePerAccount,
-    ...(isNonEmptyString(value.assumptions)
-      ? { assumptions: value.assumptions.trim() }
-      : {}),
-  };
-}
-
+/** editorial.dataModel rows (both contracts): snake_case table names and column text. */
 export function parseDataModel(
   value: unknown,
   issues: string[],
@@ -334,12 +258,81 @@ export function parseDataModel(
   return tables.length > 0 ? tables : undefined;
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
+// --- legacy v1 reader helpers ------------------------------------------------
 
-function isFiniteNum(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
+/**
+ * The v1 year-one plan, read as v1 read it (history only): counts were
+ * rounded, which v2's finance rules no longer allow. Any issue drops the plan.
+ */
+function parseLegacyYearOneV1(
+  value: unknown,
+  issues: string[],
+): LegacyYearOnePlanV1 | undefined {
+  const path = "editorial.yearOne";
+  const issuesBefore = issues.length;
+  if (!isPlainObject(value)) {
+    issues.push(`${path}: expected object`);
+    return undefined;
+  }
+  const funnel: LegacyYearOnePlanV1["funnel"] = [];
+  if (!Array.isArray(value.funnel) || value.funnel.length < 2) {
+    issues.push(`${path}.funnel: need ≥2 stages`);
+  } else {
+    value.funnel.forEach((row, i) => {
+      if (
+        !isPlainObject(row) ||
+        !isNonEmptyString(row.stage) ||
+        !isPositiveNum(row.count)
+      ) {
+        issues.push(`${path}.funnel[${i}]: need stage string and count > 0`);
+        return;
+      }
+      funnel.push({ stage: row.stage.trim(), count: Math.round(row.count) });
+    });
+    let previous: number | null = null;
+    for (const [i, stage] of funnel.entries()) {
+      if (previous !== null && stage.count > previous) {
+        issues.push(`${path}.funnel: stage counts must not grow (stage ${i})`);
+        break;
+      }
+      previous = stage.count;
+    }
+  }
+  if (!isNonEmptyString(value.tier)) issues.push(`${path}.tier: required`);
+  if (!isPositiveNum(value.payingAccounts)) {
+    issues.push(`${path}.payingAccounts: required number > 0`);
+  }
+  if (!isPositiveNum(value.monthlyRevenuePerAccount)) {
+    issues.push(`${path}.monthlyRevenuePerAccount: required number > 0`);
+  }
+  const last = funnel[funnel.length - 1];
+  if (
+    last &&
+    isPositiveNum(value.payingAccounts) &&
+    Math.round(value.payingAccounts) > last.count
+  ) {
+    issues.push(`${path}.payingAccounts: exceeds the last funnel stage`);
+  }
+  // Any issue (a growing funnel, more payers than the last stage) means the
+  // plan is dropped, never half-kept.
+  if (
+    issues.length > issuesBefore ||
+    funnel.length < 2 ||
+    !isNonEmptyString(value.tier) ||
+    !isPositiveNum(value.payingAccounts) ||
+    !isPositiveNum(value.monthlyRevenuePerAccount)
+  ) {
+    return undefined;
+  }
+  return {
+    funnel,
+    tier: value.tier.trim(),
+    payingAccounts: Math.round(value.payingAccounts),
+    monthlyRevenuePerAccount: value.monthlyRevenuePerAccount,
+    ...(isNonEmptyString(value.assumptions)
+      ? { assumptions: value.assumptions.trim() }
+      : {}),
+  };
 }
 
 function isHttpUrl(value: string): boolean {
@@ -351,11 +344,11 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
-function parseCitation(
+function parseLegacyCitationV1(
   value: unknown,
   path: string,
   issues: string[],
-): Citation | null {
+): LegacyCitationV1 | null {
   if (!isPlainObject(value)) {
     issues.push(`${path}: citation must be an object`);
     return null;
@@ -375,32 +368,23 @@ function parseCitation(
 }
 
 /**
- * Publish-path record parser. Until WP46 integration moves the compiler,
- * auditor and pipeline to contract v2, it still reads contract v1 (exactly
- * readLegacyResearchRecordV1). At integration it becomes the v2 entry point,
- * which throws LegacyResearchRecordError for v1 (evidence contract §1).
- */
-export function parseResearchRecord(input: unknown): ResearchRecord {
-  return readLegacyResearchRecordV1(input);
-}
-
-/**
  * HISTORY ONLY: read a contract v1 (legacy) record. A v1 record's evidence
  * was not accepted before its narrative was written, so nothing it returns
- * may be compiled, audited or published; use parseResearchRecordV2 there.
+ * may be compiled, audited or published; the publish path uses
+ * parseResearchRecord, which refuses v1 with LegacyResearchRecordError.
  * Throws ResearchRecordParseError on any v1 contract violation (unknown
  * version, thin citations, guessed keywords).
  */
-export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
+export function readLegacyResearchRecordV1(input: unknown): LegacyResearchRecordV1 {
   const issues: string[] = [];
 
   if (!isPlainObject(input)) {
     throw new ResearchRecordParseError(["root: expected object"]);
   }
 
-  if (input.contractVersion !== RESEARCH_RECORD_CONTRACT_VERSION) {
+  if (input.contractVersion !== LEGACY_RESEARCH_RECORD_CONTRACT_VERSION) {
     throw new ResearchRecordParseError([
-      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected ${RESEARCH_RECORD_CONTRACT_VERSION})`,
+      `contractVersion: unsupported value ${JSON.stringify(input.contractVersion)} (expected ${LEGACY_RESEARCH_RECORD_CONTRACT_VERSION})`,
     ]);
   }
 
@@ -421,7 +405,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
   }
 
   // --- market ---
-  const marketStats: MarketStat[] = [];
+  const marketStats: LegacyMarketStatV1[] = [];
   if (!isPlainObject(input.market)) {
     issues.push("market: required object");
   } else {
@@ -439,7 +423,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
         }
         if (!isNonEmptyString(stat.claim)) issues.push(`${path}.claim: required`);
         if (!isNonEmptyString(stat.value)) issues.push(`${path}.value: required`);
-        const citation = parseCitation(stat.citation, `${path}.citation`, issues);
+        const citation = parseLegacyCitationV1(stat.citation, `${path}.citation`, issues);
         if (
           citation &&
           isNonEmptyString(stat.claim) &&
@@ -452,16 +436,16 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
           });
         }
       });
-      if (marketStats.length < MIN_MARKET_STATS) {
+      if (marketStats.length < LEGACY_MIN_MARKET_STATS) {
         issues.push(
-          `market.stats: need ≥${MIN_MARKET_STATS} stats with URL citations (got ${marketStats.length})`,
+          `market.stats: need ≥${LEGACY_MIN_MARKET_STATS} stats with URL citations (got ${marketStats.length})`,
         );
       }
     }
   }
 
   // --- competitors ---
-  const competitors: Competitor[] = [];
+  const competitors: LegacyCompetitorV1[] = [];
   if (!Array.isArray(input.competitors)) {
     issues.push("competitors: required array");
   } else {
@@ -492,15 +476,15 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
         });
       }
     });
-    if (competitors.length < MIN_COMPETITORS) {
+    if (competitors.length < LEGACY_MIN_COMPETITORS) {
       issues.push(
-        `competitors: need ≥${MIN_COMPETITORS} with pricing + URL (got ${competitors.length})`,
+        `competitors: need ≥${LEGACY_MIN_COMPETITORS} with pricing + URL (got ${competitors.length})`,
       );
     }
   }
 
   // --- community ---
-  const communitySignals: CommunitySignal[] = [];
+  const communitySignals: LegacyCommunitySignalV1[] = [];
   if (!isPlainObject(input.community)) {
     issues.push("community: required object");
   } else {
@@ -517,7 +501,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
           return;
         }
         if (!isNonEmptyString(sig.quote)) issues.push(`${path}.quote: required`);
-        const citation = parseCitation(sig.citation, `${path}.citation`, issues);
+        const citation = parseLegacyCitationV1(sig.citation, `${path}.citation`, issues);
         if (sig.verified !== undefined && typeof sig.verified !== "boolean") {
           issues.push(`${path}.verified: must be boolean when present`);
         }
@@ -610,7 +594,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
       goToMarket = {
         positioning: input.goToMarket.positioning.trim(),
         pricingNotes: input.goToMarket.pricingNotes.trim(),
-        channels: input.goToMarket.channels.map((c) => (c as string).trim()),
+        channels: input.goToMarket.channels.filter(isNonEmptyString).map((c) => c.trim()),
       };
     }
   }
@@ -633,17 +617,17 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
         `howItWorks: need ≥${MIN_HOW_IT_WORKS_STEPS} steps when present (got ${input.howItWorks.length})`,
       );
     } else {
-      howItWorks = input.howItWorks.map((step) => (step as string).trim());
+      howItWorks = input.howItWorks.filter(isNonEmptyString).map((step) => step.trim());
     }
   }
 
   // --- optional editorial ---
-  let editorial: EditorialFields | undefined;
+  let editorial: LegacyEditorialFieldsV1 | undefined;
   if (input.editorial !== undefined) {
     if (!isPlainObject(input.editorial)) {
       issues.push("editorial: must be an object when present");
     } else {
-      const ed: EditorialFields = {};
+      const ed: LegacyEditorialFieldsV1 = {};
       for (const key of [
         "productName",
         "dontBuildYet",
@@ -712,7 +696,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
         }
       }
       if (input.editorial.yearOne !== undefined) {
-        const yearOne = parseYearOne(input.editorial.yearOne, issues);
+        const yearOne = parseLegacyYearOneV1(input.editorial.yearOne, issues);
         if (yearOne) ed.yearOne = yearOne;
       }
       if (input.editorial.dataModel !== undefined) {
@@ -751,7 +735,7 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
   }
 
   // --- provenance ---
-  let provenance: ResearchProvenance | null = null;
+  let provenance: LegacyProvenanceV1 | null = null;
   if (!isPlainObject(input.provenance)) {
     issues.push("provenance: required object");
   } else {
@@ -812,31 +796,39 @@ export function readLegacyResearchRecordV1(input: unknown): ResearchRecord {
     throw new ResearchRecordParseError(issues);
   }
 
-  const brief = input.brief as Record<string, string>;
-  const market = input.market as Record<string, unknown>;
-  const community = input.community as Record<string, unknown>;
+  // The checks above guarantee every value read below; a miss would be a
+  // reader defect, so it fails closed instead of being asserted away.
+  const defect = () => new ResearchRecordParseError(["record: incomplete after parsing (reader defect)"]);
+  const text = (value: unknown): string => {
+    if (!isNonEmptyString(value)) throw defect();
+    return value.trim();
+  };
+  const brief = isPlainObject(input.brief) ? input.brief : {};
+  const market = isPlainObject(input.market) ? input.market : {};
+  const community = isPlainObject(input.community) ? input.community : {};
+  if (!goToMarket || !provenance) throw defect();
 
-  const record: ResearchRecord = {
-    contractVersion: RESEARCH_RECORD_CONTRACT_VERSION,
+  const record: LegacyResearchRecordV1 = {
+    contractVersion: LEGACY_RESEARCH_RECORD_CONTRACT_VERSION,
     brief: {
-      title: brief.title.trim(),
-      slug: brief.slug.trim(),
-      oneLiner: brief.oneLiner.trim(),
-      targetCustomer: brief.targetCustomer.trim(),
+      title: text(brief.title),
+      slug: text(brief.slug),
+      oneLiner: text(brief.oneLiner),
+      targetCustomer: text(brief.targetCustomer),
     },
     market: {
-      summary: (market.summary as string).trim(),
+      summary: text(market.summary),
       stats: marketStats,
     },
     competitors,
     community: {
-      summary: (community.summary as string).trim(),
+      summary: text(community.summary),
       signals: communitySignals,
     },
     keywords,
-    goToMarket: goToMarket!,
-    whyNow: (input.whyNow as string).trim(),
-    provenance: provenance!,
+    goToMarket,
+    whyNow: text(input.whyNow),
+    provenance,
   };
 
   if (howItWorks) record.howItWorks = howItWorks;
@@ -1025,7 +1017,7 @@ function legacySlug(record: unknown): string | undefined {
 }
 
 /**
- * A contract v1 (legacy) record reached a v2 boundary. v1 wrote its
+ * parseResearchRecord was given a contract v1 (legacy) record. v1 wrote its
  * narrative before (or without) accepting evidence, so it can never be
  * compiled or pass the engine audit, and nothing upgrades it in place: the
  * operator re-runs research. A subclass of ResearchRecordParseError, so any
@@ -1788,10 +1780,13 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
 }
 
 /**
- * Parse a contract v2 research record (evidence contract §8) into a fresh,
- * normalized copy (editorial strings trimmed; evidence excerpts kept
- * byte-for-byte). The schema is closed: an unknown key at any level fails,
- * so a stray `verified` flag or a v1 `market.stats` cannot ride along.
+ * The publish-path record parser: read a contract v2 research record
+ * (evidence contract §8) into a fresh, normalized ResearchRecordV2
+ * (editorial strings trimmed; evidence excerpts kept byte-for-byte). The
+ * research CLI, the pipeline, the compiler, the compile CLI and the artifact
+ * auditor all parse records here. The schema is closed: an unknown key at
+ * any level fails, so a stray `verified` flag or a v1 `market.stats` cannot
+ * ride along.
  *
  * Throws LegacyResearchRecordError for contractVersion 1 and
  * ResearchRecordParseError, listing every issue found, for anything else
@@ -1816,13 +1811,15 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
  *   brief.oneLiner carries no token, and every token anywhere resolves.
  * Bounds: RESEARCH_RECORD_V2_LIMITS and EVIDENCE_LIMITS.
  *
- * Re-validation proves internal consistency, not authenticity: the record
- * holds no page text, so an excerpt edited together with its claim, digest
- * and id still parses. Replaying against the source text is a separate gate.
+ * Re-validation proves internal consistency, not authenticity (ruling R4):
+ * the record holds no page text, so an excerpt edited together with its
+ * claim, digest and id still parses. The deterministic replay gate
+ * (lib/engine/replay.test.ts) checks fixture excerpts against their source
+ * pages; live records need the operator's source inspection.
  */
-export function parseResearchRecordV2(input: unknown): ResearchRecordV2 {
+export function parseResearchRecord(input: unknown): ResearchRecordV2 {
   if (!isPlainObject(input)) throw new ResearchRecordParseError(["root: expected an object"]);
-  if (input.contractVersion === RESEARCH_RECORD_CONTRACT_VERSION) throw new LegacyResearchRecordError(input);
+  if (input.contractVersion === LEGACY_RESEARCH_RECORD_CONTRACT_VERSION) throw new LegacyResearchRecordError(input);
   if (input.contractVersion !== RESEARCH_RECORD_CONTRACT_VERSION_V2) {
     throw new ResearchRecordParseError([
       `contractVersion: unsupported value ${describeValue(input.contractVersion)} (expected ${RESEARCH_RECORD_CONTRACT_VERSION_V2})`,

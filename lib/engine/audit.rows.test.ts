@@ -12,7 +12,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { auditPage, cleanupTempDirs, compiledPage, replaceOnce } from "./__fixtures__/auditHarness.ts";
-import { buildFixtureRecord, EV, FIXTURE_PAGES } from "./__fixtures__/recordV2.ts";
+import { buildFixtureRecord, EV, FIXTURE_PAGES, FIXTURE_RETRIEVED_AT } from "./__fixtures__/recordV2.ts";
+import { auditEngineArtifact } from "./artifact-audit.ts";
+import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
+import type { AcceptedEvidence, ResearchRecordV2 } from "./evidence/contract.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -171,37 +174,83 @@ describe("competitor and market signal rows", () => {
     expect((await auditPage(page)).errors).toEqual([]);
   });
 
-  it("fails a first-party pricing URL that backs a second competitor", async () => {
+  describe("a first-party pricing URL backs one competitor only (ruling R5)", () => {
     const coderabbitUrl = FIXTURE_PAGES.coderabbit.url;
-    const record = buildFixtureRecord(
-      (r) => {
-        const onCodeRabbit = r.evidence.accepted.find(
-          (e) => e.kind === "competitor_price" && e.vendor === "Graphite" && e.sourceUrl === coderabbitUrl,
-        );
-        const graphite = r.competitors.find((c) => c.name === "Graphite");
-        if (!onCodeRabbit || !graphite) throw new Error("fixture: Graphite price on the CodeRabbit page not accepted");
-        graphite.priceIds = [onCodeRabbit.id];
-      },
-      {
-        pages: { coderabbit: { text: `${FIXTURE_PAGES.coderabbit.text}\nGraphite charges $40/user/month for its Team plan.` } },
-        extraCandidates: {
-          competitorPrices: [
-            {
-              vendor: "Graphite",
-              sourceUrl: coderabbitUrl,
-              supportingText: "Graphite charges $40/user/month for its Team plan.",
-              plan: "Team",
-              priceText: "$40/user/month",
-            },
-          ],
-        },
-      },
-    );
-    const page = compiledPage(record);
-    expect(page).toContain("$40/user/month (Team) (via coderabbit.ai) [CodeRabbit pricing](https://www.coderabbit.ai/pricing)");
-    expect(errorsOf(await auditPage(page, record))).toMatch(
-      /pricing URL https:\/\/www\.coderabbit\.ai\/pricing backs CodeRabbit, Graphite; a first-party URL may back one competitor/,
-    );
+    const graphiteLine = "Graphite charges $40/user/month for its Team plan.";
+    const coderabbitText = `${FIXTURE_PAGES.coderabbit.text}\n${graphiteLine}`;
+    const graphiteOnCodeRabbit = {
+      vendor: "Graphite",
+      sourceUrl: coderabbitUrl,
+      supportingText: graphiteLine,
+      plan: "Team",
+      priceText: "$40/user/month",
+    };
+    const options = {
+      pages: { coderabbit: { text: coderabbitText } },
+      extraCandidates: { competitorPrices: [graphiteOnCodeRabbit] },
+    };
+    const R5_DETAIL = "the source is CodeRabbit's own site (coderabbit.ai); a vendor's own site is not evidence for Graphite's price (ruling R5)";
+
+    /** Graphite's price from CodeRabbit's page, accepted as if CodeRabbit were unknown: what R5 forbids in a record. */
+    function smuggledPrice(): AcceptedEvidence {
+      const item = acceptEvidence({
+        candidates: { quotes: [], marketStats: [], competitorPrices: [graphiteOnCodeRabbit] },
+        citations: [{ url: coderabbitUrl, title: FIXTURE_PAGES.coderabbit.title }],
+        sources: new Map([
+          [coderabbitUrl, { status: "read", text: coderabbitText, retrievedAt: FIXTURE_RETRIEVED_AT, textSha256: sha256Hex(coderabbitText) }],
+        ]),
+      }).accepted[0];
+      if (!item) throw new Error("fixture: Graphite price was not accepted without vendor context");
+      return item;
+    }
+
+    /** The fixture record with Graphite priced only by the smuggled item. */
+    function withSmuggledGraphitePrice(record: ResearchRecordV2, smuggled: AcceptedEvidence): void {
+      const graphite = record.competitors.find((c) => c.name === "Graphite");
+      if (!graphite) throw new Error("fixture: no Graphite competitor");
+      record.evidence.accepted.push(smuggled);
+      graphite.priceIds = [smuggled.id];
+    }
+
+    it("never accepts a rival's price from a competitor's own pricing page", () => {
+      const record = buildFixtureRecord(undefined, options);
+      expect(
+        record.evidence.accepted.some((e) => e.kind === "competitor_price" && e.vendor === "Graphite" && e.sourceUrl === coderabbitUrl),
+      ).toBe(false);
+      expect(record.evidence.rejected).toContainEqual({
+        kind: "competitor_price",
+        reason: "ambiguous_attribution",
+        sourceUrl: coderabbitUrl,
+        candidate: "Graphite: $40/user/month",
+        detail: R5_DETAIL,
+      });
+    });
+
+    it("refuses a record that stores one, so the auditor fails the page on its record", async () => {
+      const smuggled = smuggledPrice();
+      expect(() => buildFixtureRecord((r) => withSmuggledGraphitePrice(r, smuggled), options)).toThrow(
+        `claim: ambiguous_attribution (${R5_DETAIL})`,
+      );
+      const tampered = structuredClone(buildFixtureRecord(undefined, options));
+      withSmuggledGraphitePrice(tampered, smuggled);
+      const errors = errorsOf(await auditPage(compiledPage(buildFixtureRecord(undefined, options)), tampered));
+      expect(errors).toMatch(/is not a valid contract v2 record: .*claim: ambiguous_attribution \(the source is CodeRabbit's own site/);
+    });
+
+    it("still flags a pricing URL that backs two competitors when a record skips the parser (defense in depth)", () => {
+      const clean = buildFixtureRecord(undefined, options);
+      const tampered = structuredClone(clean);
+      withSmuggledGraphitePrice(tampered, smuggledPrice());
+      const page = replaceOnce(
+        compiledPage(clean),
+        "$40/user/month (Team) [Graphite pricing](https://graphite.dev/pricing)",
+        "$40/user/month (Team) (via coderabbit.ai) [CodeRabbit pricing](https://www.coderabbit.ai/pricing)",
+      );
+      const body = page.slice(page.indexOf("\n---\n", 3) + "\n---\n".length);
+      expect(auditEngineArtifact(body, tampered).errors.join("\n")).toMatch(
+        /pricing URL https:\/\/www\.coderabbit\.ai\/pricing backs CodeRabbit, Graphite; a first-party URL may back one competitor/,
+      );
+    });
   });
 
   it("fails keyword rows that no longer match the record's provider metrics", async () => {

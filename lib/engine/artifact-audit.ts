@@ -25,6 +25,9 @@
  *                 Labels and notes may be polished; figures may not.
  *                 A pricing URL may back several competitors only when every
  *                 price on it is a separately bound secondary price.
+ *                 Acceptance and the record parser already refuse a rival's
+ *                 price from a vendor's own site (ruling R5), so a record
+ *                 that parses cannot trip this; it stays as defense in depth.
  *   Figures (F1)  In The Problem, Market Research and Competitive Landscape,
  *                 a figure in prose that is not the canonical rendering of
  *                 evidence the record references (or a bare year) is an
@@ -59,7 +62,7 @@ import {
   splitViaLabel,
   type DisplayedYearOneLine,
 } from "./page-format.ts";
-import { LegacyResearchRecordError, parseResearchRecordV2, ResearchRecordParseError } from "./research-record.ts";
+import { LegacyResearchRecordError, parseResearchRecord, ResearchRecordParseError } from "./research-record.ts";
 
 // ---------------------------------------------------------------------------
 // Record loading
@@ -70,13 +73,13 @@ export type RecordLoad = { ok: true; record: ResearchRecordV2 } | { ok: false; e
 const MAX_ISSUES_SHOWN = 12;
 
 /**
- * Parse an engine page's research record with parseResearchRecordV2. A v1
+ * Parse an engine page's research record with parseResearchRecord. A v1
  * record yields the LegacyResearchRecordError re-research message; any other
  * invalid record lists its first issues. Never upgrades or trusts a record.
  */
 export function loadEngineRecord(raw: unknown, label: string): RecordLoad {
   try {
-    return { ok: true, record: parseResearchRecordV2(raw) };
+    return { ok: true, record: parseResearchRecord(raw) };
   } catch (error) {
     if (error instanceof LegacyResearchRecordError) return { ok: false, error: error.message };
     if (error instanceof ResearchRecordParseError) {

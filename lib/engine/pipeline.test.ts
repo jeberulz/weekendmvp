@@ -27,7 +27,7 @@ import {
 import type { Fetcher } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
 import type { EngineProviders, SynthesisRequest } from "./providers/types.ts";
-import { parseResearchRecordV2 } from "./research-record.ts";
+import { parseResearchRecord } from "./research-record.ts";
 
 const RFP_BRIEF: BriefInput = {
   title: "AI RFP Response Assistant",
@@ -113,7 +113,7 @@ describe("runResearch (fixture)", () => {
       ranAt: "2026-10-01T00:00:00.000Z",
     });
     // Round trip through the fail-closed v2 parser.
-    const again = parseResearchRecordV2(JSON.parse(JSON.stringify(record)));
+    const again = parseResearchRecord(JSON.parse(JSON.stringify(record)));
     expect(again).toEqual(record);
     expect(record.mode).toBe("fixture");
     expect(record.brief.slug).toBe(FIXTURE_BRIEF_SLUG);

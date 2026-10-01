@@ -41,6 +41,7 @@
     "engine:eval": "node --experimental-strip-types scripts/engine-eval.mjs",
     "engine:research": "node --experimental-strip-types scripts/engine-research.mjs",
     "engine:compile": "node --experimental-strip-types scripts/engine-compile.mjs",
+    "engine:replay": "node scripts/engine-replay.mjs",
     "retag:idea-tags": "node scripts/retag-idea-tags.mjs",
     "retag:idea-tags:apply": "node scripts/retag-idea-tags.mjs --apply",
     "gsc:submit-sitemap": "node scripts/gsc-submit-sitemap.mjs",

@@ -8,9 +8,12 @@
  * - Kept unchanged: "rewrites Reddit and HN URLs to their data endpoints",
  *   "widens the primary community prompt beyond Reddit", "names the fix when
  *   Reddit blocks the public endpoint", "falls back to the default user agent
- *   when the env value is empty", "rejects a funnel that grows or pays more
- *   accounts than it has" (the v1 parseYearOne helper stays for the compiler
- *   until integration).
+ *   when the env value is empty".
+ * - Moved at WP46 integration: "rejects a funnel that grows or pays more
+ *   accounts than it has" now runs through readLegacyResearchRecordV1 in
+ *   research-record.legacy.test.ts (the v1 parseYearOne helper became
+ *   private to the history-only legacy reader; v2 funnel rules are in
+ *   finance.test.ts and research-record.v2.test.ts).
  * - Matcher swapped to the contract's contiguous matcher (findContiguousSpan;
  *   quoteAppearsIn is removed), intent unchanged: "matches verbatim text
  *   across punctuation and curly quotes", "rejects a paraphrase", "reads every
@@ -78,7 +81,6 @@ import {
 } from "./providers/fixtures.ts";
 import { createSourceTextProvider, hnApiUrl, htmlToText, redditJsonUrl } from "./providers/sourceText.ts";
 import type { EngineProviders, SynthesisRequest } from "./providers/types.ts";
-import { parseYearOne } from "./research-record.ts";
 
 /** Stub resolver: every host is public (keeps tests off the network). */
 const PUBLIC_DNS = async () => ["93.184.215.14"];
@@ -220,26 +222,6 @@ describe("pipeline quote verification", () => {
     );
     expect(error.stepId).toBe("evidence_acceptance");
     expect(error.message).toMatch(/community quotes: 0 distinct accepted, need 2/);
-  });
-});
-
-describe("record validation", () => {
-  it("rejects a funnel that grows or pays more accounts than it has", () => {
-    const issues: string[] = [];
-    parseYearOne(
-      {
-        funnel: [
-          { stage: "a", count: 10 },
-          { stage: "b", count: 20 },
-        ],
-        tier: "Team",
-        payingAccounts: 50,
-        monthlyRevenuePerAccount: 10,
-      },
-      issues,
-    );
-    expect(issues.join(" ")).toMatch(/must not grow/);
-    expect(issues.join(" ")).toMatch(/exceeds the last funnel stage/);
   });
 });
 
