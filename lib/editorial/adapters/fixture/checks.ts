@@ -4,7 +4,9 @@ import { checkPublicHttpUrl } from "../../contracts/primitives";
 import { HOW_IT_WORKS_LABEL, type SectionKey } from "../../contracts/sections";
 import { countWords, measureContent } from "../../domain/counts";
 import { sourceFreshness } from "../../domain/freshness";
-import { sectionsByKey, splitFrontmatter, splitSections } from "../../domain/structure";
+import { findExecutableMarkup, forEachProseLine } from "../../domain/executable-markup";
+import { sectionsByKey, splitSections } from "../../domain/structure";
+import type { CheckPolicy } from "../../core/state";
 import { parseArticleMarkdown, walk } from "../../markdown/parse";
 
 /**
@@ -44,92 +46,6 @@ function location(partial: Partial<CheckLocation>): CheckLocation {
     sourceId: partial.sourceId ?? null,
     line: partial.line ?? null,
   };
-}
-
-/** Remove inline code spans so their contents are not scanned as markup. */
-function stripInlineCode(line: string): string {
-  let result = "";
-  let index = 0;
-  while (index < line.length) {
-    if (line[index] !== "`") {
-      result += line[index];
-      index += 1;
-      continue;
-    }
-    let run = 0;
-    while (line[index + run] === "`") run += 1;
-    const fence = "`".repeat(run);
-    const close = line.indexOf(fence, index + run);
-    if (close === -1) {
-      result += line.slice(index);
-      break;
-    }
-    result += " ".repeat(close + run - index);
-    index = close + run;
-  }
-  return result;
-}
-
-function precededByOddBackslashes(text: string, position: number): boolean {
-  let count = 0;
-  for (let cursor = position - 1; cursor >= 0 && text[cursor] === "\\"; cursor -= 1) count += 1;
-  return count % 2 === 1;
-}
-
-/** Visit each line outside fenced code, with its 1-based document line. */
-function forEachProseLine(markdown: string, visit: (line: string, lineNumber: number) => void) {
-  const { body, bodyStartLine } = splitFrontmatter(markdown);
-  let fence: { char: string; length: number } | null = null;
-  body.split("\n").forEach((line, index) => {
-    const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(line);
-    if (fence) {
-      // A closing fence is the same character, at least as long, alone on its line.
-      if (
-        fenceMatch &&
-        fenceMatch[1][0] === fence.char &&
-        fenceMatch[1].length >= fence.length &&
-        line.trim() === fenceMatch[1]
-      ) {
-        fence = null;
-      }
-      return;
-    }
-    if (fenceMatch) {
-      fence = { char: fenceMatch[1][0], length: fenceMatch[1].length };
-      return;
-    }
-    visit(line, bodyStartLine + index);
-  });
-}
-
-/**
- * Find text the public MDX renderer would treat as code: unescaped braces
- * (expressions), tags (`<Component`, `<div`, `<!--`, autolinks) and
- * `import`/`export` lines. `\{` is escaped; `\\{` is an escaped backslash
- * followed by a live brace.
- */
-export function findExecutableMarkup(markdown: string): { line: number; reason: string }[] {
-  const findings: { line: number; reason: string }[] = [];
-
-  forEachProseLine(markdown, (raw, lineNumber) => {
-    if (/^\s{0,3}(?:import|export)\s/.test(raw)) {
-      findings.push({ line: lineNumber, reason: "an import/export statement" });
-      return;
-    }
-    const line = stripInlineCode(raw);
-    for (let position = 0; position < line.length; position += 1) {
-      const char = line[position];
-      if ((char === "{" || char === "}") && !precededByOddBackslashes(line, position)) {
-        findings.push({ line: lineNumber, reason: `an unescaped “${char}”` });
-        return;
-      }
-      if (char === "<" && !precededByOddBackslashes(line, position) && /[A-Za-z/!?]/.test(line[position + 1] ?? "")) {
-        findings.push({ line: lineNumber, reason: "an HTML/JSX tag" });
-        return;
-      }
-    }
-  });
-  return findings;
 }
 
 function sectionRange(markdown: string, key: SectionKey) {
@@ -317,3 +233,11 @@ export function runFixtureChecks(input: RunInput): QualityCheck[] {
 
   return checks;
 }
+
+/** The local demo's quality policy: simulated checks, never WP45. */
+export const FIXTURE_CHECK_POLICY: CheckPolicy = {
+  label: "Fixture quality policy (simulated checks, not WP45)",
+  requiredCheckIds: FIXTURE_REQUIRED_CHECK_IDS,
+  run: runFixtureChecks,
+  unavailableReason: "",
+};

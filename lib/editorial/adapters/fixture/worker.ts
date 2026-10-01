@@ -1,6 +1,6 @@
-import { completeActivation } from "./repository";
-import { approvalValidity, revokeApproval, transitionRelease } from "./rules";
-import { actorRef, appendAudit, touch, type FixtureState, type ReleaseRecord } from "./state";
+import { approvalValidity, completeActivation, revokeApproval, transitionRelease } from "../../core/rules";
+import { appendAudit, nowIso, touch, type ReleaseRecord } from "../../core/state";
+import type { FixtureState } from "./state";
 
 /**
  * SIMULATED release worker for the local demo and tests. It advances each
@@ -26,7 +26,7 @@ function fail(state: FixtureState, release: ReleaseRecord, code: string, message
   release.error = { code, message };
   transitionRelease(state, release, "failed", message);
   appendAudit(state, {
-    actor: actorRef(state.worker),
+    actor: state.env.workerActor,
     action: "release.failed",
     outcome: "failed",
     ideaId: release.ideaId,
@@ -41,7 +41,7 @@ function fail(state: FixtureState, release: ReleaseRecord, code: string, message
 
 function note(state: FixtureState, release: ReleaseRecord, detail: string) {
   appendAudit(state, {
-    actor: actorRef(state.worker),
+    actor: state.env.workerActor,
     action: "release.advanced",
     outcome: "succeeded",
     ideaId: release.ideaId,
@@ -92,7 +92,7 @@ async function advance(state: FixtureState, release: ReleaseRecord): Promise<boo
         const approval = release.approvalId ? state.approvals.get(release.approvalId) : undefined;
         const validity = approval ? await approvalValidity(state, approval) : { valid: false as const, reason: "Missing approval" };
         if (!validity.valid) {
-          if (approval) revokeApproval(state, approval, validity.reason, actorRef(state.worker));
+          if (approval) revokeApproval(state, approval, validity.reason, state.env.workerActor);
           fail(state, release, "APPROVAL_NOT_ACTIVE", `Approval no longer valid: ${validity.reason}`);
           return true;
         }
@@ -125,7 +125,7 @@ async function advance(state: FixtureState, release: ReleaseRecord): Promise<boo
       if (state.injections.loseNextActivationAck) {
         state.injections.loseNextActivationAck = false;
         // The simulated world did activate; only the acknowledgement was lost.
-        release.simulatedWorld = { activated: true };
+        release.observation = { activated: true, observedAt: nowIso(state) };
         transitionRelease(
           state,
           release,

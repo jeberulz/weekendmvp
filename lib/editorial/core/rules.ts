@@ -1,4 +1,4 @@
-import { APPROVABLE_CANDIDATE_STATES, canTransitionRelease, type ReleaseState } from "../../contracts/states";
+import { APPROVABLE_CANDIDATE_STATES, canTransitionRelease, type ReleaseState } from "../contracts/states";
 import { deriveRevision } from "./derive";
 import {
   appendAudit,
@@ -6,7 +6,8 @@ import {
   touch,
   type ActorRef,
   type ApprovalRecord,
-  type FixtureState,
+  type EditorialState,
+  type IdeaRecord,
   type ReleaseRecord,
 } from "./state";
 
@@ -19,7 +20,7 @@ export type Validity = { valid: true } | { valid: false; reason: string };
  * decision — makes it invalid. Checked at staging, at the publish click and
  * again by the worker before activation.
  */
-export async function approvalValidity(state: FixtureState, approval: ApprovalRecord): Promise<Validity> {
+export async function approvalValidity(state: EditorialState, approval: ApprovalRecord): Promise<Validity> {
   if (approval.status !== "active") return { valid: false, reason: `Approval is ${approval.status}` };
   const idea = state.ideas.get(approval.ideaId);
   const revision = state.revisions.get(approval.revisionId);
@@ -46,7 +47,7 @@ export async function approvalValidity(state: FixtureState, approval: ApprovalRe
 }
 
 export function revokeApproval(
-  state: FixtureState,
+  state: EditorialState,
   approval: ApprovalRecord,
   reason: string,
   actor: ActorRef,
@@ -71,7 +72,7 @@ export function revokeApproval(
 }
 
 /** Revoke every active approval of an idea (decision change, trash, policy). */
-export function revokeIdeaApprovals(state: FixtureState, ideaId: string, reason: string, actor: ActorRef): number {
+export function revokeIdeaApprovals(state: EditorialState, ideaId: string, reason: string, actor: ActorRef): number {
   let count = 0;
   for (const approval of state.approvals.values()) {
     if (approval.ideaId === ideaId && approval.status === "active") {
@@ -83,7 +84,7 @@ export function revokeIdeaApprovals(state: FixtureState, ideaId: string, reason:
 }
 
 export function transitionRelease(
-  state: FixtureState,
+  state: EditorialState,
   release: ReleaseRecord,
   to: ReleaseState,
   detail: string | null,
@@ -97,10 +98,41 @@ export function transitionRelease(
   touch(state);
 }
 
-export function inFlightReleaseFor(state: FixtureState, ideaId: string): ReleaseRecord | null {
+export function inFlightReleaseFor(state: EditorialState, ideaId: string): ReleaseRecord | null {
   for (const release of state.releases.values()) {
     if (release.ideaId !== ideaId || release.operation === "legacy_baseline") continue;
     if (!["succeeded", "failed", "cancelled"].includes(release.state)) return release;
   }
   return null;
+}
+
+/** Move the public pointer to a verified release (worker or reconciliation). */
+export function completeActivation(
+  state: EditorialState,
+  idea: IdeaRecord,
+  release: ReleaseRecord,
+  detail: string,
+): void {
+  const now = nowIso(state);
+  idea.publication.state = "live";
+  idea.publication.liveReleaseId = release.id;
+  idea.publication.lastLiveReleaseId = release.id;
+  idea.publication.lastReleasedAt = now;
+  idea.publication.firstPublishedAt ??= now.slice(0, 10);
+  idea.publication.unpublishedAt = null;
+  idea.publication.unpublishReason = null;
+  idea.generation += 1;
+  transitionRelease(state, release, "succeeded", detail);
+  appendAudit(state, {
+    actor: state.env.workerActor,
+    action: "release.succeeded",
+    outcome: "succeeded",
+    ideaId: idea.id,
+    revisionId: release.revisionId,
+    releaseId: release.id,
+    reason: null,
+    detail,
+    code: null,
+  });
+  touch(state);
 }

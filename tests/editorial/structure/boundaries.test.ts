@@ -58,7 +58,17 @@ describe("fixture isolation", () => {
       .flatMap((dir) => listFiles(dir))
       .filter((file) => !file.startsWith("lib/editorial/") && !file.startsWith("app/admin/editorial/") && !file.startsWith("components/admin/editorial/"));
     for (const file of outside) {
-      expect(fs.readFileSync(path.join(ROOT, file), "utf8"), file).not.toMatch(/lib\/editorial/);
+      expect(fs.readFileSync(path.join(ROOT, file), "utf8"), file).not.toMatch(/lib\/editorial\/(?:adapters\/fixture|fixtures)\b/);
+    }
+  });
+
+  test("Convex functions import only the store-neutral editorial modules (WP46-E4)", () => {
+    const convexFiles = listFiles("convex").filter((file) => !/\.test\.tsx?$/.test(file));
+    for (const file of convexFiles) {
+      const specifiers = [...read(file).matchAll(/from "([^"]*lib\/editorial\/[^"]*)"/g)].map((match) => match[1]);
+      for (const specifier of specifiers) {
+        expect(specifier, file).toMatch(/lib\/editorial\/(?:contracts|domain|core|markdown)\//);
+      }
     }
   });
 });

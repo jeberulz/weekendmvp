@@ -118,6 +118,19 @@ Local demo controls (E3, `demo.ts`): confirm or expire the simulated sign-in, ki
 
 For E4: `components/admin/editorial/common/StrongAuthStep.tsx` calls the demo sign-in confirmation. The live adapter must replace that call with the real step-up flow (and the demo actions must not be reachable in live mode); the dialogs that show the step do not change.
 
+## Shared core (WP46-E4b)
+
+Every rule above lives once, in `lib/editorial/core/**`: `EditorialCore` (the repository), `derive.ts` (views, issues, blockers), `rules.ts` (approval validity, release transitions, activation) and `listing.ts` (queue buckets, filters, cursors). It runs over a store-neutral `EditorialState` and an environment:
+
+- `clock` and `ids` (sequential in the demo, random keys in Convex);
+- `checks`: the quality policy in force. `run: null` means no check library is connected, so checks cannot run and nothing can be approved;
+- `releases`: whether a release worker exists. Without one, prepare, publish, retry, reconcile, rollback and unpublish refuse with the reason instead of recording an intent nobody carries out;
+- `mode` (the receiver accepts only its own submission mode) and `simulated` (demo narration).
+
+The receiver takes the verification authority from its trusted caller: legacy imports are always `none`; with `none`, submitted verification results are downgraded to unverified and submitted checks are dropped. A release keeps the probe `observation` recorded by the worker; reconciliation applies it and refuses when there is none yet. Release and activity records carry the revision number, so lists never load revision bodies.
+
+The fixture adapter is the core plus simulated seams (credentials, checks, worker, the two-tab edit). The live adapter (E4c) is the core over one idea's records loaded from Convex.
+
 ## Fixture boundary
 
 `lib/editorial/adapters/fixture/**` and `lib/editorial/fixtures/**` are demo-only: fictional content on `.example` domains, simulated checks (`producer: "fixture_simulated"`), a simulated worker and simulated re-authentication. `assertFixtureModeAllowed()` throws in production builds, and the runtime selector only reaches this code behind a `NODE_ENV !== "production"` branch. Fixture tests serialise commands in one process: they prove the rules, not real concurrency or deployment.

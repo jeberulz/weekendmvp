@@ -1,8 +1,13 @@
-import type { ApprovalBlocker } from "../../contracts/errors";
-import type { EditorialClaim, EditorialSource } from "../../contracts/evidence";
-import { displayDomain } from "../../contracts/primitives";
-import { SECTION_DEFINITIONS, type SectionKey } from "../../contracts/sections";
-import { isReleaseInFlight, releaseStateLabel } from "../../contracts/states";
+import type { ApprovalBlocker } from "../contracts/errors";
+import type {
+  EditorialClaim,
+  EditorialSource,
+  SourceType,
+  SourceVerificationStatus,
+} from "../contracts/evidence";
+import { displayDomain } from "../contracts/primitives";
+import { SECTION_DEFINITIONS, type SectionKey } from "../contracts/sections";
+import { isReleaseInFlight, releaseStateLabel } from "../contracts/states";
 import type {
   ApprovalView,
   CheckView,
@@ -17,24 +22,23 @@ import type {
   RevisionView,
   SectionView,
   SourceView,
-} from "../../contracts/views";
-import { assessmentDigest, computeRevisionHashes, type RevisionHashes } from "../../domain/artifact";
-import { measureContent, sectionWordCount } from "../../domain/counts";
+} from "../contracts/views";
+import { assessmentDigest, computeRevisionHashes, type RevisionHashes } from "../domain/artifact";
+import { measureContent, sectionWordCount } from "../domain/counts";
 import {
   computeApprovalBlockers,
   deriveIssues,
   toIssueViews,
   type DerivedIssue,
   type IssueResolution,
-} from "../../domain/eligibility";
-import { sourceFreshness, worstFreshness } from "../../domain/freshness";
-import { deriveReviewItems } from "../../domain/review-items";
-import { containsNormalized, sectionsByKey, splitSections } from "../../domain/structure";
-import { FIXTURE_REQUIRED_CHECK_IDS } from "./checks";
+} from "../domain/eligibility";
+import { sourceFreshness, worstFreshness } from "../domain/freshness";
+import { deriveReviewItems } from "../domain/review-items";
+import { containsNormalized, sectionsByKey, splitSections } from "../domain/structure";
 import type {
   ActorRef,
   ApprovalRecord,
-  FixtureState,
+  EditorialState,
   IdeaRecord,
   ReleaseRecord,
   RevisionRecord,
@@ -49,7 +53,7 @@ export type DerivedRevision = {
   checksCurrent: boolean;
 };
 
-const memo = new WeakMap<FixtureState, Map<string, { epoch: number; value: DerivedRevision }>>();
+const memo = new WeakMap<EditorialState, Map<string, { epoch: number; value: DerivedRevision }>>();
 
 export function principalView(actor: ActorRef) {
   return { kind: actor.kind, label: actor.label };
@@ -72,7 +76,7 @@ export function approvalView(approval: ApprovalRecord): ApprovalView {
   };
 }
 
-export function latestApprovalFor(state: FixtureState, revisionId: string): ApprovalRecord | null {
+export function latestApprovalFor(state: EditorialState, revisionId: string): ApprovalRecord | null {
   let latest: ApprovalRecord | null = null;
   for (const approval of state.approvals.values()) {
     if (approval.revisionId !== revisionId) continue;
@@ -81,31 +85,31 @@ export function latestApprovalFor(state: FixtureState, revisionId: string): Appr
   return latest;
 }
 
-export function activeApprovalForIdea(state: FixtureState, ideaId: string): ApprovalRecord | null {
+export function activeApprovalForIdea(state: EditorialState, ideaId: string): ApprovalRecord | null {
   for (const approval of state.approvals.values()) {
     if (approval.ideaId === ideaId && approval.status === "active") return approval;
   }
   return null;
 }
 
-export function liveRevisionId(state: FixtureState, idea: IdeaRecord): string | null {
+export function liveRevisionId(state: EditorialState, idea: IdeaRecord): string | null {
   if (!idea.publication.liveReleaseId) return null;
   return state.releases.get(idea.publication.liveReleaseId)?.revisionId ?? null;
 }
 
 function reviewStatusFor(
-  state: FixtureState,
+  state: EditorialState,
   ideaId: string,
   itemId: string,
   dependencyHash: string,
 ): { status: ReviewStatusView; flag: ReviewItemView["flag"] } {
-  let latest: FixtureState["attestations"][number] | null = null;
+  let latest: EditorialState["attestations"][number] | null = null;
   for (const attestation of state.attestations) {
     if (attestation.ideaId !== ideaId || attestation.itemId !== itemId || attestation.retracted) continue;
     if (!latest || attestation.at >= latest.at) latest = attestation;
   }
-  let openFlag: FixtureState["flags"][number] | null = null;
-  let lastFlag: FixtureState["flags"][number] | null = null;
+  let openFlag: EditorialState["flags"][number] | null = null;
+  let lastFlag: EditorialState["flags"][number] | null = null;
   for (const flag of state.flags) {
     if (flag.ideaId !== ideaId || flag.itemId !== itemId) continue;
     if (!lastFlag || flag.at >= lastFlag.at) lastFlag = flag;
@@ -166,7 +170,7 @@ function sourceLabels(source: EditorialSource, review: ReviewStatusView): Eviden
   return labels;
 }
 
-function readOnlyReason(state: FixtureState, idea: IdeaRecord, revision: RevisionRecord): string | null {
+function readOnlyReason(state: EditorialState, idea: IdeaRecord, revision: RevisionRecord): string | null {
   if (idea.lifecycle === "trashed") return "This idea is in Trash. Restore it to edit.";
   if (revision.discarded) return "This revision was discarded.";
   if (idea.workingRevisionId !== revision.id) return "This is an earlier revision. Only the working revision is editable.";
@@ -180,7 +184,7 @@ function readOnlyReason(state: FixtureState, idea: IdeaRecord, revision: Revisio
   return null;
 }
 
-export async function deriveRevision(state: FixtureState, revisionId: string): Promise<DerivedRevision> {
+export async function deriveRevision(state: EditorialState, revisionId: string): Promise<DerivedRevision> {
   let cache = memo.get(state);
   if (!cache) {
     cache = new Map();
@@ -280,7 +284,7 @@ export async function deriveRevision(state: FixtureState, revisionId: string): P
   );
   const issues = deriveIssues({
     checks: checkViews,
-    requiredCheckIds: FIXTURE_REQUIRED_CHECK_IDS,
+    requiredCheckIds: state.env.checks.requiredCheckIds,
     checksCurrent,
     missingSections,
     claims: claimViews,
@@ -359,7 +363,7 @@ export async function deriveRevision(state: FixtureState, revisionId: string): P
 }
 
 export function revisionSummary(
-  state: FixtureState,
+  state: EditorialState,
   idea: IdeaRecord,
   revision: RevisionRecord,
   artifactHash: string,
@@ -405,9 +409,8 @@ function releaseActions(release: ReleaseRecord): ReleaseAction[] {
   }
 }
 
-export function releaseView(state: FixtureState, release: ReleaseRecord): ReleaseView {
+export function releaseView(state: EditorialState, release: ReleaseRecord): ReleaseView {
   const idea = state.ideas.get(release.ideaId);
-  const revision = release.revisionId ? state.revisions.get(release.revisionId) : undefined;
   const previewAvailable =
     release.operation !== "unpublish" &&
     release.operation !== "legacy_baseline" &&
@@ -421,7 +424,7 @@ export function releaseView(state: FixtureState, release: ReleaseRecord): Releas
     operation: release.operation,
     state: release.state,
     revisionId: release.revisionId,
-    revisionNumber: revision?.number ?? null,
+    revisionNumber: release.revisionNumber,
     approvalId: release.approvalId,
     attempt: release.attempt,
     generation: release.generation,
@@ -438,20 +441,22 @@ export function releaseView(state: FixtureState, release: ReleaseRecord): Releas
     error: release.error,
     preview: previewAvailable
       ? {
-          label: "Simulated preview (editorial renderer, nothing was built)",
+          label: state.env.simulated
+            ? "Simulated preview (editorial renderer, nothing was built)"
+            : "Editorial preview (public rendering not yet verified)",
           href: `/admin/editorial/ideas/${release.ideaId}?revision=${release.revisionId}&tab=preview`,
         }
       : null,
     publicPath: `/ideas/${idea?.slug ?? ""}`,
     previousLiveReleaseId: release.expectedLiveReleaseId,
     rollbackTargetReleaseId: release.rollbackTargetReleaseId,
-    simulated: true,
+    simulated: state.env.simulated,
     availableActions: releaseActions(release),
   };
 }
 
 /** The release that still needs a human: in flight, failed or uncertain. */
-export function pendingReleaseFor(state: FixtureState, ideaId: string): ReleaseRecord | null {
+export function pendingReleaseFor(state: EditorialState, ideaId: string): ReleaseRecord | null {
   let latest: ReleaseRecord | null = null;
   for (const release of state.releases.values()) {
     if (release.ideaId !== ideaId || release.operation === "legacy_baseline") continue;
@@ -461,7 +466,7 @@ export function pendingReleaseFor(state: FixtureState, ideaId: string): ReleaseR
   return isReleaseInFlight(latest.state) || latest.state === "failed" ? latest : null;
 }
 
-export async function deriveListItem(state: FixtureState, idea: IdeaRecord): Promise<IdeaListItem> {
+export async function deriveListItem(state: EditorialState, idea: IdeaRecord): Promise<IdeaListItem> {
   const working = state.revisions.get(idea.workingRevisionId);
   if (!working) throw new Error(`Idea ${idea.id} has no working revision`);
   const derived = await deriveRevision(state, working.id);
@@ -489,10 +494,6 @@ export async function deriveListItem(state: FixtureState, idea: IdeaRecord): Pro
     ? []
     : derived.issues.filter((issue) => issue.severity === "warning" && !issue.resolution);
   const sectionItems = view.reviewItems.filter((item) => item.kind === "section");
-  const retrieved = view.sources
-    .map((source) => source.retrievedAt)
-    .filter((value): value is string => value !== null)
-    .sort();
   const duplicate = idea.duplicateOfIdeaId ? state.ideas.get(idea.duplicateOfIdeaId) : undefined;
 
   return {
@@ -543,16 +544,44 @@ export async function deriveListItem(state: FixtureState, idea: IdeaRecord): Pro
       itemsReviewed: view.reviewItems.filter((item) => item.status === "reviewed").length,
       itemsTotal: view.reviewItems.length,
     },
-    evidence: {
-      freshness: worstFreshness(view.sources.map((source) => source.freshness)),
-      staleSources: view.sources.filter((source) => source.freshness === "stale").length,
-      unavailableSources: view.sources.filter((source) => source.verification.status === "unavailable").length,
-      oldestRetrievedAt: retrieved[0] ?? null,
-    },
+    evidence: summarizeEvidence(evidenceInputsOf(working), state.clock.now()),
     lifecycle: idea.lifecycle,
     duplicateOf: duplicate ? { id: duplicate.id, title: duplicate.title } : null,
     labels: [...idea.labels],
     updatedAt: idea.updatedAt,
     version: idea.version,
+  };
+}
+
+/** The per-source facts a list item's evidence summary is computed from. */
+export type EvidenceInput = {
+  sourceType: SourceType;
+  retrievedAt: string | null;
+  verificationStatus: SourceVerificationStatus;
+};
+
+export function evidenceInputsOf(revision: RevisionRecord): EvidenceInput[] {
+  return revision.sources.map((source) => ({
+    sourceType: source.sourceType,
+    retrievedAt: source.retrievedAt,
+    verificationStatus: source.verification.status,
+  }));
+}
+
+/**
+ * Freshness depends on the current time, so stored list summaries keep these
+ * inputs and recompute the summary when they are read.
+ */
+export function summarizeEvidence(inputs: readonly EvidenceInput[], nowMs: number): IdeaListItem["evidence"] {
+  const freshness = inputs.map((input) => sourceFreshness(input.sourceType, input.retrievedAt, nowMs).freshness);
+  const retrieved = inputs
+    .map((input) => input.retrievedAt)
+    .filter((value): value is string => value !== null)
+    .sort();
+  return {
+    freshness: worstFreshness(freshness),
+    staleSources: freshness.filter((value) => value === "stale").length,
+    unavailableSources: inputs.filter((input) => input.verificationStatus === "unavailable").length,
+    oldestRetrievedAt: retrieved[0] ?? null,
   };
 }

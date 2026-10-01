@@ -1,8 +1,9 @@
 import type { IngestionCredential } from "../../contracts/principal";
 import type { SubmissionProducer } from "../../contracts/submission";
 import { assessmentDigest } from "../../domain/artifact";
-import { revokeApproval } from "./rules";
-import { appendAudit, nowIso, touch, type ActorRef, type FixtureState } from "./state";
+import { revokeApproval } from "../../core/rules";
+import { appendAudit, nowIso, touch, type ActorRef } from "../../core/state";
+import type { FixtureState } from "./state";
 import { stepFixtureWorker } from "./worker";
 
 const DEMO_ACTOR: ActorRef = { id: "fixture-demo-controls", kind: "system", label: "Local demo controls" };
