@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   acceptEvidence,
   checkEvidenceMinimums,
+  evidenceClaimKey,
   evidenceId,
   parseExtractionCandidates,
   revalidateAcceptedEvidence,
@@ -549,24 +550,24 @@ describe("acceptEvidence ordering, caps and rejection records", () => {
     expect(must(rejected.detail).length).toBeLessThanOrEqual(200);
   });
 
-  it("gives two claims that share an excerpt one id: the second is a duplicate", () => {
+  it("keeps two plans priced in one clause as separate items (ruling R1) and still rejects a repeat", () => {
     const page = { url: "https://acme.example.com/pricing", text: "Acme Starter $19/month, Acme Pro $39/month." };
-    const result = run([page], {
-      competitorPrices: [
-        priceCandidate({ vendor: "Acme", sourceUrl: page.url, supportingText: page.text, priceText: "$19/month" }),
-        priceCandidate({ vendor: "Acme", sourceUrl: page.url, supportingText: page.text, priceText: "$39/month" }),
-      ],
-    });
-    expect(result.accepted).toHaveLength(1);
+    const starter = priceCandidate({ vendor: "Acme", sourceUrl: page.url, supportingText: page.text, priceText: "$19/month" });
+    const pro = priceCandidate({ vendor: "Acme", sourceUrl: page.url, supportingText: page.text, priceText: "$39/month" });
+    const result = run([page], { competitorPrices: [starter, pro, { ...pro, supportingText: "Acme Pro $39/month" }] });
+    expect(result.accepted).toHaveLength(2);
+    expect(result.accepted.map((e) => e.excerpt)).toEqual([page.text, page.text]);
+    expect(new Set(result.accepted.map((e) => e.id)).size).toBe(2);
     expect(reasons(result)).toEqual(["duplicate"]);
   });
 
-  it("derives ids from kind, canonical URL and excerpt", () => {
-    const id = evidenceId("community_quote", HN.url, "All these teams need is a sanity check.");
+  it("derives ids from kind, canonical URL, excerpt and the claim key (ruling R1)", () => {
+    const id = evidenceId("community_quote", HN.url, "All these teams need is a sanity check.", "");
     expect(id).toMatch(/^q_[0-9a-f]{12}$/);
-    expect(id).toBe(`q_${sha256Hex(`community_quote\n${HN.url}\nAll these teams need is a sanity check.`).slice(0, 12)}`);
-    expect(evidenceId("market_stat", REPORT.url, "x").startsWith("s_")).toBe(true);
-    expect(evidenceId("competitor_price", REPORT.url, "x").startsWith("p_")).toBe(true);
+    expect(id).toBe(`q_${sha256Hex(`community_quote\n${HN.url}\nAll these teams need is a sanity check.\n`).slice(0, 12)}`);
+    expect(evidenceId("market_stat", REPORT.url, "x", "k").startsWith("s_")).toBe(true);
+    expect(evidenceId("competitor_price", REPORT.url, "x", "k").startsWith("p_")).toBe(true);
+    expect(evidenceId("market_stat", REPORT.url, "x", "a")).not.toBe(evidenceId("market_stat", REPORT.url, "x", "b"));
   });
 });
 
@@ -600,7 +601,12 @@ describe("revalidateAcceptedEvidence", () => {
   const tamper = (item: AcceptedEvidence | undefined, change: Record<string, unknown>) => ({ ...must(item), ...change });
   const recomputed = (item: AcceptedEvidence | undefined, excerpt: string) => {
     const base = must(item);
-    return { ...base, excerpt, excerptSha256: sha256Hex(excerpt), id: evidenceId(base.kind, base.sourceUrl, excerpt) };
+    return {
+      ...base,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(base.kind, base.sourceUrl, excerpt, evidenceClaimKey(base)),
+    };
   };
   const failsWith = (value: unknown, fragment: string) => {
     const result = revalidateAcceptedEvidence(value, sources, { vendors: ["Qvidian", "Loopio", "CodeRabbit"] });
@@ -683,6 +689,197 @@ describe("revalidateAcceptedEvidence", () => {
     failsWith(tamper(statItem, { kind: "opinion" }), "kind:");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Rulings R1 and R2 (contract §12)
+// ---------------------------------------------------------------------------
+
+const FORECAST = {
+  url: "https://research.example.com/ai-code-review-forecast",
+  text:
+    "The global AI code review market was valued at USD 1.2 billion in 2024 and is projected to reach " +
+    "USD 5.4 billion by 2032, growing at a CAGR of 20.4%.",
+};
+
+const baseStat = stat({ sourceUrl: FORECAST.url, supportingText: FORECAST.text, amountText: "USD 1.2 billion", year: 2024 });
+const targetStat = stat({
+  sourceUrl: FORECAST.url,
+  supportingText: "projected to reach USD 5.4 billion by 2032",
+  amountText: "USD 5.4 billion",
+  year: 2032,
+  periodKind: "projected",
+});
+const cagrStat = stat({
+  sourceUrl: FORECAST.url,
+  supportingText: "growing at a CAGR of 20.4%",
+  metric: "growth_rate",
+  amountText: "20.4%",
+  year: 2032,
+  periodKind: "projected",
+});
+
+describe("R1: evidence ids include the typed claim", () => {
+  it("builds the claim key from the typed claim, excluding subject text", () => {
+    expect(evidenceClaimKey({ kind: "community_quote" })).toBe("");
+    expect(
+      evidenceClaimKey({
+        kind: "market_stat",
+        metric: "market_size",
+        amount: { value: "1.2", magnitude: "billion", unit: "currency", currency: "USD" },
+        period: { kind: "measured", year: 2024 },
+      }),
+    ).toBe("market_size|currency|USD|1.2|billion|measured|2024|");
+    expect(
+      evidenceClaimKey({
+        kind: "market_stat",
+        metric: "growth_rate",
+        amount: { value: "20.4", magnitude: "none", unit: "percent" },
+        period: { kind: "projected", toYear: 2032 },
+      }),
+    ).toBe("growth_rate|percent||20.4|none|projected||2032");
+    expect(
+      evidenceClaimKey({
+        kind: "competitor_price",
+        vendor: "CodeRabbit",
+        plan: "Pro",
+        price: {
+          amount: { value: "24", magnitude: "none", unit: "currency", currency: "USD" },
+          period: "month",
+          basis: "per_user",
+          qualifiers: ["starting_at", "billed_annually"],
+        },
+      }),
+    ).toBe("coderabbit|Pro|currency|USD|24|none|month|per_user|billed_annually,starting_at");
+    expect(
+      evidenceClaimKey({
+        kind: "competitor_price",
+        vendor: "RFP.ai",
+        price: { amount: { value: "49", magnitude: "none", unit: "currency", currency: "EUR" }, period: "month", basis: "flat", qualifiers: [] },
+      }),
+    ).toBe("rfp||currency|EUR|49|none|month|flat|");
+  });
+
+  it("accepts three distinct stats from one sentence (base, target and CAGR)", () => {
+    const result = run([FORECAST], { marketStats: [baseStat, targetStat, cagrStat] });
+    expect(result.rejected).toEqual([]);
+    expect(result.accepted.map((e) => (e.kind === "market_stat" ? [formatStat(e), e.period] : []))).toEqual([
+      ["USD 1.2 billion", { kind: "measured", year: 2024 }],
+      ["USD 5.4 billion", { kind: "projected", toYear: 2032 }],
+      ["20.4%", { kind: "projected", toYear: 2032 }],
+    ]);
+    expect(new Set(result.accepted.map((e) => e.id)).size).toBe(3);
+    expect(new Set(result.accepted.map((e) => e.excerpt))).toEqual(new Set([FORECAST.text]));
+  });
+
+  it("still rejects the same claim twice as a duplicate, including an equal amount written differently", () => {
+    const sameTwice = run([FORECAST], { marketStats: [baseStat, { ...baseStat, supportingText: "USD 1.2 billion in 2024" }] });
+    expect(sameTwice.accepted).toHaveLength(1);
+    expect(reasons(sameTwice)).toEqual(["duplicate"]);
+    const rewritten = run([FORECAST], { marketStats: [baseStat, { ...baseStat, amountText: "$1,200,000,000" }] });
+    expect(rewritten.accepted).toHaveLength(1);
+    expect(reasons(rewritten)).toEqual(["duplicate"]);
+  });
+
+  it("revalidation recomputes the id with the claim key", () => {
+    const accepted = run([FORECAST], { marketStats: [baseStat, targetStat, cagrStat] }).accepted;
+    const sources = acquisitions([FORECAST]);
+    for (const item of accepted) expect(revalidateAcceptedEvidence(item, sources)).toEqual({ ok: true, item });
+    const target = must(accepted[1]);
+    const tampered = revalidateAcceptedEvidence(
+      { ...target, amount: { value: "5.4", magnitude: "million", unit: "currency", currency: "USD" } },
+      sources,
+    );
+    const issues = tampered.ok ? "" : tampered.issues.join(" | ");
+    expect(issues).toContain("id:");
+    expect(issues).toContain("amount_mismatch");
+    const reSubjected = revalidateAcceptedEvidence({ ...must(accepted[0]), subject: "RFP software" }, sources);
+    const subjectIssues = reSubjected.ok ? "" : reSubjected.issues.join(" | ");
+    expect(subjectIssues).not.toContain("id:");
+    expect(subjectIssues).toContain("subject_not_in_context");
+  });
+});
+
+describe("R2: projection cues scope forward", () => {
+  it("keeps the base figure measured and rejects measured labels after a cue", () => {
+    const result = run([FORECAST], {
+      marketStats: [
+        { ...targetStat, periodKind: "measured", year: undefined },
+        { ...cagrStat, periodKind: "measured", year: undefined },
+        { ...baseStat, periodKind: "measured" },
+      ],
+    });
+    expect(reasons(result)).toEqual(["projection_as_measured", "projection_as_measured"]);
+    expect(must(result.accepted[0])).toMatchObject({ kind: "market_stat", period: { kind: "measured", year: 2024 } });
+  });
+
+  it('marks both figures of "expected to grow from X in 2025 to Y by 2034" projected', () => {
+    const page = {
+      url: "https://research.example.com/ai-code-review-growth",
+      text: "The AI code review market is expected to grow from USD 1.4 billion in 2025 to USD 10.8 billion by 2034.",
+    };
+    const from = stat({ sourceUrl: page.url, supportingText: page.text, amountText: "USD 1.4 billion", year: 2025 });
+    const to = stat({ sourceUrl: page.url, supportingText: page.text, amountText: "USD 10.8 billion", year: 2034 });
+    const measured = run([page], { marketStats: [from, { ...to, year: undefined }] });
+    expect(reasons(measured)).toEqual(["projection_as_measured", "projection_as_measured"]);
+    const projected = run([page], { marketStats: [{ ...from, periodKind: "projected" }, { ...to, periodKind: "projected" }] });
+    expect(projected.rejected).toEqual([]);
+    expect(projected.accepted.map((e) => (e.kind === "market_stat" ? e.period : null))).toEqual([
+      { kind: "projected", toYear: 2025 },
+      { kind: "projected", toYear: 2034 },
+    ]);
+  });
+
+  it("rejects a projected label on a figure with no cue before it and no later year after it", () => {
+    const page = { url: "https://research.example.com/ai-code-review-2024", text: "The AI code review market was valued at USD 1.2 billion in 2024." };
+    const result = run([page], {
+      marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, amountText: "USD 1.2 billion", year: 2024, periodKind: "projected" })],
+    });
+    expect(reasons(result)).toEqual(["period_mismatch"]);
+  });
+
+  it("binds a declared year to the figure's own attached year", () => {
+    const result = run([FORECAST], { marketStats: [{ ...targetStat, year: 2024 }] });
+    expect(reasons(result)).toEqual(["year_not_in_context"]);
+  });
+
+  it("does not lend one figure's year to another figure in the sentence", () => {
+    const page = {
+      url: "https://research.example.com/ai-code-review-cagr",
+      text:
+        "The AI code review market size was estimated at USD 1.4 billion in 2025 and is expected to grow " +
+        "at a CAGR of 28.5% from 2025 to 2034.",
+    };
+    const cagr = stat({ sourceUrl: page.url, supportingText: page.text, metric: "growth_rate", amountText: "28.5%", periodKind: "projected" });
+    const result = run([page], {
+      marketStats: [
+        { ...cagr, year: 2025 },
+        { ...cagr, year: 2034 },
+        stat({ sourceUrl: page.url, supportingText: page.text, amountText: "USD 1.4 billion", year: 2025 }),
+      ],
+    });
+    expect(reasons(result)).toEqual(["year_not_in_context"]);
+    expect(result.accepted.map((e) => (e.kind === "market_stat" ? e.period : null))).toEqual([
+      { kind: "projected", toYear: 2034 },
+      { kind: "measured", year: 2025 },
+    ]);
+  });
+
+  it("applies the same rule in revalidation", () => {
+    const accepted = run([FORECAST], { marketStats: [baseStat] }).accepted;
+    const base = must(accepted[0]);
+    const relabeled = { ...base, period: { kind: "projected" as const, toYear: 2024 } };
+    const withId = { ...relabeled, id: evidenceId(base.kind, base.sourceUrl, base.excerpt, evidenceClaimKey(relabeled)) };
+    const result = revalidateAcceptedEvidence(withId, acquisitions([FORECAST]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toContain("period_mismatch");
+  });
+});
+
+function formatStat(e: AcceptedEvidence): string {
+  if (e.kind !== "market_stat") return "";
+  const sentence = e.excerpt;
+  const value = e.amount.unit === "percent" ? `${e.amount.value}%` : `USD ${e.amount.value} ${e.amount.magnitude}`;
+  return sentence.includes(value) ? value : `missing ${value}`;
+}
 
 // ---------------------------------------------------------------------------
 // Minimums

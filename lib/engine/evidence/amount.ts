@@ -78,6 +78,15 @@
  *   Every qualifier in the clause applies to every price in that clause, so
  *   a clause that names two billing terms makes each price claim need both.
  *
+ * PROJECTIONS (contract §12, ruling R2)
+ *   A projection cue (will, would, shall, could, might, should, lowercase
+ *   "may", going to, set/likely/on track/on course to, poised, slated,
+ *   expect*, projected, forecast*, predict*, anticipat*, outlook, "to reach/
+ *   hit/grow/…") or a year after the retrieval year marks every amount after
+ *   it in the same sentence; an amount is also projected when a year after
+ *   the retrieval year follows it before the next amount ("$10.8 billion by
+ *   2034", "(2034)"). See isProjectedAmount.
+ *
  * SENTENCES AND CLAUSES
  *   Sentences end at . ! ? … followed by whitespace (closing quotes/brackets
  *   allowed in between) and at every line break. A "." after a single letter
@@ -666,44 +675,73 @@ export function clauseAround(text: string, index: number): TextRange {
 }
 
 // ---------------------------------------------------------------------------
-// Projection cues
+// Projections (contract §12, ruling R2)
 // ---------------------------------------------------------------------------
 
+/** Words and phrases that mark every amount AFTER them in the sentence as projected. */
 const PROJECTION_CUE_RE = new RegExp(
   [
-    String.raw`\bwill\b`,
-    String.raw`\bwould\b`,
-    String.raw`\bshall\b`,
+    String.raw`\b(?:will|would|shall|could|might|should)\b`,
     String.raw`\bgoing to\b`,
+    String.raw`\b(?:set|likely|on track|on course) to\b`,
+    String.raw`\b(?:poised|slated)\b`,
     String.raw`\bexpect(?:s|ed|ing|ation|ations)?\b`,
     String.raw`\bproject(?:ed|ing|ion|ions)\b`,
     String.raw`\bforecast(?:s|ed|ing|er|ers)?\b`,
     String.raw`\bpredict(?:s|ed|ing|ion|ions)?\b`,
     String.raw`\banticipat(?:e|es|ed|ing)\b`,
-    String.raw`\bpoised\b`,
-    String.raw`\bset to\b`,
-    String.raw`\bslated\b`,
-    String.raw`\bon track to\b`,
     String.raw`\boutlook\b`,
-    String.raw`\bto (?:reach|hit|grow|surpass|exceed|touch|attain|climb|rise|increase|double|triple)\b`,
-    String.raw`\b(?:by|through|until|till) (?:19|20)\d{2}\b`,
+    String.raw`\bto (?:reach|hit|grow|surpass|exceed|touch|attain|climb|rise|increase|double|triple|top)\b`,
   ].join("|"),
   "i",
 );
 
-const YEAR_IN_TEXT_RE = /(?<![\p{L}\p{N}$€£.,])((?:19|20)\d{2})(?![\p{N}%]|[.,]\d)/gu;
+/** The modal "may" ("may reach"), lowercase so the month ("May 2024") is not a cue. */
+const MAY_CUE_RE = /\bmay\b(?!\s+\d)/;
 
-/**
- * True when the sentence reads as a forecast: future tense, forecast words,
- * "by/through <year>", or (with `referenceYear`) any year after it.
- */
-export function hasProjectionCue(sentence: string, referenceYear?: number): boolean {
-  if (PROJECTION_CUE_RE.test(sentence)) return true;
-  if (referenceYear === undefined) return false;
-  for (const m of sentence.matchAll(YEAR_IN_TEXT_RE)) {
+const YEAR_IN_TEXT_RE = /(?<![\p{L}\p{N}$€£.,])((?:19|20)\d{2})(?![\p{N}%]|[.,]\d)/gu;
+const MAGNITUDE_AFTER_YEAR_RE = /^[ \u00A0]?(?:thousand|million|billion|trillion|bn|mn|tn|[kKmMbBtT](?![\p{L}\p{N}]))/iu;
+
+function hasCue(text: string): boolean {
+  return PROJECTION_CUE_RE.test(text) || MAY_CUE_RE.test(text);
+}
+
+/** True when `text` names a year after `referenceYear` (not a number like "2030 billion"). */
+function hasLaterYear(text: string, referenceYear: number): boolean {
+  for (const m of text.matchAll(YEAR_IN_TEXT_RE)) {
+    const end = (m.index ?? 0) + m[0].length;
+    if (MAGNITUDE_AFTER_YEAR_RE.test(text.slice(end, end + 12))) continue;
     if (Number(m[1]) > referenceYear) return true;
   }
   return false;
+}
+
+/**
+ * Sentence-level test: any projection cue, or (with `referenceYear`) any
+ * later year anywhere in the sentence. Acceptance does not use this; it
+ * scopes cues to each amount with isProjectedAmount (ruling R2).
+ */
+export function hasProjectionCue(sentence: string, referenceYear?: number): boolean {
+  return hasCue(sentence) || (referenceYear !== undefined && hasLaterYear(sentence, referenceYear));
+}
+
+/**
+ * Ruling R2: the amount at [start, end) of `sentence` is projected when a
+ * projection cue or a year after `referenceYear` appears BEFORE it in the
+ * sentence, or a year after `referenceYear` appears after it and before the
+ * next amount (or the sentence end). A cue never reaches back to amounts
+ * before it, so "valued at X in 2024 and projected to reach Y by 2032, a
+ * CAGR of Z" keeps X measured while Y and Z are projected.
+ */
+export function isProjectedAmount(
+  sentence: string,
+  amount: { start: number; end: number },
+  referenceYear: number,
+): boolean {
+  const before = sentence.slice(0, amount.start);
+  if (hasCue(before) || hasLaterYear(before, referenceYear)) return true;
+  const next = scanAmounts(sentence).find((a) => a.start >= amount.end);
+  return hasLaterYear(sentence.slice(amount.end, next ? next.start : sentence.length), referenceYear);
 }
 
 // ---------------------------------------------------------------------------
