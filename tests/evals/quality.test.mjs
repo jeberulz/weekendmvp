@@ -320,5 +320,5 @@ test("renderReport adds the run line and claim totals", () => {
     run: { layers: 3, spentUsd: 2.94, calls: 1200, failedCalls: 2, incomplete: 1, links: { checked: 900, dead: 12, blocked: 40, errors: 3 } },
   });
   assert.ok(md.includes("Run: 1200 model call(s), $2.94 spent, 2 failed call(s), **1 page(s) incomplete**; links: 900 checked, 12 dead, 40 blocked by bot walls, 3 unknown."));
-  assert.ok(md.includes("| 4 | 1 (1 page(s)) | 2 | 6 | 0 |"));
+  assert.ok(md.includes("| 4 | 1 (1 page(s)) | 0 | 2 | 6 | 0 |"));
 });

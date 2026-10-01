@@ -3,6 +3,7 @@
  * and turns the outcome into findings in the Layer 0 verdict's shape.
  *
  *   fail  claims.contradicted  a cited source says something different
+ *   warn  claims.outdated      the source has newer figures or another period
  *   warn  claims.unsupported   most claims are unsourced or not found
  *   warn  sources.unreachable  many cited sources cannot be read
  *
@@ -64,6 +65,7 @@ export type ClaimLayerResult = {
     dropped: number;
     supported: number;
     contradicted: number;
+    outdated: number;
     notFound: number;
     unsourced: number;
     unverifiable: number;
@@ -101,6 +103,7 @@ export function combineChecks(checks: ClaimCheck[]): ClaimCheck | null {
   return (
     pick("supported") ??
     pick("contradicted") ??
+    pick("outdated") ??
     pick("not_found") ??
     pick("unverifiable") ??
     null
@@ -225,6 +228,16 @@ export async function runClaimLayers(args: RunClaimLayersArgs): Promise<ClaimLay
     });
   }
 
+  const outdated = claims.filter((x) => x.status === "outdated");
+  if (outdated.length > 0) {
+    const first = outdated[0];
+    const source = first.sourceId ? sources[first.sourceId - 1] : undefined;
+    warns.push({
+      check: "claims.outdated",
+      message: `${outdated.length} claim(s) quote an older version of their source, e.g. "${clip(first.quote)}" but ${source ? host(source.url) : "the source"} now says "${clip(first.evidence ?? "")}"`,
+    });
+  }
+
   const weak = args.layers === 2 ? count("not_found") + count("unsourced") : count("unsourced");
   if (claims.length >= config.minClaimsForShareWarn && weak / claims.length > config.unsupportedShareWarn) {
     const example = claims.find((c) => c.status === "unsourced" || (args.layers === 2 && c.status === "not_found"));
@@ -261,6 +274,7 @@ export async function runClaimLayers(args: RunClaimLayersArgs): Promise<ClaimLay
       dropped: extracted.dropped.length,
       supported: count("supported"),
       contradicted: count("contradicted"),
+      outdated: count("outdated"),
       notFound: count("not_found"),
       unsourced: count("unsourced"),
       unverifiable: count("unverifiable"),

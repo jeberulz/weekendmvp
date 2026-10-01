@@ -387,3 +387,29 @@ describe("contradiction confirmer", () => {
     expect(containsVerbatim(page, "SiteKick... $5/month")).toBe(false);
   });
 });
+
+describe("outdated verdict", () => {
+  it("warns, not fails, when a source has a newer edition of the figure", async () => {
+    const llm = fixtureLlm((body) =>
+      body.messages[0].content.includes("VERIFY_CLAIMS")
+        ? { text: JSON.stringify({ results: [{ id: "c1", verdict: "outdated", evidence: "market was valued at USD 4.9 billion in 2026" }] }) }
+        : undefined,
+    );
+    const result = await runClaimLayers({
+      slug: "test-idea",
+      sections: SECTIONS,
+      models: MODELS,
+      config: CONFIG,
+      factualSections: FACTUAL,
+      sourcesTitle: "Sources",
+      layers: 2,
+      llm,
+      sourceFetch: fixtureSourceFetch({
+        [GV]: longPage("Grand View says the invoicing software market was valued at USD 4.9 billion in 2026 and $4.2 billion before."),
+      }),
+    });
+    expect(result.fails).toEqual([]);
+    expect(result.metrics.outdated).toBe(1);
+    expect(result.warns.map((w) => w.check)).toContain("claims.outdated");
+  });
+});

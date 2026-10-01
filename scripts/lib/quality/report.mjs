@@ -74,9 +74,9 @@ function claimsTable(results) {
     "",
     "Factual claims extracted from The Problem, Market Research and Competitive Landscape, checked against each page's cited sources.",
     "",
-    "| Supported | Contradicted | Not found in source | Unsourced | Unverifiable |",
-    "|---|---|---|---|---|",
-    `| ${sum("supported")} | ${sum("contradicted")} (${withContradiction} page(s)) | ${sum("notFound")} | ${sum("unsourced")} | ${sum("unverifiable")} |`,
+    "| Supported | Contradicted | Outdated | Not found in source | Unsourced | Unverifiable |",
+    "|---|---|---|---|---|---|",
+    `| ${sum("supported")} | ${sum("contradicted")} (${withContradiction} page(s)) | ${sum("outdated")} | ${sum("notFound")} | ${sum("unsourced")} | ${sum("unverifiable")} |`,
     "",
   ];
 }

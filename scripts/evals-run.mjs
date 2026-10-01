@@ -146,7 +146,7 @@ function printResult(r) {
   const c = r.claimLayer?.metrics;
   if (c) {
     console.log(
-      `  claims (layer ${r.claimLayer.layers}): ${c.claims} checked: ${c.supported} supported, ${c.contradicted} contradicted,` +
+      `  claims (layer ${r.claimLayer.layers}): ${c.claims} checked: ${c.supported} supported, ${c.contradicted} contradicted, ${c.outdated ?? 0} outdated,` +
         ` ${c.notFound} not found, ${c.unsourced} unsourced, ${c.unverifiable} unverifiable` +
         ` | dropped ${c.dropped} | sources read ${c.sourcesChecked - c.sourcesUnreachable}/${c.sourcesChecked}` +
         ` | $${c.costUsd.toFixed(4)}${c.cachedExtract ? " (cached)" : ""}`,

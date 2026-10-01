@@ -15,11 +15,11 @@ import type { Claim, SourceRef } from "./claims.ts";
 import { callWithRetry, type EvalLlm } from "./llm.ts";
 import { containsVerbatim, keywords, numberTokens } from "./text.ts";
 
-export const VERIFY_PROMPT_VERSION = "verify-v1";
+export const VERIFY_PROMPT_VERSION = "verify-v2";
 /** Marker the fixture transport uses to route replies. */
 export const VERIFY_MARKER = "TASK: VERIFY_CLAIMS";
 
-export type Verdict = "supported" | "contradicted" | "not_found";
+export type Verdict = "supported" | "contradicted" | "outdated" | "not_found";
 export type ClaimStatus = Verdict | "unsourced" | "unverifiable";
 
 export type ClaimCheck = {
@@ -95,12 +95,13 @@ export function buildVerifyMessages(args: {
 You check whether a source supports claims made on a startup idea page. You see excerpts from one source.
 
 For each claim, answer:
-- "supported": the excerpts state the same fact or figure (rounding and unit changes are fine).
-- "contradicted": the excerpts state a clearly different figure or fact for the same thing.
-- "not_found": the excerpts do not address the claim. When unsure, answer not_found.
+- "supported": the excerpts state the same fact or figure. Rounding, unit changes, and differences of 5% or less count as supported.
+- "contradicted": the excerpts give a clearly different value for the SAME metric, the SAME product or market definition, and the SAME year or period. Example: page says a plan costs $15/month, source says that plan costs $30/month.
+- "outdated": the excerpts cover the same metric but for a different year or forecast period, or a newer edition of the same forecast with different numbers. Example: page says "$2.7B by 2035", source says "$3.1B by 2036". The page likely quotes an older version.
+- "not_found": the excerpts do not address the claim, or describe a different market or definition. When unsure, answer not_found.
 
-"evidence" must be copied exactly from the excerpts, 10 to 300 characters. Required for supported and contradicted; use "" for not_found.
-Reply with JSON only: {"results":[{"id":"c1","verdict":"supported|contradicted|not_found","evidence":"..."}]}`;
+"evidence" must be copied exactly from the excerpts, 10 to 300 characters. Required for supported, contradicted and outdated; use "" for not_found.
+Reply with JSON only: {"results":[{"id":"c1","verdict":"supported|contradicted|outdated|not_found","evidence":"..."}]}`;
   const claimList = args.claims.map((c) => `${c.id}: ${c.quote}${c.value ? ` [figure: ${c.value}]` : ""}`).join("\n");
   const excerpts = args.passages.map((p, i) => `(${i + 1}) ${p}`).join("\n\n");
   const user = `SOURCE: ${args.source.title} — ${args.source.url}\n\nEXCERPTS:\n${excerpts}\n\nCLAIMS:\n${claimList}`;
@@ -138,7 +139,7 @@ export function validateVerdicts(
     const r = byId.get(claim.id);
     const verdict = r?.verdict;
     const evidence = typeof r?.evidence === "string" ? r.evidence.trim() : "";
-    if (verdict !== "supported" && verdict !== "contradicted") {
+    if (verdict !== "supported" && verdict !== "contradicted" && verdict !== "outdated") {
       return {
         claimId: claim.id,
         status: "not_found",
@@ -272,7 +273,10 @@ async function confirmContradictions(
         args.cache?.set("confirm", key, { raw });
       }
       const [second] = validateVerdicts(raw, [claim], args.source, passages.join("\n"));
-      return second.status === "contradicted" ? { ...check, note: `confirmed by ${confirmer.model}` } : unconfirmed;
+      if (second.status === "contradicted") return { ...check, note: `confirmed by ${confirmer.model}` };
+      // The confirmer saw a different period or edition: stale, not wrong.
+      if (second.status === "outdated") return { ...second, note: `outdated per ${confirmer.model}` };
+      return unconfirmed;
     }),
   );
 }
