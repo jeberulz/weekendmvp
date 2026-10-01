@@ -53,3 +53,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - Rulings R1–R3 recorded in contract §12: ids include the typed claim (two claims in one sentence no longer collide); projection cues scope forward (a measured base value before "projected to reach" stays measured); quotes compare asymmetrically (`quoteMatchesExcerpt`). R1/R2 sent back to worker D on its branch.
 - Known limits (worker): no European number formats or implied periods; a "billed annually" toggle stated before the price is not detected (human source review); pipe-table secondary prices reject; count amounts carry no noun; the figure guard allows bare years and most spelled-out counts; revalidation cannot catch a self-consistent fabricated excerpt with recomputed hashes, so the replay gate must check excerpts against stored source text.
 - Test-only dependency note: `quote.test.ts` imports `@mdx-js/mdx`, which is transitive (via `next-mdx-remote-client`). Decision deferred to S4 (sole `package.json` writer in phase 2).
+
+## 2026-10-01 - WP46-S2 follow-up (R1, R2) merged
+
+- Worker D commit `fec922e` merged. `evidenceId(kind, sourceUrl, excerpt, claimKey)` now requires the claim key (`evidenceClaimKey`); a stat excerpt is exactly the sentence holding the amount; duplicates compare claims exactly.
+- Projection: a cue or a later-than-retrieval year before a figure, or a later year directly after it, marks it projected; the claimed period kind must equal the derived one (a "projected" claim without a cue is now `period_mismatch`). A declared year must be the year attached to its own figure (a forecast horizon may be shared by projected figures).
+- "Valued at USD 1.2 billion in 2024 … projected to reach USD 5.4 billion by 2032 … CAGR of 20.4%" yields three stats: measured 2024, projected 2032, projected 2032.
+- Worker checks: typecheck 0; eslint 0; evidence + finance 155 tests; `npm run test:engine` 264. Red: 15 tests failed on the pre-change code.
+- Known conservative limit: a cue earlier in a sentence marks every later figure ("forecast to hit $3B by 2028 from $1.2B in 2024" accepts $1.2B only as projected).
