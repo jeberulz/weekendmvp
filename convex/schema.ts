@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
+import { auditRecordValidator } from "./editorial/validators";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
@@ -632,4 +633,33 @@ export default defineSchema({
     .index("by_tokenHash", ["tokenHash"])
     .index("by_claimedByUserId_and_createdAt", ["claimedByUserId", "createdAt"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  /**
+   * WP46-E4a, additive. The editorial subset of WP38: the one `super_admin`
+   * binding (owner ruling 2026-08-06). Written only by the internal
+   * bootstrap/revoke mutations in `convex/admin/superAdmin.ts`, which an
+   * operator runs with deployment credentials; no public function writes it.
+   * Authorization reads the bound user ID, never an email. Revocation keeps
+   * the row.
+   */
+  super_admins: defineTable({
+    userId: v.id("users"),
+    role: v.literal("super_admin"),
+    boundAt: v.number(),
+    boundVia: v.literal("deployment_bootstrap"),
+    revokedAt: v.optional(v.number()),
+    revokedReason: v.optional(v.string()),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_role", ["role"]),
+
+  /**
+   * WP46-E4a, additive. Append-only editorial activity: commands, refusals,
+   * denied attempts and capability changes. Never holds bodies, tokens or
+   * contact details. Ordered by `_creationTime` within each index.
+   */
+  editorial_audit: defineTable(auditRecordValidator)
+    .index("by_ideaId", ["ideaId"])
+    .index("by_outcome", ["outcome"])
+    .index("by_ideaId_and_outcome", ["ideaId", "outcome"]),
 });

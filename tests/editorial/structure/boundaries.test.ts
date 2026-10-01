@@ -62,6 +62,18 @@ describe("fixture isolation", () => {
     }
   });
 
+  test("only the internal bootstrap module touches the super-admin binding (WP46-E4a)", () => {
+    const sources = listFiles("convex").filter(
+      (file) => !/\.test\.tsx?$/.test(file) && !file.startsWith("convex/_generated/"),
+    );
+    const touching = sources.filter((file) => read(file).includes("super_admins"));
+    expect(touching.sort()).toEqual(["convex/admin/superAdmin.ts", "convex/schema.ts"]);
+    const bootstrap = read("convex/admin/superAdmin.ts");
+    // Public builders are lower-case (`query(`, `mutation(`); only internal ones may appear.
+    expect(bootstrap).not.toMatch(/(?<![A-Za-z])(?:query|mutation|action|httpAction)\(\{/);
+    expect(bootstrap).toMatch(/internalMutation\(\{/);
+  });
+
   test("Convex functions import only the store-neutral editorial modules (WP46-E4)", () => {
     const convexFiles = listFiles("convex").filter((file) => !/\.test\.tsx?$/.test(file));
     for (const file of convexFiles) {
