@@ -25,6 +25,9 @@
  *                 Labels and notes may be polished; figures may not.
  *                 A pricing URL may back several competitors only when every
  *                 price on it is a separately bound secondary price.
+ *                 Acceptance and the record parser already refuse a rival's
+ *                 price from a vendor's own site (ruling R5), so a record
+ *                 that parses cannot trip this; it stays as defense in depth.
  *   Figures (F1)  In The Problem, Market Research and Competitive Landscape,
  *                 a figure in prose that is not the canonical rendering of
  *                 evidence the record references (or a bare year) is an

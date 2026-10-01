@@ -30,6 +30,12 @@
  * Stat periods (ruling R2) must equal the period derived from the excerpt:
  * projected exactly when isProjectedAmount marks the figure or its declared
  * year is after the retrieval year; otherwise measured.
+ *
+ * Prices (ruling R5): a page on one known vendor's own host is never
+ * evidence for another vendor's price (ambiguous_attribution), so a pricing
+ * URL can back at most one competitor's first-party prices. A neutral page
+ * (no known vendor's host) may still bind several vendors, each in its own
+ * clause.
  */
 
 import { createHash } from "node:crypto";
@@ -851,10 +857,32 @@ function nameMentions(text: string, name: string): Mention[] {
 type Attribution = { ok: true; attribution: "first_party" | "secondary" } | Failure;
 
 /**
+ * Ruling R5: a vendor's own site is not evidence for a rival's price. When
+ * the source is first-party for another known vendor (any page on its host,
+ * comparison pages included), a price claimed for `vendor` from it is
+ * ambiguous_attribution, whatever the clause says. Sources that are no known
+ * vendor's own site keep the clause binding rules in attributeVendor.
+ * Acceptance and offline re-validation both apply it (checkPriceExcerpt), so
+ * a stored item that breaks it fails the record parse.
+ */
+function rivalSiteFailure(vendor: string, sourceUrl: string, vendors: ReadonlyArray<string>): Failure | null {
+  const claimedKey = vendorKey(vendor);
+  for (const other of vendors) {
+    if (vendorKey(other) === claimedKey || !isFirstPartyHost(other, sourceUrl)) continue;
+    return fail(
+      "ambiguous_attribution",
+      `the source is ${clip(other, 40)}'s own site (${sourceHostLabel(sourceUrl)}); a vendor's own site is not evidence for ${clip(vendor, 40)}'s price (ruling R5)`,
+    );
+  }
+  return null;
+}
+
+/**
  * Who a price in `text` belongs to. No other known vendor may be named in
  * the price's clause. A first-party host (not a comparison page) needs no
  * name; otherwise the claimed vendor must be named before the price in its
- * clause (with no other vendor there, it is the nearest one).
+ * clause (with no other vendor there, it is the nearest one). Callers apply
+ * rivalSiteFailure (ruling R5) first.
  */
 function attributeVendor(
   text: string,
@@ -885,13 +913,19 @@ function attributeVendor(
 
 type PriceClaim = { vendor: string; terms: PriceTerms };
 
-/** The price rules applied to an excerpt: an equal price expression with a valid attribution. */
+/**
+ * The price rules applied to an excerpt (acceptance and re-validation alike):
+ * not from another known vendor's own site (ruling R5), and an equal price
+ * expression with a valid attribution.
+ */
 function checkPriceExcerpt(
   excerpt: string,
   claim: PriceClaim,
   sourceUrl: string,
   vendors: ReadonlyArray<string>,
 ): Attribution {
+  const rivalSite = rivalSiteFailure(claim.vendor, sourceUrl, vendors);
+  if (rivalSite) return rivalSite;
   const expressions = priceExpressionsIn(excerpt);
   if (expressions.length === 0) {
     return fail("unparseable_amount", "excerpt has no supported price expression");
@@ -932,6 +966,10 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
   const resolved = resolveSource(context, candidate.sourceUrl);
   if (!resolved.ok) return resolved;
   const source = resolved.source;
+  // Checked before the span, so a rival's price from a vendor's own site is
+  // always reported as R5, not as whichever term mismatch came first.
+  const rivalSite = rivalSiteFailure(vendor, source.url, context.vendors);
+  if (rivalSite) return rivalSite;
   const span = findContiguousSpanIn(candidate.supportingText, source.prepared);
   if (!span.ok) return fail(span.reason, spanDetail(span.reason));
   const expressions = priceExpressionsIn(source.text, span.start, span.end);

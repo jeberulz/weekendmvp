@@ -207,8 +207,9 @@ export type RejectedEvidence = {
   source expression's terms (qualifiers present in the clause must be
   claimed); first-party when the vendor key matches the source host,
   otherwise the claimed vendor must be the nearest vendor named in the
-  price's own clause and no other candidate vendor may share that clause.
-  Quotes: contiguous span in the source. Ambiguity rejects.
+  price's own clause and no other candidate vendor may share that clause; a
+  page on another known vendor's own host is never evidence for the price
+  (ruling R5, §12). Quotes: contiguous span in the source. Ambiguity rejects.
 - **Editorial tokens** (`tokens.ts`): editorial text references evidence as
   `[[ev:<id>]]`. Unknown ids, rejected ids and kind mismatches are errors.
   `FACT_BEARING_FIELDS` may contain no digits outside tokens except a bare
@@ -387,6 +388,19 @@ source acquisition statuses, accepted counts per kind, and rejected
   source inspection in S7 against the recorded `textSha256`/`retrievedAt`.
   `quality.test.ts` was split by owner: `quality.pipeline.test.ts` and
   `quality.sources.test.ts` (S3), `quality.compile.test.ts` (S4).
+- **R5 (2026-10-01, from S4 via integration): a vendor's own site is not
+  evidence for a rival's price.** A competitor_price candidate whose source
+  URL is first-party for a different known vendor (any candidate vendor or
+  vendor hint; at re-validation, any vendor named in the record) is rejected
+  as `ambiguous_attribution`, with a detail naming the other vendor's site.
+  Acceptance and offline re-validation apply the same rule
+  (`lib/engine/evidence/accept.ts`), so a stored item that breaks it fails
+  the record parse. Pages that are no known vendor's own site keep the
+  clause binding rules above. This removes the conflict S4 reported: the
+  auditor refuses a pricing URL that backs one competitor first-party and
+  another as a secondary price, and acceptance can no longer produce that.
+  Known limit: a host whose owner is not among the known vendors is treated
+  as a neutral page.
 
 Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,

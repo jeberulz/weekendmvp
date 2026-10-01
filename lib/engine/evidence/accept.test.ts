@@ -343,13 +343,14 @@ describe("source, citation and context rules", () => {
   });
 
   it("rejects a DeepRFP price taken from rfp.ai's own page", () => {
-    const result = run(
-      [RFPAI],
-      { competitorPrices: [priceCandidate({ vendor: "DeepRFP", sourceUrl: RFPAI.url, supportingText: "Starter €49/month", priceText: "€49/month" })] },
-      { vendorHints: ["RFP.ai", "AutoRFP.ai"] },
-    );
+    const deepRfp = priceCandidate({ vendor: "DeepRFP", sourceUrl: RFPAI.url, supportingText: "Starter €49/month", priceText: "€49/month" });
+    // rfp.ai is RFP.ai's own site, so it is never evidence for a rival (ruling R5).
+    const result = run([RFPAI], { competitorPrices: [deepRfp] }, { vendorHints: ["RFP.ai", "AutoRFP.ai"] });
     expect(result.accepted).toEqual([]);
-    expect(reasons(result)).toEqual(["vendor_not_in_context"]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+    expect(result.rejected[0]?.detail).toMatch(/RFP\.ai's own site \(rfp\.ai\)/);
+    // Without RFP.ai among the known vendors, the clause rule still refuses it.
+    expect(reasons(run([RFPAI], { competitorPrices: [deepRfp] }))).toEqual(["vendor_not_in_context"]);
     const own = run(
       [RFPAI],
       { competitorPrices: [priceCandidate({ vendor: "RFP.ai", plan: "Starter", sourceUrl: RFPAI.url, supportingText: "Starter €49/month", priceText: "€49/month" })] },
@@ -871,6 +872,106 @@ describe("R2: projection cues scope forward", () => {
     const withId = { ...relabeled, id: evidenceId(base.kind, base.sourceUrl, base.excerpt, evidenceClaimKey(relabeled)) };
     const result = revalidateAcceptedEvidence(withId, acquisitions([FORECAST]));
     expect(result.ok ? "" : result.issues.join(" | ")).toContain("period_mismatch");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R5: a vendor's own site is not evidence for a rival's price
+// ---------------------------------------------------------------------------
+
+const LOOPIO_OWN = {
+  url: "https://loopio.example/pricing",
+  text: "Loopio pricing\nFoundations\n$20,000/year\nTen seats included.\nSwitching from Responsive? Responsive costs $99/mo.",
+};
+const NEUTRAL_REVIEW = {
+  url: "https://reviews.example.com/rfp-tools",
+  text: "We compared the leaders. Loopio costs $20,000/year for ten seats. Responsive costs $99/mo for its Team plan.",
+};
+const loopioOwnPrice = priceCandidate({
+  vendor: "Loopio",
+  plan: "Foundations",
+  sourceUrl: LOOPIO_OWN.url,
+  supportingText: "Foundations\n$20,000/year",
+  priceText: "$20,000/year",
+});
+const responsiveOnLoopio = priceCandidate({
+  vendor: "Responsive",
+  sourceUrl: LOOPIO_OWN.url,
+  supportingText: "Responsive costs $99/mo.",
+  priceText: "$99/mo",
+});
+
+describe("R5: a vendor's own site is not evidence for a rival's price", () => {
+  it('yields no Responsive price from Loopio\'s own pricing page claiming "Responsive costs $99/mo"', () => {
+    const result = run([LOOPIO_OWN], { competitorPrices: [loopioOwnPrice, responsiveOnLoopio] });
+    expect(result.accepted.map((e) => (e.kind === "competitor_price" ? [e.vendor, e.attribution] : null))).toEqual([
+      ["Loopio", "first_party"],
+    ]);
+    expect(result.rejected).toEqual([
+      {
+        kind: "competitor_price",
+        reason: "ambiguous_attribution",
+        sourceUrl: LOOPIO_OWN.url,
+        candidate: "Responsive: $99/mo",
+        detail: "the source is Loopio's own site (loopio.example); a vendor's own site is not evidence for Responsive's price (ruling R5)",
+      },
+    ]);
+    // Loopio named only as a known vendor (hint) is enough: the page is still its own site.
+    expect(reasons(run([LOOPIO_OWN], { competitorPrices: [responsiveOnLoopio] }, { vendorHints: ["Loopio"] }))).toEqual([
+      "ambiguous_attribution",
+    ]);
+    // A comparison page on the vendor's own host is its own site too.
+    const versus = { url: "https://loopio.example/compare/loopio-vs-responsive", text: "Responsive costs $99/mo. Loopio costs $20,000/year." };
+    const onVersus = priceCandidate({ vendor: "Responsive", sourceUrl: versus.url, supportingText: "Responsive costs $99/mo.", priceText: "$99/mo" });
+    expect(reasons(run([versus], { competitorPrices: [onVersus] }, { vendorHints: ["Loopio"] }))).toEqual(["ambiguous_attribution"]);
+  });
+
+  it("reports R5 even when the claimed terms would not match either", () => {
+    const wrongPeriod = { ...responsiveOnLoopio, priceText: "$99/year" };
+    expect(reasons(run([LOOPIO_OWN], { competitorPrices: [loopioOwnPrice, wrongPeriod] }))).toEqual(["ambiguous_attribution"]);
+  });
+
+  it("still binds each vendor in its own clause on a neutral review page", () => {
+    const result = run([NEUTRAL_REVIEW], {
+      competitorPrices: [
+        priceCandidate({ vendor: "Loopio", sourceUrl: NEUTRAL_REVIEW.url, supportingText: "Loopio costs $20,000/year for ten seats.", priceText: "$20,000/year" }),
+        priceCandidate({
+          vendor: "Responsive",
+          plan: "Team",
+          sourceUrl: NEUTRAL_REVIEW.url,
+          supportingText: "Responsive costs $99/mo for its Team plan.",
+          priceText: "$99/mo",
+        }),
+      ],
+    });
+    expect(result.rejected).toEqual([]);
+    expect(result.accepted.map((e) => (e.kind === "competitor_price" ? [e.vendor, e.attribution, e.plan ?? null] : null))).toEqual([
+      ["Loopio", "secondary", null],
+      ["Responsive", "secondary", "Team"],
+    ]);
+  });
+
+  it("keeps the clause rules on a host that is no known vendor's own site", () => {
+    // Without Loopio among the candidates or hints, loopio.example is just a page that names Responsive.
+    const result = run([LOOPIO_OWN], { competitorPrices: [responsiveOnLoopio] });
+    expect(result.rejected).toEqual([]);
+    expect(must(result.accepted[0])).toMatchObject({ vendor: "Responsive", attribution: "secondary" });
+  });
+
+  it("revalidation refuses a stored item that violates it, with the same vendor set rule", () => {
+    // Accepted while Loopio was not a known vendor, then stored in a record whose vendors include Loopio.
+    const stored = must(run([LOOPIO_OWN], { competitorPrices: [responsiveOnLoopio] }).accepted[0]);
+    const sources = acquisitions([LOOPIO_OWN]);
+    const refused = revalidateAcceptedEvidence(JSON.parse(JSON.stringify(stored)), sources, { vendors: ["Loopio", "Responsive"] });
+    expect(refused.ok).toBe(false);
+    expect(refused.ok ? "" : refused.issues.join(" | ")).toContain(
+      "claim: ambiguous_attribution (the source is Loopio's own site (loopio.example); a vendor's own site is not evidence for Responsive's price (ruling R5))",
+    );
+    // The same vendor set as at acceptance gives the same answer.
+    expect(revalidateAcceptedEvidence(JSON.parse(JSON.stringify(stored)), sources, { vendors: ["Responsive"] })).toEqual({
+      ok: true,
+      item: stored,
+    });
   });
 });
 
