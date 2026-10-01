@@ -253,7 +253,8 @@ function briefContext(brief: NormalizedBrief): string {
   return [`Idea: ${brief.title}`, `Audience: ${brief.audience}`, `Business model: ${brief.model}`].join("\n");
 }
 
-function inputBudgetBytes(step: PipelineStep): number {
+/** Input bytes a step may send (its token budget less framing; a token is ≥ 1 byte). */
+export function stepInputBudgetBytes(step: PipelineStep): number {
   return step.budget.role === "synthesis" || step.budget.role === "search"
     ? step.budget.maxInputTokens - INPUT_FRAMING_TOKENS
     : 0;
@@ -266,7 +267,7 @@ function inputBudgetBytes(step: PipelineStep): number {
 function assertInputFits(step: PipelineStep, ...parts: string[]): void {
   if (step.budget.role !== "synthesis" && step.budget.role !== "search") return;
   const bytes = parts.reduce((sum, part) => sum + utf8Bytes(part), 0);
-  const limit = inputBudgetBytes(step);
+  const limit = stepInputBudgetBytes(step);
   if (bytes > limit) {
     throw new PipelineError(step.id, `input of ${bytes} bytes exceeds the ${limit}-token budget for this step`);
   }
@@ -609,7 +610,7 @@ async function stepExtraction(
   const head = `${briefContext(brief)}\n\n`;
   // The re-ask note is reserved up front, so the second attempt fits too.
   const available =
-    inputBudgetBytes(step) -
+    stepInputBudgetBytes(step) -
     utf8Bytes(EXTRACTION_INSTRUCTIONS) -
     utf8Bytes(head) -
     utf8Bytes(`\n\n${EXTRACTION_REASK}`);
@@ -863,7 +864,7 @@ const ISSUES_PREAMBLE =
 const ISSUES_SECTION_MAX_BYTES = utf8Bytes(`\n\n${ISSUES_PREAMBLE}`) + REGENERATION_ISSUES.bytes;
 
 /** The regeneration note: the issue list only (never evidence text), bounded. */
-function issuesSection(issues: ReadonlyArray<string>): string {
+export function editorialIssuesSection(issues: ReadonlyArray<string>): string {
   const lines: string[] = [];
   let bytes = 0;
   for (const issue of issues.slice(0, REGENERATION_ISSUES.count)) {
@@ -890,7 +891,7 @@ export function buildEditorialInput(
   const head = editorialBrief(brief);
   const tail = keywordSection(keywords);
   const room =
-    inputBudgetBytes(step) -
+    stepInputBudgetBytes(step) -
     utf8Bytes(EDITORIAL_INSTRUCTIONS) -
     ISSUES_SECTION_MAX_BYTES -
     utf8Bytes(`${head}\n\n\n\n${tail}`);
@@ -1086,7 +1087,7 @@ async function stepEditorial(state: RunState, context: EditorialContext): Promis
           .join("; ")}`,
       );
     }
-    input = `${base}\n\n${issuesSection(writerIssues)}`;
+    input = `${base}\n\n${editorialIssuesSection(writerIssues)}`;
   }
 }
 
