@@ -1,36 +1,83 @@
 /**
- * Anti-slop guarantees for the idea engine, research-pipeline side: quotes
- * are verified against their cited pages and figures are grounded in the
- * research text. Split mechanically from quality.test.ts (WP46-S3): test
- * bodies and assertions are unchanged.
+ * Anti-slop guarantees for the idea engine, research-pipeline side
+ * (PIPELINE_VERSION 2): quotes match their cited pages as contiguous spans,
+ * page text feeds extraction only, and unreadable sources stop the run
+ * before extraction spend.
+ *
+ * Changes from the split of quality.test.ts (WP46-S3 part 2), per test:
+ * - Kept unchanged: "rewrites Reddit and HN URLs to their data endpoints",
+ *   "widens the primary community prompt beyond Reddit", "names the fix when
+ *   Reddit blocks the public endpoint", "falls back to the default user agent
+ *   when the env value is empty", "rejects a funnel that grows or pays more
+ *   accounts than it has" (the v1 parseYearOne helper stays for the compiler
+ *   until integration).
+ * - Matcher swapped to the contract's contiguous matcher (findContiguousSpan;
+ *   quoteAppearsIn is removed), intent unchanged: "matches verbatim text
+ *   across punctuation and curly quotes", "rejects a paraphrase", "reads every
+ *   comment body from a Reddit listing", "uses Reddit's OAuth API when app
+ *   credentials are set", "decodes numeric HTML entities before matching
+ *   quotes".
+ * - Rule changed by contract §5: "treats an ellipsis as an ordered elision"
+ *   is now "rejects an internal ellipsis instead of joining fragments".
+ * - Rewritten for the v2 flow, same intent: "leaves quotes unverified when the
+ *   page cannot be fetched" (now: rejected as source_unreadable), "marks
+ *   fixture quotes verified" (now: selected quotes are accepted spans of
+ *   their pages), "fails closed when too few quotes are on their cited pages"
+ *   (now at evidence_acceptance), "runs a non-Reddit supplement when the
+ *   first pack is unreadable", "stops before keyword and synthesis spend when
+ *   sources are unreadable" (now at source_acquisition, before extraction),
+ *   "hands the fetched page text to synthesis" (now: to extraction, never to
+ *   the writer), "keeps pricing cards and table rows apart in fetched page
+ *   text" (now through acceptEvidence), "fits six long community pages into
+ *   the synthesis byte budget" (now buildExtractionSources), "runs synthesis
+ *   without exceeding its budget when pages are huge" (now the extraction
+ *   budget).
+ * - Removed, because the helper and its numeric-membership rule are gone
+ *   (F5): "extracts numbers without thousands separators", "accepts figures
+ *   present in the research text", "rejects a number the research never
+ *   mentioned", "checks a figure against the source it cites, not every
+ *   result", "ignores an untagged answer that cites several sources",
+ *   "grounds a competitor price only on a line naming that competitor",
+ *   "uses fetched page text to ground a competitor price", "never treats URL
+ *   or marker digits as evidence". Whole-claim acceptance replaces them
+ *   (evidence/amount.test.ts, evidence/accept.test.ts, F5 rows through the
+ *   pipeline in pipeline.evidence.test.ts).
+ * - Removed, because search answer prose no longer travels (dropped at the
+ *   search step, F1): "prefers non-Reddit URLs when merging search packs",
+ *   "renumbers [n] markers so merged evidence stays with its own source"
+ *   (mergeSearchPacks is gone; prose absence is asserted in
+ *   pipeline.evidence.test.ts).
+ * - Removed, because the behaviour no longer exists: "drops a malformed
+ *   year-one plan instead of failing the whole run" — a malformed plan now
+ *   fails the v2 record parse and gets one regeneration
+ *   (research-record.v2.test.ts, pipeline.evidence.test.ts).
  */
 
 import { describe, expect, it } from "vitest";
 
+import { findContiguousSpan } from "./evidence/quote.ts";
+import { acceptEvidence } from "./evidence/accept.ts";
 import {
-  buildSourcePagesSection,
-  citationEvidence,
   communitySearchQuery,
-  figureTokens,
-  isGroundedFigure,
-  isGroundedForCompetitor,
-  isRedditUrl,
-  mergeSearchPacks,
-  MIN_VERIFIED_SIGNALS,
+  EDITORIAL_INSTRUCTIONS,
+  EXTRACTION_INSTRUCTIONS,
   PipelineError,
   runResearch,
-  verifySignals,
+  stepInputBudgetBytes,
   type BriefInput,
 } from "./pipeline.ts";
-import { createProviders } from "./providers.ts";
-import { fixtureSourceText } from "./providers/fixtures.ts";
+import { buildExtractionSources, utf8Bytes, type ExtractionSource } from "./pipeline-sources.ts";
+import { stepById } from "./pipeline-steps.ts";
 import {
-  createSourceTextProvider,
-  hnApiUrl,
-  htmlToText,
-  quoteAppearsIn,
-  redditJsonUrl,
-} from "./providers/sourceText.ts";
+  createFixtureProviders,
+  FIXTURE_EXTRACTION,
+  FIXTURE_PAGES,
+  FIXTURE_URLS,
+  fixtureSourceText,
+  type FixtureProviderOptions,
+} from "./providers/fixtures.ts";
+import { createSourceTextProvider, hnApiUrl, htmlToText, redditJsonUrl } from "./providers/sourceText.ts";
+import type { EngineProviders, SynthesisRequest } from "./providers/types.ts";
 import { parseYearOne } from "./research-record.ts";
 
 /** Stub resolver: every host is public (keeps tests off the network). */
@@ -49,35 +96,65 @@ const BRIEF: BriefInput = {
   oneLiner: "Grounded RFP drafts with citations for SMB sales teams.",
 };
 
+const matches = (quote: string, text: string) => findContiguousSpan(quote, text).ok;
+
+type Counted = { providers: EngineProviders; synthesis: SynthesisRequest[]; keywordLookups: () => number };
+
+function counted(options: FixtureProviderOptions = {}): Counted {
+  const providers = createFixtureProviders(options);
+  const synthesis: SynthesisRequest[] = [];
+  let lookups = 0;
+  const realSynthesis = providers.synthesis;
+  const realKeywords = providers.keywordData;
+  providers.synthesis = {
+    ...realSynthesis,
+    complete: (request) => {
+      synthesis.push(request);
+      return realSynthesis.complete(request);
+    },
+  };
+  providers.keywordData = {
+    ...realKeywords,
+    lookup: (request) => {
+      lookups += 1;
+      return realKeywords.lookup(request);
+    },
+  };
+  return { providers, synthesis, keywordLookups: () => lookups };
+}
+
+async function failureOf(promise: Promise<unknown>): Promise<PipelineError> {
+  const error = await promise.then(
+    () => null,
+    (e: unknown) => e,
+  );
+  if (!(error instanceof PipelineError)) throw new Error(`expected a PipelineError, got ${String(error)}`);
+  return error;
+}
+
 describe("quote matching", () => {
   const page =
     "OP: It’s pretty common to get 2 business days or less to answer upwards of 300 essay questions. Anyway...";
 
   it("matches verbatim text across punctuation and curly quotes", () => {
     expect(
-      quoteAppearsIn(
-        "it's pretty common to get 2 business days or less to answer upwards of 300 essay questions",
-        page,
-      ),
+      matches("it's pretty common to get 2 business days or less to answer upwards of 300 essay questions", page),
     ).toBe(true);
   });
 
   it("rejects a paraphrase", () => {
-    expect(
-      quoteAppearsIn(
-        "Teams often get two business days to answer 300 essay questions",
-        page,
-      ),
-    ).toBe(false);
+    expect(matches("Teams often get two business days to answer 300 essay questions", page)).toBe(false);
   });
 
-  it("treats an ellipsis as an ordered elision", () => {
-    expect(
-      quoteAppearsIn("pretty common to get … upwards of 300 essay questions", page),
-    ).toBe(true);
-    expect(
-      quoteAppearsIn("upwards of 300 essay questions … pretty common to get", page),
-    ).toBe(false);
+  it("rejects an internal ellipsis instead of joining fragments", () => {
+    expect(findContiguousSpan("pretty common to get … upwards of 300 essay questions", page)).toEqual({
+      ok: false,
+      reason: "internal_ellipsis",
+    });
+    expect(findContiguousSpan("upwards of 300 essay questions … pretty common to get", page)).toEqual({
+      ok: false,
+      reason: "internal_ellipsis",
+    });
   });
 
   it("rewrites Reddit and HN URLs to their data endpoints", () => {
@@ -110,67 +187,39 @@ describe("quote matching", () => {
     const text = await provider.fetchText(
       "https://www.reddit.com/r/salesengineers/comments/17617vr/how_much/",
     );
-    expect(quoteAppearsIn("It's the most tedious part of my job.", text)).toBe(true);
+    expect(matches("It's the most tedious part of my job.", text)).toBe(true);
   });
 
-  it("leaves quotes unverified when the page cannot be fetched", async () => {
-    const out = await verifySignals(
-      [
-        {
-          quote: "We burn weekends answering the same SOC2 questionnaire.",
-          citation: { url: "https://blocked.example/", title: "x" },
-        },
-      ],
-      fixtureSourceText({}),
-    );
-    expect(out[0]!.verified).toBe(false);
+  it("rejects quotes whose page cannot be read", async () => {
+    const { record } = await runResearch({ brief: BRIEF, providers: createFixtureProviders(), mode: "fixture" });
+    const reddit = record.evidence.rejected.find((r) => r.sourceUrl?.includes("reddit.com"));
+    expect(reddit?.reason).toBe("source_unreadable");
+    expect(record.evidence.accepted.some((e) => e.sourceUrl.includes("reddit.com"))).toBe(false);
   });
 });
 
 describe("pipeline quote verification", () => {
-  it("marks fixture quotes verified", async () => {
-    const record = await runResearch({
-      brief: BRIEF,
-      providers: createProviders({ mode: "fixture" }),
-    });
-    expect(record.community.signals.every((s) => s.verified === true)).toBe(true);
+  it("selects only quotes accepted as spans of their cited pages", async () => {
+    const { record } = await runResearch({ brief: BRIEF, providers: createFixtureProviders(), mode: "fixture" });
+    expect(record.community.quoteIds.length).toBeGreaterThanOrEqual(2);
+    for (const id of record.community.quoteIds) {
+      const item = record.evidence.accepted.find((e) => e.id === id);
+      expect(item?.kind).toBe("community_quote");
+      expect(FIXTURE_PAGES[item?.sourceUrl ?? ""]).toContain(item?.excerpt ?? "\u0000");
+    }
   });
 
   it("fails closed when too few quotes are on their cited pages", async () => {
-    const providers = createProviders({ mode: "fixture" });
-    providers.sourceText = fixtureSourceText({
-      "https://news.ycombinator.com/item?id=27515468": "nothing relevant here",
-      "https://www.indiehackers.com/post/how-we-handle-security-questionnaires": "nor here",
-      "https://www.reddit.com/r/sales/": "still nothing",
-    });
-    const error = await runResearch({ brief: BRIEF, providers }).then(
-      () => null,
-      (e: unknown) => e,
+    const pages = {
+      ...FIXTURE_PAGES,
+      [FIXTURE_URLS.hnThread]: "nothing relevant here",
+      [FIXTURE_URLS.forumThread]: "nor here",
+    };
+    const error = await failureOf(
+      runResearch({ brief: BRIEF, providers: createFixtureProviders({ pages }), mode: "fixture" }),
     );
-    expect(error).toBeInstanceOf(PipelineError);
-    expect((error as PipelineError).message).toMatch(
-      new RegExp(`quote verification: 0/2 .*need ≥${MIN_VERIFIED_SIGNALS}`),
-    );
-  });
-});
-
-describe("figure grounding", () => {
-  const hay = "The market was $1.8 billion in 2025, reaching $9.4 billion by 2034 (20.2% CAGR). Plans from $1,300.";
-
-  it("extracts numbers without thousands separators", () => {
-    expect(figureTokens("$1,300/mo and 20.2%")).toEqual(["1300", "20.2"]);
-  });
-
-  it("accepts figures present in the research text", () => {
-    expect(isGroundedFigure("$1.8B in 2025; $9.4B by 2034", hay)).toBe(true);
-    expect(isGroundedFigure("from $1,300 per year", hay)).toBe(true);
-    expect(isGroundedFigure("Custom quote", hay)).toBe(true);
-  });
-
-  it("rejects a number the research never mentioned", () => {
-    expect(isGroundedFigure("$1.22 billion in 2025", hay)).toBe(false);
-    // 1.8 must not match inside 21.8 or 1.85
-    expect(isGroundedFigure("$21.8B", hay)).toBe(false);
+    expect(error.stepId).toBe("evidence_acceptance");
+    expect(error.message).toMatch(/community quotes: 0 distinct accepted, need 2/);
   });
 });
 
@@ -206,61 +255,23 @@ describe("community page reads", () => {
     expect(s).toMatch(/Hacker News/);
   });
 
-  it("prefers non-Reddit URLs when merging search packs", () => {
-    expect(isRedditUrl("https://www.reddit.com/r/x/comments/a/b/")).toBe(true);
-    expect(isRedditUrl("https://news.ycombinator.com/item?id=1")).toBe(false);
-    const merged = mergeSearchPacks(
-      {
-        text: "a",
-        citations: [
-          { url: "https://www.reddit.com/r/sales/", title: "reddit" },
-          { url: "https://news.ycombinator.com/item?id=1", title: "hn" },
-        ],
-      },
-      {
-        text: "b",
-        citations: [
-          {
-            url: "https://www.indiehackers.com/post/x",
-            title: "ih",
-          },
-        ],
-      },
-    );
-    expect(merged.citations.map((c) => c.url)).toEqual([
-      "https://news.ycombinator.com/item?id=1",
-      "https://www.indiehackers.com/post/x",
-      "https://www.reddit.com/r/sales/",
-    ]);
-  });
-
-  it("renumbers [n] markers so merged evidence stays with its own source", () => {
-    const reddit = "https://www.reddit.com/r/sales/";
-    const hn = "https://news.ycombinator.com/item?id=1";
-    const ih = "https://www.indiehackers.com/post/x";
-    const merged = mergeSearchPacks(
-      {
-        text: "Teams spend 40 hours a quarter on this [1]. HN says $99/mo [2].",
-        citations: [
-          { url: reddit, title: "reddit" },
-          { url: hn, title: "hn" },
-        ],
-      },
-      { text: "Indie Hackers reports 12 customers [1].", citations: [{ url: ih, title: "ih" }] },
-    );
-    expect(merged.citations.map((c) => c.url)).toEqual([hn, ih, reddit]);
-    const evidence = citationEvidence([merged]);
-    expect(evidence.get(hn)).toContain("$99/mo");
-    expect(evidence.get(hn)).not.toContain("40 hours");
-    expect(evidence.get(ih)).toContain("12 customers");
-    expect(evidence.get(reddit)).toContain("40 hours");
-  });
-
   it("runs a non-Reddit supplement when the first pack is unreadable", async () => {
-    const providers = createProviders({ mode: "fixture" });
+    const hn = "https://news.ycombinator.com/item?id=27515468";
+    const ih = "https://www.indiehackers.com/post/how-we-handle-security-questionnaires";
+    const providers = createFixtureProviders({
+      synthesis: {
+        extraction: () => ({
+          ...FIXTURE_EXTRACTION,
+          quotes: [
+            { sourceUrl: hn, text: "Loopio is great if you have a proposal team; we do not." },
+            { sourceUrl: ih, text: "We burn weekends answering the same SOC2 questionnaire." },
+          ],
+        }),
+      },
+    });
     const queries: string[] = [];
-    const realSearch = providers.search;
     let communityCalls = 0;
+    const realSearch = providers.search;
     const searchCost = {
       role: "search" as const,
       provider: "perplexity",
@@ -273,19 +284,14 @@ describe("community page reads", () => {
       ...realSearch,
       search: async (req) => {
         queries.push(req.query);
-        if (/pain|verbatim|community|quote|Hacker News/i.test(req.query)) {
+        if (/pain evidence/i.test(req.query)) {
           communityCalls += 1;
           if (communityCalls === 1) {
             // First pack: Reddit only → unreadable without OAuth.
             return {
               value: {
                 text: "Reddit-only pain [1].",
-                citations: [
-                  {
-                    url: "https://www.reddit.com/r/sales/comments/abc/thread/",
-                    title: "r/sales",
-                  },
-                ],
+                citations: [{ url: "https://www.reddit.com/r/sales/comments/abc/thread/", title: "r/sales" }],
                 inputTokens: 10,
                 outputTokens: 10,
                 requests: 1,
@@ -298,14 +304,8 @@ describe("community page reads", () => {
             value: {
               text: "HN and IH pain [1][2].",
               citations: [
-                {
-                  url: "https://news.ycombinator.com/item?id=27515468",
-                  title: "HN",
-                },
-                {
-                  url: "https://www.indiehackers.com/post/how-we-handle-security-questionnaires",
-                  title: "IH",
-                },
+                { url: hn, title: "HN" },
+                { url: ih, title: "IH" },
               ],
               inputTokens: 10,
               outputTokens: 10,
@@ -317,26 +317,21 @@ describe("community page reads", () => {
         return realSearch.search(req);
       },
     };
+    const fixturePages = fixtureSourceText();
     providers.sourceText = {
       async fetchText(url: string) {
-        if (url.includes("reddit.com")) {
-          throw new Error("HTTP 403 (Reddit blocks this network)");
-        }
-        if (url.includes("ycombinator.com")) {
-          return "Loopio is great if you have a proposal team; we do not.";
-        }
-        if (url.includes("indiehackers.com")) {
-          return "We burn weekends answering the same SOC2 questionnaire.";
-        }
-        throw new Error(`unexpected ${url}`);
+        if (url.includes("reddit.com")) throw new Error("HTTP 403 (Reddit blocks this network)");
+        if (url.includes("ycombinator.com")) return "Loopio is great if you have a proposal team; we do not.";
+        if (url.includes("indiehackers.com")) return "We burn weekends answering the same SOC2 questionnaire.";
+        return fixturePages.fetchText(url);
       },
     };
-    const record = await runResearch({ brief: BRIEF, providers });
+    const { record } = await runResearch({ brief: BRIEF, providers, mode: "fixture" });
     expect(communityCalls).toBe(2);
     expect(queries.some((q) => /Do NOT cite Reddit/.test(q))).toBe(true);
-    expect(
-      record.community.signals.filter((s) => s.verified).length,
-    ).toBeGreaterThanOrEqual(2);
+    expect(record.community.quoteIds).toHaveLength(2);
+    const sources = record.community.quoteIds.map((id) => record.evidence.accepted.find((e) => e.id === id)?.sourceUrl);
+    expect(sources.sort()).toEqual([ih, hn].sort());
   });
 
   it("uses Reddit's OAuth API when app credentials are set", async () => {
@@ -360,7 +355,7 @@ describe("community page reads", () => {
     const text = await provider.fetchText(
       "https://www.reddit.com/r/salesengineers/comments/17617vr/how_much/",
     );
-    expect(quoteAppearsIn("It's the most tedious part of my job.", text)).toBe(true);
+    expect(matches("It's the most tedious part of my job.", text)).toBe(true);
     expect(calls).toEqual([
       "https://www.reddit.com/api/v1/access_token",
       "https://oauth.reddit.com/r/salesengineers/comments/17617vr/how_much?limit=500&raw_json=1",
@@ -379,222 +374,99 @@ describe("community page reads", () => {
     ).rejects.toThrow(/REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET/);
   });
 
-  it("stops before keyword and synthesis spend when sources are unreadable", async () => {
-    const providers = createProviders({ mode: "fixture" });
-    providers.sourceText = fixtureSourceText({});
-    let keywordLookups = 0;
-    const realKeywords = providers.keywordData;
-    providers.keywordData = {
-      ...realKeywords,
-      lookup: (req) => {
-        keywordLookups += 1;
-        return realKeywords.lookup(req);
-      },
-    };
-    const realSynthesis = providers.synthesis;
-    let synthesisCalls = 0;
-    providers.synthesis = {
-      ...realSynthesis,
-      complete: (req) => {
-        synthesisCalls += 1;
-        return realSynthesis.complete(req);
-      },
-    };
-    const error = await runResearch({ brief: BRIEF, providers }).then(
-      () => null,
-      (e: unknown) => e,
-    );
-    expect(error).toBeInstanceOf(PipelineError);
-    expect((error as PipelineError).stepId).toBe("community_signals");
-    expect((error as PipelineError).message).toMatch(
-      /only 0\/\d+ cited community pages could be read.*Stopped before keyword and synthesis spend/,
-    );
-    expect(keywordLookups).toBe(0);
-    // Only the brief-normalization call ran; the paid synthesis never did.
-    expect(synthesisCalls).toBe(1);
+  it("stops before extraction, keyword and editorial spend when no source can be read", async () => {
+    const run = counted({ pages: {} });
+    const error = await failureOf(runResearch({ brief: BRIEF, providers: run.providers, mode: "fixture" }));
+    expect(error.stepId).toBe("source_acquisition");
+    expect(error.message).toMatch(/none of the \d+ cited pages could be read.*stopped before evidence extraction spend/);
+    expect(run.keywordLookups()).toBe(0);
+    // Only the brief-normalization call ran; extraction and the writer never did.
+    expect(run.synthesis).toHaveLength(1);
   });
 
-  it("hands the fetched page text to synthesis", async () => {
-    const providers = createProviders({ mode: "fixture" });
-    const inputs: string[] = [];
-    const realSynthesis = providers.synthesis;
-    providers.synthesis = {
-      ...realSynthesis,
-      complete: (req) => {
-        inputs.push(req.input);
-        return realSynthesis.complete(req);
-      },
-    };
-    await runResearch({ brief: BRIEF, providers });
-    const synthesisInput = inputs[inputs.length - 1]!;
-    expect(synthesisInput).toContain("## Community source pages");
-    expect(synthesisInput).toContain(
-      "### https://news.ycombinator.com/item?id=27515468",
-    );
+  it("hands fetched page text to extraction, never to the writer", async () => {
+    const run = counted();
+    await runResearch({ brief: BRIEF, providers: run.providers, mode: "fixture" });
+    const extraction = run.synthesis.find((r) => r.instructions === EXTRACTION_INSTRUCTIONS)?.input ?? "";
+    const editorial = run.synthesis.find((r) => r.instructions === EDITORIAL_INSTRUCTIONS)?.input ?? "";
+    expect(extraction).toContain("## Sources");
+    expect(extraction).toContain(`URL: ${FIXTURE_URLS.hnThread}`);
+    // A page line no candidate used: on its way to extraction only.
+    const unused = "The big proposal tools assume you have a proposal team, and we are three sales engineers.";
+    expect(extraction).toContain(unused);
+    expect(editorial).not.toContain(unused);
+    expect(editorial).not.toContain("## Sources");
   });
 });
 
-describe("figure grounding per citation", () => {
-  const pack = {
-    text: "The AI code review market was $1.8 billion in 2025 [1]. Secure code review hit $1.22 billion [2].",
-    citations: [
-      { url: "https://a.example/report-2031", title: "A", snippet: "AI code review tools" },
-      { url: "https://b.example/secure", title: "B" },
-    ],
-  };
-
-  it("checks a figure against the source it cites, not every result", () => {
-    const evidence = citationEvidence([pack]);
-    expect(isGroundedFigure("$1.8 billion in 2025", evidence.get("https://a.example/report-2031")!)).toBe(true);
-    // $1.22B appears only in source B's sentence, so citing A fails.
-    expect(isGroundedFigure("$1.22 billion", evidence.get("https://a.example/report-2031")!)).toBe(false);
-    expect(isGroundedFigure("$1.22 billion", evidence.get("https://b.example/secure")!)).toBe(true);
-  });
-
-  it("ignores an untagged answer that cites several sources", () => {
-    const evidence = citationEvidence([
-      {
-        text: "Market A was $1.8 billion; market B was $1.22 billion.",
-        citations: [
-          { url: "https://a.example/one", title: "A", snippet: "AI code review tools" },
-          { url: "https://b.example/two", title: "B" },
-        ],
-      },
-    ]);
-    expect(isGroundedFigure("$1.22 billion", evidence.get("https://a.example/one")!)).toBe(false);
-    expect(isGroundedFigure("$1.8 billion", evidence.get("https://b.example/two")!)).toBe(false);
-  });
-
-  it("grounds a competitor price only on a line naming that competitor", () => {
-    const text =
-      "Loopio starts at $388/mo [1]. Responsive costs $99/mo [2].\n| Inventive.ai | $49/mo |";
-    expect(isGroundedForCompetitor("$388/mo", "Loopio", text)).toBe(true);
-    expect(isGroundedForCompetitor("$99/mo", "Responsive", text)).toBe(true);
-    expect(isGroundedForCompetitor("$49/mo", "Inventive.ai", text)).toBe(true);
-    // The whole-pack check this replaces matched any vendor's price.
-    expect(isGroundedFigure("$388/mo", text)).toBe(true);
-    // Another vendor's price is not credited to this one.
-    expect(isGroundedForCompetitor("$388/mo", "Responsive", text)).toBe(false);
-    expect(isGroundedForCompetitor("$99/mo", "Loopio", text)).toBe(false);
-  });
-
-  it("keeps pricing cards and table rows apart in fetched page text", () => {
-    const cards = htmlToText(
-      '<div class="card">Loopio $388/mo</div><div class="card">Responsive $99/mo</div>',
-    );
-    expect(isGroundedForCompetitor("$388/mo", "Loopio", cards)).toBe(true);
-    expect(isGroundedForCompetitor("$99/mo", "Loopio", cards)).toBe(false);
-    const table = htmlToText(
-      "<table><tr><td>Loopio</td><td>$388/mo</td></tr><tr><td>Responsive</td><td>$99/mo</td></tr></table>",
-    );
-    expect(isGroundedForCompetitor("$99/mo", "Responsive", table)).toBe(true);
-    expect(isGroundedForCompetitor("$388/mo", "Responsive", table)).toBe(false);
-    // A quote across a line break still matches.
-    expect(quoteAppearsIn("same SOC2 questionnaire every week", htmlToText("same SOC2<br>questionnaire every week"))).toBe(true);
-  });
-
-  it("uses fetched page text to ground a competitor price", () => {
-    const evidence = citationEvidence(
-      [
-        {
-          text: "Loopio is an enterprise player [1].",
-          citations: [
-            {
-              url: "https://loopio.com/pricing/",
-              title: "Loopio",
-              snippet: "enterprise proposal software",
-            },
+describe("pricing cards and table rows", () => {
+  it("keeps each vendor's price with that vendor in fetched page text", () => {
+    const pages = {
+      cards: htmlToText('<div class="card">Loopio $388/mo</div><div class="card">Responsive $99/mo</div>'),
+      table: htmlToText(
+        "<table><tr><td>Loopio</td><td>$388/mo</td></tr><tr><td>Responsive</td><td>$99/mo</td></tr></table>",
+      ),
+    };
+    for (const [name, text] of Object.entries(pages)) {
+      const url = `https://${name}.example.com/rfp-tools-compared`;
+      const [loopioLine = "", responsiveLine = ""] = text.split("\n").map((line) => line.trim()).filter(Boolean);
+      const result = acceptEvidence({
+        candidates: {
+          quotes: [],
+          marketStats: [],
+          competitorPrices: [
+            { vendor: "Loopio", sourceUrl: url, supportingText: loopioLine, priceText: "$388/mo" },
+            { vendor: "Loopio", sourceUrl: url, supportingText: responsiveLine, priceText: "$99/mo" },
+            { vendor: "Responsive", sourceUrl: url, supportingText: responsiveLine, priceText: "$99/mo" },
           ],
         },
-      ],
-      new Map([
-        [
-          "https://loopio.com/pricing/",
-          "Team plan starts at $388 per month billed annually.",
-        ],
-      ]),
-    );
-    expect(
-      isGroundedFigure("$388/mo", evidence.get("https://loopio.com/pricing/")!),
-    ).toBe(true);
-    // Without page text, the snippet alone has no price.
-    const snippetsOnly = citationEvidence([
-      {
-        text: "Loopio is an enterprise player [1].",
-        citations: [
-          {
-            url: "https://loopio.com/pricing/",
-            title: "Loopio",
-            snippet: "enterprise proposal software",
-          },
-        ],
-      },
-    ]);
-    expect(
-      isGroundedFigure(
-        "$388/mo",
-        snippetsOnly.get("https://loopio.com/pricing/")!,
-      ),
-    ).toBe(false);
-  });
-
-  it("never treats URL or marker digits as evidence", () => {
-    const evidence = citationEvidence([pack]);
-    expect(isGroundedFigure("by 2031", evidence.get("https://a.example/report-2031")!)).toBe(false);
-  });
-
-  it("drops a malformed year-one plan instead of failing the whole run", () => {
-    const issues: string[] = [];
-    const plan = parseYearOne(
-      {
-        funnel: [
-          { stage: "leads", count: 10 },
-          { stage: "trials", count: 20 },
-        ],
-        tier: "Team",
-        payingAccounts: 5,
-        monthlyRevenuePerAccount: 99,
-      },
-      issues,
-    );
-    expect(plan).toBeUndefined();
-    expect(issues.join(" ")).toMatch(/must not grow/);
+        citations: [{ url, title: name }],
+        sources: new Map([[url, { status: "read", text, retrievedAt: "2026-10-01T00:00:00.000Z" }]]),
+      });
+      const accepted = result.accepted.map((e) => (e.kind === "competitor_price" ? `${e.vendor} ${e.price.amount.value}` : ""));
+      expect(accepted, name).toEqual(["Loopio 388", "Responsive 99"]);
+      // Another vendor's price is never credited to Loopio.
+      expect(result.rejected.map((r) => r.reason), name).toEqual(["ambiguous_attribution"]);
+    }
+    // A quote across a line break still matches.
+    expect(matches("same SOC2 questionnaire every week", htmlToText("same SOC2<br>questionnaire every week"))).toBe(true);
   });
 });
 
 describe("CodeRabbit regressions", () => {
-  it("fits six long community pages into the synthesis byte budget", () => {
-    const pages = new Map(
-      Array.from({ length: 6 }, (_, i) => [
-        `https://www.reddit.com/r/x/comments/${i}/thread/`,
-        { text: "é".repeat(50_000) },
-      ]),
-    );
+  it("fits six long community pages into the extraction byte budget", () => {
+    const pages: ExtractionSource[] = Array.from({ length: 6 }, (_, i) => ({
+      url: `https://www.reddit.com/r/x/comments/${i}/thread`,
+      title: `thread ${i}`,
+      roles: ["community"],
+      text: "é".repeat(50_000),
+    }));
     const available = 30_000;
-    const section = buildSourcePagesSection(pages, available);
-    const bytes = new TextEncoder().encode(`\n\n${section}`).length;
-    expect(bytes).toBeLessThanOrEqual(available);
-    expect(section.match(/^### /gm)?.length).toBe(6);
+    const section = buildExtractionSources(pages, available);
+    expect(utf8Bytes(section.text)).toBeLessThanOrEqual(available);
+    expect(section.text.match(/^### Source /gm)?.length).toBe(6);
     // No room at all → no section, never an oversized one.
-    expect(buildSourcePagesSection(pages, 500)).toBe("");
+    expect(buildExtractionSources(pages, 500)).toEqual({ text: "", included: 0 });
   });
 
-  it("runs synthesis without exceeding its budget when pages are huge", async () => {
-    const providers = createProviders({ mode: "fixture" });
-    const huge = "We burn weekends answering the same SOC2 questionnaire. " + "x ".repeat(80_000);
-    providers.sourceText = fixtureSourceText({
-      "https://news.ycombinator.com/item?id=27515468":
-        "Loopio is great if you have a proposal team; we do not. " + "y ".repeat(80_000),
-      "https://www.indiehackers.com/post/how-we-handle-security-questionnaires": huge,
-      "https://www.reddit.com/r/sales/": huge,
-    });
-    const record = await runResearch({ brief: BRIEF, providers });
-    expect(record.community.signals.filter((s) => s.verified).length).toBeGreaterThanOrEqual(2);
+  it("runs extraction within its budget when pages are huge", async () => {
+    const pages = {
+      ...FIXTURE_PAGES,
+      [FIXTURE_URLS.hnThread]: `${FIXTURE_PAGES[FIXTURE_URLS.hnThread] ?? ""}\n${"y ".repeat(80_000)}`,
+      [FIXTURE_URLS.forumThread]: `${FIXTURE_PAGES[FIXTURE_URLS.forumThread] ?? ""}\n${"x ".repeat(80_000)}`,
+    };
+    const run = counted({ pages });
+    const { record } = await runResearch({ brief: BRIEF, providers: run.providers, mode: "fixture" });
+    expect(record.community.quoteIds.length).toBeGreaterThanOrEqual(2);
+    const extraction = run.synthesis.find((r) => r.instructions === EXTRACTION_INSTRUCTIONS);
+    expect(utf8Bytes(EXTRACTION_INSTRUCTIONS) + utf8Bytes(extraction?.input ?? "")).toBeLessThanOrEqual(
+      stepInputBudgetBytes(stepById("evidence_extraction")),
+    );
   });
 
   it("decodes numeric HTML entities before matching quotes", () => {
     const text = htmlToText("<p>Our CI&#x2F;CD pipeline doesn&#39;t catch it &amp; we ship</p>");
-    expect(quoteAppearsIn("Our CI/CD pipeline doesn't catch it & we ship", text)).toBe(true);
+    expect(matches("Our CI/CD pipeline doesn't catch it & we ship", text)).toBe(true);
     expect(htmlToText("&amp;lt;")).toBe("&lt;");
   });
 
