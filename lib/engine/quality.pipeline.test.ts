@@ -1,17 +1,12 @@
 /**
- * Anti-slop guarantees for the idea engine: quotes are verified against
- * their cited pages, figures are grounded in the research text, the
- * compiler never breaks links, and revenue math is arithmetic.
+ * Anti-slop guarantees for the idea engine, research-pipeline side: quotes
+ * are verified against their cited pages and figures are grounded in the
+ * research text. Split mechanically from quality.test.ts (WP46-S3): test
+ * bodies and assertions are unchanged.
  */
 
 import { describe, expect, it } from "vitest";
 
-import {
-  collapseDuplicateSentences,
-  compileResearchRecord,
-  midSentence,
-  yearOneLines,
-} from "./compile.ts";
 import {
   buildSourcePagesSection,
   citationEvidence,
@@ -33,12 +28,10 @@ import {
   createSourceTextProvider,
   hnApiUrl,
   htmlToText,
-  isBlockedAddress,
-  publicOnlyFetch,
   quoteAppearsIn,
   redditJsonUrl,
 } from "./providers/sourceText.ts";
-import { parseResearchRecord, parseYearOne } from "./research-record.ts";
+import { parseYearOne } from "./research-record.ts";
 
 /** Stub resolver: every host is public (keeps tests off the network). */
 const PUBLIC_DNS = async () => ["93.184.215.14"];
@@ -181,50 +174,6 @@ describe("figure grounding", () => {
   });
 });
 
-describe("compiler hygiene", () => {
-  it("never splits a markdown link when collapsing duplicate sentences", () => {
-    const link =
-      "[my reviewer was useless until i made it earn the right to comment. what changed](https://www.reddit.com/r/LLMDevs/comments/1v5dveb/x/)";
-    const text = [
-      `> "quote one"\n>\n> — ${link}`,
-      "",
-      `See ${link} for the long version of this whole thread today.`,
-      "",
-      `- ${link}`,
-    ].join("\n");
-    const out = collapseDuplicateSentences(text);
-    expect(out.split(link).length - 1).toBe(3);
-  });
-
-  it("still drops a repeated prose sentence", () => {
-    const s = "This exact sentence has more than eight words in it.";
-    expect(collapseDuplicateSentences(`${s} ${s}`).trim()).toBe(s);
-  });
-
-  it("lowercases audience labels mid-sentence but keeps acronyms", () => {
-    expect(midSentence("Indie developers and sub-10 teams")).toBe(
-      "indie developers and sub-10 teams",
-    );
-    expect(midSentence("E-commerce marketers")).toBe("e-commerce marketers");
-    expect(midSentence("SMB SaaS sales teams")).toBe("SMB SaaS sales teams");
-    expect(midSentence("GitHub maintainers")).toBe("GitHub maintainers");
-  });
-
-  it("computes ARR and the downside instead of trusting prose", () => {
-    const out = yearOneLines({
-      funnel: [
-        { stage: "prospects", count: 200 },
-        { stage: "trials", count: 40 },
-      ],
-      tier: "Team",
-      payingAccounts: 10,
-      monthlyRevenuePerAccount: 499,
-    });
-    expect(out).toContain("10 × $499/mo = $59,880 ARR");
-    expect(out).toContain("$29,940 ARR** — downside if the close rate halves (5 accounts)");
-  });
-});
-
 describe("record validation", () => {
   it("rejects a funnel that grows or pays more accounts than it has", () => {
     const issues: string[] = [];
@@ -242,108 +191,6 @@ describe("record validation", () => {
     );
     expect(issues.join(" ")).toMatch(/must not grow/);
     expect(issues.join(" ")).toMatch(/exceeds the last funnel stage/);
-  });
-
-  it("drops quotes marked unverified from the compiled page", async () => {
-    const record = await runResearch({
-      brief: BRIEF,
-      providers: createProviders({ mode: "fixture" }),
-    });
-    const tampered = parseResearchRecord({
-      ...record,
-      community: {
-        ...record.community,
-        signals: [
-          ...record.community.signals,
-          {
-            quote: "A quote nobody ever wrote on that thread.",
-            citation: { url: "https://www.reddit.com/r/sales/", title: "r/sales" },
-            verified: false,
-          },
-        ],
-      },
-    });
-    const { mdx } = compileResearchRecord({ record: tampered });
-    expect(mdx).not.toContain("A quote nobody ever wrote");
-    expect(mdx).toContain("We burn weekends answering the same SOC2 questionnaire.");
-  });
-});
-
-describe("engine audit on a compiled fixture", () => {
-  it("passes every deep check except the fixture's short word count", async () => {
-    const fs = await import("node:fs");
-    const os = await import("node:os");
-    const path = await import("node:path");
-    const { pathToFileURL, fileURLToPath } = await import("node:url");
-    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-    const { auditIdeaFile } = (await import(
-      pathToFileURL(path.join(root, "scripts/audit-idea-mdx.mjs")).href
-    )) as {
-      auditIdeaFile: (
-        f: string,
-        slug: string,
-        o: Record<string, unknown>,
-      ) => { errors: string[] };
-    };
-
-    const record = await runResearch({
-      brief: BRIEF,
-      providers: createProviders({ mode: "fixture" }),
-    });
-    const { mdx } = compileResearchRecord({ record, slug: "zz-engine-fixture" });
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "engine-audit-"));
-    try {
-      const file = path.join(dir, "zz-engine-fixture.mdx");
-      const recordPath = path.join(dir, "record.json");
-      fs.writeFileSync(file, mdx);
-      fs.writeFileSync(recordPath, JSON.stringify(record));
-      const { errors } = auditIdeaFile(file, "zz-engine-fixture", {
-        engine: true,
-        recordPath,
-        otherBodies: {},
-      });
-      expect(errors.filter((e) => !/body word count/.test(e))).toEqual([]);
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
-  it("fails a page whose quotes were never verified", async () => {
-    const fs = await import("node:fs");
-    const os = await import("node:os");
-    const path = await import("node:path");
-    const { pathToFileURL, fileURLToPath } = await import("node:url");
-    const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-    const { auditIdeaFile } = (await import(
-      pathToFileURL(path.join(root, "scripts/audit-idea-mdx.mjs")).href
-    )) as {
-      auditIdeaFile: (
-        f: string,
-        slug: string,
-        o: Record<string, unknown>,
-      ) => { errors: string[] };
-    };
-    const record = await runResearch({
-      brief: BRIEF,
-      providers: { ...createProviders({ mode: "fixture" }), sourceText: undefined },
-    });
-    const { mdx } = compileResearchRecord({ record, slug: "zz-unverified" });
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "engine-audit-"));
-    try {
-      const file = path.join(dir, "zz-unverified.mdx");
-      const recordPath = path.join(dir, "record.json");
-      fs.writeFileSync(file, mdx);
-      fs.writeFileSync(recordPath, JSON.stringify(record));
-      const { errors } = auditIdeaFile(file, "zz-unverified", {
-        engine: true,
-        recordPath,
-        otherBodies: {},
-      });
-      expect(errors.join("\n")).toMatch(/quote not verified against its cited page/);
-      expect(errors.join("\n")).toMatch(/needs ≥2 verified community quotes \(got 0\)/);
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
   });
 });
 
@@ -763,124 +610,5 @@ describe("CodeRabbit regressions", () => {
     });
     await provider.fetchText("https://example.com/page");
     expect(seen[0]).toMatch(/^weekendmvp-idea-engine\//);
-  });
-
-  it("shows cents when the monthly price has them", () => {
-    const out = yearOneLines({
-      funnel: [
-        { stage: "leads", count: 100 },
-        { stage: "trials", count: 20 },
-      ],
-      tier: "Team",
-      payingAccounts: 10,
-      monthlyRevenuePerAccount: 24.99,
-    });
-    expect(out).toContain("10 × $24.99/mo = $2,999 ARR");
-  });
-});
-
-describe("source fetch safety", () => {
-  it("keeps out-of-range numeric entities as text", () => {
-    expect(htmlToText("a &#99999999; b &#x110000; c")).toBe("a &#99999999; b &#x110000; c");
-  });
-
-  it("matches quote fragments on whole words only", () => {
-    const page = "We concatenate the results before review every single week.";
-    expect(quoteAppearsIn("cat the results before review", page)).toBe(false);
-    expect(quoteAppearsIn("the results before review", page)).toBe(true);
-    // Short fragments must match too, not just the long one.
-    expect(quoteAppearsIn("the results before review … monthly", page)).toBe(false);
-    expect(quoteAppearsIn("the results before review … week", page)).toBe(true);
-  });
-
-  it("flags loopback, private, link-local and metadata addresses", () => {
-    for (const ip of ["127.0.0.1", "10.1.2.3", "172.20.0.1", "192.168.1.1", "169.254.169.254", "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1"]) {
-      expect(isBlockedAddress(ip), ip).toBe(true);
-    }
-    // IPv4-mapped / compatible / NAT64 forms, dotted and hex (Node's URL
-    // parser turns [::ffff:127.0.0.1] into [::ffff:7f00:1]).
-    for (const ip of ["::ffff:7f00:1", "::ffff:c0a8:101", "::ffff:a9fe:a9fe", "::7f00:1", "0:0:0:0:0:ffff:127.0.0.1", "64:ff9b::a00:1"]) {
-      expect(isBlockedAddress(ip), ip).toBe(true);
-    }
-    for (const ip of ["93.184.215.14", "151.101.1.140", "2606:4700::6810:84e5", "::ffff:5db8:d70e", "64:ff9b::5db8:d70e"]) {
-      expect(isBlockedAddress(ip), ip).toBe(false);
-    }
-  });
-
-  it("refuses a citation that resolves to a private address", async () => {
-    let fetched = 0;
-    const provider = createSourceTextProvider({
-      resolveHost: async () => ["10.0.0.5"],
-      fetchImpl: async () => {
-        fetched += 1;
-        return new Response("secret", { status: 200 });
-      },
-    });
-    await expect(provider.fetchText("https://intranet.example/page")).rejects.toThrow(/non-public/);
-    await expect(provider.fetchText("http://169.254.169.254/latest/meta-data/")).rejects.toThrow(/non-public/);
-    // Both spellings of an IPv4-mapped loopback literal, after URL normalization.
-    await expect(provider.fetchText("http://[::ffff:127.0.0.1]/")).rejects.toThrow(/non-public/);
-    await expect(provider.fetchText("http://[::ffff:7f00:1]/")).rejects.toThrow(/non-public/);
-    expect(fetched).toBe(0);
-  });
-
-  it("refuses a redirect to a private address", async () => {
-    const calls: string[] = [];
-    const provider = createSourceTextProvider({
-      resolveHost: PUBLIC_DNS,
-      fetchImpl: async (url) => {
-        calls.push(url);
-        return new Response(null, {
-          status: 302,
-          headers: { location: "http://127.0.0.1:8080/admin" },
-        });
-      },
-    });
-    await expect(provider.fetchText("https://example.com/post")).rejects.toThrow(/non-public/);
-    expect(calls).toEqual(["https://example.com/post"]);
-  });
-
-  it("follows a redirect to another public page", async () => {
-    const provider = createSourceTextProvider({
-      resolveHost: PUBLIC_DNS,
-      fetchImpl: async (url) =>
-        url.endsWith("/old")
-          ? new Response(null, { status: 301, headers: { location: "/new" } })
-          : new Response("<p>moved here</p>", { status: 200 }),
-    });
-    expect((await provider.fetchText("https://example.com/old")).trim()).toBe("moved here");
-  });
-
-  it("checks redirects on the Reddit path too", async () => {
-    const calls: string[] = [];
-    const provider = createSourceTextProvider({
-      redditClientId: "",
-      redditClientSecret: "",
-      resolveHost: async (host) => (host === "evil.example" ? ["10.0.0.9"] : ["151.101.1.140"]),
-      fetchImpl: async (url) => {
-        calls.push(url);
-        return new Response(null, {
-          status: 301,
-          headers: { location: "https://evil.example/steal" },
-        });
-      },
-    });
-    await expect(
-      provider.fetchText("https://www.reddit.com/r/x/comments/abc/y/"),
-    ).rejects.toThrow(/non-public/);
-    expect(calls).toHaveLength(1);
-  });
-
-  it("refuses to connect when the host resolves to a private address", async () => {
-    const { createServer } = await import("node:http");
-    const server = createServer((_req, res) => res.end("internal"));
-    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
-    const { port } = server.address() as { port: number };
-    try {
-      // "localhost" resolves to loopback at connect time, as a rebinding host would.
-      await expect(publicOnlyFetch(`http://localhost:${port}/`)).rejects.toThrow(/non-public/);
-    } finally {
-      server.close();
-    }
   });
 });
