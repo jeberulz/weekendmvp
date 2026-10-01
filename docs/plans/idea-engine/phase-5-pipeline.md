@@ -2,6 +2,15 @@
 
 Back: [overview](overview.md)
 
+> **WP46 status (2026-10-01).** The pipeline is now `PIPELINE_VERSION` 2.
+> Candidate evidence is extracted and accepted against the cited pages before
+> keywords and writing; a run stops at `evidence_acceptance` when accepted
+> evidence is below the minimums; the writer sees only the accepted bundle,
+> the brief and keyword rows. Output is a contract v2 `ResearchRecordV2`, read
+> by `parseResearchRecord`, which refuses v1 records. The step list, data
+> structures and "as built" notes below describe the pre-WP46 version. Current
+> rules: [pr71-evidence-contract.md](pr71-evidence-contract.md) §2–§8.
+
 ## Goal
 
 A brief in, a `ResearchRecord` out. Seven steps. Thin research throws. Cost over $4.00 throws before another provider call. Fixture mode is deterministic.

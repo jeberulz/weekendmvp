@@ -1,5 +1,14 @@
 # Quote-gate live N=3 — PR #71 merge gate
 
+> **2026-10-01 — superseded by WP46 (history only).** The independent review
+> of PR #71 (`docs/reviews/2026-10-01-pr71-idea-engine.md`) returned NO-GO,
+> and the quote gate and price grounding described here were removed: no more
+> search-pack merging, numeric matching of figures against pages and pack
+> text, or quotes checked after the narrative was written. Evidence is now
+> accepted against the cited pages before writing
+> (`docs/plans/idea-engine/pr71-evidence-contract.md`). The verdict below does
+> not certify the current code.
+
 Updated: 2026-10-01 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7`.
 **Do not merge from this agent.** Phases 8–9 / mcp.json untouched.
 

@@ -8,8 +8,9 @@
  * base (non-engine) bar, so a pass says the auditor still accepts known-good
  * handwritten pages. It does not run research, compile a record or audit
  * new engine output; that is the deterministic research → compile → audit
- * replay gate (WP46 integration), and the final artifact audit of engine
- * pages lives in lib/engine/artifact-audit.ts.
+ * replay (`npm run engine:replay`, and lib/engine/replay.test.ts inside
+ * `npm test`), and the final artifact audit of engine pages lives in
+ * lib/engine/artifact-audit.ts.
  *
  * Usage:
  *   npm run engine:eval
@@ -119,7 +120,7 @@ function diffEntry(expected, actual) {
 
 function runEval() {
   console.log(
-    "Legacy auditor regression: re-audits the handwritten gold pages (base bar).\nIt does not measure new engine output; see the research → compile → audit replay gate.\n",
+    "Legacy auditor regression: re-audits the handwritten gold pages (base bar).\nIt does not measure new engine output; run `npm run engine:replay` for the research → compile → audit replay.\n",
   );
   const gold = loadGold();
   const bySlug = new Map(gold.entries.map((e) => [e.slug, e]));

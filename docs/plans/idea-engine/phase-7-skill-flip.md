@@ -2,6 +2,16 @@
 
 Back: [overview](overview.md)
 
+> **WP46 status (2026-10-01).** `.claude/skills/publish-idea/SKILL.md` was
+> rewritten in WP46 to describe the evidence-first flow: evidence accepted
+> before writing, the thin-evidence stop, audited factual blocks, legacy
+> record refusal, draft visibility and the human source check. In the main
+> checkout `.agents/skills/publish-idea` is a symlink to the canonical skill
+> (ignored by git), so there is no copy to keep in sync. The live gate below
+> (one live compile) is replaced by the WP46 evaluation of three
+> representative briefs. Current rules:
+> [pr71-evidence-contract.md](pr71-evidence-contract.md).
+
 ## Goal
 
 `/publish-idea` no longer requires Ideabrowser. Default path: brief or draft in, `engine:research` plus `engine:compile`, then the existing seed, OG, and (only when you ask) commit. `--from-draft` stays. MCP Mode A is deleted, not kept as a dual default.
