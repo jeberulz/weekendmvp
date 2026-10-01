@@ -1,6 +1,6 @@
 # Engine calibration (WP41 gold set)
 
-Generated 2026-09-27 by `npm run evals:calibrate -- --live --report` (live mode, $0.1226). Do not edit by hand.
+Generated 2026-10-01 by `npm run evals:calibrate -- --live --report` (live mode, $0.0000). Do not edit by hand.
 
 **PASS**: caught 7/7 seeded bad pages (100%, need 90%), false fails on 0/5 good pages (need 0).
 
@@ -30,5 +30,5 @@ Target hits: the judge scored the seeded flaw at the fail threshold. Good-page a
 | Judge | Target hits | Good-page alarms | Discarded scores | Distance from median |
 |---|---|---|---|---|
 | `anthropic/claude-haiku-4.5` | 4/6 | 0 | 3 | 0.32 |
-| `google/gemini-3.8-flash` | 6/6 | 0 | 0 | 0.36 |
+| `google/gemini-3.8-flash` | 6/6 | 0 | 0 | 0.35 |
 | `openai/gpt-5.6-luna` | 5/6 | 0 | 0 | 0.39 |
