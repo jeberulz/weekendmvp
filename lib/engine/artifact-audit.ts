@@ -302,6 +302,9 @@ function rawQuoteSource(ctx: Ctx, paragraphs: MdNode[]): string {
     .join("\n");
 }
 
+/** Enough of a quote to show an appended or changed ending. */
+const QUOTE_SHOWN = 240;
+
 function auditQuotes(ctx: Ctx, root: MdNode, record: ResearchRecordV2, ev: Evidence): number {
   const selected = itemsOf(record.community.quoteIds, ev, "community_quote");
   const verified = new Set<string>();
@@ -330,16 +333,23 @@ function auditQuotes(ctx: Ctx, root: MdNode, record: ResearchRecordV2, ev: Evide
       ctx.errors.push(`${where}: the quote contains Markdown (${formatting}); it must be the verbatim evidence excerpt`);
       continue;
     }
-    const wrapped = /^\s*["“„«]([\s\S]*)["”»]\s*$/.exec(rawQuoteSource(ctx, paragraphs));
+    const source = rawQuoteSource(ctx, paragraphs).trim();
+    const wrapped = /^["“„«]([\s\S]*)["”»]$/.exec(source);
     if (!wrapped) {
-      ctx.errors.push(`${where}: the quote must be wrapped in double quotes`);
+      const closing = Math.max(source.lastIndexOf('"'), source.lastIndexOf("”"), source.lastIndexOf("»"));
+      const tail = closing > 0 ? norm(source.slice(closing + 1)) : "";
+      ctx.errors.push(
+        tail
+          ? `${where}: text after the closing quote mark is part of the quote ("${clip(tail, QUOTE_SHOWN)}"); a quote must equal its accepted excerpt exactly`
+          : `${where}: the quote must be wrapped in double quotes`,
+      );
       continue;
     }
     const inner = wrapped[1] ?? "";
     const match = selected.find((q) => quoteMatchesExcerpt(inner, q.excerpt));
     if (!match) {
       ctx.errors.push(
-        `${where}: "${clip(inner)}" is not a selected evidence quote (community.quoteIds); a quote must equal its accepted excerpt exactly`,
+        `${where}: "${clip(inner, QUOTE_SHOWN)}" is not a selected evidence quote (community.quoteIds); a quote must equal its accepted excerpt exactly`,
       );
       continue;
     }

@@ -3,11 +3,16 @@
  * never breaks links, keeps evidence out of text surgery and computes the
  * revenue math with finance.ts (WP46-S4). The hygiene tests are unchanged
  * from the WP46-S3 split; the v1 Year-One tests are replaced by contract v2
- * equivalents (exact cents, explicit seats, floor(base/2) downside).
+ * equivalents (exact cents, explicit seats, floor(base/2) downside), and the
+ * two engine-audit tests now compile a v2 fixture instead of a v1
+ * runResearch record.
  */
 
-import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import { afterEach, describe, expect, it } from "vitest";
 
+import { auditPage, cleanupTempDirs, compiledPage, loadAuditor, writePage } from "./__fixtures__/auditHarness.ts";
+import { buildFixtureRecord, FIXTURE_PAGE_SLUG } from "./__fixtures__/recordV2.ts";
 import { collapseDuplicateSentences, CompileError, midSentence, yearOneLines } from "./compile.ts";
 import type { YearOnePlanV2 } from "./evidence/contract.ts";
 import type { PricingTier } from "./research-record.ts";
@@ -106,5 +111,29 @@ describe("Year-One Math from finance.ts", () => {
 
   it("refuses a plan whose tier is not a pricing tier", () => {
     expect(() => yearOneLines(plan("Enterprise", 10), TIERS)).toThrow(CompileError);
+  });
+});
+
+afterEach(cleanupTempDirs);
+
+describe("engine audit on a compiled fixture", () => {
+  it("passes every deep check, the 2,200-word floor included (no exceptions)", async () => {
+    const result = await auditPage(compiledPage());
+    expect(result.errors).toEqual([]);
+    expect(result.metrics?.wordCount).toBeGreaterThanOrEqual(2200);
+    expect(result.metrics?.deep).toBe(true);
+  });
+
+  it("fails a page whose research record is contract v1 (claims never accepted as evidence)", async () => {
+    const record = buildFixtureRecord();
+    const files = writePage(compiledPage(record), record);
+    fs.writeFileSync(
+      files.recordPath,
+      JSON.stringify({ contractVersion: 1, brief: { title: "Old", slug: "old-idea", oneLiner: "x", targetCustomer: "y" } }),
+    );
+    const audit = await loadAuditor();
+    const { errors } = audit(files.file, FIXTURE_PAGE_SLUG, { engine: true, recordPath: files.recordPath, otherBodies: {} });
+    expect(errors.join("\n")).toMatch(/Research record "old-idea" is a contract v1 \(legacy\) record/);
+    expect(errors.join("\n")).toMatch(/Re-run `npm run engine:research/);
   });
 });

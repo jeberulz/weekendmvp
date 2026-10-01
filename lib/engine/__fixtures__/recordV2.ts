@@ -246,10 +246,15 @@ function sourceList(pages: ReadonlyArray<FixturePage>): SourceAcquisition[] {
 
 type Acceptance = ReturnType<typeof acceptEvidence>;
 
-function acceptPages(pages: FixturePages): Acceptance {
+function acceptPages(pages: FixturePages, extra: Partial<ExtractionCandidates> = {}): Acceptance {
   const all = Object.values(pages);
+  const base = candidatesFor(pages);
   return acceptEvidence({
-    candidates: candidatesFor(pages),
+    candidates: {
+      quotes: [...base.quotes, ...(extra.quotes ?? [])],
+      marketStats: [...base.marketStats, ...(extra.marketStats ?? [])],
+      competitorPrices: [...base.competitorPrices, ...(extra.competitorPrices ?? [])],
+    },
     citations: all.map((p) => ({ url: p.url, title: p.title })),
     sources: acquisitionInput(all),
     vendorHints: VENDORS,
@@ -527,18 +532,20 @@ function patchPages(overrides: PagePatches): FixturePages {
  * variant such as another year-one plan) and receives the selected evidence;
  * the result is JSON round-tripped and parsed with parseResearchRecordV2,
  * exactly as a CLI would read it. `pages` replaces source pages (URL, title,
- * text), which re-runs acceptance, so every id follows from the new sources.
+ * text) and `extraCandidates` adds extraction candidates; either re-runs
+ * acceptance, so every id follows from the sources (find extra items in
+ * record.evidence.accepted inside `adjust`).
  */
 export function buildFixtureRecord(
   adjust?: (record: ResearchRecordV2, ev: FixtureEvidence) => void,
-  options: { pages?: PagePatches } = {},
+  options: { pages?: PagePatches; extraCandidates?: Partial<ExtractionCandidates> } = {},
 ): ResearchRecordV2 {
   let pages: FixturePages = FIXTURE_PAGES;
   let acceptance = DEFAULT_ACCEPTANCE;
   let ev = EV;
-  if (options.pages) {
-    pages = patchPages(options.pages);
-    acceptance = acceptPages(pages);
+  if (options.pages || options.extraCandidates) {
+    pages = options.pages ? patchPages(options.pages) : FIXTURE_PAGES;
+    acceptance = acceptPages(pages, options.extraCandidates);
     ev = evidenceRoles(acceptance, pages);
   }
   const record = baseRecord(pages, acceptance, ev);
