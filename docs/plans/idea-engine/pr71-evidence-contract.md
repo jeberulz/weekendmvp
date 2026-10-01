@@ -402,6 +402,69 @@ source acquisition statuses, accepted counts per kind, and rejected
   Known limit: a host whose owner is not among the known vendors is treated
   as a neutral page.
 
+- **R6 (2026-10-01, from the final review P1-1): writer text carries no free
+  figures.** Every writer free-text field is figure-free except inside
+  evidence tokens: `brief.oneLiner`, `market.summary`, `community.summary`,
+  `whyNow`, `competitors[].notes`, `goToMarket.positioning`,
+  `goToMarket.pricingNotes`, `goToMarket.channels[]`, `howItWorks[]`,
+  `editorial.{productName, audienceShort, problemNarrative, solutionNarrative,
+  competitiveNarrative, dontBuildYet, stackNotes, brandBrief}`,
+  `unitEconomics[].label`, `yearOne.funnel[].stage` and `yearOne.assumptions`.
+  The only numeric proposal slots are `pricingTiers[].price`,
+  `pricingTiers[].includes`, `unitEconomics[].value`, the yearOne counts and
+  seats, and `dataModel` columns; the page labels them as proposals or
+  assumptions. A figure is, after NFKC normalisation: any Unicode decimal
+  digit run (`\p{Nd}`) that is not part of a letter-adjacent name (B2B,
+  GPT-4o) and is not a bare year 1990–2039 away from a currency, percent or
+  magnitude; a standalone number word two–nineteen, twenty–ninety (with
+  compounds), hundred, thousand, million, billion, trillion, dozen(s); or
+  percent/per cent. A double-quoted span (straight or typographic quotes,
+  « ») of three or more words in writer text is an error: quotations reach
+  the page only through quote evidence. It remains a guard, not proof.
+- **R7 (2026-10-01, from P2-4): a token renders its claim, not only its
+  figure.** `renderEvidenceInline` names the subject and metric of a stat and
+  the vendor (and plan) of a price; the compiler and auditor always call it
+  rather than duplicating text. `competitors[].notes` may cite only that
+  competitor's own prices; fields may restrict token kinds.
+- **R8 (2026-10-01, from P2-6/P3-15): quotes are whole statements from
+  community sources.** A community quote must come from a source cited by the
+  community search, start at a sentence start and end at a sentence end,
+  and not cross a line break of the extracted source text (comments and
+  blocks are separated by line breaks). Two quotes are distinct only when
+  neither normalized text contains the other.
+- **R9 (2026-10-01, from P2-3/P2-5): binding is per claim.** A price clause
+  with a comparison cue (unlike, than, instead of, rather than, versus/vs,
+  compared, alternative(s), competitor(s), switch from) is rejected; a plan
+  name binds only on the price's own line or the line directly above it and
+  never after "everything in"/"all of"/"includes"; when the price's block
+  shows both monthly and annual billing cues and the clause states neither,
+  the price is rejected as ambiguous billing. A stat subject is figure-free,
+  link-free and markup-free, and every subject content word must occur in
+  the amount's sentence; the metric must agree with cue words in that
+  sentence.
+- **R10 (2026-10-01, from S-P2b, P2-2, P2-7, P2-9, P3-11): the page holds
+  only audited facts.** The auditor fails: any body link whose target is not
+  a used evidence source; a link to an evidence source whose text is neither
+  that source's title nor an inline rendering of one of its items; an
+  attribution title other than the source title; a double-quoted span of
+  three or more words outside verified quote blocks; any figure outside the
+  allowlisted blocks in any section (evidence renderings, keyword rows, tier
+  rows equal to the record, unit-economics values, the Year-One block, bare
+  years, names); fenced code, footnotes or HTML outside the prompt section;
+  figures in prompt fences other than record values and renderings; a
+  Year-One-style line or a money total beside revenue wording outside the
+  Year-One block; a relabelled evidence row; a Sources list that differs from
+  the used evidence sources; manifest highlights on an engine row that are
+  not generated from the record. Compiled text is escaped so bare URLs and
+  emails cannot autolink.
+- **R11 (2026-10-01, from P2-8): fixture output stays out of publishing.**
+  The fixture brief's slug matches no published idea; `engine-compile` and
+  the auditor refuse a `mode: "fixture"` record unless the page slug is an
+  `engine-draft-*` or temp slug (or an explicit test-only flag); the
+  manifest stub records the research mode.
+- **R12 (2026-10-01, from P3-7): the run report names the code revision.**
+  `ResearchRunReport.codeRevision = { sha: string | null; dirty: boolean | null }`.
+
 Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,
 never push, never merge, and never touch another worker's files. The
