@@ -78,7 +78,6 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
           <ResearchTitle
             slug={idea.slug}
             className={`underline-offset-4 hover:text-home-orange-ink hover:underline ${FOCUS}`}
-            textClassName=""
           >
             {idea.title}
           </ResearchTitle>

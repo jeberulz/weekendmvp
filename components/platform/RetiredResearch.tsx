@@ -44,8 +44,8 @@ export function ResearchTitle({
   slug: string;
   /** Classes for the link. */
   className: string;
-  /** Classes for the plain-text title of a retired idea. */
-  textClassName: string;
+  /** Classes for the plain-text title of a retired idea, if it needs its own. */
+  textClassName?: string;
   children: ReactNode;
 }) {
   const href = publicIdeaPath(slug);
