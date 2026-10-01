@@ -142,6 +142,7 @@ describe("Home", () => {
     const html = renderToStaticMarkup(<Shortlist home={home([savedRow(DRAFT), savedRow("rfp-desk")])} />);
     expect(html.match(/type="radio"/g)).toHaveLength(1);
     expect(html).toMatch(/type="radio"[^>]*checked=""/);
+    expect(html).toContain("<legend");
     expect(html).toContain("Not open for a new plan");
     expect(html).not.toMatch(draftLink);
     expect(html).not.toMatch(draftPlanStart);
@@ -151,6 +152,8 @@ describe("Home", () => {
   test("a shortlist of drafts only says why nothing can start", () => {
     const html = renderToStaticMarkup(<Shortlist home={home([savedRow(DRAFT)])} />);
     expect(html).not.toContain('type="radio"');
+    // No empty choice group: without a plannable idea the table stands alone.
+    expect(html).not.toContain("<fieldset");
     expect(html).not.toContain("/dashboard/builds/new");
     expect(html).toContain("The research behind these saves was retired");
     expect(html).toContain('href="/dashboard/saved"');

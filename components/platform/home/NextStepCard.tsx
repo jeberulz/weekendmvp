@@ -143,18 +143,10 @@ export function Shortlist({ home }: { home: HomeState }) {
   const [selectedSlug, setSelectedSlug] = useState(plannable[0]?.slug ?? "");
   const selected = plannable.find((idea) => idea.slug === selectedSlug) ?? plannable[0];
   const count = `${home.saved.count}${home.saved.capped ? "+" : ""}`;
-  return (
-    <section aria-labelledby="next-step-title" className={CARD}>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className={EYEBROW}>Your shortlist</p>
-        <p className={EYEBROW}>{count} saved</p>
-      </div>
-      <h2 id="next-step-title" className={TITLE}>
-        Pick one idea to build this weekend.
-      </h2>
-      <fieldset className="min-w-0">
-      <legend className="sr-only">Choose an idea for your weekend plan</legend>
-      <div className="overflow-x-auto">
+  // Radios group only when one can be chosen: a list of retired drafts is a
+  // plain table, not an empty choice.
+  const table = (
+    <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">Your latest saved ideas, compared</caption>
         <thead>
@@ -221,8 +213,25 @@ export function Shortlist({ home }: { home: HomeState }) {
           })}
         </tbody>
       </table>
+    </div>
+  );
+  return (
+    <section aria-labelledby="next-step-title" className={CARD}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={EYEBROW}>Your shortlist</p>
+        <p className={EYEBROW}>{count} saved</p>
       </div>
-      </fieldset>
+      <h2 id="next-step-title" className={TITLE}>
+        Pick one idea to build this weekend.
+      </h2>
+      {plannable.length > 0 ? (
+        <fieldset className="min-w-0">
+          <legend className="sr-only">Choose an idea for your weekend plan</legend>
+          {table}
+        </fieldset>
+      ) : (
+        table
+      )}
       <p className="text-xs text-home-ink-3">Scores average the four research ratings, out of 10. Open an idea to review its evidence.</p>
       {plannable.length === 0 && (
         <p className="text-sm text-home-ink-2">
