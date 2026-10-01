@@ -48,7 +48,7 @@ import {
   SEARCH_MARKET_FIXTURE,
   type FixtureProviderOptions,
 } from "./providers/fixtures.ts";
-import type { EngineProviders, SynthesisRequest } from "./providers/types.ts";
+import { ProviderCallError, type EngineProviders, type SynthesisRequest } from "./providers/types.ts";
 import { parseResearchRecordV2, type KeywordRow } from "./research-record.ts";
 
 // ---------------------------------------------------------------------------
@@ -653,6 +653,46 @@ describe("extraction attempts", () => {
     expect(extractionRequests(h)).toHaveLength(2);
     expect(h.keywordLookups).toBe(0);
     expect(editorialRequests(h)).toHaveLength(0);
+  });
+});
+
+describe("provider retries and regenerations share a step's two attempts", () => {
+  /** The first request with these instructions fails with a retryable, unbilled 503. */
+  function failFirst(h: Harness, instructions: string): void {
+    const real = h.providers.synthesis;
+    let failed = false;
+    h.providers.synthesis = {
+      ...real,
+      complete: (request) => {
+        if (request.instructions === instructions && !failed) {
+          failed = true;
+          h.synthesis.push(request);
+          return Promise.reject(new ProviderCallError("synthesis", "provider returned 503", { retryable: true, status: 503 }));
+        }
+        return real.complete(request);
+      },
+    };
+  }
+
+  it("editorial: a provider retry uses up the regeneration", async () => {
+    const h = harness({ synthesis: { editorial: editorialSequence(() => "prose, not JSON") } });
+    failFirst(h, EDITORIAL_INSTRUCTIONS);
+    const error = await failureOf(run(h));
+    expect(error.stepId).toBe("editorial_synthesis");
+    expect(error.message).toMatch(/writer output failed validation after 2 attempts/);
+    expect(error.report?.attempts.editorial_synthesis).toBe(2);
+    expect(editorialRequests(h)).toHaveLength(2);
+  });
+
+  it("extraction: a provider retry uses up the re-ask", async () => {
+    const h = harness({ synthesis: { extraction: () => "prose, not JSON" } });
+    failFirst(h, EXTRACTION_INSTRUCTIONS);
+    const error = await failureOf(run(h));
+    expect(error.stepId).toBe("evidence_extraction");
+    expect(error.message).toMatch(/not a JSON object \(2 attempts\)/);
+    expect(error.report?.attempts.evidence_extraction).toBe(2);
+    expect(extractionRequests(h)).toHaveLength(2);
+    expect(h.keywordLookups).toBe(0);
   });
 });
 
