@@ -131,6 +131,12 @@ The receiver takes the verification authority from its trusted caller: legacy im
 
 The fixture adapter is the core plus simulated seams (credentials, checks, worker, the two-tab edit). The live adapter (E4c) is the core over one idea's records loaded from Convex.
 
+**Per-idea transactions** (`core/partitioned.ts`). `PartitionedEditorialRepository` runs the same rules over a `WorkingSetStore` that holds every idea but loads one per call: the idea, its revisions, review records, approvals and releases, the header of the idea it duplicates, plus the request key, slug or submission the call needs. A call snapshots that working set, runs the core, and commits only the change set (`core/changes.ts`) with the idea's list summary (`core/summary.ts`: the list item minus evidence freshness, which is recomputed at read time). Lists read summaries and small indexes, never revision bodies. Nothing is loaded for a caller the core will refuse; reads never write, so only refused commands are recorded. Service seams for trusted backend code: `importTrusted` (producer and verification authority established by the caller), `workerAdvance` (one release step with the outcome the worker observed; fences re-checked by `core/worker.ts`) and `setKillSwitch`.
+
+**Live environment** (`core/live.ts`). No check library is connected until WP46-E5, so checks cannot run and nothing can be approved; no release worker exists until WP46-E6, so every release intent is refused with that reason. Settings say so.
+
+**Activity totals.** `listActivity` returns `Page<ActivityEntry, number | null>`: the live store pages the log by index and does not count it, so the UI shows "Showing x–y" without "of n".
+
 ## Fixture boundary
 
 `lib/editorial/adapters/fixture/**` and `lib/editorial/fixtures/**` are demo-only: fictional content on `.example` domains, simulated checks (`producer: "fixture_simulated"`), a simulated worker and simulated re-authentication. `assertFixtureModeAllowed()` throws in production builds, and the runtime selector only reaches this code behind a `NODE_ENV !== "production"` branch. Fixture tests serialise commands in one process: they prove the rules, not real concurrency or deployment.

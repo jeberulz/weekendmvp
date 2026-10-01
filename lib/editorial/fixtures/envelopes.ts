@@ -18,6 +18,8 @@ type EnvelopeOptions = {
   recommendationReasons?: string[];
   proposedSlug?: string;
   firstPublishedAt?: string | null;
+  /** Non-legacy envelopes default to fixture mode; live-adapter tests build live ones. */
+  mode?: "fixture" | "live";
 };
 
 export function specSources(spec: ArticleSpec, nowMs: number): EditorialSourceInput[] {
@@ -109,7 +111,7 @@ export async function buildFixtureEnvelope(spec: ArticleSpec, options: EnvelopeO
     contractVersion: EDITORIAL_CONTRACT_VERSION,
     submissionId: options.submissionId,
     producer: options.producer,
-    mode: legacy ? "legacy" : "fixture",
+    mode: legacy ? "legacy" : (options.mode ?? "fixture"),
     engineRunId: legacy ? null : (options.engineRunId ?? "run-fixture"),
     engineContractVersion: legacy ? null : 2,
     artifactHash,

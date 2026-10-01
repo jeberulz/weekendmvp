@@ -113,3 +113,12 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
   - Mutation check in the moved core: disabling the save version fence turned "a stale base version conflicts" red; letting any signed-in human through the principal guard turned the three authority-boundary cases red. Restored byte-for-byte (`cmp`), green again.
   - `npx tsc --noEmit`: pass. `npx eslint lib/editorial tests/editorial convex/editorial`: clean.
 - Not done here: E4a's schema change. The first attempt to add `super_admins` and `editorial_audit` to `convex/schema.ts` was partly blocked by the session's safety check (the import line), so the schema was restored to its committed state and E4a waits for the owner's go-ahead on that edit.
+
+## 2026-10-01 - WP46-E4c groundwork (store-neutral)
+
+- While the schema edit waits, the parts of E4c that need no shared file were built in `lib/editorial/core/**`: the live environment and `LiveEditorialCore` (`live.ts`), change tracking (`changes.ts`), stored list summaries (`summary.ts`), the release-worker step rules (`worker.ts`, now shared by the simulated worker) and the per-idea transaction layer `PartitionedEditorialRepository` over a `WorkingSetStore` (`partitioned.ts`). Convex only has to implement `WorkingSetStore`. Documented in [contract-v1.md](contract-v1.md#shared-core-wp46-e4b).
+- Contract change: `listActivity` totals may be `null` (the live log is paged by index, not counted); pagination then reads "Showing x–y".
+- Checks run:
+  - `npx vitest run tests/editorial`: 20 files, 234 tests passed. New: live rules on an in-memory state (14: fixture envelopes refused, verification downgraded without a receipt, receipt-backed checks kept, legacy always unverified, checks "not connected", release intents refused before anything is recorded, truthful live settings, denial recorded, exact change sets, stored summaries) and the full repository contract (32) through `PartitionedEditorialRepository` over an in-memory store that hands out copies of one idea at a time and commits only change sets. Check results, receipts and worker outcomes there are simulated by the harness; it proves the partitioning and the live rules, not a deployment.
+  - Mutation check: skipping the request-key load in the transaction layer turned the exactly-once save and the repeated-publish cases red; restored (`cmp`), green.
+  - `npx tsc --noEmit`: pass. `npx eslint lib/editorial tests/editorial components/admin/editorial app/admin/editorial`: clean.

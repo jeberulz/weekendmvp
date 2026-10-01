@@ -56,11 +56,12 @@ export interface EditorialRepository {
     pageSize: number,
   ): Promise<CommandResult<Page<ReleaseView>>>;
   listTrash(cursor: string | null, pageSize: number): Promise<CommandResult<Page<TrashItem>>>;
+  /** `total` is `null` when the store cannot count the log cheaply. */
   listActivity(
     filter: ActivityFilter,
     cursor: string | null,
     pageSize: number,
-  ): Promise<CommandResult<Page<ActivityEntry>>>;
+  ): Promise<CommandResult<Page<ActivityEntry, number | null>>>;
   getSettings(): Promise<CommandResult<SettingsView>>;
 
   /* Ingestion: quarantined submissions only, never a human decision. */

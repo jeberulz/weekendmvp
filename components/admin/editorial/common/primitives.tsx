@@ -117,7 +117,8 @@ export const fieldClass =
 
 /**
  * Cursor pagination. "Showing x–y of n" uses a display-only `start` value;
- * the cursor alone decides what the server returns.
+ * the cursor alone decides what the server returns. With an unknown total
+ * (the live activity log) it says "Showing x–y" only.
  */
 export function Pagination({
   total,
@@ -127,23 +128,28 @@ export function Pagination({
   nextHref,
   label,
 }: {
-  total: number;
+  total: number | null;
   start: number;
   count: number;
   firstHref: string | null;
   nextHref: string | null;
   label: string;
 }) {
-  if (total === 0) return null;
-  const end = Math.min(start + count - 1, total);
+  if (total === 0 || (total === null && count === 0 && !firstHref)) return null;
+  const end = total === null ? start + count - 1 : Math.min(start + count - 1, total);
   return (
     <nav aria-label={`${label} pages`} className="flex flex-wrap items-center justify-between gap-3 text-sm">
       <p className="text-(--ed-text-2)">
         Showing{" "}
         <span className="font-mono tabular-nums text-(--ed-text)">
           {start}–{end}
-        </span>{" "}
-        of <span className="font-mono tabular-nums text-(--ed-text)">{total}</span>
+        </span>
+        {total === null ? null : (
+          <>
+            {" "}
+            of <span className="font-mono tabular-nums text-(--ed-text)">{total}</span>
+          </>
+        )}
       </p>
       <div className="flex gap-2">
         {firstHref ? (

@@ -103,6 +103,28 @@ type Denied = { ok: false; error: { code: "UNAUTHENTICATED" | "FORBIDDEN" | "SER
 
 const GENERIC_DENIAL = "You do not have access to the editorial workspace.";
 
+/** Request-key scopes. A key is unique per principal and scope. */
+export const IDEMPOTENCY_SCOPES = {
+  createRevision: "create-revision",
+  saveDraft: "save",
+  prepareRelease: "prepare",
+  publishRelease: "publish",
+  retryRelease: "retry",
+  requestRollback: "rollback",
+  unpublishIdea: "unpublish",
+} as const;
+
+export type IdempotencyScope = (typeof IDEMPOTENCY_SCOPES)[keyof typeof IDEMPOTENCY_SCOPES];
+
+/** Where a request key's first result is kept. */
+export function idempotencyStoreKey(
+  principal: EditorialPrincipal | null,
+  scope: IdempotencyScope,
+  key: string,
+): string {
+  return `${principal?.id ?? "anonymous"}:${scope}:${key}`;
+}
+
 /* ------------------------------------------------------------------ */
 /* Repository                                                          */
 /* ------------------------------------------------------------------ */
@@ -227,13 +249,12 @@ export abstract class EditorialCore implements EditorialRepository {
   }
 
   protected async idempotent<T>(
-    scope: string,
+    scope: IdempotencyScope,
     key: string,
     request: Canonicalizable,
     run: () => Promise<CommandResult<T>>,
   ): Promise<CommandResult<T>> {
-    const principalId = this.principal?.id ?? "anonymous";
-    const storeKey = `${principalId}:${scope}:${key}`;
+    const storeKey = idempotencyStoreKey(this.principal, scope, key);
     const requestHash = await hashCanonical(request);
     const existing = this.state.idempotency.get(storeKey);
     if (existing) {
@@ -436,7 +457,11 @@ export abstract class EditorialCore implements EditorialRepository {
     return paginate(items, keyOf, compare, cursor, pageSize);
   }
 
-  async listActivity(filter: ActivityFilter, cursor: string | null, pageSize: number): Promise<CommandResult<Page<ActivityEntry>>> {
+  async listActivity(
+    filter: ActivityFilter,
+    cursor: string | null,
+    pageSize: number,
+  ): Promise<CommandResult<Page<ActivityEntry, number | null>>> {
     const guard = this.editor("access.denied");
     if (!guard.ok) return guard;
     const parsed = activityFilterSchema.safeParse(filter);
@@ -740,7 +765,7 @@ export abstract class EditorialCore implements EditorialRepository {
     if (!commandIdSchemas.idempotencyKey.safeParse(idempotencyKey).success) {
       return fail<{ revisionId: string; number: number }>("INVALID_INPUT", "Invalid request key.");
     }
-    return this.idempotent("create-revision", idempotencyKey, { ideaId, fromRevisionId }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.createRevision, idempotencyKey, { ideaId, fromRevisionId }, async () => {
       const idea = this.idea(ideaId);
       const from = this.revision(fromRevisionId);
       if (!idea || !from || from.ideaId !== idea.id) {
@@ -844,7 +869,7 @@ export abstract class EditorialCore implements EditorialRepository {
     }
     const cleanPatch = parsedPatch.data;
     return this.idempotent(
-      "save",
+      IDEMPOTENCY_SCOPES.saveDraft,
       idempotencyKey,
       { ideaId, revisionId, baseVersion, patch: { ...cleanPatch } as Canonicalizable },
       async () => {
@@ -1329,7 +1354,7 @@ export abstract class EditorialCore implements EditorialRepository {
     if (!commandIdSchemas.idempotencyKey.safeParse(idempotencyKey).success) return fail<Result>("INVALID_INPUT", "Invalid request key.");
     const unavailable = this.releasesUnavailable();
     if (unavailable) return unavailable;
-    return this.idempotent("prepare", idempotencyKey, { revisionId, expectedLiveReleaseId }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.prepareRelease, idempotencyKey, { revisionId, expectedLiveReleaseId }, async () => {
       const revision = this.revision(revisionId);
       const idea = revision ? this.state.ideas.get(revision.ideaId) ?? null : null;
       if (!revision || !idea) return fail<Result>("NOT_FOUND", "That revision does not exist.");
@@ -1394,7 +1419,7 @@ export abstract class EditorialCore implements EditorialRepository {
     }
     const unavailable = this.releasesUnavailable();
     if (unavailable) return unavailable;
-    return this.idempotent("publish", idempotencyKey, { releaseId, expectedState, approvalId }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.publishRelease, idempotencyKey, { releaseId, expectedState, approvalId }, async () => {
       const release = this.state.releases.get(releaseId);
       const idea = release ? this.state.ideas.get(release.ideaId) ?? null : null;
       if (!release || !idea) return fail<Result>("NOT_FOUND", "That release does not exist.");
@@ -1471,7 +1496,7 @@ export abstract class EditorialCore implements EditorialRepository {
     if (!commandIdSchemas.idempotencyKey.safeParse(idempotencyKey).success) return fail<Result>("INVALID_INPUT", "Invalid request key.");
     const unavailable = this.releasesUnavailable();
     if (unavailable) return unavailable;
-    return this.idempotent("retry", idempotencyKey, { releaseId, expectedState }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.retryRelease, idempotencyKey, { releaseId, expectedState }, async () => {
       const release = this.state.releases.get(releaseId);
       const idea = release ? this.state.ideas.get(release.ideaId) ?? null : null;
       if (!release || !idea) return fail<Result>("NOT_FOUND", "That release does not exist.");
@@ -1557,7 +1582,7 @@ export abstract class EditorialCore implements EditorialRepository {
     }
     const unavailable = this.releasesUnavailable();
     if (unavailable) return unavailable;
-    return this.idempotent("rollback", idempotencyKey, { ideaId, targetReleaseId, expectedLiveReleaseId }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.requestRollback, idempotencyKey, { ideaId, targetReleaseId, expectedLiveReleaseId }, async () => {
       const idea = this.idea(ideaId);
       const target = this.state.releases.get(targetReleaseId);
       if (!idea || !target || target.ideaId !== idea.id) return fail<Result>("NOT_FOUND", "That release does not exist.");
@@ -1649,7 +1674,7 @@ export abstract class EditorialCore implements EditorialRepository {
     }
     const unavailable = this.releasesUnavailable();
     if (unavailable) return unavailable;
-    return this.idempotent("unpublish", idempotencyKey, { ideaId, expectedLiveReleaseId }, async () => {
+    return this.idempotent(IDEMPOTENCY_SCOPES.unpublishIdea, idempotencyKey, { ideaId, expectedLiveReleaseId }, async () => {
       const idea = this.idea(ideaId);
       if (!idea) return fail<Result>("NOT_FOUND", "That idea does not exist.");
       // Emergency removal: no kill-switch or check gate, but strong auth still applies.

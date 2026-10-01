@@ -103,7 +103,11 @@ export type QueueSummary = {
   buckets: Record<QueueBucket, number>;
 };
 
-export type Page<T> = { items: T[]; nextCursor: string | null; total: number };
+/**
+ * One page of a cursor-paginated list. `total` counts every match; a list the
+ * store cannot count cheaply (the live activity log) uses `number | null`.
+ */
+export type Page<T, Total extends number | null = number> = { items: T[]; nextCursor: string | null; total: Total };
 
 export type ApprovalView = {
   id: string;
