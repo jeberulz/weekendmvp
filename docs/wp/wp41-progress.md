@@ -126,3 +126,28 @@ Takeaways: the corpus is light on stock AI phrasing and has no copied pages. The
 - Checks run: `npm run typecheck` pass; `npm run lint` 0 errors (35 pre-existing warnings); `npm test` pass (78 vitest cases in `lib/evals`); `npm run build` pass; `git diff --check` clean.
 - Rule going forward: change a threshold, the rubric, a prompt or a judge model only if `npm run evals:calibrate -- --live` still passes, and commit the new `evals/results/calibration.md`.
 - Next: `WP41-S6` weekly sweep.
+
+## 2026-10-01 - WP41-S6 weekly sweep, PR gate, first full baseline
+
+- Actions taken:
+  - `.github/workflows/content-evals-weekly.yml`: Mondays 06:00 UTC + manual (`layers` 0/2/3). Restores and saves `evals/cache`, sweeps every page with `--layers 3 --live --check-links`, opens or updates one PR from `evals/weekly-report` with `evals/results/report.md`. Report-only. Falls back to Layer 0 + links without the secret.
+  - `ci.yml` job `content-evals`: on PRs that change idea pages, `npm run evals:changed -- --base HEAD^1 --layers 3 --live`; skips with a notice without the secret.
+  - `lib/evals/links.ts` + `--check-links`: every Sources link once per run (8 concurrent, 3 per host, one retry for network blips). dead = 404/410/unreachable; blocked = 401/403/429; error = other. `sources.dead` warns.
+  - Report: run line (spend, calls, failed calls, incomplete pages, link totals), claim totals table. `latest.json` stores the run metadata.
+  - publish-idea skill Step 7 now requires `--layers 3 --live --check-links`; `ideas/SECTIONS.md`, `CLAUDE.md`, RULINGS updated.
+- First full live sweep (verify-v1): 1,519 model calls, $3.33, 0 incomplete pages. 57 contradicted claims on 46 pages.
+- Finding from the sweep: a spot check of 8 contradictions found 3 false (same figure over a shifted forecast period; values within rounding). Fix `verify-v2`: contradicted needs the same metric, definition and period with a value more than ~5% off; a newer edition or another period is the new `outdated` verdict, which warns (`claims.outdated`) and never fails. A confirmer that sees a different period also turns a contradiction into `outdated`.
+- Second sweep (verify-v2; extraction, judges and links from cache): 611 calls, $0.35. Contradictions 27 on 23 pages, outdated 31. Spot check of 10: 8 clearly real (CodeRabbit Pro now $30 on two pages; AI companion market $600M not $18.35B; dance-tech CAGR 12.4% not 20%; $148B not $285B by 2032; no-code market $32-50B not $65B), 1 borderline (forecast end year), 1 false ($294.7B vs $292.71B, within rounding; both models still called it). Precision about 80-90%.
+- Warm re-run: 65 seconds, 6 calls (retries of earlier judge failures), $0.03.
+- Total live spend this step: about $3.70.
+- Baseline (committed `evals/results/report.md`): 59 fail, 166 warn, 0 pass.
+  - Fails: structure 31 (unchanged debt), claims.contradicted 23 pages, judges 7 pages (`fake_data` 5, `specificity` 3, `consistency` 1).
+  - Top warnings: judges.disagree 189, claims.unsupported 182, numbers.unsourced 98, judges.fake_data (median 3) 78, sources.unreachable 66, sources.dead 61 (78 dead links of 1,563; 290 more bot-walled), claims.outdated 29.
+  - Corpus judge medians: specificity 5, slop 5, verbosity 4, fake_data 4, consistency 5, actionability 5. The writing is not the problem; the data is.
+  - No page passes outright: almost every page carries at least one warning, mostly unsourced claims.
+- Known limits and follow-ups:
+  - `judges.disagree` fires on 189 pages, too noisy to act on. Candidate: raise `disagreeSpread` to 3, but only through `npm run evals:calibrate -- --live`.
+  - A within-rounding contradiction can still slip through. A deterministic numeric tolerance check on contradicted claims would close it.
+  - 1,557 of 2,936 extracted claims are unsourced: the biggest lever for content quality is inline citations, which the page contract does not require yet.
+- Checks run: `npm run typecheck` pass; `npm run lint` 0 errors (35 pre-existing warnings); `npm test` pass (83 vitest in `lib/evals`, 20 node tests); `npm run build` pass; workflow YAML parses; `git diff --check` clean.
+- Owner actions to switch it on: `OPENROUTER_API_KEY` repository secret; Settings -> Actions -> General -> "Allow GitHub Actions to create and approve pull requests"; a monthly spend limit on the OpenRouter key.

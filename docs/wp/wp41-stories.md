@@ -3,6 +3,7 @@
 Branch: `claude/tender-carson-s0bvo8` (session-assigned branch; overrides the `codex/` prefix for this WP)
 Lane: Work Package
 Registry: Weekend MVP idea corpus (`content/ideas/*.mdx`)
+Status: all six stories done (2026-10-01).
 Definition of done: every new or edited idea page is scored by a layered quality gate (deterministic checks → claim extraction → source verification → multi-model judge panel) that blocks bad pages in CI, and a weekly sweep reports a ranked fix backlog for the existing corpus, for under $10 per full sweep.
 
 ## Stories
@@ -69,7 +70,7 @@ Definition of done: every new or edited idea page is scored by a layered quality
   - Verification:
     - `npm run test:evals`, `npm run evals:calibrate -- --fixture`, `npm run evals:calibrate -- --live --report`
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
-- [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
+- [x] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
   - Scope: `.github/workflows/content-evals-weekly.yml`, `.github/workflows/ci.yml` (`content-evals` job), `lib/evals/links.ts` + tests, `scripts/evals-run.mjs` (`--check-links`, run metadata), `scripts/lib/quality/report.mjs` (run line, claim totals), `evals/config.json` (`links`), `evals/results/report.md` (first full baseline), publish-idea skill, `ideas/SECTIONS.md`, `CLAUDE.md`, RULINGS
   - Acceptance criteria:
     - Weekly workflow (Mondays 06:00 UTC + manual) sweeps every page with Layers 0-3 and link checks, restores and saves the result cache, and opens or updates one PR from branch `evals/weekly-report`. Report-only; falls back to free checks without the secret.

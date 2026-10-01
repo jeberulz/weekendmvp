@@ -1,6 +1,10 @@
-# Idea content quality report (Layer 0)
+# Idea content quality report
 
-Generated 2026-09-24 by `npm run evals:run -- --all --report`. Do not edit by hand.
+Generated 2026-10-01 by `npm run evals:run -- --all --report`. Do not edit by hand.
+
+Layers run: 0-3 (live). Layer 1 extracts factual claims; Layer 2 checks them against each page's cited sources. Layer 3 is the judge panel.
+
+Run: 611 model call(s), $0.35 spent, 8 failed call(s); links: 1563 checked, 78 dead, 290 blocked by bot walls, 19 unknown.
 
 Layer 0 is the free, deterministic layer: structure, slop phrases, verbosity, unsourced numbers, source hygiene, placeholders, and cross-page duplication. Thresholds live in `evals/config.json`.
 
@@ -10,9 +14,9 @@ New or edited pages must reach `pass` or `warn` to merge. Pages below are existi
 
 | Status | Pages |
 |---|---|
-| fail | 31 |
-| warn | 112 |
-| pass | 82 |
+| fail | 59 |
+| warn | 166 |
+| pass | 0 |
 | total | 225 |
 
 ## Findings by check
@@ -20,165 +24,278 @@ New or edited pages must reach `pass` or `warn` to merge. Pages below are existi
 | Check | Pages failing | Pages warned |
 |---|---|---|
 | `structure` | 31 | 0 |
+| `claims.contradicted` | 23 | 0 |
+| `judges.fake_data` | 5 | 78 |
+| `judges.specificity` | 3 | 6 |
+| `judges.consistency` | 1 | 10 |
+| `judges.disagree` | 0 | 189 |
+| `claims.unsupported` | 0 | 182 |
 | `numbers.unsourced` | 0 | 98 |
+| `sources.unreachable` | 0 | 66 |
+| `sources.dead` | 0 | 61 |
+| `claims.outdated` | 0 | 29 |
 | `verbosity.sentenceLength` | 0 | 29 |
 | `verbosity.longSentences` | 0 | 24 |
 | `sources.homepageOnly` | 0 | 11 |
 | `verbosity.filler` | 0 | 8 |
 | `slop.density` | 0 | 6 |
+| `judges.error` | 0 | 3 |
 | `sources.duplicates` | 0 | 1 |
 
-## Fix first: failing pages (31)
+## Claims (225 page(s))
+
+Factual claims extracted from The Problem, Market Research and Competitive Landscape, checked against each page's cited sources.
+
+| Supported | Contradicted | Outdated | Not found in source | Unsourced | Unverifiable |
+|---|---|---|---|---|---|
+| 287 | 27 (23 page(s)) | 31 | 524 | 1557 | 537 |
+
+## Judge scores (225 page(s))
+
+Median of each page's judge median, 1-5. Rubric: `evals/rubric.md`.
+
+| Dimension | Corpus median | Pages at 2 or below |
+|---|---|---|
+| `specificity` | 5 | 3 |
+| `slop` | 5 | 0 |
+| `verbosity` | 4 | 0 |
+| `fake_data` | 4 | 5 |
+| `consistency` | 5 | 1 |
+| `actionability` | 5 | 0 |
+
+## Fix first: failing pages (59)
 
 | Page | Fails | Warns | Checks | First failure |
 |---|---|---|---|---|
-| `markdown-client-proposals` | 2 | 1 | structure | body contains '{{' placeholder |
-| `personal-wellness-coach` | 1 | 2 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
-| `shopify-trust-scanner` | 1 | 2 | structure | body word count 784 < 800 |
-| `user-onboarding-builder` | 1 | 2 | structure | body has bare '<' that MDX would parse as JSX (escape as \< outside code fences) |
-| `waitlist-manager` | 1 | 2 | structure | heading[7] expected '## Sources', got (missing) |
-| `abandoned-cart-recovery` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `ai-agency-automation-control-panel` | 1 | 1 | structure | ## Sources needs ≥2 markdown links (got 0) |
-| `ai-agent-error-translator` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `ai-coding-classroom-assistant` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `ai-feedback-triage-widget` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `ai-resume-tailorer` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `api-documentation-generator` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `content-repurposing-tool` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `expense-splitter-app` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `expert-mentorship-marketplace` | 1 | 1 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
-| `feature-voting-board` | 1 | 1 | structure | body has bare '<' that MDX would parse as JSX (escape as \< outside code fences) |
-| `last-20-builder-rescue` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `one-star-attack-detection` | 1 | 1 | structure | body word count 797 < 800 |
-| `recall-radar-ecommerce-sellers` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `single-event-app-builder` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `social-media-scheduler` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `subscription-analytics-dashboard` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
-| `whatsapp-tour-guide-comms` | 1 | 1 | structure | body contains '{{' placeholder |
-| `ai-code-coach-tutor` | 1 | 0 | structure | heading[7] expected '## Sources', got (missing) |
-| `ai-knowledge-transfer-platform` | 1 | 0 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
-| `conversational-analytics-digest` | 1 | 0 | structure | heading[7] expected '## Sources', got (missing) |
-| `corporate-knowledge-ai-assistant` | 1 | 0 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
-| `customer-feedback-aggregator` | 1 | 0 | structure | heading[7] expected '## Sources', got (missing) |
-| `invoice-reminder-bot` | 1 | 0 | structure | body contains '{{' placeholder |
-| `vehicle-recall-alert-service` | 1 | 0 | structure | heading[7] expected '## Sources', got (missing) |
-| `vibe-coders-for-hire` | 1 | 0 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-material-estimator` | 3 | 5 | claims.contradicted, judges.fake_data | "The global smart materials market — which includes AI-driven estimation, planning, and waste-optimization tooling as a segment — is projecte…" but precedencere |
+| `branded-client-portal-builder-for-freelancers` | 2 | 7 | claims.contradicted | "client portal software category valued between $5.2B and $7.4B depending on methodology in 2023" but verifiedmarketresearch.com says "Client Portal Software Ma |
+| `markdown-client-proposals` | 2 | 6 | structure | body contains '{{' placeholder |
+| `last-20-builder-rescue` | 2 | 5 | structure, judges.specificity | heading[7] expected '## Sources', got (missing) |
+| `ai-schema-markup-tool` | 2 | 4 | claims.contradicted | "The global SEO services market grew from $90.35B in 2024 to a projected $106.9B in 2025" but thebusinessresearchcompany.com says "Search Engine Optimization Se |
+| `ai-storybook-generator-for-kids` | 2 | 4 | judges.fake_data, judges.consistency | fake_data 2/5 (claude-haiku-4.5 4, gemini-3.8-flash 2, gpt-5.6-luna 2): "The global personalized children's books market was valued at USD 569 million in 2024 a |
+| `ai-website-launch-rescue` | 2 | 2 | claims.contradicted | "The AI website builder market sits around $3.1 to $3.8 billion in 2025" but hostinger.com says "The global AI website builder market is projected to reach $3.2 |
+| `brake-safety-education-platform` | 2 | 2 | judges.specificity, judges.fake_data | specificity 2/5 (claude-haiku-4.5 3, gemini-3.8-flash 2, gpt-5.6-luna 2): "- **YouTube DIY channels** — Rich video, zero progression tracking, no local shop int |
+| `ai-proposal-generator-consultants` | 1 | 7 | claims.contradicted | "the proposal writing services market specifically is sized at $208 million in 2025, on track to reach $295 million by 2030 at a 7.2% CAGR" but 360iresearch.com |
+| `feature-voting-board` | 1 | 7 | structure | body has bare '<' that MDX would parse as JSX (escape as \< outside code fences) |
+| `kdp-niche-finder` | 1 | 7 | claims.contradicted | "Publisher Rocket ... $97 one-time payment" but kindlepreneur.com says "One-Time Payment Today: $199 Available on Lifetime Access for $299.00 $199.00 Get lifeti |
+| `ai-agent-error-translator` | 1 | 6 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-knowledge-transfer-platform` | 1 | 6 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
+| `ai-student-support-bot-online-educators` | 1 | 6 | claims.contradicted | "The Teacher AI Assistants submarket alone is expected to reach $17.8B by 2033 at a 28.2% CAGR" but growthmarketreports.com says "the AI Teaching Assistants mar |
+| `field-service-job-costing-tracker` | 1 | 6 | claims.contradicted | "HVAC contractors average just 2.5%-3.5% net profit margin" but contractorincharge.com says "Net Profit Margin — HVAC Average: 5-12% (top quartile: 13%+)" |
+| `personal-wellness-coach` | 1 | 6 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
+| `renter-deposit-documentation-app` | 1 | 6 | claims.contradicted | "Rocket Lawyer runs about $39.99/month for membership (or roughly $49.99 per document without one)" but rocketlawyer.com says "A Standard membership costs $149/ |
+| `shopify-seo-keyword-tool` | 1 | 6 | claims.contradicted | "The global keyword research tools market was valued at $1.2 billion in 2024 and is projected to reach $2.5 billion by 2033" but verifiedmarketreports.com says  |
+| `shopify-trust-scanner` | 1 | 6 | structure | body word count 784 < 800 |
+| `user-onboarding-builder` | 1 | 6 | structure | body has bare '<' that MDX would parse as JSX (escape as \< outside code fences) |
+| `freelancer-late-payment-predictor` | 1 | 5 | claims.contradicted | "Freelance platforms are a $7.65B market in 2025, forecast to $14.39B–$16.54B by 2030 at a 16.7–17.7% CAGR" but globenewswire.com says "Estimated Market Value ( |
+| `skill-path-course-finder` | 1 | 5 | claims.contradicted | "Online learning platforms are expected to generate about $61.59B in 2026 at roughly 13% CAGR through 2030" but statista.com says "Worldwide Revenue in the Onli |
+| `ai-api-cost-optimizer-indie-builders` | 1 | 4 | claims.contradicted | "The global AI software market is projected at $294.7 billion in 2025, growing at a 32.4% CAGR" but thebusinessresearchcompany.com says "Artificial Intelligence |
+| `ai-code-coach-tutor` | 1 | 4 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-course-tutor-companion` | 1 | 4 | claims.contradicted | "The global AI companion market was valued at roughly $18.35 billion in 2025" but dataintelo.com says "The global AI companion market was valued at USD 600.0 mi |
+| `ai-qa-test-case-generator-nocode` | 1 | 4 | claims.contradicted | "The global low-code/no-code development platform market is valued at roughly **$65 billion in 2026**, growing at a **26.1% CAGR**" but blog.tooljet.com says "E |
+| `chat-with-historical-figures` | 1 | 4 | claims.contradicted | "The global chatbot market is valued at **~USD 15.57B in 2025 and projected to reach USD 46.64B by 2029, a 24.53% CAGR**" but explodingtopics.com says "The glob |
+| `content-repurposing-tool` | 1 | 4 | structure | heading[7] expected '## Sources', got (missing) |
+| `conversational-analytics-digest` | 1 | 4 | structure | heading[7] expected '## Sources', got (missing) |
+| `expert-mentorship-marketplace` | 1 | 4 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
+| `recall-radar-ecommerce-sellers` | 1 | 4 | structure | heading[7] expected '## Sources', got (missing) |
+| `vibe-coders-for-hire` | 1 | 4 | structure | heading[7] expected '## Sources', got (missing) |
+| `abandoned-cart-recovery` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-code-reviewer` | 1 | 3 | claims.contradicted | "CodeRabbit — Current category leader. Deep PR context, language coverage, learning per repo. Pricing angles toward mid-market; free tier exi…" but coderabbit.a |
+| `ai-coding-classroom-assistant` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-collectible-verification-platform` | 1 | 3 | judges.fake_data | fake_data 2/5 (claude-haiku-4.5 3, gemini-3.8-flash 2, gpt-5.6-luna 2): "Data Insights Market — AI-Powered Detection Tool Market - OpenPR — AI Content Detection |
+| `ai-dance-form-coach` | 1 | 3 | claims.contradicted | "growing at a ~20% CAGR through the decade" but forinsightsconsultancy.com says "CAGR (2026–2034)– ~12.4%" |
+| `ai-feedback-triage-widget` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `api-documentation-generator` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `expense-splitter-app` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `freelancer-income-proof-generator` | 1 | 3 | claims.contradicted | "Income Checker — Consumer-facing one-off verification at ~$14.99" but incomechecker.com says "Pricing As low as $5/report in non-expiring packs" |
+| `inbox-zero-agent` | 1 | 3 | claims.contradicted | "growing at approximately 8.5% CAGR" but dataintelo.com says "CAGR of 11.2%" |
+| `invoice-reminder-bot` | 1 | 3 | structure | body contains '{{' placeholder |
+| `landlord-tenant-risk-screener` | 1 | 3 | claims.contradicted | "$3.28B in 2023 to $5.37B by 2030 at 7.3% CAGR" but verifiedmarketresearch.com says "Tenant Screening Services Market size was valued at USD 1.5 Billion in 2023 |
+| `microschool-admin-platform` | 1 | 3 | judges.specificity | specificity 2/5 (claude-haiku-4.5 4, gemini-3.8-flash 2, gpt-5.6-luna 2): "Generic school-management platforms — Established systems offer attendance, grades, b |
+| `one-star-attack-detection` | 1 | 3 | structure | body word count 797 < 800 |
+| `single-event-app-builder` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `tiktok-trend-predictor-creators` | 1 | 3 | judges.fake_data | fake_data 2/5 (claude-haiku-4.5 3, gemini-3.8-flash 2, gpt-5.6-luna 2): "“TikTok trend prediction tools for creators” tracks ~94K+ monthly search volume (Ideabr |
+| `waitlist-manager` | 1 | 3 | structure | heading[7] expected '## Sources', got (missing) |
+| `ai-agency-automation-control-panel` | 1 | 2 | structure | ## Sources needs ≥2 markdown links (got 0) |
+| `ai-merge-inspector` | 1 | 2 | claims.contradicted | "CodeRabbit — Category leader for AI PR review. Deep comments, language coverage, learning per repo. Reviews the whole diff for quality; does…" but coderabbit.a |
+| `ai-resume-tailorer` | 1 | 2 | structure | heading[7] expected '## Sources', got (missing) |
+| `corporate-knowledge-ai-assistant` | 1 | 2 | structure | ## The Solution must contain **How it works:** followed by a numbered list |
+| `lightroom-preset-generator` | 1 | 2 | claims.contradicted | "AI image generation: $349.6 million (2023) at 17.7% CAGR (Grand View / GM Insights)" but gminsights.com says "AI Image Generator Market size was valued at USD  |
+| `social-media-scheduler` | 1 | 2 | structure | heading[7] expected '## Sources', got (missing) |
+| `subscription-analytics-dashboard` | 1 | 2 | structure | heading[7] expected '## Sources', got (missing) |
+| `whatsapp-tour-guide-comms` | 1 | 2 | structure | body contains '{{' placeholder |
+| `customer-feedback-aggregator` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
+| `vehicle-recall-alert-service` | 1 | 1 | structure | heading[7] expected '## Sources', got (missing) |
 
-## Review: pages with warnings (112)
+## Review: pages with warnings (166)
 
 | Page | Fails | Warns | Checks | First warning |
 |---|---|---|---|---|
-| `ai-grant-writing-assistant-nonprofits` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced | average sentence is 26.3 words (warn > 25) |
-| `ai-product-data-cleaner-for-ecommerce` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced | average sentence is 28.4 words (warn > 25) |
-| `branded-client-portal-builder-for-freelancers` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced | average sentence is 27.1 words (warn > 25) |
-| `chattracker` | 0 | 3 | verbosity.sentenceLength, verbosity.filler, numbers.unsourced | average sentence is 25.4 words (warn > 25) |
-| `field-service-job-costing-tracker` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced | average sentence is 27.7 words (warn > 25) |
-| `vacation-rental-turnover-coordinator` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced | average sentence is 27.5 words (warn > 25) |
-| `ai-brake-inspection-analyser` | 0 | 2 | slop.density, numbers.unsourced | 1.52 stock AI words per 1k words (warn > 1.5): leverage x1 |
-| `ai-chief-of-staff-consultants` | 0 | 2 | numbers.unsourced, sources.homepageOnly | 15 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Solo consultants bill $150–$300 a |
-| `ai-compliance-policy-generator-smbs` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 29.5 words (warn > 25) |
-| `ai-flash-sale-creator-for-shopify` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 30.2 words (warn > 25) |
-| `ai-insurance-claim-appeal-writer` | 0 | 2 | verbosity.sentenceLength, numbers.unsourced | average sentence is 25.1 words (warn > 25) |
-| `ai-job-post-applicant-screener` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 26 words (warn > 25) |
-| `ai-material-estimator` | 0 | 2 | verbosity.sentenceLength, verbosity.filler | average sentence is 27 words (warn > 25) |
-| `ai-proposal-generator-consultants` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 26 words (warn > 25) |
-| `ai-qa-test-case-generator-nocode` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27.3 words (warn > 25) |
-| `ai-wiki-keeper` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 26 words (warn > 25) |
-| `anti-ghosting-recruitment-crm` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 29.6 words (warn > 25) |
-| `bnpl-for-digital-products` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27.1 words (warn > 25) |
-| `career-transition-escape-plan` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27.2 words (warn > 25) |
-| `chargeback-protection-for-ecommerce-sellers` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 28.7 words (warn > 25) |
-| `daily-ai-checkin-calls-for-seniors` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 28.9 words (warn > 25) |
-| `daily-standup-bot` | 0 | 2 | verbosity.filler, numbers.unsourced | 5 filler words per 1k words (warn > 4) |
-| `focus-session-timer` | 0 | 2 | numbers.unsourced, sources.homepageOnly | 26 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…proven rhythm. The upgrade path  |
-| `high-school-athlete-highlight-reel` | 0 | 2 | numbers.unsourced, sources.homepageOnly | 18 of 26 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Hudl already sits on 14 million-p |
-| `kdp-niche-finder` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27 words (warn > 25) |
-| `local-seo-citation-manager` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 31.4 words (warn > 25) |
-| `markdown-publish-everywhere` | 0 | 2 | numbers.unsourced, sources.duplicates | 15 of 22 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…and content-tool SaaS produc |
-| `micro-influencer-deliverable-tracker` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27.5 words (warn > 25) |
-| `quickbooks-escape-ramp` | 0 | 2 | slop.density, numbers.unsourced | 1.69 stock AI words per 1k words (warn > 1.5): harness x3 |
-| `rental-property-maintenance-dashboard` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 28.2 words (warn > 25) |
-| `slack-to-notion-docs` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 26.8 words (warn > 25) |
-| `youtube-algorithm-alerts` | 0 | 2 | verbosity.sentenceLength, verbosity.longSentences | average sentence is 27.3 words (warn > 25) |
-| `adventure-date-night-app` | 0 | 1 | numbers.unsourced | 25 of 60 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ideas. “Experience gifts for cou |
-| `ai-api-cost-optimizer-indie-builders` | 0 | 1 | verbosity.longSentences | 23% of sentences run over 35 words; longest is 60: "It's the daily reality showing up across developer communities at scale: r/aws (341K members) and r/devops ( |
-| `ai-app-security-badge` | 0 | 1 | verbosity.sentenceLength | average sentence is 25.9 words (warn > 25) |
-| `ai-arbitrage-agent-resellers` | 0 | 1 | numbers.unsourced | 23 of 31 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…d KitchenAid, a lot of Lego, any |
-| `ai-builder-hiring-marketplace` | 0 | 1 | numbers.unsourced | 12 of 17 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- Macro AI software + service |
-| `ai-cart-rescue-emotional-emails` | 0 | 1 | numbers.unsourced | 17 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ry benchmarks put average cart a |
-| `ai-content-factory-human-qc` | 0 | 1 | numbers.unsourced | 23 of 37 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…he actual job now: not writing,  |
-| `ai-course-tutor-companion` | 0 | 1 | numbers.unsourced | 18 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…nd cohort completion rates routi |
-| `ai-cpg-packaging-designer` | 0 | 1 | numbers.unsourced | 23 of 27 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…aging engagement with a real age |
-| `ai-landing-page-generator-ecommerce` | 0 | 1 | numbers.unsourced | 14 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…oney into paid ads — U.S. digita |
-| `ai-lesson-planner-teachers` | 0 | 1 | numbers.unsourced | 18 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…their certification. Meanwhile t |
-| `ai-nutrition-planner-trainers` | 0 | 1 | numbers.unsourced | 32 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…online coaches sell results. Nut |
-| `ai-protein-tracker` | 0 | 1 | numbers.unsourced | 11 of 18 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…has already validated the broade |
-| `ai-schema-markup-tool` | 0 | 1 | numbers.unsourced | 17 of 39 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ON-LD into , broke the header, p |
-| `ai-site-design-blueprints` | 0 | 1 | numbers.unsourced | 45 of 64 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…expensive version. Shops buy Cla |
-| `ai-slide-deck-maker` | 0 | 1 | numbers.unsourced | 21 of 29 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…AI presentation makers marke |
-| `ai-storybook-generator-for-kids` | 0 | 1 | verbosity.sentenceLength | average sentence is 25.9 words (warn > 25) |
-| `ai-student-support-bot-online-educators` | 0 | 1 | numbers.unsourced | 16 of 29 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…for course-support assistant |
-| `ai-travel-planner` | 0 | 1 | numbers.unsourced | 9 of 11 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- $317.4 billion by 2029 — the |
-| `ai-verified-freelancer-marketplace` | 0 | 1 | verbosity.sentenceLength | average sentence is 27.5 words (warn > 25) |
-| `ai-video-editor-for-creators` | 0 | 1 | verbosity.longSentences | 21% of sentences run over 35 words; longest is 52: "The category is officially in an "early-maturity but competitive" stage — mature enough that the core techno |
-| `ai-website-launch-rescue` | 0 | 1 | numbers.unsourced | 19 of 55 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…l. CVE-2025-48757 found row-leve |
-| `ai-writing-coach-freelancers` | 0 | 1 | numbers.unsourced | 5 of 8 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…tent creators who already sell |
-| `ai-zoning-intelligence` | 0 | 1 | numbers.unsourced | 12 of 17 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- AI in real estate is a $303 |
-| `aws-cert-ai-study-buddy` | 0 | 1 | sources.homepageOnly | 57% of sources are bare homepages, which cannot back a specific number |
-| `brake-repair-cost-estimator` | 0 | 1 | numbers.unsourced | 11 of 13 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ing, calls two shops, and gets e |
-| `brake-safety-education-platform` | 0 | 1 | numbers.unsourced | 2 of 3 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…e — educated leads convert hig |
-| `brakes-maintenance-tracker-app` | 0 | 1 | numbers.unsourced | 2 of 3 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Competitive Landscape) "…ed. Often subscription o |
-| `client-portal` | 0 | 1 | numbers.unsourced | 20 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "The global client portal soft |
-| `contract-analyzer` | 0 | 1 | numbers.unsourced | 19 of 27 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…work: the cheapest small-busines |
-| `contractor-ai-receptionist` | 0 | 1 | numbers.unsourced | 32 of 81 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…y-killer CPCs. “HVAC answeri |
-| `contractor-lead-refund-automation` | 0 | 1 | numbers.unsourced | 21 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…trucks have to stay full. The bi |
-| `course-completion-nudge-platform` | 0 | 1 | verbosity.filler | 4.46 filler words per 1k words (warn > 4) |
-| `course-translation-resale-network` | 0 | 1 | numbers.unsourced | 24 of 45 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…get 25 auto-translated languages |
-| `data-freelancer-bounty-board` | 0 | 1 | numbers.unsourced | 25 of 45 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…tor-pricing table by Friday. An  |
-| `email-to-todo` | 0 | 1 | numbers.unsourced | 32 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…y language, and output a clean s |
-| `etsy-seo-optimizer` | 0 | 1 | verbosity.sentenceLength | average sentence is 25.3 words (warn > 25) |
-| `expense-report-generator` | 0 | 1 | numbers.unsourced | 33 of 36 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…waste 40+ hours a month on expen |
-| `freelance-scope-creep-detector` | 0 | 1 | verbosity.filler | 4.65 filler words per 1k words (warn > 4) |
-| `freelancer-late-payment-predictor` | 0 | 1 | numbers.unsourced | 25 of 54 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "A copywriter sends a $4,800 invoi |
-| `freelancer-tax-filing-bot` | 0 | 1 | numbers.unsourced | 22 of 43 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…t. Their “books” are a Notes app |
-| `gamified-money-habit-app` | 0 | 1 | numbers.unsourced | 19 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- The gamification market is  |
-| `government-contract-finder` | 0 | 1 | verbosity.filler | 4.45 filler words per 1k words (warn > 4) |
-| `gutcheck-ai-ad-optimization` | 0 | 1 | slop.density | 2.24 stock AI words per 1k words (warn > 1.5): dynamic x2, robust x1 |
-| `habit-tracker` | 0 | 1 | numbers.unsourced | 24 of 37 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…change works when it's simple. A |
-| `inbox-zero-agent` | 0 | 1 | numbers.unsourced | 13 of 18 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…nbox zero that never closes. A c |
-| `invoice-coding-error-scanner` | 0 | 1 | numbers.unsourced | 24 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…guessed categories. Twenty minut |
-| `invoice-payment-reconciler` | 0 | 1 | numbers.unsourced | 19 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…doing detective work every week: |
-| `landlord-tenant-risk-screener` | 0 | 1 | numbers.unsourced | 15 of 43 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- Large agencies run about 60 |
-| `meeting-mood-ai` | 0 | 1 | numbers.unsourced | 20 of 29 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- Global mood tracker app mar |
-| `meeting-scheduler` | 0 | 1 | numbers.unsourced | 22 of 46 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…endly dominates the scheduling-l |
-| `mobile-brake-repair-marketplace` | 0 | 1 | numbers.unsourced | 5 of 6 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…to schedule. Shops keep 9–5 hours; |
-| `nasm-trainer-marketplace` | 0 | 1 | numbers.unsourced | 35 of 48 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Meanwhile, the NASM-certified tra |
-| `nocode-specialist-repair-marketplace` | 0 | 1 | numbers.unsourced | 30 of 58 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "A founder ships 80 percent of a B |
-| `notion-backup-tool` | 0 | 1 | numbers.unsourced | 15 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Notion is the second brain for an |
-| `personalized-employee-wellness-platform` | 0 | 1 | numbers.unsourced | 15 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ndividual. For a 40-person compa |
-| `phone-body-composition-scanner` | 0 | 1 | numbers.unsourced | 16 of 46 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "A Wegovy user steps on a $400 sma |
-| `quiet-creator-personal-branding` | 0 | 1 | numbers.unsourced | 17 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…watches a competitor's talking-h |
-| `real-estate-workflow-automation` | 0 | 1 | numbers.unsourced | 6 of 7 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ool, an email drip platform, and a |
-| `renter-deposit-documentation-app` | 0 | 1 | numbers.unsourced | 18 of 37 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…tenant hands back the keys, ment |
-| `s-corp-monthly-finance-desk` | 0 | 1 | numbers.unsourced | 43 of 54 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…hangover is monthly. A one-perso |
-| `saas-financial-toolkit` | 0 | 1 | slop.density | 1.53 stock AI words per 1k words (warn > 1.5): comprehensive x1, best-in-class x1 |
-| `shopify-b2b-wholesale-setup` | 0 | 1 | numbers.unsourced | 18 of 55 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…nto Basic, Grow, and Advanced. A |
-| `shopify-review-intelligence` | 0 | 1 | sources.homepageOnly | 80% of sources are bare homepages, which cannot back a specific number |
-| `small-order-wholesale-marketplace` | 0 | 1 | numbers.unsourced | 15 of 23 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…boutique marketplace, brands han |
-| `small-town-storefront-marketplace` | 0 | 1 | numbers.unsourced | 8 of 11 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…her side of the same pain. Downto |
-| `sms-time-tracker` | 0 | 1 | numbers.unsourced | 15 of 39 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…the U.S. side-hustle population  |
-| `solo-founder-health-score` | 0 | 1 | numbers.unsourced | 19 of 31 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- 64 million independent work |
-| `three-minute-money-habit-app` | 0 | 1 | verbosity.filler | 4.26 filler words per 1k words (warn > 4) |
-| `tiktok-shop-fulfillment-automation` | 0 | 1 | numbers.unsourced | 16 of 26 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…not a hypothetical. TikTok Shop' |
-| `tiktok-trend-predictor-creators` | 0 | 1 | numbers.unsourced | 16 of 25 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…rs live and die by timing. The d |
-| `underused-venue-marketplace` | 0 | 1 | numbers.unsourced | 14 of 22 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…for roughly six hours a week. A  |
-| `video-sales-funnel-builder` | 0 | 1 | numbers.unsourced | 23 of 35 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…s (Gisteo, Skyline) will build t |
-| `viral-ad-licensing-dtc` | 0 | 1 | numbers.unsourced | 17 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…UGC in Facebook ads can 4x CTR a |
-| `virtual-knowledge-hub` | 0 | 1 | numbers.unsourced | 39 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…s not want a LinkedIn course. Sh |
-| `voice-desktop-workflow-macros` | 0 | 1 | numbers.unsourced | 13 of 19 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…e and speech recognition sof |
-| `website-accessibility-ada-scanner` | 0 | 1 | slop.density | 1.81 stock AI words per 1k words (warn > 1.5): comprehensive x1 |
-| `wedding-event-staffing-marketplace` | 0 | 1 | sources.homepageOnly | 75% of sources are bare homepages, which cannot back a specific number |
-| `wedding-flower-pinterest-budget` | 0 | 1 | numbers.unsourced | 34 of 42 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ot. She dumps a Pinterest board  |
-| `workflow-audit-app-for-small-businesses` | 0 | 1 | numbers.unsourced | 15 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…pecialist will happily charge an |
+| `ai-flash-sale-creator-for-shopify` | 0 | 10 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.disagree, judges.fake_data, judges.consistency, sources.dead | average sentence is 30.2 words (warn > 25) |
+| `ai-product-data-cleaner-for-ecommerce` | 0 | 9 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree, sources.dead | average sentence is 28.4 words (warn > 25) |
+| `ai-app-security-badge` | 0 | 8 | verbosity.sentenceLength, claims.unsupported, judges.disagree, judges.consistency, sources.dead | average sentence is 25.9 words (warn > 25) |
+| `ai-verified-freelancer-marketplace` | 0 | 8 | verbosity.sentenceLength, claims.outdated, claims.unsupported, sources.unreachable, judges.disagree | average sentence is 27.5 words (warn > 25) |
+| `client-portal` | 0 | 8 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, judges.fake_data, sources.dead | 20 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "The global client portal soft |
+| `daily-ai-checkin-calls-for-seniors` | 0 | 8 | verbosity.sentenceLength, verbosity.longSentences, claims.outdated, claims.unsupported, judges.disagree, sources.dead | average sentence is 28.9 words (warn > 25) |
+| `habit-tracker` | 0 | 8 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 24 of 37 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…change works when it's simple. A |
+| `bnpl-for-digital-products` | 0 | 7 | verbosity.sentenceLength, verbosity.longSentences, claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | average sentence is 27.1 words (warn > 25) |
+| `career-transition-escape-plan` | 0 | 7 | verbosity.sentenceLength, verbosity.longSentences, claims.outdated, claims.unsupported, judges.disagree, judges.fake_data | average sentence is 27.2 words (warn > 25) |
+| `government-contract-finder` | 0 | 7 | verbosity.filler, claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree, sources.dead | 4.45 filler words per 1k words (warn > 4) |
+| `markdown-publish-everywhere` | 0 | 7 | numbers.unsourced, sources.duplicates, claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree | 15 of 22 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…and content-tool SaaS produc |
+| `rental-property-maintenance-dashboard` | 0 | 7 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.fake_data, judges.disagree, sources.dead | average sentence is 28.2 words (warn > 25) |
+| `tiktok-shop-fulfillment-automation` | 0 | 7 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree, sources.dead | 16 of 26 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…not a hypothetical. TikTok Shop' |
+| `voice-desktop-workflow-macros` | 0 | 7 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree, judges.consistency | 13 of 19 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…e and speech recognition sof |
+| `ai-brake-inspection-analyser` | 0 | 6 | slop.density, numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 1.52 stock AI words per 1k words (warn > 1.5): leverage x1 |
+| `ai-nutrition-planner-trainers` | 0 | 6 | numbers.unsourced, claims.outdated, claims.unsupported, judges.disagree | 32 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…online coaches sell results. Nut |
+| `ai-travel-planner` | 0 | 6 | numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 9 of 11 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- $317.4 billion by 2029 — the |
+| `automated-multi-modal-marketing-tools` | 0 | 6 | claims.outdated, claims.unsupported, judges.disagree, sources.dead | 1 claim(s) quote an older version of their source, e.g. "$8.23 billion in 2025 → $14.73 billion in 2029 at 15.7% CAGR" but thebusinessresearchcompany.com now sa |
+| `brakes-maintenance-tracker-app` | 0 | 6 | numbers.unsourced, sources.unreachable, judges.disagree, judges.fake_data | 2 of 3 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Competitive Landscape) "…ed. Often subscription o |
+| `chattracker` | 0 | 6 | verbosity.sentenceLength, verbosity.filler, numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree | average sentence is 25.4 words (warn > 25) |
+| `contract-analyzer` | 0 | 6 | numbers.unsourced, claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | 19 of 27 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…work: the cheapest small-busines |
+| `email-to-todo` | 0 | 6 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 32 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…y language, and output a clean s |
+| `freelancer-tax-filing-bot` | 0 | 6 | numbers.unsourced, claims.outdated, claims.unsupported, judges.disagree, sources.dead | 22 of 43 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…t. Their “books” are a Notes app |
+| `gamified-money-habit-app` | 0 | 6 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 19 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- The gamification market is  |
+| `meeting-mood-ai` | 0 | 6 | numbers.unsourced, claims.outdated, claims.unsupported, judges.disagree | 20 of 29 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- Global mood tracker app mar |
+| `nasm-trainer-marketplace` | 0 | 6 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 35 of 48 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Meanwhile, the NASM-certified tra |
+| `personalized-employee-wellness-platform` | 0 | 6 | numbers.unsourced, claims.unsupported, judges.disagree, judges.consistency | 15 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ndividual. For a 40-person compa |
+| `quickbooks-escape-ramp` | 0 | 6 | slop.density, numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree | 1.69 stock AI words per 1k words (warn > 1.5): harness x3 |
+| `slack-to-notion-docs` | 0 | 6 | verbosity.sentenceLength, verbosity.longSentences, claims.outdated, claims.unsupported, judges.disagree, sources.dead | average sentence is 26.8 words (warn > 25) |
+| `virtual-knowledge-hub` | 0 | 6 | numbers.unsourced, claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | 39 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…s not want a LinkedIn course. Sh |
+| `wedding-event-staffing-marketplace` | 0 | 6 | sources.homepageOnly, sources.unreachable, judges.specificity, judges.disagree, judges.fake_data | 75% of sources are bare homepages, which cannot back a specific number |
+| `adventure-date-night-app` | 0 | 5 | numbers.unsourced, sources.unreachable, judges.disagree, sources.dead | 25 of 60 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ideas. “Experience gifts for cou |
+| `ai-cart-rescue-emotional-emails` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 17 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ry benchmarks put average cart a |
+| `ai-chief-of-staff-consultants` | 0 | 5 | numbers.unsourced, sources.homepageOnly, claims.unsupported, sources.unreachable, judges.fake_data | 15 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Solo consultants bill $150–$300 a |
+| `ai-cpg-packaging-designer` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree | 23 of 27 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…aging engagement with a real age |
+| `ai-insurance-claim-appeal-writer` | 0 | 5 | verbosity.sentenceLength, numbers.unsourced, claims.unsupported, judges.disagree, sources.dead | average sentence is 25.1 words (warn > 25) |
+| `ai-slide-deck-maker` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.disagree, judges.fake_data | 21 of 29 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…AI presentation makers marke |
+| `ai-video-editor-for-creators` | 0 | 5 | verbosity.longSentences, claims.unsupported, sources.unreachable, judges.disagree | 21% of sentences run over 35 words; longest is 52: "The category is officially in an "early-maturity but competitive" stage — mature enough that the core techno |
+| `ai-writing-coach-freelancers` | 0 | 5 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data, sources.dead | 5 of 8 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…tent creators who already sell |
+| `anti-ghosting-recruitment-crm` | 0 | 5 | verbosity.sentenceLength, verbosity.longSentences, claims.outdated, claims.unsupported, judges.disagree | average sentence is 29.6 words (warn > 25) |
+| `course-completion-nudge-platform` | 0 | 5 | verbosity.filler, claims.unsupported, judges.disagree | 4.46 filler words per 1k words (warn > 4) |
+| `daily-standup-bot` | 0 | 5 | verbosity.filler, numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree | 5 filler words per 1k words (warn > 4) |
+| `etsy-seo-optimizer` | 0 | 5 | verbosity.sentenceLength, claims.unsupported, judges.disagree, sources.dead | average sentence is 25.3 words (warn > 25) |
+| `gutcheck-ai-ad-optimization` | 0 | 5 | slop.density, claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | 2.24 stock AI words per 1k words (warn > 1.5): dynamic x2, robust x1 |
+| `high-school-athlete-highlight-reel` | 0 | 5 | numbers.unsourced, sources.homepageOnly, claims.unsupported, sources.unreachable, judges.fake_data | 18 of 26 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Hudl already sits on 14 million-p |
+| `local-seo-citation-manager` | 0 | 5 | verbosity.sentenceLength, verbosity.longSentences, judges.disagree, judges.consistency | average sentence is 31.4 words (warn > 25) |
+| `micro-influencer-deliverable-tracker` | 0 | 5 | verbosity.sentenceLength, verbosity.longSentences, judges.disagree, sources.dead | average sentence is 27.5 words (warn > 25) |
+| `n8n-freelancer-academy` | 0 | 5 | claims.unsupported, judges.disagree | 11 of 15 claims are unsourced (7) or not found in their cited source (4), e.g. "The global e-learning market is projected to grow from $218.9 billion in 2025 to |
+| `nocode-specialist-repair-marketplace` | 0 | 5 | numbers.unsourced, sources.unreachable, judges.disagree, sources.dead | 30 of 58 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "A founder ships 80 percent of a B |
+| `non-toxic-appliance-verification-platform` | 0 | 5 | claims.unsupported, sources.unreachable, judges.specificity, judges.fake_data, judges.disagree | 14 of 16 claims are unsourced (13) or not found in their cited source (1), e.g. "The broader global appliance market is measured in the hundreds of billions of  |
+| `notion-backup-tool` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.disagree, sources.dead | 15 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "Notion is the second brain for an |
+| `saas-financial-toolkit` | 0 | 5 | slop.density, claims.unsupported, judges.disagree, sources.dead | 1.53 stock AI words per 1k words (warn > 1.5): comprehensive x1, best-in-class x1 |
+| `shopify-review-intelligence` | 0 | 5 | sources.homepageOnly, claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 80% of sources are bare homepages, which cannot back a specific number |
+| `small-order-wholesale-marketplace` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.disagree, judges.fake_data | 15 of 23 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…boutique marketplace, brands han |
+| `sms-time-tracker` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.disagree | 15 of 39 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…the U.S. side-hustle population  |
+| `static-ad-to-video-generator` | 0 | 5 | claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "**Global digital video advertising** is projected at **$140.18 billion in 2025**, up from $104.65 billi |
+| `supply-chain-transparency-platform` | 0 | 5 | claims.outdated, claims.unsupported, judges.fake_data, judges.disagree | 2 claim(s) quote an older version of their source, e.g. "The AI in supply chain market is projected to grow from $9.94B in 2025 to $192.51B by 2034, a 39% CAGR" |
+| `three-minute-money-habit-app` | 0 | 5 | verbosity.filler, sources.unreachable, judges.disagree, sources.dead | 4.26 filler words per 1k words (warn > 4) |
+| `underused-venue-marketplace` | 0 | 5 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 14 of 22 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…for roughly six hours a week. A  |
+| `vacation-rental-turnover-coordinator` | 0 | 5 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced, judges.disagree | average sentence is 27.5 words (warn > 25) |
+| `viral-ad-licensing-dtc` | 0 | 5 | numbers.unsourced, claims.unsupported, judges.disagree, sources.dead | 17 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…UGC in Facebook ads can 4x CTR a |
+| `youtube-algorithm-alerts` | 0 | 5 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.disagree | average sentence is 27.3 words (warn > 25) |
+| `agent-storefront-platform` | 0 | 4 | claims.unsupported, judges.disagree, judges.fake_data | 12 of 15 claims are unsourced (3) or not found in their cited source (9), e.g. "ClawHub already has 3,000+ published skills and 50,000 monthly installs" |
+| `ai-content-factory-human-qc` | 0 | 4 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.disagree | 23 of 37 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…he actual job now: not writing,  |
+| `ai-grant-writing-assistant-nonprofits` | 0 | 4 | verbosity.sentenceLength, verbosity.longSentences, numbers.unsourced, judges.disagree | average sentence is 26.3 words (warn > 25) |
+| `ai-job-post-applicant-screener` | 0 | 4 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.disagree | average sentence is 26 words (warn > 25) |
+| `ai-landing-page-generator-ecommerce` | 0 | 4 | numbers.unsourced, claims.outdated, claims.unsupported, judges.fake_data | 14 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…oney into paid ads — U.S. digita |
+| `ai-lesson-planner-teachers` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.disagree | 18 of 24 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…their certification. Meanwhile t |
+| `ai-meeting-notes-cleaner` | 0 | 4 | claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 3 of 5 claims are unsourced (0) or not found in their cited source (3), e.g. "MarketsandMarkets projects the broader conversational AI segment exceeding $40B by |
+| `ai-practice-plan-generator-music-teachers` | 0 | 4 | claims.unsupported, judges.disagree, judges.fake_data | 13 of 18 claims are unsourced (9) or not found in their cited source (4), e.g. "r/pianoteachers (about 8,900)" |
+| `ai-site-design-blueprints` | 0 | 4 | numbers.unsourced, sources.unreachable, judges.disagree | 45 of 64 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…expensive version. Shops buy Cla |
+| `ai-tutor-matchmaker` | 0 | 4 | claims.unsupported, sources.unreachable, judges.fake_data, sources.dead | 11 of 17 claims are unsourced (7) or not found in their cited source (4), e.g. "American families spend more than $7 billion a year on private tutoring" |
+| `ai-wiki-keeper` | 0 | 4 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.disagree | average sentence is 26 words (warn > 25) |
+| `ai-youtube-script-generator` | 0 | 4 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "A narrower estimate puts script-writing software at USD 140.24M (2024) growing to USD 305.91M by 2031 — |
+| `ai-zoning-intelligence` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree | 12 of 17 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- AI in real estate is a $303 |
+| `auto-repair-estimate-translator` | 0 | 4 | claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 8 of 13 claims are unsourced (4) or not found in their cited source (4), e.g. "Bosch, Autel, and Hitachi sell AI-assisted hardware in the thousands" |
+| `aws-cert-ai-study-buddy` | 0 | 4 | sources.homepageOnly, sources.unreachable, judges.fake_data, judges.disagree | 57% of sources are bare homepages, which cannot back a specific number |
+| `book-formatting-for-self-publishers` | 0 | 4 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "The global book publishers market was valued at about 103.7 billion dollars in 2025 and is forecast to  |
+| `brake-repair-cost-estimator` | 0 | 4 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.error | 11 of 13 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ing, calls two shops, and gets e |
+| `chargeback-protection-for-ecommerce-sellers` | 0 | 4 | verbosity.sentenceLength, verbosity.longSentences, claims.unsupported, judges.disagree | average sentence is 28.7 words (warn > 25) |
+| `contractor-lead-refund-automation` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.disagree, sources.dead | 21 of 47 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…trucks have to stay full. The bi |
+| `creator-manufacturer-partnership-marketplace` | 0 | 4 | claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree | 6 of 7 claims are unsourced (5) or not found in their cited source (1), e.g. "Reddit's r/influencermarketing (130K+)" |
+| `customized-lead-magnets` | 0 | 4 | sources.unreachable, judges.fake_data, judges.disagree, sources.dead | 4 of 6 cited sources could not be read (67%): hubspot.com (200), canva.com (403), mycodelesswebsite.com (200) |
+| `excel-formula-repair-ai` | 0 | 4 | claims.unsupported, judges.disagree | 8 of 10 claims are unsourced (7) or not found in their cited source (1), e.g. "Excel holds an estimated 80%+ of the spreadsheet market" |
+| `expense-report-generator` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.disagree | 33 of 36 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…waste 40+ hours a month on expen |
+| `feed-free-social-workspace` | 0 | 4 | claims.unsupported, sources.unreachable, judges.disagree | 10 of 12 claims are unsourced (6) or not found in their cited source (4), e.g. "“Social media scheduler” alone does about 165,000 monthly searches" |
+| `focus-session-timer` | 0 | 4 | numbers.unsourced, sources.homepageOnly, claims.unsupported, sources.unreachable | 26 of 41 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…proven rhythm. The upgrade path  |
+| `freelance-scope-creep-detector` | 0 | 4 | verbosity.filler, judges.disagree, sources.dead | 4.65 filler words per 1k words (warn > 4) |
+| `hold-time-call-bot` | 0 | 4 | claims.unsupported, judges.fake_data, judges.disagree, sources.dead | 14 of 17 claims are unsourced (14) or not found in their cited source (0), e.g. "Ideabrowser’s brief puts average U.S. phone-tree-and-hold time at about ten hou |
+| `invoice-coding-error-scanner` | 0 | 4 | numbers.unsourced, judges.disagree, sources.dead | 24 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…guessed categories. Twenty minut |
+| `marketplace-meetup-safety` | 0 | 4 | claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 6 of 9 claims are unsourced (6) or not found in their cited source (0), e.g. "The secondhand market is projected around $227 billion (Ideabrowser highlight on t |
+| `mobile-brake-repair-marketplace` | 0 | 4 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data | 5 of 6 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…to schedule. Shops keep 9–5 hours; |
+| `no-code-ai-agent-platform` | 0 | 4 | claims.unsupported, judges.fake_data, judges.disagree | 14 of 15 claims are unsourced (11) or not found in their cited source (3), e.g. "Reddit’s r/AI_Agents sits at 118k members" |
+| `photo-meal-workout-tracker` | 0 | 4 | claims.unsupported, judges.disagree, judges.fake_data | 14 of 20 claims are unsourced (9) or not found in their cited source (5), e.g. "manual-entry fitness-app churn near 70 percent within three months" |
+| `postpartum-recovery-platform` | 0 | 4 | claims.unsupported, sources.unreachable, judges.disagree, sources.dead | 11 of 16 claims are unsourced (8) or not found in their cited source (3), e.g. "and is projected to reach $25B–$38B by 2033–2035" |
+| `quiet-creator-personal-branding` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.fake_data, judges.disagree | 17 of 32 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…watches a competitor's talking-h |
+| `real-estate-workflow-automation` | 0 | 4 | numbers.unsourced, claims.unsupported, sources.unreachable, judges.fake_data | 6 of 7 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ool, an email drip platform, and a |
+| `saas-feature-usage-auditor` | 0 | 4 | claims.unsupported, sources.unreachable, judges.fake_data, judges.disagree | 14 of 17 claims are unsourced (11) or not found in their cited source (3), e.g. "Facebook’s Product Analytics with devtodev group (4.3K) and the Power BI suppor |
+| `small-town-storefront-marketplace` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.specificity, judges.fake_data | 8 of 11 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…her side of the same pain. Downto |
+| `solo-founder-health-score` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.disagree | 19 of 31 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- 64 million independent work |
+| `video-sales-funnel-builder` | 0 | 4 | numbers.unsourced, claims.unsupported, sources.unreachable, sources.dead | 23 of 35 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…s (Gisteo, Skyline) will build t |
+| `vintage-ride-revival-3d-printed-parts` | 0 | 4 | claims.unsupported, judges.fake_data, judges.disagree | 13 of 15 claims are unsourced (11) or not found in their cited source (2), e.g. "The cited research places the global automotive 3D-printing market around $3.4– |
+| `warranty-service-plan-tracker` | 0 | 4 | sources.unreachable, judges.disagree, sources.dead | 3 of 6 cited sources could not be read (50%): cpscentral.com (200), servicexrg.com (404), fortunebusinessinsights.com (403) |
+| `website-accessibility-ada-scanner` | 0 | 4 | slop.density, sources.unreachable, judges.disagree | 1.81 stock AI words per 1k words (warn > 1.5): comprehensive x1 |
+| `wedding-flower-pinterest-budget` | 0 | 4 | numbers.unsourced, claims.unsupported, judges.disagree | 34 of 42 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…ot. She dumps a Pinterest board  |
+| `adspark` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 6 of 9 claims are unsourced (6) or not found in their cited source (0), e.g. "Facebook's "Small Business Digital Marketing" group runs 70,000 members deep" |
+| `ai-accountability-coach` | 0 | 3 | claims.unsupported, judges.fake_data, judges.disagree | 8 of 10 claims are unsourced (7) or not found in their cited source (1), e.g. "Reddit’s r/RemoteJobs (286K members), r/WorkOnline (654K), and r/DigitalNomad (2. |
+| `ai-agent-workflow-platform` | 0 | 3 | claims.outdated, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "Precedence Research puts the AI agents market at $7.92 billion in 2025, reaching $236.03 billion by 203 |
+| `ai-arbitrage-agent-resellers` | 0 | 3 | numbers.unsourced, claims.unsupported, judges.disagree | 23 of 31 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…d KitchenAid, a lot of Lego, any |
+| `ai-bookkeeping-for-freelancers` | 0 | 3 | claims.unsupported, judges.fake_data, judges.disagree | 10 of 11 claims are unsourced (8) or not found in their cited source (2), e.g. "Threads on r/Bookkeeping and r/smallbusiness (1.6M+ members) routinely cross 100 |
+| `ai-builder-hiring-marketplace` | 0 | 3 | numbers.unsourced, claims.unsupported, sources.unreachable | 12 of 17 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "- Macro AI software + service |
+| `ai-coding-agent-dashboard` | 0 | 3 | claims.unsupported, judges.fake_data, judges.disagree | 8 of 11 claims are unsourced (0) or not found in their cited source (8), e.g. "r/github (196K members)" |
+| `ai-compliance-policy-generator-smbs` | 0 | 3 | verbosity.sentenceLength, verbosity.longSentences, judges.disagree | average sentence is 29.5 words (warn > 25) |
+| `ai-fashion-lookbook-studio` | 0 | 3 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "Dataintelo puts AI-generated fashion photography at $1.42B in 2024, headed to $13.66B by 2033 at a 27.8 |
+| `ai-meeting-copilot` | 0 | 3 | claims.outdated, claims.unsupported, judges.fake_data | 1 claim(s) quote an older version of their source, e.g. "The intelligent virtual assistant market is projected to grow from USD 22.37B in 2025 to USD 80.95B by  |
+| `ai-podcast-producer` | 0 | 3 | claims.unsupported, judges.disagree | 9 of 10 claims are unsourced (7) or not found in their cited source (2), e.g. "r/podcasting sits at roughly 250,000 members" |
+| `ai-protein-tracker` | 0 | 3 | numbers.unsourced, claims.unsupported, judges.disagree | 11 of 18 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…has already validated the broade |
+| `ai-sentiment-landing-page-design` | 0 | 3 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "Landing page builders are projected to grow from $715.5M in 2025 to $2.72B by 2035 at a 14.3% CAGR" but |
+| `ai-vocal-coach-realtime-pitch` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 13 of 19 claims are unsourced (11) or not found in their cited source (2), e.g. "Facebook's Vocal Training group sits above 205,000 members" |
+| `ai-workflow-library-solopreneurs` | 0 | 3 | claims.unsupported, sources.unreachable, judges.fake_data | 4 of 5 claims are unsourced (4) or not found in their cited source (0), e.g. "Global **workflow automation** is projected around **USD 23.77 billion in 2025** r |
+| `contractor-ai-receptionist` | 0 | 3 | numbers.unsourced, judges.disagree | 32 of 81 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (Market Research) "…y-killer CPCs. “HVAC answeri |
+| `course-translation-resale-network` | 0 | 3 | numbers.unsourced, judges.disagree, sources.dead | 24 of 45 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…get 25 auto-translated languages |
+| `data-freelancer-bounty-board` | 0 | 3 | numbers.unsourced, claims.unsupported, sources.dead | 25 of 45 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…tor-pricing table by Friday. An  |
+| `gamified-coding-rpg` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 14 of 18 claims are unsourced (14) or not found in their cited source (0), e.g. "the research around this idea cites dropout on the order of 60% for traditional |
+| `gauge-photo-meter-reading` | 0 | 3 | judges.disagree, sources.dead | fake_data: judges differ by 2 points (claude-haiku-4.5 4, gemini-3.8-flash 5, gpt-5.6-luna 3); review by hand |
+| `healthsync-personal-health-dashboard` | 0 | 3 | claims.outdated, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "The global healthcare distribution market is valued at approximately $1.19 trillion in 2025 and is proj |
+| `hr-insight-engine` | 0 | 3 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "growing at roughly 9.3% CAGR toward at least $76.9B by 2029" but einpresswire.com now says "reaching $7 |
+| `hydration-app-for-hikers` | 0 | 3 | claims.unsupported, judges.disagree | 9 of 17 claims are unsourced (3) or not found in their cited source (6), e.g. "r/hiking sits at 2.1 million members" |
+| `music-royalty-recovery-heirs` | 0 | 3 | claims.unsupported, judges.disagree | 10 of 19 claims are unsourced (7) or not found in their cited source (3), e.g. "r/musicbusiness (24.7K) keeps getting the follow-up" |
+| `on-device-privacy-ai` | 0 | 3 | claims.unsupported, judges.fake_data, judges.disagree | 16 of 17 claims are unsourced (13) or not found in their cited source (3), e.g. "Specialized on-device AI forecasts put the market near USD 10.6 billion in 2025 |
+| `phone-body-composition-scanner` | 0 | 3 | numbers.unsourced, claims.unsupported, judges.disagree | 16 of 46 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "A Wegovy user steps on a $400 sma |
+| `phone-neck-score-app` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 11 of 15 claims are unsourced (11) or not found in their cited source (0), e.g. "Reddit’s r/Posture has about 456,000 members trading pillow hacks, chin-tuck fo |
+| `python-training-for-professionals` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 12 of 18 claims are unsourced (11) or not found in their cited source (1), e.g. "Employers already prefer bootcamp-shaped proof of skill (research cites ~65% em |
+| `quarterly-tax-estimator-freelancers` | 0 | 3 | claims.unsupported, judges.fake_data, judges.disagree | 13 of 13 claims are unsourced (7) or not found in their cited source (6), e.g. "Every quarter, freelancers play a guessing game with the IRS and usually lose" |
+| `reactive-dog-post-op-recovery-planner` | 0 | 3 | sources.unreachable, judges.disagree | 4 of 6 cited sources could not be read (67%): avma.org (200), doi.org (403), pubmed.ncbi.nlm.nih.gov (203) |
+| `reddit-discord-listening-cmos` | 0 | 3 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "AI platforms: $24 billion in 2025 to $165.6 billion in 2035 (21.3%, Future Market Insights)" but future |
+| `remote-team-documentation-tool` | 0 | 3 | sources.unreachable, judges.fake_data, sources.dead | 2 of 4 cited sources could not be read (50%): fortunebusinessinsights.com (403), notion.so (404) |
+| `s-corp-monthly-finance-desk` | 0 | 3 | numbers.unsourced, sources.unreachable, judges.disagree | 43 of 54 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…hangover is monthly. A one-perso |
+| `shopify-ai-support-context` | 0 | 3 | claims.unsupported, sources.unreachable, judges.disagree | 3 of 5 claims are unsourced (2) or not found in their cited source (1), e.g. "repeat buyers expect recognition, WISMO ("where is my order") remains the highest- |
+| `shopify-b2b-wholesale-setup` | 0 | 3 | numbers.unsourced, judges.disagree | 18 of 55 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…nto Basic, Grow, and Advanced. A |
+| `tattoo-dm-booking-agent` | 0 | 3 | claims.outdated, claims.unsupported, judges.disagree | 1 claim(s) quote an older version of their source, e.g. "The broader tattoo market grows near 9.7% CAGR, from about USD 2.14 billion in 2024 toward USD 4.5 bill |
+| `voice-copilot-field-technicians` | 0 | 3 | claims.unsupported, judges.disagree, sources.dead | 13 of 20 claims are unsourced (7) or not found in their cited source (6), e.g. "Field service management software is a roughly $4 billion to $6 billion global m |
+| `workflow-audit-app-for-small-businesses` | 0 | 3 | numbers.unsourced, claims.unsupported, judges.disagree | 15 of 33 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…pecialist will happily charge an |
+| `ai-api-docs-generator` | 0 | 2 | claims.unsupported, judges.disagree | 11 of 15 claims are unsourced (7) or not found in their cited source (4), e.g. "Reddit's r/technicalwriting (52.7K members)" |
+| `ai-customer-interview-analyzer` | 0 | 2 | sources.unreachable, judges.disagree | 3 of 5 cited sources could not be read (60%): openpr.com (403), marketgrowthreports.com (403), cleverx.com (202) |
+| `ai-prompt-optimization-marketers` | 0 | 2 | sources.unreachable, judges.disagree | 3 of 6 cited sources could not be read (50%): grandviewresearch.com (403), promptbase.com (403), reddit.com (403) |
+| `ai-rfp-response-assistant` | 0 | 2 | claims.unsupported, sources.unreachable | 7 of 9 claims are unsourced (5) or not found in their cited source (2), e.g. "Public pricing for category leaders starts around five figures annually with annua |
+| `ai-search-publicist-freelancers` | 0 | 2 | judges.disagree | fake_data: judges differ by 2 points (claude-haiku-4.5 4, gemini-3.8-flash 5, gpt-5.6-luna 3); review by hand |
+| `ai-startup-governance-copilot` | 0 | 2 | claims.unsupported, judges.fake_data | 10 of 14 claims are unsourced (4) or not found in their cited source (6), e.g. "The AI governance market is estimated around $308 million to $414 million in 202 |
+| `ai-top-three-task-widget` | 0 | 2 | claims.unsupported, judges.disagree | 12 of 15 claims are unsourced (7) or not found in their cited source (5), e.g. "Todoist Premium is about $4/mo" |
+| `ai-website-redesign-service` | 0 | 2 | claims.unsupported, sources.dead | 14 of 17 claims are unsourced (11) or not found in their cited source (3), e.g. "Roughly 50% of small businesses still operate without any real website" |
+| `college-retention-early-help-router` | 0 | 2 | sources.unreachable, judges.disagree | 4 of 6 cited sources could not be read (67%): pcc.edu (200), govstech.apsu.edu (200), policy.cuny.edu (200) |
+| `contractor-osha-safety-grade` | 0 | 2 | sources.unreachable, judges.disagree | 5 of 6 cited sources could not be read (83%): st.hzcdn.com (200), jchs.harvard.edu (200), grandviewresearch.com (403) |
+| `creator-launch-kit` | 0 | 2 | claims.unsupported, judges.disagree | 10 of 11 claims are unsourced (9) or not found in their cited source (1), e.g. "North America accounts for 40–45.6% of that market—about $32–34B in 2025—and is  |
+| `fan-funded-creator-products` | 0 | 2 | claims.unsupported, judges.consistency | 20 of 20 claims are unsourced (17) or not found in their cited source (3), e.g. "Fan funding platforms projected from roughly $2.1B (2024) toward $7.8B by 2033  |
+| `first-international-hire-assistant` | 0 | 2 | judges.disagree, sources.dead | fake_data: judges differ by 2 points (claude-haiku-4.5 5, gemini-3.8-flash 5, gpt-5.6-luna 3); review by hand |
+| `helpdesk-workflow-migration-cloner` | 0 | 2 | claims.unsupported, judges.disagree | 6 of 7 claims are unsourced (4) or not found in their cited source (2), e.g. "Enterprise data migration — the parent category that ticket export tools sell into |
+| `invoice-payment-reconciler` | 0 | 2 | numbers.unsourced, judges.disagree | 19 of 21 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…doing detective work every week: |
+| `medication-interaction-checker` | 0 | 2 | claims.unsupported, judges.disagree | 10 of 14 claims are unsourced (10) or not found in their cited source (0), e.g. "A senior taking seven or more daily medications is not an edge case, it is the  |
+| `meeting-scheduler` | 0 | 2 | numbers.unsourced, claims.unsupported | 22 of 46 numbers in The Problem/Market Research/Competitive Landscape have no inline link or named source, e.g. (The Problem) "…endly dominates the scheduling-l |
+| `payment-reconciliation-market-vendors` | 0 | 2 | claims.unsupported, judges.error | 16 of 17 claims are unsourced (16) or not found in their cited source (0), e.g. "Ideabrowser's trend snapshot returned about 107,000 monthly searches across rel |
+| `retro-ad-generator` | 0 | 2 | judges.fake_data, judges.disagree | fake_data 3/5 (claude-haiku-4.5 3, gemini-3.8-flash 4, gpt-5.6-luna 3): "AI marketing spend was cited at $27.83 billion in 2024 to $35.54 billion in 2025 in the |
+| `subscription-audit-assistant` | 0 | 2 | claims.unsupported, judges.disagree | 14 of 14 claims are unsourced (11) or not found in their cited source (3), e.g. "The average household is carrying somewhere between eight and fifteen recurring |
+| `timed-tool-access-contractors` | 0 | 2 | claims.unsupported, judges.disagree | 5 of 8 claims are unsourced (4) or not found in their cited source (1), e.g. "Reddit’s r/sysadmin holds about 1.3 million members" |
+| `youth-sports-team-messaging-hub` | 0 | 2 | claims.unsupported, judges.disagree | 16 of 19 claims are unsourced (12) or not found in their cited source (4), e.g. "The U.S. unified communications market alone was $36B in 2024, growing to $144B |
+| `code-audit-for-ai-built-apps` | 0 | 1 | judges.disagree | fake_data: judges differ by 3 points (claude-haiku-4.5 4, gemini-3.8-flash 5, gpt-5.6-luna 2); review by hand |
 
 Run `npm run evals:run -- --slug <slug>` for every finding on one page.
