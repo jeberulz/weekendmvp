@@ -166,10 +166,24 @@ describe("Year-One Math against finance.ts (F6)", () => {
     const twoDownsides = replaceOnce(compiledPage(), DOWNSIDE, `${DOWNSIDE}\n${DOWNSIDE}`);
     expect(errorsOf(await auditPage(twoDownsides))).toMatch(/Year-One Math has 2 downside lines; exactly one is allowed/);
 
-    for (const extra of ["- **$54,000 ARR target** — month-12 goal", "- **$4,500 MRR** — month-12 run rate"]) {
+    for (const extra of [
+      "- **$54,000 ARR target** — month-12 goal",
+      "- **$4,500 MRR** — month-12 run rate",
+      "- **$4.5k MRR** — month-12 run rate",
+      "- **ARR of $60,000** — stretch goal",
+    ]) {
       const page = replaceOnce(compiledPage(), "- **5 developers** — Paid developers", `${extra}\n- **5 developers** — Paid developers`);
       expect(errorsOf(await auditPage(page)), extra).toMatch(/Business Model states another revenue total at line \d+/);
     }
+  });
+
+  it("does not mistake a tier that mentions ARR near its price for a revenue total", async () => {
+    const page = replaceOnce(
+      compiledPage(),
+      "- **Solo** ($12/month) — One private repository",
+      "- **Solo** ($12/month) — ARR and churn dashboards, one private repository",
+    );
+    expect((await auditPage(page)).errors).toEqual([]);
   });
 
   it("fails a missing base line or downside line", async () => {

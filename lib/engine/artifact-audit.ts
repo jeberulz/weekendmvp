@@ -692,8 +692,17 @@ function auditFigures(ctx: Ctx, pieces: ProsePiece[], ev: Evidence): number {
 // Year-One Math (F6)
 // ---------------------------------------------------------------------------
 
-const REVENUE_TOTAL_RE = /\b(?:ARR|MRR)\b|annual\s+recurring\s+revenue|monthly\s+recurring\s+revenue/i;
-const CURRENCY_FIGURE_RE = /[$€£]\s?\d/;
+const REVENUE_TERM = String.raw`(?:ARR|MRR|annual\s+recurring\s+revenue|monthly\s+recurring\s+revenue)`;
+const MONEY_FIGURE = String.raw`[$€£]\s?\d[\d,]*(?:\.\d+)?(?:\s?(?:k|K|m|M|mn|bn|thousand|million|billion))?`;
+/**
+ * A revenue total: a money figure next to ARR/MRR ("$54,000 ARR", "$4.5k
+ * MRR", "ARR of $54,000", "MRR: $4,500"). A tier that merely mentions ARR
+ * near its price ("$1,000/month — ARR dashboards") is not one.
+ */
+const REVENUE_TOTAL_RE = new RegExp(
+  String.raw`${MONEY_FIGURE}\s*(?:in\s+|of\s+)?${REVENUE_TERM}\b|\b${REVENUE_TERM}\s*(?:of|at|is|was|reaches|reaching|to|:|=)?\s*${MONEY_FIGURE}`,
+  "i",
+);
 
 type Block = { node: MdNode; text: string; list: MdNode | null };
 
@@ -746,7 +755,7 @@ function auditYearOne(ctx: Ctx, section: Section | undefined, record: ResearchRe
     const parsed = block.node.type === "listItem" ? parseYearOneLine(block.text) : null;
     if (parsed?.kind === "base") shown.base.push({ ...parsed, block });
     else if (parsed?.kind === "downside") shown.downside.push({ ...parsed, block });
-    else if (REVENUE_TOTAL_RE.test(block.text) && CURRENCY_FIGURE_RE.test(block.text)) {
+    else if (REVENUE_TOTAL_RE.test(block.text)) {
       ctx.errors.push(
         `Business Model states another revenue total at line ${lineOf(ctx, block.node.start)} ("${clip(block.text)}"); only the Year-One Math base and downside lines may state ARR or MRR`,
       );
