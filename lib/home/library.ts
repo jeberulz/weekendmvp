@@ -1,5 +1,6 @@
 /** Pure helpers over the idea manifest for the homepage. */
 import { categoryName, normalizeCategorySlug } from "../../components/ideas/idea-meta";
+import { isEngineDraftSlug } from "../engine-drafts";
 import type { CategoryCount, IdeaExtract, IndexRow, ManifestIdea } from "./types";
 
 export const ogArtPath = (slug: string) => `/image/og/idea/${slug}.png`;
@@ -7,8 +8,13 @@ export const ogArtPath = (slug: string) => `/image/og/idea/${slug}.png`;
 /** The OG generator flips `og.status` to "ready" once the card PNG is written. */
 export const hasOgArt = (idea: ManifestIdea) => idea.og?.status === "ready";
 
+/**
+ * The ideas every homepage list, pick and count reads. Retired ideas drop
+ * out, and so do engine drafts (WP46-S5) even if a row slips into the
+ * manifest: their page answers 404.
+ */
 export function liveIdeas(ideas: readonly ManifestIdea[]): ManifestIdea[] {
-  return ideas.filter((idea) => !idea._retiredAt);
+  return ideas.filter((idea) => !idea._retiredAt && !isEngineDraftSlug(idea.slug));
 }
 
 /** Oldest first; ties break on slug so the order is stable. */
