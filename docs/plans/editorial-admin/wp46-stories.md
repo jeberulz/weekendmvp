@@ -83,7 +83,7 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
     - Tests: anonymous, forged identity, missing or other-user session, anonymous account, customer, unverified or ambiguous bootstrap email, changed email, revoked binding, repeated bootstrap; a structure guard that no public function touches `super_admins`.
   - [x] `WP46-E4b` - Shared editorial core (refactor, no behaviour change)
     - Move the repository rules out of `adapters/fixture/**` into `lib/editorial/core/**` over a store-neutral state with seams (clock, ids, check policy, release capability, verification authority, accepted modes, probe result). The fixture adapter becomes the core plus simulated seams. All existing editorial tests stay green; a guard mutation still turns them red.
-  - [ ] `WP46-E4c` - Private tables and Convex backend
+  - [x] `WP46-E4c` - Private tables and Convex backend
     - Additive `editorial_*` tables and indexes (records typed with Convex validators checked against the TypeScript records), a unit-of-work store (load one idea's working set, run the core, write only what changed), list projections, bounded reads, public super-admin-gated queries and commands, and internal seams for ingestion (E5), the release worker (E6) and operator controls. Live checks and releases report "not connected" until E5/E6.
     - The repository contract suite runs unchanged against the Convex backend in `convex-test` (labelled: serialised, simulated check and worker policies supplied by the test harness only).
   - [ ] `WP46-E4d` - Live adapter and routes

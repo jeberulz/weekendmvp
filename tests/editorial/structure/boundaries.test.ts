@@ -54,8 +54,10 @@ describe("fixture isolation", () => {
   });
 
   test("fixture modules are never imported from outside the editorial library and its tests", () => {
+    // Test files may build demo envelopes; shipped code may not.
     const outside = ["app", "components", "lib", "convex"]
       .flatMap((dir) => listFiles(dir))
+      .filter((file) => !/\.test\.tsx?$/.test(file))
       .filter((file) => !file.startsWith("lib/editorial/") && !file.startsWith("app/admin/editorial/") && !file.startsWith("components/admin/editorial/"));
     for (const file of outside) {
       expect(fs.readFileSync(path.join(ROOT, file), "utf8"), file).not.toMatch(/lib\/editorial\/(?:adapters\/fixture|fixtures)\b/);
@@ -72,6 +74,64 @@ describe("fixture isolation", () => {
     // Public builders are lower-case (`query(`, `mutation(`); only internal ones may appear.
     expect(bootstrap).not.toMatch(/(?<![A-Za-z])(?:query|mutation|action|httpAction)\(\{/);
     expect(bootstrap).toMatch(/internalMutation\(\{/);
+  });
+
+  test("editorial Convex functions resolve the caller on the server and take no identity arguments (WP46-E4c)", () => {
+    const service = read("convex/editorial/service.ts");
+    expect(service).not.toMatch(/(?<![A-Za-z])(?:query|mutation|action|httpAction)\(\{/);
+
+    const commands = read("convex/editorial/commands.ts");
+    const mutations = commands.split(/export const \w+ = mutation\(\{/).slice(1);
+    expect(mutations.length).toBe(22);
+    for (const body of mutations) expect(body).toMatch(/commandRepository\(ctx\)/);
+
+    const reads = read("convex/editorial/reads.ts");
+    const queries = reads.split(/export const \w+ = query\(\{/).slice(1);
+    expect(queries.length).toBe(9);
+    for (const body of queries) expect(body).toMatch(/readRepository\(ctx, args\.nowMs\)|editorialSession\(ctx\)/);
+
+    for (const source of [commands, reads, read("convex/editorial/args.ts")]) {
+      expect(source).not.toMatch(/\b(?:userId|actorId|role|capability|approvedBy|verified|isAdmin)\s*:/);
+    }
+    // Only the editorial modules, the binding module's audit helper and the schema name the private tables.
+    const users = listFiles("convex")
+      .filter((file) => !/\.test\.tsx?$/.test(file) && !file.startsWith("convex/_generated/"))
+      .filter((file) => /"editorial_[a-z_]+"/.test(read(file)));
+    expect(users.every((file) => file.startsWith("convex/editorial/") || file === "convex/schema.ts")).toBe(true);
+  });
+
+  test("nothing Convex loads reaches the Markdown parser, React or Next.js (WP46-E4c)", () => {
+    // Convex bundles for a browser-like isolate: micromark's entity decoder
+    // then resolves to a build that touches `document` when it loads.
+    const resolve = (from: string, specifier: string) => {
+      const base = path.normalize(path.join(path.dirname(from), specifier));
+      return [`${base}.ts`, `${base}.tsx`, path.join(base, "index.ts")].find((candidate) =>
+        fs.existsSync(path.join(ROOT, candidate)),
+      );
+    };
+    const queue = listFiles("convex").filter(
+      (file) => file.endsWith(".ts") && !/\.test\.tsx?$/.test(file) && !file.startsWith("convex/_generated/"),
+    );
+    const seen = new Set<string>();
+    const reached: string[] = [];
+    while (queue.length > 0) {
+      const file = queue.pop();
+      if (file === undefined || seen.has(file)) continue;
+      seen.add(file);
+      const source = fs.readFileSync(path.join(ROOT, file), "utf8");
+      // Value imports and re-exports only: type-only ones are erased when bundled.
+      for (const match of source.matchAll(/^(?:import|export)\s+(?!type\s)[^;]*?\sfrom\s+"([^"]+)";/gms)) {
+        const specifier = match[1];
+        if (specifier.startsWith(".")) {
+          const next = resolve(file, specifier);
+          if (next) queue.push(next);
+        } else if (/^(?:mdast|micromark|remark|unified|react|next|server-only)(?:\/|-|$)/.test(specifier)) {
+          reached.push(`${file} -> ${specifier}`);
+        }
+      }
+    }
+    expect([...seen].some((file) => file.startsWith("lib/editorial/core/"))).toBe(true);
+    expect(reached).toEqual([]);
   });
 
   test("Convex functions import only the store-neutral editorial modules (WP46-E4)", () => {

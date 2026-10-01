@@ -1,7 +1,22 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
-import { auditRecordValidator } from "./editorial/validators";
+import {
+  approvalRecordValidator,
+  attestationRecordValidator,
+  auditRecordValidator,
+  flagRecordValidator,
+  ideaRecordValidator,
+  ideaSummaryValidator,
+  idempotencyValidator,
+  noteRecordValidator,
+  releaseRecordValidator,
+  resolutionRecordValidator,
+  revisionRecordValidator,
+  settingsValidator,
+  slugValidator,
+  submissionKeyValidator,
+} from "./editorial/validators";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
@@ -662,4 +677,37 @@ export default defineSchema({
     .index("by_ideaId", ["ideaId"])
     .index("by_outcome", ["outcome"])
     .index("by_ideaId_and_outcome", ["ideaId", "outcome"]),
+
+  /*
+   * WP46-E4c, additive. The private editorial store. Only the functions in
+   * `convex/editorial/**` read or write these tables, and every public one
+   * re-checks the super-admin binding first. None of it is public content:
+   * the public `ideas` table and the MDX files are untouched, and nothing here
+   * changes a public page until the release worker exists (WP46-E6).
+   */
+  editorial_settings: defineTable(settingsValidator).index("by_key", ["key"]),
+
+  editorial_ideas: defineTable(ideaRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_lifecycle", ["lifecycle"]),
+
+  editorial_revisions: defineTable(revisionRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_ideaId_and_number", ["ideaId", "number"]),
+
+  editorial_attestations: defineTable(attestationRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_flags: defineTable(flagRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_resolutions: defineTable(resolutionRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_notes: defineTable(noteRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_approvals: defineTable(approvalRecordValidator).index("by_ideaId", ["ideaId"]),
+
+  editorial_releases: defineTable(releaseRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_ideaId", ["ideaId"])
+    .index("by_state", ["state"]),
+
+  editorial_idempotency: defineTable(idempotencyValidator).index("by_storeKey", ["storeKey"]),
+  editorial_submissions: defineTable(submissionKeyValidator).index("by_submissionKey", ["submissionKey"]),
+  editorial_slugs: defineTable(slugValidator).index("by_slug", ["slug"]),
+  editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
 });

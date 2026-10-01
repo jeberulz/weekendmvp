@@ -33,6 +33,7 @@ import {
   type IngestionCredential,
   type IngestionPrincipal,
 } from "../contracts/principal";
+import { EDITORIAL_LIMITS } from "../contracts/limits";
 import type { EditorialRepository } from "../contracts/repository";
 import {
   APPROVABLE_CANDIDATE_STATES,
@@ -781,9 +782,18 @@ export abstract class EditorialCore implements EditorialRepository {
       if (working && working.kind === "draft" && !working.discarded) {
         return fail("PRECONDITION_FAILED", `A working draft already exists (v${working.number}).`);
       }
-      const number = Math.max(
-        ...[...this.state.revisions.values()].filter((r) => r.ideaId === idea.id).map((r) => r.number),
-      ) + 1;
+      const existing = [...this.state.revisions.values()].filter((r) => r.ideaId === idea.id);
+      if (existing.length >= EDITORIAL_LIMITS.revisionsPerIdea) {
+        return this.refuse(
+          "revision.created",
+          fail<{ revisionId: string; number: number }>(
+            "PRECONDITION_FAILED",
+            `This idea already has ${EDITORIAL_LIMITS.revisionsPerIdea} revisions, the most one idea can hold.`,
+          ),
+          { ideaId },
+        );
+      }
+      const number = Math.max(...existing.map((r) => r.number)) + 1;
       const now = nowIso(this.state);
       const actor = this.actor();
       const revision: RevisionRecord = {

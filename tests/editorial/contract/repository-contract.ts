@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { defaultIdeaFilter } from "@/lib/editorial/contracts/commands";
-import type { CommandResult } from "@/lib/editorial/contracts/errors";
-import type { EditorialRepository } from "@/lib/editorial/contracts/repository";
-import type { ReleaseState } from "@/lib/editorial/contracts/states";
-import { receiptSplitter, shiftSwapBoard, warrantyTracker } from "@/lib/editorial/fixtures/articles/catalog";
-import { menuCostCalculator } from "@/lib/editorial/fixtures/articles/legacy";
+import { defaultIdeaFilter } from "../../../lib/editorial/contracts/commands";
+import type { CommandResult } from "../../../lib/editorial/contracts/errors";
+import type { EditorialRepository } from "../../../lib/editorial/contracts/repository";
+import type { ReleaseState } from "../../../lib/editorial/contracts/states";
+import { receiptSplitter, shiftSwapBoard, warrantyTracker } from "../../../lib/editorial/fixtures/articles/catalog";
+import { menuCostCalculator } from "../../../lib/editorial/fixtures/articles/legacy";
 import type { HarnessFactory, RepositoryHarness } from "./harness";
 
 /**

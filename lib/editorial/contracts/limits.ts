@@ -43,6 +43,8 @@ export const EDITORIAL_LIMITS = {
   pageSizeMax: 100,
   idempotencyKeyChars: 80,
   cursorChars: 400,
+  /** An idea's whole working set is loaded per command (WP46-E4c), so revisions are capped. */
+  revisionsPerIdea: 40,
   ogSubjectChars: 240,
 } as const;
 

@@ -1,4 +1,5 @@
 import type { HumanPrincipal, IngestionPrincipal, ReleaseWorkerPrincipal } from "../../contracts/principal";
+import { measureContent, sectionWordCount } from "../../domain/counts";
 import {
   actorRef,
   createEditorialState,
@@ -38,6 +39,7 @@ export const FIXTURE_ENVIRONMENT: CoreEnvironment = {
   checks: FIXTURE_CHECK_POLICY,
   releases: { available: true },
   workerActor: actorRef(FIXTURE_WORKER, { simulated: true }),
+  measure: { content: measureContent, sectionWords: sectionWordCount },
 };
 
 export function createEmptyState(clock: FixtureClock): FixtureState {

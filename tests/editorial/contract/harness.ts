@@ -1,7 +1,7 @@
-import type { EditorialRepository } from "@/lib/editorial/contracts/repository";
-import type { IngestionCredential } from "@/lib/editorial/contracts/principal";
-import type { EditorialSubmission } from "@/lib/editorial/contracts/submission";
-import type { ArticleSpec } from "@/lib/editorial/fixtures/spec";
+import type { EditorialRepository } from "../../../lib/editorial/contracts/repository";
+import type { IngestionCredential } from "../../../lib/editorial/contracts/principal";
+import type { EditorialSubmission } from "../../../lib/editorial/contracts/submission";
+import type { ArticleSpec } from "../../../lib/editorial/fixtures/spec";
 
 /**
  * What the repository contract suite needs from an adapter under test.

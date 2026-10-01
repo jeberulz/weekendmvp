@@ -111,6 +111,13 @@ export type TransactionContext = {
     resolve(credential: IngestionCredential): IngestionPrincipal | null;
     authority: VerificationAuthority;
   };
+  /**
+   * Whether a refused command by a signed-in account without the capability
+   * is written to the activity log (the deployed app sets it from a per-account
+   * rate limit). Anonymous calls are never written: they are unattributable
+   * and would let anyone fill the log.
+   */
+  recordDenials?: boolean;
 };
 
 type Scope =
@@ -214,13 +221,21 @@ export class PartitionedEditorialRepository implements EditorialRepository {
     await this.store.commit(changes, summaries);
   }
 
+  /** Whether this call's changes (for an outsider: only its denial) are written. */
+  private persists(plan: Plan): boolean {
+    const principal = this.context.principal;
+    if (plan.service || isEditorialAdmin(principal)) return true;
+    if (principal === null) return false;
+    return this.context.recordDenials !== false;
+  }
+
   /** A command: load, run, write back, all in one store transaction. */
   private command<T>(plan: Plan, run: (core: LiveEditorialCore, state: EditorialState) => Promise<T>): Promise<T> {
     return this.store.transaction(async () => {
       const state = await this.load(plan);
       const snapshot = snapshotState(state);
       const result = await run(this.core(state), state);
-      await this.commit(state, collectChanges(state, snapshot));
+      if (this.persists(plan)) await this.commit(state, collectChanges(state, snapshot));
       return result;
     });
   }

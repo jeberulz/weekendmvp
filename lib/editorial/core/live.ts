@@ -39,8 +39,12 @@ export const LIVE_WORKER_ACTOR: ActorRef = { id: "release-worker", kind: "servic
 /** Policy version recorded while no WP45 policy is connected. */
 export const LIVE_POLICY_VERSION_UNSET = "not-connected";
 
+/**
+ * Display counts are not measured here: the Markdown parser cannot load in
+ * the Convex runtime, so the Next.js adapter measures returned revisions.
+ */
 export function liveEnvironment(
-  seams: Partial<Pick<CoreEnvironment, "checks" | "releases">> = {},
+  seams: Partial<Pick<CoreEnvironment, "checks" | "releases" | "measure">> = {},
 ): CoreEnvironment {
   return {
     mode: "live",
@@ -48,6 +52,7 @@ export function liveEnvironment(
     checks: seams.checks ?? LIVE_CHECK_POLICY,
     releases: seams.releases ?? LIVE_RELEASE_CAPABILITY,
     workerActor: LIVE_WORKER_ACTOR,
+    measure: seams.measure ?? null,
   };
 }
 

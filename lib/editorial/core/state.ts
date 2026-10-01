@@ -20,7 +20,7 @@ import type {
   RevisionKind,
 } from "../contracts/states";
 import type { EngineRecommendation, SubmissionProducer } from "../contracts/submission";
-import type { ActivityAction, IdeaOrigin } from "../contracts/views";
+import type { ActivityAction, ContentCounts, IdeaOrigin } from "../contracts/views";
 
 /**
  * Store-neutral editorial records and the state the core rules run over.
@@ -247,6 +247,16 @@ export type CheckPolicy = {
 /** Whether a release worker exists to carry out release intents. */
 export type ReleaseCapability = { available: true } | { available: false; reason: string };
 
+/**
+ * Display-only measurements (prose words, reading time, prompts, code
+ * blocks). They need the Markdown parser, which the Convex runtime cannot
+ * load, so the live backend leaves them to the Next.js adapter (`null`).
+ */
+export type ContentMeasure = {
+  content(markdown: string): ContentCounts;
+  sectionWords(body: string): number;
+};
+
 export type CoreEnvironment = {
   mode: "fixture" | "live";
   /** The local demo narrates releases and previews as simulated. */
@@ -255,6 +265,7 @@ export type CoreEnvironment = {
   releases: ReleaseCapability;
   /** Recorded as the actor of worker steps and confirmed activations. */
   workerActor: ActorRef;
+  measure: ContentMeasure | null;
 };
 
 export type EditorialState = {

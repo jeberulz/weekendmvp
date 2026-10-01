@@ -24,7 +24,6 @@ import type {
   SourceView,
 } from "../contracts/views";
 import { assessmentDigest, computeRevisionHashes, type RevisionHashes } from "../domain/artifact";
-import { measureContent, sectionWordCount } from "../domain/counts";
 import {
   computeApprovalBlockers,
   deriveIssues,
@@ -315,7 +314,7 @@ export async function deriveRevision(state: EditorialState, revisionId: string):
       order: order + 1,
       present: Boolean(block),
       hash: item?.dependencyHash ?? null,
-      words: block ? sectionWordCount(block.body) : 0,
+      words: block && state.env.measure ? state.env.measure.sectionWords(block.body) : 0,
       startLine: block?.headingLine ?? null,
       review: statusView(`section:${definition.key}`),
       issueCount: issues.filter(
@@ -336,7 +335,7 @@ export async function deriveRevision(state: EditorialState, revisionId: string):
     checks: checkViews,
     hashes,
     sections: sectionViews,
-    counts: measureContent(revision.markdown),
+    counts: state.env.measure ? state.env.measure.content(revision.markdown) : structuralCounts(sections),
     reviewItems: itemViews,
     issues: toIssueViews(issues),
     eligibility: { canApprove: blockers.length === 0, blockers },
@@ -360,6 +359,18 @@ export async function deriveRevision(state: EditorialState, revisionId: string):
   const value: DerivedRevision = { view, issues, blockers, hashes, assessment, checksCurrent };
   cache.set(revisionId, { epoch: state.epoch, value });
   return value;
+}
+
+/** Counts that need no parser; the rest are measured where the parser can run. */
+function structuralCounts(sections: ReturnType<typeof sectionsByKey>): RevisionView["counts"] {
+  return {
+    proseWords: 0,
+    readingMinutes: 0,
+    sectionsPresent: SECTION_DEFINITIONS.filter((section) => sections.has(section.key)).length,
+    sectionsExpected: SECTION_DEFINITIONS.length,
+    prompts: 0,
+    codeBlocks: 0,
+  };
 }
 
 export function revisionSummary(
