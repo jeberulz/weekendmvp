@@ -124,7 +124,7 @@ export type PriceQualifier =
   | "billed_annually" | "billed_monthly" | "starting_at" | "introductory" | "plus_usage";
 
 type EvidenceBase = {
-  id: string;            // `${q|s|p}_${sha256hex(kind\nsourceUrl\nexcerpt).slice(0,12)}`
+  id: string;            // `${q|s|p}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0,12)}` (ruling R1, §12)
   kind: EvidenceKind;
   sourceUrl: string;     // canonical (§5), a search citation, read at acquisition
   sourceTitle: string;
@@ -358,6 +358,28 @@ source acquisition statuses, accepted counts per kind, and rejected
 | 2 | S3 evidence-first pipeline (F5, F1) | worker P | `lib/engine/{pipeline,pipeline-steps,research-record,cost,providers}.ts`, `lib/engine/providers/{fixtures,pricing,types}.ts`, `scripts/engine-research.mjs`, `engine/briefs/**`, pipeline/record tests, pipeline blocks of `quality.test.ts` |
 | 2 | S4 compiler and auditor (F2, F6) | worker A | `lib/engine/{compile,compile-write}.ts`, `scripts/{audit-idea-mdx,engine-compile,engine-eval}.mjs`, `scripts/lib/idea-quality.mjs`, compile/audit tests, compiler/audit blocks of `quality.test.ts`, `package.json` scripts and lockfile if a parser dependency is justified |
 | 3 | S6 integration, replay gate, docs, skill | worker I | cross-cutting cleanup after phases 1–2 merge |
+
+## 12. Orchestrator rulings after freeze
+
+- **R1 (2026-10-01, from S2): evidence id includes the typed claim.** Hashing
+  only kind, URL and excerpt gave two claims from one sentence the same id, so
+  "valued at X in 2024 and projected to reach Y by 2032" kept one stat.
+  `claimKey` is `""` for quotes; `metric|unit|currency|value|magnitude|periodKind|year|toYear`
+  for stats; `vendorKey|plan|unit|currency|value|magnitude|period|basis|qualifiers`
+  for prices (qualifiers comma-joined, sorted). Subject text is excluded.
+- **R2 (2026-10-01, from S2): projection cues scope forward.** A cue
+  (expected, projected, forecast, will reach, anticipated, …) marks amounts
+  that come **after** it in the same sentence. An amount is also projected
+  when a "by/through/until/in <year>" phrase with a year later than the
+  retrieval year directly follows it, or when its declared year is later
+  than the retrieval year. "Valued at X in 2024 and projected to reach Y by
+  2032, a CAGR of Z" gives X measured, Y and Z projected.
+- **R3 (2026-10-01, from S2): compare quotes asymmetrically.** Rendered MDX
+  uses `normalizeQuoteForCompare` (unescapes); record excerpts use
+  `normalizeExcerptForCompare` (no unescape). `quoteMatchesExcerpt(mdx,
+  excerpt)` is the one call the auditor uses.
+- Known limitation kept: count amounts carry no noun; only the subject check
+  binds "users" vs "developers".
 
 Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,

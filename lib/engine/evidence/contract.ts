@@ -97,7 +97,11 @@ export type PriceTerms = {
 
 export type EvidenceKind = "community_quote" | "market_stat" | "competitor_price";
 
-/** Id prefix per kind: `${prefix}_${sha256hex(kind\nsourceUrl\nexcerpt).slice(0, 12)}`. */
+/**
+ * Id prefix per kind:
+ * `${prefix}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0, 12)}`, where
+ * claimKey serializes the typed claim (contract §12, ruling R1).
+ */
 export const EVIDENCE_ID_PREFIX: Record<EvidenceKind, "q" | "s" | "p"> = {
   community_quote: "q",
   market_stat: "s",
