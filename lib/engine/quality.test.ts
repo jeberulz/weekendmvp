@@ -631,6 +631,21 @@ describe("figure grounding per citation", () => {
     expect(isGroundedForCompetitor("$99/mo", "Loopio", text)).toBe(false);
   });
 
+  it("keeps pricing cards and table rows apart in fetched page text", () => {
+    const cards = htmlToText(
+      '<div class="card">Loopio $388/mo</div><div class="card">Responsive $99/mo</div>',
+    );
+    expect(isGroundedForCompetitor("$388/mo", "Loopio", cards)).toBe(true);
+    expect(isGroundedForCompetitor("$99/mo", "Loopio", cards)).toBe(false);
+    const table = htmlToText(
+      "<table><tr><td>Loopio</td><td>$388/mo</td></tr><tr><td>Responsive</td><td>$99/mo</td></tr></table>",
+    );
+    expect(isGroundedForCompetitor("$99/mo", "Responsive", table)).toBe(true);
+    expect(isGroundedForCompetitor("$388/mo", "Responsive", table)).toBe(false);
+    // A quote across a line break still matches.
+    expect(quoteAppearsIn("same SOC2 questionnaire every week", htmlToText("same SOC2<br>questionnaire every week"))).toBe(true);
+  });
+
   it("uses fetched page text to ground a competitor price", () => {
     const evidence = citationEvidence(
       [

@@ -67,6 +67,10 @@ export function htmlToText(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    // Keep block boundaries, so separate pricing cards or table rows stay on
+    // separate lines for per-competitor price checks.
+    .replace(/<\/(?:tr|li|p|div)\s*>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
     // Numeric entities (HN's Algolia text encodes "/" as &#x2F;, "'" as &#x27;).
     .replace(/&#x([0-9a-f]+);/gi, (m: string, h: string) => codePointOr(parseInt(h, 16), m))
