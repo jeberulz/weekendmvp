@@ -2,21 +2,59 @@
 
 import { ChevronsUpDown, CreditCard, LogOut, Settings2, UserRound } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DropdownMenu } from "radix-ui";
-import { useSignOut } from "@/app/dashboard/SignOutButton";
-import { AuthConvexClientProvider } from "@/app/AuthConvexClientProvider";
+import { useCallback, useState } from "react";
 import { BILLING_NAV, SETTINGS_NAV } from "@/components/platform/shell/workspace-current";
 
 const itemClass =
   "flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-sm text-neutral-800 outline-none data-[disabled]:cursor-wait data-[disabled]:opacity-60 data-[highlighted]:bg-neutral-100";
 
 /**
- * Compact account menu for the idea-page member chrome. Reuses the dashboard
- * destinations and sign-out hook; mounts a client Convex auth provider so
- * the public idea page stays static (no AuthPlatformProvider in the layout).
+ * Cookie-backed Convex Auth sign-out for public idea pages.
+ *
+ * Do not mount `AuthConvexClientProvider` here. That wraps
+ * `ConvexAuthNextjsProvider` → `ConvexProviderWithAuth({ useAuth })`, but
+ * `useAuth` only has a value under `ConvexAuthNextjsServerProvider`'s
+ * `AuthProvider`. Without it, `useAuth()` is `undefined` and production
+ * throws `Cannot destructure property 'isLoading' of undefined`, taking
+ * down the whole signed-in idea page. Mounting the server provider would
+ * also force the static idea reader dynamic — same reason #85 avoided
+ * `AuthPlatformProvider` in the layout.
+ *
+ * POST `/api/auth` is the Next.js cookie proxy the dashboard sign-out uses
+ * under the hood; it clears httpOnly session cookies. Middleware then drops
+ * the readable `wmvp_signed_in` hint.
  */
-function IdeaAccountMenuInner() {
-  const signOut = useSignOut();
+async function signOutViaAuthApi() {
+  try {
+    await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "auth:signOut", args: {} }),
+    });
+  } catch {
+    // Already signed out / network blip — still leave the page.
+  }
+}
+
+/**
+ * Compact account menu for the idea-page member chrome. Billing/Settings are
+ * plain links; sign-out hits the auth cookie proxy (no Convex React provider).
+ */
+export function IdeaAccountMenu() {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+
+  const run = useCallback(async () => {
+    setPending(true);
+    try {
+      await signOutViaAuthApi();
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  }, [router]);
 
   return (
     <DropdownMenu.Root modal={false}>
@@ -53,25 +91,17 @@ function IdeaAccountMenuInner() {
           <DropdownMenu.Separator className="my-1 h-px bg-neutral-200" />
           <DropdownMenu.Item
             className={itemClass}
-            disabled={signOut.pending}
+            disabled={pending}
             onSelect={(event) => {
               event.preventDefault();
-              void signOut.run();
+              void run();
             }}
           >
             <LogOut className="size-4 text-neutral-500" aria-hidden />
-            {signOut.pending ? "Signing out…" : "Sign out"}
+            {pending ? "Signing out…" : "Sign out"}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
-  );
-}
-
-export function IdeaAccountMenu() {
-  return (
-    <AuthConvexClientProvider>
-      <IdeaAccountMenuInner />
-    </AuthConvexClientProvider>
   );
 }

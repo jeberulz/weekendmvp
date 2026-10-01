@@ -110,8 +110,13 @@ describe("idea page member chrome wiring", () => {
     expect(memberNavSource).toContain('id="idea-site-header"');
     expect(memberNavSource).toContain("<IdeaAccountMenu />");
     expect(memberNavSource).toContain('aria-label="Workspace"');
-    expect(accountSource).toContain("AuthConvexClientProvider");
-    expect(accountSource).toContain("useSignOut");
+    // AuthConvexClientProvider alone crashes: ConvexAuthNextjsProvider
+    // destructures useAuth().isLoading with no AuthProvider ancestor.
+    expect(accountSource).not.toContain("AuthConvexClientProvider");
+    expect(accountSource).not.toContain("useSignOut");
+    expect(accountSource).not.toContain("useAuthActions");
+    expect(accountSource).toContain('action: "auth:signOut"');
+    expect(accountSource).toContain('fetch("/api/auth"');
     expect(accountSource).toContain("BILLING_NAV.href");
     expect(accountSource).toContain("SETTINGS_NAV.href");
   });
