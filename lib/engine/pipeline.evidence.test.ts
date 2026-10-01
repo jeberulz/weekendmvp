@@ -14,12 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import { CostCapExceededError, worstCaseMicroUsd } from "./cost.ts";
 import { acceptEvidence } from "./evidence/accept.ts";
-import type {
-  AcceptedEvidence,
-  CompetitorPriceCandidate,
-  MarketStatCandidate,
-  QuoteCandidate,
-} from "./evidence/contract.ts";
+import type { AcceptedEvidence, QuoteCandidate } from "./evidence/contract.ts";
 import {
   buildEditorialInput,
   editorialIssuesSection,
@@ -38,14 +33,19 @@ import {
 import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, type ExtractionSource } from "./pipeline-sources.ts";
 import { stepById } from "./pipeline-steps.ts";
 import {
+  extractionWith,
+  f1ProviderOptions,
+  F5_PACKS,
+  F5_PAGES,
+  F5_ROWS,
+  REJECTED_FRAGMENTS,
+} from "./__fixtures__/scenarios.ts";
+import {
   createFixtureProviders,
   FIXTURE_EXTRACTION,
   FIXTURE_PAGES,
   FIXTURE_URLS,
   fixtureEditorialReply,
-  SEARCH_COMMUNITY_FIXTURE,
-  SEARCH_COMPETITORS_FIXTURE,
-  SEARCH_MARKET_FIXTURE,
   type FixtureProviderOptions,
 } from "./providers/fixtures.ts";
 import { ProviderCallError, type EngineProviders, type SynthesisRequest } from "./providers/types.ts";
@@ -125,30 +125,6 @@ async function failureOf(promise: Promise<unknown>): Promise<PipelineError> {
   return error;
 }
 
-/** Search packs with extra citations appended to the fixture's. */
-function packsWith(extra: { market?: Array<{ url: string; title: string }>; competitors?: Array<{ url: string; title: string }>; community?: Array<{ url: string; title: string }> }, communityProse?: string) {
-  return {
-    market: { ...SEARCH_MARKET_FIXTURE, search_results: [...SEARCH_MARKET_FIXTURE.search_results, ...(extra.market ?? [])] },
-    competitors: {
-      ...SEARCH_COMPETITORS_FIXTURE,
-      search_results: [...SEARCH_COMPETITORS_FIXTURE.search_results, ...(extra.competitors ?? [])],
-    },
-    community: {
-      ...SEARCH_COMMUNITY_FIXTURE,
-      ...(communityProse ? { choices: [{ message: { content: communityProse } }] } : {}),
-      search_results: [...SEARCH_COMMUNITY_FIXTURE.search_results, ...(extra.community ?? [])],
-    },
-  };
-}
-
-function extractionWith(extra: { quotes?: unknown[]; marketStats?: unknown[]; competitorPrices?: unknown[] }) {
-  return () => ({
-    quotes: [...FIXTURE_EXTRACTION.quotes, ...(extra.quotes ?? [])],
-    marketStats: [...FIXTURE_EXTRACTION.marketStats, ...(extra.marketStats ?? [])],
-    competitorPrices: [...FIXTURE_EXTRACTION.competitorPrices, ...(extra.competitorPrices ?? [])],
-  });
-}
-
 /** Editorial replies in order (the last one repeats). */
 function editorialSequence(...replies: Array<(evidence: EditorialEvidenceItem[]) => unknown>) {
   let call = 0;
@@ -175,52 +151,9 @@ function forge(id: string): string {
 // F1: rejected evidence never reaches the writer or the record
 // ---------------------------------------------------------------------------
 
-const REVIEW_LOAD_PAGE = "https://forum.example.net/t/review-load/91";
-const F1_PROSE =
-  "One commenter reviews 47 PRs a week on a team of 8 [1] and spends 60% of the time reviewing versus 25% coding [2].";
-const F1_QUOTES: QuoteCandidate[] = [
-  // Not on its page (the page says something else).
-  { sourceUrl: FIXTURE_URLS.hnThread, text: "We review 47 PRs a week on a team of 8 and it eats our evenings." },
-  { sourceUrl: FIXTURE_URLS.forumThread, text: "Review takes 60% of our time versus 25% coding for the whole team." },
-  // On a page that cannot be read.
-  { sourceUrl: FIXTURE_URLS.redditThread, text: "We review 47 PRs a week on a team of 8 and nobody codes anymore." },
-  // The page states the numbers, but not as this contiguous quote.
-  { sourceUrl: REVIEW_LOAD_PAGE, text: "We review 47 PRs a week on a team of 8." },
-];
-const F1_STATS: MarketStatCandidate[] = [
-  // On its page, but a percentage cannot be a market size.
-  {
-    sourceUrl: REVIEW_LOAD_PAGE,
-    supportingText: "Our team of 8 reviews 47 PRs a week, and reviews take 60% of our time versus 25% coding.",
-    subject: "engineering teams reviewing pull requests",
-    metric: "market_size",
-    amountText: "60%",
-    periodKind: "measured",
-  },
-  // Not on its page.
-  {
-    sourceUrl: FIXTURE_URLS.workloadSurvey,
-    supportingText: "Reviewers spend 60% of their time reviewing versus 25% coding.",
-    subject: "code reviewers",
-    metric: "adoption",
-    amountText: "60%",
-    periodKind: "measured",
-  },
-];
-
 function f1Harness(options: FixtureProviderOptions = {}): Harness {
-  return harness({
-    pages: {
-      ...FIXTURE_PAGES,
-      [REVIEW_LOAD_PAGE]: "Topic: review load\nOur team of 8 reviews 47 PRs a week, and reviews take 60% of our time versus 25% coding.",
-    },
-    packs: packsWith({ community: [{ url: REVIEW_LOAD_PAGE, title: "Review load" }] }, F1_PROSE),
-    ...options,
-    synthesis: { extraction: extractionWith({ quotes: F1_QUOTES, marketStats: F1_STATS }), ...options.synthesis },
-  });
+  return harness(f1ProviderOptions(options));
 }
-
-const REJECTED_FRAGMENTS = ["47 PRs", "team of 8", "60% of", "25% coding", "eats our evenings", "nobody codes"];
 
 function legacyNarratives(): string[] {
   const legacy = JSON.parse(
@@ -425,93 +358,6 @@ describe("F1: writer output is validated before a record exists", () => {
 // ---------------------------------------------------------------------------
 // F5: whole claims through the complete fixture pipeline
 // ---------------------------------------------------------------------------
-
-const LOOPIO_PRICING = "https://loopio.example/pricing";
-const CODE_REVIEW_REPORT = "https://research.example.com/ai-code-review-market";
-const CATEGORY_NOTES = "https://research.example.com/rfp-category-notes";
-const ROUNDUP = "https://blog.example.com/rfp-tools-compared";
-
-const F5_PAGES: Record<string, string> = {
-  [LOOPIO_PRICING]: "Loopio pricing\nFoundations\n$20,000/year\nTen seats included.",
-  [CODE_REVIEW_REPORT]: "The AI code review market was worth $1.4 million in 2024.",
-  [CATEGORY_NOTES]: "Published in 2024. The RFP software category keeps growing.",
-  [ROUNDUP]: "We priced the leaders. Loopio costs $20,000/year while Qvidian costs $30/month. Both offer trials.",
-};
-
-const F5_PACKS = packsWith({
-  market: [
-    { url: CODE_REVIEW_REPORT, title: "AI code review market" },
-    { url: CATEGORY_NOTES, title: "RFP category notes" },
-  ],
-  competitors: [
-    { url: LOOPIO_PRICING, title: "Loopio pricing" },
-    { url: ROUNDUP, title: "RFP tools compared" },
-  ],
-});
-
-type F5Row = {
-  label: string;
-  stats?: MarketStatCandidate[];
-  prices?: CompetitorPriceCandidate[];
-  reasons: string[];
-  leaked: (item: AcceptedEvidence) => boolean;
-};
-
-const F5_ROWS: F5Row[] = [
-  {
-    label: "$20,000/month claimed from a $20,000/year page",
-    prices: [
-      { vendor: "Loopio", sourceUrl: LOOPIO_PRICING, supportingText: "Foundations\n$20,000/year", plan: "Foundations", priceText: "$20,000/month" },
-    ],
-    reasons: ["period_mismatch"],
-    leaked: (item) => item.kind === "competitor_price" && item.vendor === "Loopio" && item.price.period === "month",
-  },
-  {
-    label: "$1.4 billion claimed from a $1.4 million page",
-    stats: [
-      {
-        sourceUrl: CODE_REVIEW_REPORT,
-        supportingText: "The AI code review market was worth $1.4 million in 2024.",
-        subject: "AI code review market",
-        metric: "market_size",
-        amountText: "$1.4 billion",
-        year: 2024,
-        periodKind: "measured",
-      },
-    ],
-    reasons: ["amount_mismatch"],
-    leaked: (item) => item.kind === "market_stat" && item.amount.magnitude === "billion" && item.amount.value === "1.4",
-  },
-  {
-    label: '"$2024 billion" grounded only on "Published in 2024"',
-    stats: [
-      {
-        sourceUrl: CATEGORY_NOTES,
-        supportingText: "Published in 2024.",
-        subject: "RFP software category",
-        metric: "market_size",
-        amountText: "$2024 billion",
-        year: 2024,
-        periodKind: "measured",
-      },
-    ],
-    reasons: ["amount_mismatch"],
-    leaked: (item) => item.kind === "market_stat" && item.amount.value === "2024",
-  },
-  {
-    label: "Loopio at $30/month from the Loopio/Qvidian sentence",
-    prices: [
-      {
-        vendor: "Loopio",
-        sourceUrl: ROUNDUP,
-        supportingText: "Loopio costs $20,000/year while Qvidian costs $30/month.",
-        priceText: "$30/month",
-      },
-    ],
-    reasons: ["vendor_not_in_context", "ambiguous_attribution"],
-    leaked: (item) => item.kind === "competitor_price" && item.vendor === "Loopio" && item.price.amount.value === "30",
-  },
-];
 
 describe("F5: a wrong claim never enters the returned record", () => {
   it.each(F5_ROWS.map((row) => [row.label, row] as const))("%s", async (_label, row) => {
