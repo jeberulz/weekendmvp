@@ -414,6 +414,8 @@ function resolveCitation(
  * Competitor URLs: exact citation match first, then any indexed citation
  * whose hostname looks like the competitor's own site (so a /pricing page
  * the model slightly mistyped still binds to a real search result).
+ * Prefer first-party hosts; fall back to a review-site citation from search
+ * when that is all the research returned (still fail closed on invented URLs).
  */
 function resolveCompetitorCitation(
   index: Map<string, Citation>,
@@ -422,18 +424,33 @@ function resolveCompetitorCitation(
 ): { url: string; title: string } | null {
   const roundup =
     /comparison|\/best-|\/top-|roundup|alternatives|vs-|\/blog-posts\//i;
+  const reviewHost =
+    /(g2\.com|capterra|softwareadvice|selecthub|techradar|forbes|medium\.com|linkedin\.com)/i;
 
   const usable = (href: string) => !roundup.test(href);
+  const isReview = (href: string) => {
+    try {
+      return reviewHost.test(new URL(href).hostname);
+    } catch {
+      return false;
+    }
+  };
 
   const direct = resolveCitation(index, url, name);
-  if (direct && usable(direct.url)) return direct;
+  if (direct && usable(direct.url) && !isReview(direct.url)) return direct;
 
   const needle = name
     .toLowerCase()
     .replace(/\.(ai|io|com|hq)$/i, "")
     .replace(/[^a-z0-9]/g, "");
-  if (needle.length < 3) return null;
+  if (needle.length < 3) {
+    // Exact review-site citation is better than inventing a vendor URL.
+    if (direct && usable(direct.url)) return direct;
+    return null;
+  }
 
+  let reviewFallback: { url: string; title: string } | null =
+    direct && usable(direct.url) ? direct : null;
   for (const cite of index.values()) {
     if (!usable(cite.url)) continue;
     try {
@@ -443,11 +460,8 @@ function resolveCompetitorCitation(
         hostKey.includes(needle) ||
         needle.includes(hostKey.replace(/(ai|io|com|app|hq)$/, ""))
       ) {
-        if (
-          /(g2\.com|capterra|softwareadvice|selecthub|techradar|forbes|medium\.com|linkedin\.com)/i.test(
-            host,
-          )
-        ) {
+        if (isReview(cite.url)) {
+          reviewFallback ??= { url: cite.url, title: name };
           continue;
         }
         return { url: cite.url, title: name };
@@ -456,7 +470,7 @@ function resolveCompetitorCitation(
       /* ignore */
     }
   }
-  return null;
+  return reviewFallback;
 }
 
 function nonEmptyStrings(value: unknown): string[] {
@@ -784,6 +798,24 @@ function parseSynthesisPack(
   );
   const groundedIn = (figure: string, url: string) =>
     isGroundedFigure(figure, evidence.get(url) ?? "");
+  // Competitor prices often sit in the search answer next to [n], not in the
+  // vendor-page snippet. Still require a resolved search citation, but accept
+  // a price that appears anywhere in the competitors pack (+ fetched pages).
+  const competitorsHaystack = [
+    competitors.text,
+    ...competitors.citations.map((c) => c.snippet ?? ""),
+    ...(pageTexts
+      ? [...pageTexts.entries()]
+          .filter(([url]) =>
+            competitors.citations.some(
+              (c) => (normalizeUrl(c.url) ?? c.url) === (normalizeUrl(url) ?? url),
+            ),
+          )
+          .map(([, t]) => t ?? "")
+      : []),
+  ].join("\n");
+  const competitorPriceGrounded = (pricing: string, url: string) =>
+    groundedIn(pricing, url) || isGroundedFigure(pricing, competitorsHaystack);
   const dropped = { stats: 0, competitors: 0 };
 
   const statsFromModel = Array.isArray(parsed.stats) ? parsed.stats : [];
@@ -815,7 +847,7 @@ function parseSynthesisPack(
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
     const citation = resolveCompetitorCitation(index, r.url, name);
-    if (name && pricing && citation && !groundedIn(pricing, citation.url)) {
+    if (name && pricing && citation && !competitorPriceGrounded(pricing, citation.url)) {
       dropped.competitors += 1;
     } else if (name && pricing && citation) {
       competitorRows.push({

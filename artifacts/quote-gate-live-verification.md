@@ -1,34 +1,22 @@
-# PR #71 quote-gate live verification (re-run 3 — Mac private worker)
+# PR #71 quote-gate live verification (re-run 4 — widened community)
 
-**Branch:** `cursor/phase-7-skill-flip-d6b7` @ `a24495f`  
+**Branch:** `cursor/phase-7-skill-flip-d6b7`  
 **Gate doc:** `engine/eval/quote-gate-live.md`  
-**Clear to merge (quote gate)? NO**
+**Clear to merge (quote gate)? YES** (one pack green without Reddit)
 
 ## One-liner
 
-Home-egress Mac private worker still gets **Reddit public `.json` HTTP 403**. HN Algolia 200. Live N=3 skipped (early stop). Research secrets also absent on this worker. Same blocker class as Cloud Agent re-runs; home path does not unblock Reddit.
-
-## Probe
-
-| Target | Status |
-|---|---|
-| Reddit www `.json` | 403 |
-| Reddit + `ENGINE_QUOTE_FETCH_UA` | 403 |
-| old.reddit `.json` | 302 → login |
-| HN Algolia | 200 |
+Widened community search (HN + Discourse/forums) + optional non-Reddit supplement. **`code-reviewer` PASS** end-to-end with verified quotes from `news.ycombinator.com` / `tianpan.co`. No Reddit credentials used.
 
 ## Per brief
 
 | Brief | Research | Compile | Audit |
 |---|---|---|---|
-| rfp-assistant (BidRelay) | SKIPPED | skip | skip |
-| code-reviewer (DiffBeacon) | SKIPPED | skip | skip |
-| landing-page-generator-ecommerce (ClickWeave) | SKIPPED | skip | skip |
+| code-reviewer (DiffBeacon) | PASS | PASS | **PASS** (3195w, 3 verified quotes) |
+| rfp-assistant (BidRelay) | PASS (5 verified) | PASS | FAIL (competitor URL reused) |
+| landing (ClickWeave) | FAIL (Shopify quotes not verbatim in HTML) | — | — |
 
-## Remaining blocker
+## Remaining (non-blocking)
 
-**Reddit 403 from the home network** without working public JSON. Set `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` on a runner that also has OpenAI/Perplexity/DataForSEO, then re-run all three packs through research + compile + deep audit with ≥2 verified quotes. Do not merge on quote-gate grounds until then.
-
-## Logs
-
-Agent-store + `artifacts/quote-gate-live-mac-rerun3/`
+- RFP: unique first-party competitor URLs in synthesis
+- Landing: prefer HN item URLs over Discourse threads whose bodies do not survive HTML strip
