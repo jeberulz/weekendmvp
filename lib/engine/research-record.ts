@@ -901,8 +901,8 @@ const ISO_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)
 const TOKEN_LIKE_PATTERN = /\[\[\s*ev\s*:/i;
 const PLAIN_KEY_PATTERN = /^[A-Za-z0-9_$-]{1,60}$/;
 
-/** Mirrors the pipeline's MIN_CHANNELS: no canned channel fallback. */
-const MIN_GTM_CHANNELS = 2;
+/** Go-to-market channels a v2 record needs; the editorial prompt asks for them (no canned fallback). */
+export const MIN_GTM_CHANNELS = 2;
 const SCORE_MIN = 0;
 const SCORE_MAX = 10;
 /** The site's score contract publishes all four of these or none. */

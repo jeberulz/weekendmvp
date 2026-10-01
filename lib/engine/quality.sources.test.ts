@@ -1,17 +1,22 @@
 /**
  * Source fetch safety for the idea engine: entity decoding, whole-word quote
  * matching and the SSRF guards. Split mechanically from quality.test.ts
- * (WP46-S3): test bodies and assertions are unchanged.
+ * (WP46-S3). Part 2 changed one test: quoteAppearsIn was removed, so
+ * "matches quote fragments on whole words only" became "matches quote spans
+ * on whole words only and never joins fragments" on the contract matcher
+ * (findContiguousSpan): whole-word matching is unchanged, and a quote with an
+ * internal ellipsis is now always rejected (contract §5) where the old helper
+ * accepted ordered fragments.
  */
 
 import { describe, expect, it } from "vitest";
 
+import { findContiguousSpan } from "./evidence/quote.ts";
 import {
   createSourceTextProvider,
   htmlToText,
   isBlockedAddress,
   publicOnlyFetch,
-  quoteAppearsIn,
 } from "./providers/sourceText.ts";
 
 /** Stub resolver: every host is public (keeps tests off the network). */
@@ -22,13 +27,13 @@ describe("source fetch safety", () => {
     expect(htmlToText("a &#99999999; b &#x110000; c")).toBe("a &#99999999; b &#x110000; c");
   });
 
-  it("matches quote fragments on whole words only", () => {
+  it("matches quote spans on whole words only and never joins fragments", () => {
     const page = "We concatenate the results before review every single week.";
-    expect(quoteAppearsIn("cat the results before review", page)).toBe(false);
-    expect(quoteAppearsIn("the results before review", page)).toBe(true);
-    // Short fragments must match too, not just the long one.
-    expect(quoteAppearsIn("the results before review … monthly", page)).toBe(false);
-    expect(quoteAppearsIn("the results before review … week", page)).toBe(true);
+    expect(findContiguousSpan("cat the results before review", page).ok).toBe(false);
+    expect(findContiguousSpan("the results before review", page).ok).toBe(true);
+    // An internal ellipsis would join separate fragments: always rejected.
+    expect(findContiguousSpan("the results before review … monthly", page)).toEqual({ ok: false, reason: "internal_ellipsis" });
+    expect(findContiguousSpan("the results before review … week", page)).toEqual({ ok: false, reason: "internal_ellipsis" });
   });
 
   it("flags loopback, private, link-local and metadata addresses", () => {
