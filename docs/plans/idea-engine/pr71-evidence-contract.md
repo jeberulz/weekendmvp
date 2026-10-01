@@ -352,11 +352,11 @@ source acquisition statuses, accepted counts per kind, and rejected
 
 | Phase | Story | Owner | Exclusive files |
 |---|---|---|---|
-| 1 | S1 transport (F4, F7, redirects) | worker T | `lib/engine/providers/sourceText.ts`, `lib/engine/acquire.ts`, new transport/acquire tests; existing SSRF blocks in `quality.test.ts` / `providers.test.ts` only if unavoidable |
+| 1 | S1 transport (F4, F7, redirects) | worker T | `lib/engine/providers/sourceText.ts`, `lib/engine/acquire.ts`, new transport/acquire tests; existing SSRF blocks in `quality.sources.test.ts` / `providers.test.ts` only if unavoidable |
 | 1 | S2 evidence core | worker D | `lib/engine/evidence/{amount,quote,citation,accept,tokens}.ts`, `lib/engine/finance.ts`, their tests; `contract.ts` types may be extended, not changed |
 | 1 | S5 catalogue (F3) | worker K | `convex/**` (no schema change without a ruling), `lib/engine-drafts.ts`, `scripts/seed-convex.mjs`, discovery consumers in `app/**`, `components/**`, `lib/home/**`, catalogue tests |
-| 2 | S3 evidence-first pipeline (F5, F1) | worker P | `lib/engine/{pipeline,pipeline-steps,research-record,cost,providers}.ts`, `lib/engine/providers/{fixtures,pricing,types}.ts`, `scripts/engine-research.mjs`, `engine/briefs/**`, pipeline/record tests, pipeline blocks of `quality.test.ts` |
-| 2 | S4 compiler and auditor (F2, F6) | worker A | `lib/engine/{compile,compile-write}.ts`, `scripts/{audit-idea-mdx,engine-compile,engine-eval}.mjs`, `scripts/lib/idea-quality.mjs`, compile/audit tests, compiler/audit blocks of `quality.test.ts`, `package.json` scripts and lockfile if a parser dependency is justified |
+| 2 | S3 evidence-first pipeline (F5, F1) | worker P | `lib/engine/{pipeline,pipeline-steps,research-record,cost,providers}.ts`, `lib/engine/providers/{fixtures,pricing,types}.ts`, `scripts/engine-research.mjs`, `engine/briefs/**`, pipeline/record tests, `quality.pipeline.test.ts`, `quality.sources.test.ts` |
+| 2 | S4 compiler and auditor (F2, F6) | worker A | `lib/engine/{compile,compile-write}.ts`, `scripts/{audit-idea-mdx,engine-compile,engine-eval}.mjs`, `scripts/lib/idea-quality.mjs`, compile/audit tests, `quality.compile.test.ts`, `package.json` scripts and lockfile if a parser dependency is justified |
 | 3 | S6 integration, replay gate, docs, skill | worker I | cross-cutting cleanup after phases 1–2 merge |
 
 ## 12. Orchestrator rulings after freeze
@@ -380,6 +380,13 @@ source acquisition statuses, accepted counts per kind, and rejected
   excerpt)` is the one call the auditor uses.
 - Known limitation kept: count amounts carry no noun; only the subject check
   binds "users" vs "developers".
+- **R4 (2026-10-01, from S3 part 1): the record proves consistency, not
+  authenticity.** A record holds no page text, so an excerpt replaced together
+  with its claim, digest and id still parses. Authenticity comes from the
+  deterministic replay gate (fixture sources) and, for live records, from the
+  source inspection in S7 against the recorded `textSha256`/`retrievedAt`.
+  `quality.test.ts` was split by owner: `quality.pipeline.test.ts` and
+  `quality.sources.test.ts` (S3), `quality.compile.test.ts` (S4).
 
 Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,

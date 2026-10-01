@@ -61,3 +61,11 @@ Append-only progress log. Do not rely on chat history for project state.
 - "Valued at USD 1.2 billion in 2024 … projected to reach USD 5.4 billion by 2032 … CAGR of 20.4%" yields three stats: measured 2024, projected 2032, projected 2032.
 - Worker checks: typecheck 0; eslint 0; evidence + finance 155 tests; `npm run test:engine` 264. Red: 15 tests failed on the pre-change code.
 - Known conservative limit: a cue earlier in a sentence marks every later figure ("forecast to hit $3B by 2028 from $1.2B in 2024" accepts $1.2B only as projected).
+
+## 2026-10-01 - WP46-S3 part 1 merged
+
+- Worker P commits `eabefe0` (mechanical split of `quality.test.ts` into `quality.pipeline.test.ts` 31, `quality.compile.test.ts` 8, `quality.sources.test.ts` 8; 47/47 tests and bodies identical; engine count 310 before and after) and `6d63e48` (record v2 parser) merged as `9e6410d`.
+- `research-record.ts`: `parseResearchRecordV2` (closed schema at every level, re-validates every accepted item, resolves every id by kind, vendor-matched prices, distinct quotes, FACT_BEARING_FIELDS token/figure rule, finance-validated yearOne, explicit mode, models/attempts, `RESEARCH_RECORD_V2_LIMITS`), `LegacyResearchRecordError` (subclass of `ResearchRecordParseError`, re-research message), `readLegacyResearchRecordV1`. `parseResearchRecord` still delegates to the v1 reader until integration.
+- Red (v1 parser): accepted `payingAccounts: 0.4` as 0; accepted a record whose quote was `verified: false` while `problemNarrative` and `market.summary` stated "47 PRs … team of 8 … 60% … 25%"; the committed `ai-code-reviewer.json` parses with 3 unverified signals and a narrative mentioning 47 PRs.
+- Green: worker 484 engine tests (174 new); after merging with R1/R2 the integration branch runs 498 engine tests, typecheck 0. Ten-rule mutation check failed the suite each time.
+- Ruling R4 recorded (contract §12): records prove consistency, not authenticity; the replay gate and S7 source inspection cover authenticity.
