@@ -483,7 +483,7 @@ export function IdeaWorkspace({
       />
 
       <WorkspaceBanners detail={detail} view={view} notice={notice} commandError={state.conflict ? null : commandError} />
-      {detail.releases.some((release) => WORKER_STATES.has(release.state)) ? (
+      {detail.releases.some((release) => release.simulated && WORKER_STATES.has(release.state)) ? (
         <div className="px-4 pt-4 sm:px-6">
           <SimulatedWorkerTicker active />
         </div>

@@ -66,7 +66,7 @@ async function ReleasesContent({ searchParams }: { searchParams: Promise<SearchP
   const base = filter.group === "all" ? RELEASES : `${RELEASES}?group=${filter.group}`;
   return (
     <>
-      <SimulatedWorkerTicker active={running.ok && running.value.total > 0} />
+      <SimulatedWorkerTicker active={running.ok && running.value.items.some((release) => release.simulated)} />
       <nav aria-label="Release groups">
         <ul className="flex flex-wrap gap-1.5">
           {GROUPS.map((entry) => {

@@ -86,7 +86,7 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
   - [x] `WP46-E4c` - Private tables and Convex backend
     - Additive `editorial_*` tables and indexes (records typed with Convex validators checked against the TypeScript records), a unit-of-work store (load one idea's working set, run the core, write only what changed), list projections, bounded reads, public super-admin-gated queries and commands, and internal seams for ingestion (E5), the release worker (E6) and operator controls. Live checks and releases report "not connected" until E5/E6.
     - The repository contract suite runs unchanged against the Convex backend in `convex-test` (labelled: serialised, simulated check and worker policies supplied by the test harness only).
-  - [ ] `WP46-E4d` - Live adapter and routes
+  - [x] `WP46-E4d` - Live adapter and routes
     - `ConvexEditorialRepository` (Next.js) calling the public functions with the signed-in user's token; `resolveWorkspace()` returns the live workspace for a bound super-admin and is unavailable for everyone else; pages, metadata and server actions work in live mode; demo controls stay fixture-only; settings report live capability, re-authentication and integrations truthfully.
   - [ ] `WP46-E4e` - Edge, analytics and re-authentication
     - `/admin/**` responses are `private, no-store`, `noindex, nofollow` and `no-referrer`; signed-out visitors and accounts without the capability get a real 404 from middleware; consented analytics never load on `/admin`. Strong authentication is a fresh sign-in (session created within 10 minutes) through the account's own provider; the live "Confirm it's you" step starts that sign-in and returns to the editorial page.

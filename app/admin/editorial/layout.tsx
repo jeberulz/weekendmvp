@@ -35,11 +35,20 @@ export default function EditorialLayout({ children }: { children: ReactNode }) {
 async function WorkspaceShell({ children }: { children: ReactNode }) {
   // Pages re-check access themselves: a layout never protects its pages alone.
   const workspace = await getEditorialWorkspace();
-  if (workspace.status !== "fixture") notFound();
-  const [summary, settings] = await Promise.all([
-    workspace.repository.getQueueSummary(),
-    workspace.repository.getSettings(),
-  ]);
+  if (workspace.status === "unavailable") notFound();
+  const summary = await workspace.repository.getQueueSummary();
+  const counts = summary.ok ? { queue: summary.value.needReview, releases: summary.value.releasesNeedingAttention } : null;
+  if (workspace.status === "live") {
+    return (
+      <EditorialShell
+        environment={{ mode: "live", connection: "Private editorial store", accountLabel: workspace.editor.displayName }}
+        counts={counts}
+      >
+        {children}
+      </EditorialShell>
+    );
+  }
+  const settings = await workspace.repository.getSettings();
   return (
     <EditorialShell
       environment={{
@@ -47,7 +56,7 @@ async function WorkspaceShell({ children }: { children: ReactNode }) {
         connection: "In-memory fixture adapter",
         accountLabel: settings.ok ? `${settings.value.principal.label} (simulated)` : "Unknown account",
       }}
-      counts={summary.ok ? { queue: summary.value.needReview, releases: summary.value.releasesNeedingAttention } : null}
+      counts={counts}
     >
       {children}
     </EditorialShell>

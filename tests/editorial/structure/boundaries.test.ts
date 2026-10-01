@@ -238,7 +238,9 @@ describe("server actions", () => {
       const exported = [...source.matchAll(/export async function (\w+)\([^)]*\)[^{]*\{([\s\S]*?)\n\}/g)];
       expect(exported.length, file).toBeGreaterThan(0);
       for (const [, name, body] of exported) {
-        expect(body, `${file}: ${name}`).toMatch(/return withWorkspace\(\w+Schema, input,/);
+        // Demo controls use the fixture-only wrapper; everything else the general one.
+        const wrapper = file.endsWith("/demo.ts") ? "withFixtureWorkspace" : "withWorkspace";
+        expect(body, `${file}: ${name}`).toMatch(new RegExp(`return ${wrapper}\\(\\w+Schema, input,`));
       }
       // Nothing else is exported from a "use server" module.
       expect(source.match(/^export /gm)?.length, file).toBe(exported.length);

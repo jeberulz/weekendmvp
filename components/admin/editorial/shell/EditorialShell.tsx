@@ -9,8 +9,8 @@ import { NavList } from "./NavList";
 import { EDITORIAL_BASE, type NavCounts } from "./nav-items";
 
 export type ShellEnvironment = {
-  /** Only "fixture" exists until the live adapter lands (WP46-E4). */
-  mode: "fixture";
+  /** "fixture": the local demo, loudly labelled. "live": the private store, for the bound super-admin. */
+  mode: "fixture" | "live";
   connection: string;
   accountLabel: string;
 };
@@ -57,7 +57,7 @@ export function EditorialShell({
       >
         Skip to main content
       </a>
-      <DemoBanner />
+      {environment.mode === "fixture" ? <DemoBanner /> : null}
       <header className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 border-b border-(--ed-border) bg-(--ed-surface) px-4 py-2">
         <MobileNav counts={counts} accountLabel={environment.accountLabel} connection={environment.connection} />
         <p className="text-[0.9375rem] font-semibold">
@@ -70,9 +70,13 @@ export function EditorialShell({
         <dl className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-(--ed-text-2)">
           <div className="flex items-center gap-1.5">
             <dt className="sr-only">Environment</dt>
-            <dd className="rounded border border-(--ed-demo) bg-(--ed-demo-bg) px-1.5 py-0.5 font-semibold text-(--ed-demo)">
-              Local demo
-            </dd>
+            {environment.mode === "fixture" ? (
+              <dd className="rounded border border-(--ed-demo) bg-(--ed-demo-bg) px-1.5 py-0.5 font-semibold text-(--ed-demo)">
+                Local demo
+              </dd>
+            ) : (
+              <dd className="rounded border border-(--ed-border) px-1.5 py-0.5 font-semibold text-(--ed-text)">Live</dd>
+            )}
           </div>
           <div className="hidden items-center gap-1.5 md:flex">
             <dt>Data:</dt>
