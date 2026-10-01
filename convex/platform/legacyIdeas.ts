@@ -6,6 +6,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUser, requireCurrentPlatformUserForMutation } from "./authz";
+import { excludeEngineDrafts } from "./catalogPolicy";
 import {
   intentFlagValidator,
   projectSourceValidator,
@@ -394,7 +395,12 @@ export const explore = query({
             q.eq("category", args.category!),
           )
       : ctx.db.query("ideas").withIndex("by_publishedAt");
-    const result = await source.order("desc").paginate(args.paginationOpts);
+    // Discovery views (all, for_you) never list engine drafts. Saved,
+    // interested and building above are the member's own work and keep them.
+    const result = await source
+      .order("desc")
+      .filter(excludeEngineDrafts)
+      .paginate(args.paginationOpts);
     const cards = await Promise.all(
       result.page.map((idea) => toExploreCard(ctx, user._id, idea)),
     );

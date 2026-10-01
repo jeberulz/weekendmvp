@@ -1,7 +1,14 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, query } from "./_generated/server";
+import { excludeEngineDrafts, isEngineDraftSlug } from "./platform/catalogPolicy";
 import schema from "./schema";
+
+/*
+ * Every public read below hides engine drafts (lib/engine-drafts.ts): rows
+ * seeded while they were public stay stored, but no archive, hub, related
+ * rail, sitemap or direct lookup returns them. See platform/catalogPolicy.ts.
+ */
 
 const ideaFields = schema.tables.ideas.validator.fields;
 
@@ -40,11 +47,17 @@ function relatedIdeaCard(idea: {
   };
 }
 
-/** Look up a single idea by slug. Returns null when not found. */
+/**
+ * Look up a single idea by slug. Returns null when not found, and for engine
+ * drafts: their page answers 404, so no public lookup (curated hub rails,
+ * `/build/{slug}`, member prompt bodies) may resolve one. Member work reads
+ * its ideas by id, owner-scoped, and is unaffected.
+ */
 export const bySlug = query({
   args: { slug: v.string() },
   returns: v.union(ideaDoc, v.null()),
   handler: async (ctx, { slug }) => {
+    if (isEngineDraftSlug(slug)) return null;
     return await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
@@ -76,6 +89,7 @@ export const list = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .paginate({ numItems: limit ?? 20, cursor: cursor ?? null });
   },
 });
@@ -89,6 +103,7 @@ export const byCategory = query({
       .query("ideas")
       .withIndex("by_category_publishedAt", (q) => q.eq("category", category))
       .order("desc")
+      .filter(excludeEngineDrafts)
       .collect();
   },
 });
@@ -104,6 +119,7 @@ export const byRevenueGoal = query({
         q.eq("revenueGoal", revenueGoal),
       )
       .order("desc")
+      .filter(excludeEngineDrafts)
       .collect();
   },
 });
@@ -121,6 +137,7 @@ export const byTool = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .collect();
     return all
       .filter((idea) => idea.tools.includes(tool))
@@ -146,6 +163,7 @@ export const byAudience = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .collect();
     return all
       .filter((idea) => idea.audiences.includes(audience))
@@ -167,6 +185,7 @@ export const latest = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .first();
   },
 });
@@ -174,7 +193,8 @@ export const latest = query({
 /**
  * Related ideas for an idea page: same category first (newest first), then
  * ideas sharing an audience (newest first), always excluding the idea
- * itself. Returns [] when the slug is unknown.
+ * itself. Returns [] when the slug is unknown or an engine draft, and never
+ * suggests a draft.
  */
 export const relatedFor = query({
   args: { slug: v.string(), limit: v.optional(v.number()) },
@@ -185,6 +205,9 @@ export const relatedFor = query({
       return [];
     }
 
+    if (isEngineDraftSlug(slug)) {
+      return [];
+    }
     const self = await ctx.db
       .query("ideas")
       .withIndex("by_slug", (q) => q.eq("slug", slug))
@@ -202,6 +225,7 @@ export const relatedFor = query({
         q.eq("category", self.category),
       )
       .order("desc")
+      .filter(excludeEngineDrafts)
       .take(max + 1);
     const related = categoryCandidates
       .filter((idea) => idea.slug !== slug)
@@ -221,7 +245,8 @@ export const relatedFor = query({
     const newestIdeas = ctx.db
       .query("ideas")
       .withIndex("by_publishedAt")
-      .order("desc");
+      .order("desc")
+      .filter(excludeEngineDrafts);
     for await (const idea of newestIdeas) {
       if (
         idea.slug === slug ||
@@ -248,6 +273,7 @@ export const allForSitemap = query({
       .query("ideas")
       .withIndex("by_publishedAt")
       .order("desc")
+      .filter(excludeEngineDrafts)
       .collect();
     return all.map(({ slug, publishedAt }) => ({ slug, publishedAt }));
   },

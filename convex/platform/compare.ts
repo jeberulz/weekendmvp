@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
+import type { Doc } from "../_generated/dataModel";
 import { query } from "../_generated/server";
 import { requireCurrentPlatformUser } from "./authz";
+import { isEngineDraftSlug } from "./catalogPolicy";
 import { getEntitlements, upgradeRequired } from "./entitlements";
 import { COMPARE_MIN } from "./hubLimits";
 import { hoursOf, meanScore, savedAmong } from "./ideaCards";
@@ -43,6 +45,8 @@ export const ideas = query({
     if (slugs.length < COMPARE_MIN || slugs.length > limits.compareMax) {
       throw new ConvexError({ code: "COMPARE_SIZE", max: limits.compareMax });
     }
+    // Unknown slugs and engine drafts drop out alike: a draft's research page
+    // is withheld, so it has no column to link to.
     const found = (
       await Promise.all(
         slugs.map((slug) =>
@@ -52,7 +56,7 @@ export const ideas = query({
             .unique(),
         ),
       )
-    ).filter((idea) => idea !== null);
+    ).filter((idea): idea is Doc<"ideas"> => idea !== null && !isEngineDraftSlug(idea.slug));
     const savedIds = await savedAmong(
       ctx,
       user._id,
