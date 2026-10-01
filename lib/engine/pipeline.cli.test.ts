@@ -34,8 +34,9 @@ function cli(args: string[]) {
   const result = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", script, ...args], {
     cwd: root,
     encoding: "utf8",
-    // No provider keys: fixture mode must not need any.
-    env: { PATH: process.env.PATH ?? "", NODE_ENV: "test" },
+    // No provider keys: fixture mode must not need any. The child runs the
+    // current node binary directly, so it needs no PATH either.
+    env: { NODE_ENV: "test" },
     timeout: 120_000,
   });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr, output: `${result.stdout}\n${result.stderr}` };
