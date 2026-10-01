@@ -1,0 +1,244 @@
+/**
+ * The real CLIs end to end (WP46-S4; plan §8 "Run the reported mutations
+ * against a complete compiler-generated page and assert the CLI exits
+ * nonzero"). A v2 fixture record is written to a temp dir, compiled with
+ * scripts/engine-compile.mjs, and the page (plus mutations) is audited with
+ * scripts/audit-idea-mdx.mjs — both as child processes with the npm
+ * scripts' `node --experimental-strip-types`, `--json` output and an empty
+ * `--siblings` dir so no other repo page affects the result.
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import {
+  AUDITOR,
+  auditCli,
+  cleanupTempDirs,
+  COMPILER,
+  lastJson,
+  makeTempDir,
+  replaceOnce,
+  runNodeScript,
+  writePage,
+} from "./__fixtures__/auditHarness.ts";
+import { buildFixtureRecord, EV, FIXTURE_PAGE_SLUG, withEditorial } from "./__fixtures__/recordV2.ts";
+import type { ResearchRecordV2 } from "./evidence/contract.ts";
+
+const TIMEOUT = 120_000;
+const RE_RESEARCH = "Re-run `npm run engine:research -- --brief <brief.json> --live` to produce a contract v2 record.";
+
+let record: ResearchRecordV2;
+let page = "";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** A contract v1 record in the legacy shape the committed engine/records/*.json use. */
+const LEGACY_RECORD = {
+  contractVersion: 1,
+  brief: {
+    title: "AI Code Reviewer",
+    slug: "ai-code-reviewer",
+    oneLiner: "A quiet reviewer.",
+    targetCustomer: "Small GitHub teams",
+  },
+  market: { stats: [], summary: "Legacy summary." },
+  competitors: [],
+  community: {
+    signals: [
+      {
+        quote: "We review 47 PRs a week on a team of 8.",
+        citation: { url: "https://example.org/thread", title: "Thread" },
+        verified: false,
+      },
+    ],
+    summary: "Legacy summary.",
+  },
+  keywords: [],
+  goToMarket: { positioning: "x", channels: [], pricingNotes: "x" },
+  whyNow: "x",
+  provenance: { providerCalls: [], costUsd: 0, ranAt: "2026-09-24T00:00:00.000Z" },
+};
+
+beforeAll(async () => {
+  record = buildFixtureRecord();
+  const dir = makeTempDir("engine-cli-");
+  const recordPath = path.join(dir, "record.json");
+  fs.writeFileSync(recordPath, JSON.stringify(record, null, 2));
+  const out = path.join(dir, "out");
+  const run = await runNodeScript(COMPILER, [
+    "--record",
+    recordPath,
+    "--slug",
+    FIXTURE_PAGE_SLUG,
+    "--ideas-dir",
+    out,
+    "--no-manifest",
+    "--json",
+  ]);
+  const result = lastJson(run.stdout);
+  if (run.code !== 0 || !isRecord(result) || typeof result.mdxPath !== "string") {
+    throw new Error(`engine-compile failed (${run.code}): ${run.stdout}\n${run.stderr}`);
+  }
+  page = fs.readFileSync(result.mdxPath, "utf8");
+}, TIMEOUT);
+
+afterAll(cleanupTempDirs);
+
+describe("scripts/audit-idea-mdx.mjs on a compiler-generated page", () => {
+  it(
+    "exits 0 on the clean page: the whole deep bar passes, including the 2,200-word floor",
+    async () => {
+      const { code, result } = await auditCli(writePage(page, record));
+      expect(result.errors).toEqual([]);
+      expect(code).toBe(0);
+      expect(result.ok).toBe(true);
+      expect(result.metrics?.wordCount).toBeGreaterThanOrEqual(2200);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "exits nonzero with the specific error for each reported mutation",
+    async () => {
+      const hnAttribution = "(https://news.ycombinator.com/item?id=27515468)\n\n> \"Our bot";
+      const mutations: Array<{ name: string; mdx: string; expected: RegExp | string }> = [
+        {
+          name: "sentence appended inside a verified quote",
+          mdx: replaceOnce(
+            page,
+            "every single one of them.\"\n>",
+            "every single one of them. This product increased our engineering revenue by nine million dollars overnight.\"\n>",
+          ),
+          expected: /"We review 12 pull requests .*nine million dollars overnight\." is not a selected evidence quote/,
+        },
+        {
+          name: "quote attribution moved to a fake URL",
+          mdx: replaceOnce(page, hnAttribution, hnAttribution.replace("https://news.ycombinator.com/item?id=27515468", "https://example.org/fake-source")),
+          expected:
+            "attribution links to https://example.org/fake-source, but this quote's evidence source is https://news.ycombinator.com/item?id=27515468",
+        },
+        {
+          name: "ARR inflated to $5,400,000",
+          mdx: replaceOnce(page, "= $54,000 ARR**", "= $5,400,000 ARR**"),
+          expected: "Year-One Math shows $5,400,000 ARR; the record computes 45 × $100/mo = $54,000 ARR",
+        },
+        {
+          name: "downside accounts changed",
+          mdx: replaceOnce(page, "**22 × $100/mo = $26,400 ARR**", "**23 × $100/mo = $26,400 ARR**"),
+          expected: /Year-One Math downside shows 23 × \$100\/mo = \$26,400 ARR; the record computes 22 × \$100\/mo = \$26,400 ARR/,
+        },
+        {
+          name: '"47 PRs on a team of 8" inserted into The Problem',
+          mdx: replaceOnce(
+            page,
+            "the onboarding of new contributors.",
+            "the onboarding of new contributors. One engineer reports reviewing 47 PRs in a week on a team of 8.",
+          ),
+          expected: /The Problem: unbound figure "47"/,
+        },
+      ];
+      const runs = await Promise.all(mutations.map(async (m) => ({ m, run: await auditCli(writePage(m.mdx, record)) })));
+      for (const { m, run } of runs) {
+        expect(run.code, m.name).toBe(1);
+        expect(run.result.ok, m.name).toBe(false);
+        const errors = run.result.errors.join("\n");
+        if (typeof m.expected === "string") expect(errors, m.name).toContain(m.expected);
+        else expect(errors, m.name).toMatch(m.expected);
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "fails an engine page whose record is contract v1 with the re-research message",
+    async () => {
+      const files = writePage(page, record);
+      fs.writeFileSync(files.recordPath, JSON.stringify(LEGACY_RECORD));
+      const { code, result } = await auditCli(files);
+      expect(code).toBe(1);
+      expect(result.errors.join("\n")).toContain(
+        `Research record "ai-code-reviewer" is a contract v1 (legacy) record: its evidence was not accepted before writing.`,
+      );
+      expect(result.errors.join("\n")).toContain(RE_RESEARCH);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "fails a record that does not parse as contract v2, listing its issues",
+    async () => {
+      const files = writePage(page, record);
+      const tampered: unknown = JSON.parse(JSON.stringify(record));
+      if (!isRecord(tampered)) throw new Error("fixture: record is not an object");
+      const evidence = tampered.evidence;
+      if (!isRecord(evidence) || !Array.isArray(evidence.accepted)) throw new Error("fixture: evidence missing");
+      const first: unknown = evidence.accepted.find((item: unknown) => isRecord(item) && item.id === EV.quoteHn.id);
+      if (!isRecord(first)) throw new Error("fixture: HN quote missing");
+      first.excerpt = "We review 15 pull requests a day and the bot comments on every single one of them.";
+      fs.writeFileSync(files.recordPath, JSON.stringify(tampered));
+      const { code, result } = await auditCli(files);
+      expect(code).toBe(1);
+      expect(result.errors.join("\n")).toMatch(/is not a valid contract v2 record: .*excerptSha256: does not match the excerpt/);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "exits 2 on a usage error",
+    async () => {
+      const none = await runNodeScript(AUDITOR, []);
+      expect(none.code).toBe(2);
+      const bad = await runNodeScript(AUDITOR, ["--file"]);
+      expect(bad.code).toBe(2);
+    },
+    TIMEOUT,
+  );
+});
+
+describe("scripts/engine-compile.mjs", () => {
+  it(
+    "refuses a contract v1 record with the re-research message and writes nothing",
+    async () => {
+      const dir = makeTempDir("engine-cli-");
+      const recordPath = path.join(dir, "legacy.json");
+      fs.writeFileSync(recordPath, JSON.stringify(LEGACY_RECORD));
+      const out = path.join(dir, "out");
+      const run = await runNodeScript(COMPILER, ["--record", recordPath, "--ideas-dir", out, "--no-manifest", "--json"]);
+      expect(run.code).toBe(1);
+      const result = lastJson(run.stdout);
+      expect(isRecord(result) && result.ok).toBe(false);
+      expect(isRecord(result) ? String(result.error) : "").toContain(RE_RESEARCH);
+      expect(fs.existsSync(out)).toBe(false);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "refuses a record missing the editorial fields the deep audit needs, listing them",
+    async () => {
+      const dir = makeTempDir("engine-cli-");
+      const recordPath = path.join(dir, "incomplete.json");
+      fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord(withEditorial({ yearOne: undefined }))));
+      const out = path.join(dir, "out");
+      const run = await runNodeScript(COMPILER, ["--record", recordPath, "--ideas-dir", out, "--no-manifest", "--json"]);
+      expect(run.code).toBe(1);
+      const result = lastJson(run.stdout);
+      expect(isRecord(result) ? result.error : null).toBe("record cannot compile into a publishable page");
+      expect(isRecord(result) && Array.isArray(result.issues) ? result.issues.join("\n") : "").toContain("editorial.yearOne is missing");
+      expect(fs.existsSync(out)).toBe(false);
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "exits 2 without --record",
+    async () => {
+      expect((await runNodeScript(COMPILER, [])).code).toBe(2);
+    },
+    TIMEOUT,
+  );
+});

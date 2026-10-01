@@ -4,20 +4,26 @@
  *
  * Checks the eight-heading contract (seven canonical sections + Sources),
  * How-it-works numbered list under The Solution, source links, word count,
- * slug shape, and MDX JSX traps. Exit 0 on pass, 1 on any failure.
+ * slug shape, and MDX JSX traps. Exit 0 on pass, 1 on any failure (2 on a
+ * usage error).
  *
- * Engine pages (manifest source engine:* or engine-draft-* in engine/drafts/)
- * also get the deep writing bar — see the --help text.
+ * Engine pages (manifest source engine:*, engine-draft-* drafts in
+ * engine/drafts/, or any page audited with --record) also get the deep bar,
+ * which audits the final artifact against its contract v2 research record
+ * (lib/engine/artifact-audit.ts) — see the --help text. Imports TypeScript
+ * modules, so run it with `node --experimental-strip-types` (npm run audit:idea).
  *
  * Usage:
- *   node scripts/audit-idea-mdx.mjs --slug ai-rfp-response-assistant
- *   node scripts/audit-idea-mdx.mjs --all
- *   node scripts/audit-idea-mdx.mjs --slug <slug> --json
+ *   npm run audit:idea -- --slug ai-rfp-response-assistant
+ *   npm run audit:idea -- --all
+ *   npm run audit:idea -- --file /tmp/page.mdx --record /tmp/record.json [--siblings dir] [--json]
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { auditEngineArtifact, loadEngineRecord } from "../lib/engine/artifact-audit.ts";
 import {
   CANONICAL_SECTION_TITLES,
   HOW_IT_WORKS_LABEL,
@@ -29,12 +35,10 @@ import {
 import {
   auditHowItWorksNaming,
   countPhrase,
-  extractBlockquotes,
   findBrokenLinkLines,
   GENERIC_SETUP_TABLES,
   promptBlocks,
   setupTableNames,
-  extractCompetitorLinks,
   findCrossIdeaSentenceDupes,
   findDuplicateSentencesInPage,
   findFillerHits,
@@ -46,7 +50,6 @@ import {
   isEngineDraftSlug,
   MIN_DEEP_BODY_WORDS,
   MIN_DEEP_BODY_WORDS_HARD,
-  normalizeQuote,
   proseParagraphs,
 } from "./lib/idea-quality.mjs";
 
@@ -66,10 +69,10 @@ const MIN_PROMPT_WORDS = {
   "landing page": 40,
   "branding package": 70,
 };
-/** Engine pages must quote at least this many verified community voices. */
-const MIN_VERIFIED_QUOTES = 2;
 /** The full brief audience may appear this many times; use audienceShort after. */
 const MAX_FULL_AUDIENCE_MENTIONS = 2;
+/** Fewer first-party pricing URLs than this is a warning, not an error. */
+const PREFERRED_FIRST_PARTY_URLS = 3;
 
 let manifestRowsCache = null;
 function manifestRows() {
@@ -129,6 +132,21 @@ function otherEngineBodies(slug) {
   return bodies;
 }
 
+/**
+ * Bodies of the *.mdx files in `dir` (keyed by file name without .mdx),
+ * except `slug` itself: the --siblings set for the cross-idea check.
+ */
+export function siblingBodies(dir, slug) {
+  const bodies = {};
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith(".mdx")) continue;
+    const s = f.replace(/\.mdx$/, "");
+    if (s === slug) continue;
+    bodies[s] = splitFrontmatter(fs.readFileSync(path.join(dir, f), "utf8")).body;
+  }
+  return bodies;
+}
+
 const MD_LINK_RE = /\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g;
 const H2_RE = /^##[ \t]+(.+?)\s*$/gm;
 
@@ -142,6 +160,24 @@ export function splitFrontmatter(raw) {
   const frontmatter = raw.slice(0, end + 4);
   const body = raw.slice(end + 4).replace(/^\s*\n/, "");
   return { frontmatter, body };
+}
+
+/** The frontmatter `slug:` value (bare or JSON-quoted), or null. */
+export function frontmatterSlug(raw) {
+  const { frontmatter } = splitFrontmatter(raw);
+  const m = /^slug:[ \t]*(.+?)[ \t]*$/m.exec(frontmatter);
+  if (!m) return null;
+  const value = m[1];
+  if (value.startsWith('"')) {
+    try {
+      const parsed = JSON.parse(value);
+      return typeof parsed === "string" ? parsed : null;
+    } catch {
+      // Not a JSON string: report no slug and let the caller fall back.
+      return null;
+    }
+  }
+  return value.replace(/^'|'$/g, "");
 }
 
 /** Remove fenced + inline code so JSX-trap checks ignore them. */
@@ -213,10 +249,44 @@ export function resolveRecordPath(slug, recordPath) {
 }
 
 /**
+ * The contract v2 record behind an engine page, or null with the reason in
+ * `errors` (missing file, unreadable JSON, legacy v1 record, invalid record).
+ */
+function loadRecord(slug, recordPath, errors) {
+  const resolved = resolveRecordPath(slug, recordPath);
+  if (!resolved || !fs.existsSync(resolved)) {
+    errors.push(`no research record for ${slug} (expected engine/records/${slug}.json or --record path)`);
+    return null;
+  }
+  let raw;
+  try {
+    raw = JSON.parse(fs.readFileSync(resolved, "utf8"));
+  } catch (err) {
+    errors.push(`could not read research record ${resolved} (${err instanceof Error ? err.message : err})`);
+    return null;
+  }
+  const loaded = loadEngineRecord(raw, resolved);
+  if (!loaded.ok) {
+    errors.push(loaded.error);
+    return null;
+  }
+  return loaded.record;
+}
+
+/** Prose without blockquote lines (verbatim source quotes are checked against evidence instead). */
+function withoutQuoteLines(prose) {
+  return prose
+    .split("\n")
+    .filter((line) => !/^\s*>/.test(line))
+    .join("\n");
+}
+
+/**
  * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
  * @param {string} filePath
  * @param {string} [slugHint]
  * @param {{ recordPath?: string, engine?: boolean, otherBodies?: Record<string, string> }} [options]
+ *   recordPath: the page's research record (else engine/records/…);
  *   engine: force (true) or skip (false) the deep bar instead of looking the
  *   slug up in the manifests; otherBodies: sibling bodies for the cross-idea
  *   check (defaults to every other engine page on disk).
@@ -243,6 +313,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
 
   const raw = fs.readFileSync(filePath, "utf8");
   const { body } = splitFrontmatter(raw);
+  const frontmatterLines = raw.slice(0, raw.length - body.length).split("\n").length - 1;
   const sections = splitSections(body);
   const titles = sections.map((s) => s.title);
 
@@ -299,7 +370,8 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   }
 
   const prose = stripCode(body);
-  if (/<[A-Za-z\/!]/.test(prose)) {
+  // A backslash-escaped "\<" or "\{" renders literally; only a bare one is a trap.
+  if (/(?<!\\)<[A-Za-z/!]/.test(prose)) {
     errors.push(
       "body has bare '<' that MDX would parse as JSX (escape as \\< outside code fences)",
     );
@@ -323,7 +395,10 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   }
 
   // --- writing quality (fail-closed) ---
-  const fillerHits = findFillerHits(prose.toLowerCase());
+  // On engine pages every blockquote must equal an accepted source quote
+  // (checked below), so verbatim source text is not held to our prose rules.
+  const ownProse = deep ? withoutQuoteLines(prose) : prose;
+  const fillerHits = findFillerHits(ownProse.toLowerCase());
   for (const hit of fillerHits) {
     errors.push(`stock filler phrase: "${hit}"`);
   }
@@ -363,7 +438,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     }
   }
 
-  for (const issue of findHygieneIssues(prose)) {
+  for (const issue of findHygieneIssues(ownProse)) {
     errors.push(issue);
   }
 
@@ -371,34 +446,13 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     errors.push(`broken markdown link near line ${hit.line}: "${hit.text.slice(0, 90)}"`);
   }
 
-  // Deep drafts: niche sizing, first-party competitor URLs, quote fidelity.
+  // Deep pages: niche sizing, prompts, schema, unit economics, and the final
+  // artifact audit against the contract v2 research record.
+  let artifactMetrics = null;
   if (deep) {
     const megaHits = findMegaTamHits(prose);
     for (const hit of megaHits) {
       errors.push(`mega-TAM claim (niche sizing only): "${hit}"`);
-    }
-
-    if (competitive) {
-      const links = extractCompetitorLinks(competitive.content);
-      const seen = new Map();
-      for (const url of links) {
-        if (isCompetitorRoundupUrl(url)) {
-          errors.push(`competitor link looks like a roundup, not pricing page: ${url}`);
-        }
-        seen.set(url, (seen.get(url) || 0) + 1);
-      }
-      for (const [url, n] of seen) {
-        if (n > 1) {
-          errors.push(
-            `competitor link reused ${n}× (each competitor needs its own pricing URL): ${url}`,
-          );
-        }
-      }
-      if (links.length < 3) {
-        warnings.push(
-          `competitive landscape has ${links.length} competitor link(s); prefer ≥3 first-party pricing URLs`,
-        );
-      }
     }
 
     // Four AI prompts (incl. branding), each with real content.
@@ -438,10 +492,6 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     }
 
     if (business) {
-      const tierNames = [
-        ...business.content.matchAll(/^\s*[-*]\s+\*\*([^*]+)\*\*\s+\(/gm),
-      ].map((m) => m[1].trim());
-
       // Unit economics bullets lead with the number: `- **$2.40/dev/mo** — label`.
       const unit = business.content.match(
         /\*\*Unit Economics\*\*\s*\n([\s\S]*?)(?:\n\*\*[^*\n]+\*\*\s*\n|$)/,
@@ -458,85 +508,40 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
           }
         }
       }
-
-      // Year-one math with a computed ARR line on a real tier.
-      if (!business.content.includes("**Year-One Math**")) {
-        errors.push("Business Model needs **Year-One Math** (funnel → paying accounts → ARR, plus downside)");
-      } else {
-        const arr = business.content.match(
-          /\*\*[\d,]+ × \$[\d,.]+\/mo = \$[\d,]+ ARR\*\* — (.+?) accounts paying/,
-        );
-        if (!arr) {
-          errors.push("Year-One Math is missing its computed ARR line");
-        } else if (tierNames.length > 0 && !tierNames.includes(arr[1].trim())) {
-          errors.push(
-            `Year-One Math lands on tier "${arr[1].trim()}", which is not a pricing tier (${tierNames.join(", ")})`,
-          );
-        }
-        if (!/downside if the close rate halves/.test(business.content)) {
-          errors.push("Year-One Math is missing its downside case");
-        }
-      }
     }
 
-    // Every engine page is compiled from a research record; audit against it.
-    const recordPath = resolveRecordPath(slug, options.recordPath);
-    if (!recordPath || !fs.existsSync(recordPath)) {
-      errors.push(
-        `no research record for ${slug} (expected engine/records/${slug}.json or --record path)`,
-      );
-    } else {
-      let record = null;
-      try {
-        record = JSON.parse(fs.readFileSync(recordPath, "utf8"));
-      } catch (err) {
-        errors.push(
-          `could not read research record ${recordPath} (${err instanceof Error ? err.message : err})`,
-        );
-      }
-      if (record) {
-        const signals = record?.community?.signals || [];
-        const mdxQuotes = extractBlockquotes(body);
-        let verifiedOnPage = 0;
-        for (const quote of mdxQuotes) {
-          const q = normalizeQuote(quote);
-          const match = signals.find((sig) => {
-            const rq = normalizeQuote(sig.quote || "");
-            return rq && (rq.includes(q) || q.includes(rq));
-          });
-          if (!match) {
-            errors.push(`quote not in the research record: "${quote.slice(0, 80)}"`);
-          } else if (match.verified !== true) {
-            errors.push(
-              `quote not verified against its cited page (re-run engine:research): "${quote.slice(0, 80)}"`,
-            );
-          } else {
-            verifiedOnPage += 1;
-          }
-        }
-        if (verifiedOnPage < MIN_VERIFIED_QUOTES) {
-          errors.push(
-            `needs ≥${MIN_VERIFIED_QUOTES} verified community quotes (got ${verifiedOnPage})`,
-          );
-        }
-        // Verified quotes the compiler dropped would mean a lossy compile.
-        for (const sig of signals) {
-          if (sig.verified !== true) continue;
-          const q = normalizeQuote(sig.quote || "");
-          if (q && !mdxQuotes.some((mq) => normalizeQuote(mq).includes(q) || q.includes(normalizeQuote(mq)))) {
-            errors.push(
-              `quote fidelity: verified research quote missing or rewritten in MDX: "${(sig.quote || "").slice(0, 80)}"`,
-            );
-          }
-        }
+    // Every engine page is compiled from a contract v2 research record; the
+    // final artifact must match it (quotes, rows, figures, Year-One Math).
+    const record = loadRecord(slug, options.recordPath, errors);
+    const artifact = auditEngineArtifact(body, record, { lineOffset: frontmatterLines });
+    errors.push(...artifact.errors);
+    warnings.push(...artifact.warnings);
+    artifactMetrics = artifact.metrics;
 
-        const fullAudience = record?.brief?.targetCustomer;
-        const mentions = countPhrase(prose, fullAudience);
-        if (mentions > MAX_FULL_AUDIENCE_MENTIONS) {
-          errors.push(
-            `full audience label "${fullAudience}" appears ${mentions}× (max ${MAX_FULL_AUDIENCE_MENTIONS}; use editorial.audienceShort)`,
-          );
-        }
+    // Pricing links: first-party prices need a pricing page, not a roundup;
+    // a secondary price may cite a roundup because it is labelled "via host".
+    const reported = new Set();
+    const firstPartyUrls = new Set();
+    for (const link of artifact.competitorLinks) {
+      if (link.attribution === "first_party") firstPartyUrls.add(link.url);
+      if (link.attribution !== "secondary" && !reported.has(link.url) && isCompetitorRoundupUrl(link.url)) {
+        reported.add(link.url);
+        errors.push(`competitor link looks like a roundup, not pricing page: ${link.url}`);
+      }
+    }
+    if (record && firstPartyUrls.size < PREFERRED_FIRST_PARTY_URLS) {
+      warnings.push(
+        `competitive landscape has ${firstPartyUrls.size} first-party pricing URL(s); prefer ≥${PREFERRED_FIRST_PARTY_URLS}`,
+      );
+    }
+
+    if (record) {
+      const fullAudience = record.brief.targetCustomer;
+      const mentions = countPhrase(prose, fullAudience);
+      if (mentions > MAX_FULL_AUDIENCE_MENTIONS) {
+        errors.push(
+          `full audience label "${fullAudience}" appears ${mentions}× (max ${MAX_FULL_AUDIENCE_MENTIONS}; use editorial.audienceShort)`,
+        );
       }
     }
   }
@@ -554,6 +559,7 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     nearDuplicatePairs: dups.length,
     duplicateSentences: sentenceDups.length,
     crossIdeaSentenceDupes: crossIdeaHits.length,
+    ...(artifactMetrics ? { artifact: artifactMetrics } : {}),
   };
 
   return {
@@ -590,54 +596,105 @@ function printResult(result, { json }) {
   }
 }
 
+function usageError(message) {
+  console.error(message);
+  process.exit(2);
+}
+
 function parseArgs(argv) {
   const args = {
     slug: null,
+    file: null,
     all: false,
     json: false,
     help: false,
     recordPath: null,
+    siblings: null,
+  };
+  const value = (i, flag) => {
+    const v = argv[i];
+    if (v === undefined || v.startsWith("--")) usageError(`${flag} needs a value`);
+    return v;
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--slug") args.slug = argv[++i];
+    if (a === "--slug") args.slug = value(++i, a);
+    else if (a === "--file") args.file = value(++i, a);
     else if (a === "--all") args.all = true;
     else if (a === "--json") args.json = true;
-    else if (a === "--record") args.recordPath = argv[++i];
+    else if (a === "--record") args.recordPath = value(++i, a);
+    else if (a === "--siblings") args.siblings = value(++i, a);
     else if (a === "--help" || a === "-h") args.help = true;
-    else {
-      console.error(`unknown arg: ${a}`);
-      process.exit(2);
-    }
+    else usageError(`unknown arg: ${a}`);
   }
   return args;
 }
 
+const HELP = `Usage:
+  npm run audit:idea -- --slug <slug> [--record path.json] [--json]
+  npm run audit:idea -- --all
+  npm run audit:idea -- --file <page.mdx> --record <record.json> [--siblings <dir>] [--json]
+
+  --slug      audit content/ideas/<slug>.mdx (else engine/drafts/<slug>.mdx)
+  --file      audit an MDX file anywhere (the slug comes from its frontmatter,
+              else the file name; --slug overrides)
+  --record    the page's contract v2 research record; implies the engine bar
+  --siblings  compare cross-idea sentences with the *.mdx files in this
+              directory instead of the repository's engine pages
+  --json      one JSON result per audited page on stdout
+  Exit codes: 0 every page passed, 1 any page failed, 2 usage error.
+
+Engine pages (manifest source engine:*, engine-draft-* drafts in
+engine/drafts/, or --record) get the deep bar: ≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock
+filler, no duplicate ≥8-word sentences (in-page or across engine pages),
+named How-it-works steps, niche sizing, four prompts with real content and
+an idea-specific schema, number-first unit economics, and the final
+artifact audit against the contract v2 record (engine/records/{slug}.json
+or --record; a legacy v1 record fails with a re-research message):
+  - every blockquote equals a selected accepted quote, with "— [title](url)"
+    linking to that quote's own source; every selected quote appears; ≥2
+    distinct quotes (a repeated quote counts once);
+  - market signal and competitor rows show their evidence renderings and
+    sources ("(via host)" on secondary prices); a first-party pricing URL
+    backs one competitor only;
+  - figures in The Problem, Market Research and Competitive Landscape prose
+    must be renderings of the record's evidence (a guard, not proof);
+  - Year-One Math is recomputed from the record (accounts, per-account
+    price, ARR, tier, seats, downside, funnel) with exactly one base and one
+    downside line and no other ARR/MRR total.`;
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (args.help || (!args.slug && !args.all)) {
-    console.log(`Usage:
-  node scripts/audit-idea-mdx.mjs --slug <slug> [--record path.json]
-  node scripts/audit-idea-mdx.mjs --all
-  node scripts/audit-idea-mdx.mjs --slug <slug> --json
+  if (args.help) {
+    console.log(HELP);
+    process.exit(0);
+  }
+  if ([args.file, args.slug && !args.file, args.all].filter(Boolean).length !== 1) {
+    console.error(HELP);
+    process.exit(2);
+  }
+  if (args.siblings && !fs.existsSync(args.siblings)) usageError(`--siblings directory not found: ${args.siblings}`);
 
-Engine pages (manifest source engine:* and engine-draft-* drafts in
-engine/drafts/) get the deep bar: ≥${MIN_DEEP_BODY_WORDS_HARD} words, no stock filler,
-no duplicate ≥8-word sentences (in-page or across engine pages), named
-How-it-works steps, niche sizing, first-party competitor URLs, four prompts
-with real content and an idea-specific schema, number-first unit economics,
-Year-One Math with computed ARR and downside, the full audience label at most
-twice, and ≥2 community quotes verified on their cited pages
-(engine/records/{slug}.json or --record).`);
-    process.exit(args.help ? 0 : 2);
+  const targets = [];
+  if (args.file) {
+    const filePath = path.resolve(args.file);
+    const fromFrontmatter = fs.existsSync(filePath) ? frontmatterSlug(fs.readFileSync(filePath, "utf8")) : null;
+    targets.push({
+      filePath,
+      slug: args.slug || fromFrontmatter || path.basename(filePath, path.extname(filePath)),
+    });
+  } else {
+    for (const slug of args.all ? listIdeaSlugs() : [args.slug]) {
+      targets.push({ filePath: resolveIdeaFile(slug), slug });
+    }
   }
 
-  const slugs = args.all ? listIdeaSlugs() : [args.slug];
   let failed = 0;
-  for (const slug of slugs) {
-    const filePath = resolveIdeaFile(slug);
+  for (const { filePath, slug } of targets) {
     const result = auditIdeaFile(filePath, slug, {
       recordPath: args.recordPath || undefined,
+      ...(args.recordPath ? { engine: true } : {}),
+      ...(args.siblings ? { otherBodies: siblingBodies(args.siblings, slug) } : {}),
     });
     printResult(result, { json: args.json });
     if (!result.ok) failed += 1;
@@ -645,7 +702,7 @@ twice, and ≥2 community quotes verified on their cited pages
 
   if (!args.json && args.all) {
     console.log(
-      `\naudit-idea-mdx: ${slugs.length - failed}/${slugs.length} passed`,
+      `\naudit-idea-mdx: ${targets.length - failed}/${targets.length} passed`,
     );
   }
   process.exit(failed > 0 ? 1 : 0);

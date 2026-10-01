@@ -6,6 +6,11 @@
  *
  * Round 3: sentence-level + cross-idea 8+ word dedupe; ≥2200 words hard;
  * no compiler padding templates; proper audience casing.
+ *
+ * Plain JavaScript on purpose: seed-convex.mjs imports it under plain node.
+ * Quote, row and Year-One checks against the research record live in
+ * lib/engine/artifact-audit.ts (WP46-S4); the loose substring quote matcher
+ * that used to live here is gone.
  */
 
 /** Soft target for engine-draft-* (IB deep pages are ~2,300–2,600). */
@@ -85,18 +90,6 @@ export const COMPETITOR_ROUNDUP_URL_RE =
 
 export const COMPETITOR_ROUNDUP_HOST_PATH_RE =
   /\/(best|top)-[\w-]*(rfp|ai|software|tools|page|builder)/i;
-
-/**
- * Normalize quote text for fidelity checks (whitespace + curly quotes).
- */
-export function normalizeQuote(text) {
-  return String(text)
-    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
-    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
 
 /**
  * Split prose into paragraphs (blank-line separated), ignoring fenced code.
@@ -363,33 +356,6 @@ export function isCompetitorRoundupUrl(url) {
   } catch {
     return true;
   }
-}
-
-/**
- * Extract competitor markdown bullets' links from Competitive Landscape.
- */
-export function extractCompetitorLinks(competitiveContent) {
-  const links = [];
-  const lines = competitiveContent.split("\n");
-  for (const line of lines) {
-    if (!/^\s*[-*]\s+\*\*/.test(line)) continue;
-    for (const m of line.matchAll(/\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g)) {
-      links.push(m[1]);
-    }
-  }
-  return links;
-}
-
-/**
- * Extract blockquote bodies from MDX.
- */
-export function extractBlockquotes(body) {
-  const quotes = [];
-  for (const m of body.matchAll(/^>\s*"?([^"\n]+)"?/gm)) {
-    const q = m[1].replace(/\s*—\s*.*$/, "").trim();
-    if (q.length >= 12) quotes.push(q);
-  }
-  return quotes;
 }
 
 /** Tables every engine Setup prompt carries; the idea's own tables are extra. */

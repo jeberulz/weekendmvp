@@ -1,11 +1,20 @@
 #!/usr/bin/env node
 /**
- * Eval harness: re-run the MDX auditor on gold slugs and diff metrics
- * against engine/eval/gold.json. Fail on gold regression.
+ * LEGACY AUDITOR REGRESSION — not an engine-quality measurement.
+ *
+ * Re-runs the MDX auditor on three HANDWRITTEN gold pages in content/ideas
+ * and diffs their metrics against engine/eval/gold.json, failing on a
+ * regression. These pages were written by hand and are audited with the
+ * base (non-engine) bar, so a pass says the auditor still accepts known-good
+ * handwritten pages. It does not run research, compile a record or audit
+ * new engine output; that is the deterministic research → compile → audit
+ * replay gate (WP46 integration), and the final artifact audit of engine
+ * pages lives in lib/engine/artifact-audit.ts.
  *
  * Usage:
- *   node scripts/engine-eval.mjs
- *   node scripts/engine-eval.mjs --write-gold   # regenerate gold.json from auditor
+ *   npm run engine:eval
+ *   npm run engine:eval -- --write-gold   # regenerate gold.json from auditor
+ * (node --experimental-strip-types: the auditor imports TypeScript modules)
  */
 
 import fs from "node:fs";
@@ -109,6 +118,9 @@ function diffEntry(expected, actual) {
 }
 
 function runEval() {
+  console.log(
+    "Legacy auditor regression: re-audits the handwritten gold pages (base bar).\nIt does not measure new engine output; see the research → compile → audit replay gate.\n",
+  );
   const gold = loadGold();
   const bySlug = new Map(gold.entries.map((e) => [e.slug, e]));
   let failed = 0;
@@ -136,7 +148,7 @@ function runEval() {
       for (const r of regressions) console.log(`  - ${r}`);
       failed += 1;
     } else {
-      console.log(`PASS  ${slug}`);
+      console.log(`PASS  ${slug} (handwritten gold page)`);
       const m = result.entry;
       console.log(
         `  metrics: words=${m.wordCount} competitors=${m.competitorMentions} sources=${m.sourceLinkCount} howTo=${m.howToStepCount}`,
@@ -145,7 +157,7 @@ function runEval() {
   }
 
   console.log(
-    `\nengine-eval: ${GOLD_SLUGS.length - failed}/${GOLD_SLUGS.length} gold slugs ok`,
+    `\nengine-eval (legacy auditor regression): ${GOLD_SLUGS.length - failed}/${GOLD_SLUGS.length} handwritten gold pages ok`,
   );
   process.exit(failed > 0 ? 1 : 0);
 }
@@ -158,8 +170,11 @@ function main() {
   }
   if (args.includes("--help") || args.includes("-h")) {
     console.log(`Usage:
-  node scripts/engine-eval.mjs
-  node scripts/engine-eval.mjs --write-gold`);
+  npm run engine:eval
+  npm run engine:eval -- --write-gold
+
+Legacy auditor regression over three handwritten gold pages; it does not
+measure new engine output.`);
     process.exit(0);
   }
   runEval();
