@@ -3,7 +3,7 @@
 Updated: 2026-10-01 (UTC). Branch: `cursor/phase-7-skill-flip-d6b7`.
 **Do not merge from this agent.** Phases 8–9 / mcp.json untouched.
 
-## Re-run 4 (Cloud Agent) — widened community sources (John go 1 Oct 2026)
+## Re-run 4 (Cloud Agent) — widened community sources (owner go-ahead, 1 Oct 2026)
 
 Reddit public `.json` still HTTP 403 here; **no** `REDDIT_CLIENT_ID` / `SECRET`. Fix: widen community search + non-Reddit supplement; keep Reddit OAuth paths.
 

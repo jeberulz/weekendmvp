@@ -505,6 +505,23 @@ export function isGroundedFigure(figure: string, haystack: string): boolean {
   );
 }
 
+/**
+ * True when `figure` appears on a sentence or line of `text` that also names
+ * the competitor, so a price beside one vendor is never credited to another.
+ */
+export function isGroundedForCompetitor(
+  figure: string,
+  name: string,
+  text: string,
+): boolean {
+  const key = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const needle = key(name.replace(/\.(ai|io|com|hq)$/i, ""));
+  if (needle.length < 3) return false;
+  return text
+    .split(/(?<=[.!?])\s+|\n+/)
+    .some((line) => key(line).includes(needle) && isGroundedFigure(figure, line));
+}
+
 /** Community quotes that must be found verbatim before a record is kept. */
 export const MIN_VERIFIED_SIGNALS = 2;
 
@@ -799,9 +816,11 @@ function parseSynthesisPack(
   const groundedIn = (figure: string, url: string) =>
     isGroundedFigure(figure, evidence.get(url) ?? "");
   // Competitor prices often sit in the search answer next to [n], not in the
-  // vendor-page snippet. Still require a resolved search citation, but accept
-  // a price that appears anywhere in the competitors pack (+ fetched pages).
-  const competitorsHaystack = [
+  // vendor-page snippet. Still require a resolved search citation, and accept
+  // a price found elsewhere in the competitors pack (+ fetched competitor
+  // pages) only on a line that also names that competitor, so one vendor's
+  // price is never credited to another.
+  const competitorsText = [
     competitors.text,
     ...competitors.citations.map((c) => c.snippet ?? ""),
     ...(pageTexts
@@ -814,8 +833,9 @@ function parseSynthesisPack(
           .map(([, t]) => t ?? "")
       : []),
   ].join("\n");
-  const competitorPriceGrounded = (pricing: string, url: string) =>
-    groundedIn(pricing, url) || isGroundedFigure(pricing, competitorsHaystack);
+  const competitorPriceGrounded = (pricing: string, url: string, name: string) =>
+    groundedIn(pricing, url) ||
+    isGroundedForCompetitor(pricing, name, competitorsText);
   const dropped = { stats: 0, competitors: 0 };
 
   const statsFromModel = Array.isArray(parsed.stats) ? parsed.stats : [];
@@ -847,7 +867,7 @@ function parseSynthesisPack(
     const pricing = typeof r.pricing === "string" ? r.pricing.trim() : "";
     const notes = typeof r.notes === "string" ? r.notes.trim() : undefined;
     const citation = resolveCompetitorCitation(index, r.url, name);
-    if (name && pricing && citation && !competitorPriceGrounded(pricing, citation.url)) {
+    if (name && pricing && citation && !competitorPriceGrounded(pricing, citation.url, name)) {
       dropped.competitors += 1;
     } else if (name && pricing && citation) {
       competitorRows.push({

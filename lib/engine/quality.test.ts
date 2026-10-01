@@ -18,6 +18,7 @@ import {
   communitySearchQuery,
   figureTokens,
   isGroundedFigure,
+  isGroundedForCompetitor,
   isRedditUrl,
   mergeSearchPacks,
   MIN_VERIFIED_SIGNALS,
@@ -615,6 +616,19 @@ describe("figure grounding per citation", () => {
     ]);
     expect(isGroundedFigure("$1.22 billion", evidence.get("https://a.example/one")!)).toBe(false);
     expect(isGroundedFigure("$1.8 billion", evidence.get("https://b.example/two")!)).toBe(false);
+  });
+
+  it("grounds a competitor price only on a line naming that competitor", () => {
+    const text =
+      "Loopio starts at $388/mo [1]. Responsive costs $99/mo [2].\n| Inventive.ai | $49/mo |";
+    expect(isGroundedForCompetitor("$388/mo", "Loopio", text)).toBe(true);
+    expect(isGroundedForCompetitor("$99/mo", "Responsive", text)).toBe(true);
+    expect(isGroundedForCompetitor("$49/mo", "Inventive.ai", text)).toBe(true);
+    // The whole-pack check this replaces matched any vendor's price.
+    expect(isGroundedFigure("$388/mo", text)).toBe(true);
+    // Another vendor's price is not credited to this one.
+    expect(isGroundedForCompetitor("$388/mo", "Responsive", text)).toBe(false);
+    expect(isGroundedForCompetitor("$99/mo", "Loopio", text)).toBe(false);
   });
 
   it("uses fetched page text to ground a competitor price", () => {
