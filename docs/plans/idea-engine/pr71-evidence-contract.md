@@ -402,13 +402,6 @@ source acquisition statuses, accepted counts per kind, and rejected
   Known limit: a host whose owner is not among the known vendors is treated
   as a neutral page.
 
-- **R5 (2026-10-01, from S4): a vendor's own site is not evidence for a
-  rival's price.** A competitor price whose source is first-party for a
-  different candidate vendor is rejected (`ambiguous_attribution`) at
-  acceptance and in revalidation. Neutral secondary sources keep the clause
-  binding rules. This removes the conflict between accepted secondary prices
-  and the auditor's rule that a first-party pricing URL backs one competitor.
-
 Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,
 never push, never merge, and never touch another worker's files. The
