@@ -1,6 +1,8 @@
 /**
  * Write compiled MDX (+ optional manifest merge) to disk.
- * Refuses to overwrite existing MDX unless force=true.
+ * Refuses to overwrite existing MDX unless force=true. The record is a
+ * contract v2 record; compileResearchRecord re-validates it and refuses a
+ * legacy v1 record, so nothing is written for one.
  */
 
 import fs from "node:fs";
@@ -10,7 +12,7 @@ import {
   type CompileOptions,
   type CompileResult,
 } from "./compile.ts";
-import type { ResearchRecord } from "./research-record.ts";
+import type { ResearchRecordV2 } from "./evidence/contract.ts";
 
 export type WriteCompileOptions = CompileOptions & {
   ideasDir: string;
@@ -123,7 +125,7 @@ export function writeCompiledIdea(
 }
 
 export function compileAndWrite(
-  record: ResearchRecord,
+  record: ResearchRecordV2,
   options: Omit<WriteCompileOptions, "record">,
 ): WriteCompileResult {
   return writeCompiledIdea({ ...options, record });
