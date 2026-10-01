@@ -85,6 +85,19 @@ describe("WP44-S2 light workspace shell", () => {
     expect(searchSource).toContain('<label htmlFor="workspace-search" className="sr-only">');
   });
 
+  test("keeps a visible focus ring where the chrome resets the outline", () => {
+    // Tailwind v4: outline-none sets --tw-outline-style to none and
+    // focus-visible:outline-2 only sets the width, so the style must be named too.
+    expect(searchSource).toContain("focus-visible:outline-solid");
+    for (const [name, source] of Object.entries(chromeSources)) {
+      for (const [classes] of source.matchAll(/"[^"\n]*\boutline-(?:none|hidden)\b[^"\n]*"/g)) {
+        if (classes.includes("focus-visible:outline-2")) {
+          expect(classes, name).toContain("focus-visible:outline-solid");
+        }
+      }
+    }
+  });
+
   test("keeps the mobile account sheet labelled and calm", () => {
     expect(shellSource).toContain("<SheetTitle");
     expect(shellSource).toContain("<SheetClose asChild>");

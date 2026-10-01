@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
@@ -17,5 +17,12 @@ export default defineConfig({
   },
   test: {
     environment: "edge-runtime",
+    // Path filters like `vitest run convex` otherwise match copies of the
+    // repo in agent/work-package worktrees nested under the project root.
+    exclude: [
+      ...configDefaults.exclude,
+      "**/.worktrees/**",
+      "**/.claude/worktrees/**",
+    ],
   },
 });

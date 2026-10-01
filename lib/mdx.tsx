@@ -97,7 +97,7 @@ export const defaultMdxComponents: MDXComponents = {
     <p className="text-neutral-300 leading-relaxed mb-6" {...props} />
   ),
   a: (props: ElProps<"a">) => (
-    <a className="text-white hover:underline" {...props} />
+    <a className="text-white break-words hover:underline" {...props} />
   ),
   strong: (props: ElProps<"strong">) => (
     <strong className="text-white font-medium" {...props} />
@@ -136,7 +136,7 @@ export const defaultMdxComponents: MDXComponents = {
       <code {...props} />
     ) : (
       <code
-        className="font-mono text-[0.85em] text-neutral-200 bg-white/5 border border-white/10 rounded px-1.5 py-0.5"
+        className="font-mono text-[0.85em] break-words text-neutral-200 bg-white/5 border border-white/10 rounded px-1.5 py-0.5"
         {...props}
       />
     ),

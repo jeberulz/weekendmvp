@@ -12,15 +12,18 @@
  * DOM under a blur/clip applied via a data attribute. A brief flash of
  * content before the lock resolves is accepted by design (SEO over polish).
  *
- * Access resolution order (gate.js `resolveAccess`, + explicit localhost
- * bypass):
+ * Access resolution order (gate.js `resolveAccess`, + member session +
+ * localhost bypass). `?e=` is always stripped first (privacy), then:
  *   1. localStorage 'ideas_email' present            → unlocked
- *   2. ?e=<email> → POST /api/ideas-verify, ok       → store + unlock
- *      (the ?e param is stripped via history.replaceState either way)
- *   3. ?utm_source=beehiiv                           → store '__newsletter__' + unlock
- *   4. hostname localhost / 127.0.0.1                → unlocked (dev bypass)
- *   5. otherwise                                     → locked (overlay + form)
+ *   2. WP44 session hint cookie (signed-in member)   → unlocked
+ *   3. captured ?e=<email> → POST /api/ideas-verify  → store + unlock
+ *   4. ?utm_source=beehiiv                           → store '__newsletter__' + unlock
+ *   5. hostname localhost / 127.0.0.1                → unlocked (dev bypass)
+ *   6. otherwise                                     → locked (overlay + form)
+ * Immediate access (1/2/5) never calls /api/ideas-verify.
  * Form submit → POST /api/ideas-subscribe → store email + unlock.
+ * Dashboard "Read the research" links stay on /ideas/{slug}; members skip
+ * this overlay via the session hint, anonymous visitors still see it.
  */
 
 import * as React from "react";
