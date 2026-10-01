@@ -617,14 +617,49 @@ describe("figure grounding per citation", () => {
     expect(isGroundedFigure("$1.8 billion", evidence.get("https://b.example/two")!)).toBe(false);
   });
 
-  it("uses an untagged answer when it cites one source", () => {
-    const evidence = citationEvidence([
+  it("uses fetched page text to ground a competitor price", () => {
+    const evidence = citationEvidence(
+      [
+        {
+          text: "Loopio is an enterprise player [1].",
+          citations: [
+            {
+              url: "https://loopio.com/pricing/",
+              title: "Loopio",
+              snippet: "enterprise proposal software",
+            },
+          ],
+        },
+      ],
+      new Map([
+        [
+          "https://loopio.com/pricing/",
+          "Team plan starts at $388 per month billed annually.",
+        ],
+      ]),
+    );
+    expect(
+      isGroundedFigure("$388/mo", evidence.get("https://loopio.com/pricing/")!),
+    ).toBe(true);
+    // Without page text, the snippet alone has no price.
+    const snippetsOnly = citationEvidence([
       {
-        text: "Market A was $1.8 billion.",
-        citations: [{ url: "https://a.example/one", title: "A" }],
+        text: "Loopio is an enterprise player [1].",
+        citations: [
+          {
+            url: "https://loopio.com/pricing/",
+            title: "Loopio",
+            snippet: "enterprise proposal software",
+          },
+        ],
       },
     ]);
-    expect(isGroundedFigure("$1.8 billion", evidence.get("https://a.example/one")!)).toBe(true);
+    expect(
+      isGroundedFigure(
+        "$388/mo",
+        snippetsOnly.get("https://loopio.com/pricing/")!,
+      ),
+    ).toBe(false);
   });
 
   it("never treats URL or marker digits as evidence", () => {

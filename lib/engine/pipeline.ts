@@ -720,8 +720,15 @@ export async function verifySignals(
  * result (or URLs and titles) at once. When an answer carries no markers at
  * all, it counts as evidence only if it cites one unique source; with
  * several sources, attribution is impossible and only snippets remain.
+ *
+ * Optional `pageTexts` adds fetched page bodies (competitor pricing pages,
+ * etc.) so prices that appear on the cited page — not only in the search
+ * snippet — still ground honestly.
  */
-export function citationEvidence(packs: SearchPack[]): Map<string, string> {
+export function citationEvidence(
+  packs: SearchPack[],
+  pageTexts?: Map<string, string | null>,
+): Map<string, string> {
   const evidence = new Map<string, string[]>();
   const add = (href: string, text: string) =>
     evidence.set(href, [...(evidence.get(href) ?? []), text]);
@@ -745,6 +752,13 @@ export function citationEvidence(packs: SearchPack[]): Map<string, string> {
       }
     }
   }
+  if (pageTexts) {
+    for (const [url, text] of pageTexts) {
+      if (!text?.trim()) continue;
+      const href = normalizeUrl(url) ?? url;
+      add(href, text.slice(0, SOURCE_EXCERPT_CHARS));
+    }
+  }
   return new Map([...evidence].map(([href, parts]) => [href, parts.join("\n")]));
 }
 
@@ -754,6 +768,7 @@ function parseSynthesisPack(
   competitors: SearchPack,
   community: SearchPack,
   brief: NormalizedBrief,
+  pageTexts?: Map<string, string | null>,
 ): SynthesisPack {
   let parsed: Record<string, unknown>;
   try {
@@ -763,7 +778,10 @@ function parseSynthesisPack(
   }
 
   const index = citationIndex([market, competitors, community]);
-  const evidence = citationEvidence([market, competitors, community]);
+  const evidence = citationEvidence(
+    [market, competitors, community],
+    pageTexts,
+  );
   const groundedIn = (figure: string, url: string) =>
     isGroundedFigure(figure, evidence.get(url) ?? "");
   const dropped = { stats: 0, competitors: 0 };
@@ -1066,10 +1084,20 @@ export async function runResearch(
       providers,
       run,
       2,
-      `${briefContext(brief)}\n\nIdentify at least three direct competitors with current plan prices. Prefer each vendor's own pricing or product page URL in your citations (company.com/pricing or product homepage). Avoid roundup/best-of blogs as the primary URL, but still return ≥3 named competitors with prices. Cite each.`,
+      `${briefContext(brief)}\n\nIdentify at least three direct competitors with current plan prices. Prefer each vendor's own pricing or product page URL in your citations (company.com/pricing or product homepage). Avoid roundup/best-of blogs as the primary URL. In the answer body, write each competitor's exact plan prices as numerals (e.g. "$99/mo", "$1,200/yr") next to the citation marker so the figures appear in the research text. Still return ≥3 named competitors with prices. Cite each.`,
     );
   } catch (error) {
     throw stepError("competitors", "competitors search failed", error);
+  }
+
+  // Best-effort fetch of competitor citation pages (unpaid). Prices that
+  // appear on the vendor page ground even when the search snippet omitted them.
+  let competitorPages = new Map<string, PageRead>();
+  if (providers.sourceText) {
+    competitorPages = await readCommunityPages(
+      competitorsPack.citations,
+      providers.sourceText,
+    );
   }
 
   // --- 3 community_signals ---
@@ -1128,7 +1156,7 @@ export async function runResearch(
         .join("; ");
       throw new PipelineError(
         "community_signals",
-        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Prefer HN / Indie Hackers / public forums (Reddit needs REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET on this network). Unreadable: ${reasons}`,
+        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Prefer Hacker News item URLs and public Discourse/forum threads (Reddit needs REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET on this network). Unreadable: ${reasons}`,
       );
     }
   }
@@ -1169,12 +1197,17 @@ export async function runResearch(
   }
 
   // --- 6 provenance_parse (unpaid) ---
+  const pageTextsForGrounding = new Map<string, string | null>();
+  for (const [url, page] of [...competitorPages, ...communityPages]) {
+    pageTextsForGrounding.set(url, page.text);
+  }
   const synth = parseSynthesisPack(
     synthesisText,
     market,
     competitorsPack,
     community,
     brief,
+    pageTextsForGrounding,
   );
 
   const shortfalls: string[] = [];
