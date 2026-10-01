@@ -32,8 +32,11 @@ import {
   type EditorialEvidenceItem,
 } from "../pipeline.ts";
 import type { ExtractionCandidates } from "../evidence/contract.ts";
-import type { Fetcher } from "./openai.ts";
+import { createKeywordDataProvider } from "./keywordData.ts";
+import { createSynthesisProvider, type Fetcher } from "./openai.ts";
+import { createSearchProvider } from "./perplexity.ts";
 import type { SourceTextProvider } from "./sourceText.ts";
+import type { EngineProviders } from "./types.ts";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -287,13 +290,15 @@ export const FIXTURE_EXTRACTION: ExtractionCandidates = {
 /**
  * The saved editorial reply. Fact-bearing fields carry figures only through
  * resolved `{{tok:…}}` tokens; proposal fields (tiers, yearOne, unit
- * economics) hold the product's own assumptions.
+ * economics) hold the product's own assumptions. It selects exactly the
+ * evidence minimums (2 stats, 3 priced competitors, 2 quotes), so it
+ * resolves in every scenario that meets them.
  */
 export const FIXTURE_EDITORIAL_TEMPLATE = {
   oneLiner: "Cited first drafts of RFPs and security questionnaires for SaaS sales teams without a proposal team.",
   marketSummary:
-    "Response software for RFPs and security questionnaires is a measurable niche rather than a slice of the whole SaaS market. The category was valued at {{tok:stat:0}}, and analysts project it to reach {{tok:stat:1}}. The workload is broad as well: {{tok:stat:2}} of B2B SaaS sales teams answer at least one security questionnaire a month. The opening is the small team that answers the same questions every quarter without a proposal manager, a buyer the enterprise suites price out.",
-  marketStatIds: ["{{id:stat:0}}", "{{id:stat:1}}", "{{id:stat:2}}"],
+    "Response software for RFPs and security questionnaires is a measurable niche rather than a slice of the whole SaaS market. The category was valued at {{tok:stat:0}}, and analysts project it to reach {{tok:stat:1}}. The opening is the small team that answers the same questions every quarter without a proposal manager, a buyer the enterprise suites price out.",
+  marketStatIds: ["{{id:stat:0}}", "{{id:stat:1}}"],
   competitors: [
     {
       name: "{{vendor:price:0}}",
@@ -315,8 +320,8 @@ export const FIXTURE_EDITORIAL_TEMPLATE = {
     },
   ],
   communitySummary:
-    "Sales engineers describe the same loop: answers live in scattered spreadsheets, legal cannot tell which version was approved, and generic chat tools invent controls. One put the time cost plainly: {{tok:quote:0}} Another described the version problem: {{tok:quote:1}} A third explained why generic assistants fail legal review: {{tok:quote:2}}",
-  quoteIds: ["{{id:quote:0}}", "{{id:quote:1}}", "{{id:quote:2}}"],
+    "Sales engineers describe the same loop: answers live in scattered spreadsheets, legal cannot tell which version was approved, and generic chat tools invent controls. One put the time cost plainly: {{tok:quote:0}} Another described the version problem: {{tok:quote:1}}",
+  quoteIds: ["{{id:quote:0}}", "{{id:quote:1}}"],
   goToMarket: {
     positioning:
       "Cited first drafts for SaaS sales teams that outgrew spreadsheets but will never staff a proposal team, sold on trust and setup time rather than feature breadth.",
@@ -601,4 +606,36 @@ export function unreachableFetch(): Fetcher {
   return (async () => {
     throw new Error("ECONNREFUSED");
   }) as Fetcher;
+}
+
+// ---------------------------------------------------------------------------
+// Fixture providers
+// ---------------------------------------------------------------------------
+
+export type FixtureProviderOptions = {
+  /** Synthetic page set (ignored when `pages` is given). */
+  scenario?: FixtureScenario;
+  /** Replaces the page set: cited URL → page text. */
+  pages?: Readonly<Record<string, string>>;
+  synthesis?: FixtureSynthesisOptions;
+  packs?: FixtureSearchPacks;
+  /** DataForSEO payload (default KEYWORD_RFP_FIXTURE). */
+  keywordPayload?: unknown;
+};
+
+/**
+ * The four real adapters on fixture transports and synthetic pages:
+ * placeholder credentials (env is never read), no network.
+ */
+export function createFixtureProviders(options: FixtureProviderOptions = {}): EngineProviders {
+  return {
+    synthesis: createSynthesisProvider({ fetchImpl: fixtureSynthesisFetch(options.synthesis), apiKey: "fixture-mode" }),
+    search: createSearchProvider({ fetchImpl: fixtureSearchFetch({ packs: options.packs }), apiKey: "fixture-mode" }),
+    keywordData: createKeywordDataProvider({
+      fetchImpl: fixtureKeywordFetch({ payload: options.keywordPayload ?? KEYWORD_RFP_FIXTURE }),
+      login: "fixture-mode",
+      password: "fixture-mode",
+    }),
+    sourceText: fixtureSourceText(options.pages ?? fixtureScenarioPages(options.scenario ?? "default")),
+  };
 }

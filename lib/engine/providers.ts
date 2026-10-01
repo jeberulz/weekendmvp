@@ -9,15 +9,7 @@ import { createSynthesisProvider } from "./providers/openai.ts";
 import { createSearchProvider } from "./providers/perplexity.ts";
 import { createKeywordDataProvider } from "./providers/keywordData.ts";
 import { createSourceTextProvider } from "./providers/sourceText.ts";
-import {
-  fixtureKeywordFetch,
-  fixtureScenarioPages,
-  fixtureSearchFetch,
-  fixtureSourceText,
-  fixtureSynthesisFetch,
-  KEYWORD_RFP_FIXTURE,
-  type FixtureScenario,
-} from "./providers/fixtures.ts";
+import { createFixtureProviders, type FixtureScenario } from "./providers/fixtures.ts";
 import type { EngineProviders } from "./providers/types.ts";
 
 export type ProviderMode = "fixture" | "live";
@@ -42,24 +34,10 @@ export type CreateProvidersOptions = {
  */
 export function createProviders(options: CreateProvidersOptions): EngineProviders {
   if (options.mode === "fixture") {
-    return {
-      synthesis: createSynthesisProvider({
-        fetchImpl: fixtureSynthesisFetch(),
-        apiKey: "fixture-mode",
-      }),
-      search: createSearchProvider({
-        fetchImpl: fixtureSearchFetch(),
-        apiKey: "fixture-mode",
-      }),
-      keywordData: createKeywordDataProvider({
-        fetchImpl: fixtureKeywordFetch({
-          payload: options.keywordFixturePayload ?? KEYWORD_RFP_FIXTURE,
-        }),
-        login: "fixture-mode",
-        password: "fixture-mode",
-      }),
-      sourceText: fixtureSourceText(fixtureScenarioPages(options.scenario ?? "default")),
-    };
+    return createFixtureProviders({
+      ...(options.scenario !== undefined ? { scenario: options.scenario } : {}),
+      ...(options.keywordFixturePayload !== undefined ? { keywordPayload: options.keywordFixturePayload } : {}),
+    });
   }
 
   if (options.scenario !== undefined) {
