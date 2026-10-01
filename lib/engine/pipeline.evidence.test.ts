@@ -563,6 +563,19 @@ describe("F5: a wrong claim never enters the returned record", () => {
     expect(record.evidence.accepted.some((e) => e.sourceUrl.includes("reddit.com"))).toBe(false);
   });
 
+  it("drops a rejected candidate's over-long source URL instead of failing the record", async () => {
+    // 1,028 characters as written (a valid candidate), over 6,000 once percent-encoded.
+    const longUrl = `https://forum.example.net/t/${"é".repeat(1_000)}`;
+    const h = harness({
+      synthesis: { extraction: extractionWith({ quotes: [{ sourceUrl: longUrl, text: "A quote from a page no search returned at all." }] }) },
+    });
+    const { record } = await run(h);
+    const rejected = record.evidence.rejected.find((r) => r.candidate === "A quote from a page no search returned at all.");
+    expect(rejected?.reason).toBe("unknown_citation");
+    expect(rejected?.sourceUrl).toBeUndefined();
+    expect(record.evidence.rejected.every((r) => (r.sourceUrl?.length ?? 0) <= 2_048)).toBe(true);
+  });
+
   it("ignores a model-supplied evidence id and verified flag; acceptance assigns ids", async () => {
     const forged = "p_000000000000";
     const tampered = { ...FIXTURE_EXTRACTION.competitorPrices[0], id: forged, verified: true };
