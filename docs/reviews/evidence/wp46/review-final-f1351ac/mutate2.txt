@@ -1,0 +1,20 @@
+M16 cost: billed failures are not settled: 2 failing
+      - pipeline.evidence.test.ts: extraction attempts retries a billed failed extraction call and records its cost
+      - pipeline.test.ts: runResearch (fixture) reserves before the retry and counts the billed failed attempt
+M17 cost: reservation (cap check) skipped: 4 failing
+      - pipeline.evidence.test.ts: extraction attempts re-asks once after a reply that is not JSON, under the same rules
+      - pipeline.evidence.test.ts: spend is reserved before every attempt throws the cap error before a regeneration call when the budget is too
+      - pipeline.test.ts: runResearch (fixture) stops before any provider call when the cap refuses the first reservation
+      - pipeline.test.ts: runResearch (fixture) reserves before the retry and counts the billed failed attempt
+M18 F1: regeneration note carries the accepted bundle again plus rejected candidates: 4 failing
+      - pipeline.evidence.test.ts: F1: writer output is validated before a record exists refuses a writer that references an unknown evidence id:
+      - pipeline.evidence.test.ts: F1: writer output is validated before a record exists refuses a writer that references a rejected candidate's
+      - pipeline.evidence.test.ts: F1: writer output is validated before a record exists refuses a writer that invents a metric in a fact-bearing
+      - pipeline.evidence.test.ts: F1: writer output is validated before a record exists refuses a writer that replies with prose instead of JSON
+M19 F2: rendered-quote compare folds case (case-insensitive): 2 failing
+      - audit.quotes.test.ts: quotes and their attribution (F2) fails a changed number, an inserted negation, reordered fragments and an uns
+      - quote.test.ts: strict quote comparison keeps case and other punctuation significant
+M20 F6: auditor stops checking the seat count: 1 failing
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) fails inconsistent revenue per account: wrong seat price, seat count or
+M21 F6: auditor stops flagging other revenue totals: 1 failing
+      - audit.finance.test.ts: Year-One Math against finance.ts (F6) fails duplicate or conflicting revenue totals in Business Model

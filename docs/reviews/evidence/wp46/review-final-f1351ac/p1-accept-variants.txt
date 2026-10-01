@@ -1,0 +1,52 @@
+
+## 1 'Unlike Loopio, Qvidian costs $30/month.' -> Loopio $30/month (only Loopio candidate)
+accepted: [{"kind":"competitor_price","vendor":"Loopio","render":"$30/month","attribution":"secondary","excerpt":"Unlike Loopio, Qvidian costs $30/month for small teams."}]
+rejected: []
+
+## 1b same, with a Qvidian candidate too
+accepted: []
+rejected: [["ambiguous_attribution","the price's clause also names Qvidian"],["ambiguous_attribution","the price's clause also names Loopio"]]
+
+## 2 'Loopio is cheaper than the $30/month alternatives.' -> Loopio $30/month
+accepted: [{"kind":"competitor_price","vendor":"Loopio","render":"$30/month","attribution":"secondary","excerpt":"Loopio is cheaper than the $30/month alternatives most teams try first."}]
+rejected: []
+
+## 3 'Teams that outgrow Loopio pay $30/month for Qvidian.' -> Loopio $30/month
+accepted: [{"kind":"competitor_price","vendor":"Loopio","render":"$30/month","attribution":"secondary","excerpt":"Teams that outgrow Loopio usually pay $30/month for Qvidian instead."}]
+rejected: []
+
+## 4 annual-billing toggle before the price -> $24/user/month without billed_annually
+accepted: [{"kind":"competitor_price","vendor":"CodeRabbit","plan":"Pro","render":"$24/user/month (Pro)","attribution":"first_party","excerpt":"Pro\n$24/user/month"}]
+rejected: []
+
+## 4b 'Billed annually' header line, then price
+accepted: [{"kind":"competitor_price","vendor":"CodeRabbit","render":"$24/user/month","attribution":"first_party","excerpt":"$24/user/month"}]
+rejected: []
+
+## 5 'Pro starts at only $24/user/month' -> no starting_at
+accepted: []
+rejected: [["qualifier_dropped","source says from $24/user/month"]]
+
+## 6 plan 'Starter' kept for the Pro price ('Everything in Starter, plus SSO. $24/user/month')
+accepted: [{"kind":"competitor_price","vendor":"CodeRabbit","plan":"Starter","render":"$24/user/month, billed annually (Starter)","attribution":"first_party","excerpt":"Everything in Starter, plus SSO and audit logs. $24/user/month, billed annually."}]
+rejected: []
+
+## 7 broad 'developer tools market' sentence accepted as the niche 'AI code review tools' market
+accepted: [{"kind":"market_stat","render":"$1.4 billion (2024)","row":"- **AI code review tools (market size)**: $1.4 billion (2024) ([Cited page](https://research.example.com/devtools)).","subject":"AI code review tools","metric":"market_size"}]
+rejected: []
+
+## 8 growth rate (grew 12%) accepted with metric 'adoption'
+accepted: [{"kind":"market_stat","render":"12% (2024)","row":"- **AI code review market (adoption)**: 12% (2024) ([Cited page](https://research.example.com/devtools)).","subject":"AI code review market","metric":"adoption"}]
+rejected: []
+
+## 9 testimonial on a vendor page accepted as community_quote
+accepted: [{"kind":"community_quote","attribution":"community","excerpt":"We cut our review time in half after switching to CodeRabbit last spring."}]
+rejected: []
+
+## 10 quote joining two commenters' text across a line break
+accepted: [{"kind":"community_quote","attribution":"community","excerpt":"I review pull requests all weekend\nbob 2 hours ago\nand our startup will die because of it"}]
+rejected: []
+(node:77929) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<repo>/lib/engine/evidence/accept.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to <repo>/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,0 +1,9 @@
+FAIL (caught) — figure in a ### heading in The Problem: The Problem: unbound figure "47" near line 10 ("…Teams review 47 PRs a week…") — not a rendering of the record's evidence (guard, not proof of truth)
+FAIL (caught) — figure in non-evidence link text: The Problem: unbound figure "47" near line 10 ("…The buyer is specific: 47 PRs a week . SMB SaaS sales and solutio…") — not a rendering of the record'
+FAIL (caught) — figure split by bold markup 4**7**: The Problem: unbound figure "47" near line 10 ("…The buyer is specific: 47 PRs a week. SMB SaaS sales and solution…") — not a rendering of the record'
+FAIL (caught) — figure in image alt text: The Problem: unbound figure "47" near line 10 ("…47 PRs a week The buyer is specific. SMB S…") — not a rendering of the record's evidence (guard, not
+FAIL (caught) — attribution with two links: blockquote at line 16: missing or malformed attribution — the attribution line holds more than one link or extra text (ambiguous)
+FAIL (caught) — attribution moved outside the blockquote: blockquote at line 16: missing or malformed attribution — no "— [source title](url)" line
+FAIL (caught) — quote with emphasis inside: blockquote at line 16: the quote contains Markdown (emphasis); it must be the verbatim evidence excerpt
+FAIL (caught) — second Year-One block inside Business Model: Year-One Math has 2 base ARR lines; exactly one is allowed
+FAIL (caught) — base line written as prose paragraph, list line removed: Year-One Math is missing its computed ARR line
