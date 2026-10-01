@@ -4,6 +4,7 @@ import Script from "next/script";
 import { usePathname } from "next/navigation";
 
 import { isSensitiveAuthPath } from "@/lib/auth-return";
+import { isOperatorPath } from "@/lib/private-paths";
 import {
   CLAIM_PARAM,
   REDACTED_PREVIEW_PATH,
@@ -28,7 +29,9 @@ export function AnalyticsScripts() {
   const { consent } = useConsent();
   const pathname = usePathname();
 
-  if (consent !== true || isSensitiveAuthPath(pathname)) {
+  // Operator surfaces (the editorial workspace) are never measured: their
+  // URLs carry private record ids even though their titles are generic.
+  if (consent !== true || isSensitiveAuthPath(pathname) || isOperatorPath(pathname)) {
     return null;
   }
 

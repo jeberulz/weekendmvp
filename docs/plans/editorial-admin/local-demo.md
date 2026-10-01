@@ -43,18 +43,26 @@ npx vitest run tests/editorial
 
 The editorial suite is not yet part of `npm test` (that script lives in `package.json`, a shared file). It covers the Editorial DTO v1 validators, state machines, domain rules, the reusable repository contract (run against the fixture adapter), seeded scenarios, the workspace gate, server-rendered UI markup and static boundary guards.
 
-## Production gate (fixture mode must be impossible)
+## Production gate (fixture mode must be impossible, outsiders get a real 404)
 
 ```bash
-npm run build
+npm run build                                               # no Convex URL: every editorial page is a static 404
 node tests/editorial/scripts/verify-production-build.mjs
 EDITORIAL_FIXTURE_MODE=local-demo npx next start -p 3247   # second shell; the opt-in is set on purpose
 node tests/editorial/scripts/verify-production-build.mjs --probe http://localhost:3247
 ```
 
-The first check scans `.next/` for fixture code and fictional-data sentinels. The probe requires HTTP 404 and `noindex` for every editorial path (including attempts to enable fixture mode through query strings or cookies) and rejects any editorial copy or fixture text in the body. It then calls every editorial server action directly, with the action IDs from the build's server-reference manifest, and requires `WORKSPACE_UNAVAILABLE` (or a refusal) with no fixture data.
+Then the live build, with a Convex URL that cannot resolve (nothing is contacted):
 
-Known limitation, reported by the probe as a `NOTE`: a statically prerendered `notFound()` is served as Next's error shell with prerender cache headers, not the full site 404 document. Visitors see the normal 404 page, but the raw response is distinguishable from an unknown path. Making it identical needs the proxy/middleware seam (WP46-E4 integration window).
+```bash
+NEXT_PUBLIC_CONVEX_URL=https://editorial-probe.invalid npx next build
+npx next start -p 3247                                      # second shell
+node tests/editorial/scripts/verify-production-build.mjs --probe http://localhost:3247
+```
+
+The first check scans `.next/` for fixture code and fictional-data sentinels. The probe requests every editorial path twice — with attempts to enable fixture mode through query strings and cookies, and with a forged Convex Auth session cookie — and requires HTTP 404, `noindex`, `private, no-store` and `no-referrer`, with no editorial copy or fixture text in the body. It then calls every editorial server action directly, with the action IDs from the build's server-reference manifest, and requires a refusal or `WORKSPACE_UNAVAILABLE`.
+
+Since WP46-E4e, middleware answers every editorial request it cannot confirm as the super-admin's with the site's own 404 page: the body is byte-identical to an unknown path's. Only the operator headers differ, and every `/admin/*` path carries them, so they do not reveal whether the workspace exists. Server actions are refused by the same gate before they run.
 
 As a positive control, the development bundle in `.next/dev/` does contain the fixture sentinels; the production bundle does not.
 

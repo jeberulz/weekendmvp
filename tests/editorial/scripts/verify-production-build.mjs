@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WP46 production gate for the fixture-only editorial slice.
+ * WP46 production gate for the editorial workspace.
  *
  *   npm run build
  *   node tests/editorial/scripts/verify-production-build.mjs            # bundle scan
@@ -9,11 +9,16 @@
  *
  * 1. Scans `.next/` for fixture code and fictional demo data. Any hit fails:
  *    production builds must not contain the fixture adapter or its content.
- * 2. With --probe, requests every editorial path (plus attempts to switch
- *    fixture mode on through the URL) from a production server and requires
- *    a real 404 whose body carries no editorial or fixture content. It then
- *    calls every editorial server action directly and requires a refusal or
- *    WORKSPACE_UNAVAILABLE, never fixture data.
+ * 2. With --probe, requests every editorial path from a production server —
+ *    with attempts to switch fixture mode on through the URL and cookies, and
+ *    with a forged Convex Auth session — and requires a real 404 whose body
+ *    carries no editorial or fixture content, plus private, no-store, noindex
+ *    headers. It then calls every editorial server action directly and
+ *    requires a refusal or WORKSPACE_UNAVAILABLE, never data.
+ *
+ * Works for both kinds of build: without a Convex URL every editorial path is
+ * a static 404; with one (WP46-E4e) middleware refuses anyone the backend does
+ * not confirm as the super-admin.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -100,6 +105,26 @@ const UI_PHRASES = [
   "Weekend MVP / Editorial",
 ];
 
+/** An unsigned, unexpired JWT: middleware passes it on and Convex must refuse it. */
+function forgedSessionCookie() {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = Buffer.from(JSON.stringify({ iat: now, exp: now + 3600, sub: "forged|forged" })).toString("base64url");
+  return `__convexAuthJWT=eyJhbGciOiJSUzI1NiJ9.${payload}.forged; __convexAuthRefreshToken=forged`;
+}
+
+const ATTEMPTS = [
+  { label: "fixture switch", cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture" },
+  { label: "forged session", cookie: forgedSessionCookie() },
+];
+
+function privateHeaders(response) {
+  return (
+    /noindex/.test(response.headers.get("x-robots-tag") ?? "") &&
+    /no-store/.test(response.headers.get("cache-control") ?? "") &&
+    response.headers.get("referrer-policy") === "no-referrer"
+  );
+}
+
 function headSignature(html) {
   const tags = html.match(/<(meta|title|link rel="canonical")[^>]*>(?:[^<]*<\/title>)?/g) ?? [];
   return [...new Set(tags)].sort().join("\n");
@@ -112,21 +137,22 @@ async function probe(base) {
   let ok = control.status === 404;
   console.log(`${ok ? "PASS" : "FAIL"} ${control.status} control 404 for comparison`);
   for (const route of PATHS) {
-    const response = await fetch(new URL(route, base), {
-      redirect: "manual",
-      headers: { cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture" },
-    });
-    const body = await response.text();
-    const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
-    const noindex = /<meta name="robots" content="noindex/.test(body);
-    const passed = response.status === 404 && leaked.length === 0 && noindex;
-    ok &&= passed;
-    if (headSignature(body) !== controlHead) residual.add(route);
-    console.log(
-      `${passed ? "PASS" : "FAIL"} ${response.status} ${route}` +
-        `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}` +
-        `${noindex ? "" : " missing noindex"}`,
-    );
+    for (const attempt of ATTEMPTS) {
+      const response = await fetch(new URL(route, base), { redirect: "manual", headers: { cookie: attempt.cookie } });
+      const body = await response.text();
+      const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
+      const noindex = /<meta name="robots" content="noindex/.test(body);
+      const headers = privateHeaders(response);
+      const passed = response.status === 404 && leaked.length === 0 && noindex && headers;
+      ok &&= passed;
+      if (headSignature(body) !== controlHead) residual.add(route);
+      console.log(
+        `${passed ? "PASS" : "FAIL"} ${response.status} ${route} (${attempt.label})` +
+          `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}` +
+          `${noindex ? "" : " missing noindex"}` +
+          `${headers ? "" : " missing private headers"}`,
+      );
+    }
   }
   if (residual.size > 0) {
     // Known limitation, reported rather than hidden: a statically prerendered
@@ -134,8 +160,8 @@ async function probe(base) {
     // headers), not the full site 404 page. Making it byte-identical needs the
     // proxy/middleware seam (WP46-E4 integration window).
     console.log(
-      `NOTE ${residual.size} editorial path(s) return 404 via Next's error shell, not the full site 404 document. ` +
-        "Identical responses need the proxy seam (E4).",
+      `NOTE ${residual.size} editorial path(s) return 404 via Next's error shell, not the full site 404 document ` +
+        "(builds without a Convex URL; with one, middleware serves the site's own 404).",
     );
   }
   return ok && (await probeActions(base));
@@ -242,7 +268,7 @@ async function probeActions(base) {
         Accept: "text/x-component",
         "Content-Type": "text/plain;charset=UTF-8",
         Origin: origin,
-        cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture",
+        cookie: `EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture; ${forgedSessionCookie()}`,
       },
       body: JSON.stringify([input]),
     });

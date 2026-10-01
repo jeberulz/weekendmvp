@@ -137,6 +137,14 @@ The fixture adapter is the core plus simulated seams (credentials, checks, worke
 
 **Activity totals.** `listActivity` returns `Page<ActivityEntry, number | null>`: the live store pages the log by index and does not count it, so the UI shows "Showing x–y" without "of n".
 
+## Access, re-authentication and edge (WP46-E4a, E4e)
+
+- **Who.** One account, bound to the `super_admin` capability by its Convex Auth user ID through deployment configuration ([runbook](super-admin-runbook.md)). Every editorial Convex function resolves the caller from the verified session token and that binding; nothing is taken from arguments.
+- **Middleware first.** For `/admin/editorial/**` (pages, RSC requests and server actions), middleware asks Convex whether the session's account holds the capability and rewrites anyone else — signed out, a customer, a forged or expired session, or anyone the backend cannot vouch for — to the site's own 404. Pages, actions and functions check again. The local-demo skip exists only when `NODE_ENV` is not "production" and the exact opt-in is set.
+- **Headers.** Every `/admin/**` response is `private, no-store`, `noindex, nofollow` and `no-referrer`; consented analytics never load there.
+- **Strong authentication.** A sign-in within the last 10 minutes, measured by the Convex Auth session's creation time: a full sign-in creates a new session and token refreshes keep it. Publish, retry, rollback, unpublish and trash require it, enforced with the server's clock. "Confirm it's you" starts a fresh sign-in with the account's own method (accounts are never linked across providers) and returns to the same editorial page; the three post-sign-in allowlists accept `/admin/editorial` for that. Limitation: with Google, the round trip may complete silently while the browser is still signed in to Google, so it proves a current Google session rather than a password re-entry. The email link always proves inbox access.
+- **Recording.** Refusals by the capability holder are always recorded. Refusals by a signed-in account without it are recorded up to 20 an hour. Anonymous calls write nothing (they are unattributable and would let anyone fill the log). Reads never write.
+
 ## Fixture boundary
 
 `lib/editorial/adapters/fixture/**` and `lib/editorial/fixtures/**` are demo-only: fictional content on `.example` domains, simulated checks (`producer: "fixture_simulated"`), a simulated worker and simulated re-authentication. `assertFixtureModeAllowed()` throws in production builds, and the runtime selector only reaches this code behind a `NODE_ENV !== "production"` branch. Fixture tests serialise commands in one process: they prove the rules, not real concurrency or deployment.

@@ -1,3 +1,4 @@
+import { isPrivateReturnPath } from "../lib/private-paths";
 import { normalizeEmail } from "./authEmail";
 import { Email } from "@convex-dev/auth/providers/Email";
 import { validatedSiteOrigin } from "./siteUrl";
@@ -41,8 +42,7 @@ function safeDashboardReturn(value: string) {
     const target = new URL(value, "https://platform.weekendmvp.invalid");
     if (
       target.origin === "https://platform.weekendmvp.invalid" &&
-      (target.pathname === "/dashboard" ||
-        target.pathname.startsWith("/dashboard/"))
+      isPrivateReturnPath(target.pathname)
     ) {
       return `${target.pathname}${target.search}${target.hash}`;
     }

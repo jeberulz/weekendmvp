@@ -1,3 +1,5 @@
+import { isPrivateReturnPath } from "./private-paths";
+
 export const DEFAULT_AUTH_RETURN = "/dashboard";
 
 const AUTH_ENTRY_PATHS = new Set(["/login", "/signup", "/signin"]);
@@ -17,7 +19,10 @@ function carriesClaimPreview(url: URL) {
   return raw !== null && /^[0-9a-f]{64}$/.test(raw.trim().toLowerCase());
 }
 
-/** Restrict post-auth navigation to the private platform namespace. */
+/**
+ * Restrict post-auth navigation to the private namespaces: the member
+ * dashboard and the editorial workspace (its "confirm it's you" sign-in).
+ */
 export function safePlatformReturn(value: unknown) {
   if (typeof value !== "string" || value.includes("\\")) {
     return DEFAULT_AUTH_RETURN;
@@ -27,8 +32,7 @@ export function safePlatformReturn(value: unknown) {
     const target = new URL(value, "https://platform.weekendmvp.invalid");
     if (
       target.origin === "https://platform.weekendmvp.invalid" &&
-      (target.pathname === "/dashboard" ||
-        target.pathname.startsWith("/dashboard/"))
+      isPrivateReturnPath(target.pathname)
     ) {
       return `${target.pathname}${target.search}${target.hash}`;
     }

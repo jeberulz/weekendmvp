@@ -1,15 +1,22 @@
 import { notFound } from "next/navigation";
 
+import { isValidPlatformConvexUrl } from "@/lib/platform-convex-url";
+
 /**
  * Build-time gate for every editorial layout, page and metadata function.
  *
- * There is no live adapter yet (WP46-E4), so production builds must answer
- * every editorial path exactly like any other missing page. Layouts render in
- * parallel with their pages, so a layout-only check would still serialise
- * each page's static shell (and resolve its metadata) into the 404 response.
- * Calling this first, synchronously, everywhere prevents that. In production
- * `process.env.NODE_ENV` is inlined, so the rest of each caller is dead code.
+ * A production build without a Convex backend has no workspace at all, so
+ * every editorial path answers exactly like any other missing page: a static
+ * 404 with nothing serialised. Both conditions are inlined at build time
+ * (`NODE_ENV`, `NEXT_PUBLIC_CONVEX_URL`), so the rest of each caller is dead
+ * code then. Layouts render in parallel with their pages, so every page and
+ * metadata function calls this first.
+ *
+ * With a backend (WP46-E4e), pages render per request. Middleware refuses
+ * everyone but the bound super-admin with a real 404 before rendering starts
+ * (a `notFound()` after the PPR shell would be soft), and every page, action
+ * and Convex function checks again.
  */
 export function assertEditorialRoutesEnabled(): void {
-  if (process.env.NODE_ENV === "production") notFound();
+  if (process.env.NODE_ENV === "production" && !isValidPlatformConvexUrl(process.env.NEXT_PUBLIC_CONVEX_URL)) notFound();
 }

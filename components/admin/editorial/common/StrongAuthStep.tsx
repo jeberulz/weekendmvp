@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition, type ReactNode } from "react";
 
 import { demoConfirmStrongAuthAction } from "@/app/admin/editorial/_actions/demo";
+import { authCallbackTarget } from "@/lib/auth-return";
 import { smallButtonClass } from "../workspace/ui";
+import { useStepUp, type StepUp } from "./StepUpContext";
 
 /** True when a refusal means "confirm your sign-in first". */
 export function isReauthMessage(message: string | null): boolean {
@@ -12,26 +16,128 @@ export function isReauthMessage(message: string | null): boolean {
 
 export type StrongAuthContext = { fresh: boolean; mechanism: string };
 
+type StepProps = { fresh: boolean; mechanism: string; onConfirmed(): void };
+
 /**
  * The recent sign-in confirmation that publishing, retrying, rolling back,
- * unpublishing and trashing need. In the local demo it is SIMULATED: no
- * password, code or credential is ever asked for. The real step-up
- * mechanism arrives with the live adapter (WP46-E4).
+ * unpublishing and trashing need. In the live workspace it is a fresh sign-in
+ * with the account's own method (WP46-E4e); in the local demo it is
+ * SIMULATED. Neither ever asks for a password or code here.
  */
-export function StrongAuthStep({
-  fresh,
-  mechanism,
-  onConfirmed,
-}: {
-  fresh: boolean;
-  mechanism: string;
-  onConfirmed(): void;
-}) {
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+export function StrongAuthStep(props: StepProps) {
+  const stepUp = useStepUp();
+  return stepUp ? <LiveStrongAuthStep {...props} stepUp={stepUp} /> : <SimulatedStrongAuthStep {...props} />;
+}
+
+function Frame({ children }: { children: ReactNode }) {
   return (
     <div role="group" aria-label="Recent sign-in confirmation" className="flex flex-col gap-2 rounded-md border border-(--ed-border) px-3 py-2 text-sm">
       <p className="font-medium">Recent sign-in confirmation</p>
+      {children}
+    </div>
+  );
+}
+
+/** Where the sign-in comes back to: this editorial page, as it is now. */
+function currentPage(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function LiveStrongAuthStep({ fresh, mechanism, stepUp, onConfirmed }: StepProps & { stepUp: StepUp }) {
+  const { signIn } = useAuthActions();
+  const router = useRouter();
+  const [phase, setPhase] = useState<"idle" | "starting" | "sent" | "failed">("idle");
+  const [checking, startCheck] = useTransition();
+
+  if (fresh) {
+    return (
+      <Frame>
+        <p className="text-(--ed-success)">Confirmed within the last 10 minutes.</p>
+      </Frame>
+    );
+  }
+
+  const startSignIn = async () => {
+    if (phase === "starting") return;
+    setPhase("starting");
+    try {
+      if (stepUp.method === "google") {
+        // Leaves the page for Google and comes back through the callback.
+        await signIn("google", { redirectTo: authCallbackTarget(currentPage()) });
+      } else if (stepUp.method === "email" && stepUp.email) {
+        await signIn("email", { email: stepUp.email, redirectTo: currentPage() });
+        setPhase("sent");
+      }
+    } catch {
+      setPhase("failed");
+    }
+  };
+
+  const checkAgain = () =>
+    startCheck(() => {
+      router.refresh();
+      onConfirmed();
+    });
+
+  return (
+    <Frame>
+      <p className="text-(--ed-text-2)">
+        This action needs you to have signed in within the last 10 minutes. Sign in again with this account to confirm it’s you.
+      </p>
+      <p className="text-xs text-(--ed-text-2)">{mechanism}</p>
+      {stepUp.method === "google" ? (
+        <button
+          type="button"
+          className={`${smallButtonClass} self-start`}
+          aria-disabled={phase === "starting" || undefined}
+          onClick={() => void startSignIn()}
+        >
+          {phase === "starting" ? "Opening Google…" : "Sign in again with Google"}
+        </button>
+      ) : stepUp.method === "email" && stepUp.email ? (
+        phase === "sent" ? (
+          <>
+            <p role="status" className="text-(--ed-text)">
+              We sent a sign-in link to {stepUp.email}. Open it in this browser, then come back here.
+            </p>
+            <button
+              type="button"
+              className={`${smallButtonClass} self-start`}
+              aria-disabled={checking || undefined}
+              onClick={() => {
+                if (!checking) checkAgain();
+              }}
+            >
+              {checking ? "Checking…" : "I’ve signed in again"}
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className={`${smallButtonClass} self-start`}
+            aria-disabled={phase === "starting" || undefined}
+            onClick={() => void startSignIn()}
+          >
+            {phase === "starting" ? "Sending…" : "Email me a sign-in link"}
+          </button>
+        )
+      ) : (
+        <p className="text-(--ed-text-2)">Sign out, sign in again with this account, then come back to this page.</p>
+      )}
+      {phase === "failed" ? (
+        <p role="alert" className="text-(--ed-danger)">
+          The sign-in could not be started. Try again.
+        </p>
+      ) : null}
+    </Frame>
+  );
+}
+
+function SimulatedStrongAuthStep({ fresh, mechanism, onConfirmed }: StepProps) {
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <Frame>
       {fresh ? (
         <p className="text-(--ed-success)">Confirmed within the last 10 minutes.</p>
       ) : (
@@ -67,6 +173,6 @@ export function StrongAuthStep({
           ) : null}
         </>
       )}
-    </div>
+    </Frame>
   );
 }

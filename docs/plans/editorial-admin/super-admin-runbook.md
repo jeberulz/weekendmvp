@@ -50,6 +50,12 @@ npx convex run admin/superAdmin:revokeSuperAdmin '{"reason":"<why>"}'
 
 Every active binding ends at once, and the workspace closes for the account at its next request. The rows stay as history. Binding again is a fresh `bootstrapOwner` run.
 
+## Using the workspace
+
+- Sign in at `/login?returnTo=/admin/editorial` with the bound account. Anyone else, and a signed-out visitor, gets the site's ordinary 404.
+- Publishing, retrying, rolling back, unpublishing and moving to Trash ask for a sign-in from the last 10 minutes. "Confirm it's you" starts a fresh sign-in with the account's own method (Google, or an email link to its own address) and comes back to the same page.
+- Until WP46-E5 connects WP45's checks and WP46-E6 the release worker, the workspace says so: checks cannot run, nothing can be approved, and every release action is refused. Nothing in it changes the public site.
+
 ## What this does not do
 
 - It creates no roles beyond `super_admin`, no staff accounts and no impersonation, and gives no access to customers' private data.

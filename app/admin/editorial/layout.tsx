@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 
+import { AuthPlatformProvider } from "@/app/AuthPlatformProvider";
+import { StepUpProvider } from "@/components/admin/editorial/common/StepUpContext";
 import { EditorialShell, EditorialShellFallback } from "@/components/admin/editorial/shell/EditorialShell";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
 import { getEditorialWorkspace } from "@/lib/editorial/runtime/workspace";
@@ -39,13 +41,19 @@ async function WorkspaceShell({ children }: { children: ReactNode }) {
   const summary = await workspace.repository.getQueueSummary();
   const counts = summary.ok ? { queue: summary.value.needReview, releases: summary.value.releasesNeedingAttention } : null;
   if (workspace.status === "live") {
+    // The auth client lets "Confirm it's you" start a fresh sign-in with the
+    // account's own method and come back to the same page.
     return (
-      <EditorialShell
-        environment={{ mode: "live", connection: "Private editorial store", accountLabel: workspace.editor.displayName }}
-        counts={counts}
-      >
-        {children}
-      </EditorialShell>
+      <AuthPlatformProvider fallbackClassName="bg-[#F7F6F3]">
+        <StepUpProvider value={{ method: workspace.editor.signInMethod, email: workspace.editor.email }}>
+          <EditorialShell
+            environment={{ mode: "live", connection: "Private editorial store", accountLabel: workspace.editor.displayName }}
+            counts={counts}
+          >
+            {children}
+          </EditorialShell>
+        </StepUpProvider>
+      </AuthPlatformProvider>
     );
   }
   const settings = await workspace.repository.getSettings();

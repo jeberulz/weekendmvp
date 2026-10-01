@@ -182,10 +182,20 @@ describe("safe rendering and storage", () => {
 });
 
 describe("private route metadata", () => {
-  test("the production guard is a build-time constant", () => {
+  test("the production guard depends only on build-time constants (WP46-E4e)", () => {
     expect(read("lib/editorial/runtime/route-guard.ts")).toMatch(
-      /if \(process\.env\.NODE_ENV === "production"\) notFound\(\);/,
+      /if \(process\.env\.NODE_ENV === "production" && !isValidPlatformConvexUrl\(process\.env\.NEXT_PUBLIC_CONVEX_URL\)\) notFound\(\);/,
     );
+  });
+
+  test("middleware refuses the editorial workspace to anyone the backend does not confirm (WP46-E4e)", () => {
+    const middleware = read("middleware.ts");
+    // The gate runs before the auth-managed routes and fails closed.
+    expect(middleware.indexOf("if (isEditorialPath(pathname))")).toBeGreaterThan(-1);
+    expect(middleware.indexOf("if (isEditorialPath(pathname))")).toBeLessThan(middleware.indexOf("if (!isAuthManagedPath(pathname))"));
+    expect(middleware).toMatch(/catch \{\s*return false;\s*\}/);
+    // The local-demo skip is compiled out of production builds.
+    expect(middleware).toMatch(/process\.env\.NODE_ENV !== "production" && process\.env\.EDITORIAL_FIXTURE_MODE === "local-demo"/);
   });
 
   test("the editorial layout is noindex, no-referrer and guarded in both metadata and render", () => {
