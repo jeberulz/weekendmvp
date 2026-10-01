@@ -10,6 +10,7 @@ import {
   formatAmount,
   formatPriceTerms,
   hasProjectionCue,
+  isProjectedAmount,
   parseAmount,
   parsePriceTerms,
   priceToCents,
@@ -379,6 +380,39 @@ describe("sentences, clauses and projection cues", () => {
     const row = "Loopio | $20,000/year\tQvidian vs. Responsive, compared to Upland";
     expect(clauseAround(row, row.indexOf("$20")).text).toBe("$20,000/year");
     expect(clauseAround(row, row.indexOf("Upland")).text).toBe("compared to Upland");
+  });
+
+  it("R2: a cue marks only the amounts after it in the sentence", () => {
+    const s =
+      "The global AI code review market was valued at USD 1.2 billion in 2024 and is projected to reach " +
+      "USD 5.4 billion by 2032, growing at a CAGR of 20.4%.";
+    const projected = findAmounts(s).map((a) => [a.raw, isProjectedAmount(s, a, 2026)]);
+    expect(projected).toEqual([
+      ["USD 1.2 billion", false],
+      ["USD 5.4 billion", true],
+      ["20.4%", true],
+    ]);
+  });
+
+  it("R2: a later year right after a figure marks it; a past year does not", () => {
+    const list = "AI code review: USD 1.4 billion (2025), USD 10.8 billion (2034), CAGR 28.5%.";
+    expect(findAmounts(list).map((a) => isProjectedAmount(list, a, 2026))).toEqual([false, true, true]);
+    const history = "The market grew at a CAGR of 12% between 2019 and 2024.";
+    expect(findAmounts(history).map((a) => isProjectedAmount(history, a, 2026))).toEqual([false]);
+    const sameYear = "In 2026 the market is worth USD 2 billion.";
+    expect(findAmounts(sameYear).map((a) => isProjectedAmount(sameYear, a, 2026))).toEqual([false]);
+  });
+
+  it('R2: "expected to grow from X in 2025 to Y by 2034" marks both figures', () => {
+    const s = "The market is expected to grow from USD 1.4 billion in 2025 to USD 10.8 billion by 2034.";
+    expect(findAmounts(s).map((a) => isProjectedAmount(s, a, 2026))).toEqual([true, true]);
+  });
+
+  it("R2: lowercase modal 'may' is a cue; the month May is not", () => {
+    const modal = "Analysts say the market may reach USD 5 billion.";
+    expect(findAmounts(modal).map((a) => isProjectedAmount(modal, a, 2026))).toEqual([true]);
+    const month = "In May 2024 the market was USD 1.2 billion.";
+    expect(findAmounts(month).map((a) => isProjectedAmount(month, a, 2026))).toEqual([false]);
   });
 
   it("detects projection cues", () => {

@@ -15,16 +15,21 @@
  *
  * Excerpts (all in the source's own characters):
  *   community_quote  the matched span itself (6–80 words, ≤480 chars)
- *   market_stat      the sentence(s) from the start of the supporting span
- *                    to the end of the sentence holding the amount (≤600)
+ *   market_stat      the one sentence holding the amount (≤600 chars)
  *   competitor_price from the start of the supporting span's sentence to the
  *                    end of the price's clause (≤600; falls back to the
  *                    clause alone when the sentence is too long)
  * Every stat/price check runs on that excerpt, so acceptance and offline
- * re-validation apply the identical rules to the identical text. Because the
- * evidence id hashes (kind, url, excerpt), two claims that share an excerpt
- * (two figures in one sentence, two plans in one clause) share an id; the
- * first accepted wins and the rest are rejected as "duplicate".
+ * re-validation apply the identical rules to the identical text.
+ *
+ * Ids (contract §12, ruling R1) hash kind, URL, excerpt and the typed claim
+ * (evidenceClaimKey), so several claims from one sentence keep separate ids.
+ * The same claim twice from one excerpt (also an equal amount written
+ * differently, e.g. "$1.2 billion" and "$1,200,000,000") is a "duplicate".
+ *
+ * Stat periods (ruling R2) must equal the period derived from the excerpt:
+ * projected exactly when isProjectedAmount marks the figure or its declared
+ * year is after the retrieval year; otherwise measured.
  */
 
 import { createHash } from "node:crypto";
@@ -34,7 +39,7 @@ import {
   comparePriceTerms,
   formatAmount,
   formatPriceTerms,
-  hasProjectionCue,
+  isProjectedAmount,
   parseAmount,
   parsePriceTerms,
   priceExpressionsIn,
@@ -151,9 +156,51 @@ export function sha256Hex(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
 }
 
-/** Contract id: `${q|s|p}_${sha256hex(kind + "\n" + sourceUrl + "\n" + excerpt).slice(0, 12)}`. */
-export function evidenceId(kind: EvidenceKind, sourceUrl: string, excerpt: string): string {
-  return `${EVIDENCE_ID_PREFIX[kind]}_${sha256Hex(`${kind}\n${sourceUrl}\n${excerpt}`).slice(0, 12)}`;
+/** The typed claim an evidence id hashes (contract §12, ruling R1); accepted items fit it. */
+export type EvidenceClaim =
+  | { kind: "community_quote" }
+  | { kind: "market_stat"; metric: MarketStatMetric; amount: Amount; period: MarketStatEvidence["period"] }
+  | { kind: "competitor_price"; vendor: string; plan?: string; price: PriceTerms };
+
+/**
+ * Ruling R1 claim key: "" for a quote;
+ * metric|unit|currency|value|magnitude|periodKind|year|toYear for a stat;
+ * vendorKey|plan|unit|currency|value|magnitude|period|basis|qualifiers for a
+ * price (qualifiers sorted and comma-joined). Absent parts are "". Subject
+ * text is not part of the key.
+ */
+export function evidenceClaimKey(claim: EvidenceClaim): string {
+  if (claim.kind === "community_quote") return "";
+  if (claim.kind === "market_stat") {
+    const { amount, period } = claim;
+    return [
+      claim.metric,
+      amount.unit,
+      amount.currency ?? "",
+      amount.value,
+      amount.magnitude,
+      period.kind,
+      period.year ?? "",
+      period.toYear ?? "",
+    ].join("|");
+  }
+  const { amount, period, basis, qualifiers } = claim.price;
+  return [
+    vendorKey(claim.vendor),
+    claim.plan ?? "",
+    amount.unit,
+    amount.currency ?? "",
+    amount.value,
+    amount.magnitude,
+    period,
+    basis,
+    [...qualifiers].sort().join(","),
+  ].join("|");
+}
+
+/** Contract id (R1): `${q|s|p}_${sha256hex(kind\nsourceUrl\nexcerpt\nclaimKey).slice(0, 12)}`. */
+export function evidenceId(kind: EvidenceKind, sourceUrl: string, excerpt: string, claimKey: string): string {
+  return `${EVIDENCE_ID_PREFIX[kind]}_${sha256Hex(`${kind}\n${sourceUrl}\n${excerpt}\n${claimKey}`).slice(0, 12)}`;
 }
 
 function isIsoTime(value: string): boolean {
@@ -468,9 +515,9 @@ function resolveSource(context: Context, sourceUrl: string): { ok: true; source:
   };
 }
 
-function baseFields(kind: EvidenceKind, source: ReadSource, excerpt: string) {
+function baseFields(claim: EvidenceClaim, source: ReadSource, excerpt: string) {
   return {
-    id: evidenceId(kind, source.url, excerpt),
+    id: evidenceId(claim.kind, source.url, excerpt, evidenceClaimKey(claim)),
     sourceUrl: source.url,
     sourceTitle: source.title,
     excerpt,
@@ -502,7 +549,7 @@ function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; i
   const issue = quoteBoundsIssue(span.text);
   if (issue) return fail("span_bounds", issue);
   const item: CommunityQuoteEvidence = {
-    ...baseFields("community_quote", resolved.source, span.text),
+    ...baseFields({ kind: "community_quote" }, resolved.source, span.text),
     kind: "community_quote",
     attribution: "community",
   };
@@ -574,40 +621,129 @@ function subjectIssue(subject: string, sentence: string): string | null {
 
 const MAGNITUDE_AFTER_YEAR_RE = /^[ \u00A0]?(?:thousand|million|billion|trillion|bn|mn|tn|[kKmMbBtT](?![\p{L}\p{N}]))/iu;
 
-/** True when the declared year appears in the sentence (as a range end or single year when projected). */
-function yearMentioned(sentence: string, year: number, kind: "measured" | "projected"): boolean {
+type Span = { start: number; end: number };
+
+/** Occurrences of a four-digit year in the sentence (not numbers like "2024 billion"). */
+function yearOccurrences(sentence: string, year: number): Span[] {
   const re = new RegExp(String.raw`(?<![\p{L}\p{N}$€£.,])${year}(?![\p{N}%]|[.,]\d)`, "gu");
+  const out: Span[] = [];
   for (const m of sentence.matchAll(re)) {
     const start = m.index ?? 0;
     const end = start + m[0].length;
-    if (MAGNITUDE_AFTER_YEAR_RE.test(sentence.slice(end, end + 12))) continue;
-    if (kind === "measured") return true;
-    const rangeStart =
-      /(?:^|[^\p{L}])(?:from|since|between|starting)\s+$/iu.test(sentence.slice(0, start)) ||
-      /^\s*(?:-|–|—|to|through|until|and)\s*(?:19|20)\d{2}/iu.test(sentence.slice(end));
-    if (!rangeStart) return true;
+    if (!MAGNITUDE_AFTER_YEAR_RE.test(sentence.slice(end, end + 12))) out.push({ start, end });
   }
-  return false;
+  return out;
+}
+
+/** "from 2025 …", "between 2025 and …", "2025–2034": the start of a period, not a target. */
+function isRangeStartYear(sentence: string, occurrence: Span): boolean {
+  return (
+    /(?:^|[^\p{L}])(?:from|since|between|starting)\s+$/iu.test(sentence.slice(0, occurrence.start)) ||
+    /^\s*(?:-|–|—|to|through|until|and)\s*(?:19|20)\d{2}/iu.test(sentence.slice(occurrence.end))
+  );
+}
+
+const ATTACHED_YEAR_RE =
+  /^\s*[(,]?\s*(?:(?:in|by|through|until|till|for|during|as of)\s+)?((?:19|20)\d{2})(?![\p{N}%]|[.,]\d)/iu;
+
+/** The year written right after an amount ("in 2024", "by 2032", "(2034)"), or null. */
+function attachedYear(sentence: string, amount: Span): { year: number; start: number } | null {
+  const m = ATTACHED_YEAR_RE.exec(sentence.slice(amount.end, amount.end + 24));
+  if (!m) return null;
+  const end = amount.end + m[0].length;
+  if (MAGNITUDE_AFTER_YEAR_RE.test(sentence.slice(end, end + 12))) return null;
+  return { year: Number(m[1]), start: end - 4 };
 }
 
 /**
- * The stat rules applied to an excerpt: some sentence of the excerpt holds an
- * amount equal to the claim, and in that sentence: metric/unit agree, no
- * projection cue when "measured", the declared year appears, and a subject
- * content word appears. A "measured" year after `referenceYear` is a projection.
+ * Why a declared year does not belong to the figure `amounts[target]`, or
+ * null. The year must equal the figure's own attached year when it has one.
+ * Otherwise some occurrence must be free (attached to no figure) or attached
+ * to this figure; a projected claim may also share a later-than-retrieval
+ * horizon attached to another figure ("Y by 2032, a CAGR of Z"). A projected
+ * claim's year may not be only a range start ("from 2025 to 2034").
+ */
+function yearIssue(
+  sentence: string,
+  amounts: Span[],
+  target: number,
+  year: number,
+  kind: "measured" | "projected",
+  referenceYear: number,
+): string | null {
+  const figure = amounts[target];
+  if (!figure) return "no figure to date";
+  const own = attachedYear(sentence, figure);
+  if (own && own.year !== year) return `the figure is tied to ${own.year}, not ${year}`;
+  const owners = new Map<number, number>();
+  amounts.forEach((amount, index) => {
+    const attached = attachedYear(sentence, amount);
+    if (attached) owners.set(attached.start, index);
+  });
+  for (const occurrence of yearOccurrences(sentence, year)) {
+    if (kind === "projected" && isRangeStartYear(sentence, occurrence)) continue;
+    const owner = owners.get(occurrence.start);
+    if (owner === undefined || owner === target || (kind === "projected" && year > referenceYear)) return null;
+  }
+  return `${year} does not appear in the sentence as this figure's period`;
+}
+
+/**
+ * The stat rules applied to an excerpt (acceptance and re-validation alike).
+ * Some amount of the excerpt equals the claim, and for that amount: metric
+ * and unit agree; the claimed period kind equals the derived one (ruling R2:
+ * projected when isProjectedAmount marks it or the declared year is after
+ * the retrieval year, otherwise measured); a declared year belongs to this
+ * figure (see yearIssue); and a subject content word appears in the sentence.
  */
 function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: number): StatCheck {
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);
   }
-  if (claim.periodKind === "measured" && claim.year !== undefined && claim.year > referenceYear) {
-    return fail("projection_as_measured", `${claim.year} is after the retrieval year ${referenceYear}`);
-  }
+  const laterDeclaredYear = claim.year !== undefined && claim.year > referenceYear;
   const amounts = scanAmounts(excerpt);
-  const sentences = splitSentences(excerpt).filter((s) =>
-    amounts.some((a) => a.numberStart >= s.start && a.numberStart < s.end && amountsEqual(a.amount, claim.amount)),
-  );
-  if (sentences.length === 0) {
+  let matched = false;
+  let failure: Failure | null = null;
+  for (const sentence of splitSentences(excerpt)) {
+    const inSentence = amounts.filter((a) => a.numberStart >= sentence.start && a.numberStart < sentence.end);
+    const spans = inSentence.map((a) => ({ start: Math.max(0, a.start - sentence.start), end: a.end - sentence.start }));
+    for (const [index, found] of inSentence.entries()) {
+      if (!amountsEqual(found.amount, claim.amount)) continue;
+      matched = true;
+      const span = spans[index] ?? { start: 0, end: 0 };
+      const projected = laterDeclaredYear || isProjectedAmount(sentence.text, span, referenceYear);
+      if (claim.periodKind === "measured" && projected) {
+        failure ??= fail(
+          "projection_as_measured",
+          laterDeclaredYear
+            ? `${claim.year} is after the retrieval year ${referenceYear}`
+            : "a projection cue or a later year marks this figure; label it projected",
+        );
+        continue;
+      }
+      if (claim.periodKind === "projected" && !projected) {
+        failure ??= fail("period_mismatch", "no projection cue before the figure and no later year after it; label it measured");
+        continue;
+      }
+      const yearProblem =
+        claim.year === undefined ? null : yearIssue(sentence.text, spans, index, claim.year, claim.periodKind, referenceYear);
+      if (yearProblem) {
+        failure ??= fail("year_not_in_context", yearProblem);
+        continue;
+      }
+      const subject = subjectIssue(claim.subject, sentence.text);
+      if (subject) {
+        failure ??= fail("subject_not_in_context", subject);
+        continue;
+      }
+      const period: MarketStatEvidence["period"] =
+        claim.periodKind === "measured"
+          ? { kind: "measured", ...(claim.year !== undefined ? { year: claim.year } : {}) }
+          : { kind: "projected", ...(claim.year !== undefined ? { toYear: claim.year } : {}) };
+      return { ok: true, period };
+    }
+  }
+  if (!matched) {
     const found = amounts.map((a) => formatAmount(a.amount));
     return fail(
       "amount_mismatch",
@@ -616,38 +752,13 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
         : `excerpt has no amount equal to ${formatAmount(claim.amount)}`,
     );
   }
-  let failure: Failure | null = null;
-  for (const sentence of sentences) {
-    if (claim.periodKind === "measured" && hasProjectionCue(sentence.text, referenceYear)) {
-      failure ??= fail("projection_as_measured", "the sentence is a forecast; label the figure projected");
-      continue;
-    }
-    if (claim.year !== undefined && !yearMentioned(sentence.text, claim.year, claim.periodKind)) {
-      failure ??= fail("year_not_in_context", `${claim.year} does not appear in the sentence as that period`);
-      continue;
-    }
-    const subject = subjectIssue(claim.subject, sentence.text);
-    if (subject) {
-      failure ??= fail("subject_not_in_context", subject);
-      continue;
-    }
-    const period: MarketStatEvidence["period"] =
-      claim.periodKind === "measured"
-        ? { kind: "measured", ...(claim.year !== undefined ? { year: claim.year } : {}) }
-        : { kind: "projected", ...(claim.year !== undefined ? { toYear: claim.year } : {}) };
-    return { ok: true, period };
-  }
   return failure ?? fail("amount_mismatch", "no sentence supports the amount");
 }
 
-/** Excerpt range for a stat: span's first sentence through the amount's sentence. */
-function statExcerptRange(text: string, spanStart: number, amountIndex: number): { start: number; end: number } | null {
-  const first = sentenceAround(text, spanStart);
+/** Excerpt range for a stat: the one sentence holding the amount, if it fits. */
+function statExcerptRange(text: string, amountIndex: number): { start: number; end: number } | null {
   const own = sentenceAround(text, amountIndex);
-  const start = Math.min(first.start, own.start);
-  if (own.end - start <= EVIDENCE_LIMITS.excerptMaxChars) return { start, end: own.end };
-  if (own.end - own.start <= EVIDENCE_LIMITS.excerptMaxChars) return { start: own.start, end: own.end };
-  return null;
+  return own.end - own.start <= EVIDENCE_LIMITS.excerptMaxChars ? { start: own.start, end: own.end } : null;
 }
 
 function acceptStat(candidate: MarketStatCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
@@ -681,7 +792,7 @@ function acceptStat(candidate: MarketStatCandidate, context: Context): { ok: tru
   }
   let failure: Failure | null = null;
   for (const found of equal) {
-    const range = statExcerptRange(source.text, span.start, found.numberStart);
+    const range = statExcerptRange(source.text, found.numberStart);
     if (!range) {
       failure = closer(failure, fail("span_bounds", `supporting sentence exceeds ${EVIDENCE_LIMITS.excerptMaxChars} characters`));
       continue;
@@ -692,14 +803,12 @@ function acceptStat(candidate: MarketStatCandidate, context: Context): { ok: tru
       failure = closer(failure, check);
       continue;
     }
+    const typed = { kind: "market_stat" as const, metric: candidate.metric, amount, period: check.period };
     const item: MarketStatEvidence = {
-      ...baseFields("market_stat", source, excerpt),
-      kind: "market_stat",
+      ...baseFields(typed, source, excerpt),
+      ...typed,
       attribution: "secondary",
       subject: candidate.subject,
-      metric: candidate.metric,
-      amount,
-      period: check.period,
     };
     return { ok: true, item };
   }
@@ -848,13 +957,16 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
       continue;
     }
     const plan = candidate.plan?.trim();
-    const item: CompetitorPriceEvidence = {
-      ...baseFields("competitor_price", source, excerpt),
-      kind: "competitor_price",
-      attribution: check.attribution,
+    const typed = {
+      kind: "competitor_price" as const,
       vendor,
       ...(plan && planMentioned(plan, excerpt) ? { plan } : {}),
       price: terms,
+    };
+    const item: CompetitorPriceEvidence = {
+      ...baseFields(typed, source, excerpt),
+      ...typed,
+      attribution: check.attribution,
     };
     return { ok: true, item };
   }
@@ -864,6 +976,33 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
 // ---------------------------------------------------------------------------
 // Acceptance
 // ---------------------------------------------------------------------------
+
+/**
+ * Two accepted items state the same claim at the same place: equal ids, or
+ * the same kind, URL and excerpt with an equal claim (amounts compared
+ * exactly, so "$1.2 billion" and "$1,200,000,000" are the same figure).
+ */
+function sameClaim(a: AcceptedEvidence, b: AcceptedEvidence): boolean {
+  if (a.id === b.id) return true;
+  if (a.kind !== b.kind || a.sourceUrl !== b.sourceUrl || a.excerpt !== b.excerpt) return false;
+  if (a.kind === "market_stat" && b.kind === "market_stat") {
+    return (
+      a.metric === b.metric &&
+      amountsEqual(a.amount, b.amount) &&
+      a.period.kind === b.period.kind &&
+      a.period.year === b.period.year &&
+      a.period.toYear === b.period.toYear
+    );
+  }
+  if (a.kind === "competitor_price" && b.kind === "competitor_price") {
+    return (
+      vendorKey(a.vendor) === vendorKey(b.vendor) &&
+      (a.plan ?? "") === (b.plan ?? "") &&
+      comparePriceTerms(a.price, b.price) === null
+    );
+  }
+  return true;
+}
 
 function rawField(raw: unknown, key: string): string {
   return isPlainObject(raw) ? textField(raw, key) : "";
@@ -889,14 +1028,14 @@ function rejection(
 /**
  * Accept or reject every candidate against the acquired text of its own
  * canonical citation. Deterministic: quotes, then stats, then prices, each in
- * candidate order. A repeated id is "duplicate"; more than
+ * candidate order. The same claim again at the same place (equal id, or an
+ * equal claim with the same URL and excerpt) is "duplicate"; more than
  * EVIDENCE_LIMITS.maxAccepted of a kind is "over_cap".
  */
 export function acceptEvidence(input: AcceptEvidenceInput): AcceptEvidenceResult {
   const context = createContext(input);
   const accepted: AcceptedEvidence[] = [];
   const rejected: RejectedEvidence[] = [];
-  const ids = new Map<string, string>();
   const counts: Record<EvidenceKind, number> = { community_quote: 0, market_stat: 0, competitor_price: 0 };
 
   const settle = (
@@ -910,15 +1049,15 @@ export function acceptEvidence(input: AcceptEvidenceInput): AcceptEvidenceResult
       return;
     }
     const { item } = outcome;
-    if (ids.has(item.id)) {
-      rejected.push(rejection(kind, "duplicate", sourceUrl, claim, `same source and excerpt as accepted ${item.id}`));
+    const twin = accepted.find((other) => sameClaim(other, item));
+    if (twin) {
+      rejected.push(rejection(kind, "duplicate", sourceUrl, claim, `same claim at the same place as accepted ${twin.id}`));
       return;
     }
     if (counts[kind] >= EVIDENCE_LIMITS.maxAccepted[kind]) {
       rejected.push(rejection(kind, "over_cap", sourceUrl, claim, `more than ${EVIDENCE_LIMITS.maxAccepted[kind]} accepted`));
       return;
     }
-    ids.set(item.id, kind);
     counts[kind] += 1;
     accepted.push(item);
   };
@@ -1047,13 +1186,101 @@ function samePeriod(a: MarketStatEvidence["period"], b: MarketStatEvidence["peri
   return a.kind === b.kind && a.year === b.year && a.toYear === b.toYear;
 }
 
+/** A stored item's typed claim after shape checks (attribution included). */
+type StoredClaim =
+  | { kind: "community_quote" }
+  | {
+      kind: "market_stat";
+      subject: string;
+      metric: MarketStatMetric;
+      amount: Amount;
+      period: MarketStatEvidence["period"];
+    }
+  | {
+      kind: "competitor_price";
+      attribution: "first_party" | "secondary";
+      vendor: string;
+      plan?: string;
+      price: PriceTerms;
+    };
+
+/** Shape-check the typed claim fields of a stored item; null (with issues) when invalid. */
+function readStoredClaim(kind: EvidenceKind, item: Record<string, unknown>, issues: string[]): StoredClaim | null {
+  if (kind === "community_quote") {
+    if (item.attribution !== "community") issues.push("attribution: quotes are community");
+    return { kind };
+  }
+  if (kind === "market_stat") {
+    if (item.attribution !== "secondary") issues.push("attribution: market stats are secondary");
+    const subject = nonEmptyString(item.subject, CANDIDATE_LIMITS.claimChars) ? item.subject : null;
+    if (subject === null) issues.push("subject: required");
+    const metric = METRICS.find((m) => m === item.metric);
+    if (!metric) issues.push("metric: invalid");
+    const amount = readStoredAmount(item.amount, issues, "amount");
+    const period = readStoredPeriod(item.period, issues);
+    return subject !== null && metric && amount && period ? { kind, subject, metric, amount, period } : null;
+  }
+  const attribution = item.attribution === "first_party" || item.attribution === "secondary" ? item.attribution : null;
+  if (!attribution) issues.push("attribution: prices are first_party or secondary");
+  const vendor =
+    nonEmptyString(item.vendor, CANDIDATE_LIMITS.nameChars) && vendorKey(item.vendor).length >= 2 ? item.vendor : null;
+  if (vendor === null) issues.push("vendor: required");
+  const planValid = item.plan === undefined || nonEmptyString(item.plan, CANDIDATE_LIMITS.nameChars);
+  if (!planValid) issues.push("plan: invalid");
+  const price = readStoredPrice(item.price, issues);
+  if (!attribution || vendor === null || !planValid || !price) return null;
+  const plan = typeof item.plan === "string" ? item.plan : undefined;
+  return { kind, attribution, vendor, ...(plan !== undefined ? { plan } : {}), price };
+}
+
+/** Re-derive a stored claim from its own excerpt with the acceptance rules. */
+function rederivationIssues(
+  claim: StoredClaim,
+  excerpt: string,
+  sourceUrl: string,
+  referenceYear: number,
+  vendors: ReadonlyArray<string>,
+): string[] {
+  if (claim.kind === "community_quote") {
+    const bounds = quoteBoundsIssue(excerpt);
+    return bounds ? [`excerpt: ${bounds}`] : [];
+  }
+  if (claim.kind === "market_stat") {
+    const { period } = claim;
+    const year = period.kind === "measured" ? period.year : period.toYear;
+    const check = checkStatExcerpt(
+      excerpt,
+      {
+        subject: claim.subject,
+        metric: claim.metric,
+        amount: claim.amount,
+        periodKind: period.kind,
+        ...(year !== undefined ? { year } : {}),
+      },
+      referenceYear,
+    );
+    if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
+    return samePeriod(check.period, period) ? [] : ["period: does not re-derive from the excerpt"];
+  }
+  const check = checkPriceExcerpt(excerpt, { vendor: claim.vendor, terms: claim.price }, sourceUrl, vendors);
+  if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
+  const issues: string[] = [];
+  if (check.attribution !== claim.attribution) {
+    issues.push(`attribution: re-derives as ${check.attribution}, stored ${claim.attribution}`);
+  }
+  if (claim.plan !== undefined && !planMentioned(claim.plan, excerpt)) issues.push("plan: not named in the excerpt");
+  return issues;
+}
+
 /**
  * Offline re-validation of one stored accepted item (the record parser's
- * check): full shape, id and excerpt digest recompute, its source is listed
- * as "read" with the same retrievedAt, and the typed claim re-derives from
- * the item's OWN excerpt under the acceptance rules. `vendors` (for example
- * every competitor name in the record) feeds the other-vendor clause check.
- * Returns a freshly built item; unknown fields are reported, never kept.
+ * check): full shape, the excerpt digest and the R1 id (kind, URL, excerpt
+ * and claim key) recompute, its source is listed as "read" with the same
+ * retrievedAt, and the typed claim re-derives from the item's OWN excerpt
+ * under the acceptance rules (R2 period derivation included). Every failing
+ * check is reported, so a tampered claim with a stale id shows both. `vendors`
+ * (e.g. every competitor name in the record) feeds the other-vendor clause
+ * check. Returns a freshly built item; unknown fields are reported, never kept.
  */
 export function revalidateAcceptedEvidence(
   item: unknown,
@@ -1075,7 +1302,6 @@ export function revalidateAcceptedEvidence(
   const excerpt = typeof item.excerpt === "string" ? item.excerpt : "";
   if (excerpt.trim() === "" || excerpt.length > maxExcerpt) issues.push(`excerpt: required, at most ${maxExcerpt} characters`);
   if (item.excerptSha256 !== sha256Hex(excerpt)) issues.push("excerptSha256: does not match the excerpt");
-  if (item.id !== evidenceId(kind, sourceUrl, excerpt)) issues.push("id: does not match kind, sourceUrl and excerpt");
   const retrievedAt = typeof item.retrievedAt === "string" && isIsoTime(item.retrievedAt) ? item.retrievedAt : "";
   if (!retrievedAt) issues.push("retrievedAt: expected an ISO time");
 
@@ -1085,74 +1311,26 @@ export function revalidateAcceptedEvidence(
   else if (!read) issues.push(`source: listed as ${listed[0]?.status ?? "unknown"}, not read`);
   else if (read.retrievedAt !== retrievedAt) issues.push("source: retrievedAt differs from the source read");
 
+  const claim = readStoredClaim(kind, item, issues);
+  if (!claim) return { ok: false, issues };
+  if (item.id !== evidenceId(kind, sourceUrl, excerpt, evidenceClaimKey(claim))) {
+    issues.push("id: does not match kind, sourceUrl, excerpt and claim");
+  }
+  const referenceYear = retrievedAt ? yearOf(retrievedAt) : 0;
+  issues.push(...rederivationIssues(claim, excerpt, sourceUrl, referenceYear, options.vendors ?? []));
+  if (issues.length > 0) return { ok: false, issues };
+
   const base = {
     id: String(item.id),
     sourceUrl,
-    sourceTitle: typeof item.sourceTitle === "string" ? item.sourceTitle : "",
+    sourceTitle: String(item.sourceTitle),
     excerpt,
     excerptSha256: sha256Hex(excerpt),
     retrievedAt,
   };
-  const referenceYear = retrievedAt ? yearOf(retrievedAt) : 0;
-
-  if (kind === "community_quote") {
-    if (item.attribution !== "community") issues.push("attribution: quotes are community");
-    const bounds = quoteBoundsIssue(excerpt);
-    if (bounds) issues.push(`excerpt: ${bounds}`);
-    return issues.length > 0
-      ? { ok: false, issues }
-      : { ok: true, item: { ...base, kind, attribution: "community" } };
-  }
-
-  if (kind === "market_stat") {
-    if (item.attribution !== "secondary") issues.push("attribution: market stats are secondary");
-    if (!nonEmptyString(item.subject, CANDIDATE_LIMITS.claimChars)) issues.push("subject: required");
-    const metric = METRICS.find((m) => m === item.metric);
-    if (!metric) issues.push("metric: invalid");
-    const amount = readStoredAmount(item.amount, issues, "amount");
-    const period = readStoredPeriod(item.period, issues);
-    if (issues.length > 0 || !metric || !amount || !period || typeof item.subject !== "string") {
-      return { ok: false, issues };
-    }
-    const check = checkStatExcerpt(
-      excerpt,
-      {
-        subject: item.subject,
-        metric,
-        amount,
-        periodKind: period.kind,
-        ...(period.year !== undefined ? { year: period.year } : {}),
-        ...(period.toYear !== undefined ? { year: period.toYear } : {}),
-      },
-      referenceYear,
-    );
-    if (!check.ok) return { ok: false, issues: [`claim: ${check.reason} (${check.detail})`] };
-    if (!samePeriod(check.period, period)) return { ok: false, issues: ["period: does not re-derive from the excerpt"] };
-    return {
-      ok: true,
-      item: { ...base, kind, attribution: "secondary", subject: item.subject, metric, amount, period },
-    };
-  }
-
-  const attribution = item.attribution === "first_party" || item.attribution === "secondary" ? item.attribution : null;
-  if (!attribution) issues.push("attribution: prices are first_party or secondary");
-  if (!nonEmptyString(item.vendor, CANDIDATE_LIMITS.nameChars) || vendorKey(String(item.vendor)).length < 2) {
-    issues.push("vendor: required");
-  }
-  if (item.plan !== undefined && !nonEmptyString(item.plan, CANDIDATE_LIMITS.nameChars)) issues.push("plan: invalid");
-  const price = readStoredPrice(item.price, issues);
-  if (issues.length > 0 || !attribution || !price || typeof item.vendor !== "string") return { ok: false, issues };
-  const check = checkPriceExcerpt(excerpt, { vendor: item.vendor, terms: price }, sourceUrl, options.vendors ?? []);
-  if (!check.ok) return { ok: false, issues: [`claim: ${check.reason} (${check.detail})`] };
-  if (check.attribution !== attribution) {
-    return { ok: false, issues: [`attribution: re-derives as ${check.attribution}, stored ${attribution}`] };
-  }
-  const plan = typeof item.plan === "string" ? item.plan : undefined;
-  if (plan !== undefined && !planMentioned(plan, excerpt)) return { ok: false, issues: ["plan: not named in the excerpt"] };
-  return {
-    ok: true,
-    item: { ...base, kind, attribution, vendor: item.vendor, ...(plan !== undefined ? { plan } : {}), price },
-  };
+  if (claim.kind === "community_quote") return { ok: true, item: { ...base, kind: claim.kind, attribution: "community" } };
+  if (claim.kind === "market_stat") return { ok: true, item: { ...base, ...claim, attribution: "secondary" } };
+  return { ok: true, item: { ...base, ...claim } };
 }
 
 // ---------------------------------------------------------------------------
