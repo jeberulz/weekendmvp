@@ -2,7 +2,7 @@
  * Synthetic contract v2 research record for the compiler and final-artifact
  * audit tests (WP46-S4). Built the way the pipeline builds a record:
  * synthetic source pages → acceptEvidence → a ResearchRecordV2 → JSON round
- * trip → parseResearchRecordV2. No evidence id is hard-coded (ruling R1
+ * trip → parseResearchRecord. No evidence id is hard-coded (ruling R1
  * hashes the typed claim into the id), nothing touches the network or a paid
  * provider, and nothing is written to disk here.
  *
@@ -25,7 +25,7 @@ import type {
   SourceAcquisition,
   SourceRole,
 } from "../evidence/contract.ts";
-import { parseResearchRecordV2 } from "../research-record.ts";
+import { parseResearchRecord } from "../research-record.ts";
 
 export const FIXTURE_RETRIEVED_AT = "2026-09-30T12:00:00.000Z";
 /** The page slug tests compile to (an engine draft, so it can never ship). */
@@ -530,7 +530,7 @@ function patchPages(overrides: PagePatches): FixturePages {
 /**
  * A validated fixture record. `adjust` edits the plain object first (for a
  * variant such as another year-one plan) and receives the selected evidence;
- * the result is JSON round-tripped and parsed with parseResearchRecordV2,
+ * the result is JSON round-tripped and parsed with parseResearchRecord,
  * exactly as a CLI would read it. `pages` replaces source pages (URL, title,
  * text) and `extraCandidates` adds extraction candidates; either re-runs
  * acceptance, so every id follows from the sources (find extra items in
@@ -551,7 +551,7 @@ export function buildFixtureRecord(
   const record = baseRecord(pages, acceptance, ev);
   adjust?.(record, ev);
   const json: unknown = JSON.parse(JSON.stringify(record));
-  return parseResearchRecordV2(json);
+  return parseResearchRecord(json);
 }
 
 /** Replace the editorial fields (merged over the base) of a fixture record. */

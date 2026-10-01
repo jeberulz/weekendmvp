@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { parseResearchRecordV2 } from "./research-record.ts";
+import { parseResearchRecord } from "./research-record.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(root, "scripts/engine-research.mjs");
@@ -61,7 +61,7 @@ describe("engine:research CLI (fixture mode)", () => {
     const run = cli(["--fixture", "rfp-assistant", "--out", out]);
     expect(run.status).toBe(0);
 
-    const record = parseResearchRecordV2(readJson(out));
+    const record = parseResearchRecord(readJson(out));
     expect(record.mode).toBe("fixture");
     expect(record.contractVersion).toBe(2);
     expect(record.pipelineVersion).toBe(2);

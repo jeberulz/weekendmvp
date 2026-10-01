@@ -1,16 +1,31 @@
+/**
+ * Contract v1 (legacy) research records — history only (WP46 integration).
+ *
+ * parseResearchRecord, the one parser on the publish path, refuses every v1
+ * record with LegacyResearchRecordError (re-research instruction). The v1
+ * shape stays readable through readLegacyResearchRecordV1 for history, so
+ * the original v1 parser tests now exercise that reader: a thin or guessed
+ * v1 record is still rejected by it, and nothing it returns can be compiled
+ * or audited. The v1 year-one funnel test moved here from
+ * quality.pipeline.test.ts when its helper became private to the reader.
+ */
+
 import { describe, expect, it } from "vitest";
+
 import {
+  LEGACY_RESEARCH_RECORD_CONTRACT_VERSION,
+  LegacyResearchRecordError,
   parseResearchRecord,
+  readLegacyResearchRecordV1,
   ResearchRecordParseError,
-  RESEARCH_RECORD_CONTRACT_VERSION,
-  type ResearchRecord,
+  type LegacyResearchRecordV1,
 } from "./research-record.ts";
 
 function goldFixture(
   overrides: Record<string, unknown> = {},
 ): Record<string, unknown> {
-  const base: ResearchRecord = {
-    contractVersion: RESEARCH_RECORD_CONTRACT_VERSION,
+  const base: LegacyResearchRecordV1 = {
+    contractVersion: LEGACY_RESEARCH_RECORD_CONTRACT_VERSION,
     brief: {
       title: "AI RFP Response Assistant",
       slug: "ai-rfp-response-assistant",
@@ -116,9 +131,29 @@ function goldFixture(
   return { ...structuredClone(base), ...overrides };
 }
 
-describe("parseResearchRecord", () => {
-  it("accepts a valid gold record", () => {
-    const record = parseResearchRecord(goldFixture());
+/** The issues of the ResearchRecordParseError `read` throws. */
+function issuesOf(read: () => unknown): string[] {
+  try {
+    read();
+  } catch (error) {
+    if (error instanceof ResearchRecordParseError) return error.issues;
+    throw error;
+  }
+  throw new Error("expected a ResearchRecordParseError");
+}
+
+describe("parseResearchRecord refuses contract v1 records (publish path)", () => {
+  it("throws LegacyResearchRecordError with the re-research instruction for a valid v1 record", () => {
+    const read = () => parseResearchRecord(goldFixture());
+    expect(read).toThrow(LegacyResearchRecordError);
+    expect(read).toThrow(/Research record "ai-rfp-response-assistant" is a contract v1 \(legacy\) record/);
+    expect(read).toThrow(/Re-run `npm run engine:research -- --brief <brief\.json> --live`/);
+  });
+});
+
+describe("readLegacyResearchRecordV1 (history only)", () => {
+  it("reads a valid v1 gold record", () => {
+    const record = readLegacyResearchRecordV1(goldFixture());
     expect(record.contractVersion).toBe(1);
     expect(record.market.stats).toHaveLength(2);
     expect(record.competitors).toHaveLength(3);
@@ -139,13 +174,7 @@ describe("parseResearchRecord", () => {
         ],
       },
     });
-    expect(() => parseResearchRecord(thin)).toThrow(ResearchRecordParseError);
-    try {
-      parseResearchRecord(thin);
-    } catch (e) {
-      const err = e as ResearchRecordParseError;
-      expect(err.issues.some((i) => i.includes("market.stats"))).toBe(true);
-    }
+    expect(issuesOf(() => readLegacyResearchRecordV1(thin)).some((i) => i.includes("market.stats"))).toBe(true);
   });
 
   it("rejects competitors without pricing or URL", () => {
@@ -156,13 +185,7 @@ describe("parseResearchRecord", () => {
         { name: "DIY", pricing: "$20/mo", url: "ftp://bad.example" },
       ],
     });
-    expect(() => parseResearchRecord(thin)).toThrow(ResearchRecordParseError);
-    try {
-      parseResearchRecord(thin);
-    } catch (e) {
-      const err = e as ResearchRecordParseError;
-      expect(err.issues.some((i) => i.includes("competitors"))).toBe(true);
-    }
+    expect(issuesOf(() => readLegacyResearchRecordV1(thin)).some((i) => i.includes("competitors"))).toBe(true);
   });
 
   it("rejects guessed / model-invented keyword metrics", () => {
@@ -177,13 +200,7 @@ describe("parseResearchRecord", () => {
         },
       ],
     });
-    expect(() => parseResearchRecord(guessed)).toThrow(ResearchRecordParseError);
-    try {
-      parseResearchRecord(guessed);
-    } catch (e) {
-      const err = e as ResearchRecordParseError;
-      expect(err.issues.some((i) => i.includes("provider-sourced"))).toBe(true);
-    }
+    expect(issuesOf(() => readLegacyResearchRecordV1(guessed)).some((i) => i.includes("provider-sourced"))).toBe(true);
   });
 
   it("rejects keyword rows missing numeric volume/cpc", () => {
@@ -198,15 +215,39 @@ describe("parseResearchRecord", () => {
         },
       ],
     });
-    expect(() => parseResearchRecord(bad)).toThrow(ResearchRecordParseError);
+    expect(() => readLegacyResearchRecordV1(bad)).toThrow(ResearchRecordParseError);
   });
 
   it("rejects unknown contractVersion", () => {
     expect(() =>
-      parseResearchRecord(goldFixture({ contractVersion: 99 })),
+      readLegacyResearchRecordV1(goldFixture({ contractVersion: 99 })),
     ).toThrow(/contractVersion/);
     expect(() =>
-      parseResearchRecord(goldFixture({ contractVersion: "1" })),
+      readLegacyResearchRecordV1(goldFixture({ contractVersion: "1" })),
     ).toThrow(/contractVersion/);
+    // A v2 record is not history: the legacy reader refuses it too.
+    expect(() => readLegacyResearchRecordV1(goldFixture({ contractVersion: 2 }))).toThrow(/contractVersion/);
+  });
+
+  it("rejects a v1 funnel that grows or pays more accounts than it has", () => {
+    const issues = issuesOf(() =>
+      readLegacyResearchRecordV1(
+        goldFixture({
+          editorial: {
+            yearOne: {
+              funnel: [
+                { stage: "a", count: 10 },
+                { stage: "b", count: 20 },
+              ],
+              tier: "Team",
+              payingAccounts: 50,
+              monthlyRevenuePerAccount: 10,
+            },
+          },
+        }),
+      ),
+    );
+    expect(issues.join(" ")).toMatch(/must not grow/);
+    expect(issues.join(" ")).toMatch(/exceeds the last funnel stage/);
   });
 });

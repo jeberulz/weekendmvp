@@ -174,15 +174,6 @@ function formatUsdCentsBig(cents: bigint): string {
   return `$${groupThousands(dollars.toString())}${rest === BigInt(0) ? "" : `.${rest.toString().padStart(2, "0")}`}`;
 }
 
-/** Exact cents for a legacy decimal number such as 99.95, or null. */
-function legacyNumberToCents(value: number): number | null {
-  const text = String(value);
-  const m = /^(\d+)(?:\.(\d{1,2}))?$/.exec(text);
-  if (!m) return null;
-  const cents = Number(m[1]) * 100 + Number((m[2] ?? "").padEnd(2, "0"));
-  return Number.isSafeInteger(cents) ? cents : null;
-}
-
 function readFunnel(raw: unknown, issues: string[]): Array<{ stage: string; count: number }> {
   if (!Array.isArray(raw) || raw.length < 2) {
     issues.push(`${PATH}.funnel: need at least 2 stages`);
@@ -219,9 +210,10 @@ function readFunnel(raw: unknown, issues: string[]): Array<{ stage: string; coun
 /**
  * Validate a v2 year-one plan against the record's pricing tiers. Never
  * rounds: 0.4, 0, negatives, NaN, Infinity and unsafe integers are issues.
- * A legacy `monthlyRevenuePerAccount`, when present, must equal the tier's
- * monthly price × seats exactly; it is never used. Returns the plan only
- * when there are no issues (the ARR cap included).
+ * Only the v2 plan keys are read; revenue per account always comes from the
+ * tier price × seats (a v1 `monthlyRevenuePerAccount` is never read here,
+ * and parseResearchRecord's closed schema refuses the field). Returns the
+ * plan only when there are no issues (the ARR cap included).
  */
 export function validateYearOnePlan(
   raw: unknown,
@@ -261,21 +253,6 @@ export function validateYearOnePlan(
     issues.push(`${PATH}.assumptions: must be a string`);
   }
   const assumptions = typeof raw.assumptions === "string" ? raw.assumptions.trim() : "";
-
-  const legacy = raw.monthlyRevenuePerAccount;
-  if (legacy !== undefined && legacy !== null) {
-    const legacyCents = typeof legacy === "number" ? legacyNumberToCents(legacy) : null;
-    const unit = terms ? priceToCents(terms) : null;
-    if (legacyCents === null) {
-      issues.push(`${PATH}.monthlyRevenuePerAccount: must be a whole-cent USD amount (got ${describe(legacy)})`);
-    } else if (terms && terms.period === "year") {
-      issues.push(`${PATH}.monthlyRevenuePerAccount: does not apply to an annually priced tier; remove it`);
-    } else if (unit !== null && isWholeCount(seats) && legacyCents !== unit * seats) {
-      issues.push(
-        `${PATH}.monthlyRevenuePerAccount: ${formatUsdCents(legacyCents)} is not ${formatUsdCents(unit)} × ${seats} seats = ${formatUsdCents(unit * seats)}`,
-      );
-    }
-  }
 
   if (issues.length > 0 || !terms || !isWholeCount(accounts) || !isWholeCount(seats)) return { issues };
   const plan: YearOnePlanV2 = {

@@ -10,7 +10,7 @@
  *         → deterministic acceptance (acceptEvidence) → minimums
  *         → keyword metrics (fail closed)
  *         → editorial synthesis from the accepted bundle ONLY
- *         → record assembly and parseResearchRecordV2
+ *         → record assembly and parseResearchRecord
  *
  * Trust boundaries: search answer prose is dropped where the search step
  * returns (only citations survive); page text reaches only the extraction
@@ -69,7 +69,7 @@ import { redactText, redactUrl } from "./providers/sourceText.ts";
 import {
   MIN_GTM_CHANNELS,
   MIN_HOW_IT_WORKS_STEPS,
-  parseResearchRecordV2,
+  parseResearchRecord,
   RESEARCH_RECORD_V2_LIMITS,
   ResearchRecordParseError,
   type KeywordRow,
@@ -978,7 +978,7 @@ type DraftParts = {
   provenance: ResearchProvenanceV2;
 };
 
-/** The v2 record a writer reply describes; parseResearchRecordV2 decides. */
+/** The v2 record a writer reply describes; parseResearchRecord decides. */
 function draftRecord(writer: Record<string, unknown>, parts: DraftParts): Record<string, unknown> {
   return {
     contractVersion: RESEARCH_RECORD_CONTRACT_VERSION_V2,
@@ -1063,7 +1063,7 @@ async function stepEditorial(state: RunState, context: EditorialContext): Promis
         provenance: provenanceOf(state, context.ranAt),
       });
       try {
-        return parseResearchRecordV2(draft);
+        return parseResearchRecord(draft);
       } catch (error) {
         if (!(error instanceof ResearchRecordParseError)) throw error;
         const pipelineIssues = error.issues.filter((issue) => writerPath(issue) === null);

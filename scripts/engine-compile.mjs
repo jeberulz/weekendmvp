@@ -8,7 +8,7 @@
  *   npm run engine:compile -- --record path.json --slug _engine-fixture-draft --force
  *   npm run engine:compile -- --record path.json --ideas-dir /tmp/ideas --no-manifest --json
  *
- * The record is validated with parseResearchRecordV2 before anything is
+ * The record is validated with parseResearchRecord before anything is
  * written. A contract v1 (legacy) record is refused with the re-research
  * message; an invalid record or one missing the editorial fields the deep
  * audit needs is refused with its issues. Exit 0 on success, 1 on any
@@ -31,7 +31,7 @@ import { writeCompiledIdea } from "../lib/engine/compile-write.ts";
 import { ENGINE_DRAFT_PREFIX } from "../lib/engine-drafts.ts";
 import {
   LegacyResearchRecordError,
-  parseResearchRecordV2,
+  parseResearchRecord,
   ResearchRecordParseError,
 } from "../lib/engine/research-record.ts";
 
@@ -120,7 +120,7 @@ function main() {
 
   let record;
   try {
-    record = parseResearchRecordV2(raw);
+    record = parseResearchRecord(raw);
   } catch (err) {
     if (err instanceof LegacyResearchRecordError) refuse(args, err.message);
     if (err instanceof ResearchRecordParseError) {

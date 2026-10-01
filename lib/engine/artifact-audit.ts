@@ -59,7 +59,7 @@ import {
   splitViaLabel,
   type DisplayedYearOneLine,
 } from "./page-format.ts";
-import { LegacyResearchRecordError, parseResearchRecordV2, ResearchRecordParseError } from "./research-record.ts";
+import { LegacyResearchRecordError, parseResearchRecord, ResearchRecordParseError } from "./research-record.ts";
 
 // ---------------------------------------------------------------------------
 // Record loading
@@ -70,13 +70,13 @@ export type RecordLoad = { ok: true; record: ResearchRecordV2 } | { ok: false; e
 const MAX_ISSUES_SHOWN = 12;
 
 /**
- * Parse an engine page's research record with parseResearchRecordV2. A v1
+ * Parse an engine page's research record with parseResearchRecord. A v1
  * record yields the LegacyResearchRecordError re-research message; any other
  * invalid record lists its first issues. Never upgrades or trusts a record.
  */
 export function loadEngineRecord(raw: unknown, label: string): RecordLoad {
   try {
-    return { ok: true, record: parseResearchRecordV2(raw) };
+    return { ok: true, record: parseResearchRecord(raw) };
   } catch (error) {
     if (error instanceof LegacyResearchRecordError) return { ok: false, error: error.message };
     if (error instanceof ResearchRecordParseError) {

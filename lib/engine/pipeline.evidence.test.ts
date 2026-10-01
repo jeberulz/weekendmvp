@@ -49,7 +49,7 @@ import {
   type FixtureProviderOptions,
 } from "./providers/fixtures.ts";
 import { ProviderCallError, type EngineProviders, type SynthesisRequest } from "./providers/types.ts";
-import { parseResearchRecordV2, type KeywordRow } from "./research-record.ts";
+import { parseResearchRecord, type KeywordRow } from "./research-record.ts";
 
 // ---------------------------------------------------------------------------
 // Harness
@@ -271,7 +271,7 @@ describe("F1: the writer sees accepted evidence only", () => {
 
   it("yields a v2 record whose writer fields and accepted evidence hold none of the rejected claims", async () => {
     const { record } = await run(f1Harness());
-    const reparsed = parseResearchRecordV2(JSON.parse(JSON.stringify(record)));
+    const reparsed = parseResearchRecord(JSON.parse(JSON.stringify(record)));
     const writerText = JSON.stringify({
       oneLiner: reparsed.brief.oneLiner,
       market: reparsed.market.summary,
@@ -528,7 +528,7 @@ describe("F5: a wrong claim never enters the returned record", () => {
     expect(rejectedHere.length).toBeGreaterThan(0);
     for (const r of rejectedHere) expect(row.reasons).toContain(r.reason);
     // And nothing the writer selected can point at it.
-    expect(() => parseResearchRecordV2(JSON.parse(JSON.stringify(record)))).not.toThrow();
+    expect(() => parseResearchRecord(JSON.parse(JSON.stringify(record)))).not.toThrow();
   });
 
   it("fails closed when the wrong claims were the only prices, before keyword or editorial spend", async () => {

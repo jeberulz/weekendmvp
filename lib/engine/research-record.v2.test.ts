@@ -31,7 +31,7 @@ import {
 } from "./evidence/contract.ts";
 import {
   LegacyResearchRecordError,
-  parseResearchRecordV2,
+  parseResearchRecord,
   readLegacyResearchRecordV1,
   RESEARCH_RECORD_V2_LIMITS,
   ResearchRecordParseError,
@@ -438,7 +438,7 @@ function renameId(record: Json, from: string, to: string): Json {
 
 function issuesOf(record: unknown): string[] {
   try {
-    parseResearchRecordV2(record);
+    parseResearchRecord(record);
   } catch (error) {
     if (error instanceof LegacyResearchRecordError) throw error;
     if (error instanceof ResearchRecordParseError) return error.issues;
@@ -463,7 +463,7 @@ function escapeRe(text: string): string {
 // Valid records
 // ---------------------------------------------------------------------------
 
-describe("parseResearchRecordV2: valid records", () => {
+describe("parseResearchRecord: valid records", () => {
   it("builds its fixture from accepted evidence only", () => {
     expect(BASE.accepted).toHaveLength(9);
     expect(BASE.rejected.map((r) => r.reason).sort()).toEqual(["source_unreadable", "span_not_found"]);
@@ -471,7 +471,7 @@ describe("parseResearchRecordV2: valid records", () => {
 
   it("parses a record built from accepted evidence and returns a fresh deep copy", () => {
     const input = fresh();
-    const parsed = parseResearchRecordV2(input);
+    const parsed = parseResearchRecord(input);
     expect(parsed).toEqual(input);
     expect(parsed).not.toBe(input);
     const shared = [
@@ -510,7 +510,7 @@ describe("parseResearchRecordV2: valid records", () => {
     const input = fresh();
     setAt(input, "market.summary", `  ${textAt(input, "market.summary")}\n`);
     setAt(input, "howItWorks[0]", `\t${textAt(input, "howItWorks[0]")}  `);
-    const parsed = parseResearchRecordV2(input);
+    const parsed = parseResearchRecord(input);
     expect(parsed.market.summary).toBe(textAt(fresh(), "market.summary"));
     expect(parsed.howItWorks[0]).toBe(textAt(fresh(), "howItWorks[0]"));
     expect(textAt(input, "market.summary").startsWith("  ")).toBe(true);
@@ -522,7 +522,7 @@ describe("parseResearchRecordV2: valid records", () => {
     deleteAt(input, "editorial");
     deleteAt(input, "competitors[0].notes");
     deleteAt(input, "competitors[1].notes");
-    const parsed = parseResearchRecordV2(input);
+    const parsed = parseResearchRecord(input);
     expect(parsed.scores).toBeUndefined();
     expect(parsed.editorial).toBeUndefined();
     expect(parsed.competitors[0]).toEqual({ name: "CodeRabbit", priceIds: [EV.priceCodeRabbit.id] });
@@ -531,13 +531,13 @@ describe("parseResearchRecordV2: valid records", () => {
   it("accepts scores without the optional execution score", () => {
     const input = fresh();
     deleteAt(input, "scores.execution");
-    expect(parseResearchRecordV2(input).scores).toEqual({ opportunity: 7.5, pain: 8, timing: 8, builderConfidence: 7 });
+    expect(parseResearchRecord(input).scores).toEqual({ opportunity: 7.5, pain: 8, timing: 8, builderConfidence: 7 });
   });
 
   it("accepts a live-mode record", () => {
     const input = fresh();
     setAt(input, "mode", "live");
-    expect(parseResearchRecordV2(input).mode).toBe("live");
+    expect(parseResearchRecord(input).mode).toBe("live");
   });
 });
 
@@ -556,7 +556,7 @@ function readCommitted(file: string): Json {
 
 function legacyError(record: unknown): LegacyResearchRecordError {
   try {
-    parseResearchRecordV2(record);
+    parseResearchRecord(record);
   } catch (error) {
     if (error instanceof LegacyResearchRecordError) return error;
     throw error;
@@ -564,7 +564,7 @@ function legacyError(record: unknown): LegacyResearchRecordError {
   throw new Error("expected LegacyResearchRecordError");
 }
 
-describe("parseResearchRecordV2: legacy and unsupported versions", () => {
+describe("parseResearchRecord: legacy and unsupported versions", () => {
   it("finds committed engine records to check", () => {
     expect(COMMITTED_RECORDS.length).toBeGreaterThan(0);
   });
@@ -572,7 +572,7 @@ describe("parseResearchRecordV2: legacy and unsupported versions", () => {
   it.each(COMMITTED_RECORDS)("refuses committed %s if it is contract v1, and parses it if it is v2", (file) => {
     const record = readCommitted(file);
     if (record.contractVersion !== 1) {
-      expect(parseResearchRecordV2(record).contractVersion).toBe(2);
+      expect(parseResearchRecord(record).contractVersion).toBe(2);
       return;
     }
     const error = legacyError(record);
@@ -662,7 +662,7 @@ describe("parseResearchRecordV2: legacy and unsupported versions", () => {
 // Offline re-validation of accepted evidence
 // ---------------------------------------------------------------------------
 
-describe("parseResearchRecordV2: accepted evidence is re-validated", () => {
+describe("parseResearchRecord: accepted evidence is re-validated", () => {
   const statIndex = indexOfAccepted(EV.statMeasured);
   const priceIndex = indexOfAccepted(EV.priceCodeRabbit);
   const quoteIndex = indexOfAccepted(EV.quoteHn);
@@ -814,7 +814,7 @@ describe("parseResearchRecordV2: accepted evidence is re-validated", () => {
 // References
 // ---------------------------------------------------------------------------
 
-describe("parseResearchRecordV2: references resolve to accepted evidence", () => {
+describe("parseResearchRecord: references resolve to accepted evidence", () => {
   it.each([
     ["market.statIds", () => EV.statMeasured.id, "market_stat"],
     ["competitors[0].priceIds", () => EV.priceCodeRabbit.id, "competitor_price"],
@@ -922,7 +922,7 @@ describe("parseResearchRecordV2: references resolve to accepted evidence", () =>
 const REJECTED_CLAIMS = ["47 PRs on a team of 8", "60% of time reviewing versus 25% coding", "$5k"];
 const FIELDS_UNDER_TEST = ["market.summary", "editorial.problemNarrative", "competitors[0].notes", "whyNow"];
 
-describe("parseResearchRecordV2: fact-bearing text carries figures only through tokens", () => {
+describe("parseResearchRecord: fact-bearing text carries figures only through tokens", () => {
   it.each(FIELDS_UNDER_TEST.flatMap((field) => REJECTED_CLAIMS.map((claim) => [claim, field])))(
     'rejects "%s" stated in %s',
     (claim, field) => {
@@ -945,7 +945,7 @@ describe("parseResearchRecordV2: fact-bearing text carries figures only through 
     const input = fresh();
     setAt(input, "whyNow", `${textAt(input, "whyNow")} The category already reached ${tok(EV.statMeasured)}.`);
     setAt(input, "editorial.problemNarrative", `${textAt(input, "editorial.problemNarrative")} One maintainer put it plainly: ${tok(EV.quoteForum)}.`);
-    const parsed = parseResearchRecordV2(input);
+    const parsed = parseResearchRecord(input);
     expect(parsed.whyNow).toContain(tok(EV.statMeasured));
   });
 
@@ -957,14 +957,14 @@ describe("parseResearchRecordV2: fact-bearing text carries figures only through 
       "Reviewers on small teams describe spending more of their week reading pull requests than writing code, and they say automated reviewers bury the one useful comment under noise.",
     );
     setAt(input, "community.summary", "Maintainers want a quiet sanity check, not another stream of comments nobody reads.");
-    expect(() => parseResearchRecordV2(input)).not.toThrow();
+    expect(() => parseResearchRecord(input)).not.toThrow();
   });
 
   it("allows figures in proposal fields", () => {
     const input = fresh();
     setAt(input, "editorial.stackNotes", "Cache 30 days of review history and cap each summary at 120 words.");
     setAt(input, "goToMarket.channels[1]", "Post 2 build logs a week on X");
-    expect(() => parseResearchRecordV2(input)).not.toThrow();
+    expect(() => parseResearchRecord(input)).not.toThrow();
   });
 
   it.each([
@@ -1014,9 +1014,9 @@ describe("parseResearchRecordV2: fact-bearing text carries figures only through 
 // Year-one plan
 // ---------------------------------------------------------------------------
 
-describe("parseResearchRecordV2: year-one plan", () => {
+describe("parseResearchRecord: year-one plan", () => {
   it("accepts a per-seat plan on a per-developer tier", () => {
-    const parsed = parseResearchRecordV2(fresh());
+    const parsed = parseResearchRecord(fresh());
     expect(parsed.editorial?.yearOne).toEqual({
       funnel: [
         { stage: "Marketplace visitors", count: 1200 },
@@ -1084,7 +1084,7 @@ describe("parseResearchRecordV2: year-one plan", () => {
 // Closed schema and shape
 // ---------------------------------------------------------------------------
 
-describe("parseResearchRecordV2: closed schema and shape", () => {
+describe("parseResearchRecord: closed schema and shape", () => {
   it("rejects an unknown top-level key", () => {
     const input = fresh();
     setAt(input, "notes", "operator scratch");
