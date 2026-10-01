@@ -1,0 +1,361 @@
+/**
+ * Evidence contract for research records v2 (WP46, PR #71 remediation).
+ *
+ * Types and constants only. `docs/plans/idea-engine/pr71-evidence-contract.md`
+ * explains the rules; this file is the source of truth for the shapes.
+ *
+ * Candidates are untrusted model output. Only the deterministic acceptance
+ * code (and the record parser's offline re-validation) may construct an
+ * `AcceptedEvidence` value; a JSON boolean or a model flag never does.
+ */
+
+import type {
+  DataTable,
+  GoToMarket,
+  KeywordRow,
+  PricingTier,
+  ProviderCall,
+  ResearchBrief,
+  ResearchScores,
+  UnitEconRow,
+} from "../research-record.ts";
+
+export const RESEARCH_RECORD_CONTRACT_VERSION_V2 = 2 as const;
+export const PIPELINE_VERSION_V2 = 2 as const;
+export const EVIDENCE_CONTRACT_VERSION = 1 as const;
+
+// ---------------------------------------------------------------------------
+// Source acquisition
+// ---------------------------------------------------------------------------
+
+export type SourceStatus =
+  | "read"
+  | "unreadable"
+  | "oversized"
+  | "timeout"
+  | "no_content"
+  | "blocked"
+  | "http_error"
+  | "unsupported_encoding"
+  | "redirect_rejected";
+
+export type SourceRole = "market" | "competitors" | "community";
+
+/** One distinct URL the run tried to read. Bodies are never stored. */
+export type SourceAcquisition = {
+  url: string;
+  roles: SourceRole[];
+  status: SourceStatus;
+  /** Short, redacted reason when status is not "read". */
+  detail?: string;
+  /** ISO time of a successful read. */
+  retrievedAt?: string;
+  /** sha256 hex of the extracted source text, for replay checks. */
+  textSha256?: string;
+};
+
+// ---------------------------------------------------------------------------
+// Amounts and prices
+// ---------------------------------------------------------------------------
+
+export type CurrencyCode = "USD" | "EUR" | "GBP" | "CAD" | "AUD";
+
+export type Magnitude = "none" | "thousand" | "million" | "billion" | "trillion";
+
+export type Amount = {
+  /** Decimal digits as written, without separators: "1.4", "20000", "24.99". */
+  value: string;
+  magnitude: Magnitude;
+  unit: "currency" | "percent" | "count";
+  /** Present only when unit is "currency". A bare "$" is USD. */
+  currency?: CurrencyCode;
+};
+
+export type PricePeriod = "month" | "year" | "week" | "day" | "one_time";
+
+export type PriceBasis = "flat" | "per_user" | "per_workspace";
+
+export type PriceQualifier =
+  | "billed_annually"
+  | "billed_monthly"
+  | "starting_at"
+  | "introductory"
+  | "plus_usage";
+
+export type PriceTerms = {
+  /** unit is always "currency". */
+  amount: Amount;
+  period: PricePeriod;
+  basis: PriceBasis;
+  /** Sorted and unique. */
+  qualifiers: PriceQualifier[];
+};
+
+// ---------------------------------------------------------------------------
+// Evidence items
+// ---------------------------------------------------------------------------
+
+export type EvidenceKind = "community_quote" | "market_stat" | "competitor_price";
+
+/** Id prefix per kind: `${prefix}_${sha256hex(kind\nsourceUrl\nexcerpt).slice(0, 12)}`. */
+export const EVIDENCE_ID_PREFIX: Record<EvidenceKind, "q" | "s" | "p"> = {
+  community_quote: "q",
+  market_stat: "s",
+  competitor_price: "p",
+};
+
+export type EvidenceAttribution = "first_party" | "secondary" | "community";
+
+export type EvidenceBase = {
+  id: string;
+  kind: EvidenceKind;
+  /** Canonical citation URL; a search citation that was read at acquisition. */
+  sourceUrl: string;
+  sourceTitle: string;
+  /** Contiguous span of the source text, in the source's own characters. */
+  excerpt: string;
+  /** sha256 hex of `excerpt`. */
+  excerptSha256: string;
+  /** Copied from the source read. */
+  retrievedAt: string;
+  attribution: EvidenceAttribution;
+};
+
+/** The quote is the excerpt. */
+export type CommunityQuoteEvidence = EvidenceBase & {
+  kind: "community_quote";
+  attribution: "community";
+};
+
+export type MarketStatMetric =
+  | "market_size"
+  | "growth_rate"
+  | "spend"
+  | "user_count"
+  | "adoption"
+  | "other";
+
+export type MarketStatEvidence = EvidenceBase & {
+  kind: "market_stat";
+  subject: string;
+  metric: MarketStatMetric;
+  amount: Amount;
+  period: { kind: "measured" | "projected"; year?: number; toYear?: number };
+};
+
+export type CompetitorPriceEvidence = EvidenceBase & {
+  kind: "competitor_price";
+  attribution: "first_party" | "secondary";
+  vendor: string;
+  plan?: string;
+  price: PriceTerms;
+};
+
+export type AcceptedEvidence =
+  | CommunityQuoteEvidence
+  | MarketStatEvidence
+  | CompetitorPriceEvidence;
+
+export const EVIDENCE_LIMITS = {
+  quoteMinWords: 6,
+  quoteMaxWords: 80,
+  quoteMaxChars: 480,
+  excerptMaxChars: 600,
+  maxAccepted: { community_quote: 8, market_stat: 8, competitor_price: 12 },
+  maxRejectedStored: 200,
+  rejectedCandidateChars: 120,
+} as const;
+
+export const EVIDENCE_MINIMUMS = {
+  marketStats: 2,
+  pricedCompetitors: 3,
+  distinctQuotes: 2,
+} as const;
+
+// ---------------------------------------------------------------------------
+// Rejections (operator-only; never reach the writer or the compiler)
+// ---------------------------------------------------------------------------
+
+export type RejectionReason =
+  | "invalid_candidate"
+  | "unknown_citation"
+  | "source_unreadable"
+  | "source_oversized"
+  | "source_timeout"
+  | "source_no_content"
+  | "span_not_found"
+  | "span_bounds"
+  | "internal_ellipsis"
+  | "unparseable_amount"
+  | "amount_mismatch"
+  | "unit_mismatch"
+  | "currency_mismatch"
+  | "period_mismatch"
+  | "basis_mismatch"
+  | "qualifier_dropped"
+  | "metric_unit_mismatch"
+  | "projection_as_measured"
+  | "year_not_in_context"
+  | "subject_not_in_context"
+  | "vendor_not_in_context"
+  | "ambiguous_attribution"
+  | "duplicate"
+  | "over_cap";
+
+export type RejectedEvidence = {
+  kind: EvidenceKind;
+  reason: RejectionReason;
+  sourceUrl?: string;
+  /** At most `EVIDENCE_LIMITS.rejectedCandidateChars` of the candidate's claim. */
+  candidate?: string;
+  detail?: string;
+};
+
+// ---------------------------------------------------------------------------
+// Candidate extraction (untrusted model output, after JSON shape checks)
+// ---------------------------------------------------------------------------
+
+export type QuoteCandidate = { sourceUrl: string; text: string };
+
+export type MarketStatCandidate = {
+  sourceUrl: string;
+  supportingText: string;
+  subject: string;
+  metric: MarketStatMetric;
+  amountText: string;
+  year?: number;
+  periodKind: "measured" | "projected";
+};
+
+export type CompetitorPriceCandidate = {
+  vendor: string;
+  sourceUrl: string;
+  supportingText: string;
+  plan?: string;
+  priceText: string;
+};
+
+export type ExtractionCandidates = {
+  quotes: QuoteCandidate[];
+  marketStats: MarketStatCandidate[];
+  competitorPrices: CompetitorPriceCandidate[];
+};
+
+// ---------------------------------------------------------------------------
+// Editorial references
+// ---------------------------------------------------------------------------
+
+/**
+ * `[[ev:<id>]]` inside editorial text. Not global: build a `g` copy with
+ * `new RegExp(EVIDENCE_TOKEN_RE.source, "g")` so no caller shares lastIndex.
+ */
+export const EVIDENCE_TOKEN_RE = /\[\[ev:([qsp]_[0-9a-f]{12})\]\]/;
+
+/**
+ * Record paths whose text may carry figures only through evidence tokens
+ * (plus a bare year). `[]` marks an array of objects.
+ */
+export const FACT_BEARING_FIELDS = [
+  "brief.oneLiner",
+  "market.summary",
+  "community.summary",
+  "whyNow",
+  "competitors[].notes",
+  "goToMarket.positioning",
+  "goToMarket.pricingNotes",
+  "editorial.problemNarrative",
+  "editorial.solutionNarrative",
+  "editorial.competitiveNarrative",
+] as const;
+
+// ---------------------------------------------------------------------------
+// Record v2
+// ---------------------------------------------------------------------------
+
+export type YearOnePlanV2 = {
+  /** Integer counts ≥ 1, non-increasing, at least two stages. */
+  funnel: Array<{ stage: string; count: number }>;
+  /** A pricingTiers name whose price parses under the shared grammar. */
+  tier: string;
+  /** Integer ≥ 1 and equal to the last funnel stage count. */
+  payingAccounts: number;
+  /** Integer ≥ 1; must be 1 when the tier price is flat. */
+  seatsPerAccount: number;
+  assumptions?: string;
+};
+
+export type EditorialFieldsV2 = {
+  productName?: string;
+  dontBuildYet?: string;
+  problemNarrative?: string;
+  solutionNarrative?: string;
+  competitiveNarrative?: string;
+  pricingTiers?: PricingTier[];
+  unitEconomics?: UnitEconRow[];
+  stackNotes?: string;
+  audienceShort?: string;
+  brandBrief?: string;
+  yearOne?: YearOnePlanV2;
+  dataModel?: DataTable[];
+};
+
+export type ResearchMode = "live" | "fixture";
+
+export type ResearchProvenanceV2 = {
+  providerCalls: ProviderCall[];
+  costUsd: number;
+  ranAt: string;
+  models: { synthesis: string; search: string; keywordData: string };
+  /** Billable attempts per pipeline step id. */
+  attempts: Record<string, number>;
+};
+
+export type ResearchRecordV2 = {
+  contractVersion: typeof RESEARCH_RECORD_CONTRACT_VERSION_V2;
+  pipelineVersion: typeof PIPELINE_VERSION_V2;
+  mode: ResearchMode;
+  brief: ResearchBrief;
+  evidence: {
+    contractVersion: typeof EVIDENCE_CONTRACT_VERSION;
+    accepted: AcceptedEvidence[];
+    rejected: RejectedEvidence[];
+    sources: SourceAcquisition[];
+  };
+  market: { summary: string; statIds: string[] };
+  competitors: Array<{ name: string; priceIds: string[]; notes?: string }>;
+  community: { summary: string; quoteIds: string[] };
+  keywords: KeywordRow[];
+  goToMarket: GoToMarket;
+  whyNow: string;
+  howItWorks: string[];
+  scores?: ResearchScores;
+  editorial?: EditorialFieldsV2;
+  provenance: ResearchProvenanceV2;
+};
+
+// ---------------------------------------------------------------------------
+// Run report (written by engine:research on success and failure)
+// ---------------------------------------------------------------------------
+
+export type ResearchRunReport = {
+  ok: boolean;
+  pipelineVersion: number;
+  recordContractVersion: number;
+  mode: ResearchMode;
+  briefSlug: string;
+  briefSha256: string;
+  startedAt: string;
+  finishedAt: string;
+  failedStep?: string;
+  /** Redacted. */
+  error?: string;
+  providerCalls: ProviderCall[];
+  costUsd: number;
+  attempts: Record<string, number>;
+  models: { synthesis: string; search: string; keywordData: string };
+  sources: SourceAcquisition[];
+  evidence: {
+    accepted: Record<EvidenceKind, number>;
+    rejected: Array<Pick<RejectedEvidence, "kind" | "reason" | "sourceUrl" | "detail">>;
+  };
+};
