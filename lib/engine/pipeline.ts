@@ -552,20 +552,31 @@ export function isRedditUrl(url: string): boolean {
   }
 }
 
-/** Merge two search packs; non-Reddit URLs sort first so Reddit 403s do not crowd out readable sources. */
+/**
+ * Merge two search packs; non-Reddit URLs sort first so Reddit 403s do not
+ * crowd out readable sources. Each pack's `[n]` markers are renumbered to the
+ * merged citation list (and dropped when their citation was cut), so
+ * `citationEvidence` still attributes every sentence to the right source.
+ */
 export function mergeSearchPacks(a: SearchPack, b: SearchPack): SearchPack {
   const byUrl = new Map<string, Citation>();
   for (const c of [...a.citations, ...b.citations]) {
     if (!byUrl.has(c.url)) byUrl.set(c.url, c);
   }
   const all = [...byUrl.values()];
-  const preferred = [
+  const citations = [
     ...all.filter((c) => !isRedditUrl(c.url)),
     ...all.filter((c) => isRedditUrl(c.url)),
-  ];
+  ].slice(0, MAX_CITATIONS_PER_SEARCH * 2);
+  const position = new Map(citations.map((c, i) => [c.url, i + 1]));
+  const renumber = (pack: SearchPack) =>
+    pack.text.replace(/\[(\d+)\]/g, (_, n: string) => {
+      const merged = position.get(pack.citations[Number(n) - 1]?.url ?? "");
+      return merged ? `[${merged}]` : "";
+    });
   return {
-    text: `${a.text}\n\n${b.text}`.trim().slice(0, MAX_SEARCH_TEXT_CHARS),
-    citations: preferred.slice(0, MAX_CITATIONS_PER_SEARCH * 2),
+    text: `${renumber(a)}\n\n${renumber(b)}`.trim().slice(0, MAX_SEARCH_TEXT_CHARS),
+    citations,
   };
 }
 
@@ -1062,7 +1073,7 @@ export async function runResearch(
   }
 
   // --- 3 community_signals ---
-  // Prefer HN / Indie Hackers / forums / review sites so live runs work
+  // Prefer HN / Indie Hackers / public forums so live runs work
   // without Reddit OAuth. Keep Reddit fetch paths; they still help when
   // REDDIT_CLIENT_ID/SECRET are set. If the first pack is unreadable
   // (typical: Reddit-only citations + HTTP 403), one supplemental search
@@ -1117,7 +1128,7 @@ export async function runResearch(
         .join("; ");
       throw new PipelineError(
         "community_signals",
-        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Prefer HN / Indie Hackers / forums / review sites (Reddit needs REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET on this network). Unreadable: ${reasons}`,
+        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Prefer HN / Indie Hackers / public forums (Reddit needs REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET on this network). Unreadable: ${reasons}`,
       );
     }
   }

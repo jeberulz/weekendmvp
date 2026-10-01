@@ -386,6 +386,28 @@ describe("community page reads", () => {
     ]);
   });
 
+  it("renumbers [n] markers so merged evidence stays with its own source", () => {
+    const reddit = "https://www.reddit.com/r/sales/";
+    const hn = "https://news.ycombinator.com/item?id=1";
+    const ih = "https://www.indiehackers.com/post/x";
+    const merged = mergeSearchPacks(
+      {
+        text: "Teams spend 40 hours a quarter on this [1]. HN says $99/mo [2].",
+        citations: [
+          { url: reddit, title: "reddit" },
+          { url: hn, title: "hn" },
+        ],
+      },
+      { text: "Indie Hackers reports 12 customers [1].", citations: [{ url: ih, title: "ih" }] },
+    );
+    expect(merged.citations.map((c) => c.url)).toEqual([hn, ih, reddit]);
+    const evidence = citationEvidence([merged]);
+    expect(evidence.get(hn)).toContain("$99/mo");
+    expect(evidence.get(hn)).not.toContain("40 hours");
+    expect(evidence.get(ih)).toContain("12 customers");
+    expect(evidence.get(reddit)).toContain("40 hours");
+  });
+
   it("runs a non-Reddit supplement when the first pack is unreadable", async () => {
     const providers = createProviders({ mode: "fixture" });
     const queries: string[] = [];
