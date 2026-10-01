@@ -60,8 +60,10 @@
  *   Exactly one period and at most one basis word. A second period/basis or
  *   any unknown unit ("per credit", "/1k tokens") invalidates the expression.
  *   No period → not a price ("$20,000", "$240 billed annually").
- *   A unit or qualifier segment may continue on the next line ("$24 /month"
- *   then "per seat, billed annually"); a conflicting segment on the next line
+ *   After one line break, "/x", "per x", one-time/lifetime and qualifier
+ *   phrases still continue the expression ("$24 /month" then "per seat,
+ *   billed annually"); after one sentence-ending "." only a qualifier phrase
+ *   does ("$24/mo. Billed annually."). A conflicting segment after a break
  *   ends the expression instead of invalidating it.
  *   QUALIFIERS are read from the expression's own clause (clauseAround,
  *   merged across the lines the expression spans):
@@ -274,7 +276,7 @@ export const COUNT_NOUNS: readonly string[] = [
   "repositories", "repo", "repos", "project", "projects", "website", "websites",
   "site", "sites", "app", "apps", "worker", "workers", "marketer", "marketers",
   "designer", "designers", "writer", "writers", "researcher", "researchers",
-  "practitioner", "practitioners", "installer", "reviewer", "reviewers",
+  "practitioner", "practitioners", "reviewer", "reviewers",
 ];
 
 const COUNT_RE = new RegExp(
@@ -789,16 +791,17 @@ function stickyMatch(re: RegExp, text: string, index: number): RegExpExecArray |
   return re.exec(text);
 }
 
-function readSegment(text: string, index: number, afterNewline: boolean): Segment | null {
+function readSegment(text: string, index: number, crossed: Break): Segment | null {
   const qualifier = stickyMatch(QUALIFIER_SEGMENT_RE, text, index);
   if (qualifier) return { kind: "qualifier", end: index + qualifier[0].length };
+  if (crossed === "sentence") return null;
   const slash = stickyMatch(SLASH_SEGMENT_RE, text, index);
   if (slash) return classifyUnit(slash[1] ?? "", index + slash[0].length);
   const per = stickyMatch(PER_SEGMENT_RE, text, index);
   if (per) return classifyUnit(per[1] ?? "", index + per[0].length);
   const oneTime = stickyMatch(ONE_TIME_SEGMENT_RE, text, index);
   if (oneTime) return { kind: "period", period: "one_time", end: index + oneTime[0].length };
-  if (afterNewline) return null;
+  if (crossed === "newline") return null;
   const article = stickyMatch(ARTICLE_SEGMENT_RE, text, index);
   if (article) {
     const unit = classifyUnit(article[1] ?? "", index + article[0].length);
@@ -812,20 +815,30 @@ function readSegment(text: string, index: number, afterNewline: boolean): Segmen
   return null;
 }
 
-/** Whitespace before a segment: at most one line break. */
-function readGap(text: string, index: number): { end: number; newline: boolean } {
+type Break = "none" | "newline" | "sentence";
+
+/**
+ * Gap before a segment: spaces, then optionally one sentence-ending "." and
+ * one line break. `crossed` names the strongest break in the gap.
+ */
+function readGap(text: string, index: number): { end: number; crossed: Break } {
   let i = index;
   while (HSPACE_RE.test(at(text, i))) i += 1;
-  let newline = false;
+  let crossed: Break = "none";
+  if (at(text, i) === "." && SPACE_RE.test(at(text, i + 1))) {
+    i += 1;
+    crossed = "sentence";
+    while (HSPACE_RE.test(at(text, i))) i += 1;
+  }
   if (at(text, i) === "\r" && at(text, i + 1) === "\n") {
     i += 2;
-    newline = true;
+    crossed = crossed === "none" ? "newline" : crossed;
   } else if (NEWLINE_RE.test(at(text, i))) {
     i += 1;
-    newline = true;
+    crossed = crossed === "none" ? "newline" : crossed;
   }
-  if (newline) while (HSPACE_RE.test(at(text, i))) i += 1;
-  return { end: i, newline };
+  if (crossed !== "none") while (HSPACE_RE.test(at(text, i))) i += 1;
+  return { end: i, crossed };
 }
 
 type Units = { period: PricePeriod | null; basis: PriceBasis; end: number };
@@ -836,14 +849,14 @@ function readUnits(text: string, amountEnd: number): Units | null {
   let end = amountEnd;
   for (;;) {
     const gap = readGap(text, end);
-    const segment = readSegment(text, gap.end, gap.newline);
+    const segment = readSegment(text, gap.end, gap.crossed);
     if (!segment) break;
     const conflict =
       segment.kind === "invalid" ||
       (segment.kind === "period" && period !== null) ||
       (segment.kind === "basis" && basis !== null);
     if (conflict) {
-      if (gap.newline) break;
+      if (gap.crossed !== "none") break;
       return null;
     }
     if (segment.kind === "period") period = segment.period;

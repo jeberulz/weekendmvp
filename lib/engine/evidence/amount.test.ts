@@ -266,6 +266,13 @@ describe("parsePriceTerms", () => {
     expect(price("$24/month\nMonthly reports included")).toBe("$24/month");
   });
 
+  it("continues a price past one sentence end for its unit or qualifier", () => {
+    expect(price("Pro is $24/mo. Billed annually.")).toBe("$24/month, billed annually");
+    expect(price("Loopio is $20,000/year. Per user pricing is extra.")).toBe("$20,000/year");
+    expect(price("Pro is $24/month. A month later we raised it.")).toBe("$24/month");
+    expect(price("Pro is $24/month. Per our policy, refunds take a week.")).toBe("$24/month");
+  });
+
   it("rejects ranges, bounds, usage units, missing periods and several prices", () => {
     for (const text of [
       "$20-$30/month",
