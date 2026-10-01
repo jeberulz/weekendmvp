@@ -10,6 +10,7 @@ import { categoryName, toolName } from "@/components/ideas/idea-meta";
 import { CopyPrompt } from "@/components/platform/builds/CopyPrompt";
 import { PlanLink } from "@/components/platform/builds/PlanLink";
 import { ExportPromptPack } from "@/components/platform/hub/ExportPromptPack";
+import { ResearchTitle, RetiredTag, isResearchWithheld } from "@/components/platform/RetiredResearch";
 import {
   STAGE_STATUS_LABEL,
   dayName,
@@ -132,23 +133,20 @@ function StartHere({
   );
 }
 
-function Shortlist({ home }: { home: HomeState }) {
+/**
+ * Choosing (PRD 6.2). A retired draft (WP46-S5) stays in the member's list,
+ * but it starts no new plan: no radio, no plan link. Exported for tests.
+ */
+export function Shortlist({ home }: { home: HomeState }) {
   const rows = home.saved.latest.slice(0, 3);
-  const [selectedSlug, setSelectedSlug] = useState(rows[0]?.slug ?? "");
-  const selected = rows.find((idea) => idea.slug === selectedSlug) ?? rows[0];
+  const plannable = rows.filter((idea) => !isResearchWithheld(idea.slug));
+  const [selectedSlug, setSelectedSlug] = useState(plannable[0]?.slug ?? "");
+  const selected = plannable.find((idea) => idea.slug === selectedSlug) ?? plannable[0];
   const count = `${home.saved.count}${home.saved.capped ? "+" : ""}`;
-  return (
-    <section aria-labelledby="next-step-title" className={CARD}>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className={EYEBROW}>Your shortlist</p>
-        <p className={EYEBROW}>{count} saved</p>
-      </div>
-      <h2 id="next-step-title" className={TITLE}>
-        Pick one idea to build this weekend.
-      </h2>
-      <fieldset className="min-w-0">
-      <legend className="sr-only">Choose an idea for your weekend plan</legend>
-      <div className="overflow-x-auto">
+  // Radios group only when one can be chosen: a list of retired drafts is a
+  // plain table, not an empty choice.
+  const table = (
+    <div className="overflow-x-auto">
       <table className="w-full border-collapse text-left text-sm">
         <caption className="sr-only">Your latest saved ideas, compared</caption>
         <thead>
@@ -164,51 +162,83 @@ function Shortlist({ home }: { home: HomeState }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((idea) => (
-            <tr key={idea.ideaId} className="border-b border-home-rule align-top">
-              <td className="py-1 pr-2">
-                <label className="flex min-h-11 min-w-11 items-center justify-center text-sm text-home-ink">
-                  <input type="radio" name="weekend-shortlist" checked={selected?.slug === idea.slug}
-                    onChange={() => setSelectedSlug(idea.slug)} className="size-4 accent-home-orange-ink" />
-                  <span className="sr-only">Choose {idea.title}</span>
-                </label>
-              </td>
-              <th scope="row" className="py-3 pr-3 font-normal">
-                <Link
-                  href={`/ideas/${idea.slug}`}
-                  className="text-[15px] font-medium text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
-                >
-                  {idea.title}
-                </Link>
-                <span className="mt-0.5 block text-[13px] text-home-ink-3">{categoryName(idea.category)}</span>
-              </th>
-              <td className="py-3 pr-3 font-mono text-[13px] text-home-ink">{idea.buildTime}</td>
-              <td className="py-3 pr-3 font-mono text-[13px] text-home-ink">
-                {idea.score === null ? (
-                  <>
-                    <span aria-hidden>–</span>
-                    <span className="sr-only">Not scored</span>
-                  </>
-                ) : (
-                  <>
-                    {idea.score}
-                    <span className="text-home-ink-3">/10</span>
-                  </>
-                )}
-              </td>
-              <td className="hidden py-3 pr-3 text-[13px] text-home-ink-2 sm:table-cell">
-                {idea.tools.length > 0 ? idea.tools.slice(0, 3).map(toolName).join(", ") : "None listed"}
-              </td>
-              <td className="py-1">
-                <PlanLink slug={idea.slug} title={idea.title} source="home" variant="icon" />
-              </td>
-            </tr>
-          ))}
+          {rows.map((idea) => {
+            const retired = isResearchWithheld(idea.slug);
+            return (
+              <tr key={idea.ideaId} className="border-b border-home-rule align-top">
+                <td className="py-1 pr-2">
+                  {retired ? (
+                    <span className="sr-only">Not open for a new plan</span>
+                  ) : (
+                    <label className="flex min-h-11 min-w-11 items-center justify-center text-sm text-home-ink">
+                      <input type="radio" name="weekend-shortlist" checked={selected?.slug === idea.slug}
+                        onChange={() => setSelectedSlug(idea.slug)} className="size-4 accent-home-orange-ink" />
+                      <span className="sr-only">Choose {idea.title}</span>
+                    </label>
+                  )}
+                </td>
+                <th scope="row" className="py-3 pr-3 font-normal">
+                  <ResearchTitle
+                    slug={idea.slug}
+                    className="text-[15px] font-medium text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink"
+                    textClassName="text-[15px] font-medium text-home-ink"
+                  >
+                    {idea.title}
+                  </ResearchTitle>
+                  <span className="mt-0.5 block text-[13px] text-home-ink-3">{categoryName(idea.category)}</span>
+                  {retired && <RetiredTag className="mt-1" />}
+                </th>
+                <td className="py-3 pr-3 font-mono text-[13px] text-home-ink">{idea.buildTime}</td>
+                <td className="py-3 pr-3 font-mono text-[13px] text-home-ink">
+                  {idea.score === null ? (
+                    <>
+                      <span aria-hidden>–</span>
+                      <span className="sr-only">Not scored</span>
+                    </>
+                  ) : (
+                    <>
+                      {idea.score}
+                      <span className="text-home-ink-3">/10</span>
+                    </>
+                  )}
+                </td>
+                <td className="hidden py-3 pr-3 text-[13px] text-home-ink-2 sm:table-cell">
+                  {idea.tools.length > 0 ? idea.tools.slice(0, 3).map(toolName).join(", ") : "None listed"}
+                </td>
+                <td className="py-1">
+                  {!retired && <PlanLink slug={idea.slug} title={idea.title} source="home" variant="icon" />}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+    </div>
+  );
+  return (
+    <section aria-labelledby="next-step-title" className={CARD}>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={EYEBROW}>Your shortlist</p>
+        <p className={EYEBROW}>{count} saved</p>
       </div>
-      </fieldset>
+      <h2 id="next-step-title" className={TITLE}>
+        Pick one idea to build this weekend.
+      </h2>
+      {plannable.length > 0 ? (
+        <fieldset className="min-w-0">
+          <legend className="sr-only">Choose an idea for your weekend plan</legend>
+          {table}
+        </fieldset>
+      ) : (
+        table
+      )}
       <p className="text-xs text-home-ink-3">Scores average the four research ratings, out of 10. Open an idea to review its evidence.</p>
+      {plannable.length === 0 && (
+        <p className="text-sm text-home-ink-2">
+          The research behind these saves was retired, so they can’t start a weekend plan. Pick another idea from
+          Saved or the library.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         {selected && <PlanLink slug={selected.slug} title={selected.title} source="home" />}
         <Link href="/dashboard/saved" className={`${LINK} border border-home-rule text-home-ink`}>
@@ -232,6 +262,7 @@ const STAGE_BAR = {
 function BuildingCard({ plan }: { plan: PlanSummary }) {
   const stage = currentStage(plan.doneKeys);
   const next = nextStepLabel(plan.doneKeys);
+  const retired = isResearchWithheld(plan.slug);
   // Friday and Monday have no prompts, so there is nothing to fetch.
   const prompts = usePlanPrompts(stage === "sat" || stage === "sun" ? plan.slug : null);
   const prompt = prompts.status === "ready" ? promptForStage(prompts.prompts, stage) : null;
@@ -271,6 +302,12 @@ function BuildingCard({ plan }: { plan: PlanSummary }) {
           {prompt && <p className="text-sm text-home-ink-3">Today’s prompt: {prompt.title}</p>}
         </div>
       )}
+      {retired && (
+        <p className="text-sm text-home-ink-2">
+          <RetiredTag className="mr-2 align-middle" />
+          Your plan and progress stay here. The research and its prompts are no longer published.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         {prompt && <CopyPrompt prompt={prompt} surface="home" variant="primary" />}
         <Link
@@ -286,7 +323,7 @@ function BuildingCard({ plan }: { plan: PlanSummary }) {
         </Link>
       </div>
       {/* PRD 7.2: "Export prompt pack" next to Copy prompt. Flag on only. */}
-      <ExportPromptPack slug={plan.slug} title={plan.title} />
+      {!retired && <ExportPromptPack slug={plan.slug} title={plan.title} />}
     </section>
   );
 }
