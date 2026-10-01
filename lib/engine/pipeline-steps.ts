@@ -87,7 +87,8 @@ export const PIPELINE: readonly PipelineStep[] = [
       role: "search",
       maxInputTokens: 2_000,
       maxOutputTokens: 2_000,
-      requests: 1,
+      // Primary search + optional non-Reddit supplement when pages are unreadable.
+      requests: 2,
       searchContextSize: "medium",
     },
   },

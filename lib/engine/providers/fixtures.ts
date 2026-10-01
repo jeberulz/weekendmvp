@@ -101,12 +101,12 @@ export const SYNTHESIS_SCORE_FIXTURE = {
     signals: [
       {
         quote: "We burn weekends answering the same SOC2 questionnaire.",
-        citationUrl: "https://www.reddit.com/r/sales/",
-        citationTitle: "r/sales thread",
+        citationUrl: "https://www.indiehackers.com/post/how-we-handle-security-questionnaires",
+        citationTitle: "Indie Hackers — security questionnaires",
       },
       {
         quote: "Loopio is great if you have a proposal team; we do not.",
-        citationUrl: "https://news.ycombinator.com/",
+        citationUrl: "https://news.ycombinator.com/item?id=27515468",
         citationTitle: "Hacker News discussion",
       },
     ],
@@ -332,14 +332,19 @@ export const SEARCH_COMMUNITY_FIXTURE = {
   ],
   search_results: [
     {
-      url: "https://www.reddit.com/r/sales/",
-      title: "r/sales thread",
+      url: "https://news.ycombinator.com/item?id=27515468",
+      title: "Hacker News discussion",
+      snippet: "Loopio is great if you have a proposal team; we do not.",
+    },
+    {
+      url: "https://www.indiehackers.com/post/how-we-handle-security-questionnaires",
+      title: "Indie Hackers — security questionnaires",
       snippet: "We burn weekends answering the same SOC2 questionnaire.",
     },
     {
-      url: "https://news.ycombinator.com/",
-      title: "Hacker News discussion",
-      snippet: "Loopio is great if you have a proposal team; we do not.",
+      url: "https://www.reddit.com/r/sales/",
+      title: "r/sales thread",
+      snippet: "We burn weekends answering the same SOC2 questionnaire.",
     },
   ],
   usage: { prompt_tokens: 950, completion_tokens: 360 },

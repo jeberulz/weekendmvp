@@ -503,6 +503,73 @@ const MAX_SOURCE_PAGES = 6;
 type PageRead = { text: string | null; error?: string };
 
 /**
+ * Prefer sources the quote-fetcher can read without Reddit OAuth.
+ * Reddit stays allowed as a supplement when credentials work; it must not be
+ * the only cited surface on networks that get HTTP 403 from public `.json`.
+ *
+ * Live fetchability (cloud egress, 2026-10): HN Algolia and many Discourse
+ * forums return 200. Reddit public JSON, Stack Overflow, G2, Capterra, and
+ * Trustpilot often return 403 — do not rely on them without credentials.
+ */
+export function communitySearchQuery(
+  brief: string,
+  kind: "primary" | "supplement" = "primary",
+): string {
+  if (kind === "supplement") {
+    return (
+      `${brief}\n\n` +
+      "Earlier community citations were mostly unreadable from this network. " +
+      "Find MORE pain evidence using ONLY public pages we can fetch without login. " +
+      "Strongest: Hacker News item URLs (news.ycombinator.com/item?id=…) — cite the " +
+      "item page, not the homepage. Also good: public Discourse/forum threads " +
+      "(e.g. community.shopify.com, discuss.huggingface.co, vendor product forums) " +
+      "and attributed blog posts. " +
+      "Do NOT cite Reddit, YouTube, Stack Overflow, G2, Capterra, or Trustpilot " +
+      "(they often return HTTP 403 here). Copy short VERBATIM quotes (do not rewrite) " +
+      "and link each source page."
+    );
+  }
+  return (
+    `${brief}\n\n` +
+    "Find pain evidence from real users. Prefer sources we can fetch without login. " +
+    "Strongest: Hacker News item URLs (news.ycombinator.com/item?id=…) — always include " +
+    "≥2 HN item links when they exist for this problem. Also good: public Discourse/" +
+    "forum threads (Shopify Community, Hugging Face Discuss, Cursor Forum, other " +
+    "vendor forums) and attributed blog posts with clear quotes. " +
+    "Reddit is optional and only useful when the runner has Reddit API credentials — " +
+    "always include ≥2 non-Reddit page URLs. Avoid YouTube, Stack Overflow, G2, " +
+    "Capterra, and Trustpilot as primary citations (bot blocks are common). " +
+    "Copy short VERBATIM quotes (do not rewrite) and link each source."
+  );
+}
+
+/** True when the URL is a Reddit host (public JSON often 403 without OAuth). */
+export function isRedditUrl(url: string): boolean {
+  try {
+    return /(^|\.)reddit\.com$/i.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
+/** Merge two search packs; non-Reddit URLs sort first so Reddit 403s do not crowd out readable sources. */
+export function mergeSearchPacks(a: SearchPack, b: SearchPack): SearchPack {
+  const byUrl = new Map<string, Citation>();
+  for (const c of [...a.citations, ...b.citations]) {
+    if (!byUrl.has(c.url)) byUrl.set(c.url, c);
+  }
+  const all = [...byUrl.values()];
+  const preferred = [
+    ...all.filter((c) => !isRedditUrl(c.url)),
+    ...all.filter((c) => isRedditUrl(c.url)),
+  ];
+  return {
+    text: `${a.text}\n\n${b.text}`.trim().slice(0, MAX_SEARCH_TEXT_CHARS),
+    citations: preferred.slice(0, MAX_CITATIONS_PER_SEARCH * 2),
+  };
+}
+
+/**
  * Fetch each cited community page once. Runs right after the community
  * search, so a network that blocks the sources fails the run before
  * DataForSEO or the synthesis model is billed.
@@ -995,13 +1062,18 @@ export async function runResearch(
   }
 
   // --- 3 community_signals ---
+  // Prefer HN / Indie Hackers / forums / review sites so live runs work
+  // without Reddit OAuth. Keep Reddit fetch paths; they still help when
+  // REDDIT_CLIENT_ID/SECRET are set. If the first pack is unreadable
+  // (typical: Reddit-only citations + HTTP 403), one supplemental search
+  // forbids Reddit and tries again before any keyword/synthesis spend.
   let community: SearchPack;
   try {
     community = await stepSearch(
       providers,
       run,
       3,
-      `${briefContext(brief)}\n\nFind pain evidence from real users on Reddit, Hacker News, and YouTube. Copy short VERBATIM quotes (do not rewrite) and link each source.`,
+      communitySearchQuery(briefContext(brief), "primary"),
     );
   } catch (error) {
     throw stepError("community_signals", "community search failed", error);
@@ -1015,7 +1087,29 @@ export async function runResearch(
       community.citations,
       providers.sourceText,
     );
-    const readable = [...communityPages.values()].filter((p) => p.text !== null);
+    let readable = [...communityPages.values()].filter((p) => p.text !== null);
+    if (readable.length < MIN_READABLE_SOURCES) {
+      try {
+        const supplement = await stepSearch(
+          providers,
+          run,
+          3,
+          communitySearchQuery(briefContext(brief), "supplement"),
+        );
+        community = mergeSearchPacks(community, supplement);
+        communityPages = await readCommunityPages(
+          community.citations,
+          providers.sourceText,
+        );
+        readable = [...communityPages.values()].filter((p) => p.text !== null);
+      } catch (error) {
+        throw stepError(
+          "community_signals",
+          "community supplement search failed",
+          error,
+        );
+      }
+    }
     if (readable.length < MIN_READABLE_SOURCES) {
       const reasons = [...communityPages]
         .filter(([, p]) => p.text === null)
@@ -1023,7 +1117,7 @@ export async function runResearch(
         .join("; ");
       throw new PipelineError(
         "community_signals",
-        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Unreadable: ${reasons}`,
+        `only ${readable.length}/${communityPages.size} cited community pages could be read; need ≥${MIN_READABLE_SOURCES} to verify quotes. Stopped before keyword and synthesis spend. Prefer HN / Indie Hackers / forums / review sites (Reddit needs REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET on this network). Unreadable: ${reasons}`,
       );
     }
   }

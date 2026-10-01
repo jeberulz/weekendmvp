@@ -15,8 +15,11 @@ import {
 import {
   buildSourcePagesSection,
   citationEvidence,
+  communitySearchQuery,
   figureTokens,
   isGroundedFigure,
+  isRedditUrl,
+  mergeSearchPacks,
   MIN_VERIFIED_SIGNALS,
   PipelineError,
   runResearch,
@@ -142,8 +145,9 @@ describe("pipeline quote verification", () => {
   it("fails closed when too few quotes are on their cited pages", async () => {
     const providers = createProviders({ mode: "fixture" });
     providers.sourceText = fixtureSourceText({
-      "https://www.reddit.com/r/sales/": "nothing relevant here",
-      "https://news.ycombinator.com/": "nor here",
+      "https://news.ycombinator.com/item?id=27515468": "nothing relevant here",
+      "https://www.indiehackers.com/post/how-we-handle-security-questionnaires": "nor here",
+      "https://www.reddit.com/r/sales/": "still nothing",
     });
     const error = await runResearch({ brief: BRIEF, providers }).then(
       () => null,
@@ -343,6 +347,128 @@ describe("engine audit on a compiled fixture", () => {
 });
 
 describe("community page reads", () => {
+  it("widens the primary community prompt beyond Reddit", () => {
+    const q = communitySearchQuery("Brief: test", "primary");
+    expect(q).toMatch(/Hacker News/);
+    expect(q).toMatch(/Discourse|forum/i);
+    expect(q).toMatch(/verbatim/i);
+    expect(q).toMatch(/Avoid YouTube/);
+    const s = communitySearchQuery("Brief: test", "supplement");
+    expect(s).toMatch(/Do NOT cite Reddit/);
+    expect(s).toMatch(/Hacker News/);
+  });
+
+  it("prefers non-Reddit URLs when merging search packs", () => {
+    expect(isRedditUrl("https://www.reddit.com/r/x/comments/a/b/")).toBe(true);
+    expect(isRedditUrl("https://news.ycombinator.com/item?id=1")).toBe(false);
+    const merged = mergeSearchPacks(
+      {
+        text: "a",
+        citations: [
+          { url: "https://www.reddit.com/r/sales/", title: "reddit" },
+          { url: "https://news.ycombinator.com/item?id=1", title: "hn" },
+        ],
+      },
+      {
+        text: "b",
+        citations: [
+          {
+            url: "https://www.indiehackers.com/post/x",
+            title: "ih",
+          },
+        ],
+      },
+    );
+    expect(merged.citations.map((c) => c.url)).toEqual([
+      "https://news.ycombinator.com/item?id=1",
+      "https://www.indiehackers.com/post/x",
+      "https://www.reddit.com/r/sales/",
+    ]);
+  });
+
+  it("runs a non-Reddit supplement when the first pack is unreadable", async () => {
+    const providers = createProviders({ mode: "fixture" });
+    const queries: string[] = [];
+    const realSearch = providers.search;
+    let communityCalls = 0;
+    const searchCost = {
+      role: "search" as const,
+      provider: "perplexity",
+      billedAs: "sonar-pro",
+      usd: 0.01,
+      estimated: true,
+      units: { requests: 1 },
+    };
+    providers.search = {
+      ...realSearch,
+      search: async (req) => {
+        queries.push(req.query);
+        if (/pain|verbatim|community|quote|Hacker News/i.test(req.query)) {
+          communityCalls += 1;
+          if (communityCalls === 1) {
+            // First pack: Reddit only → unreadable without OAuth.
+            return {
+              value: {
+                text: "Reddit-only pain [1].",
+                citations: [
+                  {
+                    url: "https://www.reddit.com/r/sales/comments/abc/thread/",
+                    title: "r/sales",
+                  },
+                ],
+                inputTokens: 10,
+                outputTokens: 10,
+                requests: 1,
+              },
+              cost: searchCost,
+            };
+          }
+          // Supplement: fetchable HN + Indie Hackers.
+          return {
+            value: {
+              text: "HN and IH pain [1][2].",
+              citations: [
+                {
+                  url: "https://news.ycombinator.com/item?id=27515468",
+                  title: "HN",
+                },
+                {
+                  url: "https://www.indiehackers.com/post/how-we-handle-security-questionnaires",
+                  title: "IH",
+                },
+              ],
+              inputTokens: 10,
+              outputTokens: 10,
+              requests: 1,
+            },
+            cost: searchCost,
+          };
+        }
+        return realSearch.search(req);
+      },
+    };
+    providers.sourceText = {
+      async fetchText(url: string) {
+        if (url.includes("reddit.com")) {
+          throw new Error("HTTP 403 (Reddit blocks this network)");
+        }
+        if (url.includes("ycombinator.com")) {
+          return "Loopio is great if you have a proposal team; we do not.";
+        }
+        if (url.includes("indiehackers.com")) {
+          return "We burn weekends answering the same SOC2 questionnaire.";
+        }
+        throw new Error(`unexpected ${url}`);
+      },
+    };
+    const record = await runResearch({ brief: BRIEF, providers });
+    expect(communityCalls).toBe(2);
+    expect(queries.some((q) => /Do NOT cite Reddit/.test(q))).toBe(true);
+    expect(
+      record.community.signals.filter((s) => s.verified).length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
   it("uses Reddit's OAuth API when app credentials are set", async () => {
     const calls: string[] = [];
     const listing = [
@@ -411,7 +537,7 @@ describe("community page reads", () => {
     expect(error).toBeInstanceOf(PipelineError);
     expect((error as PipelineError).stepId).toBe("community_signals");
     expect((error as PipelineError).message).toMatch(
-      /only 0\/2 cited community pages could be read.*Stopped before keyword and synthesis spend/,
+      /only 0\/\d+ cited community pages could be read.*Stopped before keyword and synthesis spend/,
     );
     expect(keywordLookups).toBe(0);
     // Only the brief-normalization call ran; the paid synthesis never did.
@@ -432,7 +558,9 @@ describe("community page reads", () => {
     await runResearch({ brief: BRIEF, providers });
     const synthesisInput = inputs[inputs.length - 1]!;
     expect(synthesisInput).toContain("## Community source pages");
-    expect(synthesisInput).toContain("### https://www.reddit.com/r/sales/");
+    expect(synthesisInput).toContain(
+      "### https://news.ycombinator.com/item?id=27515468",
+    );
   });
 });
 
@@ -522,9 +650,10 @@ describe("CodeRabbit regressions", () => {
     const providers = createProviders({ mode: "fixture" });
     const huge = "We burn weekends answering the same SOC2 questionnaire. " + "x ".repeat(80_000);
     providers.sourceText = fixtureSourceText({
-      "https://www.reddit.com/r/sales/": huge,
-      "https://news.ycombinator.com/":
+      "https://news.ycombinator.com/item?id=27515468":
         "Loopio is great if you have a proposal team; we do not. " + "y ".repeat(80_000),
+      "https://www.indiehackers.com/post/how-we-handle-security-questionnaires": huge,
+      "https://www.reddit.com/r/sales/": huge,
     });
     const record = await runResearch({ brief: BRIEF, providers });
     expect(record.community.signals.filter((s) => s.verified).length).toBeGreaterThanOrEqual(2);
