@@ -1,0 +1,102 @@
+name: Content evals (weekly)
+
+# WP41-S6. Sweeps every idea page and opens (or updates) one PR with the
+# refreshed backlog in evals/results/report.md. Report-only: findings never
+# fail the job; only a crashed run does. Spend is capped by EVALS_MAX_USD;
+# the restored cache makes unchanged pages free, so a warm week costs cents.
+#
+# Needs: the OPENROUTER_API_KEY repository secret (without it the sweep runs
+# Layer 0 and link checks only), and Settings -> Actions -> General ->
+# "Allow GitHub Actions to create and approve pull requests".
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      layers:
+        description: 'Highest layer to run (0 = free checks only, 2 = + claims, 3 = + judges)'
+        type: choice
+        options: ['3', '2', '0']
+        default: '3'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: content-evals-weekly
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Restore eval cache
+        uses: actions/cache/restore@v4
+        with:
+          path: evals/cache
+          key: evals-cache-${{ github.run_id }}
+          restore-keys: evals-cache-
+
+      - name: Sweep every idea page
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EVALS_MAX_USD: '10'
+          LAYERS: ${{ github.event.inputs.layers || '3' }}
+        run: |
+          if [ "$LAYERS" != "0" ] && [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::warning::OPENROUTER_API_KEY is not set; running Layer 0 and link checks only."
+            LAYERS=0
+          fi
+          if [ "$LAYERS" = "0" ]; then
+            npm run evals:run -- --all --report --check-links
+          else
+            npm run evals:run -- --all --report --check-links --layers "$LAYERS" --live
+          fi
+
+      - name: Save eval cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: evals/cache
+          key: evals-cache-${{ github.run_id }}
+
+      - name: Open or update the report PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- evals/results/report.md; then
+            echo "Report unchanged; no PR."
+            exit 0
+          fi
+          branch=evals/weekly-report
+          day=$(date -u +%F)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add evals/results/report.md
+          git commit -m "evals: weekly content quality report $day"
+          git push --force origin "$branch"
+          # PR body: everything above the ranked page tables.
+          sed '/^## Fix first/,$d' evals/results/report.md > pr-body.md
+          printf '\nFull ranked backlog: `evals/results/report.md` in this PR.\n' >> pr-body.md
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --title "Weekly content quality report ($day)" --body-file pr-body.md
+          else
+            gh pr create --base main --head "$branch" --title "Weekly content quality report ($day)" --body-file pr-body.md
+          fi

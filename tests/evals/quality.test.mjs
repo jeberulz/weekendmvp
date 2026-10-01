@@ -304,3 +304,21 @@ test("renderReport adds a judge table when Layer 3 ran", () => {
   const unjudged = { slug: "a", status: "pass", fails: [], warns: [] };
   assert.ok(!renderReport([unjudged], { generatedOn: "x" }).includes("Judge scores"));
 });
+
+test("renderReport adds the run line and claim totals", () => {
+  const page = (slug, contradicted) => ({
+    slug,
+    status: contradicted ? "fail" : "pass",
+    fails: contradicted ? [{ check: "claims.contradicted", message: "m" }] : [],
+    warns: [],
+    claimLayer: { metrics: { supported: 2, contradicted, notFound: 1, unsourced: 3, unverifiable: 0 } },
+  });
+  const md = renderReport([page("a", 1), page("b", 0)], {
+    generatedOn: "2026-10-01",
+    layers: 3,
+    mode: "live",
+    run: { layers: 3, spentUsd: 2.94, calls: 1200, failedCalls: 2, incomplete: 1, links: { checked: 900, dead: 12, blocked: 40, errors: 3 } },
+  });
+  assert.ok(md.includes("Run: 1200 model call(s), $2.94 spent, 2 failed call(s), **1 page(s) incomplete**; links: 900 checked, 12 dead, 40 blocked by bot walls, 3 unknown."));
+  assert.ok(md.includes("| 4 | 1 (1 page(s)) | 2 | 6 | 0 |"));
+});

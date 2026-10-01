@@ -63,7 +63,43 @@ function judgeTable(results) {
   ];
 }
 
-export function renderReport(results, { generatedOn, layers = 0, mode = null }) {
+/** Corpus totals for claim checks, from pages that ran Layers 1-2. */
+function claimsTable(results) {
+  const pages = results.filter((r) => r.claimLayer?.metrics);
+  if (pages.length === 0) return [];
+  const sum = (k) => pages.reduce((n, r) => n + (r.claimLayer.metrics[k] ?? 0), 0);
+  const withContradiction = pages.filter((r) => r.claimLayer.metrics.contradicted > 0).length;
+  return [
+    `## Claims (${pages.length} page(s))`,
+    "",
+    "Factual claims extracted from The Problem, Market Research and Competitive Landscape, checked against each page's cited sources.",
+    "",
+    "| Supported | Contradicted | Not found in source | Unsourced | Unverifiable |",
+    "|---|---|---|---|---|",
+    `| ${sum("supported")} | ${sum("contradicted")} (${withContradiction} page(s)) | ${sum("notFound")} | ${sum("unsourced")} | ${sum("unverifiable")} |`,
+    "",
+  ];
+}
+
+function runLine(run) {
+  if (!run) return [];
+  const parts = [];
+  if (run.layers > 0) {
+    parts.push(
+      `${run.calls} model call(s), $${run.spentUsd.toFixed(2)} spent` +
+        (run.failedCalls > 0 ? `, ${run.failedCalls} failed call(s)` : "") +
+        (run.incomplete > 0 ? `, **${run.incomplete} page(s) incomplete**` : ""),
+    );
+  }
+  if (run.links) {
+    parts.push(
+      `links: ${run.links.checked} checked, ${run.links.dead} dead, ${run.links.blocked} blocked by bot walls, ${run.links.errors} unknown`,
+    );
+  }
+  return parts.length > 0 ? [`Run: ${parts.join("; ")}.`, ""] : [];
+}
+
+export function renderReport(results, { generatedOn, layers = 0, mode = null, run = null }) {
   const sorted = results.slice().sort(rank);
   const count = (s) => results.filter((r) => r.status === s).length;
   const failing = sorted.filter((r) => r.status === "fail");
@@ -78,6 +114,7 @@ export function renderReport(results, { generatedOn, layers = 0, mode = null }) 
       ? `Layers run: 0-${layers} (${mode}). Layer 1 extracts factual claims; Layer 2 checks them against each page's cited sources. Layer 3 is the judge panel.`
       : "Layers run: 0 only.",
     "",
+    ...runLine(run),
     "Layer 0 is the free, deterministic layer: structure, slop phrases, verbosity, unsourced numbers, source hygiene, placeholders, and cross-page duplication. Thresholds live in `evals/config.json`.",
     "",
     "New or edited pages must reach `pass` or `warn` to merge. Pages below are existing debt, ranked worst first.",
@@ -97,6 +134,7 @@ export function renderReport(results, { generatedOn, layers = 0, mode = null }) 
     "|---|---|---|",
     ...tallyChecks(results).map((t) => `| \`${t.check}\` | ${t.fail} | ${t.warn} |`),
     "",
+    ...claimsTable(results),
     ...judgeTable(results),
     `## Fix first: failing pages (${failing.length})`,
     "",

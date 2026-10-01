@@ -40,7 +40,7 @@ before an idea ships. CI runs `npm run evals:changed` and blocks any new or
 edited idea page that fails (structure, AI-slop phrases, placeholders, source
 hygiene, copied text). Existing pages are report-only: the ranked backlog is
 `evals/results/report.md`. Thresholds: `evals/config.json`,
-`evals/slop-lexicon.json`. The LLM layers (WIP) call OpenRouter only through
+`evals/slop-lexicon.json`. The LLM layers call OpenRouter only through
 `lib/evals/llm.ts`, which enforces a hard cap (`EVALS_MAX_USD`, max $10) and
 reads prices live. Check wiring with `npm run evals:ping -- --fixture`
 (no key) or `-- --live` (`OPENROUTER_API_KEY`). Claim checks and
@@ -49,7 +49,11 @@ the 3-model judge panel: `npm run evals:run -- --slug {slug} --layers 3 --live`
 `evals/rubric.md`. Before changing a threshold, the rubric, a prompt or a
 judge model, run `npm run evals:calibrate -- --live --report` (gold set in
 `evals/gold/`, ~$0.12) and commit `evals/results/calibration.md` only if it
-passes. Results cache in `evals/cache/` (gitignored).
+passes. Results cache in `evals/cache/` (gitignored). CI runs the paid layers
+on PRs that change idea pages (`content-evals` job, needs the
+`OPENROUTER_API_KEY` repo secret); `.github/workflows/content-evals-weekly.yml`
+sweeps every page on Mondays and opens a PR updating `evals/results/report.md`.
+`--check-links` flags dead Sources links.
 
 ## Accessibility
 

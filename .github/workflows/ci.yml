@@ -56,3 +56,57 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # WP41: the paid layers (claim checks + judge panel) on idea pages a PR
+  # adds or edits. Fails on a confirmed contradicted claim or a judge median
+  # of 2 or below. About $0.013 per changed page, under EVALS_MAX_USD.
+  # Without the OPENROUTER_API_KEY secret (fork PRs) it skips; the Layer 0
+  # gate in the quality job still runs.
+  content-evals:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Find changed idea pages
+        id: changed
+        run: |
+          if git diff --name-only HEAD^1 HEAD -- 'content/ideas/*.mdx' | grep -q .; then
+            echo "ideas=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No idea pages changed; skipping the paid layers."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.ideas == 'true'
+        with:
+          node-version: '22.x'
+          cache: npm
+
+      - name: Install locked dependencies
+        if: steps.changed.outputs.ideas == 'true'
+        run: npm ci
+
+      - name: Restore eval cache
+        if: steps.changed.outputs.ideas == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: evals/cache
+          key: evals-cache-${{ github.run_id }}
+          restore-keys: evals-cache-
+
+      - name: Claim checks and judge panel (changed pages)
+        if: steps.changed.outputs.ideas == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          EVALS_MAX_USD: '10'
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::notice::OPENROUTER_API_KEY is not available to this run; skipping the paid layers."
+            exit 0
+          fi
+          npm run evals:changed -- --base HEAD^1 --layers 3 --live

@@ -12,6 +12,7 @@
  *   --fixture   no key, no network, canned replies (for wiring checks)
  *   --live      OpenRouter (OPENROUTER_API_KEY) under the EVALS_MAX_USD cap
  * --estimate prints the worst-case cost of the planned run and stops.
+ * --check-links checks every ## Sources link once (network, no LLM, no key).
  *
  * Usage:
  *   npm run evals:run -- --slug phone-neck-score-app   # exit 1 on fail
@@ -100,6 +101,7 @@ function parseArgs(argv) {
     layers: 0,
     mode: null,
     estimate: false,
+    checkLinks: false,
     help: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -119,6 +121,7 @@ function parseArgs(argv) {
       }
       args.mode = a.slice(2);
     } else if (a === "--estimate") args.estimate = true;
+    else if (a === "--check-links") args.checkLinks = true;
     else if (a === "--help" || a === "-h") args.help = true;
     else {
       console.error(`unknown arg: ${a}`);
@@ -147,6 +150,12 @@ function printResult(r) {
         ` ${c.notFound} not found, ${c.unsourced} unsourced, ${c.unverifiable} unverifiable` +
         ` | dropped ${c.dropped} | sources read ${c.sourcesChecked - c.sourcesUnreachable}/${c.sourcesChecked}` +
         ` | $${c.costUsd.toFixed(4)}${c.cachedExtract ? " (cached)" : ""}`,
+    );
+  }
+  if (r.links) {
+    console.log(
+      `  links: ${r.links.checked} checked, ${r.links.dead.length} dead, ${r.links.blocked.length} blocked` +
+        (r.links.blocked.length > 0 ? ` (${r.links.blocked.map((b) => `${new URL(b.url).hostname} ${b.httpStatus}`).join(", ")})` : ""),
     );
   }
   const j = r.judgeLayer?.metrics;
@@ -328,7 +337,55 @@ async function runModelLayersForPages({ args, config, corpus, results }) {
       ` spent $${llm.spentUsd().toFixed(4)} of $${llm.capUsd().toFixed(2)} cap` +
       (errors > 0 ? `, ${errors} page(s) incomplete` : ""),
   );
-  return errors;
+  return { errors, spentUsd: llm.spentUsd(), calls: ledger.length, failedCalls: ledger.filter((e) => !e.ok).length };
+}
+
+/**
+ * Check every ## Sources link once across the corpus (no LLM). Fixture runs
+ * use the fixture web; otherwise the real network with the disk cache.
+ */
+async function runLinkChecksForPages({ args, config, corpus, results }) {
+  const load = (rel) => import(pathToFileURL(path.join(root, rel)).href);
+  const [linksMod, claimsMod, cacheMod, fixtureReplies] = await Promise.all([
+    load("lib/evals/links.ts"),
+    load("lib/evals/claims.ts"),
+    load("lib/evals/cache.ts"),
+    load("lib/evals/fixture-replies.ts"),
+  ]);
+  const lc = config.links;
+  const fixture = args.mode === "fixture";
+  const cache = fixture
+    ? cacheMod.createMemoryCache()
+    : cacheMod.createDiskCache(path.join(evalsDir, "cache"), { ttlMs: lc.cacheTtlDays * 86_400_000 });
+  const pages = results.filter((r) => corpus.has(r.slug));
+  const urlsBySlug = new Map(
+    pages.map((r) => {
+      const sources = corpus.get(r.slug).page.sections.find((s) => s.title === SOURCES_TITLE)?.content;
+      return [r.slug, claimsMod.listSources(sources).map((s) => s.url)];
+    }),
+  );
+  const checked = await linksMod.checkLinks([...urlsBySlug.values()].flat(), {
+    fetchImpl: fixture ? fixtureReplies.fixtureSourceFetch() : undefined,
+    cache,
+    timeoutMs: lc.timeoutMs,
+    maxBytes: config.claims.maxSourceBytes,
+    maxTextChars: config.claims.maxSourceTextChars,
+    concurrency: lc.concurrency,
+    perHost: lc.perHost,
+  });
+  for (const r of pages) {
+    const summary = linksMod.pageLinkSummary(urlsBySlug.get(r.slug), checked);
+    r.warns.push(...linksMod.linkFindings(summary, lc));
+    r.links = summary;
+    r.status = statusOf(r);
+  }
+  const all = [...checked.values()];
+  const count = (s) => all.filter((x) => x.status === s).length;
+  const totals = { checked: all.length, dead: count("dead"), blocked: count("blocked"), errors: count("error") };
+  console.error(
+    `evals-run: links: ${totals.checked} checked, ${totals.dead} dead, ${totals.blocked} blocked by bot walls, ${totals.errors} unknown`,
+  );
+  return totals;
 }
 
 async function main() {
@@ -336,12 +393,13 @@ async function main() {
   const modes = [args.all, args.changed, args.slugs.length > 0].filter(Boolean);
   const badLayers = ![0, 1, 2, 3].includes(args.layers);
   const needsMode = args.layers > 0 && !args.mode;
-  const strayMode = args.layers === 0 && (args.mode || args.estimate);
+  const strayMode = args.layers === 0 && (args.estimate || (args.mode && !args.checkLinks));
   if (args.help || modes.length !== 1 || (args.report && !args.all) || badLayers || needsMode || strayMode) {
     console.log(`Usage:
   npm run evals:run -- --slug <slug> [--slug <slug>...]
   npm run evals:run -- --changed [--base <ref>]   (default base: origin/main)
   npm run evals:run -- --all [--report] [--strict]
+  add --check-links to check every Sources link (network, no key)
   add --layers 1|2|3 --fixture|--live [--estimate]: 1 extracts claims, 2 checks them
   against cited sources, 3 adds the judge panel (each layer includes the ones below)
   add --json for machine-readable output`);
@@ -399,8 +457,13 @@ async function main() {
     });
   });
 
-  const layerErrors =
-    args.layers > 0 ? await runModelLayersForPages({ args, config, corpus, results }) : 0;
+  const run = { layers: args.layers, mode: args.mode, links: null, spentUsd: 0, calls: 0, failedCalls: 0, incomplete: 0 };
+  if (args.layers > 0) {
+    const model = await runModelLayersForPages({ args, config, corpus, results });
+    Object.assign(run, { spentUsd: model.spentUsd, calls: model.calls, failedCalls: model.failedCalls, incomplete: model.errors });
+  }
+  if (args.checkLinks) run.links = await runLinkChecksForPages({ args, config, corpus, results });
+  const layerErrors = run.incomplete;
 
   if (args.json) console.log(JSON.stringify(results, null, 2));
   else results.forEach(printResult);
@@ -418,11 +481,11 @@ async function main() {
     fs.mkdirSync(resultsDir, { recursive: true });
     fs.writeFileSync(
       path.join(resultsDir, "latest.json"),
-      `${JSON.stringify({ generatedOn, layers: args.layers, mode: args.mode, results }, null, 2)}\n`,
+      `${JSON.stringify({ generatedOn, run, results }, null, 2)}\n`,
     );
     fs.writeFileSync(
       path.join(resultsDir, "report.md"),
-      renderReport(results, { generatedOn, layers: args.layers, mode: args.mode }),
+      renderReport(results, { generatedOn, layers: args.layers, mode: args.mode, run }),
     );
     if (!args.json) console.log("evals-run: wrote evals/results/latest.json and report.md");
   }

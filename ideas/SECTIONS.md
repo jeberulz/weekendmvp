@@ -59,6 +59,10 @@ Tagging is a separate gate: `npm run validate:idea-tags` (wired in CI).
   as `npm run evals:changed`, which blocks any new or edited idea page that
   fails. Existing pages are report-only; the ranked backlog is
   `evals/results/report.md` (`npm run evals:run -- --all --report`).
+- `npm run evals:run -- --slug {slug} --layers 3 --live` — WP41 claim checks
+  against cited sources plus the 3-model judge panel (`evals/rubric.md`).
+  CI runs it on PRs that change idea pages; a weekly workflow sweeps the
+  whole corpus and opens a PR with the refreshed backlog.
 - `npm run validate:idea-tags` — WP19 tagging allowlists
 - `npm run engine:eval` — gold slug metrics must not regress
 

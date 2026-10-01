@@ -70,6 +70,16 @@ Definition of done: every new or edited idea page is scored by a layered quality
     - `npm run test:evals`, `npm run evals:calibrate -- --fixture`, `npm run evals:calibrate -- --live --report`
     - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 - [ ] `WP41-S6` - Weekly scheduled sweep (cached, link liveness), baseline report PR, publish-idea skill uses the full gate
+  - Scope: `.github/workflows/content-evals-weekly.yml`, `.github/workflows/ci.yml` (`content-evals` job), `lib/evals/links.ts` + tests, `scripts/evals-run.mjs` (`--check-links`, run metadata), `scripts/lib/quality/report.mjs` (run line, claim totals), `evals/config.json` (`links`), `evals/results/report.md` (first full baseline), publish-idea skill, `ideas/SECTIONS.md`, `CLAUDE.md`, RULINGS
+  - Acceptance criteria:
+    - Weekly workflow (Mondays 06:00 UTC + manual) sweeps every page with Layers 0-3 and link checks, restores and saves the result cache, and opens or updates one PR from branch `evals/weekly-report`. Report-only; falls back to free checks without the secret.
+    - PR CI runs Layers 1-3 on changed idea pages and fails on a confirmed contradiction or a judge median of 2 or below; skips without the secret.
+    - `--check-links` checks every Sources link once per run, politely (global and per-host limits), retries network blips once, and separates dead (404/410/unreachable) from bot-walled (401/403/429). Dead links warn `sources.dead`.
+    - Report shows the run (spend, calls, incomplete pages, link totals) and corpus claim totals.
+    - First full live sweep committed as the baseline report; a warm re-run costs about $0.
+  - Verification:
+    - `npm run test:evals`, workflow YAML parses, live `--check-links` on sample pages, full live sweep and warm re-run
+    - `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`
 
 ## Out Of Scope
 

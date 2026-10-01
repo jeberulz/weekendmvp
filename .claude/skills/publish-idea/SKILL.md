@@ -528,6 +528,15 @@ npm run evals:run -- --slug {slug}
 
 This runs the structural auditor (`scripts/audit-idea-mdx.mjs`) plus the WP41 Layer 0 checks: banned AI-slop phrases, slop density, verbosity, unsourced or guessed numbers, source hygiene (≥2 distinct domains, no placeholder or duplicate URLs), leftover placeholders, leaked model chatter, and near-duplication with other pages. Fix every `x` line. Read every `!` line: warnings do not block, but an unsourced number is the first thing a reader will doubt, so link it or name its source in the same paragraph. Thresholds live in `evals/config.json`; banned phrases in `evals/slop-lexicon.json`.
 
+**Claim checks + judge panel (required, about $0.013 per page, repeated in CI on the PR):**
+
+```bash
+npm run evals:run -- --slug {slug} --layers 3 --live --check-links
+# expect: no x lines. Needs OPENROUTER_API_KEY.
+```
+
+This extracts the page's factual claims and checks them against the sources it cites, then has three judges score it against `evals/rubric.md`. Fix every `x` line: `claims.contradicted` means a cited source says something different (update the figure or the source); `judges.<dimension>` means the panel median is 2 or below (the message quotes the line to fix). `!` lines are review items: `claims.unsupported` (most claims have no backing source), `sources.dead` (replace the link), `judges.disagree` (read it yourself).
+
 Then verify the rest of the MDX body against `ideas/SECTIONS.md` by hand before seeding:
 
 - [ ] All 7 required `##` sections present, in order: The Problem → The Solution → Market Research → Competitive Landscape → Business Model → Recommended Tech Stack → AI Prompts to Build This (plus `## Sources`).

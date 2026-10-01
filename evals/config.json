@@ -68,5 +68,13 @@
     "unsupportedShareWarn": 0.5,
     "unreachableShareWarn": 0.4,
     "pageConcurrency": 4
+  },
+  "links": {
+    "$comment": "WP41-S6. --check-links: every ## Sources link, once per run, through the same cache as Layer 2. dead = 404/410 or a network failure that repeats on retry; 401/403/429 are bot walls (blocked), never dead.",
+    "timeoutMs": 15000,
+    "concurrency": 8,
+    "perHost": 3,
+    "cacheTtlDays": 7,
+    "deadShareWarn": 0.3
   }
 }
