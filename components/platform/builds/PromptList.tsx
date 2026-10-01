@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { publicIdeaPath } from "@/lib/engine-drafts";
 import type { PlanPrompt } from "@/lib/dashboard/weekend-prompts";
 import { cn } from "@/lib/utils";
 import { CopyPrompt } from "./CopyPrompt";
@@ -61,17 +62,30 @@ export function PromptList({
       </div>
     );
   }
-  if (state.status === "failed") {
+  if (state.status === "retired") {
     return (
       <p className={NOTE}>
-        We can’t load the prompts right now. They are also on the{" "}
-        <Link
-          href={`/ideas/${ideaSlug}`}
-          className={cn("font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink", FOCUS)}
-        >
-          idea page
-        </Link>
-        .
+        This idea’s research was retired, so its prompts are no longer published. Your plan and progress stay here.
+      </p>
+    );
+  }
+  if (state.status === "failed") {
+    const ideaPage = publicIdeaPath(ideaSlug);
+    return (
+      <p className={NOTE}>
+        We can’t load the prompts right now.
+        {ideaPage && (
+          <>
+            {" "}They are also on the{" "}
+            <Link
+              href={ideaPage}
+              className={cn("font-medium text-home-orange-ink underline underline-offset-4 hover:text-home-ink", FOCUS)}
+            >
+              idea page
+            </Link>
+            .
+          </>
+        )}
       </p>
     );
   }

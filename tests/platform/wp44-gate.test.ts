@@ -42,7 +42,10 @@ describe("WP44-S13 review fixes", () => {
 
   test("R5: the parked project card no longer links into the preview builder", () => {
     expect(projectCardSource).toContain("const SITE_PUBLISHING_PARKED = true;");
-    expect(projectCardSource).toContain("? `/ideas/${project.sourceSlug}`");
+    // `sourceHref` is `/ideas/{slug}` (null for a retired draft, WP46-S5);
+    // tests/platform/wp46-retired-drafts.test.tsx renders both cases.
+    expect(projectCardSource).toContain("const sourceHref = ideaHref(project.sourceSlug);");
+    expect(projectCardSource).toContain("? sourceHref");
   });
 
   test("paging reaches every idea and every save", () => {

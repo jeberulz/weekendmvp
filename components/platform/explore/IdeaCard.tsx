@@ -1,5 +1,4 @@
 import type { FunctionReturnType } from "convex/server";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import type { api } from "@/convex/_generated/api";
 import { IdeaArt } from "@/components/home/IdeaArt";
@@ -13,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { BuildingBadge, PlanLink } from "@/components/platform/builds/PlanLink";
 import { SaveIdeaButton } from "@/components/platform/home/SaveIdeaButton";
+import { ResearchTitle, RetiredTag, isResearchWithheld } from "@/components/platform/RetiredResearch";
 import { ogArtPath } from "@/lib/home/library";
 import type { DashboardSource } from "@/lib/track";
 import { ReasonLine } from "./ReasonLine";
@@ -22,14 +22,24 @@ export type IdeaCardData = FunctionReturnType<typeof api.platform.ideas.library>
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-home-orange-ink";
 
-function Category({ raw, building = false }: { raw: string; building?: boolean }) {
+function Category({ raw, building = false, retired = false }: { raw: string; building?: boolean; retired?: boolean }) {
   const slug = normalizeCategorySlug(raw);
   return (
     <div className="flex flex-wrap items-center gap-2">
       <CategoryTag slug={slug} name={categoryName(slug)} />
       {building && <BuildingBadge />}
+      {retired && <RetiredTag />}
     </div>
   );
+}
+
+/**
+ * "Plan my weekend", or "Open your plan" for the idea being built. A retired
+ * draft (WP46-S5) starts no new plan, so it keeps only the link to its plan.
+ */
+function PlanAction({ idea, source, retired }: { idea: IdeaCardData; source: DashboardSource; retired: boolean }) {
+  if (retired && !idea.building) return null;
+  return <PlanLink slug={idea.slug} title={idea.title} source={source} building={idea.building} variant="icon" />;
 }
 
 /** Stand-in band while an idea's cover art is not generated yet. Decorative. */
@@ -49,6 +59,7 @@ function toolList(tools: string[], max = 3) {
 
 /** Grid card: art band, category, title, pitch, four scores, hours, tools, Save. */
 export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: DashboardSource }) {
+  const retired = isResearchWithheld(idea.slug);
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[14px] border border-home-rule bg-home-card">
       {idea.hasArt ? (
@@ -61,15 +72,16 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
         <NoArt raw={idea.category} />
       )}
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <Category raw={idea.category} building={idea.building} />
+        <Category raw={idea.category} building={idea.building} retired={retired} />
         <ReasonLine reason={idea.reason} />
         <h3 className="font-editorial text-[20px] font-normal leading-[1.2] text-home-ink">
-          <Link
-            href={`/ideas/${idea.slug}`}
+          <ResearchTitle
+            slug={idea.slug}
             className={`underline-offset-4 hover:text-home-orange-ink hover:underline ${FOCUS}`}
+            textClassName=""
           >
             {idea.title}
-          </Link>
+          </ResearchTitle>
         </h3>
         <p className="line-clamp-2 text-sm leading-[1.5] text-home-ink-2">{idea.description}</p>
         {idea.scores ? (
@@ -86,7 +98,7 @@ export function IdeaCard({ idea, source }: { idea: IdeaCardData; source: Dashboa
             {toolList(idea.tools)}
           </p>
           <div className="-my-1.5 -mr-2 flex shrink-0 items-center">
-            <PlanLink slug={idea.slug} title={idea.title} source={source} building={idea.building} variant="icon" />
+            <PlanAction idea={idea} source={source} retired={retired} />
             <SaveIdeaButton slug={idea.slug} title={idea.title} variant="icon" saved={idea.saved} source={source} />
           </div>
         </div>
@@ -112,21 +124,24 @@ export function IdeaRow({
   /** Full-width content under the row, such as a private note. */
   below?: ReactNode;
 }) {
+  const retired = isResearchWithheld(idea.slug);
   return (
     <div className="py-2.5">
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1 md:grid md:grid-cols-[minmax(0,1fr)_150px_64px_56px_150px] md:items-center md:gap-4">
           <div className="min-w-0">
-            <Link
-              href={`/ideas/${idea.slug}`}
+            <ResearchTitle
+              slug={idea.slug}
               className={`block text-[15px] font-medium leading-snug text-home-ink underline-offset-4 hover:text-home-orange-ink hover:underline ${FOCUS}`}
+              textClassName="block text-[15px] font-medium leading-snug text-home-ink"
             >
               {idea.title}
-            </Link>
+            </ResearchTitle>
             {meta && <span className="mt-0.5 block text-[12px] text-home-ink-3">{meta}</span>}
-            {idea.building && (
-              <div className="mt-1 flex">
-                <BuildingBadge />
+            {(idea.building || retired) && (
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {idea.building && <BuildingBadge />}
+                {retired && <RetiredTag />}
               </div>
             )}
             {idea.reason && (
@@ -159,7 +174,7 @@ export function IdeaRow({
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end">
           {actions}
-          <PlanLink slug={idea.slug} title={idea.title} source={source} building={idea.building} variant="icon" />
+          <PlanAction idea={idea} source={source} retired={retired} />
           <SaveIdeaButton slug={idea.slug} title={idea.title} variant="icon" saved={idea.saved} source={source} />
         </div>
       </div>
