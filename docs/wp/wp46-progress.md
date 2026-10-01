@@ -91,3 +91,8 @@ Append-only progress log. Do not rely on chat history for project state.
 - Docs: canonical `.claude/skills/publish-idea/SKILL.md` rewritten to actual behavior (the `.agents/skills/publish-idea` copy in the main checkout is a symlink to it); `engine/records/README.md`, `engine/briefs/README.md`, dated "superseded by WP46" notes in `engine/eval/{deep-benchmark,live-spotcheck,quote-gate-live}.md`, `docs/plans/idea-engine/testing.md`, WP46 status notes in phase-5/6/7 docs; `ideas/SECTIONS.md` unchanged (no quote-verification text).
 - Worker gate: typecheck 0; lint 0 (35 warnings, baseline); `npm test` 0 with 1,735 tests (engine 614); validate:idea-tags 0 (225/225); engine:eval 0 (3/3 legacy gold pages); engine:replay 0; build 0 (existing "middleware deprecated" warning); check:server-traces 0; npm audit 0; `git diff --check` 0; `git diff --check origin/main...HEAD` 0.
 - Open: AGENTS.md still calls Ideabrowser MCP required for Mode A (phase 9, out of scope); the three committed records are v1 until S7.
+
+## 2026-10-01 - Post-integration gate and independent reviews
+
+- Gate on `f1351ac` (orchestrator run): typecheck 0; lint 0 (35 warnings, baseline); `npm test` 0 with 1,735 tests; validate:idea-tags 0; engine:eval 0; build 0; check:server-traces 0; npm audit 0; `git diff --check` 0; `git diff --check origin/main...HEAD` 0; `npm run engine:replay` 0.
+- Independent reviewers launched read-only on `f1351ac` before any paid live run: a security reviewer (transport/SSRF/redirects, CLI file I/O, MDX injection, prompt-injection blast radius, Convex authorization, secrets) and a final correctness reviewer (F1–F7 verdicts, leak and bypass hunts, contract/versioning, cost, code quality, docs accuracy).
