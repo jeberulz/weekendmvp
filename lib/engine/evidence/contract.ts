@@ -375,6 +375,13 @@ export type EditorialFieldsV2 = {
 
 export type ResearchMode = "live" | "fixture";
 
+/**
+ * Ruling R12: the code that produced a run. `sha` is the git commit
+ * (40 or 64 lowercase hex); `dirty` is true when the working tree had
+ * changes or untracked files. Both are null when git was unavailable.
+ */
+export type CodeRevision = { sha: string | null; dirty: boolean | null };
+
 export type ResearchProvenanceV2 = {
   providerCalls: ProviderCall[];
   costUsd: number;
@@ -382,6 +389,8 @@ export type ResearchProvenanceV2 = {
   models: { synthesis: string; search: string; keywordData: string };
   /** Billable attempts per pipeline step id. */
   attempts: Record<string, number>;
+  /** Ruling R12; absent on records written before it. */
+  codeRevision?: CodeRevision;
 };
 
 export type ResearchRecordV2 = {
@@ -427,6 +436,8 @@ export type ResearchRunReport = {
   costUsd: number;
   attempts: Record<string, number>;
   models: { synthesis: string; search: string; keywordData: string };
+  /** Ruling R12: the code revision that ran (nulls when git was unavailable). */
+  codeRevision: CodeRevision;
   sources: SourceAcquisition[];
   evidence: {
     accepted: Record<EvidenceKind, number>;

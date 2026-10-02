@@ -54,6 +54,7 @@ import {
   FACT_BEARING_FIELDS,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
   type AcceptedEvidence,
+  type CodeRevision,
   type EvidenceKind,
   type ExtractionCandidates,
   type RejectedEvidence,
@@ -118,7 +119,16 @@ export type RunResearchOptions = {
   now?: () => Date;
   /** Spend ceiling check; tests inject a low remaining budget. */
   assertCap?: typeof assertWithinCap;
+  /**
+   * Ruling R12: the code revision running this research (the CLI reads it
+   * from git). Copied into the run report and the record's provenance;
+   * unknown (nulls) when omitted.
+   */
+  codeRevision?: CodeRevision;
 };
+
+/** The revision a report records when the caller does not know it. */
+export const UNKNOWN_CODE_REVISION: CodeRevision = { sha: null, dirty: null };
 
 export type RunResearchResult = { record: ResearchRecordV2; report: ResearchRunReport };
 
@@ -289,6 +299,7 @@ type RunState = {
   readonly startedAt: string;
   readonly checkCap: typeof assertWithinCap;
   readonly briefSha256: string;
+  readonly codeRevision: CodeRevision;
   briefSlug: string;
   phase: PipelinePhase;
   providerCalls: ProviderCall[];
@@ -405,6 +416,7 @@ function buildReport(state: RunState, failure: PipelineError | null): ResearchRu
     costUsd: fromMicroUsd(state.spentMicroUsd),
     attempts: { ...state.attempts },
     models: currentModels(state),
+    codeRevision: { ...state.codeRevision },
     sources: state.sources.map((s) => ({ ...s, url: redactUrl(s.url), roles: [...s.roles] })),
     evidence: {
       accepted: countByKind(state.accepted),
@@ -1011,6 +1023,7 @@ function provenanceOf(state: RunState, ranAt: string): ResearchProvenanceV2 {
     ranAt,
     models: currentModels(state),
     attempts: { ...state.attempts },
+    codeRevision: { ...state.codeRevision },
   };
 }
 
@@ -1193,6 +1206,7 @@ export async function runResearch(options: RunResearchOptions): Promise<RunResea
     startedAt: clock().toISOString(),
     checkCap: options.assertCap ?? assertWithinCap,
     briefSha256: briefSha256(options.brief),
+    codeRevision: options.codeRevision ? { ...options.codeRevision } : { ...UNKNOWN_CODE_REVISION },
     briefSlug: "",
     phase: "brief_normalization",
     providerCalls: [],
