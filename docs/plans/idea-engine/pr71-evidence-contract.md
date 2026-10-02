@@ -329,18 +329,30 @@ excerpt fails the parse.
 ## 9. Compiler and auditor
 
 The compiler renders every factual block from the validated representation:
-quote blockquotes (`> "…"` / `>` / `> — [title](url)`, every line prefixed),
-market signal rows, competitor price rows (secondary sources labeled with
-their host), inline tokens and Year-One Math (via `finance.ts`). Assumptions
-and proposals are labeled as such in the page.
+quote blockquotes (`> "…"` / `>` / `> — [title](url)`), market signal rows,
+competitor price rows (secondary sources labelled "(via host)"), evidence
+tokens as linked canonical renderings, Year-One Math (via `finance.ts`), the
+Sources list (exactly the used evidence sources) and the manifest highlights
+block. Proposals and assumptions (How it works, what not to build, stack,
+channels, pricing, unit economics, Year-One) carry labels on the page.
+Compiled text is escaped once with the shared `escapeMdxText`, which also
+stops GFM autolinks. Fixture-mode records compile only to `engine-draft-*` or
+temp slugs, and the manifest stub records the research mode.
 
-The auditor (CLI exits nonzero on any error) parses each blockquote together
-with its attribution, requires strict equality with a selected accepted quote
-and the exact canonical source URL, counts distinct quote identities, checks
-competitor rows and market rows against their evidence, recomputes Year-One
-Math with `finance.ts` (accounts, per-account amount, ARR, tier, downside,
-no duplicate totals), flags unbound figures in The Problem, Market Research
-and Competitive Landscape, and refuses legacy records.
+The auditor (CLI exits nonzero on any error) refuses legacy and invalid
+records and fixture records behind public slugs; parses each blockquote with
+its attribution (strict quote equality, exact source URL and title, distinct
+quote identities); checks competitor, market, keyword, tier and
+unit-economics rows against the record; allows links only to used evidence
+sources with their title or an item rendering as text; refuses quoted spans
+outside verified quote blocks; runs the figure guard on every section with
+node-level allowlists (linked renderings, verified rows, tier and
+unit-economics values, Year-One lines, bare years, names) and on prompt
+fences; refuses fenced code, footnotes, images and link definitions outside
+the prompt section; recomputes Year-One Math and refuses other revenue
+totals anywhere; and checks manifest highlights against the record. These
+checks are guards on the final artifact, not proof that prose is true
+(ruling R4, R6).
 
 ## 10. Run report
 
