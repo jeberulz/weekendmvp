@@ -13,10 +13,10 @@ import { SavedToolbar } from "@/components/platform/hub/SavedToolbar";
 import { useFeatureGate } from "@/components/platform/hub/useFeatureGate";
 import { BUILDERS_HUB_UI } from "@/components/platform/plan/flag";
 import { useUpsell } from "@/components/platform/plan/useUpsell";
-import { isResearchWithheld } from "@/components/platform/RetiredResearch";
 import { cn } from "@/lib/utils";
 import { IdeaRow } from "./IdeaCard";
 import { IDEAS_PATH } from "./library-params";
+import { isComparable } from "./saved-compare";
 
 type SavedItem = FunctionReturnType<typeof api.platform.dashboard.savedList>["items"][number];
 
@@ -146,8 +146,7 @@ function LiveSaved() {
                 meta={savedOn(item.savedAt)}
                 onUpgrade={(feature) => gate.openSheet(feature)}
                 compare={
-                  // A retired draft (WP46-S5) has no research to compare.
-                  comparing && !isResearchWithheld(item.card.slug)
+                  isComparable(item.card.slug, comparing)
                     ? {
                         checked: picked.includes(item.card.slug),
                         disabled: !picked.includes(item.card.slug) && picked.length >= compareMax,
