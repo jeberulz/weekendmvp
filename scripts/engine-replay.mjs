@@ -2,8 +2,9 @@
 /**
  * engine:replay — the deterministic research → compile → audit replay, for
  * operators (WP54). It runs the real CLIs on the synthetic RFP fixture
- * (engine/briefs/rfp-assistant.json) in a fresh temp dir, prints each step's
- * exit code and the audit verdict, and removes the temp dir:
+ * (engine/briefs/fixtures/rfp-assistant.json, which --fixture rfp-assistant
+ * loads) in a fresh temp dir, prints each step's exit code and the audit
+ * verdict, and removes the temp dir:
  *
  *   engine-research.mjs --fixture rfp-assistant --out <tmp>/r.json
  *   engine-compile.mjs  --record <tmp>/r.json --slug engine-draft-replay-rfp
