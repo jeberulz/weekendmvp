@@ -1,16 +1,20 @@
 /**
- * Final-artifact Year-One Math audit (WP46-S4, review finding F6; plan §9).
+ * Final-artifact Year-One Math audit (WP46-S4, review finding F6; plan §9;
+ * ruling R10 for totals outside Business Model and the tier/unit rows).
  *
  * The auditor recomputes the plan with finance.ts from the v2 record and
  * compares the DISPLAYED accounts, per-account price, period, ARR, tier,
  * seats, downside and funnel with it. Business Model holds exactly one base
- * and one downside line and no other ARR/MRR total.
+ * and one downside line; no section states another ARR/MRR/revenue total or
+ * a Year-One-style computation; pricing tier rows and unit-economics values
+ * print the record's proposals exactly.
  */
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { auditPage, cleanupTempDirs, compiledPage, replaceOnce } from "./__fixtures__/auditHarness.ts";
+import { auditPage, cleanupTempDirs, compiledPage, pageBody, replaceOnce } from "./__fixtures__/auditHarness.ts";
 import { buildFixtureRecord, withEditorial } from "./__fixtures__/recordV2.ts";
+import { auditEngineArtifact } from "./artifact-audit.ts";
 import type { YearOnePlanV2 } from "./evidence/contract.ts";
 import { computeYearOne, yearOneTierTerms } from "./finance.ts";
 import { parseYearOneLine } from "./page-format.ts";
@@ -178,16 +182,86 @@ describe("Year-One Math against finance.ts (F6)", () => {
   });
 
   it("does not mistake a tier that mentions ARR near its price for a revenue total", async () => {
-    const page = replaceOnce(
-      compiledPage(),
-      "- **Solo** ($12/month) — One private repository",
-      "- **Solo** ($12/month) — ARR and churn dashboards, one private repository",
-    );
-    expect((await auditPage(page)).errors).toEqual([]);
+    // Through the record: since ruling R10 a tier row prints the record's tier
+    // exactly, so a hand edit of the row now fails (see the tier-row tests).
+    const record = buildFixtureRecord((r) => {
+      const solo = r.editorial?.pricingTiers?.find((t) => t.name === "Solo");
+      if (!solo) throw new Error("fixture: Solo tier missing");
+      solo.includes = "ARR and churn dashboards, one private repository for an individual developer.";
+    });
+    const page = compiledPage(record);
+    expect(page).toContain("- **Solo** ($12/month) — ARR and churn dashboards, one private repository");
+    expect((await auditPage(page, record)).errors).toEqual([]);
   });
 
   it("fails a missing base line or downside line", async () => {
     expect(errorsOf(await auditPage(replaceOnce(compiledPage(), `${BASE}\n`, "")))).toMatch(/Year-One Math is missing its computed ARR line/);
     expect(errorsOf(await auditPage(replaceOnce(compiledPage(), `${DOWNSIDE}\n`, "")))).toMatch(/Year-One Math is missing its downside case/);
+  });
+});
+
+describe("revenue totals and Year-One computations outside Year-One Math (R10, P2-7)", () => {
+  const PLANNING = "Planning estimates to verify, not measured results:";
+
+  it("fails a money amount beside revenue wording, with or without ARR/MRR or a currency sign (Y2, Y3)", async () => {
+    for (const line of [
+      "At this pace SignalPass reaches $5.4 million in annual revenue by month twelve.",
+      "Target ARR: 5,400,000 USD by month twelve.",
+      "The plan reaches an annual run-rate of $250,000 once the seats fill.",
+    ]) {
+      const page = replaceOnce(compiledPage(), PLANNING, `${line}\n\n${PLANNING}`);
+      expect(errorsOf(await auditPage(page)), line).toMatch(
+        /Business Model states another revenue total at line \d+ .*only the Year-One Math base and downside lines may state ARR, MRR or revenue totals/,
+      );
+    }
+  });
+
+  it("still flags another Business Model revenue total when the record is missing (record-independent)", () => {
+    const page = replaceOnce(compiledPage(), PLANNING, `Target ARR: $5,400,000 by month twelve.\n\n${PLANNING}`);
+    expect(auditEngineArtifact(pageBody(page), null).errors.join("\n")).toMatch(/Business Model states another revenue total at line \d+/);
+    expect(auditEngineArtifact(pageBody(compiledPage()), null).errors).toEqual([]);
+  });
+
+  it("fails a revenue total in another section", async () => {
+    const page = replaceOnce(
+      compiledPage(),
+      "Everything else stays out of the thread.",
+      "Everything else stays out of the thread. Teams like this add up to $54,000 ARR quickly.",
+    );
+    expect(errorsOf(await auditPage(page))).toMatch(/The Solution states another revenue total at line \d+/);
+  });
+
+  it("fails a Year-One-style line outside Year-One Math, in prose or in a build prompt (Y4)", async () => {
+    const solution = replaceOnce(
+      compiledPage(),
+      "**How it works:**",
+      "- **150 × $100/mo = $180,000 ARR** — Crew accounts paying by month 12\n\n**How it works:**",
+    );
+    expect(errorsOf(await auditPage(solution))).toMatch(/The Solution: a Year-One-style computation at line \d+ .* outside Year-One Math/);
+    const prompt = replaceOnce(compiledPage(), "Persist state between screens", "Revenue check: 45 × $100/mo = $54,000. Persist state between screens");
+    expect(errorsOf(await auditPage(prompt))).toMatch(/AI Prompts to Build This: a Year-One-style computation at line \d+/);
+  });
+});
+
+describe("pricing tier and unit-economics rows print the record (R10, P2-7)", () => {
+  it("fails a displayed tier price, include or name that is not the record's (Y5)", async () => {
+    const cases: Array<[string, string, RegExp]> = [
+      ["- **Crew** ($20/developer/month)", "- **Crew** ($16/developer/month)", /pricing tier row "Crew" at line \d+ shows "Crew \(\$16\/developer\/month\) — .*"; the record's tier reads "Crew \(\$20\/developer\/month\) — /],
+      ["— One private repository for an individual developer", "— Two private repositories for an individual developer", /pricing tier row "Solo" at line \d+ shows/],
+      ["- **Solo** ($12/month)", "- **Starter** ($12/month)", /pricing tier row "Starter" at line \d+ is not one of the record's pricing tiers \(Open Source, Solo, Crew\)/],
+    ];
+    for (const [from, to, expected] of cases) {
+      const page = replaceOnce(compiledPage(), from, to);
+      expect(errorsOf(await auditPage(page)), to).toMatch(expected);
+    }
+    const missing = replaceOnce(compiledPage(), "- **Open Source** (Free) — Unlimited public repositories, the full review summary and community support.\n", "");
+    expect(errorsOf(await auditPage(missing))).toContain('Business Model has no row for the record\'s pricing tier "Open Source"');
+  });
+
+  it("fails a unit-economics value that is not the record's", async () => {
+    const page = replaceOnce(compiledPage(), "- **80% gross margin**", "- **95% gross margin**");
+    expect(errorsOf(await auditPage(page))).toMatch(
+      /unit economics row 2 at line \d+ shows "95% gross margin"; the record's value is "80% gross margin"/,
+    );
   });
 });

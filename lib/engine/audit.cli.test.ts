@@ -140,6 +140,20 @@ describe("scripts/audit-idea-mdx.mjs on a compiler-generated page", () => {
           ),
           expected: /The Problem: unbound figure "47"/,
         },
+        {
+          name: "a fabricated quote as a plain paragraph (R10)",
+          mdx: replaceOnce(
+            page,
+            "the onboarding of new contributors.",
+            "the onboarding of new contributors.\n\n“Legal rejects every single draft that the chat tool writes for us.”",
+          ),
+          expected: /quoted text "Legal rejects every single draft .*" near line \d+ is not an accepted community quote/,
+        },
+        {
+          name: "figures in The Solution (R10)",
+          mdx: replaceOnce(page, "Everything else stays out of the thread.", "Everything else stays out of the thread. It saves 9 hours a week."),
+          expected: /The Solution: unbound figure "9"/,
+        },
       ];
       const runs = await Promise.all(mutations.map(async (m) => ({ m, run: await auditCli(writePage(m.mdx, record)) })));
       for (const { m, run } of runs) {

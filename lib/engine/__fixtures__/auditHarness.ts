@@ -4,7 +4,9 @@
  * result through the real scripts/audit-idea-mdx.mjs — in-process via its
  * exported auditIdeaFile, or as a child process with the npm script's node
  * flags. Everything is written to temp dirs; cross-idea comparison uses an
- * empty sibling set so the result does not depend on other repo drafts.
+ * empty sibling set so the result does not depend on other repo drafts. A
+ * page can be audited under another slug and with a manifest row (the
+ * auditor's --manifest), for the R11 and highlights checks.
  */
 
 import { spawn } from "node:child_process";
@@ -21,7 +23,7 @@ export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url
 export const AUDITOR = path.join(REPO_ROOT, "scripts", "audit-idea-mdx.mjs");
 export const COMPILER = path.join(REPO_ROOT, "scripts", "engine-compile.mjs");
 /** The same flags the npm scripts use (audit:idea, engine:compile). */
-export const NODE_FLAGS = ["--experimental-strip-types"];
+export const NODE_FLAGS = ["--experimental-strip-types", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON"];
 
 export type AuditResult = {
   ok: boolean;
@@ -62,7 +64,7 @@ export function toAuditResult(raw: unknown): AuditResult {
 type AuditFn = (
   filePath: string,
   slug: string,
-  options: { recordPath?: string; engine?: boolean; otherBodies?: Record<string, string> },
+  options: { recordPath?: string; engine?: boolean; otherBodies?: Record<string, string>; manifestPath?: string },
 ) => AuditResult;
 
 let auditor: AuditFn | null = null;
@@ -106,10 +108,10 @@ export function replaceOnce(text: string, from: string, to: string): string {
 
 export type PageFiles = { dir: string; file: string; recordPath: string; siblings: string };
 
-/** Write the page, its record and an empty sibling dir to a fresh temp dir. */
-export function writePage(mdx: string, record: ResearchRecordV2): PageFiles {
+/** Write the page (as `<slug>.mdx`), its record and an empty sibling dir to a fresh temp dir. */
+export function writePage(mdx: string, record: ResearchRecordV2, slug: string = FIXTURE_PAGE_SLUG): PageFiles {
   const dir = makeTempDir();
-  const file = path.join(dir, `${FIXTURE_PAGE_SLUG}.mdx`);
+  const file = path.join(dir, `${slug}.mdx`);
   const recordPath = path.join(dir, "record.json");
   const siblings = path.join(dir, "siblings");
   fs.writeFileSync(file, mdx);
@@ -118,11 +120,36 @@ export function writePage(mdx: string, record: ResearchRecordV2): PageFiles {
   return { dir, file, recordPath, siblings };
 }
 
+/** Write a manifest holding `rows` next to the page; returns its path (for --manifest). */
+export function writeManifest(files: PageFiles, rows: unknown[]): string {
+  const manifestPath = path.join(files.dir, "manifest.json");
+  fs.writeFileSync(manifestPath, `${JSON.stringify({ ideas: rows }, null, 2)}\n`);
+  return manifestPath;
+}
+
+export type AuditPageOptions = {
+  /** The page slug the auditor sees (default FIXTURE_PAGE_SLUG). */
+  slug?: string;
+  /** The page's manifest row, written to a manifest the auditor reads instead of the repo's. */
+  manifestRow?: unknown;
+};
+
 /** Audit MDX in-process with the engine bar and its record (no repo siblings). */
-export async function auditPage(mdx: string, record: ResearchRecordV2 = buildFixtureRecord()): Promise<AuditResult> {
+export async function auditPage(
+  mdx: string,
+  record: ResearchRecordV2 = buildFixtureRecord(),
+  options: AuditPageOptions = {},
+): Promise<AuditResult> {
   const audit = await loadAuditor();
-  const { file, recordPath } = writePage(mdx, record);
-  return audit(file, FIXTURE_PAGE_SLUG, { engine: true, recordPath, otherBodies: {} });
+  const slug = options.slug ?? FIXTURE_PAGE_SLUG;
+  const files = writePage(mdx, record, slug);
+  const manifestPath = options.manifestRow === undefined ? undefined : writeManifest(files, [options.manifestRow]);
+  return audit(files.file, slug, {
+    engine: true,
+    recordPath: files.recordPath,
+    otherBodies: {},
+    ...(manifestPath ? { manifestPath } : {}),
+  });
 }
 
 export type CliRun = { code: number | null; stdout: string; stderr: string };
@@ -158,8 +185,11 @@ export function lastJson(stdout: string): unknown {
   return JSON.parse(last);
 }
 
-/** Audit a written page through the real CLI: --file, --record, --siblings, --json. */
-export async function auditCli(files: PageFiles): Promise<{ code: number | null; result: AuditResult; stderr: string }> {
+/** Audit a written page through the real CLI: --file, --record, --siblings, --json (plus `extra` flags). */
+export async function auditCli(
+  files: PageFiles,
+  extra: string[] = [],
+): Promise<{ code: number | null; result: AuditResult; stderr: string }> {
   const run = await runNodeScript(AUDITOR, [
     "--file",
     files.file,
@@ -168,6 +198,13 @@ export async function auditCli(files: PageFiles): Promise<{ code: number | null;
     "--siblings",
     files.siblings,
     "--json",
+    ...extra,
   ]);
   return { code: run.code, result: toAuditResult(lastJson(run.stdout)), stderr: run.stderr };
+}
+
+/** The page body (frontmatter removed), as auditEngineArtifact takes it. */
+export function pageBody(mdx: string): string {
+  const end = mdx.indexOf("\n---\n", 3);
+  return end < 0 ? mdx : mdx.slice(end + "\n---\n".length);
 }
