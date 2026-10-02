@@ -89,6 +89,7 @@ import {
   isProjectedAmount,
   lineAbove,
   lineAround,
+  pageBillingCues,
   parseAmount,
   parsePriceTerms,
   priceExpressionsIn,
@@ -96,6 +97,7 @@ import {
   scanAmounts,
   sentenceAround,
   splitSentences,
+  type PageBillingCues,
   type PriceExpression,
 } from "./amount.ts";
 import {
@@ -513,6 +515,8 @@ type Context = {
   citations: Map<string, string>;
   sources: Map<string, SourceInput>;
   prepared: Map<string, PreparedSource>;
+  /** Each read page's billing cues, read once (amount.ts pageBillingCues). */
+  billing: Map<string, PageBillingCues>;
   vendors: string[];
 };
 
@@ -578,7 +582,7 @@ function createContext(input: AcceptEvidenceInput): Context {
         .filter((v) => vendorKey(v).length >= 2),
     ),
   ];
-  return { citations, sources, prepared: new Map(), vendors };
+  return { citations, sources, prepared: new Map(), billing: new Map(), vendors };
 }
 
 function resolveSource(context: Context, sourceUrl: string): { ok: true; source: ReadSource } | Failure {
@@ -1346,7 +1350,12 @@ type PriceClaim = { vendor: string; terms: PriceTerms };
  * that shows annual billing above a per-month price without the clause
  * saying which is ambiguous billing (qualifier_dropped).
  */
-function priceContextFailure(text: string, expression: PriceExpression, vendors: ReadonlyArray<string>): Failure | null {
+function priceContextFailure(
+  text: string,
+  expression: PriceExpression,
+  vendors: ReadonlyArray<string>,
+  cues?: PageBillingCues,
+): Failure | null {
   const cue = comparisonCueFor(text, expression) ?? nameCueFor(text, expression, vendors);
   if (cue) {
     return fail(
@@ -1354,7 +1363,7 @@ function priceContextFailure(text: string, expression: PriceExpression, vendors:
       `the price's sentence compares vendors ("${cue}"); a comparison binds no price (rulings R9, R14)`,
     );
   }
-  const billing = ambiguousBilling(text, expression);
+  const billing = ambiguousBilling(text, expression, cues ?? pageBillingCues(text));
   return billing ? fail("qualifier_dropped", billing) : null;
 }
 
@@ -1482,7 +1491,12 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
     // Rulings R9 and R14 on the whole page first: the price's full sentence,
     // a soft-wrapped line above it and every line above it (billing), which
     // the stored excerpt may not include.
-    const sourceContext = priceContextFailure(source.text, expression, context.vendors);
+    let cues = context.billing.get(source.url);
+    if (!cues) {
+      cues = pageBillingCues(source.text);
+      context.billing.set(source.url, cues);
+    }
+    const sourceContext = priceContextFailure(source.text, expression, context.vendors, cues);
     if (sourceContext) {
       failure = closer(failure, sourceContext);
       continue;

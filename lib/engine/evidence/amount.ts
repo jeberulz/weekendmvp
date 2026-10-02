@@ -1244,44 +1244,101 @@ function billingCues(line: string, withPrices: boolean): { annual: boolean; mont
   return { annual: hasBillingCue(ANNUAL_BILLING_RE, line), monthly: hasBillingCue(MONTHLY_BILLING_RE, line) };
 }
 
-const LINE_SPLIT_RE = /\r\n|[\n\r\u2028\u2029]/u;
+const LINE_BREAK_G_RE = /\r\n|[\n\r\u2028\u2029]/gu;
+
+/**
+ * Each line's billing cues, read once per page (ruling R14), so a page with
+ * many prices and candidates is scanned once: line starts, the nearest
+ * non-blank line at or before each line, each line's cues as a block line
+ * (prices allowed) and prefix ORs of the page-scoped cues (price lines
+ * ignored) before each line.
+ */
+export type PageBillingCues = {
+  readonly starts: readonly number[];
+  readonly nonBlankAtOrBefore: Int32Array;
+  readonly blockAnnual: Uint8Array;
+  readonly blockMonthly: Uint8Array;
+  readonly pageAnnualBefore: Uint8Array;
+  readonly pageMonthlyBefore: Uint8Array;
+};
+
+export function pageBillingCues(text: string): PageBillingCues {
+  const starts = [0];
+  for (const m of text.matchAll(new RegExp(LINE_BREAK_G_RE.source, LINE_BREAK_G_RE.flags))) {
+    starts.push((m.index ?? 0) + m[0].length);
+  }
+  const ends = starts.map((start, i) => {
+    const next = starts[i + 1];
+    if (next === undefined) return text.length;
+    return text.slice(start, next).search(/\r\n|[\n\r\u2028\u2029]/u) + start;
+  });
+  const n = starts.length;
+  const nonBlankAtOrBefore = new Int32Array(n);
+  const blockAnnual = new Uint8Array(n);
+  const blockMonthly = new Uint8Array(n);
+  const pageAnnualBefore = new Uint8Array(n + 1);
+  const pageMonthlyBefore = new Uint8Array(n + 1);
+  let lastNonBlank = -1;
+  for (let i = 0; i < n; i += 1) {
+    const line = text.slice(starts[i] ?? 0, ends[i] ?? 0);
+    if (line.trim() !== "") lastNonBlank = i;
+    nonBlankAtOrBefore[i] = lastNonBlank;
+    const block = billingCues(line, true);
+    blockAnnual[i] = block.annual ? 1 : 0;
+    blockMonthly[i] = block.monthly ? 1 : 0;
+    const page = billingCues(line, false);
+    pageAnnualBefore[i + 1] = (pageAnnualBefore[i] ?? 0) | (page.annual ? 1 : 0);
+    pageMonthlyBefore[i + 1] = (pageMonthlyBefore[i] ?? 0) | (page.monthly ? 1 : 0);
+  }
+  return { starts, nonBlankAtOrBefore, blockAnnual, blockMonthly, pageAnnualBefore, pageMonthlyBefore };
+}
+
+/** Index of the line holding `index` (binary search on line starts). */
+function lineIndexAt(starts: readonly number[], index: number): number {
+  let lo = 0;
+  let hi = starts.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if ((starts[mid] ?? 0) <= index) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo;
+}
 
 /**
  * Rulings R9 and R14: why a price's billing is ambiguous, or null. Annual
  * billing shows when a billing toggle line or a price-free annual-billing
  * line ("All plans are billed annually.") stands anywhere above the price,
  * or an annual-billing phrase stands in its block (its line and
- * PRICE_BLOCK_LINES_ABOVE lines above, where another price's "billed
- * annually" counts too). When it shows and the price is per month (or the
- * page shows monthly billing too) and the price's clause states neither
- * billed annually nor billed monthly, a reader cannot tell which billing
- * the figure is. A per-year or one-time price states its own term; feature
- * lines that mention "annual" and negated cues ("no annual contract") do
- * not count. Acceptance reads the page, re-validation the excerpt.
+ * PRICE_BLOCK_LINES_ABOVE non-blank lines above, where another price's
+ * "billed annually" counts too). When it shows and the price is per month
+ * (or the page shows monthly billing too) and the price's clause states
+ * neither billed annually nor billed monthly, a reader cannot tell which
+ * billing the figure is. A per-year or one-time price states its own term;
+ * feature lines that mention "annual" and negated cues ("no annual
+ * contract") do not count. Acceptance reads the page (with its cues read
+ * once, `cues`), re-validation the excerpt.
  */
-export function ambiguousBilling(text: string, expression: PriceExpression): string | null {
+export function ambiguousBilling(
+  text: string,
+  expression: PriceExpression,
+  cues: PageBillingCues = pageBillingCues(text),
+): string | null {
   const { qualifiers, period } = expression.terms;
   if (qualifiers.includes("billed_annually") || qualifiers.includes("billed_monthly")) return null;
   if (period === "year" || period === "one_time") return null;
-  const own = lineAround(text, expression.start);
-  let blockStart = own.start;
-  let line: { start: number; end: number } | null = own;
-  for (let i = 0; i < PRICE_BLOCK_LINES_ABOVE && line; i += 1) {
-    line = lineAbove(text, line.start);
-    if (line) blockStart = line.start;
+  const own = lineIndexAt(cues.starts, expression.start);
+  let first = own;
+  for (let i = 0; i < PRICE_BLOCK_LINES_ABOVE && first > 0; i += 1) {
+    const above = cues.nonBlankAtOrBefore[first - 1] ?? -1;
+    if (above < 0) break;
+    first = above;
   }
-  let annual = false;
-  let monthly = period === "month";
-  const scopes: Array<[string, boolean]> = [
-    [text.slice(0, blockStart), false],
-    [text.slice(blockStart, own.end), true],
-  ];
-  for (const [scope, withPrices] of scopes) {
-    for (const each of scope.split(LINE_SPLIT_RE)) {
-      const cues = billingCues(each, withPrices);
-      annual ||= cues.annual;
-      monthly ||= cues.monthly;
-    }
+  let annual = (cues.pageAnnualBefore[first] ?? 0) === 1;
+  let monthly = period === "month" || (cues.pageMonthlyBefore[first] ?? 0) === 1;
+  for (let i = first; i <= own; i += 1) {
+    annual ||= cues.blockAnnual[i] === 1;
+    monthly ||= cues.blockMonthly[i] === 1;
   }
   if (!annual || !monthly) return null;
   return "ambiguous billing: the page shows annual billing (a billing toggle or an annual-billing line) above a per-month price whose clause states neither billing (rulings R9, R14)";

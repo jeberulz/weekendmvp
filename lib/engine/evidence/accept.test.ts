@@ -1804,3 +1804,23 @@ describe("R15: invisible and bidirectional format controls never reach accepted 
     expect(result.ok ? "" : result.issues.join(" | ")).toMatch(/U\+202E/);
   });
 });
+
+describe("R14: billing cues are read once per page", () => {
+  it("accepts forty candidates against a page of sixty thousand lines in well under two seconds", () => {
+    const url = "https://acme.example/pricing";
+    const lines: string[] = [];
+    for (let i = 0; i < 60_000; i += 1) {
+      lines.push(i % 3 === 0 ? "Pro" : i % 3 === 1 ? `$${(i % 90) + 10}/user/month` : "Unlimited reviews for teams, billed per seat.");
+    }
+    lines.push("Acme Max", "$999/user/month");
+    const page: Page = { url, roles: ["competitors"], text: lines.join("\n") };
+    const candidates = Array.from({ length: 40 }, () =>
+      priceCandidate({ vendor: "Acme", sourceUrl: url, supportingText: "$999/user/month", priceText: "$999/user/month" }),
+    );
+    const started = performance.now();
+    const result = run([page], { competitorPrices: candidates });
+    expect(performance.now() - started).toBeLessThan(2_000);
+    expect(result.accepted).toHaveLength(1);
+    expect(reasons(result).every((r) => r === "duplicate")).toBe(true);
+  });
+});
