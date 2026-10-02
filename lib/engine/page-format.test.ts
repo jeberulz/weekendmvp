@@ -12,6 +12,7 @@ import { REPO_ROOT } from "./__fixtures__/auditHarness.ts";
 import { GENERIC_SETUP_TABLE_NAMES } from "./compile.ts";
 import {
   arrEquation,
+  HIGHLIGHT_LIMITS,
   linkUrl,
   mdLink,
   parseDisplayedCount,
@@ -39,6 +40,20 @@ describe("page formats shared by the compiler and the auditor", () => {
   it("keeps the section titles in sync with scripts/lib/idea-sections.mjs", async () => {
     const sections = await importScript("scripts/lib/idea-sections.mjs");
     expect(sections.CANONICAL_SECTION_TITLES).toEqual([...SECTION_TITLES]);
+  });
+
+  it("keeps the highlight limits in sync with scripts/validate-idea-tags.mjs", async () => {
+    const tags = await importScript("scripts/validate-idea-tags.mjs");
+    const theirs = tags.HIGHLIGHT_LIMITS;
+    if (typeof theirs !== "object" || theirs === null) throw new Error("HIGHLIGHT_LIMITS export missing");
+    const { minCompetitors, ...shared } = HIGHLIGHT_LIMITS;
+    expect(theirs).toEqual(shared);
+    // validateHighlights wants 3–maxCompetitors competitors when the block has any.
+    expect(typeof tags.validateHighlights === "function" ? tags.validateHighlights({
+      problemQuote: "A quote.",
+      stats: [{ value: "1", label: "x" }],
+      competitors: Array.from({ length: minCompetitors - 1 }, (_, i) => ({ name: `C${i}`, price: "$1/month" })),
+    }) : null).toContain(`highlights.competitors needs ${minCompetitors}–${HIGHLIGHT_LIMITS.maxCompetitors} entries when present`);
   });
 
   it("keeps the generic setup tables in sync with scripts/lib/idea-quality.mjs", async () => {
