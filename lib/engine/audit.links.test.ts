@@ -84,15 +84,17 @@ describe("every link targets an evidence source the record uses (R10)", () => {
     expect(errorsOf(await auditPage(page))).toMatch(/link at line \d+ to https:\/\/example\.org\/guide is not an evidence source this record uses/);
   });
 
-  it("never lets a bare URL in writer text reach the page as a live link: the compiler escapes it or the audit refuses the page", async () => {
+  it("escapes bare URLs, www hosts and emails in writer text so none becomes a live link (S-P2b), and the page passes", async () => {
     const record = buildFixtureRecord((r) => {
-      if (r.editorial) r.editorial.problemNarrative += " Read the full playbook at https://example.invalid/offer before you buy anything.";
+      if (r.editorial) {
+        r.editorial.problemNarrative +=
+          " Read the playbook at https://example.invalid/offer or www.example.invalid/guide, or write to founders@example.invalid before you buy anything.";
+      }
     });
     const page = compile(record);
-    const live = pageLinkUrls(page).some((url) => url.includes("example.invalid"));
-    const errors = errorsOf(await auditPage(page, record));
-    if (live) expect(errors).toMatch(/link at line \d+ to https:\/\/example\.invalid\/offer is not an evidence source/);
-    else expect(errors).not.toMatch(/example\.invalid/);
+    expect(page).toContain("example.invalid/offer");
+    expect(pageLinkUrls(page).filter((url) => url.includes("example.invalid"))).toEqual([]);
+    expect((await auditPage(page, record)).errors).toEqual([]);
   });
 
   it("never lets an accepted quote that carries a URL publish a live link (hostile cited page)", async () => {
@@ -109,10 +111,22 @@ describe("every link targets an evidence source the record uses (R10)", () => {
       },
     );
     const page = compile(record);
-    const live = pageLinkUrls(page).some((url) => url.includes("example.invalid"));
-    const errors = errorsOf(await auditPage(page, record));
-    if (live) expect(errors).toMatch(/link at line \d+ to https:\/\/example\.invalid\/tool is not an evidence source/);
-    else expect(errors).not.toMatch(/example\.invalid/);
+    expect(page).toContain("example.invalid/tool");
+    expect(pageLinkUrls(page).filter((url) => url.includes("example.invalid"))).toEqual([]);
+    expect((await auditPage(page, record)).errors).toEqual([]);
+  });
+
+  it("renders a stat token re-used in other prose with its own subject and metric (R7, p4 v5)", async () => {
+    // The reviewer's v5 put a survey stat behind "churn of …"; the rendering now names the stat's own
+    // claim, so the reader sees what the figure measures. The audit cannot judge the sentence around it.
+    const record = buildFixtureRecord((r, ev) => {
+      r.market.summary = `${r.market.summary} Reviewers report churn of ${tok(ev.statAdoption)} in their first year.`;
+    });
+    const page = compile(record);
+    const rendering = renderEvidenceInline(EV.statAdoption);
+    expect(rendering).toContain(EV.statAdoption.subject);
+    expect(page).toContain(`churn of ${mdLink(rendering, EV.statAdoption.sourceUrl)} in their first year`);
+    expect((await auditPage(page, record)).errors).toEqual([]);
   });
 });
 

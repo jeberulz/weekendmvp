@@ -21,7 +21,7 @@ import { auditEngineArtifact } from "./artifact-audit.ts";
 import type { MarketStatEvidence } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
 import { renderEvidenceInline } from "./evidence/tokens.ts";
-import { marketSignalLabel, mdLink, proposalLabels } from "./page-format.ts";
+import { mdLink, proposalLabels } from "./page-format.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -94,23 +94,31 @@ describe("unbound figures in every section (R10, P1-1)", () => {
     expect(clean).toContain(renderEvidenceInline(EV.priceGraphite));
   });
 
-  it("ignores digits inside a record name (a tier called Solo 10), but a name that is only a figure hides nothing", async () => {
-    const record = buildFixtureRecord((r) => {
-      const solo = r.editorial?.pricingTiers?.find((t) => t.name === "Solo");
-      if (solo) solo.name = "Solo 10";
-    });
-    const page = compiledPage(record);
-    expect(page).toContain("Open Source / Solo 10 / Crew subscriptions");
-    expect((await auditPage(page, record)).errors).toEqual([]);
-    const typed = replaceOnce(page, "Open Source / Solo 10 / Crew subscriptions", "Open Source / Solo 47 / Crew subscriptions");
-    expect(errorsOf(await auditPage(typed, record))).toMatch(/Recommended Tech Stack: unbound figure "47"/);
-
-    const tampered = structuredClone(record);
-    const tier = tampered.editorial?.pricingTiers?.find((t) => t.name === "Solo 10");
-    if (!tier) throw new Error("fixture: renamed tier missing");
-    tier.name = "60%";
-    const figureName = replaceOnce(page, "Open Source / Solo 10 / Crew subscriptions", "Open Source / 60% / Crew subscriptions");
-    expect(auditEngineArtifact(pageBody(figureName), tampered).errors.join("\n")).toMatch(/Recommended Tech Stack: unbound figure "60%"/);
+  it("ignores digits inside a competitor name (R10 \"names\"), but a stray figure or a name made of a figure hides nothing", () => {
+    // Product and tier names are writer text that R6 keeps figure-free; a competitor name is the
+    // evidence's vendor name, so "Qodo 2" may appear bare (the landing-page strip, the row).
+    const record = buildFixtureRecord();
+    const renamed = (name: string) => {
+      const tampered = structuredClone(record);
+      const competitor = tampered.competitors.find((c) => c.name === "Qodo");
+      const price = tampered.evidence.accepted.find((e) => e.id === EV.priceQodo.id);
+      if (!competitor || price?.kind !== "competitor_price") throw new Error("fixture: Qodo missing");
+      competitor.name = name;
+      price.vendor = name;
+      const page = compiledPage(record)
+        .split(renderEvidenceInline(EV.priceQodo))
+        .join(renderEvidenceInline(price))
+        .replace("- **Qodo** —", `- **${name}** —`)
+        .replace("Qodo: ", `${name}: `);
+      return { tampered, page };
+    };
+    const named = renamed("Qodo 2");
+    expect(named.page).toContain("Qodo 2: ");
+    expect(auditEngineArtifact(pageBody(named.page), named.tampered).errors).toEqual([]);
+    const stray = replaceOnce(named.page, "Qodo focuses on review agents", "Qodo 3 focuses on review agents");
+    expect(auditEngineArtifact(pageBody(stray), named.tampered).errors.join("\n")).toMatch(/Competitive Landscape: unbound figure "3"/);
+    const figure = renamed("60%");
+    expect(auditEngineArtifact(pageBody(figure.page), figure.tampered).errors.join("\n")).toMatch(/AI Prompts to Build This: unbound figure "60%" in a build prompt/);
   });
 
   it("never allowlists a market stat's model-written subject (security P2)", () => {
@@ -119,23 +127,22 @@ describe("unbound figures in every section (R10, P1-1)", () => {
     const stat = tampered.evidence.accepted.find((e): e is MarketStatEvidence => e.id === EV.statMeasured.id && e.kind === "market_stat");
     if (!stat) throw new Error("fixture: measured stat missing");
     stat.subject = "AI code review market, already a $9 billion buyer opportunity";
-    const row = `- **${escapeMdxText(marketSignalLabel(EV.statMeasured))}**: ${renderingMdx(EV.statMeasured)} (`;
-    const page = replaceOnce(
-      compiledPage(record),
-      row,
-      `- **${escapeMdxText(marketSignalLabel(stat))}**: ${renderingMdx(stat)} (`,
+    // The subject sits inside the verified rendering (masked as evidence), so it is checked on its own.
+    const page = replaceOnce(compiledPage(record), `- ${renderingMdx(EV.statMeasured)} (`, `- ${renderingMdx(stat)} (`);
+    expect(auditEngineArtifact(pageBody(page), tampered).errors.join("\n")).toMatch(
+      new RegExp(`Market Research: the subject of stat ${EV.statMeasured.id} \\(".*"\\) carries the figure "\\$9 billion"; a stat's subject is never allowlisted`),
     );
-    expect(auditEngineArtifact(pageBody(page), tampered).errors.join("\n")).toMatch(/Market Research: unbound figure "\$9 billion"/);
   });
 });
 
-describe("evidence rows keep the compiler's labels (R10, P3)", () => {
-  it("fails a market signal row relabelled to another subject or metric", async () => {
-    const label = `**${escapeMdxText(marketSignalLabel(EV.statMeasured))}**: ${renderingMdx(EV.statMeasured)}`;
-    const page = replaceOnce(compiledPage(), label, label.replace(escapeMdxText(marketSignalLabel(EV.statMeasured)), "Revenue lost to noisy reviews (annual)"));
-    expect(errorsOf(await auditPage(page))).toMatch(
-      /market signal row at line \d+: label "Revenue lost to noisy reviews \(annual\)" is not the label rendered from its stat \("AI code review market \(market size\)"\)/,
-    );
+describe("evidence rows cannot be relabelled (R7, R10, P3)", () => {
+  it("fails a market signal row whose rendering was edited to another subject or metric", async () => {
+    const rendering = renderingMdx(EV.statMeasured);
+    for (const edited of [rendering.replace("AI code review market", "Revenue lost to noisy reviews"), rendering.replace("market size", "spend")]) {
+      expect(edited).not.toBe(rendering);
+      const page = replaceOnce(compiledPage(), `- ${rendering} (`, `- ${edited} (`);
+      expect(errorsOf(await auditPage(page)), edited).toMatch(/market signal row at line \d+: ".*" is not the rendering of a selected market stat/);
+    }
   });
 });
 

@@ -31,7 +31,7 @@ import { auditEngineArtifact } from "./artifact-audit.ts";
 import { compileResearchRecord, type ManifestEntry } from "./compile.ts";
 import { formatAmount } from "./evidence/amount.ts";
 import type { ResearchRecordV2 } from "./evidence/contract.ts";
-import { ideaHighlights, marketSignalLabel } from "./page-format.ts";
+import { highlightStatLabel, ideaHighlights } from "./page-format.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -100,9 +100,10 @@ describe("manifest highlights are generated from the record (P2-9)", () => {
     expect(highlights?.problemQuote).toBe(EV.quoteHn.excerpt.replace(/\s+/g, " ").trim());
     expect(highlights?.stats[0]).toEqual({
       value: formatAmount(EV.statMeasured.amount),
-      label: `${marketSignalLabel(EV.statMeasured)} in 2025`,
+      label: highlightStatLabel(EV.statMeasured),
       source: EV.statMeasured.sourceTitle,
     });
+    expect(highlights?.stats[0]?.label).toBe("AI code review market (market size) in 2025");
     expect(highlights?.stats.every((s) => s.value.length <= 12)).toBe(true);
     expect(await validateHighlights(highlights)).toEqual([]);
     expect(manifestEntry.provenance.researchMode).toBe("fixture");

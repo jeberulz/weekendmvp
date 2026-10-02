@@ -111,17 +111,16 @@ describe("quotes and their attribution (F2)", () => {
     expect((await auditPage(page)).errors).toEqual([]);
   });
 
-  it("passes legitimate multiline formatting, including a multiline quote joined onto one line", async () => {
-    const page = replaceOnce(
-      compiledPage(),
-      '> "Our bot leaves forty comments per PR\n> and nobody reads any of them anymore."',
-      '> "Our bot leaves forty comments per PR and nobody reads any of them anymore."',
-    );
-    expect((await auditPage(page)).errors).toEqual([]);
-    expect(quoteBlock(EV.quoteForum).split("\n").slice(0, 2)).toEqual([
-      '> "Our bot leaves forty comments per PR',
-      '> and nobody reads any of them anymore."',
-    ]);
+  it("fails a blockquote that joins two accepted sentences of one source into one quote (R8: whole statements, compared strictly)", async () => {
+    // Since R8 a quote is one line of its source, so the S4 multiline-excerpt case cannot occur; whitespace
+    // variants stay presentation (the test above), while joining two statements is a different quote.
+    expect(EV.quoteForum.excerpt).not.toMatch(/\n/);
+    const forumLine = `> "${EV.quoteForum.excerpt}"`;
+    const joined = `> "${EV.quoteForum.excerpt} ${EV.quoteUnselected.excerpt}"`;
+    const errors = errorsOf(await auditPage(replaceOnce(compiledPage(), forumLine, joined)));
+    expect(errors).toMatch(/"Our bot leaves forty comments per PR and nobody reads any of them anymore\. We switched the bot off .*" is not a selected evidence quote/);
+    expect(errors).toMatch(new RegExp(`quote fidelity: selected quote ${EV.quoteForum.id}`));
+    expect(quoteBlock(EV.quoteForum).split("\n")).toHaveLength(3);
   });
 
   it("does not let a repeated quote inflate the distinct verified-quote count", async () => {

@@ -11,7 +11,9 @@
  * Writer text is figure-free (rulings R6 and R10): no digits, number words or
  * double-quoted spans outside evidence tokens. Figures appear only in the
  * proposal slots (tier prices, unit-economics values, Year-One counts and
- * seats) and in evidence.
+ * seats) and in evidence. Source inputs carry the searches that cited them
+ * (`roles`), and every community quote is a whole sentence on its own line
+ * of a community page (ruling R8).
  */
 
 import { createHash } from "node:crypto";
@@ -78,13 +80,13 @@ export const FIXTURE_PAGES = {
     url: "https://news.ycombinator.com/item?id=27515468",
     title: "Ask HN: Is AI code review worth it?",
     roles: ["community"],
-    text: "Comment: We review 12 pull requests a day and the bot comments on every single one of them. Reply: agreed, the rest is noise.",
+    text: "Comment\nWe review 12 pull requests a day and the bot comments on every single one of them.\nReply: agreed, the rest is noise.",
   },
   forum: {
     url: "https://forum.example.com/t/ai-review-noise",
     title: "AI review noise",
     roles: ["community"],
-    text: "Our bot leaves forty comments per PR\nand nobody reads any of them anymore. We switched the bot off for a week and nobody noticed the difference.",
+    text: "Our bot leaves forty comments per PR and nobody reads any of them anymore. We switched the bot off for a week and nobody noticed the difference.",
   },
   lobsters: {
     url: "https://lobste.rs/s/abc123/review_noise",
@@ -217,8 +219,8 @@ function acquisitionInput(pages: ReadonlyArray<FixturePage>): Map<string, Source
     pages.map((p): [string, SourceInput] => [
       p.url,
       p.text === undefined
-        ? { status: "unreadable" }
-        : { status: "read", text: p.text, retrievedAt: FIXTURE_RETRIEVED_AT, textSha256: sha256(p.text) },
+        ? { status: "unreadable", roles: p.roles }
+        : { status: "read", text: p.text, retrievedAt: FIXTURE_RETRIEVED_AT, textSha256: sha256(p.text), roles: p.roles },
     ]),
   );
 }

@@ -20,7 +20,7 @@ import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
 import type { AcceptedEvidence, ResearchRecordV2 } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
 import { renderEvidenceInline } from "./evidence/tokens.ts";
-import { marketSignalLabel, mdLink } from "./page-format.ts";
+import { mdLink } from "./page-format.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -105,16 +105,19 @@ describe("unbound figures in fact-bearing sections (F1 defense)", () => {
     );
   });
 
-  it("fails unbound figures in Market Research prose, row labels and competitor notes", async () => {
+  it("refuses a label added in front of a market signal row: the rendering is the row (R7, R10)", async () => {
+    const row = `- ${shown(EV.statAdoption).mdx} (`;
+    const page = replaceOnce(compiledPage(), row, `- **Adoption, up 300%**: ${shown(EV.statAdoption).mdx} (`);
+    expect(errorsOf(await auditPage(page))).toMatch(
+      /market signal row at line \d+: expected "<evidence rendering> \(\[source title\]\(url\)\)\." with exactly one source link and no other formatting/,
+    );
+  });
+
+  it("fails unbound figures in Market Research prose and competitor notes", async () => {
     const cases: Array<[string, string, RegExp]> = [
       [
         "noisy bots have taught developers to ignore automated comments entirely.",
         "noisy bots have taught developers to ignore automated comments entirely. The market grew 300% last year.",
-        /Market Research: unbound figure "300%"/,
-      ],
-      [
-        `**${escapeMdxText(marketSignalLabel(EV.statAdoption))}**`,
-        "**Developers using AI code review assistants, up 300% (adoption)**",
         /Market Research: unbound figure "300%"/,
       ],
       [

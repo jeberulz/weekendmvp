@@ -679,9 +679,10 @@ an idea-specific schema, number-first unit economics, and the final
 artifact audit against the contract v2 record (engine/records/{slug}.json
 or --record; a legacy v1 record fails with a re-research message). The page
 holds only audited facts (ruling R10):
-  - structure: no JSX, HTML, images, footnotes or link definitions; fenced
-    code only in the build prompts; nothing before ## The Problem or after
-    ## Sources; the proposal and assumption labels stay on the page;
+  - structure: no JSX, HTML, images, footnotes, link definitions or raw
+    evidence tokens; fenced code only in the build prompts; nothing before
+    ## The Problem or after ## Sources; the proposal and assumption labels
+    stay on the page;
   - links: every link targets an evidence source the record uses, with that
     source's title or an evidence rendering as its text; ## Sources lists
     exactly those sources;
@@ -690,13 +691,16 @@ holds only audited facts (ruling R10):
     selected quote appears; ≥2 distinct quotes (a repeated quote counts
     once); any other double-quoted text of three or more words must be an
     accepted quote the record uses;
-  - rows: market signal rows keep the compiler's labels; market and
-    competitor rows show their evidence renderings and sources ("(via host)"
-    on secondary prices); a first-party pricing URL backs one competitor
-    only; competitor notes cite only their own prices; keyword, pricing tier
-    and unit-economics rows print the record exactly;
-  - figures in every section must be linked evidence renderings, evidence
-    rows or record values (in the build prompts: tier prices and includes,
+  - rows: market signal rows are their evidence renderings (which name
+    the stat's subject, metric and period) with their sources; competitor
+    rows show their evidence renderings and sources ("(via host)" on
+    secondary prices); a first-party pricing URL backs one competitor only;
+    competitor notes cite only their own prices; keyword, pricing tier and
+    unit-economics rows print the record exactly; a used stat's subject is
+    figure-free;
+  - figures (digits in any script, number words, percent) in every section
+    must be linked evidence renderings, evidence rows or record values (in
+    the build prompts: tier prices and includes, unit-economics values,
     data-model columns, renderings); a guard, not proof;
   - Year-One Math is recomputed from the record (accounts, per-account
     price, ARR, tier, seats, downside, funnel) with exactly one base and one

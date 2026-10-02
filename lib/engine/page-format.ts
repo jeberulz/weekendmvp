@@ -3,9 +3,12 @@
  * evidence contract §9, rulings R10 and R11). The compiler (compile.ts)
  * renders these lines and the final artifact audit (artifact-audit.ts) reads
  * them back, so both sides live here: a displayed figure is compared with the
- * record exactly, never matched as loose prose. The same goes for the page's
- * evidence set (usedEvidenceIds: what ## Sources lists and what a link may
- * target), the proposal labels and the manifest `highlights` block.
+ * record exactly, never matched as loose prose. The same goes for the market
+ * signal row, the page's evidence set (usedEvidenceIds: what ## Sources
+ * lists and what a link may target), the proposal labels and the manifest
+ * `highlights` block. Record fields are named by the contract's lists
+ * (WRITER_TEXT_FIELDS, WRITER_FIELD_TOKEN_KINDS, NUMERIC_PROPOSAL_FIELDS),
+ * resolved with recordTextsAt.
  *
  * Year-One Math lines (all figures from finance.ts, money in exact cents):
  *   base      **45 × $100/mo = $54,000 ARR** — Crew accounts paying by month 12 (5 seats × $20/developer/month)
@@ -20,9 +23,14 @@
 
 import { formatAmount, formatPriceTerms } from "./evidence/amount.ts";
 import { sourceHostLabel } from "./evidence/citation.ts";
-import type { MarketStatEvidence, ResearchRecordV2 } from "./evidence/contract.ts";
+import {
+  WRITER_FIELD_TOKEN_KINDS,
+  WRITER_TEXT_FIELDS,
+  type MarketStatEvidence,
+  type ResearchRecordV2,
+} from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
-import { evidenceRefs } from "./evidence/tokens.ts";
+import { evidenceRefs, renderEvidenceInline } from "./evidence/tokens.ts";
 import { formatUsdCents } from "./finance.ts";
 import type { KeywordRow } from "./research-record.ts";
 
@@ -144,78 +152,63 @@ export function keywordRowMdx(row: KeywordRow): string {
   return `- **${escapeMdxText(row.term)}** — ${row.volume}/mo, competition ${row.competition}, CPC $${row.cpc.toFixed(2)}`;
 }
 
-const METRIC_LABEL: Record<MarketStatEvidence["metric"], string> = {
-  market_size: "market size",
-  growth_rate: "growth rate",
-  spend: "spend",
-  user_count: "users",
-  adoption: "adoption",
-  other: "",
-};
-
 /**
- * The bold label of a market signal row, rendered from the stat itself:
- * "AI code review market (market size)". The auditor requires exactly this
- * label (no relabelling, ruling R10) and still runs the figure guard on it:
- * the subject is model-written, so its figures are never allowlisted.
+ * A market signal row, written by the compiler and read back by the audit:
+ * `- <renderEvidenceInline(stat)> ([source title](url)).` The rendering
+ * already names the stat's subject, metric and period (ruling R7), so the
+ * row has no label of its own: nothing on it can be relabelled, and a
+ * changed subject or metric is a changed rendering.
  */
-export function marketSignalLabel(item: MarketStatEvidence): string {
-  const subject = item.subject.charAt(0).toUpperCase() + item.subject.slice(1);
-  const metric = METRIC_LABEL[item.metric];
-  return metric ? `${subject} (${metric})` : subject;
+export function marketSignalRow(item: MarketStatEvidence): string {
+  return `- ${escapeMdxText(renderEvidenceInline(item))} (${mdLink(item.sourceTitle, item.sourceUrl)}).`;
 }
 
 // ---------------------------------------------------------------------------
 // The record's evidence on the page
 // ---------------------------------------------------------------------------
 
-/** One record text the compiler prints, with its record path. */
+/** One record text at a concrete path ("competitors[2].notes"). */
 export type RecordText = { path: string; text: string };
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
- * Every record text in which the compiler expands `[[ev:<id>]]` tokens: as
- * evidence links in prose, or as plain renderings inside the build-prompt
- * fences. The compiler refuses a token anywhere else (names, titles, step
- * titles, funnel stages), so these texts plus the selected ids are exactly
- * the evidence a page uses.
+ * The strings of a record at a contract field path such as
+ * "competitors[].notes" or "goToMarket.channels[]" (`[]` walks every array
+ * element). The contract's field lists (WRITER_TEXT_FIELDS,
+ * NUMERIC_PROPOSAL_FIELDS) are resolved with this, so neither the compiler
+ * nor the auditor keeps its own list of record fields. Values that are not
+ * strings are skipped.
  */
-export function expandedRecordTexts(record: ResearchRecordV2): RecordText[] {
-  const ed = record.editorial;
-  const out: RecordText[] = [];
-  const add = (path: string, text: string | undefined) => {
-    if (text !== undefined) out.push({ path, text });
-  };
-  add("editorial.problemNarrative", ed?.problemNarrative);
-  add("community.summary", record.community.summary);
-  add("editorial.solutionNarrative", ed?.solutionNarrative);
-  record.howItWorks.forEach((step, i) => add(`howItWorks[${i}]`, step));
-  add("editorial.dontBuildYet", ed?.dontBuildYet);
-  add("market.summary", record.market.summary);
-  add("whyNow", record.whyNow);
-  record.competitors.forEach((c, i) => add(`competitors[${i}].notes`, c.notes));
-  add("editorial.competitiveNarrative", ed?.competitiveNarrative);
-  add("goToMarket.positioning", record.goToMarket.positioning);
-  add("goToMarket.pricingNotes", record.goToMarket.pricingNotes);
-  (ed?.pricingTiers ?? []).forEach((t, i) => {
-    add(`editorial.pricingTiers[${i}].price`, t.price);
-    add(`editorial.pricingTiers[${i}].includes`, t.includes);
-  });
-  (ed?.unitEconomics ?? []).forEach((u, i) => {
-    add(`editorial.unitEconomics[${i}].value`, u.value);
-    add(`editorial.unitEconomics[${i}].label`, u.label);
-  });
-  add("editorial.yearOne.assumptions", ed?.yearOne?.assumptions);
-  record.goToMarket.channels.forEach((c, i) => add(`goToMarket.channels[${i}]`, c));
-  add("editorial.stackNotes", ed?.stackNotes);
-  add("editorial.brandBrief", ed?.brandBrief);
-  (ed?.dataModel ?? []).forEach((t, i) => add(`editorial.dataModel[${i}].columns`, t.columns));
-  return out;
+export function recordTextsAt(record: ResearchRecordV2, field: string): RecordText[] {
+  let level: Array<{ path: string; value: unknown }> = [{ path: "", value: record }];
+  for (const part of field.split(".")) {
+    const many = part.endsWith("[]");
+    const key = many ? part.slice(0, -2) : part;
+    const next: Array<{ path: string; value: unknown }> = [];
+    for (const { path, value } of level) {
+      if (!isPlainRecord(value)) continue;
+      const child = value[key];
+      const at = path === "" ? key : `${path}.${key}`;
+      if (!many) {
+        if (child !== undefined) next.push({ path: at, value: child });
+      } else if (Array.isArray(child)) {
+        child.forEach((element: unknown, i: number) => next.push({ path: `${at}[${i}]`, value: element }));
+      }
+    }
+    level = next;
+  }
+  return level.flatMap(({ path, value }) => (typeof value === "string" ? [{ path, text: value }] : []));
 }
 
 /**
  * The evidence ids a compiled page uses: the selected quotes, stats and
- * prices plus every token in expandedRecordTexts. ## Sources lists exactly
- * their sources, and every link on the page must target one of them.
+ * prices plus every token in a writer text field that may cite evidence
+ * (WRITER_FIELD_TOKEN_KINDS, ruling R7; the record parser refuses a token in
+ * any other field). ## Sources lists exactly their sources, and every link
+ * on the page must target one of them.
  */
 export function usedEvidenceIds(record: ResearchRecordV2): Set<string> {
   const ids = new Set<string>([
@@ -223,8 +216,11 @@ export function usedEvidenceIds(record: ResearchRecordV2): Set<string> {
     ...record.market.statIds,
     ...record.competitors.flatMap((c) => c.priceIds),
   ]);
-  for (const { text } of expandedRecordTexts(record)) {
-    for (const id of evidenceRefs(text)) ids.add(id);
+  for (const field of WRITER_TEXT_FIELDS) {
+    if (WRITER_FIELD_TOKEN_KINDS[field].length === 0) continue;
+    for (const { text } of recordTextsAt(record, field)) {
+      for (const id of evidenceRefs(text)) ids.add(id);
+    }
   }
   return ids;
 }
@@ -260,11 +256,27 @@ function collapse(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-/** "in 2025", "projected for 2034", "projected" or "": a stat's period in words. */
-function statPeriodWords(item: MarketStatEvidence): string {
+const METRIC_WORDS: Record<MarketStatEvidence["metric"], string | null> = {
+  market_size: "market size",
+  growth_rate: "growth rate",
+  spend: "spend",
+  user_count: "user count",
+  adoption: "adoption",
+  other: null,
+};
+
+/**
+ * The label a stat gets in the homepage highlights, which show the amount
+ * separately: subject, metric and period in words ("AI code review market
+ * (market size) in 2025", "… (market size) projected for 2034"). Built from
+ * the stat's typed fields; the subject is figure-free (ruling R9).
+ */
+export function highlightStatLabel(item: MarketStatEvidence): string {
+  const subject = item.subject.charAt(0).toUpperCase() + item.subject.slice(1);
+  const metric = METRIC_WORDS[item.metric];
   const { kind, year, toYear } = item.period;
-  if (kind === "projected") return toYear !== undefined ? `projected for ${toYear}` : "projected";
-  return year !== undefined ? `in ${year}` : "";
+  const period = kind === "projected" ? (toYear !== undefined ? `projected for ${toYear}` : "projected") : year !== undefined ? `in ${year}` : "";
+  return collapse(`${subject}${metric ? ` (${metric})` : ""} ${period}`);
 }
 
 /**
@@ -274,8 +286,8 @@ function statPeriodWords(item: MarketStatEvidence): string {
  *   - problemQuote: the first selected quote (community.quoteIds order) that
  *     fits, word for word (whitespace collapsed);
  *   - stats: up to three selected stats whose canonical amount (formatAmount)
- *     fits the value slot; the label is the market signal label plus the
- *     stat's period, the source its source title (or host) when it fits;
+ *     fits the value slot; the label is highlightStatLabel (subject, metric,
+ *     period), the source its source title (or host) when it fits;
  *   - competitors: each competitor's first FIRST-PARTY price whose canonical
  *     terms (formatPriceTerms) fit the price slot, only when at least three
  *     competitors have one. A secondary price would lose its "(via host)"
@@ -302,7 +314,7 @@ export function ideaHighlights(record: ResearchRecordV2): IdeaHighlights | undef
     const item = byId.get(id);
     if (item?.kind !== "market_stat") continue;
     const value = formatAmount(item.amount);
-    const label = collapse(`${marketSignalLabel(item)} ${statPeriodWords(item)}`);
+    const label = highlightStatLabel(item);
     if (value.length > L.statValue || label.length === 0 || label.length > L.statLabel) continue;
     const title = collapse(item.sourceTitle);
     const host = sourceHostLabel(item.sourceUrl);
