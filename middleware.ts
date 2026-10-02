@@ -1,6 +1,8 @@
 import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
+import { api } from "./convex/_generated/api";
 import {
   canonicalPath,
   isProdApexHost,
@@ -15,6 +17,7 @@ import {
   isSensitiveAuthPath,
 } from "./lib/auth-return";
 import { SESSION_HINT_COOKIE } from "./lib/auth-session-cookie";
+import { isOperatorRequestPath } from "./lib/private-paths";
 import { isKnownIdeaSlug } from "./lib/idea-slugs.generated";
 import { classifyHost, tenantHostForSlug } from "./lib/tenant-host";
 import { checkTenantSitePublished } from "./lib/tenant-publish-check";
@@ -157,6 +160,70 @@ export function applySensitiveAuthResponseHeaders(
   return response;
 }
 
+/**
+ * WP46-E4e. Operator surfaces are never cached, indexed, sent as a referrer or
+ * framed: their URLs carry private record ids, and a signed-in workspace inside
+ * another page invites clickjacking.
+ */
+export function applyOperatorResponseHeaders(pathname: string, response: Response) {
+  if (isOperatorRequestPath(pathname)) {
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  }
+  return response;
+}
+
+/**
+ * The local demo (development only, exact opt-in) has no accounts; its pages
+ * gate themselves. A production build inlines NODE_ENV, so this is always
+ * false there and no deployable route can skip the check below.
+ */
+function editorialLocalDemo() {
+  return process.env.NODE_ENV !== "production" && process.env.EDITORIAL_FIXTURE_MODE === "local-demo";
+}
+
+/** A backend that has not answered by then is treated as unable to vouch. */
+export const EDITORIAL_GATE_TIMEOUT_MS = 3_000;
+
+/** Only the bound super-admin passes; anything the backend cannot confirm, or not in time, is refused. */
+export async function editorialAccessAllowed(token: string | undefined): Promise<boolean> {
+  if (editorialLocalDemo()) return true;
+  if (!token) return false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const timedOut = new Promise<null>((resolve) => {
+      timer = setTimeout(() => resolve(null), EDITORIAL_GATE_TIMEOUT_MS);
+    });
+    const session = await Promise.race([
+      fetchQuery(api.editorial.reads.session, { nowMs: Date.now() }, { token }),
+      timedOut,
+    ]);
+    // Only an explicit grant passes; a missing or unexpected shape is a refusal.
+    return session !== null && session.signedIn === true && typeof session.editor === "object" && session.editor !== null;
+  } catch {
+    return false;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+/**
+ * A real 404 rendered exactly like any unknown path. `notFound()` inside the
+ * dynamic editorial pages would be soft under Cache Components (PPR flushes
+ * a 200 shell first), so the refusal has to happen here. The target is a
+ * neutral, nonexistent path: Next.js can expose a rewrite target in response
+ * headers (`x-middleware-rewrite` on `next start`, `x-nextjs-rewritten-path`
+ * for RSC requests), so the body is identical but those markers are not.
+ */
+export const EDITORIAL_NOT_FOUND_PATH = "/__not-found";
+
+function editorialNotFound(request: NextRequest) {
+  return NextResponse.rewrite(new URL(EDITORIAL_NOT_FOUND_PATH, request.url));
+}
+
 /** Convex Auth's session JWT cookie; unprefixed on localhost only. */
 const CONVEX_AUTH_JWT_COOKIES = ["__Host-__convexAuthJWT", "__convexAuthJWT"];
 
@@ -203,6 +270,13 @@ export function syncSessionHintCookie(
 const platformAuthMiddleware = convexAuthNextjsMiddleware(
   async (request, { convexAuth }) => {
     const pathname = request.nextUrl.pathname;
+    // WP46-E4e. Pages, RSC and segment requests and server actions anywhere
+    // under /admin pass this gate; the pages and actions check again.
+    if (isOperatorRequestPath(pathname)) {
+      return (await editorialAccessAllowed(await convexAuth.getToken()))
+        ? NextResponse.next({ request: { headers: request.headers } })
+        : editorialNotFound(request);
+    }
     if (!isAuthManagedPath(pathname)) {
       return NextResponse.next({ request: { headers: request.headers } });
     }
@@ -299,9 +373,10 @@ export async function middleware(
   // auth endpoints.
   const canonical = canonicalRedirect(request);
   if (canonical !== null) {
-    return applySensitiveAuthResponseHeaders(
+    // The Location of a redirect under /admin repeats the private path.
+    return applyOperatorResponseHeaders(
       request.nextUrl.pathname,
-      canonical,
+      applySensitiveAuthResponseHeaders(request.nextUrl.pathname, canonical),
     );
   }
 
@@ -323,9 +398,12 @@ export async function middleware(
   }
 
   const response = await platformAuthMiddleware(request, event);
-  return applySensitiveAuthResponseHeaders(
+  return applyOperatorResponseHeaders(
     request.nextUrl.pathname,
-    syncSessionHintCookie(request, response ?? NextResponse.next()),
+    applySensitiveAuthResponseHeaders(
+      request.nextUrl.pathname,
+      syncSessionHintCookie(request, response ?? NextResponse.next()),
+    ),
   );
 }
 
@@ -334,6 +412,10 @@ export const config = {
   // resembles a static asset. Ordinary public/internal assets remain skipped.
   matcher: [
     "/dashboard/:path*",
+    // WP46-E4f. The operator area too: a final segment like `x.js` must not
+    // skip the editorial gate and its headers.
+    "/admin",
+    "/admin/:path*",
     "/robots.txt",
     "/sitemap.xml",
     // `public/llms.txt` is a static file, so the extension exclusion below

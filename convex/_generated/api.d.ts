@@ -8,11 +8,21 @@
  * @module
  */
 
+import type * as admin_superAdmin from "../admin/superAdmin.js";
 import type * as articles from "../articles.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as authUser from "../authUser.js";
 import type * as currentUser from "../currentUser.js";
+import type * as editorial_args from "../editorial/args.js";
+import type * as editorial_audit from "../editorial/audit.js";
+import type * as editorial_commands from "../editorial/commands.js";
+import type * as editorial_ids from "../editorial/ids.js";
+import type * as editorial_reads from "../editorial/reads.js";
+import type * as editorial_service from "../editorial/service.js";
+import type * as editorial_session from "../editorial/session.js";
+import type * as editorial_store from "../editorial/store.js";
+import type * as editorial_validators from "../editorial/validators.js";
 import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
 import type * as newsletter from "../newsletter.js";
@@ -74,11 +84,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/superAdmin": typeof admin_superAdmin;
   articles: typeof articles;
   auth: typeof auth;
   authEmail: typeof authEmail;
   authUser: typeof authUser;
   currentUser: typeof currentUser;
+  "editorial/args": typeof editorial_args;
+  "editorial/audit": typeof editorial_audit;
+  "editorial/commands": typeof editorial_commands;
+  "editorial/ids": typeof editorial_ids;
+  "editorial/reads": typeof editorial_reads;
+  "editorial/service": typeof editorial_service;
+  "editorial/session": typeof editorial_session;
+  "editorial/store": typeof editorial_store;
+  "editorial/validators": typeof editorial_validators;
   http: typeof http;
   ideas: typeof ideas;
   newsletter: typeof newsletter;

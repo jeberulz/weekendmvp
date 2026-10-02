@@ -1,6 +1,22 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
+import {
+  approvalRecordValidator,
+  attestationRecordValidator,
+  auditRecordValidator,
+  flagRecordValidator,
+  ideaRecordValidator,
+  ideaSummaryValidator,
+  idempotencyValidator,
+  noteRecordValidator,
+  releaseRecordValidator,
+  resolutionRecordValidator,
+  revisionRecordValidator,
+  settingsValidator,
+  slugValidator,
+  submissionKeyValidator,
+} from "./editorial/validators";
 import { previewTemplateValidator } from "./platform/preview/renderSpec";
 import {
   auditActorValidator,
@@ -632,4 +648,67 @@ export default defineSchema({
     .index("by_tokenHash", ["tokenHash"])
     .index("by_claimedByUserId_and_createdAt", ["claimedByUserId", "createdAt"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  /**
+   * WP46-E4a, additive. The editorial subset of WP38: the one `super_admin`
+   * binding (owner ruling 2026-08-06). Written only by the internal
+   * bootstrap/revoke mutations in `convex/admin/superAdmin.ts`, which an
+   * operator runs with deployment credentials; no public function writes it.
+   * Authorization reads the bound user ID, never an email. Revocation keeps
+   * the row.
+   */
+  super_admins: defineTable({
+    userId: v.id("users"),
+    role: v.literal("super_admin"),
+    boundAt: v.number(),
+    boundVia: v.literal("deployment_bootstrap"),
+    revokedAt: v.optional(v.number()),
+    revokedReason: v.optional(v.string()),
+  })
+    // Active bindings are the rows without `revokedAt`; history never hides them.
+    .index("by_userId_and_revokedAt", ["userId", "revokedAt"])
+    .index("by_role_and_revokedAt", ["role", "revokedAt"]),
+
+  /**
+   * WP46-E4a, additive. Append-only editorial activity: commands, refusals,
+   * denied attempts and capability changes. Never holds bodies, tokens or
+   * contact details. Ordered by `_creationTime` within each index.
+   */
+  editorial_audit: defineTable(auditRecordValidator)
+    .index("by_ideaId", ["ideaId"])
+    .index("by_outcome", ["outcome"])
+    .index("by_ideaId_and_outcome", ["ideaId", "outcome"]),
+
+  /*
+   * WP46-E4c, additive. The private editorial store. Only the functions in
+   * `convex/editorial/**` read or write these tables, and every public one
+   * re-checks the super-admin binding first. None of it is public content:
+   * the public `ideas` table and the MDX files are untouched, and nothing here
+   * changes a public page until the release worker exists (WP46-E6).
+   */
+  editorial_settings: defineTable(settingsValidator).index("by_key", ["key"]),
+
+  editorial_ideas: defineTable(ideaRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_lifecycle", ["lifecycle"]),
+
+  editorial_revisions: defineTable(revisionRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_ideaId_and_number", ["ideaId", "number"]),
+
+  editorial_attestations: defineTable(attestationRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_flags: defineTable(flagRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_resolutions: defineTable(resolutionRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_notes: defineTable(noteRecordValidator).index("by_ideaId", ["ideaId"]),
+  editorial_approvals: defineTable(approvalRecordValidator).index("by_ideaId", ["ideaId"]),
+
+  editorial_releases: defineTable(releaseRecordValidator)
+    .index("by_key", ["key"])
+    .index("by_ideaId", ["ideaId"])
+    .index("by_state", ["state"]),
+
+  editorial_idempotency: defineTable(idempotencyValidator).index("by_storeKey", ["storeKey"]),
+  editorial_submissions: defineTable(submissionKeyValidator).index("by_submissionKey", ["submissionKey"]),
+  editorial_slugs: defineTable(slugValidator).index("by_slug", ["slug"]),
+  editorial_idea_summaries: defineTable(ideaSummaryValidator).index("by_ideaKey", ["ideaKey"]),
 });

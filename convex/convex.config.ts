@@ -13,6 +13,12 @@ const app = defineApp({
     // local and CI deployments keep booting; generation fails closed when it
     // is unset rather than running unprotected.
     PLATFORM_PREVIEW_BRIDGE_SECRET: v.optional(v.string()),
+    // WP46-E4a. The owner's sign-in email, read only by the internal
+    // `admin/superAdmin:bootstrapOwner` mutation to bind the super-admin
+    // capability to that verified account's user ID. Deployment configuration
+    // only — never committed, never compared at request time. Optional: with
+    // it unset, bootstrap refuses and the editorial workspace stays closed.
+    SUPER_ADMIN_BOOTSTRAP_EMAIL: v.optional(v.string()),
   },
 });
 

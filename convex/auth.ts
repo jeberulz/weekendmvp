@@ -2,6 +2,7 @@ import Google from "@auth/core/providers/google";
 import { convexAuth, type Tokens } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { action, type ActionCtx } from "./_generated/server";
+import { isPrivateReturnPath } from "../lib/private-paths";
 import { createOrUpdateAuthUser } from "./authUser";
 import {
   emailMagicLinkProvider,
@@ -12,9 +13,12 @@ import { validatedSiteOrigin } from "./siteUrl";
 const AUTH_REDIRECT_ORIGIN = "https://auth.weekendmvp.invalid";
 const DEFAULT_AUTH_REDIRECT = "/dashboard";
 
-/** Bound a same-origin path to the private dashboard namespace. */
+/**
+ * Bound a same-origin path to the private namespaces: the member dashboard
+ * and the editorial workspace (WP46-E4e, its "confirm it's you" sign-in).
+ */
 function safeDashboardTarget(pathname: string, search: string, hash: string) {
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
+  if (isPrivateReturnPath(pathname)) {
     return `${pathname}${search}${hash}`;
   }
   return null;
