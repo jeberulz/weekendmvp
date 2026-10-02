@@ -8,6 +8,7 @@ import type { Id } from "./_generated/dataModel";
 import {
   AUTH_ACCOUNT_COLLISION_MESSAGE,
   createOrUpdateAuthUser,
+  googleProfile,
   normalizeAuthEmail,
 } from "./authUser";
 import {
@@ -160,6 +161,71 @@ describe("Convex Auth user compatibility", () => {
       });
       expect(user?.emailVerificationTime).toEqual(expect.any(Number));
     });
+  });
+});
+
+describe("Google profile (verified email kept)", () => {
+  const claims = {
+    sub: "google-sub-123",
+    email: "Owner@Example.test",
+    email_verified: true,
+    name: "Owner Name",
+    picture: "https://example.test/owner.png",
+  };
+
+  test("maps the account id, contact fields and Google's verified-email claim", () => {
+    expect(googleProfile(claims)).toEqual({
+      id: "google-sub-123",
+      email: "Owner@Example.test",
+      name: "Owner Name",
+      image: "https://example.test/owner.png",
+      emailVerified: true,
+    });
+    expect(googleProfile({ ...claims, email_verified: "true" }).emailVerified).toBe(true);
+  });
+
+  test("an unverified or missing claim never counts as verified", () => {
+    expect(googleProfile({ ...claims, email_verified: false }).emailVerified).toBe(false);
+    expect(googleProfile({ ...claims, email_verified: "yes" }).emailVerified).toBe(false);
+    const { email_verified: _omitted, ...withoutClaim } = claims;
+    void _omitted;
+    expect(googleProfile(withoutClaim).emailVerified).toBe(false);
+  });
+
+  test("refuses a profile without an account id", () => {
+    expect(() => googleProfile({ ...claims, sub: "" })).toThrow();
+    const { sub: _omitted, ...withoutSub } = claims;
+    void _omitted;
+    expect(() => googleProfile(withoutSub)).toThrow();
+  });
+
+  test("a verified Google sign-in records the verified email, new or returning", async () => {
+    const t = convexTest(schema, modules);
+    await t.run(async (ctx) => {
+      const { id: _id, ...profile } = googleProfile(claims);
+      void _id;
+      const created = await createOrUpdateAuthUser(ctx, { existingUserId: null, type: "oauth", provider: googleProvider, profile });
+      expect((await ctx.db.get("users", created))?.emailVerificationTime).toEqual(expect.any(Number));
+
+      // A Google account created before this change signs in again.
+      const earlier = await ctx.db.insert("users", { email: "earlier@example.test", name: "Earlier" });
+      const { id: _again, ...again } = googleProfile({ ...claims, sub: "google-sub-456", email: "earlier@example.test" });
+      void _again;
+      await createOrUpdateAuthUser(ctx, { existingUserId: earlier, type: "oauth", provider: googleProvider, profile: again });
+      expect((await ctx.db.get("users", earlier))?.emailVerificationTime).toEqual(expect.any(Number));
+
+      // An unverified Google address stays unverified.
+      const { id: _unverified, ...unverified } = googleProfile({ ...claims, sub: "google-sub-789", email: "plain@example.test", email_verified: false });
+      void _unverified;
+      const plain = await createOrUpdateAuthUser(ctx, { existingUserId: null, type: "oauth", provider: googleProvider, profile: unverified });
+      expect((await ctx.db.get("users", plain))?.emailVerificationTime).toBeUndefined();
+    });
+  });
+
+  test("the Google provider is configured with this mapping", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(new URL("./auth.ts", import.meta.url), "utf8");
+    expect(source).toMatch(/Google\(\{[\s\S]*?profile: googleProfile,[\s\S]*?\}\)/);
   });
 });
 

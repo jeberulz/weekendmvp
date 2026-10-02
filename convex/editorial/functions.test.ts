@@ -36,15 +36,15 @@ function value<T>(result: CommandResult<T>): T {
 }
 
 /**
- * An account as Convex Auth leaves it. Only email-link sign-in records a
- * verified email; the site's Google sign-in does not keep Google's flag, so a
- * Google-only account is never verified (and can never be bound).
+ * An account as Convex Auth leaves it. Email-link sign-in and a Google
+ * sign-in whose address Google verified both record a verified email; an
+ * account without one can never be bound.
  */
-async function member(t: TestConvex<typeof schema>, email: string, provider = "email"): Promise<Member> {
+async function member(t: TestConvex<typeof schema>, email: string, provider = "email", verified = true): Promise<Member> {
   return await t.run(async (ctx) => {
     const userId = await ctx.db.insert("users", {
       email,
-      ...(provider === "email" ? { emailVerificationTime: 1 } : {}),
+      ...(verified ? { emailVerificationTime: 1 } : {}),
       name: "Owner Name",
     });
     await ctx.db.insert("authAccounts", { userId, provider, providerAccountId: `${provider}-${email}` });
@@ -213,15 +213,21 @@ describe("who may use the workspace", () => {
     expect(denied[1].ideaId).toBe(ideaId);
   });
 
-  test("a Google-only account is never verified, so bootstrap refuses it", async () => {
+  test("a Google account binds once Google's verified email is recorded, and not before", async () => {
     vi.stubEnv("SUPER_ADMIN_BOOTSTRAP_EMAIL", "google-owner@example.test");
     const t = convexTest(schema, modules);
     registerRateLimiter(t);
-    await member(t, "google-owner@example.test", "google");
+    // Signed in before the Google mapping kept the verified-email claim.
+    const owner = await member(t, "google-owner@example.test", "google", false);
     expect(await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).toEqual({
       outcome: "refused",
       reason: "no_verified_account",
     });
+    // The next Google sign-in records it; bootstrap then binds that account.
+    await t.run(async (ctx) => ctx.db.patch("users", owner.userId, { emailVerificationTime: 2 }));
+    expect((await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).outcome).toBe("bound");
+    const mine = await as(t, owner).query(api.editorial.reads.session, { nowMs: Date.now() });
+    expect(mine.editor).toMatchObject({ signInMethod: "google" });
   });
 
   test("forged identities are anonymous, and revocation ends access at the next request", async () => {

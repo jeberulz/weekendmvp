@@ -26,6 +26,27 @@ function optionalString(value: unknown) {
 }
 
 /**
+ * Google's OpenID claims as the profile Convex Auth hands to
+ * `createOrUpdateAuthUser`. Convex Auth's default mapping drops Google's
+ * `email_verified`, so a Google account never recorded a verified email and
+ * could not be bound as the editorial super-admin (WP46). Google signs that
+ * claim; only an explicit `true` counts. The account id stays `sub`, as before,
+ * and accounts are still never linked across providers (see below).
+ */
+export function googleProfile(claims: Record<string, unknown>) {
+  if (typeof claims.sub !== "string" || claims.sub === "") {
+    throw new Error("Unable to complete sign-in.");
+  }
+  return {
+    id: claims.sub,
+    ...(typeof claims.name === "string" ? { name: claims.name } : {}),
+    ...(typeof claims.email === "string" ? { email: claims.email } : {}),
+    ...(typeof claims.picture === "string" ? { image: claims.picture } : {}),
+    emailVerified: claims.email_verified === true || claims.email_verified === "true",
+  };
+}
+
+/**
  * Normalize every new auth-owned email before lookup and storage. WP21's
  * production inventory found no legacy users, so no email backfill is needed;
  * keeping the legacy field optional still preserves compatibility on rollout.

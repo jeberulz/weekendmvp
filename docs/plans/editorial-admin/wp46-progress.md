@@ -269,3 +269,18 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
     - Public visitors who never touch `/admin` are unaffected.
     - Structure guard added. It supersedes the "found, not fixed" note in the E4f entry.
   - **Google-only owners cannot be bootstrapped.** Not changed: mapping Google's verified-email flag changes the shared sign-in code for every customer, so it stays the owner's decision (runbook and contract say so).
+
+## 2026-10-02 - WP46-E4g Google accounts can own the workspace
+
+- Production after PR #92: `bindingStatus` read `configured: true, activeBindings: 0`. The editorial activity log showed the owner's bootstrap refused with `NO_VERIFIED_ACCOUNT` at 15:37:41 UTC; the owner signs in with Google. Both checks were read-only.
+- Owner instruction: "make the change so Google works".
+- Cause: Convex Auth's default OIDC profile drops Google's `email_verified` claim, so `createOrUpdateAuthUser` never set `emailVerificationTime` for Google accounts, and bootstrap requires it.
+- Change:
+  - `convex/authUser.ts` `googleProfile` maps Google's claims: `id` from `sub`, as before, plus email, name and picture, and `emailVerified` only when Google says `true`. `convex/auth.ts` passes it to the Google provider.
+  - The only readers of `emailVerificationTime` are the auth callback, which writes it, and the bootstrap, which requires it, so no customer-facing behaviour changes.
+  - Accounts are still never linked across providers (custom callback; existing collision tests unchanged).
+  - Convex Auth also stores the verified address on the Google account row, as it does for email links.
+- Rollout: deploy Convex, then sign out and sign in with Google once (an existing Google account records the flag at its next sign-in), then run `admin/superAdmin:bootstrapOwner --prod` again.
+- Checks: `convex/authUser.test.ts` 36 tests (5 new). The bootstrap test now covers a Google account refused before the flag and bound after it.
+  - Mutation check: forcing `emailVerified` to false turned the mapping and sign-in tests red; restored with `cmp`, green again.
+- Docs: runbook, contract (Who, strong authentication) and stories (E4g).

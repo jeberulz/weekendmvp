@@ -92,6 +92,8 @@ Commands live in [local-demo.md](local-demo.md) until a package-script merge win
     - `/admin/**` responses are `private, no-store`, `noindex, nofollow` and `no-referrer`; signed-out visitors and accounts without the capability get a real 404 from middleware; consented analytics never load on `/admin`. Strong authentication is a fresh sign-in (session created within 10 minutes) through the account's own provider; the live "Confirm it's you" step starts that sign-in and returns to the editorial page.
   - [x] `WP46-E4f` - Denial matrix, production probe and review
     - Every public editorial function denies anonymous, customer and revoked principals; the production probe covers live-mode routes and actions without a session; independent security review; docs and runbook.
+  - [x] `WP46-E4g` - Google accounts can own the workspace (owner request 2026-10-02)
+    - The Google provider maps Google's signed `email_verified` claim into the profile, so a Google sign-in records a verified email and the super-admin bootstrap accepts it. Only an explicit `true` counts; the account id stays `sub`; accounts are still never linked across providers. Tests: claim mapping, new and returning Google sign-ins, unverified addresses, bootstrap before and after the flag is recorded.
 
 - [ ] `WP46-E5` - Engine and legacy bridge — **blocked: needs WP45 contract freeze and E4**
   - Map WP45 v2 records/checks/receipts to Editorial DTO v1, authenticated ingestion, fixture-mode rejection, read-only import inventory and private import adapter.
