@@ -18,7 +18,7 @@ import { compileResearchRecord, type ManifestEntry } from "../../lib/engine/comp
 import { escapeMdxText } from "../../lib/engine/evidence/quote";
 import { extractIdea } from "../../lib/home/extract";
 import { applyHighlights, ideaHomeExtract, readHighlights } from "../../lib/home/highlights";
-import { isEngineIdea, isFeatureReady } from "../../lib/home/library";
+import { isEngineIdea, isFeatureReady, newestRows } from "../../lib/home/library";
 import { plainText } from "../../lib/home/text";
 import type { ManifestIdea } from "../../lib/home/types";
 
@@ -77,13 +77,22 @@ describe("engine rows use generated highlights only (R15, P2-E)", () => {
     expect(isFeatureReady(row, bare, true)).toBe(false);
   });
 
-  test("an engine row can be featured without competitor and tier tiles, a handwritten row cannot", () => {
+  test("an engine row without pricing tiers is not feature-ready (WP42 live-data ruling), yet the Index still lists it", () => {
     const { body, row } = compiledEngineIdea();
-    const shown = ideaHomeExtract({ ...row, provenance: { ...row.provenance, citations: 9 } }, body);
-    const ready = { ...shown, stack: ["a", "b", "c"], how: ["a", "b", "c"] };
-    expect(isFeatureReady({ ...row, provenance: { citations: 9 } }, ready, true)).toBe(true);
-    const handwritten: ManifestIdea = { slug: "handwritten", title: "Handwritten", source: "mode-b:backfill", provenance: { citations: 9 } };
-    expect(isFeatureReady(handwritten, ready, true)).toBe(false);
+    const sourced = { ...row, provenance: { citations: 9 } };
+    const competitors = [
+      { name: "Graphite", price: "$40/user/month" },
+      { name: "Linear", price: "$8/user/month" },
+      { name: "Height", price: "$9/user/month" },
+    ];
+    // Every other tile complete, three competitor prices included: no tiers, so not in the weekly pool.
+    const shown = ideaHomeExtract({ ...sourced, highlights: { ...readHighlights(row.highlights), competitors } }, body);
+    const complete = { ...shown, stack: ["a", "b", "c"], how: ["a", "b", "c"] };
+    expect(complete.tiers).toEqual([]);
+    expect(isFeatureReady(sourced, complete, true)).toBe(false);
+    // The pool rule is the same for every source: with a tier the same tiles would qualify.
+    expect(isFeatureReady(sourced, { ...complete, tiers: [{ name: "Solo", price: "$12/month" }] }, true)).toBe(true);
+    expect(newestRows([sourced], () => true).map((r) => r.slug)).toEqual([row.slug]);
   });
 
   test("a handwritten row keeps the MDX fallback, and curated highlights still win", () => {
