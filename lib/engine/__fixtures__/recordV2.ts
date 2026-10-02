@@ -80,7 +80,8 @@ export const FIXTURE_PAGES = {
     url: "https://news.ycombinator.com/item?id=27515468",
     title: "Ask HN: Is AI code review worth it?",
     roles: ["community"],
-    text: "Comment\nWe review 12 pull requests a day and the bot comments on every single one of them.\nReply: agreed, the rest is noise.",
+    // Comments joined by blank lines, as the source reader joins HN comment bodies (R14).
+    text: "Comment\n\nWe review 12 pull requests a day and the bot comments on every single one of them.\n\nReply: agreed, the rest is noise.",
   },
   forum: {
     url: "https://forum.example.com/t/ai-review-noise",
