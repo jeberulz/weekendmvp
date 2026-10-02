@@ -31,12 +31,12 @@ import { CompileError, compileResearchRecord, GENERIC_SETUP_TABLE_NAMES, quoteBl
 import { writeCompiledIdea } from "./compile-write.ts";
 import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
 import { canonicalSourceUrl, sourceHostLabel } from "./evidence/citation.ts";
-import type { AcceptedEvidence, CompetitorPriceEvidence, EditorialFieldsV2, ResearchRecordV2 } from "./evidence/contract.ts";
+import { WRITER_FIELD_TOKEN_KINDS, type AcceptedEvidence, type CompetitorPriceEvidence, type EditorialFieldsV2, type ResearchRecordV2, type WriterTextField } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
 import { findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
 import {
   HOW_IT_WORKS_LABEL,
-  marketSignalLabel,
+  marketSignalRow,
   mdLink,
   promptHeadingText,
   proposalLabels,
@@ -115,14 +115,17 @@ describe("compileResearchRecord (contract v2)", () => {
     for (const quote of [EV.quoteHn, EV.quoteForum, EV.quoteLobsters]) expect(compileFixture().mdx).toContain(`> "${escapeMdxText(quote.excerpt)}"\n>`);
   });
 
-  it("renders market signal rows from the accepted stats and their sources", () => {
+  it("renders market signal rows from the accepted stats and their sources, with no label of their own", () => {
     const { mdx } = compileFixture();
     for (const stat of [EV.statMeasured, EV.statProjected, EV.statAdoption]) {
-      expect(mdx).toContain(
-        `- **${escapeMdxText(marketSignalLabel(stat))}**: ${escapeMdxText(renderEvidenceInline(stat))} (${mdLink(stat.sourceTitle, stat.sourceUrl)}).`,
-      );
+      const row = `- ${escapeMdxText(renderEvidenceInline(stat))} (${mdLink(stat.sourceTitle, stat.sourceUrl)}).`;
+      expect(marketSignalRow(stat)).toBe(row);
+      expect(mdx).toContain(`\n${row}\n`);
+      // The rendering already names the subject (ruling R7), so the row repeats nothing in a label.
+      expect(renderEvidenceInline(stat)).toContain(stat.subject);
     }
-    expect(marketSignalLabel(EV.statAdoption)).toBe("Developers using AI code review assistants (adoption)");
+    const signals = mdx.slice(mdx.indexOf("**Market signals**"), mdx.indexOf("**Search demand**"));
+    expect(signals).not.toMatch(/^- \*\*/m);
   });
 
   it("renders competitor rows with formatPriceTerms, plans, a (via host) label for secondary prices and evidence links", () => {
@@ -547,31 +550,24 @@ describe("fixture records compile only to draft or temp slugs (R11, P2-8)", () =
 });
 
 describe("evidence tokens only where the compiler expands them", () => {
-  it("refuses a token in a field the page prints as written: product name, tier name, step title, funnel stage", () => {
+  it("never compiles a token in a field that takes none (WRITER_FIELD_TOKEN_KINDS): the record parser refuses it", () => {
     const base = buildFixtureRecord();
     const statToken = tok(EV.statMeasured);
-    const cases: Array<[string, (r: ResearchRecordV2) => void]> = [
-      ["editorial.productName", (r) => { if (r.editorial) r.editorial.productName = `SignalPass ${statToken}`; }],
-      ["editorial.pricingTiers[0].name", (r) => { const t = r.editorial?.pricingTiers?.[0]; if (t) t.name = `Open ${statToken}`; }],
-      ["howItWorks[0] (step title)", (r) => { r.howItWorks[0] = `Connect ${statToken} — Install the GitHub App on one repository.`; }],
-      ["editorial.yearOne.funnel[0].stage", (r) => { const f = r.editorial?.yearOne?.funnel[0]; if (f) f.stage = `Visitors ${statToken}`; }],
+    const cases: Array<[WriterTextField, string, (r: ResearchRecordV2) => void]> = [
+      ["editorial.productName", "editorial.productName", (r) => { if (r.editorial) r.editorial.productName = `SignalPass ${statToken}`; }],
+      ["editorial.pricingTiers[].name", "editorial.pricingTiers[0].name", (r) => { const t = r.editorial?.pricingTiers?.[0]; if (t) t.name = `Open ${statToken}`; }],
+      ["howItWorks[]", "howItWorks[0]", (r) => { r.howItWorks[0] = `Connect ${statToken} — Install the GitHub App on one repository.`; }],
+      ["editorial.yearOne.funnel[].stage", "editorial.yearOne.funnel[0].stage", (r) => { const f = r.editorial?.yearOne?.funnel[0]; if (f) f.stage = `Visitors ${statToken}`; }],
+      ["goToMarket.channels[]", "goToMarket.channels[0]", (r) => { r.goToMarket.channels[0] = `Outreach ${statToken}`; }],
     ];
-    for (const [path, edit] of cases) {
+    for (const [field, path, edit] of cases) {
+      expect(WRITER_FIELD_TOKEN_KINDS[field], field).toEqual([]);
       const record = structuredClone(base);
       edit(record);
-      // The record parser may refuse the token first (field-specific token rules); either way nothing compiles.
-      let error: unknown = null;
-      try {
-        compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG });
-      } catch (caught) {
-        error = caught;
-      }
-      expect(error, path).not.toBeNull();
-      if (error instanceof CompileError) {
-        expect(error.issues.join("\n"), path).toContain(`${path}: an evidence token here would print as raw text; cite evidence only in prose fields`);
-      } else {
-        expect(error, path).toBeInstanceOf(ResearchRecordParseError);
-      }
+      expect(() => compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG }), path).toThrow(ResearchRecordParseError);
+      expect(() => compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG }), path).toThrow(
+        `${path}: evidence ${EV.statMeasured.id} cannot be cited here (this field takes no evidence tokens)`,
+      );
     }
   });
 

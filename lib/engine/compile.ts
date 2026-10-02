@@ -7,16 +7,18 @@
  * What the compiled page guarantees, and what it does not:
  *   - Measured facts come only from accepted evidence and are printed by the
  *     evidence module, never retyped: quote blockquotes (community.quoteIds)
- *     `> "<excerpt>"`, `>`, `> — [source title](url)`, every line of a
- *     multiline excerpt prefixed; market signal rows (market.statIds) with
- *     marketSignalLabel, renderEvidenceInline and the source; competitor
+ *     `> "<excerpt>"`, `>`, `> — [source title](url)` (a quote is one line
+ *     of its source, ruling R8); market signal rows (market.statIds) that
+ *     are renderEvidenceInline and the source (marketSignalRow: the
+ *     rendering names subject, metric and period, ruling R7); competitor
  *     rows whose "Published pricing:" items are renderEvidenceInline of each
  *     accepted price, "(via host)" for a secondary source, and the source
  *     link; `[[ev:<id>]]` tokens in prose as links whose text is
  *     renderEvidenceInline(item) and whose target is the evidence source
  *     (plain renderings inside the build-prompt fences). Every link on the
  *     page targets an evidence source the record uses, and ## Sources lists
- *     exactly those sources (usedEvidenceIds).
+ *     exactly those sources (usedEvidenceIds). The record parser allows a
+ *     token only in the writer fields WRITER_FIELD_TOKEN_KINDS lists.
  *   - Search demand rows are provider keyword metrics, printed as recorded.
  *   - Proposals and planning assumptions are labelled as such on the page
  *     (proposalLabels): How it works, what not to build yet, pricing tiers,
@@ -67,7 +69,7 @@ import {
   ideaHighlights,
   keywordRowMdx,
   LABEL,
-  marketSignalLabel,
+  marketSignalRow,
   mdLink,
   pageProductName,
   PROMPT_TITLES,
@@ -84,7 +86,6 @@ import {
   yearOneDownsideLine,
   yearOneFunnelLine,
   type IdeaHighlights,
-  type RecordText,
 } from "./page-format.ts";
 import {
   parseResearchRecord,
@@ -93,7 +94,7 @@ import {
   type UnitEconRow,
 } from "./research-record.ts";
 
-export { mdLink } from "./page-format.ts";
+export { marketSignalRow, mdLink } from "./page-format.ts";
 
 const MIN_SOURCE_LINKS = 2;
 /** The deep audit wants at least this many tiers, unit-economics rows and idea tables. */
@@ -374,7 +375,11 @@ function fenceText(text: string, ctx: Ctx): string {
   return text.replace(tokenRe(), (_token: string, id: string) => renderEvidenceInline(evidence(ctx, id)));
 }
 
-/** A quote blockquote: `> "<excerpt>"`, `>`, `> — [title](url)`; multiline excerpts keep their lines. */
+/**
+ * A quote blockquote: `> "<excerpt>"`, `>`, `> — [title](url)`. Since ruling
+ * R8 an excerpt is one line of its source; a line break would still be kept,
+ * each line prefixed.
+ */
 export function quoteBlock(item: CommunityQuoteEvidence): string {
   const lines: string[] = [];
   for (const raw of escapeMdxText(item.excerpt.trim()).split(/\r\n|\r|\n/)) {
@@ -390,11 +395,6 @@ export function quoteBlock(item: CommunityQuoteEvidence): string {
     return text === "" ? ">" : `> ${text}`;
   });
   return [...quoted, ">", `> — ${mdLink(item.sourceTitle, item.sourceUrl)}`].join("\n");
-}
-
-/** `- **<marketSignalLabel>**: <rendering> ([title](url)).` */
-export function marketSignalRow(item: MarketStatEvidence): string {
-  return `- **${escapeMdxText(marketSignalLabel(item))}**: ${escapeMdxText(renderEvidenceInline(item))} (${mdLink(item.sourceTitle, item.sourceUrl)}).`;
 }
 
 /** One price of a competitor row: rendering, "(via host)" when secondary, evidence link. */
@@ -528,32 +528,6 @@ function requireEditorial(record: ResearchRecordV2): Editorial {
   };
 }
 
-/** Any evidence-token-like text, valid or malformed. */
-const TOKEN_LIKE_RE = /\[\[\s*ev\s*:/i;
-
-/**
- * Record texts the page prints as written (names, titles, step titles,
- * funnel stages). A token there would show as raw "[[ev:…]]" text and its
- * evidence would be missing from ## Sources, so the compiler refuses it;
- * evidence belongs in the prose fields (expandedRecordTexts).
- */
-function verbatimRecordTexts(record: ResearchRecordV2, ed: Editorial): RecordText[] {
-  return [
-    { path: "brief.title", text: record.brief.title },
-    { path: "brief.oneLiner", text: record.brief.oneLiner },
-    { path: "brief.targetCustomer", text: record.brief.targetCustomer },
-    { path: "editorial.productName", text: record.editorial?.productName ?? "" },
-    { path: "editorial.audienceShort", text: record.editorial?.audienceShort ?? "" },
-    ...record.competitors.map((c, i) => ({ path: `competitors[${i}].name`, text: c.name })),
-    ...record.keywords.map((k, i) => ({ path: `keywords[${i}].term`, text: k.term })),
-    ...record.howItWorks.map((step, i) => ({ path: `howItWorks[${i}] (step title)`, text: splitNamedStep(step).title })),
-    ...ed.pricingTiers.map((t, i) => ({ path: `editorial.pricingTiers[${i}].name`, text: t.name })),
-    ...ed.dataModel.map((t, i) => ({ path: `editorial.dataModel[${i}].table`, text: t.table })),
-    { path: "editorial.yearOne.tier", text: ed.yearOne.tier },
-    ...ed.yearOne.funnel.map((f, i) => ({ path: `editorial.yearOne.funnel[${i}].stage`, text: f.stage })),
-  ];
-}
-
 /** Short audience for repeated mentions; the full brief label appears in the narrative. */
 function audienceShortLabel(record: ResearchRecordV2): string {
   return midSentence(
@@ -600,10 +574,6 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ]);
   }
   const ed = requireEditorial(record);
-  const tokenIssues = verbatimRecordTexts(record, ed)
-    .filter(({ text }) => TOKEN_LIKE_RE.test(text))
-    .map(({ path }) => `${path}: an evidence token here would print as raw text; cite evidence only in prose fields`);
-  if (tokenIssues.length > 0) throw new CompileError(tokenIssues);
 
   const ctx: Ctx = {
     record,

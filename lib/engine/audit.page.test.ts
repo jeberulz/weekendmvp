@@ -21,7 +21,7 @@ import { auditEngineArtifact } from "./artifact-audit.ts";
 import type { MarketStatEvidence } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
 import { renderEvidenceInline } from "./evidence/tokens.ts";
-import { marketSignalLabel, mdLink, proposalLabels } from "./page-format.ts";
+import { mdLink, proposalLabels } from "./page-format.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -127,23 +127,22 @@ describe("unbound figures in every section (R10, P1-1)", () => {
     const stat = tampered.evidence.accepted.find((e): e is MarketStatEvidence => e.id === EV.statMeasured.id && e.kind === "market_stat");
     if (!stat) throw new Error("fixture: measured stat missing");
     stat.subject = "AI code review market, already a $9 billion buyer opportunity";
-    const row = `- **${escapeMdxText(marketSignalLabel(EV.statMeasured))}**: ${renderingMdx(EV.statMeasured)} (`;
-    const page = replaceOnce(
-      compiledPage(record),
-      row,
-      `- **${escapeMdxText(marketSignalLabel(stat))}**: ${renderingMdx(stat)} (`,
+    // The subject sits inside the verified rendering (masked as evidence), so it is checked on its own.
+    const page = replaceOnce(compiledPage(record), `- ${renderingMdx(EV.statMeasured)} (`, `- ${renderingMdx(stat)} (`);
+    expect(auditEngineArtifact(pageBody(page), tampered).errors.join("\n")).toMatch(
+      new RegExp(`Market Research: the subject of stat ${EV.statMeasured.id} \\(".*"\\) carries the figure "\\$9 billion"; a stat's subject is never allowlisted`),
     );
-    expect(auditEngineArtifact(pageBody(page), tampered).errors.join("\n")).toMatch(/Market Research: unbound figure "\$9 billion"/);
   });
 });
 
-describe("evidence rows keep the compiler's labels (R10, P3)", () => {
-  it("fails a market signal row relabelled to another subject or metric", async () => {
-    const label = `**${escapeMdxText(marketSignalLabel(EV.statMeasured))}**: ${renderingMdx(EV.statMeasured)}`;
-    const page = replaceOnce(compiledPage(), label, label.replace(escapeMdxText(marketSignalLabel(EV.statMeasured)), "Revenue lost to noisy reviews (annual)"));
-    expect(errorsOf(await auditPage(page))).toMatch(
-      /market signal row at line \d+: label "Revenue lost to noisy reviews \(annual\)" is not the label rendered from its stat \("AI code review market \(market size\)"\)/,
-    );
+describe("evidence rows cannot be relabelled (R7, R10, P3)", () => {
+  it("fails a market signal row whose rendering was edited to another subject or metric", async () => {
+    const rendering = renderingMdx(EV.statMeasured);
+    for (const edited of [rendering.replace("AI code review market", "Revenue lost to noisy reviews"), rendering.replace("market size", "spend")]) {
+      expect(edited).not.toBe(rendering);
+      const page = replaceOnce(compiledPage(), `- ${rendering} (`, `- ${edited} (`);
+      expect(errorsOf(await auditPage(page)), edited).toMatch(/market signal row at line \d+: ".*" is not the rendering of a selected market stat/);
+    }
   });
 });
 

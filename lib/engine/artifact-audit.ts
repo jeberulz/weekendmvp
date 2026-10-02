@@ -11,16 +11,19 @@
  * matches the record:
  *
  *   Structure     Only what the compiler writes: no JSX, expressions, HTML,
- *                 images, footnotes, link definitions or reference links;
- *                 fenced code only in "AI Prompts to Build This"; nothing
- *                 before ## The Problem or after ## Sources; ## Sources is a
- *                 single list of source links; the proposal labels stay.
+ *                 images, footnotes, link definitions or reference links, no
+ *                 raw "[[ev:…]]" token; fenced code only in "AI Prompts to
+ *                 Build This"; nothing before ## The Problem or after
+ *                 ## Sources; ## Sources is a single list of source links;
+ *                 the proposal labels stay.
  *   Links (R10)   Every link targets an evidence source the record uses
  *                 (usedEvidenceIds), and its text is that source's title or
  *                 renderEvidenceInline of one of that source's used items.
  *                 Quote attributions, market rows and price links carry their
  *                 own item's source title; ## Sources lists exactly the used
  *                 sources; a competitor's notes cite only its own prices.
+ *                 Visible text drops the invisible U+2060 that escapeMdxText
+ *                 puts into URLs, www hosts and emails (AUTOLINK_BREAK_CHAR).
  *   Quotes (F2)   Each blockquote is one unit: the quote paragraphs plus a
  *                 last line "— [title](url)". The quote's MDX text must
  *                 strictly equal a selected accepted quote
@@ -33,10 +36,12 @@
  *                 selected quote must appear; the minimum counts distinct
  *                 quote ids, so a repeated quote adds nothing. Outside the
  *                 quote blocks, a double-quoted span of three or more words
- *                 must be a quote the record uses.
- *   Rows          Market signal rows: the compiler's label
- *                 (marketSignalLabel), the rendering of a selected stat, its
- *                 own source. Competitor rows: the record's name and exactly
+ *                 (findQuotedSpans) must be a quote the record uses.
+ *   Rows          Market signal rows (marketSignalRow): the rendering of a
+ *                 selected stat, which names its subject, metric and period
+ *                 (R7), and its own source; no label to relabel. A used
+ *                 stat's subject must be figure-free (it is masked inside the
+ *                 verified rendering). Competitor rows: the record's name and exactly
  *                 its accepted prices, each with its own source and a
  *                 "(via host)" label when secondary. A pricing URL may back
  *                 several competitors only when every price on it is a
@@ -49,12 +54,14 @@
  *                 renderings (link text = rendering, target = that item's
  *                 source), verified evidence rows, source-title links,
  *                 keyword rows, tier rows and unit-economics values equal to
- *                 the record, the Year-One lines, bare years and digits inside
- *                 names. A bare (unlinked) rendering is not allowlisted, and a
- *                 market stat's model-written subject never is. Inside a
- *                 prompt fence, figures must be record values or renderings
- *                 (tier prices and includes, data-model columns, evidence).
- *                 A guard against typed-in figures, not proof of any prose.
+ *                 the record, the Year-One lines, bare years, and digits
+ *                 inside competitor names. A bare (unlinked) rendering is not
+ *                 allowlisted, and a market stat's model-written subject
+ *                 never is. Inside a prompt fence, figures must be evidence
+ *                 renderings or NUMERIC_PROPOSAL_FIELDS text (tier prices and
+ *                 includes, unit-economics values, data-model columns).
+ *                 findUnboundFigures reads number words and any script's
+ *                 digits (R6). A guard against typed-in figures, not proof.
  *   Money (F6)    Year-One Math is recomputed with finance.ts and the
  *                 displayed accounts, per-account price, period, ARR, tier,
  *                 seats, downside and funnel are compared exactly. Business
@@ -77,19 +84,19 @@ import { canonicalSourceUrl, sameSource, sourceHostLabel } from "./evidence/cita
 import {
   EVIDENCE_MINIMUMS,
   EVIDENCE_TOKEN_RE,
+  NUMERIC_PROPOSAL_FIELDS,
   type AcceptedEvidence,
   type CommunityQuoteEvidence,
   type ResearchRecordV2,
 } from "./evidence/contract.ts";
-import { quoteMatchesExcerpt } from "./evidence/quote.ts";
-import { findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import { AUTOLINK_BREAK_CHAR, quoteMatchesExcerpt } from "./evidence/quote.ts";
+import { findQuotedSpans, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
 import { computeYearOne, formatUsdCents, YearOneMathError, yearOneTierTerms, type YearOneMath } from "./finance.ts";
 import {
   ideaHighlights,
   keywordRowText,
   LABEL,
   linkUrl,
-  marketSignalLabel,
   pageProductName,
   parseYearOneLine,
   periodAbbrev,
@@ -98,6 +105,7 @@ import {
   promptHeadingText,
   proposalLabels,
   PUBLISHED_PRICING,
+  recordTextsAt,
   SOURCES_TITLE,
   splitViaLabel,
   tidyProse,
@@ -193,9 +201,21 @@ export function parseMdxBody(body: string): { ok: true; root: MdNode } | { ok: f
 
 const INLINE_CONTAINERS = new Set(["paragraph", "heading", "strong", "emphasis", "delete", "link", "tableCell"]);
 
+const AUTOLINK_BREAK_RE = new RegExp(AUTOLINK_BREAK_CHAR, "g");
+
+/**
+ * A text node's value as a reader sees it: escapeMdxText puts an invisible
+ * U+2060 (AUTOLINK_BREAK_CHAR) inside "https://", "www." and before "@" so
+ * GFM cannot autolink them; it renders as nothing, so it is dropped before
+ * any comparison with record text.
+ */
+function textValue(node: MdNode): string {
+  return (node.value ?? "").replace(AUTOLINK_BREAK_RE, "");
+}
+
 /** What a reader sees: text values, alt text, line breaks; no code fences. */
 function visible(node: MdNode): string {
-  if (node.type === "text" || node.type === "inlineCode") return node.value ?? "";
+  if (node.type === "text" || node.type === "inlineCode") return textValue(node);
   if (node.type === "break") return "\n";
   if (node.type === "image") return node.alt ?? "";
   if (node.type === "code") return "";
@@ -367,34 +387,12 @@ function relabel(segs: Seg[], from: SegKind, to: SegKind): Seg[] {
   return segs.map((s) => (s.kind === from ? { ...s, kind: to } : s));
 }
 
-/**
- * Double-quoted spans: straight "…", typographic “…” and „…“, guillemets
- * «…». A span opens at an opening mark and closes at the next closing mark
- * of its style; single quotes and apostrophes are never quotation marks
- * here. `words` counts letter/digit runs inside the marks.
- */
-function doubleQuotedSpans(text: string): Array<{ inner: string; words: number }> {
-  const closersFor = new Map<string, string>([
-    ['"', '"”“'],
-    ["“", "”\"“"],
-    ["„", "“”\""],
-    ["«", "»"],
-  ]);
-  const spans: Array<{ inner: string; words: number }> = [];
-  let open: { mark: string; at: number } | null = null;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i] ?? "";
-    if (open) {
-      if ((closersFor.get(open.mark) ?? "").includes(ch)) {
-        const inner = text.slice(open.at + 1, i);
-        spans.push({ inner, words: (inner.match(/[\p{L}\p{N}]+/gu) ?? []).length });
-        open = null;
-      }
-      continue;
-    }
-    if (closersFor.has(ch)) open = { mark: ch, at: i };
-  }
-  return spans;
+/** Quote marks findQuotedSpans pairs (fullwidth ＂ included, as its NFKC reads it). */
+const QUOTE_MARKS_AROUND_RE = /^["“”„‟«»〝〞〟＂]([\s\S]*?)["“”„‟«»〝〞〟＂]?$/u;
+
+/** The text inside a span from findQuotedSpans (its marks removed; an unclosed span has no closing mark). */
+function spanInner(span: string): string {
+  return QUOTE_MARKS_AROUND_RE.exec(span)?.[1] ?? span;
 }
 
 const MONEY = String.raw`(?:(?:US|CA|AU|C|A)?[$€£]\s?\d[\d,]*(?:\.\d+)?|(?:USD|EUR|GBP|CAD|AUD)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:USD|EUR|GBP|CAD|AUD)\b)(?:\s?(?:k|m|mn|bn|b|thousand|million|billion|trillion)\b)?`;
@@ -425,18 +423,20 @@ type State = {
   /** Nodes a row audit already read (their figures and links are checked there). */
   handled: Set<MdNode>;
   pieces: Piece[];
-  /** Record names the page prints bare (product, competitors, tiers): their digits are not figures. */
+  /** Competitor names the page prints bare: their digits are not figures (R10 "names"). */
   names: string[];
 };
 
 /**
- * The names whose digits the figure rule ignores (R10 "names"): the product,
- * competitor and pricing-tier names, longest first. A name without a letter
- * is never one, so a "name" made of a figure cannot hide that figure.
+ * The names whose digits the figure rule ignores (R10 "names"), longest
+ * first. Only competitor names: they are the evidence's vendor names, while
+ * the product and pricing-tier names are writer text that ruling R6 keeps
+ * figure-free (WRITER_TEXT_FIELDS). A name without a letter is never one, so
+ * a "name" made of a figure cannot hide that figure.
  */
 function recordNames(record: ResearchRecordV2): string[] {
-  const names = [pageProductName(record), ...record.competitors.map((c) => c.name), ...(record.editorial?.pricingTiers ?? []).map((t) => t.name)];
-  return [...new Set(names.map((n) => n.trim()).filter((n) => /\p{L}/u.test(n)))].sort((a, b) => b.length - a.length);
+  const names = record.competitors.map((c) => c.name.trim()).filter((n) => /\p{L}/u.test(n));
+  return [...new Set(names)].sort((a, b) => b.length - a.length);
 }
 
 /** Text with every whole occurrence of a name blanked (same length), for the figure rule. */
@@ -497,7 +497,7 @@ function inlineSegs(state: State, nodes: MdNode[], at = -1): Seg[] {
   const out: Seg[] = [];
   for (const node of nodes) {
     const here = node.start >= 0 ? node.start : at;
-    if (node.type === "text" || node.type === "inlineCode") out.push({ text: node.value ?? "", kind: "prose" });
+    if (node.type === "text" || node.type === "inlineCode") out.push({ text: textValue(node), kind: "prose" });
     else if (node.type === "break") out.push({ text: "\n", kind: "prose" });
     else if (node.type === "image") out.push({ text: node.alt ?? "", kind: "prose" });
     else if (node.type === "link") out.push(linkSeg(state, node, here));
@@ -562,16 +562,18 @@ function maskValues(text: string, values: ReadonlyArray<{ text: string; kind: Se
   return segs;
 }
 
-/** Record values a prompt fence may hold: evidence renderings, tier prices/includes, data-model columns. */
+/**
+ * Record values a prompt fence may hold: renderings of the evidence the page
+ * uses, and the text of the numeric proposal slots (NUMERIC_PROPOSAL_FIELDS:
+ * tier prices and includes, unit-economics values, data-model columns; the
+ * numeric counts are not text and never appear in a fence).
+ */
 function fenceValuesOf(record: ResearchRecordV2, ev: Evidence): Array<{ text: string; kind: SegKind }> {
-  const expand = (text: string) => expandTokens(text, ev);
   const values: Array<{ text: string; kind: SegKind }> = [
     ...ev.used.map((item) => ({ text: renderEvidenceInline(item), kind: "evidence" as const })),
-    ...(record.editorial?.pricingTiers ?? []).flatMap((t) => [
-      { text: expand(t.price), kind: "proposal" as const },
-      { text: expand(t.includes), kind: "proposal" as const },
-    ]),
-    ...(record.editorial?.dataModel ?? []).map((t) => ({ text: expand(t.columns), kind: "proposal" as const })),
+    ...NUMERIC_PROPOSAL_FIELDS.flatMap((field) =>
+      recordTextsAt(record, field).map(({ text }) => ({ text: expandTokens(text, ev), kind: "proposal" as const })),
+    ),
   ];
   return values.sort((a, b) => b.text.length - a.text.length);
 }
@@ -591,11 +593,11 @@ function applyRules(state: State): number {
           : `${piece.section}: unbound figure "${hit.figure}" near line ${piece.line} ("…${context}…") — not a rendering of the record's evidence (guard, not proof of truth)`,
       );
     }
-    for (const span of doubleQuotedSpans(pieceText(piece, QUOTE_MASK))) {
-      if (span.words < 3) continue;
-      if (ev.quotes.some((q) => quoteMatchesExcerpt(span.inner, q.excerpt))) continue;
+    for (const { span } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
+      const inner = spanInner(span);
+      if (ev.quotes.some((q) => quoteMatchesExcerpt(inner, q.excerpt))) continue;
       ctx.errors.push(
-        `${piece.section}: quoted text "${clip(span.inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,
+        `${piece.section}: quoted text "${clip(inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,
       );
     }
     const moneyText = pieceText(piece, MONEY_MASK);
@@ -621,6 +623,9 @@ function applyRules(state: State): number {
 
 const MDX_ONLY_NODES = new Set(["mdxJsxFlowElement", "mdxJsxTextElement", "mdxFlowExpression", "mdxTextExpression", "mdxjsEsm", "html"]);
 
+/** An evidence token, valid or malformed, as text a reader would see. */
+const RAW_TOKEN_RE = /\[\[\s*ev\s*:/i;
+
 /** Markdown the compiler never writes, with the plural used in the message. */
 const FOREIGN_NODES = new Map<string, string>([
   ["image", "images"],
@@ -639,6 +644,11 @@ function auditStructure(ctx: Ctx, root: MdNode, layout: Layout): void {
     const foreign = FOREIGN_NODES.get(node.type);
     if (foreign) {
       ctx.errors.push(`${node.type} at line ${lineOf(ctx, node.start)}: an engine page contains no ${foreign} (the compiler never writes them)`);
+    }
+    if ((node.type === "text" || node.type === "inlineCode" || node.type === "code") && RAW_TOKEN_RE.test(textValue(node))) {
+      ctx.errors.push(
+        `raw evidence token at line ${lineOf(ctx, node.start)}: "[[ev:…]]" reached the page unexpanded (the compiler expands every token the record parser allows)`,
+      );
     }
   });
   const first = layout.preamble[0];
@@ -876,7 +886,7 @@ function inlineRows(list: MdNode): Array<{ item: MdNode; paragraph: MdNode | nul
 }
 
 function textOnly(nodes: MdNode[]): string | null {
-  return nodes.every((n) => n.type === "text") ? nodes.map((n) => n.value ?? "").join("") : null;
+  return nodes.every((n) => n.type === "text") ? nodes.map(textValue).join("") : null;
 }
 
 function auditMarketRows(state: State, section: Section): number {
@@ -894,48 +904,38 @@ function auditMarketRows(state: State, section: Section): number {
   const shown = new Set<string>();
   let rows = 0;
   for (const { item, paragraph } of inlineRows(list)) {
+    state.handled.add(item);
     const where = `market signal row at line ${lineOf(ctx, item.start)}`;
-    const [label, ...rest] = paragraph?.children ?? [];
-    const links = rest.filter((n) => n.type === "link");
+    const children = paragraph?.children ?? [];
+    const links = children.filter((n) => n.type === "link");
     const link = links[0];
-    if (!paragraph || !label || label.type !== "strong" || links.length !== 1 || !link?.url) {
-      ctx.errors.push(`${where}: expected "**label**: <figure> ([source](url))." with exactly one source link`);
-      continue;
-    }
-    const at = rest.indexOf(link);
-    const before = textOnly(rest.slice(0, at));
-    const after = textOnly(rest.slice(at + 1));
-    const middle = before === null ? "" : norm(before);
-    if (before === null || after === null || !middle.startsWith(":") || !middle.endsWith("(") || !/^\)\.?$/.test(norm(after))) {
-      ctx.errors.push(`${where}: expected "**label**: <figure> ([source](url))." (no other formatting)`);
+    const at = link ? children.indexOf(link) : -1;
+    const before = textOnly(children.slice(0, Math.max(0, at)));
+    const after = textOnly(children.slice(at + 1));
+    const lead = before === null ? "" : norm(before);
+    if (!paragraph || links.length !== 1 || !link?.url || before === null || after === null || !lead.endsWith("(") || !/^\)\.?$/.test(norm(after))) {
+      ctx.errors.push(
+        `${where}: expected "<evidence rendering> ([source title](url))." with exactly one source link and no other formatting (the rendering names the stat; rows carry no label)`,
+      );
       continue;
     }
     rows += 1;
-    const rendering = norm(middle.slice(1, -1));
-    const sameFigure = stats.filter((s) => norm(renderEvidenceInline(s)) === rendering);
-    const match = sameFigure.find((s) => sameLinkedSource(link.url ?? "", s.sourceUrl));
+    const rendering = norm(lead.slice(0, -1));
+    const sameRendering = stats.filter((s) => norm(renderEvidenceInline(s)) === rendering);
+    const match = sameRendering.find((s) => sameLinkedSource(link.url ?? "", s.sourceUrl));
     if (!match) {
       ctx.errors.push(
-        sameFigure[0]
-          ? `${where}: "${rendering}" links to ${link.url}, but its evidence source is ${sameFigure[0].sourceUrl}`
+        sameRendering[0]
+          ? `${where}: "${rendering}" links to ${link.url}, but its evidence source is ${sameRendering[0].sourceUrl}`
           : `${where}: "${rendering}" is not the rendering of a selected market stat (expected one of: ${stats.map((s) => renderEvidenceInline(s)).join(" | ")})`,
       );
       continue;
     }
     shown.add(match.id);
-    const labelText = norm(visible(label));
-    const expectedLabel = norm(marketSignalLabel(match));
-    if (labelText !== expectedLabel) {
-      ctx.errors.push(
-        `${where}: label "${clip(labelText, 120)}" is not the label rendered from its stat ("${expectedLabel}"); evidence rows are not relabelled`,
-      );
-    }
     const title = norm(visible(link));
     if (title !== norm(match.sourceTitle)) {
       ctx.errors.push(`${where}: source title "${clip(title, 120)}" is not the evidence source title "${norm(match.sourceTitle)}"`);
     }
-    // The label is model-written subject text: the figure guard reads it, nothing allowlists it.
-    addPiece(state, section.title, item, inlineSegs(state, label.children, item.start));
   }
   for (const s of stats) {
     if (!shown.has(s.id)) {
@@ -943,6 +943,23 @@ function auditMarketRows(state: State, section: Section): number {
     }
   }
   return rows;
+}
+
+/**
+ * A stat's subject is model-written text inside its rendering, which the
+ * figure rule masks wherever the rendering is verified. So the subject of
+ * every stat the page uses is checked on its own (security review P2; the
+ * record parser refuses such a subject since ruling R9).
+ */
+function auditStatSubjects(state: State): void {
+  for (const item of state.ev.used) {
+    if (item.kind !== "market_stat") continue;
+    for (const hit of findUnboundFigures(item.subject)) {
+      state.ctx.errors.push(
+        `Market Research: the subject of stat ${item.id} ("${clip(item.subject, 100)}") carries the figure "${hit.figure}"; a stat's subject is never allowlisted`,
+      );
+    }
+  }
 }
 
 function auditKeywordRows(state: State, section: Section): void {
@@ -990,7 +1007,7 @@ function readCompetitorRow(
   let markerOffset = -1;
   rest.forEach((node, i) => {
     if (node.type !== "text") return;
-    const offset = (node.value ?? "").lastIndexOf(PUBLISHED_PRICING);
+    const offset = textValue(node).lastIndexOf(PUBLISHED_PRICING);
     if (offset >= 0) {
       markerAt = i;
       markerOffset = offset;
@@ -998,7 +1015,7 @@ function readCompetitorRow(
   });
   const markerNode = rest[markerAt];
   if (markerAt < 0 || !markerNode) return { ok: false, reason: `no "${PUBLISHED_PRICING}" list` };
-  const markerText = markerNode.value ?? "";
+  const markerText = textValue(markerNode);
   const notes: MdNode[] = [
     ...rest.slice(0, markerAt),
     { ...markerNode, value: markerText.slice(0, markerOffset), children: [] },
@@ -1007,7 +1024,7 @@ function readCompetitorRow(
   let pending = markerText.slice(markerOffset + PUBLISHED_PRICING.length);
   for (const node of rest.slice(markerAt + 1)) {
     if (node.type === "text") {
-      pending += node.value ?? "";
+      pending += textValue(node);
       continue;
     }
     if (node.type !== "link" || !node.url) return { ok: false, reason: `unexpected ${node.type} in the price list` };
@@ -1586,6 +1603,7 @@ export function auditEngineArtifact(
     result.metrics.marketRows = auditMarketRows(state, market);
     auditKeywordRows(state, market);
   }
+  auditStatSubjects(state);
   const competitive = section("Competitive Landscape");
   if (competitive) {
     result.metrics.competitorRows = auditCompetitorRows(state, competitive, result.competitorLinks);
