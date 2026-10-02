@@ -2,8 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "../../_generated/dataModel";
 import { mutation, type MutationCtx } from "../../_generated/server";
 import { PLATFORM_AUTH_ERROR, requireCurrentPlatformUserForMutation } from "../authz";
-import { isEngineDraftSlug } from "../catalogPolicy";
-import { resolveCapability } from "./capabilities";
+import { resolveCapability, sourceIsEngineDraft } from "./capabilities";
 import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
 
 /**
@@ -61,20 +60,6 @@ const claimedGraphValidator = v.object({
   siteVersionId: v.id("site_versions"),
   created: v.boolean(),
 });
-
-/**
- * WP54-S5 (review P3-13, ruling 2026-10-01): no new repository project starts
- * from an engine draft. The bridge stopped minting draft previews at the
- * backend deploy, but a capability minted before it stays live for up to
- * 7 days, so the claim checks the source idea itself.
- */
-async function sourceIsEngineDraft(
-  ctx: MutationCtx,
-  sourceIdeaId: Id<"ideas">,
-): Promise<boolean> {
-  const idea = await ctx.db.get("ideas", sourceIdeaId);
-  return idea !== null && isEngineDraftSlug(idea.slug);
-}
 
 function projectTitle(spec: SiteRenderSpec): string {
   const headline = spec.siteInput.headline.trim();

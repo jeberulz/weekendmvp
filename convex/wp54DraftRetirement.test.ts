@@ -7,7 +7,9 @@ import type { Infer } from "convex/values";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import manifest from "../ideas/manifest.json";
 import { isEngineDraftSlug } from "../lib/engine-drafts";
+import { isRetiredIdea } from "./platform/catalogPolicy";
 import { selectLibrary, type RankedCard } from "./platform/libraryResults";
 import { capabilityExpiresAt, generateCapabilityToken, hashCapabilityToken } from "./platform/preview/capabilities";
 import { normalizePreviewCustomisation, toSiteInput } from "./platform/preview/customisation";
@@ -836,5 +838,50 @@ describe("claiming a preview minted before the drafts retired (review P3-13)", (
     expect(await claimOutcome(owner, second)).toContain("RESOURCE_NOT_FOUND");
     expect(await claimOutcome(other, second)).toContain("RESOURCE_NOT_FOUND");
     expect(await ownedGraphRows(t)).toEqual({ projects: 1, documents: 1, siteConfigs: 1, siteVersions: 1 });
+  });
+
+  /**
+   * An idea WP44 retired through the manifest (`_retiredAt`). It left the
+   * member catalogue, but its page still renders and, unlike an engine draft,
+   * an in-flight preview of it can still be kept (WP44 R5).
+   */
+  function wp44RetiredSlug(): string {
+    const idea = manifest.ideas.find((entry) => "_retiredAt" in entry && entry._retiredAt);
+    if (idea === undefined) throw new Error("the manifest has no WP44-retired idea to test with");
+    return idea.slug;
+  }
+
+  test("a WP44-retired idea's in-flight preview still claims into a new project (review MC5)", async () => {
+    const retiredSlug = wp44RetiredSlug();
+    expect(isRetiredIdea(retiredSlug)).toBe(true);
+    expect(isEngineDraftSlug(retiredSlug)).toBe(false);
+    const t = convexTest(schema, modules);
+    await t.mutation(internal.seed.seedIdeas, { items: [ordinary(retiredSlug)] });
+    const member = asUser(t, await seedUser(t, "claimer@example.test"));
+    const retiredId = await ideaId(t, retiredSlug);
+    const { token } = await mintPreview(t, retiredId);
+
+    const graph = await member.mutation(api.platform.preview.claim.claim, { token });
+    expect(graph.created).toBe(true);
+    expect(await t.run((ctx) => ctx.db.get("projects", graph.projectId))).toMatchObject({
+      source: "repository_idea",
+      sourceIdeaId: retiredId,
+    });
+  });
+
+  test("the preview page is told when a preview's idea is a retired draft, and only then", async () => {
+    const t = convexTest(schema, modules);
+    await seedThenReseedWithoutDrafts(t);
+    const retiredSlug = wp44RetiredSlug();
+    await t.mutation(internal.seed.seedIdeas, { items: [ordinary(retiredSlug)] });
+    async function viewOf(slug: string) {
+      const { token } = await mintPreview(t, await ideaId(t, slug));
+      return await t.action(api.platform.preview.read.view, { token });
+    }
+
+    // Still viewable until it expires; it just can't be kept.
+    expect(await viewOf(REVIEWER_DRAFT)).toMatchObject({ claimed: false, researchWithheld: true });
+    expect(await viewOf("ai-code-reviewer")).toMatchObject({ claimed: false, researchWithheld: false });
+    expect(await viewOf(retiredSlug)).toMatchObject({ claimed: false, researchWithheld: false });
   });
 });
