@@ -168,6 +168,43 @@ describe("scripts/audit-idea-mdx.mjs on a compiler-generated page", () => {
   );
 
   it(
+    "exits nonzero on spelled-out numbers and Unicode digits in The Problem, The Solution and Business Model (R6 figures, R10)",
+    async () => {
+      const mutations: Array<{ name: string; mdx: string; figures: string[]; section: string }> = [
+        {
+          name: "number words in The Problem",
+          section: "The Problem",
+          mdx: replaceOnce(
+            page,
+            "the onboarding of new contributors.",
+            "the onboarding of new contributors. On a team of eight, one engineer reviews forty seven pull requests a week.",
+          ),
+          figures: ["eight", "forty seven"],
+        },
+        {
+          name: "fullwidth digits in The Solution",
+          section: "The Solution",
+          mdx: replaceOnce(page, "Everything else stays out of the thread.", "Everything else stays out of the thread. It cuts ６０％ of the review time across ４７ repositories."),
+          figures: ["６０％", "４７"],
+        },
+        {
+          name: "mathematical bold digits in Business Model",
+          section: "Business Model",
+          mdx: replaceOnce(page, "trials convert after a short evaluation", "trials convert for 𝟏𝟐 teams after a short evaluation"),
+          figures: ["𝟏𝟐"],
+        },
+      ];
+      const runs = await Promise.all(mutations.map(async (m) => ({ m, run: await auditCli(writePage(m.mdx, record)) })));
+      for (const { m, run } of runs) {
+        expect(run.code, m.name).toBe(1);
+        const errors = run.result.errors.join("\n");
+        for (const figure of m.figures) expect(errors, m.name).toContain(`${m.section}: unbound figure "${figure}"`);
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
     "fails an engine page whose record is contract v1 with the re-research message",
     async () => {
       const files = writePage(page, record);
