@@ -6,9 +6,12 @@ import {
   EvidenceReferenceError,
   evidenceRefs,
   expandEvidenceTokens,
+  findComputations,
   findQuotedSpans,
+  findRevenueTotals,
   findUnboundFigures,
   renderEvidenceInline,
+  STANDARD_AND_VERSION_NAMES,
   validateEditorialText,
 } from "./tokens.ts";
 
@@ -101,12 +104,13 @@ describe("findUnboundFigures", () => {
   });
 
   it("flags other figure shapes and spelled quantities", () => {
-    const text = "It is 10x faster, 1,000s of teams, #1 on 24/7 support, forty-seven reviewers, two million installs, 1.4 billion.";
+    // Ruling R13 made "24/7" a standard name; "9/10" keeps the slash-separated figure shape covered.
+    const text = "It is 10x faster, 1,000s of teams, #1 on 9/10 support queues, forty-seven reviewers, two million installs, 1.4 billion.";
     expect(findUnboundFigures(text).map((f) => f.figure)).toEqual([
       "10x",
       "1,000s",
       "1",
-      "24/7",
+      "9/10",
       "forty-seven",
       "two million",
       "1.4 billion",
@@ -242,10 +246,10 @@ describe("validateEditorialText", () => {
     expect(validateEditorialText({ path: "community.summary", text, factBearing: true, accepted: map })).toEqual([]);
   });
 
-  it("R6: flags a double-quoted span of three or more words in writer text, and only there", () => {
+  it("R6: flags a quoted span of three or more words in writer text, and only there", () => {
     const text = "As one commenter put it, “our team answers every questionnaire by hand.”";
     expect(validateEditorialText({ path: "editorial.problemNarrative", text, factBearing: true, accepted: map })).toEqual([
-      'editorial.problemNarrative: double-quoted span "“our team answers every questionnaire by hand.”" (7 words); quotations reach the page only as quote evidence ([[ev:<id>]])',
+      "editorial.problemNarrative: quoted span “our team answers every questionnaire by hand.” (7 words); quotations reach the page only as quote evidence ([[ev:<id>]]), so write no quotation marks",
     ]);
     expect(validateEditorialText({ path: "editorial.dataModel[0].columns", text, factBearing: false, accepted: map })).toEqual([]);
   });
@@ -315,5 +319,198 @@ describe("renderEvidenceInline and expandEvidenceTokens", () => {
 
   it("throws on an unknown id", () => {
     expect(() => expandEvidenceTokens("Spend is [[ev:s_000000000000]].", map)).toThrow(EvidenceReferenceError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R13: realistic writer text, one rule set
+// ---------------------------------------------------------------------------
+
+describe("R13: standard and version names are not figures", () => {
+  it.each([
+    "Buyers ask for SOC 2 reports and ISO 27001 certificates before any security review.",
+    "Use Next.js 15, React 19, Postgres 16 and Node 22 with OAuth 2.0 sign-in through Microsoft 365.",
+    "Support stays available 24/7 for the paying teams.",
+    "Freelancers file a Form 1099 and keep a W-9 on record; contractors get a 1099-NEC.",
+    "It drafts answers with Claude 3.5 Sonnet or GPT-4o and Gemini 2.5 Pro, and stores embeddings in pgvector.",
+    "Pages meet WCAG 2.2 AA, cards follow PCI DSS 4.0, links use TLS 1.3 over HTTP/2, on IPv6.",
+    "It runs on Python 3.12, Ruby 3.3 with Rails 8, Django 5, Vue 3, Angular 18, Svelte 5 and Tailwind v4.",
+    "Office 365, ISO/IEC 27001:2022, SOC 1 and SOC 3 reports, Ubuntu 24.04, Windows 11, macOS 15 and iOS 18 are fine.",
+    "TypeScript 5.6, Swift 6, Kotlin 2.0, Java 21, PHP 8.3, Android 15, MySQL 8, PostgreSQL 17, Llama 3.1 and Mistral 7 too.",
+  ])("allows %s", (text) => {
+    expect(figures(text)).toEqual([]);
+  });
+
+  it("exports one allowlist of patterns, and keeps every other figure", () => {
+    expect(STANDARD_AND_VERSION_NAMES.length).toBeGreaterThan(5);
+    expect(figures("SOC 4 audits, ISO 27001% compliance and Node 22 million installs.")).toEqual(["4", "27001%", "22 million"]);
+    expect(figures("Two-person sales teams ship in two weekends; Seven Bridges sells too.")).toEqual(["Two", "two", "Seven"]);
+    expect(figures("Five9 sells to call centers.")).toEqual([]);
+  });
+
+  it("treats digits inside snake_case identifiers as names (review probe p20)", () => {
+    expect(figures("Tables library_documents, tier_1_questionnaires and answers_v2.")).toEqual([]);
+    expect(figures("A tier 1 plan for tier_1 buyers.")).toEqual(["1"]);
+  });
+});
+
+describe("R13: currency symbols and quantity hyphen forms are figures", () => {
+  it("flags any currency symbol outside a token, with or without digits (security N6)", () => {
+    expect(figures("Most $lOk deals stall, and € pricing confuses buyers.")).toEqual(["$lOk", "€"]);
+  });
+
+  it("flags sub-, top-, under-, over-, up-to- and about-N forms (review probe p25)", () => {
+    expect(figures("Indie developers and sub-10 engineering teams pick from the top-5 vendors.")).toEqual(["10", "5"]);
+    expect(figures("Teams under-30 people, over-50 seats, up-to-10 users, about-15% churn, grew by-40% last year.")).toEqual([
+      "30",
+      "50",
+      "10",
+      "15%",
+      "40%",
+    ]);
+    expect(figures("GPT-4o, COVID-19 and W-2 stay names; Top-5 does not.")).toEqual(["5"]);
+  });
+});
+
+describe("R13: quoted spans in every quotation style", () => {
+  it.each([
+    ["typographic double", "One buyer said “we would pay for this tomorrow” at the demo."],
+    ["typographic double with joiners", "One buyer said “\u2060we would pay for this tomorrow\u2060” at the demo."],
+    ["typographic single", "One buyer said ‘we would pay for this tomorrow’ at the demo."],
+    ["straight single", "One buyer said 'we would pay for this tomorrow' at the demo."],
+    ["corner brackets", "One buyer said 「we would pay for this tomorrow」 at the demo."],
+    ["white corner brackets", "One buyer said 『we would pay for this tomorrow』 at the demo."],
+    ["single guillemets", "One buyer said ‹we would pay for this tomorrow› at the demo."],
+  ])("finds a %s quotation (security probe-quoted-spans)", (_label, text) => {
+    expect(findQuotedSpans(text)).toHaveLength(1);
+    expect(findQuotedSpans(text)[0]?.inner.replace(/\u2060/g, "")).toBe("we would pay for this tomorrow");
+  });
+
+  it("finds the review's single-quote and corner-bracket fabrications (review probes p19, p5 Q2s/Q2a/Q2c)", () => {
+    for (const text of [
+      "One engineer on the thread summed it up: ‘legal rejects every single draft the chat tool writes for us, and the deal waits.’",
+      "As one engineer on the thread put it, 'legal rejects every single draft that the chat tool writes for us.' — [thread](https://news.example.com/item?id=1)",
+      "One engineer: 「Legal rejects every single draft that the chat tool writes for us.」",
+    ]) {
+      expect(findQuotedSpans(text), text).toHaveLength(1);
+    }
+  });
+
+  it("does not read apostrophes as quotation marks", () => {
+    for (const text of [
+      "Sales engineers don't trust the teams' old answers, and it's the buyer's call.",
+      "In the '90s teams used rock 'n' roll playlists, and the team’s library didn’t help.",
+      "The owners’ approvals and the reviewers’ notes stay with each answer.",
+    ]) {
+      expect(findQuotedSpans(text), text).toEqual([]);
+    }
+  });
+
+  it("does not run an unclosed single quote to the end of the text", () => {
+    expect(findQuotedSpans("The '90s were different for proposal teams and their tools.")).toEqual([]);
+  });
+});
+
+describe("R13: revenue totals and computations (the auditor's rules, shared)", () => {
+  it("finds a money amount beside revenue wording, either way round (review probe p16)", () => {
+    expect(findRevenueTotals("Shared library and review workflow for teams closing up to $250k in annual sales.").map((m) => m.text)).toEqual([
+      "$250k in annual sales",
+    ]);
+    expect(findRevenueTotals("$100 MRR per account").map((m) => m.text)).toEqual(["$100 MRR"]);
+    expect(findRevenueTotals("One seat; pays for itself at $39 MRR once a single deal closes.").map((m) => m.text)).toEqual(["$39 MRR"]);
+    expect(findRevenueTotals("Target ARR: 5,400,000 USD and an annual run-rate of $250k.").map((m) => m.text)).toEqual([
+      "ARR: 5,400,000 USD",
+      "annual run-rate of $250k",
+    ]);
+  });
+
+  it("does not read a price or a tier that mentions ARR after its price as a revenue total", () => {
+    for (const text of ["$100 per month", "$39/month", "$12/month) — ARR dashboards", "$25/seat/month, billed annually"]) {
+      expect(findRevenueTotals(text), text).toEqual([]);
+    }
+  });
+
+  it("finds a Year-One-style computation", () => {
+    expect(findComputations("Fifteen teams, so 15 × $100/month = $1,500 a month.").map((m) => m.text)).toEqual(["15 × $100/month = $1"]);
+    expect(findComputations("$100 per month for each team")).toEqual([]);
+  });
+});
+
+describe("R13: the shared revenue and computation detectors run in linear time and agree with the audit", () => {
+  // The final audit's rules as of c97f6d0 (lib/engine/artifact-audit.ts), the reference for parity.
+  const MONEY = String.raw`(?:(?:US|CA|AU|C|A)?[$€£]\s?\d[\d,]*(?:\.\d+)?|(?:USD|EUR|GBP|CAD|AUD)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:USD|EUR|GBP|CAD|AUD)\b)(?:\s?(?:k|m|mn|bn|b|thousand|million|billion|trillion)\b)?`;
+  const NOUN = String.raw`(?:ARR|MRR|revenue|run[- ]?rate|sales|income)`;
+  const MOD = String.raw`(?:annual|annualized|yearly|monthly|recurring|new|total|gross|net|projected|expected)`;
+  const AUDIT_REVENUE_RE = new RegExp(
+    String.raw`${MONEY}(?:\s*\/\s*(?:mo|month|yr|year))?(?:\s+(?:a|per)\s+(?:year|month))?(?:\s+(?:in|of))?(?:\s+${MOD})*\s+${NOUN}\b` +
+      String.raw`|\b(?:${MOD}\s+)*${NOUN}\s*(?:[:=]|of|at|is|was|reaches|reaching|hits|hitting|to|totals?|totaling|near|around|about|over|above)?\s*(?:of\s+)?~?\s*${MONEY}`,
+    "i",
+  );
+  const AUDIT_COMPUTATION_RE = /\d[\d,]*\s*[×xX*]\s*(?:US)?[$€£]\s?\d[\d,]*(?:\.\d+)?(?:\s*\/\s*[A-Za-z]+)*\s*=\s*(?:US)?[$€£]?\s?\d/;
+
+  const PIECES = [
+    "ARR", "MRR", "annual", "net", "run-rate", "sales", "revenue", "of", "in", "a", "per", "month", "year", "at", "is", "to",
+    "totals", "~", ":", "=", "$", "US$", "€", "USD", "eur", "1", "15", "1,000", ",", ".", "5", "k", "m", "bn", "million",
+    "×", "x", "*", "/", "/mo", "seat", "biannual", "planet", "Revenue", "arr",
+    "$250k", "$1,500", "15 USD", "€1.5 million", "$100/month", "15 × $100/month = $1,500",
+  ];
+  const SEPARATORS = [" ", " ", " ", "", "  ", ":", ", ", "\n"];
+  function randomText(seed: number): string {
+    let state = seed;
+    const next = (): number => {
+      state = (state * 1103515245 + 12345) % 2147483648;
+      return state / 2147483648;
+    };
+    const pick = (list: readonly string[]): string => list[Math.floor(next() * list.length)] ?? "";
+    const length = 1 + Math.floor(next() * 10);
+    let text = "";
+    for (let i = 0; i < length; i += 1) text += `${pick(PIECES)}${pick(SEPARATORS)}`;
+    return text;
+  }
+  const first = (re: RegExp, text: string): { text: string; index: number } | null => {
+    const m = re.exec(text);
+    return m ? { text: m[0], index: m.index } : null;
+  };
+
+  it("finds the audit's first match on every one of thousands of generated texts", () => {
+    let revenueHits = 0;
+    let computationHits = 0;
+    for (let seed = 1; seed <= 20_000; seed += 1) {
+      const text = randomText(seed);
+      const revenue = first(AUDIT_REVENUE_RE, text);
+      expect(findRevenueTotals(text)[0] ?? null, JSON.stringify(text)).toEqual(revenue);
+      const computation = first(AUDIT_COMPUTATION_RE, text);
+      expect(findComputations(text)[0] ?? null, JSON.stringify(text)).toEqual(computation);
+      if (revenue) revenueHits += 1;
+      if (computation) computationHits += 1;
+    }
+    // The generator reaches both rules often enough to mean something.
+    expect(revenueHits).toBeGreaterThan(200);
+    expect(computationHits).toBeGreaterThan(20);
+  });
+
+  it.each([
+    ["revenue wording before a long run of spaces", "ARR" + " ".repeat(20_000) + "x"],
+    ["a long run of digit groups", "1,".repeat(10_000)],
+    ["revenue wording before a long run of digit groups", "ARR " + "1,".repeat(10_000)],
+    ["a long chain of revenue modifiers", "annual ".repeat(2_800) + "ARR x"],
+    ["a money amount before a long run of spaces", "$1" + " ".repeat(20_000) + "x"],
+  ])("stays linear on %s (a 20,000-character field)", (_label, text) => {
+    const started = performance.now();
+    findRevenueTotals(text);
+    findComputations(text);
+    expect(performance.now() - started).toBeLessThan(1_000);
+  });
+
+  it.each([
+    ["standard names", "SOC 2 and Next.js 15 ".repeat(1_000)],
+    ["one long snake_case identifier", `t${"_1".repeat(10_000)}`],
+    ["single quotes and apostrophes", "'a b' don't teams' ".repeat(1_000)],
+    ["unclosed corner brackets", "「a b c ".repeat(2_500)],
+  ])("findUnboundFigures and findQuotedSpans stay linear on %s", (_label, text) => {
+    const started = performance.now();
+    findUnboundFigures(text);
+    findQuotedSpans(text);
+    expect(performance.now() - started).toBeLessThan(1_000);
   });
 });

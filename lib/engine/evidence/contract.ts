@@ -257,9 +257,10 @@ export const EVIDENCE_TOKEN_RE = /\[\[ev:([qsp]_[0-9a-f]{12})\]\]/;
 
 /**
  * Ruling R6: every writer free-text field of a v2 record. Each carries no
- * figure outside evidence tokens (a bare year 1990–2039 aside) and no
- * double-quoted span of three or more words (tokens.ts states the exact
- * detectors). `[]` marks an array element (of objects or of strings).
+ * figure outside evidence tokens (a bare year 1990–2039 and the R13
+ * standard and version names aside) and no quoted span of three or more
+ * words in any quotation style (tokens.ts states the exact detectors).
+ * `[]` marks an array element (of objects or of strings).
  * One list drives the record parser and the final-artifact auditor.
  * `editorial.pricingTiers[].name` is listed because the ruling's only
  * numeric slots (NUMERIC_PROPOSAL_FIELDS) do not include tier names.

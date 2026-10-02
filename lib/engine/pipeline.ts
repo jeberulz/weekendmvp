@@ -17,8 +17,9 @@
  * step; extraction output (prose, flags, ids) is never trusted, only what
  * acceptEvidence re-derives from the page; the writer sees the brief, the
  * accepted bundle and provider keyword rows, nothing else. A writer reply
- * that fails the v2 record parse is regenerated once with the issue list
- * (never with evidence text) under the same rules.
+ * that fails the v2 record parse is regenerated with the issue list (never
+ * with evidence text) under the same rules, within the step's three
+ * billable attempts (ruling R13).
  *
  * Spend: every billable attempt reserves its step's worst case first and is
  * settled (billed failures included); `maxAttempts` per step bounds retries
@@ -795,14 +796,14 @@ export const EDITORIAL_INSTRUCTIONS = [
   "- Select ids only from the accepted evidence list. marketStatIds: at least 2 market_stat ids. quoteIds: at least 2 community_quote ids, neither text containing the other. competitors: at least 3, each with priceIds of competitor_price items, and name exactly equal to the vendor of those items.",
   "- Cite an evidence item inside text as [[ev:<id>]]. The page shows that item's whole claim there: a stat's figure with its subject, metric and period, a price with its vendor and plan, or the quote itself. Write the sentence so that claim reads as what it is.",
   "- Where tokens may go: marketSummary cites market_stat items only; communitySummary cites community_quote items only; whyNow cites market_stat or community_quote items; problemNarrative cites any kind; competitiveNarrative and goToMarket.pricingNotes cite competitor_price items only; competitors[].notes cites only that competitor's own priceIds. No other field takes tokens.",
-  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent. A bare year (1990–2039) and product names with digits (B2B, GPT-4o) are fine. The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns.",
-  "- No quotation marks around three or more words in any text field: quotations reach the page only as quote evidence, so cite the quote with [[ev:<id>]] instead.",
+  "- No figures outside [[ev:<id>]] tokens in ANY text field: no digits in any script, no currency signs, no number words from two upward (two, ten, twelve, forty seven, hundreds, thousands, a dozen), no percent or per cent, and no forms such as sub-10 or top-5. Where a quantity matters, write \"a few\", \"several\" or \"a couple of\". A bare year (1990–2039), product names with digits (B2B, GPT-4o) and standard or version names (SOC 2, ISO 27001, Next.js 15, OAuth 2.0) are fine. The only places for figures are pricingTiers[].price, pricingTiers[].includes, unitEconomics[].value, the yearOne counts and seats, and dataModel columns; even there, state no ARR, MRR or revenue total and no computation (a count times a price equals a total).",
+  "- No quotation marks of any kind in any field, the proposal slots and dataModel columns included: no straight or curly double or single quotes, guillemets or corner brackets around words (apostrophes inside words, such as don't or teams', are fine). Quotations reach the page only as quote evidence, so cite the quote with [[ev:<id>]] instead.",
   "- Never state a statistic, price, user count, quote or source that is not in the evidence list. When no item supports a point, say it qualitatively without numbers.",
   "Proposal rules (these are the product proposal and its assumptions, not measured facts):",
   `- howItWorks: ${MIN_HOW_IT_WORKS_STEPS}–5 steps, each exactly "Title — description" with a named title (never "Step 1"); each description is at least 35 words and describes what the product would do.`,
   `- goToMarket.channels: at least ${MIN_GTM_CHANNELS} customer-acquisition channels. pricingTiers: 2–4 tiers whose names fit this buying motion (not a generic Starter/Team/Scale ladder); each price is one fixed USD price per month or per year such as "$20/developer/month" or "$49/month", or "Free".`,
   "- yearOne is an assumption: funnel of 2–5 stages, each naming its channel in words, with integer counts that never increase; the last stage count equals payingAccounts; tier is one pricingTiers name with a fixed price; seatsPerAccount is an integer (1 for a flat price); assumptions explain the plan in words, without rates; never compute ARR or revenue totals.",
-  "- unitEconomics: at least 3 rows, value first and at most 8 words, label at most 12 words. stackNotes at least 60 words, specific to this product. dataModel: 3–6 snake_case tables specific to this product's workflow (not workspaces, members or usage_events, which always exist), columns as 'id, workspace_id fk, …'.",
+  "- unitEconomics: at least 3 rows, value first and at most 8 words, label at most 12 words. stackNotes at least 60 words, specific to this product. dataModel: 3–6 snake_case tables specific to this product's workflow (not workspaces, members or usage_events, which always exist), columns as id, workspace_id fk, … with enum values named plainly (status: draft, in review, approved).",
   "- scores: opportunity, pain, timing (market timing), builderConfidence and execution (build feasibility), each a number from 0 to 10.",
   "Writing: marketSummary 180–280 words about the niche (never global SaaS or AI totals); communitySummary at least 100 words; problemNarrative 300–420 words with named buyers in their proper casing; solutionNarrative 220–320 words naming the product and its wedge; competitiveNarrative 120–180 words on how this product differs from the named competitors; competitors[].notes at least 25 words each, unique per competitor; goToMarket.positioning at least 40 words; pricingNotes at least 60 words; brandBrief 50–90 words on visual direction and voice for this buyer; audienceShort a 2–5 word label keeping acronyms such as SMB or SaaS uppercase; productName a short brand name unique to this idea; dontBuildYet one sentence on what not to build yet.",
   "Never emit operator notes (no 're-check before publish'), never invent keyword volume or CPC, and never reuse padding phrases from other ideas.",
@@ -943,7 +944,7 @@ export function editorialIssuesSection(issues: ReadonlyArray<string>): string {
  * The editorial input before any regeneration note: brief, accepted bundle
  * and keyword rows, nothing else. Room for the longest regeneration note is
  * reserved, and the bundle's clips shrink until everything fits the step
- * budget, so the step's input check is a true worst case for both attempts.
+ * budget, so the step's input check is a true worst case for every attempt.
  */
 export function buildEditorialInput(
   brief: NormalizedBrief,

@@ -24,6 +24,7 @@ import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  NUMERIC_PROPOSAL_FIELDS,
   PIPELINE_VERSION_V2,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
   WRITER_FIELD_TOKEN_KINDS,
@@ -43,7 +44,13 @@ import {
   type YearOnePlanV2,
 } from "./evidence/contract.ts";
 import { quoteTextsOverlap } from "./evidence/quote.ts";
-import { evidenceRefs, validateEditorialText } from "./evidence/tokens.ts";
+import {
+  evidenceRefs,
+  findComputations,
+  findQuotedSpans,
+  findRevenueTotals,
+  validateEditorialText,
+} from "./evidence/tokens.ts";
 import { validateYearOnePlan } from "./finance.ts";
 
 // ===========================================================================
@@ -1792,15 +1799,42 @@ function writerTextField(path: string): WriterTextField | null {
 
 const COMPETITOR_NOTES_PATH = /^competitors\[(\d+)\]\.notes$/;
 
+const NUMERIC_PROPOSAL_PATHS: ReadonlySet<string> = new Set(NUMERIC_PROPOSAL_FIELDS);
+
 /**
- * Rulings R6 and R7 over every queued text field. Writer text
+ * Ruling R13: the numeric proposal slots may hold figures, but the page's
+ * other rules hold there too, so a run regenerates at parse instead of
+ * failing the final audit: no revenue total and no Year-One-style
+ * computation (only the Year-One Math lines state those), and no quotation
+ * of three or more words in any quotation style.
+ */
+function proposalTextIssues(path: string, text: string): string[] {
+  return [
+    ...findRevenueTotals(text).map(
+      (m) =>
+        `${path}: states a revenue total "${m.text}"; only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
+    ),
+    ...findComputations(text).map(
+      (m) => `${path}: holds a Year-One-style computation "${m.text}"; only Year-One Math computes revenue`,
+    ),
+    ...findQuotedSpans(text).map(
+      (q) =>
+        `${path}: quotes "${q.inner.slice(0, 80)}"; quotations reach the page only as quote evidence, so write it without quotation marks`,
+    ),
+  ];
+}
+
+/**
+ * Rulings R6, R7 and R13 over every queued text field. Writer text
  * (WRITER_TEXT_FIELDS) carries no figure outside tokens and no quotation,
  * and cites only the kinds WRITER_FIELD_TOKEN_KINDS allows it;
  * competitors[i].notes cites only that competitor's own price ids. Every
  * other text field (operator brief text, competitor names, provider keyword
- * terms and the numeric proposal slots) takes no evidence token at all.
- * brief.oneLiner becomes the manifest description verbatim, so it may hold
- * no token either (with its own message).
+ * terms and the numeric proposal slots) takes no evidence token at all, and
+ * the numeric proposal slots hold no revenue total, computation or
+ * quotation (proposalTextIssues). brief.oneLiner becomes the manifest
+ * description verbatim, so it may hold no token either (with its own
+ * message).
  */
 function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, AcceptedEvidence>): void {
   for (const { path, text } of ctx.texts) {
@@ -1822,6 +1856,7 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
         ...(notes ? { allowedIds: ownPrices ?? new Set<string>() } : {}),
       }),
     );
+    if (NUMERIC_PROPOSAL_PATHS.has(path.replace(/\[\d+\]/g, "[]"))) ctx.issues.push(...proposalTextIssues(path, text));
   }
 }
 
@@ -1853,8 +1888,10 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
  *   scores all four of opportunity/pain/timing/builderConfidence in 0–10
  *   (execution optional) or absent; editorial.yearOne through
  *   validateYearOnePlan against editorial.pricingTiers;
- * - FACT_BEARING_FIELDS carry figures only via accepted evidence tokens,
- *   brief.oneLiner carries no token, and every token anywhere resolves.
+ * - writer text (WRITER_TEXT_FIELDS) carries figures only via accepted
+ *   evidence tokens and no quotation (R6, R13); the numeric proposal slots
+ *   hold no revenue total, computation or quotation (R13); brief.oneLiner
+ *   carries no token, and every token anywhere resolves.
  * Bounds: RESEARCH_RECORD_V2_LIMITS and EVIDENCE_LIMITS.
  *
  * Re-validation proves internal consistency, not authenticity (ruling R4):

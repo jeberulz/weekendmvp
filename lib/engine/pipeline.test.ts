@@ -95,17 +95,19 @@ describe("step table (PIPELINE_VERSION 2)", () => {
       community_signals: 4,
       evidence_extraction: 2,
       keywords_demand: 2,
-      editorial_synthesis: 2,
+      // Ruling R13: the writer gets up to three billable attempts in total.
+      editorial_synthesis: 3,
       provenance_parse: 0,
     });
   });
 
-  it("keeps the worst case of every allowed billable attempt under the $4.00 cap ($3.262)", () => {
+  it("keeps the worst case of every allowed billable attempt under the $4.00 cap ($3.922)", () => {
     const worst = worstCaseRunMicroUsd(PIPELINE);
     expect(worst).toBe(PIPELINE.reduce((sum, s) => sum + s.maxAttempts * worstCaseMicroUsd(s.budget), 0));
     expect(worst).toBeLessThanOrEqual(CAP_MICRO_USD);
-    // Pinned so any budget or attempt change is a deliberate, reviewed edit.
-    expect(worst).toBe(3_262_000);
+    // Pinned so any budget or attempt change is a deliberate, reviewed edit
+    // (ruling R13 added the third editorial attempt: $3.262 + $0.660).
+    expect(worst).toBe(3_922_000);
   });
 });
 

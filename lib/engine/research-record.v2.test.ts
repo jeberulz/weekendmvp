@@ -957,7 +957,7 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
       );
       const quoted = fresh();
       setAt(quoted, field, `${textAt(quoted, field)} As one reviewer put it, “we read every single diff by hand.”`);
-      expectRejected(quoted, new RegExp(`^${escapeRe(field)}: double-quoted span`, "m"));
+      expectRejected(quoted, new RegExp(`^${escapeRe(field)}: quoted span`, "m"));
     },
   );
 
@@ -973,7 +973,7 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
       /^editorial\.problemNarrative: unbound figure "eight"/m,
       /^editorial\.problemNarrative: unbound figure "forty seven"/m,
       /^editorial\.problemNarrative: unbound figure "dozen"/m,
-      /^editorial\.problemNarrative: double-quoted span/m,
+      /^editorial\.problemNarrative: quoted span/m,
     );
   });
 
@@ -1403,5 +1403,57 @@ describe("parseResearchRecord: provenance.codeRevision (ruling R12)", () => {
     const input = fresh();
     setAt(input, "provenance.codeRevision", codeRevision);
     expectRejected(input, pattern);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R13: the numeric proposal slots follow the page's revenue and quotation rules
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: numeric proposal slots (ruling R13)", () => {
+  it.each([
+    [
+      "editorial.pricingTiers[1].includes",
+      "Shared library and review workflow for teams closing up to $250k in annual sales.",
+      /states a revenue total "\$250k in annual sales"/,
+    ],
+    ["editorial.unitEconomics[0].value", "$100 MRR per account", /states a revenue total "\$100 MRR"/],
+    [
+      "editorial.pricingTiers[0].includes",
+      "One seat; pays for itself at $39 MRR once a single deal closes.",
+      /states a revenue total "\$39 MRR"/,
+    ],
+    ["editorial.unitEconomics[0].value", "15 × $100/month = $1,500 a month", /holds a Year-One-style computation "15 × \$100\/month = \$1"/],
+    [
+      "editorial.pricingTiers[1].includes",
+      'Shared library with an "approved answers only" review mode and export packs.',
+      /quotes "approved answers only"/,
+    ],
+    [
+      "editorial.pricingTiers[1].includes",
+      "Shared library with an ‘approved answers only’ review mode and export packs.",
+      /quotes "approved answers only"/,
+    ],
+    [
+      "editorial.dataModel[1].columns",
+      "id, status text check (status in ('draft','needs legal review','approved')), reviewer_id uuid null",
+      /quotes "needs legal review"/,
+    ],
+  ])("rejects %s = %s at parse, so the run regenerates (review probes p16, p20b)", (field, value, pattern) => {
+    const input = fresh();
+    setAt(input, field, value);
+    expectRejected(input, new RegExp(`^${escapeRe(field)}: ${pattern.source}`, "m"));
+  });
+
+  it("accepts prices, per-period values, ARR features after a price and short SQL literals", () => {
+    const input = fresh();
+    setAt(input, "editorial.unitEconomics[0].value", "$100 per month");
+    setAt(input, "editorial.pricingTiers[0].includes", "One private repository ($12/month) — ARR dashboards included.");
+    setAt(
+      input,
+      "editorial.dataModel[1].columns",
+      "id, repository_id, deal_value_usd numeric check (deal_value_usd >= 0), status text check (status in ('draft','approved'))",
+    );
+    expect(() => parseResearchRecord(input)).not.toThrow();
   });
 });
