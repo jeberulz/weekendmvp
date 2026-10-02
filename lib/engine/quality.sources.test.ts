@@ -50,6 +50,27 @@ describe("source fetch safety", () => {
     }
   });
 
+  it("reads IPv4 embedded by 6to4 and SIIT through the IPv4 rules, and blocks site-local and local NAT64", () => {
+    for (const ip of [
+      "2002:a9fe:a9fe::1", // 6to4 (2002::/16, IPv4 in bits 16–47): 169.254.169.254
+      "2002:7f00:1::1", // 6to4: 127.0.0.1
+      "2002:0a00:0005:1234::abcd", // 6to4: 10.0.0.5
+      "2002:c0a8:101::", // 6to4: 192.168.1.1
+      "::ffff:0:7f00:1", // IPv4-translated (SIIT, ::ffff:0:0/96): 127.0.0.1
+      "::ffff:0:a9fe:a9fe", // SIIT: 169.254.169.254
+      "0:0:0:0:ffff:0:10.0.0.5", // SIIT, dotted: 10.0.0.5
+      "fec0::1", // deprecated site-local fec0::/10
+      "feff:1:2::3", // the top of fec0::/10
+      "64:ff9b:1::a9fe:a9fe", // local-use NAT64 64:ff9b:1::/48 (RFC 8215)
+    ]) {
+      expect(isBlockedAddress(ip), ip).toBe(true);
+    }
+    // The same forms around public IPv4 addresses stay allowed.
+    for (const ip of ["2002:5db8:d70e::1", "::ffff:0:5db8:d70e", "::ffff:0:93.184.215.14"]) {
+      expect(isBlockedAddress(ip), ip).toBe(false);
+    }
+  });
+
   it("refuses a citation that resolves to a private address", async () => {
     let fetched = 0;
     const provider = createSourceTextProvider({

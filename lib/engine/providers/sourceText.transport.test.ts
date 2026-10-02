@@ -9,6 +9,7 @@
 import { spawn } from "node:child_process";
 import { getEventListeners } from "node:events";
 import http from "node:http";
+import type { Socket } from "node:net";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
@@ -62,7 +63,7 @@ async function serveRaw(respond: Parameters<typeof startRawServer>[0]): Promise<
   return server;
 }
 
-function transport(limits?: Partial<Pick<SourceLimits, "maxWireBytes">>) {
+function transport(limits?: Partial<Pick<SourceLimits, "maxBodyBytes" | "maxSocketBytes">>) {
   return createPublicOnlyFetch({ lookup: loopbackLookup, limits });
 }
 
@@ -79,16 +80,46 @@ function cutShort(res: http.ServerResponse): Promise<boolean> {
   return new Promise((resolve) => res.on("close", () => resolve(!res.writableFinished)));
 }
 
+/** `count` chunked-encoding chunks of one body byte each (with an optional chunk extension), then the terminator. */
+function oneByteChunks(count: number, extension = ""): Buffer {
+  const unit = Buffer.from(`1${extension}\r\na\r\n`);
+  const terminator = Buffer.from("0\r\n\r\n");
+  const wire = Buffer.alloc(unit.length * count + terminator.length);
+  for (let i = 0; i < count; i += 1) unit.copy(wire, i * unit.length);
+  terminator.copy(wire, unit.length * count);
+  return wire;
+}
+
+/** Writes `wire` with backpressure until done or the peer hangs up; resolves with the bytes handed over. */
+function pump(socket: Socket, wire: Buffer): Promise<number> {
+  return new Promise((resolve) => {
+    let offset = 0;
+    const next = () => {
+      while (offset < wire.length && !socket.destroyed) {
+        const slice = wire.subarray(offset, offset + 64 * 1024);
+        offset += slice.length;
+        if (!socket.write(slice)) {
+          socket.once("drain", next);
+          return;
+        }
+      }
+      if (offset >= wire.length) socket.end();
+    };
+    socket.on("close", () => resolve(offset));
+    next();
+  });
+}
+
 describe("source transport: body bounds (F4)", () => {
   it("returns a body below the cap", async () => {
     const server = await serve((_req, res) => res.end("x".repeat(1000)));
-    const res = await transport({ maxWireBytes: 1024 })(`${server.origin("page")}/`);
+    const res = await transport({ maxBodyBytes: 1024 })(`${server.origin("page")}/`);
     expect(res.status).toBe(200);
     expect(await res.text()).toBe("x".repeat(1000));
   });
 
   it("accepts a body of exactly the default 2 MiB cap", async () => {
-    expect(SOURCE_LIMITS.maxWireBytes).toBe(2 * MiB);
+    expect(SOURCE_LIMITS.maxBodyBytes).toBe(2 * MiB);
     const server = await serve((_req, res) => res.end(Buffer.alloc(2 * MiB, "a")));
     const res = await transport()(`${server.origin("page")}/`);
     expect((await res.arrayBuffer()).byteLength).toBe(2 * MiB);
@@ -154,7 +185,7 @@ describe("source transport: body bounds (F4)", () => {
       pump();
     });
     await expect(
-      transport({ maxWireBytes: 64 * 1024 })(`${server.origin("page")}/`),
+      transport({ maxBodyBytes: 64 * 1024 })(`${server.origin("page")}/`),
     ).rejects.toMatchObject({ code: "oversized" });
     const outcome = await seen.promise;
     expect(outcome.cutShort).toBe(true);
@@ -168,7 +199,7 @@ describe("source transport: body bounds (F4)", () => {
       void cutShort(res).then(closed.resolve);
       res.write(Buffer.alloc(512 * 1024, "a")); // one write, far over the cap
     });
-    await expect(transport({ maxWireBytes: 1000 })(`${server.origin("page")}/`)).rejects.toMatchObject({
+    await expect(transport({ maxBodyBytes: 1000 })(`${server.origin("page")}/`)).rejects.toMatchObject({
       code: "oversized",
     });
     expect(await closed.promise).toBe(true);
@@ -195,6 +226,151 @@ describe("source transport: body bounds (F4)", () => {
       state: "fulfilled",
       value: undefined,
     });
+  });
+});
+
+describe("source transport: connection bytes are capped too (P2-1)", () => {
+  it("refuses a body sent as 1-byte chunks once the connection has carried 4 MiB", async () => {
+    expect(SOURCE_LIMITS.maxSocketBytes).toBe(4 * MiB);
+    // 2 MiB - 1 body bytes, under the body cap, but about 12 MiB on the wire.
+    const wire = oneByteChunks(2 * MiB - 1);
+    let handedOver: Promise<number> = Promise.resolve(0);
+    const server = await serveRaw((socket) => {
+      socket.write("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+      handedOver = pump(socket, wire);
+    });
+    const error = await provider()
+      .fetchText(`${server.origin("tiny")}/`)
+      .then(
+        () => null,
+        (e: unknown) => e,
+      );
+    expect(error).toMatchObject({ code: "oversized" });
+    expect((error as Error).message).toMatch(/exceeds 4194304 bytes on the connection/);
+    // The client hung up before the server could finish (kernel buffers let
+    // the server hand over 4–6 MiB of the 12 MiB first).
+    expect(await handedOver).toBeLessThan(wire.length);
+  });
+
+  it("counts status lines, headers and body bytes exactly against the cap", async () => {
+    const response = Buffer.from("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello");
+    const server = await serveRaw((socket) => socket.end(response));
+    const capped = (maxSocketBytes: number) =>
+      createPublicOnlyFetch({ lookup: loopbackLookup, limits: { maxBodyBytes: 5, maxSocketBytes } });
+    expect(await (await capped(response.length)(`${server.origin("cap")}/`)).text()).toBe("hello");
+    await expect(capped(response.length - 1)(`${server.origin("cap")}/`)).rejects.toMatchObject({
+      code: "oversized",
+    });
+  });
+
+  it("counts chunk framing and extensions: a tiny body on a large wire is refused", async () => {
+    // 1,024 one-byte chunks with an 8 KiB extension each: 1 KiB of body, 8 MiB of wire.
+    const wire = oneByteChunks(1024, `;x=${"e".repeat(8 * 1024)}`);
+    let handedOver: Promise<number> = Promise.resolve(0);
+    const server = await serveRaw((socket) => {
+      socket.write("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+      handedOver = pump(socket, wire);
+    });
+    // The bare transport has no deadline: only the cap can end this early.
+    const settled = await settleWithin(transport({ maxBodyBytes: 16 * 1024, maxSocketBytes: 64 * 1024 })(`${server.origin("ext")}/`), 2000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "oversized" } });
+    expect(await handedOver).toBeLessThan(wire.length);
+  });
+
+  it("cuts off a flood of informational responses", async () => {
+    const server = await serveRaw((socket) => {
+      const burst = Buffer.from("HTTP/1.1 102 Processing\r\n\r\n".repeat(1024));
+      const timer = setInterval(() => {
+        if (!socket.destroyed) socket.write(burst);
+      }, 1);
+      socket.on("close", () => clearInterval(timer));
+    });
+    const settled = await settleWithin(transport({ maxBodyBytes: 16 * 1024, maxSocketBytes: 64 * 1024 })(`${server.origin("flood")}/`), 2000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "oversized" } });
+  });
+
+  it("leaves ordinary chunking alone: a 2 MiB body in 1 KiB chunks reads under the default caps", async () => {
+    const chunk = Buffer.alloc(1024, "a");
+    const frame = Buffer.concat([Buffer.from("400\r\n"), chunk, Buffer.from("\r\n")]);
+    const wire = Buffer.concat([...Array.from({ length: 2048 }, () => frame), Buffer.from("0\r\n\r\n")]);
+    const server = await serveRaw((socket) => {
+      socket.write("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+      socket.end(wire);
+    });
+    expect((await provider().fetchText(`${server.origin("page")}/`)).length).toBe(2 * MiB);
+  });
+
+  it("refuses limits that are not positive integers or put the socket cap under the body cap", () => {
+    expect(() => createPublicOnlyFetch({ limits: { maxBodyBytes: 0 } })).toThrow(RangeError);
+    expect(() => createPublicOnlyFetch({ limits: { maxSocketBytes: 1.5 } })).toThrow(RangeError);
+    expect(() => createPublicOnlyFetch({ limits: { maxBodyBytes: 2048, maxSocketBytes: 1024 } })).toThrow(
+      /maxSocketBytes/,
+    );
+  });
+});
+
+describe("source reads: decoded bytes are capped for any fetch implementation", () => {
+  /** A body of `total` bytes in `chunk`-byte pieces that records how much was pulled and whether it was cancelled. */
+  function streamed(total: number, chunk: number) {
+    const state = { sent: 0, cancelled: false };
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (state.sent >= total) {
+          controller.close();
+          return;
+        }
+        const size = Math.min(chunk, total - state.sent);
+        controller.enqueue(new Uint8Array(size).fill(0x61));
+        state.sent += size;
+      },
+      cancel() {
+        state.cancelled = true;
+      },
+    });
+    return { body, state };
+  }
+
+  const reader = (response: Response) =>
+    createSourceTextProvider({ fetchImpl: async () => response, resolveHost: PUBLIC_TEST_DNS, timeoutMs: 5000 });
+
+  it("reads exactly maxDecodedBytes from an injected fetch", async () => {
+    expect(SOURCE_LIMITS.maxDecodedBytes).toBe(2 * MiB);
+    const { body } = streamed(2 * MiB, 64 * 1024);
+    expect((await reader(new Response(body)).fetchText("https://example.com/page")).length).toBe(2 * MiB);
+  });
+
+  it("refuses one byte over maxDecodedBytes, even in tiny chunks", async () => {
+    for (const chunk of [64 * 1024, 1024, 16]) {
+      const { body } = streamed(2 * MiB + 1, chunk);
+      await expect(
+        reader(new Response(body)).fetchText("https://example.com/page"),
+        String(chunk),
+      ).rejects.toMatchObject({ code: "oversized" });
+    }
+  });
+
+  it("stops reading a long stream at the cap instead of decoding it", async () => {
+    const { body, state } = streamed(64 * MiB, 64 * 1024);
+    await expect(reader(new Response(body)).fetchText("https://example.com/page")).rejects.toMatchObject({
+      code: "oversized",
+    });
+    expect(state).toMatchObject({ cancelled: true });
+    expect(state.sent).toBeLessThanOrEqual(2 * MiB + 2 * 64 * 1024);
+  });
+
+  it("refuses a declared Content-Length over the cap without reading the body", async () => {
+    let cancelled = false;
+    // A body that never yields: reading it would wait for the deadline.
+    const body = new ReadableStream<Uint8Array>({
+      pull: () => new Promise<void>(() => undefined),
+      cancel() {
+        cancelled = true;
+      },
+    });
+    const response = new Response(body, { headers: { "content-length": String(2 * MiB + 1) } });
+    const settled = await settleWithin(reader(response).fetchText("https://example.com/page"), 2000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "oversized" } });
+    expect(cancelled).toBe(true);
   });
 });
 
@@ -243,6 +419,55 @@ describe("source transport: compression is refused, never decoded", () => {
       });
     }
     expect(await provider().fetchText(`${server.origin("page")}/identity`)).toBe("plain text");
+  });
+
+  /** One chunked-encoding chunk and the terminator. */
+  const oneChunk = (body: Buffer) =>
+    Buffer.concat([Buffer.from(`${body.length.toString(16)}\r\n`), body, Buffer.from("\r\n0\r\n\r\n")]);
+
+  it("fails any transfer-coding Node would not decode as plain chunked, without returning its bytes", async () => {
+    const gz = gzipSync("<p>Loopio costs $20,000/year</p>");
+    const hi = Buffer.from("hi");
+    // Node only decodes "chunked" as the last coding: gzip comes through as
+    // compressed bytes, and "chunked, identity" or "chunked;x=1" as raw framing.
+    const responses: Array<[string, Buffer]> = [
+      ["Transfer-Encoding: gzip, chunked", oneChunk(gz)],
+      ["Transfer-Encoding: gzip", gz],
+      ["Transfer-Encoding: chunked, gzip", gz],
+      ["Transfer-Encoding: chunked\r\nTransfer-Encoding: gzip", gz],
+      ["Transfer-Encoding: x-custom", hi],
+      ["Transfer-Encoding: chunked, chunked", oneChunk(hi)],
+      ["Transfer-Encoding: chunked;x=1", oneChunk(hi)],
+      ["Transfer-Encoding: chunked, identity", oneChunk(hi)],
+    ];
+    for (const [header, body] of responses) {
+      const server = await serveRaw((socket) =>
+        socket.end(Buffer.concat([Buffer.from(`HTTP/1.1 200 OK\r\n${header}\r\n\r\n`), body])),
+      );
+      const error = await provider()
+        .fetchText(`${server.origin("te")}/`)
+        .then(
+          () => null,
+          (e: unknown) => e,
+        );
+      expect(error, header).toMatchObject({ code: "unsupported_encoding", status: 200 });
+      expect((error as Error).message, header).toMatch(/^Unsupported transfer-encoding "/);
+    }
+  });
+
+  it("reads chunked and identity transfer-codings", async () => {
+    const hi = Buffer.from("hi");
+    for (const [header, body] of [
+      ["Transfer-Encoding: chunked", oneChunk(hi)],
+      ["Transfer-Encoding: CHUNKED", oneChunk(hi)],
+      ["Transfer-Encoding: identity, chunked", oneChunk(hi)],
+      ["Transfer-Encoding: identity", hi], // read to EOF
+    ] as const) {
+      const server = await serveRaw((socket) =>
+        socket.end(Buffer.concat([Buffer.from(`HTTP/1.1 200 OK\r\n${header}\r\n\r\n`), body])),
+      );
+      expect(await provider().fetchText(`${server.origin("te")}/`), header).toBe("hi");
+    }
   });
 });
 
@@ -311,6 +536,65 @@ describe("source transport: every response settles (F7)", () => {
     expect(errors.stop()).toEqual([]);
   });
 
+  it("settles 101 Switching Protocols promptly as http_status and closes the socket", async () => {
+    const errors = captureProcessErrors();
+    const closed: Array<Promise<void>> = [];
+    const server = await serveRaw((socket) => {
+      const gone = deferred<void>();
+      socket.on("close", () => gone.resolve());
+      closed.push(gone.promise);
+      // An upgrade nobody asked for; the socket stays open on the server side.
+      socket.write("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n");
+    });
+    // The bare transport has no timer of its own, so a hold would never end here.
+    const settled = await settleWithin(transport()(`${server.origin("up")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "http_status", status: 101 } });
+    // Through the provider it settles long before the read's deadline, freeing the slot.
+    const started = Date.now();
+    await expect(provider({ timeoutMs: 10_000 }).fetchText(`${server.origin("up")}/`)).rejects.toMatchObject({
+      code: "http_status",
+      status: 101,
+    });
+    expect(Date.now() - started).toBeLessThan(1000);
+    expect(closed).toHaveLength(2);
+    expect(await settleWithin(Promise.all(closed), 1000)).toMatchObject({ state: "fulfilled" });
+    await sleep(20);
+    expect(errors.stop()).toEqual([]);
+  });
+
+  it("settles at once when the connection closes with neither a response nor an error", async () => {
+    // Node treats the answer to CONNECT as a tunnel: with no 'connect'
+    // listener it destroys the socket and emits only 'close' on the request.
+    const server = await serveRaw((socket) => socket.write("HTTP/1.1 200 Connection Established\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("tunnel")}/`, { method: "CONNECT" }), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "network" } });
+  });
+
+  it("settles a 101 without Upgrade headers as http_status", async () => {
+    const server = await serveRaw((socket) => socket.write("HTTP/1.1 101 Switching Protocols\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("up")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "http_status", status: 101 } });
+  });
+
+  it("reads the final response after 100, 102 and 103 informational responses", async () => {
+    for (const informational of [
+      "HTTP/1.1 100 Continue\r\n\r\n",
+      "HTTP/1.1 102 Processing\r\n\r\n",
+      "HTTP/1.1 103 Early Hints\r\nLink: </a.css>; rel=preload\r\n\r\n",
+    ]) {
+      const server = await serveRaw((socket) =>
+        socket.end(`${informational}HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello`),
+      );
+      expect(await provider().fetchText(`${server.origin("info")}/`), informational).toBe("hello");
+    }
+  });
+
+  it("settles an informational response followed by a closed connection at once", async () => {
+    const server = await serveRaw((socket) => socket.end("HTTP/1.1 103 Early Hints\r\n\r\n"));
+    const settled = await settleWithin(transport()(`${server.origin("info")}/`), 1000);
+    expect(settled).toMatchObject({ state: "rejected", reason: { code: "network" } });
+  });
+
   it("rejects a malformed status line and conflicting length headers", async () => {
     const server = await serveRaw((socket) => socket.end("HTTP/1.1 2x0 Bad\r\n\r\n"));
     await expect(transport()(`${server.origin("page")}/`)).rejects.toMatchObject({ code: "network" });
@@ -351,7 +635,7 @@ describe("source transport: every response settles (F7)", () => {
     await transport()(`${server.origin("page")}/`, { signal: controller.signal });
     expect(getEventListeners(controller.signal, "abort")).toHaveLength(0);
     await expect(
-      transport({ maxWireBytes: 2 })(`${server.origin("page")}/`, { signal: controller.signal }),
+      transport({ maxBodyBytes: 2 })(`${server.origin("page")}/`, { signal: controller.signal }),
     ).rejects.toMatchObject({ code: "oversized" });
     expect(getEventListeners(controller.signal, "abort")).toHaveLength(0);
   });
@@ -576,6 +860,69 @@ describe("source reads: redirects never leak credentials", () => {
         proxyAuthorization: undefined,
         userAgent: "transport-test",
       },
+    ]);
+  });
+
+  it("forwards only User-Agent, Accept and Accept-Language once the origin changes", async () => {
+    const names = [
+      "user-agent", "accept", "accept-language", "accept-encoding", "x-api-key", "x-custom",
+      "content-type", "authorization", "cookie",
+    ] as const;
+    const seen: Array<Record<string, string | undefined>> = [];
+    const record = (req: http.IncomingMessage) => {
+      const headers: Record<string, string | undefined> = { path: req.url };
+      for (const name of names) {
+        const value = req.headers[name];
+        if (typeof value === "string") headers[name] = value;
+      }
+      seen.push(headers);
+    };
+    const first = await serve((req, res) => {
+      record(req);
+      if (req.url === "/start") res.writeHead(302, { location: "/same" });
+      else if (req.url === "/same") res.writeHead(302, { location: `${second.origin("second")}/hop` });
+      res.end("home");
+    });
+    const second = await serve((req, res) => {
+      record(req);
+      res.writeHead(302, { location: `${first.origin("first")}/home` });
+      res.end();
+    });
+    const sent = {
+      "User-Agent": "transport-test",
+      Accept: "text/html",
+      "Accept-Language": "en",
+      "X-Api-Key": "dummy-api-key",
+      "x-custom": "dummy-custom",
+      "content-type": "text/plain",
+      authorization: "Bearer dummy-token",
+      cookie: "session=dummy-cookie",
+    };
+    const res = await sendWithRedirects(`${first.origin("first")}/start`, { headers: sent }, deps());
+    expect(await res.text()).toBe("home");
+    const everything = {
+      "user-agent": "transport-test",
+      accept: "text/html",
+      "accept-language": "en",
+      "accept-encoding": "identity",
+      "x-api-key": "dummy-api-key",
+      "x-custom": "dummy-custom",
+      "content-type": "text/plain",
+      authorization: "Bearer dummy-token",
+      cookie: "session=dummy-cookie",
+    };
+    const safelisted = {
+      "user-agent": "transport-test",
+      accept: "text/html",
+      "accept-language": "en",
+      "accept-encoding": "identity",
+    };
+    expect(seen).toEqual([
+      { path: "/start", ...everything },
+      { path: "/same", ...everything },
+      { path: "/hop", ...safelisted },
+      // Returning to the first origin does not restore what was dropped.
+      { path: "/home", ...safelisted },
     ]);
   });
 
@@ -864,7 +1211,109 @@ describe("redaction", () => {
     expect(text).toBe("GET https://x.example/a?… failed: Bearer [redacted] at [path]");
     expect(redactText("x".repeat(500), 50)).toHaveLength(50);
   });
+
+  it("redacts credential-like path segments and matrix parameters", () => {
+    for (const [url, redacted] of [
+      // A webhook secret: one long random run.
+      [
+        "https://hooks.example.com/services/T0A1B2C3D/B4E5F6G7H/aB3dE5fG7hJ9kL1mN3pQ5rS7",
+        "https://hooks.example.com/services/T0A1B2C3D/B4E5F6G7H/…",
+      ],
+      // A capability document id and a hex token, mid-path.
+      [
+        "https://docs.example.com/document/d/1AbC2dEf3GhI4jKl5MnO6pQr7StU8vWx9YzA0bCd/edit",
+        "https://docs.example.com/document/d/…/edit",
+      ],
+      [
+        "https://cdn.example/download/3f786850e387550fdab836ed7e6dc881de23001b/report.pdf",
+        "https://cdn.example/download/…/report.pdf",
+      ],
+      // Separators inside a random token do not make it a slug.
+      ["https://x.example/s/aB3dE-5fG7hJ9kL1_mN3pQ5rS7tU9vW", "https://x.example/s/…"],
+      ["https://x.example/gh/ghp_Ab12Cd34Ef56Gh78Ij90Kl12Mn34Op56Qr78", "https://x.example/gh/…"],
+      // Percent-encoded base64 is checked decoded.
+      ["https://x.example/t/dG9rZW4%2Bd2l0aCtwbHVz%2FYW5kL3NsYXNoZXM", "https://x.example/t/…"],
+      // Whatever follows a credential-like name, however short.
+      ["https://api.example/v1/token/abc123/refresh", "https://api.example/v1/token/…/refresh"],
+      ["https://api.example/api_key/k1", "https://api.example/api_key/…"],
+      ["https://x.example/reset/Session-ID/42", "https://x.example/reset/Session-ID/…"],
+      // Matrix parameters and name=value segments keep only the name.
+      ["https://host.example/a;jsessionid=SECRET7", "https://host.example/a;…"],
+      ["https://host.example/files/sig=c2VjcmV0/x", "https://host.example/files/sig=…/x"],
+    ] as const) {
+      expect(redactUrl(url), url).toBe(redacted);
+    }
+  });
+
+  it("keeps ordinary slugs, numeric ids and HN item ids readable", () => {
+    for (const url of [
+      "https://news.ycombinator.com/item?id=27515468",
+      "https://www.reddit.com/r/shopify/comments/1n2jsoc/meta_ad_landing_page_poor_conversion_rate/",
+      "https://tianpan.co/forum/t/ai-code-review-bottleneck-our-pr-queue-grew-91-and-nobody-knows-how-to-fix-it/2001",
+      "https://www.industryresearch.biz/market-reports/request-for-proposal-rfp-software-market-109348",
+      "https://en.wikipedia.example/wiki/List_of_Software_as_a_Service_companies_in_the_United_States",
+      "https://medium.example/@writer/why-we-rewrote-our-billing-system-1a2b3c4d5e6f",
+      "https://x.example/status/1234567890123456789",
+      "https://x.example/best-SaaS-tools-for-startups-in-2024/",
+      "https://x.example/report_%28v2%29",
+      "https://x.example/",
+    ]) {
+      expect(redactUrl(url), url).toBe(url);
+    }
+  });
+
+  it("finds URLs in text exactly as the old regex did, on random input", () => {
+    const tokens = [
+      "https://", "http://", "a://", "Z.y-1+q://", "1abc://", "-x://", "://", ":", "/", "//", " ", "\t",
+      "\n", "\u00a0", "\u2028", '"', "'", "<", ">", "(", ")", "=", ",", ";", "a", "Z", "1", "_", "-",
+      ".", "+", "é", "user:pw@", "host.example", "?token=s3cret", "&id=7", "#frag", "Bearer ", "basic ",
+      "/Users/me/x", "C:\\x", "/home/u/.ssh", "%2F", "\u{1F600}",
+    ];
+    // Deterministic generator, so a failure is reproducible.
+    let seed = 0x7ed;
+    const random = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed / 0x80000000;
+    };
+    for (let i = 0; i < 5000; i += 1) {
+      const length = Math.floor(random() * 24);
+      let text = "";
+      for (let j = 0; j < length; j += 1) text += tokens[Math.floor(random() * tokens.length)];
+      expect(redactText(text, 10_000), JSON.stringify(text)).toBe(regexRedactText(text, 10_000));
+    }
+  });
+
+  it("stays linear on hostile text: 2 MiB redacts in well under the bound each", () => {
+    // The URL regex rescanned every scheme-like run from each word boundary:
+    // 64k characters of "a." took 1.8 s, and the cost grew with the square
+    // (2 MiB would take about half an hour). Linear work takes milliseconds
+    // here, ~200 ms for the URL-dense units; the bounds only separate the two.
+    const units = [
+      "a.", "a:", "a-1+", "1://", "a://", "a://b ", "https://h/a/b?token=1 ", "x?a=1&", "bearer \t",
+      "/Users/x ", "%",
+    ];
+    for (const unit of units) {
+      for (const size of [64 * 1024, 2 * MiB]) {
+        const text = unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
+        const started = performance.now();
+        redactText(text, 200);
+        const elapsed = performance.now() - started;
+        expect(elapsed, `${JSON.stringify(unit)} × ${size}`).toBeLessThan(size === 2 * MiB ? 3000 : 250);
+      }
+    }
+  });
 });
+
+/** The pre-fix URL matcher (quadratic), kept to prove the linear scan is equivalent. */
+function regexRedactText(text: string, maxChars: number): string {
+  const clean = text
+    .replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>]+/gi, (match) => redactUrl(match))
+    .replace(/\b(bearer|basic)\s+[^\s,;"']+/gi, "$1 [redacted]")
+    .replace(/(^|[\s("'=])(?:\/(?:Users|home|private|tmp|var|opt|root)\/|[A-Za-z]:\\)[^\s"'<>)]*/g, "$1[path]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return clean.length <= maxChars ? clean : `${clean.slice(0, maxChars - 1)}…`;
+}
 
 describe("child-process smoke", () => {
   type ChildResult = { code: number | null; signal: string | null; stdout: string; stderr: string };
@@ -903,5 +1352,28 @@ describe("child-process smoke", () => {
       ).toEqual({ code: 0, signal: null, timedOut: false, stdout: '{"outcome":"no_content"}' });
     },
     30_000,
+  );
+
+  it(
+    "keeps one body buffer however the body is chunked (1-byte chunks, heap measured with gc)",
+    async () => {
+      const script = fileURLToPath(new URL("./__smoke__/tinyChunks.ts", import.meta.url));
+      const result = await runNode(["--expose-gc", "--experimental-strip-types", script], 60_000);
+      expect({ code: result.code, signal: result.signal, timedOut: result.timedOut }, result.stderr).toEqual({
+        code: 0,
+        signal: null,
+        timedOut: false,
+      });
+      const report: unknown = JSON.parse(result.stdout.trim());
+      expect(report).toMatchObject({ outcome: `read ${2 * MiB - 1} bytes`, wireBytes: 12 * MiB - 1 });
+      const peakMiB =
+        typeof report === "object" && report !== null && "peakMiB" in report && typeof report.peakMiB === "number"
+          ? report.peakMiB
+          : Number.NaN;
+      // One growing body buffer and the Response's copy of it are a few MiB;
+      // a Buffer kept per 1-byte chunk was more than 300 MiB.
+      expect(peakMiB, result.stdout).toBeLessThan(64);
+    },
+    90_000,
   );
 });
