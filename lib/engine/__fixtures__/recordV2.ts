@@ -8,6 +8,10 @@
  *
  * The editorial prose is long enough (about 2,700 words compiled) that a
  * clean compile passes the whole deep audit, including the 2,200-word floor.
+ * Writer text is figure-free (rulings R6 and R10): no digits, number words or
+ * double-quoted spans outside evidence tokens. Figures appear only in the
+ * proposal slots (tier prices, unit-economics values, Year-One counts and
+ * seats) and in evidence.
  */
 
 import { createHash } from "node:crypto";
@@ -344,15 +348,15 @@ const PROBLEM = [
   "Indie developers and small engineering teams maintaining GitHub repositories are merging more AI-assisted code than ever, and review has quietly become the bottleneck. Authors can now produce a large change in an afternoon, but the person who has to approve it still reads every line by hand. On a small team that person is usually the most senior engineer, the one who also owns architecture decisions, production incidents and the onboarding of new contributors.",
   "The problem is not a lack of tools. Most of these teams already run an automated reviewer, and the result is a different kind of noise. Bots comment on formatting that the linter already handles, restate the diff in friendlier words, and flag speculative risks that turn out to be fine. Each comment has to be read, judged and dismissed, so the bot adds a step instead of removing one. Maintainers describe a slow drift: first they skim the bot's comments, then they skip them, and eventually the one comment that mattered is buried under a pile of suggestions nobody asked for.",
   "Generated code makes this worse in a specific way. A human reviewer normally leans on context about the author: their habits, the order of their commits, the mistakes they tend to make. Code written with an assistant arrives without those signals. It often looks polished while taking a needlessly general approach, ignoring a helper that already exists in the repository, or handling an edge case in a way that contradicts a decision the team made months ago. The reviewer has to reconstruct the intent before deciding whether the change is safe, and that reconstruction is the expensive part.",
-  "The cost shows up in three places. Pull requests wait longer for a first human look, so authors switch context and lose momentum. Senior engineers spend their best hours reading diffs instead of designing the next feature. Junior contributors get terse, asynchronous corrections instead of the explanation that would help them learn the codebase. None of this appears on an invoice, which is why teams tolerate it for so long.",
-  "What these teams want is not more comments. They want a short, trustworthy answer to two questions on every pull request: what actually changed, and is there anything here a senior engineer must look at before merging. If a tool can answer those questions in the repository's own terms, and stay silent when there is nothing worth saying, it protects the scarcest resource on a small team: the attention of the people who know the system best.",
+  "The cost shows up in several places. Pull requests wait longer for a first human look, so authors switch context and lose momentum. Senior engineers spend their best hours reading diffs instead of designing the next feature. Junior contributors get terse, asynchronous corrections instead of the explanation that would help them learn the codebase. None of this appears on an invoice, which is why teams tolerate it for so long.",
+  "What these teams want is not more comments. They want a short, trustworthy answer to a pair of questions on every pull request: what actually changed, and is there anything here a senior engineer must look at before merging. If a tool can answer those questions in the repository's own terms, and stay silent when there is nothing worth saying, it protects the scarcest resource on a small team: the attention of the people who know the system best.",
 ].join("\n\n");
 
 const SOLUTION = [
   "SignalPass is a quiet reviewer for small GitHub teams. It installs as a GitHub App, reads the repository's merged history and conventions, and posts a single review on each pull request: a plain-language summary of what changed and a short list of the risks that deserve a human look. Everything else stays out of the thread.",
   "The summary is written for the reviewer, not the author. It groups changed files by behavior instead of by path, names the functions and data flows that moved, and points out where the change departs from patterns the repository already uses. A reviewer can read it quickly and decide where to spend attention, instead of rebuilding the story of the change from a long diff.",
   "The risk list is deliberately short. A finding only appears when SignalPass can tie it to a specific line, a specific reason and something concrete in the repository, such as a test that no longer covers a branch or a helper that the new code duplicates. Findings that cannot meet that bar are dropped rather than posted as maybes, because a speculative comment costs a reviewer the same time as a real one.",
-  "Teams stay in control of the volume. Every finding carries two buttons, useful and noise, and SignalPass learns from both. If a team keeps dismissing a category of finding, SignalPass stops raising it for that repository; if a reviewer confirms a finding, similar issues rank higher next time. The goal is a reviewer that becomes quieter and more precise the longer a team uses it, which is the opposite of how most bots age.",
+  "Teams stay in control of the volume. Every finding carries a pair of buttons, useful and noise, and SignalPass learns from both. If a team keeps dismissing a category of finding, SignalPass stops raising it for that repository; if a reviewer confirms a finding, similar issues rank higher next time. The goal is a reviewer that becomes quieter and more precise the longer a team uses it, which is the opposite of how most bots age.",
 ].join("\n\n");
 
 function competitiveNarrative(ev: FixtureEvidence): string {
@@ -404,7 +408,7 @@ function baseRecord(pages: FixturePages, acceptance: Acceptance, ev: FixtureEvid
       payingAccounts: 45,
       seatsPerAccount: 5,
       assumptions:
-        "Five paid developers per Crew account on average; trials convert after a two-week evaluation on one private repository.",
+        "A typical Crew account pays for a small team of developers; trials convert after a short evaluation on one private repository.",
     },
     dataModel: [
       { table: "repositories", columns: "id uuid pk, workspace_id uuid fk, github_repo_id bigint unique, full_name text, default_branch text" },
@@ -481,9 +485,9 @@ function baseRecord(pages: FixturePages, acceptance: Acceptance, ev: FixtureEvid
     whyNow:
       "AI-generated code is increasing review load faster than small teams can add reviewers, and noisy bots have taught developers to ignore automated comments entirely.",
     howItWorks: [
-      "Connect — Install the GitHub App on one repository and choose the branches SignalPass should watch; setup takes under 2 minutes.",
+      "Connect — Install the GitHub App on one repository and choose the branches SignalPass should watch; setup takes a few minutes.",
       "Learn — SignalPass reads merged pull requests, tests and past review comments to build a short profile of the repository's conventions and helpers.",
-      "Review — Each new pull request gets one summary of what changed and at most 3 risks, each tied to a line, a reason and evidence from the repository.",
+      "Review — Each new pull request gets one summary of what changed and a short list of risks, each tied to a line, a reason and evidence from the repository.",
       "Tune — Reviewers mark each finding as useful or noise, and SignalPass lowers the volume of anything the team keeps dismissing.",
     ],
     scores: { opportunity: 7.5, pain: 8, timing: 8, builderConfidence: 7, execution: 7.5 },

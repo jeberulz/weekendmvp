@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Compile CLI: contract v2 research record JSON → content/ideas/{slug}.mdx
- * (+ manifest stub).
+ * (+ manifest stub with generated highlights and the research mode).
  *
  * Usage:
  *   npm run engine:compile -- --record engine/records/{slug}.json
- *   npm run engine:compile -- --record path.json --slug _engine-fixture-draft --force
+ *   npm run engine:compile -- --record path.json --slug engine-draft-x --force
  *   npm run engine:compile -- --record path.json --ideas-dir /tmp/ideas --no-manifest --json
  *
  * The record is validated with parseResearchRecord before anything is
@@ -16,24 +16,19 @@
  *
  * Slugs starting with engine-draft- are spot-check drafts: they default to
  * engine/drafts/{slug}.mdx + engine/drafts/manifest.json and are refused in
- * content/ideas/, so a draft can never reach the live site.
+ * content/ideas/, so a draft can never reach the live site. A mode
+ * "fixture" record (synthetic research) compiles only to an engine-draft-*
+ * or _temp slug unless the test-only --allow-fixture flag is passed (ruling
+ * R11).
  *
  * Refuses to overwrite existing MDX unless --force.
- * Does not seed Convex, generate OG, or push git.
+ * Does not seed Convex, generate OG, or push git. Output never includes a
+ * stack trace; paths in messages are repo-relative or reduced to a file name.
  */
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-import { CompileError } from "../lib/engine/compile.ts";
-import { writeCompiledIdea } from "../lib/engine/compile-write.ts";
-import { ENGINE_DRAFT_PREFIX } from "../lib/engine-drafts.ts";
-import {
-  LegacyResearchRecordError,
-  parseResearchRecord,
-  ResearchRecordParseError,
-} from "../lib/engine/research-record.ts";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -49,14 +44,28 @@ Flags:
                       engine/drafts/manifest.json for engine-draft-* slugs)
   --no-manifest       Do not write/update the manifest
   --force             Overwrite existing MDX / manifest row
+  --allow-fixture     Test only: compile a mode "fixture" record to any slug
+                      (otherwise only engine-draft-* or _temp slugs; R11)
   --json              Print one JSON result line (ok, mdxPath, slug, wordCount,
-                      manifestWritten; or ok:false with error and issues)
+                      manifestWritten, researchMode; or ok:false with error
+                      and issues)
 Exit codes: 0 compiled, 1 refused or failed, 2 usage error.
 `;
 
 function usage(exit) {
   (exit === 0 ? console.log : console.error)(HELP);
   process.exit(exit);
+}
+
+/** Absolute local paths out of a message (this runs even if the TS modules failed to load). */
+function scrubPaths(text) {
+  return String(text).replace(/(?:\/(?:Users|home|private|tmp|var|opt|root)\/|[A-Za-z]:\\)[^\s'"<>)]*/g, "[path]");
+}
+
+/** A path for terminal output: repo-relative inside the repo, else only the file name. */
+function displayPath(p) {
+  const rel = path.relative(root, path.resolve(p));
+  return rel && !rel.startsWith("..") && !path.isAbsolute(rel) ? rel : `…/${path.basename(p)}`;
 }
 
 function parseArgs(argv) {
@@ -67,6 +76,7 @@ function parseArgs(argv) {
     manifestPath: null,
     noManifest: false,
     force: false,
+    allowFixture: false,
     json: false,
   };
   const value = (i, flag) => {
@@ -86,6 +96,7 @@ function parseArgs(argv) {
     else if (a === "--manifest") out.manifestPath = path.resolve(value(++i, a));
     else if (a === "--no-manifest") out.noManifest = true;
     else if (a === "--force") out.force = true;
+    else if (a === "--allow-fixture") out.allowFixture = true;
     else if (a === "--json") out.json = true;
     else {
       console.error(`unknown arg: ${a}`);
@@ -97,26 +108,41 @@ function parseArgs(argv) {
 
 /** Report a refusal (human text or one JSON line) and exit 1. */
 function refuse(args, error, issues = []) {
+  const message = scrubPaths(error);
+  const details = issues.map(scrubPaths);
   if (args.json) {
-    console.log(JSON.stringify({ ok: false, error, issues }));
+    console.log(JSON.stringify({ ok: false, error: message, issues: details }));
   } else {
-    console.error(error);
-    for (const issue of issues) console.error(`  - ${issue}`);
+    console.error(message);
+    for (const issue of details) console.error(`  - ${issue}`);
   }
   process.exit(1);
 }
 
-function main() {
+async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.recordPath) usage(2);
-  if (!fs.existsSync(args.recordPath)) refuse(args, `record not found: ${args.recordPath}`);
+  if (!fs.existsSync(args.recordPath)) refuse(args, `record not found: ${displayPath(args.recordPath)}`);
 
   let raw;
   try {
     raw = JSON.parse(fs.readFileSync(args.recordPath, "utf8"));
   } catch (err) {
-    refuse(args, `record is not valid JSON: ${args.recordPath} (${err instanceof Error ? err.message : err})`);
+    refuse(args, `record is not valid JSON: ${displayPath(args.recordPath)} (${err instanceof Error ? err.message : err})`);
   }
+
+  // Loaded here, not statically, so a module failure is reported like any
+  // other error: one scrubbed line, no stack.
+  const [compileModule, writeModule, draftsModule, recordModule] = await Promise.all([
+    import(pathToFileURL(path.join(root, "lib/engine/compile.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/compile-write.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine-drafts.ts")).href),
+    import(pathToFileURL(path.join(root, "lib/engine/research-record.ts")).href),
+  ]);
+  const { CompileError } = compileModule;
+  const { writeCompiledIdea } = writeModule;
+  const { ENGINE_DRAFT_PREFIX } = draftsModule;
+  const { LegacyResearchRecordError, parseResearchRecord, ResearchRecordParseError } = recordModule;
 
   let record;
   try {
@@ -124,7 +150,7 @@ function main() {
   } catch (err) {
     if (err instanceof LegacyResearchRecordError) refuse(args, err.message);
     if (err instanceof ResearchRecordParseError) {
-      refuse(args, `record is not a valid contract v2 research record: ${args.recordPath}`, err.issues);
+      refuse(args, `record is not a valid contract v2 research record: ${displayPath(args.recordPath)}`, err.issues);
     }
     throw err;
   }
@@ -160,6 +186,7 @@ function main() {
       manifestPath: args.noManifest ? undefined : manifestPath,
       writeManifest: !args.noManifest,
       force: args.force,
+      allowFixture: args.allowFixture,
     });
   } catch (err) {
     if (err instanceof CompileError) refuse(args, "record cannot compile into a publishable page", err.issues);
@@ -180,18 +207,18 @@ function main() {
         source: result.manifestEntry.source,
         wordCount: result.manifestEntry.provenance.wordCount,
         manifestWritten: result.manifestWritten,
+        researchMode: result.manifestEntry.provenance.researchMode,
       }),
     );
   } else {
     console.log(
-      `wrote ${result.mdxPath} (source=${result.manifestEntry.source} words≈${result.manifestEntry.provenance.wordCount} manifest=${result.manifestWritten})`,
+      `wrote ${displayPath(result.mdxPath)} (source=${result.manifestEntry.source} mode=${result.manifestEntry.provenance.researchMode} words≈${result.manifestEntry.provenance.wordCount} manifest=${result.manifestWritten})`,
     );
   }
 }
 
-try {
-  main();
-} catch (err) {
-  console.error(err instanceof Error ? err.stack || err.message : err);
+main().catch((err) => {
+  // Never print a stack trace: it carries local paths.
+  console.error(`engine:compile: unexpected error: ${scrubPaths(err instanceof Error ? err.message : String(err))}`);
   process.exit(1);
-}
+});

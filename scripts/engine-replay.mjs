@@ -34,8 +34,11 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SLUG = "engine-draft-replay-rfp";
-/** The npm scripts' flags for the CLIs (they import TypeScript modules). */
-const NODE_FLAGS = ["--experimental-strip-types"];
+/**
+ * The npm scripts' flags for the CLIs: they import TypeScript modules, and the
+ * typeless-package warning (which prints an absolute path) is silenced.
+ */
+const NODE_FLAGS = ["--experimental-strip-types", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON"];
 const STEP_TIMEOUT_MS = 120_000;
 const TAIL_LINES = 15;
 

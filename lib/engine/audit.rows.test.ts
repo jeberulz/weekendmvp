@@ -1,21 +1,26 @@
 /**
  * Final-artifact evidence rows and the unbound-figure guard (WP46-S4; plan
- * §7.5–6 F1 defense, contract §9).
+ * §7.5–6 F1 defense, contract §9, ruling R10).
  *
  * Market signal and competitor rows must show their evidence's canonical
- * rendering with that evidence's own source. In The Problem, Market Research
- * and Competitive Landscape, a figure in prose that is not a rendering of
- * evidence the record references is an "unbound figure" — a guard against
- * figures typed into the page, not proof that the prose is true.
+ * rendering with that evidence's own source. A figure in prose that is not
+ * a LINKED rendering of evidence the record uses is an "unbound figure" — a
+ * guard against figures typed into the page, not proof that the prose is
+ * true. (audit.page.test.ts covers the other sections; this file keeps the
+ * three factual ones.) Renderings are computed with renderEvidenceInline,
+ * never typed, so the tests follow the evidence module's wording.
  */
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { auditPage, cleanupTempDirs, compiledPage, replaceOnce } from "./__fixtures__/auditHarness.ts";
+import { auditPage, cleanupTempDirs, compiledPage, pageBody, replaceOnce } from "./__fixtures__/auditHarness.ts";
 import { buildFixtureRecord, EV, FIXTURE_PAGES, FIXTURE_RETRIEVED_AT } from "./__fixtures__/recordV2.ts";
 import { auditEngineArtifact } from "./artifact-audit.ts";
 import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
 import type { AcceptedEvidence, ResearchRecordV2 } from "./evidence/contract.ts";
+import { escapeMdxText } from "./evidence/quote.ts";
+import { renderEvidenceInline } from "./evidence/tokens.ts";
+import { marketSignalLabel, mdLink } from "./page-format.ts";
 
 afterEach(cleanupTempDirs);
 
@@ -24,6 +29,16 @@ function errorsOf(result: { errors: string[] }): string {
 }
 
 const FIRST_PROBLEM_END = "the onboarding of new contributors.";
+
+/** An evidence rendering as the compiler prints it (escaped once) and as the auditor reads it. */
+function shown(item: AcceptedEvidence): { mdx: string; text: string } {
+  const text = renderEvidenceInline(item);
+  return { mdx: escapeMdxText(text), text };
+}
+
+function re(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+}
 
 describe("unbound figures in fact-bearing sections (F1 defense)", () => {
   it("passes the compiled page, whose figures are all evidence renderings", async () => {
@@ -60,25 +75,32 @@ describe("unbound figures in fact-bearing sections (F1 defense)", () => {
     expect(errorsOf(await auditPage(page))).toMatch(/The Problem: unbound figure "sixty percent"/);
   });
 
-  it("passes a figure that is a selected evidence rendering, plain or linked", async () => {
+  it("passes a figure that is a linked evidence rendering with its own source", async () => {
     const page = replaceOnce(
       compiledPage(),
       FIRST_PROBLEM_END,
-      `${FIRST_PROBLEM_END} Adoption already sits at 62% (2025) of developers, in a market of [$1.4 billion (2025)](${FIXTURE_PAGES.report.url}).`,
+      `${FIRST_PROBLEM_END} The category already sits at ${mdLink(shown(EV.statMeasured).text, FIXTURE_PAGES.report.url)}.`,
     );
     expect((await auditPage(page)).errors).toEqual([]);
   });
 
+  it("fails the same rendering typed as bare text (ruling R10, review P2-4: renderings are allowlisted only where linked or in rows)", async () => {
+    // Replaces the S4 test that passed a plain "62% (2025)": a bare rendering
+    // is exactly how a figure gets re-attributed to another claim.
+    const page = replaceOnce(compiledPage(), FIRST_PROBLEM_END, `${FIRST_PROBLEM_END} Adoption already sits at ${shown(EV.statAdoption).mdx} of developers.`);
+    expect(errorsOf(await auditPage(page))).toMatch(/The Problem: unbound figure "62%"/);
+  });
+
   it("fails an evidence link whose figure is right but whose source is not", async () => {
+    const { text } = shown(EV.statMeasured);
     const page = replaceOnce(
       compiledPage(),
-      `[$1.4 billion (2025)](${FIXTURE_PAGES.report.url}) and expects`,
-      `[$1.4 billion (2025)](${FIXTURE_PAGES.survey.url}) and expects`,
+      `${mdLink(text, FIXTURE_PAGES.report.url)} and expects`,
+      `${mdLink(text, FIXTURE_PAGES.survey.url)} and expects`,
     );
-    expect(errorsOf(await auditPage(page))).toContain(
-      `evidence link "$1.4 billion (2025)" near line`,
-    );
-    expect(errorsOf(await auditPage(page))).toMatch(
+    const errors = errorsOf(await auditPage(page));
+    expect(errors).toContain(`evidence link "${text}" near line`);
+    expect(errors).toMatch(
       /points to https:\/\/survey\.example\.org\/developer-tools-2025, but its evidence source is https:\/\/research\.example\.com\/ai-code-review-market/,
     );
   });
@@ -91,7 +113,7 @@ describe("unbound figures in fact-bearing sections (F1 defense)", () => {
         /Market Research: unbound figure "300%"/,
       ],
       [
-        "**Developers using AI code review assistants (adoption)**",
+        `**${escapeMdxText(marketSignalLabel(EV.statAdoption))}**`,
         "**Developers using AI code review assistants, up 300% (adoption)**",
         /Market Research: unbound figure "300%"/,
       ],
@@ -110,61 +132,56 @@ describe("unbound figures in fact-bearing sections (F1 defense)", () => {
 
 describe("competitor and market signal rows", () => {
   it("fails a changed competitor price", async () => {
-    const page = replaceOnce(
-      compiledPage(),
-      "$24/user/month, billed annually (Pro) [CodeRabbit pricing]",
-      "$19/user/month, billed annually (Pro) [CodeRabbit pricing]",
-    );
+    const pro = shown(EV.pricePro);
+    const changed = pro.text.replace("$24", "$19");
+    const page = replaceOnce(compiledPage(), `${pro.mdx} [CodeRabbit pricing]`, `${escapeMdxText(changed)} [CodeRabbit pricing]`);
     const errors = errorsOf(await auditPage(page));
     expect(errors).toMatch(
-      /competitor row "CodeRabbit" \(line \d+\): published price "\$19\/user\/month, billed annually \(Pro\)" is not an accepted price for CodeRabbit/,
+      new RegExp(`competitor row "CodeRabbit" \\(line \\d+\\): published price "${re(changed)}" is not an accepted price for CodeRabbit`),
     );
-    expect(errors).toContain(`accepted price "$24/user/month, billed annually (Pro)" (${EV.pricePro.id}) is missing from the row`);
+    expect(errors).toContain(`accepted price "${pro.text}" (${EV.pricePro.id}) is missing from the row`);
   });
 
   it("fails a price moved to another competitor", async () => {
-    const graphite = "$40/user/month (Team) [Graphite pricing](https://graphite.dev/pricing)";
-    const qodo = "$30/user/month, billed annually (Teams) [Qodo pricing](https://www.qodo.ai/pricing)";
+    const graphite = `${shown(EV.priceGraphite).mdx} ${mdLink(FIXTURE_PAGES.graphite.title, FIXTURE_PAGES.graphite.url)}`;
+    const qodo = `${shown(EV.priceQodo).mdx} ${mdLink(FIXTURE_PAGES.qodo.title, FIXTURE_PAGES.qodo.url)}`;
     const page = replaceOnce(replaceOnce(compiledPage(), graphite, "@@GRAPHITE@@"), qodo, graphite).replace("@@GRAPHITE@@", qodo);
     const errors = errorsOf(await auditPage(page));
-    expect(errors).toMatch(/competitor row "Graphite" .*: price "\$30\/user\/month, billed annually \(Teams\)" is Qodo's accepted price, not Graphite's/);
-    expect(errors).toMatch(/competitor row "Qodo" .*: price "\$40\/user\/month \(Team\)" is Graphite's accepted price, not Qodo's/);
+    expect(errors).toMatch(new RegExp(`competitor row "Graphite" .*: price "${re(shown(EV.priceQodo).text)}" is Qodo's accepted price, not Graphite's`));
+    expect(errors).toMatch(new RegExp(`competitor row "Qodo" .*: price "${re(shown(EV.priceGraphite).text)}" is Graphite's accepted price, not Qodo's`));
   });
 
   it("fails a changed market figure", async () => {
-    const page = replaceOnce(compiledPage(), "$1.4 billion (2025) ([AI code review", "$1.9 billion (2025) ([AI code review");
+    const measured = shown(EV.statMeasured);
+    const changed = measured.text.replace("$1.4", "$1.9");
+    const page = replaceOnce(compiledPage(), `${measured.mdx} ([AI code review`, `${escapeMdxText(changed)} ([AI code review`);
     const errors = errorsOf(await auditPage(page));
-    expect(errors).toMatch(/market signal row at line \d+: "\$1\.9 billion \(2025\)" is not the rendering of a selected market stat/);
-    expect(errors).toContain(`market signal fidelity: selected stat ${EV.statMeasured.id} ("$1.4 billion (2025)") has no matching row`);
+    expect(errors).toMatch(new RegExp(`market signal row at line \\d+: "${re(changed)}" is not the rendering of a selected market stat`));
+    expect(errors).toContain(`market signal fidelity: selected stat ${EV.statMeasured.id} ("${measured.text}") has no matching row`);
   });
 
   it("fails a market signal row whose figure is right but whose source is not", async () => {
+    const adoption = shown(EV.statAdoption);
     const page = replaceOnce(
       compiledPage(),
-      `62% (2025) ([Developer tools survey 2025](${FIXTURE_PAGES.survey.url}))`,
-      `62% (2025) ([Developer tools survey 2025](${FIXTURE_PAGES.report.url}))`,
+      `${adoption.mdx} (${mdLink(FIXTURE_PAGES.survey.title, FIXTURE_PAGES.survey.url)})`,
+      `${adoption.mdx} (${mdLink(FIXTURE_PAGES.survey.title, FIXTURE_PAGES.report.url)})`,
     );
     expect(errorsOf(await auditPage(page))).toContain(
-      `"62% (2025)" links to ${FIXTURE_PAGES.report.url}, but its evidence source is ${FIXTURE_PAGES.survey.url}`,
+      `"${adoption.text}" links to ${FIXTURE_PAGES.report.url}, but its evidence source is ${FIXTURE_PAGES.survey.url}`,
     );
   });
 
   it("requires (via host) on a secondary price and refuses it on a first-party price", async () => {
-    const unlabelled = replaceOnce(
-      compiledPage(),
-      "$12/user/month (Pro) (via reviews.example.com) [Best AI",
-      "$12/user/month (Pro) [Best AI",
-    );
+    const sourcery = shown(EV.priceSourcery);
+    const unlabelled = replaceOnce(compiledPage(), `${sourcery.mdx} (via reviews.example.com) [Best AI`, `${sourcery.mdx} [Best AI`);
     expect(errorsOf(await auditPage(unlabelled))).toMatch(
-      /competitor row "Sourcery" .*: secondary price "\$12\/user\/month \(Pro\)" must be labelled "\(via reviews\.example\.com\)"/,
+      new RegExp(`competitor row "Sourcery" .*: secondary price "${re(sourcery.text)}" must be labelled "\\(via reviews\\.example\\.com\\)"`),
     );
-    const mislabelled = replaceOnce(
-      compiledPage(),
-      "$40/user/month (Team) [Graphite pricing]",
-      "$40/user/month (Team) (via graphite.dev) [Graphite pricing]",
-    );
+    const graphite = shown(EV.priceGraphite);
+    const mislabelled = replaceOnce(compiledPage(), `${graphite.mdx} [Graphite pricing]`, `${graphite.mdx} (via graphite.dev) [Graphite pricing]`);
     expect(errorsOf(await auditPage(mislabelled))).toMatch(
-      /competitor row "Graphite" .*: first-party price "\$40\/user\/month \(Team\)" is labelled "\(via graphite\.dev\)"/,
+      new RegExp(`competitor row "Graphite" .*: first-party price "${re(graphite.text)}" is labelled "\\(via graphite\\.dev\\)"`),
     );
   });
 
@@ -241,13 +258,13 @@ describe("competitor and market signal rows", () => {
       const clean = buildFixtureRecord(undefined, options);
       const tampered = structuredClone(clean);
       withSmuggledGraphitePrice(tampered, smuggledPrice());
+      const graphite = shown(EV.priceGraphite).mdx;
       const page = replaceOnce(
         compiledPage(clean),
-        "$40/user/month (Team) [Graphite pricing](https://graphite.dev/pricing)",
-        "$40/user/month (Team) (via coderabbit.ai) [CodeRabbit pricing](https://www.coderabbit.ai/pricing)",
+        `${graphite} ${mdLink(FIXTURE_PAGES.graphite.title, FIXTURE_PAGES.graphite.url)}`,
+        `${graphite} (via coderabbit.ai) ${mdLink(FIXTURE_PAGES.coderabbit.title, FIXTURE_PAGES.coderabbit.url)}`,
       );
-      const body = page.slice(page.indexOf("\n---\n", 3) + "\n---\n".length);
-      expect(auditEngineArtifact(body, tampered).errors.join("\n")).toMatch(
+      expect(auditEngineArtifact(pageBody(page), tampered).errors.join("\n")).toMatch(
         /pricing URL https:\/\/www\.coderabbit\.ai\/pricing backs CodeRabbit, Graphite; a first-party URL may back one competitor/,
       );
     });

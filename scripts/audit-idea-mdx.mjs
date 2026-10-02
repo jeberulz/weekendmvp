@@ -16,7 +16,7 @@
  * Usage:
  *   npm run audit:idea -- --slug ai-rfp-response-assistant
  *   npm run audit:idea -- --all
- *   npm run audit:idea -- --file /tmp/page.mdx --record /tmp/record.json [--siblings dir] [--json]
+ *   npm run audit:idea -- --file /tmp/page.mdx --record /tmp/record.json [--siblings dir] [--manifest m.json] [--json]
  */
 
 import fs from "node:fs";
@@ -92,13 +92,28 @@ function manifestRows() {
 }
 
 /**
+ * The manifest row for a slug: from `manifestPath` when given (--manifest),
+ * else from ideas/manifest.json and engine/drafts/manifest.json. Returns
+ * { row } (undefined when absent) or { error } for an unreadable --manifest.
+ */
+function manifestRowFor(slug, manifestPath) {
+  if (!manifestPath) return { row: manifestRows().get(slug) };
+  try {
+    const ideas = JSON.parse(fs.readFileSync(manifestPath, "utf8")).ideas;
+    if (!Array.isArray(ideas)) return { error: `manifest ${path.basename(manifestPath)} has no ideas[] array` };
+    return { row: ideas.find((row) => row && row.slug === slug) };
+  } catch (err) {
+    return { error: `could not read manifest ${path.basename(manifestPath)} (${err instanceof Error ? err.message : err})` };
+  }
+}
+
+/**
  * Engine pages get the full deep bar: engine-draft-* spot checks and every
  * published page whose manifest source is `engine:*`. Legacy hand-written
  * and Ideabrowser pages keep the base contract.
  */
-export function isEnginePage(slug) {
+export function isEnginePage(slug, row = manifestRows().get(slug)) {
   if (isEngineDraftSlug(slug)) return true;
-  const row = manifestRows().get(slug);
   return typeof row?.source === "string" && row.source.startsWith("engine:");
 }
 
@@ -285,11 +300,13 @@ function withoutQuoteLines(prose) {
  * Audit one MDX file. Returns { ok, slug, errors, warnings, metrics }.
  * @param {string} filePath
  * @param {string} [slugHint]
- * @param {{ recordPath?: string, engine?: boolean, otherBodies?: Record<string, string> }} [options]
+ * @param {{ recordPath?: string, engine?: boolean, otherBodies?: Record<string, string>, manifestPath?: string }} [options]
  *   recordPath: the page's research record (else engine/records/…);
  *   engine: force (true) or skip (false) the deep bar instead of looking the
  *   slug up in the manifests; otherBodies: sibling bodies for the cross-idea
- *   check (defaults to every other engine page on disk).
+ *   check (defaults to every other engine page on disk); manifestPath: read
+ *   the page's manifest row from this manifest instead of the repository's
+ *   (its highlights and research mode are checked against the record).
  */
 export function auditIdeaFile(filePath, slugHint, options = {}) {
   const errors = [];
@@ -383,7 +400,9 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
   }
 
   const wordCount = countWords(body);
-  const deep = options.engine ?? isEnginePage(slug);
+  const manifest = manifestRowFor(slug, options.manifestPath);
+  if (manifest.error) errors.push(manifest.error);
+  const deep = options.engine ?? isEnginePage(slug, manifest.row);
   if (deep) {
     if (wordCount < MIN_DEEP_BODY_WORDS_HARD) {
       errors.push(
@@ -513,7 +532,11 @@ export function auditIdeaFile(filePath, slugHint, options = {}) {
     // Every engine page is compiled from a contract v2 research record; the
     // final artifact must match it (quotes, rows, figures, Year-One Math).
     const record = loadRecord(slug, options.recordPath, errors);
-    const artifact = auditEngineArtifact(body, record, { lineOffset: frontmatterLines });
+    const artifact = auditEngineArtifact(body, record, {
+      lineOffset: frontmatterLines,
+      slug,
+      ...(manifest.row !== undefined ? { manifestRow: manifest.row } : {}),
+    });
     errors.push(...artifact.errors);
     warnings.push(...artifact.warnings);
     artifactMetrics = artifact.metrics;
@@ -610,6 +633,7 @@ function parseArgs(argv) {
     help: false,
     recordPath: null,
     siblings: null,
+    manifestPath: null,
   };
   const value = (i, flag) => {
     const v = argv[i];
@@ -624,6 +648,7 @@ function parseArgs(argv) {
     else if (a === "--json") args.json = true;
     else if (a === "--record") args.recordPath = value(++i, a);
     else if (a === "--siblings") args.siblings = value(++i, a);
+    else if (a === "--manifest") args.manifestPath = value(++i, a);
     else if (a === "--help" || a === "-h") args.help = true;
     else usageError(`unknown arg: ${a}`);
   }
@@ -631,9 +656,9 @@ function parseArgs(argv) {
 }
 
 const HELP = `Usage:
-  npm run audit:idea -- --slug <slug> [--record path.json] [--json]
+  npm run audit:idea -- --slug <slug> [--record path.json] [--manifest path.json] [--json]
   npm run audit:idea -- --all
-  npm run audit:idea -- --file <page.mdx> --record <record.json> [--siblings <dir>] [--json]
+  npm run audit:idea -- --file <page.mdx> --record <record.json> [--siblings <dir>] [--manifest <m.json>] [--json]
 
   --slug      audit content/ideas/<slug>.mdx (else engine/drafts/<slug>.mdx)
   --file      audit an MDX file anywhere (the slug comes from its frontmatter,
@@ -641,6 +666,8 @@ const HELP = `Usage:
   --record    the page's contract v2 research record; implies the engine bar
   --siblings  compare cross-idea sentences with the *.mdx files in this
               directory instead of the repository's engine pages
+  --manifest  read the page's manifest row from this file instead of
+              ideas/manifest.json and engine/drafts/manifest.json
   --json      one JSON result per audited page on stdout
   Exit codes: 0 every page passed, 1 any page failed, 2 usage error.
 
@@ -650,18 +677,34 @@ filler, no duplicate ≥8-word sentences (in-page or across engine pages),
 named How-it-works steps, niche sizing, four prompts with real content and
 an idea-specific schema, number-first unit economics, and the final
 artifact audit against the contract v2 record (engine/records/{slug}.json
-or --record; a legacy v1 record fails with a re-research message):
-  - every blockquote equals a selected accepted quote, with "— [title](url)"
-    linking to that quote's own source; every selected quote appears; ≥2
-    distinct quotes (a repeated quote counts once);
-  - market signal and competitor rows show their evidence renderings and
-    sources ("(via host)" on secondary prices); a first-party pricing URL
-    backs one competitor only;
-  - figures in The Problem, Market Research and Competitive Landscape prose
-    must be renderings of the record's evidence (a guard, not proof);
+or --record; a legacy v1 record fails with a re-research message). The page
+holds only audited facts (ruling R10):
+  - structure: no JSX, HTML, images, footnotes or link definitions; fenced
+    code only in the build prompts; nothing before ## The Problem or after
+    ## Sources; the proposal and assumption labels stay on the page;
+  - links: every link targets an evidence source the record uses, with that
+    source's title or an evidence rendering as its text; ## Sources lists
+    exactly those sources;
+  - quotes: every blockquote equals a selected accepted quote, with
+    "— [title](url)" naming and linking that quote's own source; every
+    selected quote appears; ≥2 distinct quotes (a repeated quote counts
+    once); any other double-quoted text of three or more words must be an
+    accepted quote the record uses;
+  - rows: market signal rows keep the compiler's labels; market and
+    competitor rows show their evidence renderings and sources ("(via host)"
+    on secondary prices); a first-party pricing URL backs one competitor
+    only; competitor notes cite only their own prices; keyword, pricing tier
+    and unit-economics rows print the record exactly;
+  - figures in every section must be linked evidence renderings, evidence
+    rows or record values (in the build prompts: tier prices and includes,
+    data-model columns, renderings); a guard, not proof;
   - Year-One Math is recomputed from the record (accounts, per-account
     price, ARR, tier, seats, downside, funnel) with exactly one base and one
-    downside line and no other ARR/MRR total.`;
+    downside line; no section states another revenue total or a
+    Year-One-style computation;
+  - a mode "fixture" record backs only an engine-draft-* page (ruling R11);
+    a manifest row's highlights must equal what the record generates and its
+    provenance.researchMode the record's mode.`;
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -674,6 +717,7 @@ function main() {
     process.exit(2);
   }
   if (args.siblings && !fs.existsSync(args.siblings)) usageError(`--siblings directory not found: ${args.siblings}`);
+  if (args.manifestPath && !fs.existsSync(args.manifestPath)) usageError(`--manifest file not found: ${args.manifestPath}`);
 
   const targets = [];
   if (args.file) {
@@ -695,6 +739,7 @@ function main() {
       recordPath: args.recordPath || undefined,
       ...(args.recordPath ? { engine: true } : {}),
       ...(args.siblings ? { otherBodies: siblingBodies(args.siblings, slug) } : {}),
+      ...(args.manifestPath ? { manifestPath: path.resolve(args.manifestPath) } : {}),
     });
     printResult(result, { json: args.json });
     if (!result.ok) failed += 1;

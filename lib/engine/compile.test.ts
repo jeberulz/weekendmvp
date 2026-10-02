@@ -1,9 +1,15 @@
 /**
- * Compiler tests (WP46-S4, evidence contract §9): contract v2 records only.
+ * Compiler tests (WP46-S4, evidence contract §9, rulings R10 and R11):
+ * contract v2 records only.
  *
  * Records come from lib/engine/__fixtures__/recordV2.ts (synthetic sources →
  * acceptEvidence → parseResearchRecord); no test calls runResearch, hits
- * the network or writes outside a temp dir.
+ * the network or writes outside a temp dir. Evidence renderings are computed
+ * with renderEvidenceInline and the page-format helpers, never typed.
+ *
+ * The fixture record is mode "fixture", so since ruling R11 a test that
+ * compiles it names an engine-draft-* slug, or passes allowFixture when it
+ * tests write mechanics under another slug.
  */
 
 import fs from "node:fs";
@@ -11,14 +17,24 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildFixtureRecord, EV, FIXTURE_PAGE_SLUG, REJECTED_QUOTE, withEditorial } from "./__fixtures__/recordV2.ts";
+import { buildFixtureRecord, EV, FIXTURE_PAGES, FIXTURE_PAGE_SLUG, REJECTED_QUOTE, tok, withEditorial } from "./__fixtures__/recordV2.ts";
 import { CompileError, compileResearchRecord, GENERIC_SETUP_TABLE_NAMES, quoteBlock } from "./compile.ts";
 import { writeCompiledIdea } from "./compile-write.ts";
 import { acceptEvidence } from "./evidence/accept.ts";
-import { canonicalSourceUrl } from "./evidence/citation.ts";
-import type { EditorialFieldsV2, ResearchRecordV2 } from "./evidence/contract.ts";
+import { canonicalSourceUrl, sourceHostLabel } from "./evidence/citation.ts";
+import type { AcceptedEvidence, CompetitorPriceEvidence, EditorialFieldsV2, ResearchRecordV2 } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
-import { SECTION_TITLES } from "./page-format.ts";
+import { findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import {
+  HOW_IT_WORKS_LABEL,
+  marketSignalLabel,
+  mdLink,
+  promptHeadingText,
+  proposalLabels,
+  SECTION_TITLES,
+  usedEvidenceIds,
+  viaLabel,
+} from "./page-format.ts";
 import { LegacyResearchRecordError, ResearchRecordParseError } from "./research-record.ts";
 
 const tempDirs: string[] = [];
@@ -37,9 +53,9 @@ function compileFixture(record: ResearchRecordV2 = buildFixtureRecord()) {
   return compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG, publishedAt: "2026-10-01" });
 }
 
-function compileIssues(record: ResearchRecordV2): string[] {
+function compileIssues(record: ResearchRecordV2, slug = FIXTURE_PAGE_SLUG): string[] {
   try {
-    compileResearchRecord({ record });
+    compileResearchRecord({ record, slug });
   } catch (error) {
     if (error instanceof CompileError) return error.issues;
     throw error;
@@ -81,39 +97,34 @@ describe("compileResearchRecord (contract v2)", () => {
 
   it("renders market signal rows from the accepted stats and their sources", () => {
     const { mdx } = compileFixture();
-    expect(mdx).toContain(
-      "- **AI code review market (market size)**: $1.4 billion (2025) ([AI code review market report](https://research.example.com/ai-code-review-market)).",
-    );
-    expect(mdx).toContain(
-      "- **AI code review market (market size)**: $10.8 billion by 2034 (projected) ([AI code review market report](https://research.example.com/ai-code-review-market)).",
-    );
-    expect(mdx).toContain(
-      "- **Developers using AI code review assistants (adoption)**: 62% (2025) ([Developer tools survey 2025](https://survey.example.org/developer-tools-2025)).",
-    );
+    for (const stat of [EV.statMeasured, EV.statProjected, EV.statAdoption]) {
+      expect(mdx).toContain(
+        `- **${escapeMdxText(marketSignalLabel(stat))}**: ${escapeMdxText(renderEvidenceInline(stat))} (${mdLink(stat.sourceTitle, stat.sourceUrl)}).`,
+      );
+    }
+    expect(marketSignalLabel(EV.statAdoption)).toBe("Developers using AI code review assistants (adoption)");
   });
 
   it("renders competitor rows with formatPriceTerms, plans, a (via host) label for secondary prices and evidence links", () => {
     const { mdx } = compileFixture();
+    const price = (item: CompetitorPriceEvidence) => {
+      const via = item.attribution === "secondary" ? ` ${viaLabel(sourceHostLabel(item.sourceUrl))}` : "";
+      return `${escapeMdxText(renderEvidenceInline(item))}${via} ${mdLink(item.sourceTitle, item.sourceUrl)}`;
+    };
     expect(mdx).toContain(
-      "- **CodeRabbit** — Broad per-seat review across every repository, with summaries on the cheaper plan and unlimited reviews on Pro. Published pricing: $12/user/month, billed annually (Lite) [CodeRabbit pricing](https://www.coderabbit.ai/pricing); $24/user/month, billed annually (Pro) [CodeRabbit pricing](https://www.coderabbit.ai/pricing).",
+      `- **CodeRabbit** — Broad per-seat review across every repository, with summaries on the cheaper plan and unlimited reviews on Pro. Published pricing: ${price(EV.priceLite)}; ${price(EV.pricePro)}.`,
     );
-    expect(mdx).toContain("- **Qodo** — Published pricing: $30/user/month, billed annually (Teams) [Qodo pricing](https://www.qodo.ai/pricing).");
-    expect(mdx).toContain(
-      "Published pricing: $12/user/month (Pro) (via reviews.example.com) [Best AI code review tools](https://reviews.example.com/best-ai-code-review-tools).",
-    );
-    expect(mdx).toContain(
-      "Published pricing: $15/user/month (Team) (via reviews.example.com) [Best AI code review tools](https://reviews.example.com/best-ai-code-review-tools).",
-    );
+    expect(mdx).toContain(`- **Qodo** — Published pricing: ${price(EV.priceQodo)}.`);
+    expect(mdx).toContain(`Published pricing: ${price(EV.priceSourcery)}.`);
+    expect(mdx).toContain(`Published pricing: ${price(EV.priceCodacy)}.`);
+    expect(price(EV.priceSourcery)).toContain("(via reviews.example.com) [Best AI code review tools]");
   });
 
   it("expands evidence tokens into linked canonical renderings", () => {
     const { mdx } = compileFixture();
-    expect(mdx).toContain(
-      "sizes it at [$1.4 billion (2025)](https://research.example.com/ai-code-review-market) and expects [$10.8 billion by 2034 (projected)](https://research.example.com/ai-code-review-market)",
-    );
-    expect(mdx).toContain(
-      'summed up the daily load as ["We review 12 pull requests a day and the bot comments on every single one of them."](https://news.ycombinator.com/item?id=27515468)',
-    );
+    const link = (item: AcceptedEvidence) => mdLink(renderEvidenceInline(item), item.sourceUrl);
+    expect(mdx).toContain(`sizes it at ${link(EV.statMeasured)} and expects ${link(EV.statProjected)}`);
+    expect(mdx).toContain(`summed up the daily load as ${link(EV.quoteHn)}`);
     expect(mdx).not.toMatch(/\[\[ev:/);
   });
 
@@ -134,8 +145,10 @@ describe("compileResearchRecord (contract v2)", () => {
 
   it("puts plain renderings in the build prompts, including the landing-page competitor strip", () => {
     const { mdx } = compileFixture();
+    const plain = (item: CompetitorPriceEvidence) =>
+      item.attribution === "secondary" ? `${renderEvidenceInline(item)} ${viaLabel(sourceHostLabel(item.sourceUrl))}` : renderEvidenceInline(item);
     expect(mdx).toContain(
-      "competitor strip (CodeRabbit: $12/user/month, billed annually (Lite), $24/user/month, billed annually (Pro); Graphite: $40/user/month (Team); Qodo: $30/user/month, billed annually (Teams); Sourcery: $12/user/month (Pro) (via reviews.example.com); Codacy: $15/user/month (Team) (via reviews.example.com))",
+      `competitor strip (CodeRabbit: ${plain(EV.priceLite)}, ${plain(EV.pricePro)}; Graphite: ${plain(EV.priceGraphite)}; Qodo: ${plain(EV.priceQodo)}; Sourcery: ${plain(EV.priceSourcery)}; Codacy: ${plain(EV.priceCodacy)})`,
     );
     expect(mdx).toContain("Stripe catalog must match the pricing tiers exactly: Open Source at Free; Solo at $12/month; Crew at $20/developer/month.");
     const fences = [...mdx.matchAll(/```text\n([\s\S]*?)```/g)].map((m) => m[1] ?? "");
@@ -160,6 +173,45 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(mdx).toContain(
       "**Year-One Math**\n\nSignalPass's funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.",
     );
+  });
+
+  it("labels How it works, what not to build, channels and the stack as proposals, keeping the HowTo list format", () => {
+    const { mdx } = compileFixture();
+    const labels = proposalLabels("SignalPass");
+    expect(mdx).toContain(`${escapeMdxText(labels.howItWorks)}\n\n${HOW_IT_WORKS_LABEL}\n\n1. **Connect** — `);
+    expect(mdx).toContain(`${escapeMdxText(labels.dontBuildYet)}\n\nDo not build IDE plugins`);
+    expect(mdx).toContain(`**Channels**\n\n${escapeMdxText(labels.channels)}\n\n- GitHub Marketplace listing`);
+    expect(mdx).toContain(`## Recommended Tech Stack\n\n${escapeMdxText(labels.stack)}\n\nBuild SignalPass as a GitHub App`);
+    // Every label of eight or more words names the product, so it never repeats on another engine page.
+    for (const label of Object.values(labels)) {
+      if ((label.match(/[A-Za-z0-9][A-Za-z0-9'-]*/g) ?? []).length >= 8) expect(label).toContain("SignalPass");
+    }
+  });
+
+  it("writes no figure, number word or quotation of its own into the build prompts", () => {
+    const record = buildFixtureRecord();
+    const { mdx } = compileFixture(record);
+    for (let i = 0; i < 4; i += 1) expect(mdx).toContain(`**${promptHeadingText(i)}**\n\n\`\`\`text`);
+    const fences = [...mdx.matchAll(/\`\`\`text\n([\s\S]*?)\`\`\`/g)].map((m) => m[1] ?? "");
+    expect(fences).toHaveLength(4);
+    const [setup = "", coreFeature = "", landing = "", branding = ""] = fences;
+    // No step ordinals or step count: each line is a record step.
+    expect(coreFeature).not.toMatch(/^\s*\d+[.)]/m);
+    expect(coreFeature).toContain("Build SignalPass's core workflow as one screen per step, in this order:");
+    // The hero is the one-liner as written, not a quotation.
+    expect(landing).toContain(`Hero line: ${record.brief.oneLiner}`);
+    // The deliverables carry no counts in words and no quoted phrase.
+    expect(branding).not.toMatch(/["“”«»]|\b(?:two|three|four|five)\b/i);
+    // Outside record values (tier prices, data-model columns, evidence renderings) the prompts hold no figure.
+    let rest = fences.join("\n");
+    const values = [
+      ...(record.editorial?.pricingTiers ?? []).flatMap((t) => [t.price, t.includes]),
+      ...(record.editorial?.dataModel ?? []).map((t) => t.columns),
+      ...record.evidence.accepted.map(renderEvidenceInline),
+    ];
+    for (const value of values.sort((a, b) => b.length - a.length)) rest = rest.split(value).join(" ");
+    expect(findUnboundFigures(rest)).toEqual([]);
+    expect(setup).toContain("Stripe catalog must match the pricing tiers exactly");
   });
 
   it("renders Year-One Math from finance.ts with the seats stated and a floor(base/2) downside", () => {
@@ -265,8 +317,8 @@ describe("compile write safety", () => {
   it("refuses to overwrite without force", () => {
     const record = buildFixtureRecord();
     const dir = tempDir();
-    writeCompiledIdea({ record, slug: "overwrite-me", ideasDir: dir, writeManifest: false });
-    expect(() => writeCompiledIdea({ record, slug: "overwrite-me", ideasDir: dir, writeManifest: false })).toThrow(
+    writeCompiledIdea({ record, slug: "overwrite-me", ideasDir: dir, writeManifest: false, allowFixture: true });
+    expect(() => writeCompiledIdea({ record, slug: "overwrite-me", ideasDir: dir, writeManifest: false, allowFixture: true })).toThrow(
       /refusing to overwrite/,
     );
   });
@@ -277,7 +329,7 @@ describe("compile write safety", () => {
     const manifestPath = path.join(dir, "manifest.json");
     fs.writeFileSync(manifestPath, JSON.stringify({ ideas: [{ slug: "already-listed" }] }));
     expect(() =>
-      writeCompiledIdea({ record, slug: "already-listed", ideasDir: path.join(dir, "ideas"), manifestPath }),
+      writeCompiledIdea({ record, slug: "already-listed", ideasDir: path.join(dir, "ideas"), manifestPath, allowFixture: true }),
     ).toThrow(/manifest entry/);
     expect(fs.existsSync(path.join(dir, "ideas", "already-listed.mdx"))).toBe(false);
   });
@@ -285,8 +337,8 @@ describe("compile write safety", () => {
   it("writes nothing for a record that cannot compile", () => {
     const record = buildFixtureRecord(withEditorial({ stackNotes: undefined }));
     const dir = tempDir();
-    expect(() => writeCompiledIdea({ record, slug: "incomplete", ideasDir: dir, writeManifest: false })).toThrow(
-      CompileError,
+    expect(() => writeCompiledIdea({ record, slug: "incomplete", ideasDir: dir, writeManifest: false, allowFixture: true })).toThrow(
+      /editorial\.stackNotes is missing/,
     );
     expect(fs.readdirSync(dir)).toEqual([]);
   });
@@ -313,7 +365,7 @@ describe("compile write safety", () => {
       },
     );
     const dir = tempDir();
-    const written = writeCompiledIdea({ record, slug: "engine-escape-test", ideasDir: dir, writeManifest: false });
+    const written = writeCompiledIdea({ record, slug: "engine-escape-test", ideasDir: dir, writeManifest: false, allowFixture: true });
     const frontTitle = written.mdx.split("\n")[2] ?? "";
     expect(JSON.parse(frontTitle.replace(/^title: /, ""))).toBe(record.brief.title);
     expect(written.mdx).toContain("[Report \\<2026\\> \\{draft\\] edition](https://www.industryresearch.biz/report_%28v2%29?q=%7Bx%7D)");
@@ -333,7 +385,7 @@ describe("compile write safety", () => {
     const blocker = path.join(dir, "not-a-dir");
     fs.writeFileSync(blocker, "");
     expect(() =>
-      writeCompiledIdea({ record, slug: "keep-me", ideasDir, manifestPath: path.join(blocker, "manifest.json"), force: true }),
+      writeCompiledIdea({ record, slug: "keep-me", ideasDir, manifestPath: path.join(blocker, "manifest.json"), force: true, allowFixture: true }),
     ).toThrow();
     expect(fs.readFileSync(mdxPath, "utf8")).toBe("ORIGINAL");
   });
@@ -344,7 +396,7 @@ describe("compile manifest stub", () => {
     const record = buildFixtureRecord((r) => {
       r.scores = { opportunity: 8, pain: 7, timing: 6, builderConfidence: 5, execution: 2 };
     });
-    expect(compileResearchRecord({ record }).manifestEntry.scores).toEqual({
+    expect(compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG }).manifestEntry.scores).toEqual({
       opportunity: 8,
       pain: 7,
       timing: 6,
@@ -356,7 +408,7 @@ describe("compile manifest stub", () => {
     const record = buildFixtureRecord((r) => {
       delete r.scores;
     });
-    expect(compileResearchRecord({ record }).manifestEntry.scores).toBeUndefined();
+    expect(compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG }).manifestEntry.scores).toBeUndefined();
   });
 
   it("refuses a record whose evidence cites fewer than two distinct sources", () => {
@@ -439,5 +491,77 @@ describe("parse errors surface at the compile boundary", () => {
     const record = buildFixtureRecord();
     const broken: unknown = JSON.parse(JSON.stringify({ ...record, market: { ...record.market, statIds: [] } }));
     expect(() => compileResearchRecord({ record: broken as ResearchRecordV2 })).toThrow(ResearchRecordParseError);
+  });
+});
+
+describe("fixture records compile only to draft or temp slugs (R11, P2-8)", () => {
+  it("refuses a fixture-mode record for a public slug and names the rule", () => {
+    const record = buildFixtureRecord();
+    expect(record.mode).toBe("fixture");
+    for (const slug of [undefined, "signalpass", "ai-code-reviewer"]) {
+      const issues = compileIssues(record, slug ?? record.brief.slug);
+      expect(issues.join("\n"), slug).toContain(
+        `record mode is "fixture" (synthetic research): compile it only to an engine-draft-* or _temp slug, not '${slug ?? record.brief.slug}' (ruling R11; tests may pass --allow-fixture)`,
+      );
+    }
+  });
+
+  it("compiles it to engine-draft-* and _temp slugs, or anywhere with the test-only allowFixture option", () => {
+    const record = buildFixtureRecord();
+    for (const slug of [FIXTURE_PAGE_SLUG, "_engine-fixture-temp"]) {
+      expect(compileResearchRecord({ record, slug }).slug).toBe(slug);
+    }
+    expect(compileResearchRecord({ record, slug: "signalpass", allowFixture: true }).slug).toBe("signalpass");
+  });
+
+  it("compiles a live-mode record to a public slug and records the mode in the manifest stub", () => {
+    const record = buildFixtureRecord((r) => {
+      r.mode = "live";
+    });
+    const { manifestEntry } = compileResearchRecord({ record, slug: "signalpass" });
+    expect(manifestEntry.provenance.researchMode).toBe("live");
+    expect(compileFixture().manifestEntry.provenance.researchMode).toBe("fixture");
+  });
+});
+
+describe("evidence tokens only where the compiler expands them", () => {
+  it("refuses a token in a field the page prints as written: product name, tier name, step title, funnel stage", () => {
+    const base = buildFixtureRecord();
+    const statToken = tok(EV.statMeasured);
+    const cases: Array<[string, (r: ResearchRecordV2) => void]> = [
+      ["editorial.productName", (r) => { if (r.editorial) r.editorial.productName = `SignalPass ${statToken}`; }],
+      ["editorial.pricingTiers[0].name", (r) => { const t = r.editorial?.pricingTiers?.[0]; if (t) t.name = `Open ${statToken}`; }],
+      ["howItWorks[0] (step title)", (r) => { r.howItWorks[0] = `Connect ${statToken} — Install the GitHub App on one repository.`; }],
+      ["editorial.yearOne.funnel[0].stage", (r) => { const f = r.editorial?.yearOne?.funnel[0]; if (f) f.stage = `Visitors ${statToken}`; }],
+    ];
+    for (const [path, edit] of cases) {
+      const record = structuredClone(base);
+      edit(record);
+      // The record parser may refuse the token first (field-specific token rules); either way nothing compiles.
+      let error: unknown = null;
+      try {
+        compileResearchRecord({ record, slug: FIXTURE_PAGE_SLUG });
+      } catch (caught) {
+        error = caught;
+      }
+      expect(error, path).not.toBeNull();
+      if (error instanceof CompileError) {
+        expect(error.issues.join("\n"), path).toContain(`${path}: an evidence token here would print as raw text; cite evidence only in prose fields`);
+      } else {
+        expect(error, path).toBeInstanceOf(ResearchRecordParseError);
+      }
+    }
+  });
+
+  it("lists in ## Sources exactly the sources of usedEvidenceIds, the set the auditor checks", () => {
+    const record = buildFixtureRecord();
+    const used = usedEvidenceIds(record);
+    const urls = new Set(record.evidence.accepted.filter((e) => used.has(e.id)).map((e) => e.sourceUrl));
+    const { mdx } = compileFixture(record);
+    const sources = mdx.slice(mdx.indexOf("## Sources"));
+    const listed = [...sources.matchAll(/^- \[[^\]]*\]\(([^)]+)\)$/gm)].map((m) => m[1]);
+    expect(new Set(listed)).toEqual(urls);
+    expect(listed).toHaveLength(urls.size);
+    expect(urls.has(FIXTURE_PAGES.reddit.url)).toBe(false);
   });
 });

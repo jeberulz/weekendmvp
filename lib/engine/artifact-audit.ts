@@ -1,65 +1,107 @@
 /**
- * Final artifact audit for engine pages (WP46-S4: review findings F2 and F6,
- * plus the F1 defense in the published page; evidence contract §9).
+ * Final artifact audit for engine pages (WP46: review findings F1, F2 and F6;
+ * evidence contract §9; rulings R10 and R11).
  *
  * The page is parsed with the same Markdown stack the site renders with
  * (@mdx-js/mdx + remark-gfm), so a sentence appended to a quote as a lazy
- * continuation line, a link hidden in a list or a fence that swallows text
- * is read exactly as a reader would see it. Every factual block is then
- * compared with the contract v2 record:
+ * continuation line, a bare URL that GFM turns into a link, a link hidden
+ * in a list or a fence that swallows text is read exactly as a reader would
+ * see it. The page holds only audited facts (R10); the record proves
+ * consistency, not authenticity (ruling R4), and this audit proves the page
+ * matches the record:
  *
+ *   Structure     Only what the compiler writes: no JSX, expressions, HTML,
+ *                 images, footnotes, link definitions or reference links;
+ *                 fenced code only in "AI Prompts to Build This"; nothing
+ *                 before ## The Problem or after ## Sources; ## Sources is a
+ *                 single list of source links; the proposal labels stay.
+ *   Links (R10)   Every link targets an evidence source the record uses
+ *                 (usedEvidenceIds), and its text is that source's title or
+ *                 renderEvidenceInline of one of that source's used items.
+ *                 Quote attributions, market rows and price links carry their
+ *                 own item's source title; ## Sources lists exactly the used
+ *                 sources; a competitor's notes cite only its own prices.
  *   Quotes (F2)   Each blockquote is one unit: the quote paragraphs plus a
  *                 last line "— [title](url)". The quote's MDX text must
  *                 strictly equal a selected accepted quote
- *                 (quoteMatchesExcerpt, ruling R3) and the link must be the
+ *                 (quoteMatchesExcerpt, ruling R3), the link must be the
  *                 same source (sameSource after the compiler's linkUrl form;
- *                 a different HN thread on the same host fails). Missing,
- *                 malformed or ambiguous attribution fails; Markdown inside
- *                 a quote fails; a blockquote that is not a selected quote
- *                 fails; every selected quote must appear; the minimum
- *                 counts distinct quote ids, so a repeated quote adds nothing.
- *   Rows          Market signal rows must show the canonical rendering of a
- *                 selected stat with its own source; competitor rows must
- *                 show exactly their competitor's accepted prices, each with
- *                 its own source and a "(via host)" label when secondary.
- *                 Labels and notes may be polished; figures may not.
- *                 A pricing URL may back several competitors only when every
- *                 price on it is a separately bound secondary price.
- *                 Acceptance and the record parser already refuse a rival's
- *                 price from a vendor's own site (ruling R5), so a record
- *                 that parses cannot trip this; it stays as defense in depth.
- *   Figures (F1)  In The Problem, Market Research and Competitive Landscape,
- *                 a figure in prose that is not the canonical rendering of
- *                 evidence the record references (or a bare year) is an
- *                 "unbound figure". This is a guard against figures typed
- *                 into the page, not proof that any prose is true.
+ *                 a different HN thread on the same host fails) and its text
+ *                 that source's title. Missing, malformed or ambiguous
+ *                 attribution fails; Markdown inside a quote fails; a
+ *                 blockquote that is not a selected quote fails; every
+ *                 selected quote must appear; the minimum counts distinct
+ *                 quote ids, so a repeated quote adds nothing. Outside the
+ *                 quote blocks, a double-quoted span of three or more words
+ *                 must be a quote the record uses.
+ *   Rows          Market signal rows: the compiler's label
+ *                 (marketSignalLabel), the rendering of a selected stat, its
+ *                 own source. Competitor rows: the record's name and exactly
+ *                 its accepted prices, each with its own source and a
+ *                 "(via host)" label when secondary. A pricing URL may back
+ *                 several competitors only when every price on it is a
+ *                 separately bound secondary price (ruling R5; defense in
+ *                 depth). Keyword rows, pricing tier rows and unit-economics
+ *                 values print the record exactly. Competitor notes and other
+ *                 labels may be polished; figures may not.
+ *   Figures (F1)  In every section, a figure (findUnboundFigures) outside the
+ *                 allowlisted spots is an "unbound figure": linked evidence
+ *                 renderings (link text = rendering, target = that item's
+ *                 source), verified evidence rows, source-title links,
+ *                 keyword rows, tier rows and unit-economics values equal to
+ *                 the record, the Year-One lines, bare years and digits inside
+ *                 names. A bare (unlinked) rendering is not allowlisted, and a
+ *                 market stat's model-written subject never is. Inside a
+ *                 prompt fence, figures must be record values or renderings
+ *                 (tier prices and includes, data-model columns, evidence).
+ *                 A guard against typed-in figures, not proof of any prose.
  *   Money (F6)    Year-One Math is recomputed with finance.ts and the
  *                 displayed accounts, per-account price, period, ARR, tier,
  *                 seats, downside and funnel are compared exactly. Business
- *                 Model must hold exactly one base and one downside line and
- *                 no other ARR/MRR total.
- *
- * The record proves consistency, not authenticity (ruling R4); this audit
- * proves the page matches the record.
+ *                 Model holds exactly one base and one downside line. No
+ *                 section states another revenue total (a money amount beside
+ *                 ARR, MRR, revenue, run-rate, sales or income) or a
+ *                 Year-One-style computation (N × $X/… = $Y).
+ *   Identity      A mode "fixture" record backs only an engine-draft-* page
+ *                 (R11). A manifest row's highlights must equal
+ *                 ideaHighlights(record) and its provenance.researchMode the
+ *                 record's mode.
  */
 
 import { createProcessor } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 
+import { isEngineDraftSlug } from "../engine-drafts.ts";
 import { comparePriceTerms, parsePriceTerms } from "./evidence/amount.ts";
 import { canonicalSourceUrl, sameSource, sourceHostLabel } from "./evidence/citation.ts";
-import { EVIDENCE_MINIMUMS, type AcceptedEvidence, type ResearchRecordV2 } from "./evidence/contract.ts";
+import {
+  EVIDENCE_MINIMUMS,
+  EVIDENCE_TOKEN_RE,
+  type AcceptedEvidence,
+  type CommunityQuoteEvidence,
+  type ResearchRecordV2,
+} from "./evidence/contract.ts";
 import { quoteMatchesExcerpt } from "./evidence/quote.ts";
-import { evidenceRefs, findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
+import { findUnboundFigures, renderEvidenceInline } from "./evidence/tokens.ts";
 import { computeYearOne, formatUsdCents, YearOneMathError, yearOneTierTerms, type YearOneMath } from "./finance.ts";
 import {
+  ideaHighlights,
   keywordRowText,
   LABEL,
   linkUrl,
+  marketSignalLabel,
+  pageProductName,
   parseYearOneLine,
   periodAbbrev,
+  PROMPT_TITLES,
+  PROMPTS_TITLE,
+  promptHeadingText,
+  proposalLabels,
   PUBLISHED_PRICING,
+  SOURCES_TITLE,
   splitViaLabel,
+  tidyProse,
+  usedEvidenceIds,
   type DisplayedYearOneLine,
 } from "./page-format.ts";
 import { LegacyResearchRecordError, parseResearchRecord, ResearchRecordParseError } from "./research-record.ts";
@@ -169,15 +211,22 @@ function walk(node: MdNode, visit: (node: MdNode) => void): void {
   for (const child of node.children) walk(child, visit);
 }
 
-type Section = { title: string; nodes: MdNode[] };
+type Section = { title: string; heading: MdNode; nodes: MdNode[] };
+type Layout = { preamble: MdNode[]; sections: Section[] };
 
-function sectionsOf(root: MdNode): Section[] {
-  const out: Section[] = [];
+function layoutOf(root: MdNode): Layout {
+  const preamble: MdNode[] = [];
+  const sections: Section[] = [];
   for (const node of root.children) {
-    if (node.type === "heading" && node.depth === 2) out.push({ title: norm(visible(node)), nodes: [] });
-    else out[out.length - 1]?.nodes.push(node);
+    if (node.type === "heading" && node.depth === 2) {
+      sections.push({ title: norm(visible(node)), heading: node, nodes: [] });
+      continue;
+    }
+    const current = sections[sections.length - 1];
+    if (current) current.nodes.push(node);
+    else preamble.push(node);
   }
-  return out;
+  return { preamble, sections };
 }
 
 function clip(text: string, max = 80): string {
@@ -195,6 +244,11 @@ function isBoldLabel(node: MdNode, label: string): boolean {
 /** Same source after the compiler's link encoding is applied to both URLs. */
 function sameLinkedSource(pageUrl: string, evidenceUrl: string): boolean {
   return sameSource(linkUrl(pageUrl), linkUrl(evidenceUrl));
+}
+
+/** The comparison key of a link target or evidence URL (canonical, in the compiler's link form). */
+function sourceKey(url: string): string | null {
+  return canonicalSourceUrl(linkUrl(url));
 }
 
 // ---------------------------------------------------------------------------
@@ -215,28 +269,39 @@ function lineOf(ctx: Ctx, offset: number): number {
   return line + ctx.lineOffset;
 }
 
+type SourceEntry = { url: string; titles: Set<string>; items: AcceptedEvidence[] };
+
 type Evidence = {
   byId: ReadonlyMap<string, AcceptedEvidence>;
-  /** Items the record selects or references with a token, rendered once. */
-  referenced: Array<{ item: AcceptedEvidence; rendering: string }>;
+  /** Items the page uses (usedEvidenceIds): selected ids plus tokens in the compiled fields. */
+  used: AcceptedEvidence[];
+  /** Normalized renderEvidenceInline text per used item id. */
+  rendering: ReadonlyMap<string, string>;
+  /** Used evidence sources by sourceKey: their titles and used items. */
+  sources: ReadonlyMap<string, SourceEntry>;
+  /** Community quotes the page uses. */
+  quotes: CommunityQuoteEvidence[];
 };
 
 function evidenceOf(record: ResearchRecordV2): Evidence {
   const byId = new Map(record.evidence.accepted.map((item) => [item.id, item]));
-  const ids = new Set<string>([
-    ...record.market.statIds,
-    ...record.competitors.flatMap((c) => c.priceIds),
-    ...record.community.quoteIds,
-    // Tokens anywhere outside the evidence block (JSON keeps `[[ev:…]]` verbatim).
-    ...evidenceRefs(JSON.stringify({ ...record, evidence: null })),
-  ]);
-  const referenced: Evidence["referenced"] = [];
-  for (const id of ids) {
+  const used: AcceptedEvidence[] = [];
+  for (const id of usedEvidenceIds(record)) {
     const item = byId.get(id);
-    if (item) referenced.push({ item, rendering: norm(renderEvidenceInline(item)) });
+    if (item) used.push(item);
   }
-  referenced.sort((a, b) => b.rendering.length - a.rendering.length);
-  return { byId, referenced };
+  const rendering = new Map(used.map((item) => [item.id, norm(renderEvidenceInline(item))]));
+  const sources = new Map<string, SourceEntry>();
+  for (const item of used) {
+    const key = sourceKey(item.sourceUrl);
+    if (key === null) continue;
+    const entry = sources.get(key) ?? { url: item.sourceUrl, titles: new Set<string>(), items: [] };
+    entry.titles.add(norm(item.sourceTitle));
+    entry.items.push(item);
+    sources.set(key, entry);
+  }
+  const quotes = used.filter((item): item is CommunityQuoteEvidence => item.kind === "community_quote");
+  return { byId, used, rendering, sources, quotes };
 }
 
 function itemsOf<K extends AcceptedEvidence["kind"]>(
@@ -259,11 +324,424 @@ function isKind<K extends AcceptedEvidence["kind"]>(
   return item.kind === kind;
 }
 
+/** Each token as its canonical rendering, as in a prompt fence (an unknown id stays as written, so it never matches). */
+function expandTokens(text: string, ev: Evidence): string {
+  return text.replace(new RegExp(EVIDENCE_TOKEN_RE.source, "g"), (token: string, id: string) => {
+    const item = ev.byId.get(id);
+    return item ? renderEvidenceInline(item) : token;
+  });
+}
+
+/** Record text as the page's prose shows it once the compiler has expanded it: tidyProse, then tokens. */
+function plainProse(text: string, ev: Evidence): string {
+  return expandTokens(tidyProse(text), ev);
+}
+
+// ---------------------------------------------------------------------------
+// Text pieces and the rules that read them
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a run of visible text came from, which decides the rules it is
+ * exempt from: "evidence" (a verified evidence rendering or source title,
+ * a keyword row), "proposal" (a tier row or unit-economics value equal to
+ * the record, a record value inside a prompt fence), "yearOne" (a verified
+ * Year-One count or line) and "prose" (everything else).
+ */
+type SegKind = "prose" | "evidence" | "proposal" | "yearOne";
+type Seg = { text: string; kind: SegKind };
+type Piece = { section: string; line: number; segs: Seg[]; fence: boolean };
+
+/** Figures: only prose counts. */
+const FIGURE_MASK: ReadonlySet<SegKind> = new Set<SegKind>(["evidence", "proposal", "yearOne"]);
+/** Quoted spans: verified evidence (renderings, titles) is exempt; proposals are not. */
+const QUOTE_MASK: ReadonlySet<SegKind> = new Set<SegKind>(["evidence"]);
+/** Revenue totals and Year-One-style lines: evidence and the verified Year-One lines are exempt. */
+const MONEY_MASK: ReadonlySet<SegKind> = new Set<SegKind>(["evidence", "yearOne"]);
+
+function pieceText(piece: Piece, masked: ReadonlySet<SegKind>): string {
+  return piece.segs.map((s) => (masked.has(s.kind) ? " ".repeat(s.text.length) : s.text)).join("");
+}
+
+function relabel(segs: Seg[], from: SegKind, to: SegKind): Seg[] {
+  return segs.map((s) => (s.kind === from ? { ...s, kind: to } : s));
+}
+
+/**
+ * Double-quoted spans: straight "…", typographic “…” and „…“, guillemets
+ * «…». A span opens at an opening mark and closes at the next closing mark
+ * of its style; single quotes and apostrophes are never quotation marks
+ * here. `words` counts letter/digit runs inside the marks.
+ */
+function doubleQuotedSpans(text: string): Array<{ inner: string; words: number }> {
+  const closersFor = new Map<string, string>([
+    ['"', '"”“'],
+    ["“", "”\"“"],
+    ["„", "“”\""],
+    ["«", "»"],
+  ]);
+  const spans: Array<{ inner: string; words: number }> = [];
+  let open: { mark: string; at: number } | null = null;
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i] ?? "";
+    if (open) {
+      if ((closersFor.get(open.mark) ?? "").includes(ch)) {
+        const inner = text.slice(open.at + 1, i);
+        spans.push({ inner, words: (inner.match(/[\p{L}\p{N}]+/gu) ?? []).length });
+        open = null;
+      }
+      continue;
+    }
+    if (closersFor.has(ch)) open = { mark: ch, at: i };
+  }
+  return spans;
+}
+
+const MONEY = String.raw`(?:(?:US|CA|AU|C|A)?[$€£]\s?\d[\d,]*(?:\.\d+)?|(?:USD|EUR|GBP|CAD|AUD)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:USD|EUR|GBP|CAD|AUD)\b)(?:\s?(?:k|m|mn|bn|b|thousand|million|billion|trillion)\b)?`;
+const REVENUE_NOUN = String.raw`(?:ARR|MRR|revenue|run[- ]?rate|sales|income)`;
+const REVENUE_MODIFIER = String.raw`(?:annual|annualized|yearly|monthly|recurring|new|total|gross|net|projected|expected)`;
+/**
+ * A revenue total: a money amount beside revenue wording, either way round.
+ * "$54,000 ARR", "$5.4 million in annual revenue", "$1.2M a year in sales",
+ * "ARR of $60,000", "Target ARR: 5,400,000 USD", "annual run-rate of $250k".
+ * Between the amount and the wording only "in"/"of" and revenue modifiers
+ * (annual, recurring, …) may stand, so a tier whose description mentions ARR
+ * after its price ("$12/month) — ARR dashboards") is not one. A bare
+ * "annual"/"annually" beside a price is a billing period, not revenue.
+ */
+const REVENUE_TOTAL_RE = new RegExp(
+  String.raw`${MONEY}(?:\s*\/\s*(?:mo|month|yr|year))?(?:\s+(?:a|per)\s+(?:year|month))?(?:\s+(?:in|of))?(?:\s+${REVENUE_MODIFIER})*\s+${REVENUE_NOUN}\b` +
+    String.raw`|\b(?:${REVENUE_MODIFIER}\s+)*${REVENUE_NOUN}\s*(?:[:=]|of|at|is|was|reaches|reaching|hits|hitting|to|totals?|totaling|near|around|about|over|above)?\s*(?:of\s+)?~?\s*${MONEY}`,
+  "i",
+);
+
+/** A Year-One-style computation: a count times a money amount (per period) equals an amount. */
+const YEAR_ONE_STYLE_RE = /\d[\d,]*\s*[×xX*]\s*(?:US)?[$€£]\s?\d[\d,]*(?:\.\d+)?(?:\s*\/\s*[A-Za-z]+)*\s*=\s*(?:US)?[$€£]?\s?\d/;
+
+type State = {
+  ctx: Ctx;
+  record: ResearchRecordV2;
+  ev: Evidence;
+  /** Nodes a row audit already read (their figures and links are checked there). */
+  handled: Set<MdNode>;
+  pieces: Piece[];
+  /** Record names the page prints bare (product, competitors, tiers): their digits are not figures. */
+  names: string[];
+};
+
+/**
+ * The names whose digits the figure rule ignores (R10 "names"): the product,
+ * competitor and pricing-tier names, longest first. A name without a letter
+ * is never one, so a "name" made of a figure cannot hide that figure.
+ */
+function recordNames(record: ResearchRecordV2): string[] {
+  const names = [pageProductName(record), ...record.competitors.map((c) => c.name), ...(record.editorial?.pricingTiers ?? []).map((t) => t.name)];
+  return [...new Set(names.map((n) => n.trim()).filter((n) => /\p{L}/u.test(n)))].sort((a, b) => b.length - a.length);
+}
+
+/** Text with every whole occurrence of a name blanked (same length), for the figure rule. */
+function blankNames(text: string, names: ReadonlyArray<string>): string {
+  let out = text;
+  for (const name of names) {
+    for (let at = out.indexOf(name); at >= 0; at = out.indexOf(name, at + name.length)) {
+      const end = at + name.length;
+      if (isWordChar(out[at - 1] ?? "") || isWordChar(out[end] ?? "")) continue;
+      out = `${out.slice(0, at)}${" ".repeat(name.length)}${out.slice(end)}`;
+    }
+  }
+  return out;
+}
+
+type LinkVerdict =
+  | { kind: "title" | "rendering" }
+  | { kind: "untargeted" }
+  | { kind: "misplaced"; item: AcceptedEvidence }
+  | { kind: "unknown" };
+
+/** What a link's text is, given its target (the target itself is checked page-wide). */
+function classifyLink(ev: Evidence, url: string, text: string): LinkVerdict {
+  const key = sourceKey(url);
+  const entry = key === null ? undefined : ev.sources.get(key);
+  if (!entry) return { kind: "untargeted" };
+  if (entry.titles.has(text)) return { kind: "title" };
+  if (entry.items.some((item) => ev.rendering.get(item.id) === text)) return { kind: "rendering" };
+  const other = ev.used.find((item) => ev.rendering.get(item.id) === text);
+  return other ? { kind: "misplaced", item: other } : { kind: "unknown" };
+}
+
+/**
+ * A link inside prose: verified (title or rendering of its own source) or
+ * reported and kept as prose. `at` is the offset of the nearest positioned
+ * ancestor: GFM's autolinks carry no position of their own.
+ */
+function linkSeg(state: State, link: MdNode, at: number): Seg {
+  const text = norm(visible(link));
+  const url = link.url ?? "";
+  const verdict = classifyLink(state.ev, url, text);
+  if (verdict.kind === "title" || verdict.kind === "rendering") return { text, kind: "evidence" };
+  const line = lineOf(state.ctx, link.start >= 0 ? link.start : at);
+  if (verdict.kind === "misplaced") {
+    state.ctx.errors.push(
+      `evidence link "${clip(text, 60)}" near line ${line} points to ${url}, but its evidence source is ${verdict.item.sourceUrl}`,
+    );
+  } else if (verdict.kind === "unknown") {
+    state.ctx.errors.push(
+      `link "${clip(text, 60)}" at line ${line} to ${clip(url, 120)}: the text must be that source's title or the rendering of one of its evidence items`,
+    );
+  }
+  return { text, kind: "prose" };
+}
+
+/** Inline nodes as segments; links are verified on the way. `at`: offset for nodes without a position. */
+function inlineSegs(state: State, nodes: MdNode[], at = -1): Seg[] {
+  const out: Seg[] = [];
+  for (const node of nodes) {
+    const here = node.start >= 0 ? node.start : at;
+    if (node.type === "text" || node.type === "inlineCode") out.push({ text: node.value ?? "", kind: "prose" });
+    else if (node.type === "break") out.push({ text: "\n", kind: "prose" });
+    else if (node.type === "image") out.push({ text: node.alt ?? "", kind: "prose" });
+    else if (node.type === "link") out.push(linkSeg(state, node, here));
+    else out.push(...inlineSegs(state, node.children, here));
+  }
+  return out;
+}
+
+function addPiece(state: State, section: string, node: MdNode, segs: Seg[], fence = false): void {
+  state.pieces.push({ section, line: lineOf(state.ctx, node.start), segs, fence });
+}
+
+/** Every node a row audit did not read, as pieces (blockquotes are the quote audit's). */
+function collectPieces(state: State, section: Section, fenceValues: ReadonlyArray<{ text: string; kind: SegKind }>): void {
+  const visit = (node: MdNode) => {
+    if (state.handled.has(node) || node.type === "blockquote") return;
+    if (node.type === "code") {
+      // Outside the prompt section a fence is a structure error already.
+      if (section.title === PROMPTS_TITLE) addPiece(state, section.title, node, maskValues(node.value ?? "", fenceValues), true);
+      return;
+    }
+    if (INLINE_CONTAINERS.has(node.type)) {
+      addPiece(state, section.title, node, inlineSegs(state, node.children, node.start));
+      return;
+    }
+    for (const child of node.children) visit(child);
+  };
+  for (const node of section.nodes) visit(node);
+}
+
+function isWordChar(ch: string): boolean {
+  return /[\p{L}\p{N}]/u.test(ch);
+}
+
+/**
+ * Plain text with every occurrence of the given values (longest first, not
+ * inside a word) marked with the value's kind; the rest is prose. Used for
+ * prompt fences, which hold record values as plain text by design.
+ */
+function maskValues(text: string, values: ReadonlyArray<{ text: string; kind: SegKind }>): Seg[] {
+  const kinds: Array<SegKind> = new Array<SegKind>(text.length).fill("prose");
+  const taken: boolean[] = new Array<boolean>(text.length).fill(false);
+  for (const value of values) {
+    if (value.text.length === 0) continue;
+    for (let at = text.indexOf(value.text); at >= 0; at = text.indexOf(value.text, at + 1)) {
+      const end = at + value.text.length;
+      if (isWordChar(text[at - 1] ?? "") || isWordChar(text[end] ?? "")) continue;
+      if (taken.slice(at, end).some(Boolean)) continue;
+      for (let i = at; i < end; i += 1) {
+        kinds[i] = value.kind;
+        taken[i] = true;
+      }
+    }
+  }
+  const segs: Seg[] = [];
+  for (let i = 0; i < text.length; i += 1) {
+    const kind = kinds[i] ?? "prose";
+    const last = segs[segs.length - 1];
+    if (last && last.kind === kind) last.text += text[i] ?? "";
+    else segs.push({ text: text[i] ?? "", kind });
+  }
+  return segs;
+}
+
+/** Record values a prompt fence may hold: evidence renderings, tier prices/includes, data-model columns. */
+function fenceValuesOf(record: ResearchRecordV2, ev: Evidence): Array<{ text: string; kind: SegKind }> {
+  const expand = (text: string) => expandTokens(text, ev);
+  const values: Array<{ text: string; kind: SegKind }> = [
+    ...ev.used.map((item) => ({ text: renderEvidenceInline(item), kind: "evidence" as const })),
+    ...(record.editorial?.pricingTiers ?? []).flatMap((t) => [
+      { text: expand(t.price), kind: "proposal" as const },
+      { text: expand(t.includes), kind: "proposal" as const },
+    ]),
+    ...(record.editorial?.dataModel ?? []).map((t) => ({ text: expand(t.columns), kind: "proposal" as const })),
+  ];
+  return values.sort((a, b) => b.text.length - a.text.length);
+}
+
+/** The four page-wide text rules; returns the number of unbound figures. */
+function applyRules(state: State): number {
+  const { ctx, ev } = state;
+  let unbound = 0;
+  for (const piece of state.pieces) {
+    const figureText = blankNames(pieceText(piece, FIGURE_MASK), state.names);
+    for (const hit of findUnboundFigures(figureText)) {
+      unbound += 1;
+      const context = norm(figureText.slice(Math.max(0, hit.index - 40), hit.index + hit.figure.length + 40));
+      ctx.errors.push(
+        piece.fence
+          ? `${piece.section}: unbound figure "${hit.figure}" in a build prompt near line ${piece.line} ("…${context}…") — prompt figures must be record values (tier prices and includes, data-model columns) or evidence renderings`
+          : `${piece.section}: unbound figure "${hit.figure}" near line ${piece.line} ("…${context}…") — not a rendering of the record's evidence (guard, not proof of truth)`,
+      );
+    }
+    for (const span of doubleQuotedSpans(pieceText(piece, QUOTE_MASK))) {
+      if (span.words < 3) continue;
+      if (ev.quotes.some((q) => quoteMatchesExcerpt(span.inner, q.excerpt))) continue;
+      ctx.errors.push(
+        `${piece.section}: quoted text "${clip(span.inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,
+      );
+    }
+    const moneyText = pieceText(piece, MONEY_MASK);
+    const revenue = REVENUE_TOTAL_RE.exec(moneyText);
+    if (revenue) {
+      ctx.errors.push(
+        `${piece.section} states another revenue total at line ${piece.line} ("${clip(revenue[0], 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
+      );
+    }
+    const computation = YEAR_ONE_STYLE_RE.exec(moneyText);
+    if (computation) {
+      ctx.errors.push(
+        `${piece.section}: a Year-One-style computation at line ${piece.line} ("${clip(computation[0], 80)}") outside Year-One Math; only its base and downside lines compute revenue`,
+      );
+    }
+  }
+  return unbound;
+}
+
+// ---------------------------------------------------------------------------
+// Structure (record-independent)
+// ---------------------------------------------------------------------------
+
+const MDX_ONLY_NODES = new Set(["mdxJsxFlowElement", "mdxJsxTextElement", "mdxFlowExpression", "mdxTextExpression", "mdxjsEsm", "html"]);
+
+/** Markdown the compiler never writes, with the plural used in the message. */
+const FOREIGN_NODES = new Map<string, string>([
+  ["image", "images"],
+  ["imageReference", "image references"],
+  ["linkReference", "reference-style links"],
+  ["definition", "link definitions"],
+  ["footnoteDefinition", "footnotes"],
+  ["footnoteReference", "footnote references"],
+]);
+
+function auditStructure(ctx: Ctx, root: MdNode, layout: Layout): void {
+  walk(root, (node) => {
+    if (MDX_ONLY_NODES.has(node.type)) {
+      ctx.errors.push(`${node.type} at line ${lineOf(ctx, node.start)}: engine pages render record text literally (no JSX, expressions or HTML)`);
+    }
+    const foreign = FOREIGN_NODES.get(node.type);
+    if (foreign) {
+      ctx.errors.push(`${node.type} at line ${lineOf(ctx, node.start)}: an engine page contains no ${foreign} (the compiler never writes them)`);
+    }
+  });
+  const first = layout.preamble[0];
+  if (first) {
+    ctx.errors.push(`content before ## The Problem at line ${lineOf(ctx, first.start)}: an engine page starts with its first section`);
+  }
+  for (const section of layout.sections) {
+    if (section.title === PROMPTS_TITLE) continue;
+    for (const node of section.nodes) {
+      walk(node, (inner) => {
+        if (inner.type === "code") {
+          ctx.errors.push(
+            `fenced code at line ${lineOf(ctx, inner.start)} in ${section.title}: code blocks belong only in "${PROMPTS_TITLE}"`,
+          );
+        }
+      });
+    }
+  }
+  const sourcesAt = layout.sections.findIndex((s) => s.title === SOURCES_TITLE);
+  if (sourcesAt < 0) return;
+  for (const later of layout.sections.slice(sourcesAt + 1)) {
+    ctx.errors.push(
+      `## ${later.title} at line ${lineOf(ctx, later.heading.start)} comes after ## ${SOURCES_TITLE}: an engine page ends with its Sources list`,
+    );
+  }
+  for (const node of layout.sections[sourcesAt]?.nodes ?? []) {
+    const what = node.type === "list" ? sourcesListShape(node) : node.type;
+    if (what) {
+      ctx.errors.push(
+        `## ${SOURCES_TITLE} may hold only the list of evidence sources ("- [title](url)" lines); found ${what} at line ${lineOf(ctx, node.start)}`,
+      );
+    }
+  }
+}
+
+/** The single link of a Sources item, or null when the item is anything else. */
+function sourceItemLink(item: MdNode): MdNode | null {
+  const paragraph = item.children.length === 1 && item.children[0]?.type === "paragraph" ? item.children[0] : null;
+  const parts = (paragraph?.children ?? []).filter((c) => !(c.type === "text" && norm(c.value ?? "") === ""));
+  const link = parts[0];
+  return parts.length === 1 && link?.type === "link" ? link : null;
+}
+
+/** Null when every item of a Sources list is a single link, else what was found. */
+function sourcesListShape(list: MdNode): string | null {
+  for (const item of list.children) {
+    if (item.type !== "listItem" || !sourceItemLink(item)) return "a list item that is not a single source link";
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Links and ## Sources (R10)
+// ---------------------------------------------------------------------------
+
+function auditLinkTargets(state: State, root: MdNode): void {
+  const visit = (node: MdNode, at: number) => {
+    const here = node.start >= 0 ? node.start : at;
+    if (node.type === "link") {
+      const url = node.url ?? "";
+      const key = sourceKey(url);
+      if (key === null || !state.ev.sources.has(key)) {
+        state.ctx.errors.push(
+          `link at line ${lineOf(state.ctx, here)} to ${clip(url, 120)} is not an evidence source this record uses (an engine page links only to its own evidence sources)`,
+        );
+      }
+    }
+    for (const child of node.children) visit(child, here);
+  };
+  visit(root, -1);
+}
+
+function auditSourcesList(state: State, section: Section | undefined): void {
+  if (!section) return;
+  const { ctx, ev } = state;
+  const listed = new Map<string, number>();
+  for (const list of section.nodes.filter((n) => n.type === "list")) {
+    state.handled.add(list);
+    for (const item of list.children) {
+      const link = sourceItemLink(item);
+      if (!link) continue;
+      const key = sourceKey(link.url ?? "");
+      const entry = key === null ? undefined : ev.sources.get(key);
+      if (key === null || !entry) continue;
+      listed.set(key, (listed.get(key) ?? 0) + 1);
+      const title = norm(visible(link));
+      if (!entry.titles.has(title)) {
+        ctx.errors.push(`## ${SOURCES_TITLE} entry at line ${lineOf(ctx, item.start)}: "${clip(title)}" is not the title of ${entry.url}`);
+      }
+    }
+  }
+  for (const [key, entry] of ev.sources) {
+    const count = listed.get(key) ?? 0;
+    if (count === 0) ctx.errors.push(`## ${SOURCES_TITLE} is missing ${entry.url}, an evidence source the page's record uses`);
+    if (count > 1) ctx.errors.push(`## ${SOURCES_TITLE} lists ${entry.url} ${count} times`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Quotes (F2)
 // ---------------------------------------------------------------------------
 
-type Attribution = { ok: true; url: string } | { ok: false; reason: string };
+type Attribution = { ok: true; url: string; title: string } | { ok: false; reason: string };
 
 function readAttribution(paragraph: MdNode): Attribution {
   const parts = paragraph.children.filter((c) => !(c.type === "text" && norm(c.value ?? "") === ""));
@@ -273,9 +751,10 @@ function readAttribution(paragraph: MdNode): Attribution {
   }
   if (!link || link.type !== "link" || !link.url) return { ok: false, reason: "the attribution line has no source link" };
   if (rest.length > 0) return { ok: false, reason: "the attribution line holds more than one link or extra text (ambiguous)" };
-  if (norm(visible(link)) === "") return { ok: false, reason: "the source link has no title" };
+  const title = norm(visible(link));
+  if (title === "") return { ok: false, reason: "the source link has no title" };
   if (canonicalSourceUrl(link.url) === null) return { ok: false, reason: `the source link ${clip(link.url)} is not an http(s) URL` };
-  return { ok: true, url: link.url };
+  return { ok: true, url: link.url, title };
 }
 
 /** GFM's bare-URL/email links show their own address; anything else is formatting. */
@@ -287,6 +766,7 @@ function isLiteralAutolink(node: MdNode): boolean {
 
 function formattingIn(paragraph: MdNode): string | null {
   for (const child of paragraph.children) {
+    // A literal autolink is the quote's own text; its target is checked page-wide (R10).
     if (child.type === "text" || child.type === "break" || isLiteralAutolink(child)) continue;
     return child.type;
   }
@@ -362,6 +842,11 @@ function auditQuotes(ctx: Ctx, root: MdNode, record: ResearchRecordV2, ev: Evide
       );
       continue;
     }
+    if (attribution.title !== norm(match.sourceTitle)) {
+      ctx.errors.push(
+        `${where}: attribution title "${clip(attribution.title, 120)}" is not the evidence source title "${norm(match.sourceTitle)}"`,
+      );
+    }
     verified.add(match.id);
   }
   if (verified.size < EVIDENCE_MINIMUMS.distinctQuotes) {
@@ -381,9 +866,6 @@ function auditQuotes(ctx: Ctx, root: MdNode, record: ResearchRecordV2, ev: Evide
 // Evidence rows: market signals, keywords, competitors
 // ---------------------------------------------------------------------------
 
-/** Prose found inside rows (labels, notes) for the unbound-figure guard. */
-type ProsePiece = { section: string; text: string; line: number; allowed?: string[] };
-
 function inlineRows(list: MdNode): Array<{ item: MdNode; paragraph: MdNode | null }> {
   return list.children
     .filter((item) => item.type === "listItem")
@@ -397,14 +879,8 @@ function textOnly(nodes: MdNode[]): string | null {
   return nodes.every((n) => n.type === "text") ? nodes.map((n) => n.value ?? "").join("") : null;
 }
 
-function auditMarketRows(
-  ctx: Ctx,
-  section: Section,
-  record: ResearchRecordV2,
-  ev: Evidence,
-  handled: Set<MdNode>,
-  prose: ProsePiece[],
-): number {
+function auditMarketRows(state: State, section: Section): number {
+  const { ctx, record, ev } = state;
   const stats = itemsOf(record.market.statIds, ev, "market_stat");
   const labelIndex = section.nodes.findIndex((n) => isBoldLabel(n, LABEL.marketSignals));
   const list = labelIndex >= 0 ? section.nodes[labelIndex + 1] : undefined;
@@ -413,8 +889,8 @@ function auditMarketRows(
     return 0;
   }
   const labelNode = section.nodes[labelIndex];
-  if (labelNode) handled.add(labelNode);
-  handled.add(list);
+  if (labelNode) state.handled.add(labelNode);
+  state.handled.add(list);
   const shown = new Set<string>();
   let rows = 0;
   for (const { item, paragraph } of inlineRows(list)) {
@@ -436,7 +912,6 @@ function auditMarketRows(
     }
     rows += 1;
     const rendering = norm(middle.slice(1, -1));
-    const labelText = norm(visible(label));
     const sameFigure = stats.filter((s) => norm(renderEvidenceInline(s)) === rendering);
     const match = sameFigure.find((s) => sameLinkedSource(link.url ?? "", s.sourceUrl));
     if (!match) {
@@ -448,7 +923,19 @@ function auditMarketRows(
       continue;
     }
     shown.add(match.id);
-    prose.push({ section: "Market Research", text: labelText, line: lineOf(ctx, item.start), allowed: [match.subject] });
+    const labelText = norm(visible(label));
+    const expectedLabel = norm(marketSignalLabel(match));
+    if (labelText !== expectedLabel) {
+      ctx.errors.push(
+        `${where}: label "${clip(labelText, 120)}" is not the label rendered from its stat ("${expectedLabel}"); evidence rows are not relabelled`,
+      );
+    }
+    const title = norm(visible(link));
+    if (title !== norm(match.sourceTitle)) {
+      ctx.errors.push(`${where}: source title "${clip(title, 120)}" is not the evidence source title "${norm(match.sourceTitle)}"`);
+    }
+    // The label is model-written subject text: the figure guard reads it, nothing allowlists it.
+    addPiece(state, section.title, item, inlineSegs(state, label.children, item.start));
   }
   for (const s of stats) {
     if (!shown.has(s.id)) {
@@ -458,7 +945,8 @@ function auditMarketRows(
   return rows;
 }
 
-function auditKeywordRows(ctx: Ctx, section: Section, record: ResearchRecordV2, handled: Set<MdNode>): void {
+function auditKeywordRows(state: State, section: Section): void {
+  const { ctx, record } = state;
   const labelIndex = section.nodes.findIndex((n) => {
     if (n.type !== "paragraph") return false;
     const first = n.children[0];
@@ -466,10 +954,10 @@ function auditKeywordRows(ctx: Ctx, section: Section, record: ResearchRecordV2, 
   });
   if (labelIndex < 0) return;
   const label = section.nodes[labelIndex];
-  if (label) handled.add(label);
+  if (label) state.handled.add(label);
   const list = section.nodes[labelIndex + 1];
   if (!list || list.type !== "list") return;
-  handled.add(list);
+  state.handled.add(list);
   const expected = new Set(record.keywords.map((k) => norm(keywordRowText(k))));
   for (const { item } of inlineRows(list)) {
     const text = norm(visible(item));
@@ -481,18 +969,21 @@ function auditKeywordRows(ctx: Ctx, section: Section, record: ResearchRecordV2, 
   }
 }
 
-type PriceShown = { text: string; via: string | null; url: string };
+type PriceShown = { text: string; via: string | null; url: string; title: string };
 
 type CompetitorRow = {
   name: string;
   line: number;
+  item: MdNode;
   /** Inline nodes of the editorial notes (before "Published pricing:"). */
   notes: MdNode[];
   prices: PriceShown[];
 };
 
 /** Split a competitor row at "Published pricing:" into notes and price items. */
-function readCompetitorRow(paragraph: MdNode): { ok: true; row: Omit<CompetitorRow, "line"> } | { ok: false; reason: string } {
+function readCompetitorRow(
+  paragraph: MdNode,
+): { ok: true; row: Omit<CompetitorRow, "line" | "item"> } | { ok: false; reason: string } {
   const [name, ...rest] = paragraph.children;
   if (!name || name.type !== "strong") return { ok: false, reason: "a competitor row starts with **Name**" };
   let markerAt = -1;
@@ -521,7 +1012,7 @@ function readCompetitorRow(paragraph: MdNode): { ok: true; row: Omit<CompetitorR
     }
     if (node.type !== "link" || !node.url) return { ok: false, reason: `unexpected ${node.type} in the price list` };
     const { text, via } = splitViaLabel(norm(pending).replace(/^[;,]\s*/, ""));
-    prices.push({ text: norm(text), via, url: node.url });
+    prices.push({ text: norm(text), via, url: node.url, title: norm(visible(node)) });
     pending = "";
   }
   if (!/^\.?$/.test(norm(pending))) return { ok: false, reason: `text after the last price link: "${clip(pending, 40)}"` };
@@ -535,29 +1026,30 @@ export type CompetitorLink = {
   attribution: "first_party" | "secondary" | "unverified";
 };
 
-function auditCompetitorRows(
-  ctx: Ctx,
-  section: Section,
-  record: ResearchRecordV2,
-  ev: Evidence,
-  handled: Set<MdNode>,
-  prose: ProsePiece[],
-  links: CompetitorLink[],
-): number {
+function linksIn(nodes: MdNode[]): MdNode[] {
+  const out: MdNode[] = [];
+  for (const node of nodes) walk(node, (inner) => {
+    if (inner.type === "link") out.push(inner);
+  });
+  return out;
+}
+
+function auditCompetitorRows(state: State, section: Section, links: CompetitorLink[]): number {
+  const { ctx, record, ev } = state;
   const rows: CompetitorRow[] = [];
   for (const list of section.nodes.filter((n) => n.type === "list")) {
     for (const { item, paragraph } of inlineRows(list)) {
       if (paragraph?.children[0]?.type !== "strong") continue;
-      handled.add(item);
+      state.handled.add(item);
       const where = `competitor row at line ${lineOf(ctx, item.start)}`;
       const read = readCompetitorRow(paragraph);
       if (!read.ok) {
         ctx.errors.push(`${where}: ${read.reason}`);
         continue;
       }
-      rows.push({ ...read.row, line: lineOf(ctx, item.start) });
+      rows.push({ ...read.row, line: lineOf(ctx, item.start), item });
     }
-    if (list.children.every((item) => handled.has(item))) handled.add(list);
+    if (list.children.every((item) => state.handled.has(item))) state.handled.add(list);
   }
 
   const owners = new Map<string, string>();
@@ -577,7 +1069,17 @@ function auditCompetitorRows(
     }
     if (seenNames.has(row.name)) ctx.errors.push(`${where}: a second row for the same competitor`);
     seenNames.add(row.name);
-    prose.push({ section: "Competitive Landscape", text: inlineProse(ctx, row.notes, ev, row.line), line: row.line });
+    // Notes are polishable prose: the figure guard reads them, and their links are verified.
+    addPiece(state, section.title, row.item, inlineSegs(state, row.notes, row.item.start));
+    for (const link of linksIn(row.notes)) {
+      const text = norm(visible(link));
+      const cited = allPrices.find((p) => ev.rendering.get(p.id) === text && sameLinkedSource(link.url ?? "", p.sourceUrl));
+      if (cited && !competitor.priceIds.includes(cited.id)) {
+        ctx.errors.push(
+          `${where}: its notes cite ${owners.get(cited.id) ?? "another competitor"}'s price "${text}"; a competitor's notes may cite only its own prices`,
+        );
+      }
+    }
     const own = itemsOf(competitor.priceIds, ev, "competitor_price");
     const shown = new Set<string>();
     for (const price of row.prices) {
@@ -599,6 +1101,11 @@ function auditCompetitorRows(
       }
       shown.add(match.id);
       links.push({ competitor: row.name, url: price.url, attribution: match.attribution });
+      if (price.title !== norm(match.sourceTitle)) {
+        ctx.errors.push(
+          `${where}: price "${price.text}" links with title "${clip(price.title, 120)}"; its evidence source title is "${norm(match.sourceTitle)}"`,
+        );
+      }
       const host = sourceHostLabel(match.sourceUrl);
       if (match.attribution === "secondary" && price.via !== host) {
         ctx.errors.push(`${where}: secondary price "${price.text}" must be labelled "(via ${host})"`);
@@ -632,80 +1139,98 @@ function auditCompetitorRows(
 }
 
 // ---------------------------------------------------------------------------
-// Unbound figures (F1 defense)
+// Business Model rows: pricing tiers and unit economics (R10, P2-7)
 // ---------------------------------------------------------------------------
 
-const FIGURE_SECTIONS = ["The Problem", "Market Research", "Competitive Landscape"];
-
-/** Inline prose with every evidence link checked against its own source. */
-function inlineProse(ctx: Ctx, nodes: MdNode[], ev: Evidence, line: number): string {
-  return nodes
-    .map((node) => {
-      if (node.type === "link") {
-        const text = norm(visible(node));
-        const same = ev.referenced.filter((r) => r.rendering === text);
-        if (same.length > 0 && !same.some((r) => sameLinkedSource(node.url ?? "", r.item.sourceUrl))) {
-          ctx.errors.push(
-            `evidence link "${clip(text, 60)}" near line ${line} points to ${node.url ?? "(none)"}, but its evidence source is ${same[0]?.item.sourceUrl ?? "unknown"}`,
-          );
-        }
-        return ` ${text} `;
-      }
-      if (node.type === "text" || node.type === "inlineCode") return node.value ?? "";
-      if (node.type === "break") return " ";
-      if (node.type === "image") return node.alt ?? "";
-      return inlineProse(ctx, node.children, ev, line);
-    })
-    .join("");
+/** A list item whose paragraph is "**Name** (price) — includes": a pricing tier row. */
+function tierRowParagraph(item: MdNode): MdNode | null {
+  const paragraph = item.children.length === 1 && item.children[0]?.type === "paragraph" ? item.children[0] : null;
+  const [first, second] = paragraph?.children ?? [];
+  return paragraph && first?.type === "strong" && second?.type === "text" && /^\s*\(/.test(second.value ?? "") ? paragraph : null;
 }
 
-function collectProse(ctx: Ctx, section: string, nodes: MdNode[], ev: Evidence, handled: Set<MdNode>, out: ProsePiece[]): void {
-  for (const node of nodes) {
-    if (handled.has(node) || node.type === "blockquote" || node.type === "code") continue;
-    const line = lineOf(ctx, node.start);
-    if (INLINE_CONTAINERS.has(node.type)) {
-      out.push({ section, text: inlineProse(ctx, node.children, ev, line), line });
-      continue;
+function auditTierRows(state: State, section: Section): void {
+  const { ctx, record, ev } = state;
+  const tiers = record.editorial?.pricingTiers ?? [];
+  const counts = new Map<string, number>();
+  walk({ type: "root", value: null, url: null, alt: null, depth: null, start: -1, end: -1, children: section.nodes }, (item) => {
+    if (item.type !== "listItem" || state.handled.has(item)) return;
+    const paragraph = tierRowParagraph(item);
+    if (!paragraph) return;
+    state.handled.add(item);
+    const name = norm(visible(paragraph.children[0] ?? item));
+    const where = `pricing tier row "${clip(name, 60)}" at line ${lineOf(ctx, item.start)}`;
+    const segs = inlineSegs(state, paragraph.children, item.start);
+    const tier = tiers.find((t) => norm(t.name) === name);
+    if (!tier) {
+      ctx.errors.push(`${where} is not one of the record's pricing tiers (${tiers.map((t) => t.name).join(", ")})`);
+      addPiece(state, section.title, item, segs);
+      return;
     }
-    collectProse(ctx, section, node.children, ev, handled, out);
-  }
-}
-
-function auditFigures(ctx: Ctx, pieces: ProsePiece[], ev: Evidence): number {
-  let count = 0;
-  for (const piece of pieces) {
-    let text = norm(piece.text);
-    for (const { rendering } of ev.referenced) {
-      if (rendering) text = text.split(rendering).join(" ".repeat(rendering.length));
-    }
-    const allowed = new Set((piece.allowed ?? []).flatMap((a) => findUnboundFigures(a).map((f) => f.figure)));
-    for (const hit of findUnboundFigures(text)) {
-      if (allowed.has(hit.figure)) continue;
-      count += 1;
-      const context = text.slice(Math.max(0, hit.index - 40), hit.index + hit.figure.length + 40);
+    counts.set(tier.name, (counts.get(tier.name) ?? 0) + 1);
+    const shown = norm(visible(paragraph));
+    const expected = norm(`${tier.name} (${plainProse(tier.price, ev)}) — ${plainProse(tier.includes, ev)}`);
+    if (shown !== expected) {
       ctx.errors.push(
-        `${piece.section}: unbound figure "${hit.figure}" near line ${piece.line} ("…${norm(context)}…") — not a rendering of the record's evidence (guard, not proof of truth)`,
+        `${where} shows "${clip(shown, 160)}"; the record's tier reads "${clip(expected, 160)}" (tier rows print the record's proposal and are not edited)`,
       );
+      addPiece(state, section.title, item, segs);
+      return;
     }
+    addPiece(state, section.title, item, relabel(segs, "prose", "proposal"));
+  });
+  for (const tier of tiers) {
+    const count = counts.get(tier.name) ?? 0;
+    if (count === 0) ctx.errors.push(`Business Model has no row for the record's pricing tier "${tier.name}"`);
+    if (count > 1) ctx.errors.push(`Business Model has ${count} rows for pricing tier "${tier.name}"`);
   }
-  return count;
+}
+
+function auditUnitRows(state: State, section: Section): void {
+  const { ctx, record, ev } = state;
+  const rows = record.editorial?.unitEconomics ?? [];
+  const labelIndex = section.nodes.findIndex((n) => isBoldLabel(n, LABEL.unitEconomics));
+  if (labelIndex < 0) return;
+  let list: MdNode | undefined;
+  for (const node of section.nodes.slice(labelIndex + 1)) {
+    if (node.type === "list") {
+      list = node;
+      break;
+    }
+    if (node.type === "paragraph" && node.children.length === 1 && node.children[0]?.type === "strong") break;
+  }
+  if (!list) return;
+  const items = inlineRows(list).filter(({ item }) => !state.handled.has(item));
+  if (items.length !== rows.length) {
+    ctx.errors.push(`Unit Economics shows ${items.length} rows; the record has ${rows.length}`);
+  }
+  items.forEach(({ item, paragraph }, i) => {
+    state.handled.add(item);
+    const value = paragraph?.children[0];
+    if (!paragraph || value?.type !== "strong") {
+      ctx.errors.push(`unit economics row at line ${lineOf(ctx, item.start)}: expected "**value** — label"`);
+      addPiece(state, section.title, item, inlineSegs(state, paragraph?.children ?? item.children, item.start));
+      return;
+    }
+    const valueSegs = inlineSegs(state, value.children, item.start);
+    const restSegs = inlineSegs(state, paragraph.children.slice(1), item.start);
+    const record_row = rows[i];
+    const shown = norm(visible(value));
+    const expected = record_row ? norm(plainProse(record_row.value, ev)) : null;
+    if (expected === null || shown !== expected) {
+      ctx.errors.push(
+        `unit economics row ${i + 1} at line ${lineOf(ctx, item.start)} shows "${clip(shown, 80)}"; the record's value is "${expected === null ? "(no such row)" : clip(expected, 80)}"`,
+      );
+      addPiece(state, section.title, item, [...valueSegs, ...restSegs]);
+      return;
+    }
+    addPiece(state, section.title, item, [...relabel(valueSegs, "prose", "proposal"), ...restSegs]);
+  });
 }
 
 // ---------------------------------------------------------------------------
 // Year-One Math (F6)
 // ---------------------------------------------------------------------------
-
-const REVENUE_TERM = String.raw`(?:ARR|MRR|annual\s+recurring\s+revenue|monthly\s+recurring\s+revenue)`;
-const MONEY_FIGURE = String.raw`[$€£]\s?\d[\d,]*(?:\.\d+)?(?:\s?(?:k|K|m|M|mn|bn|thousand|million|billion))?`;
-/**
- * A revenue total: a money figure next to ARR/MRR ("$54,000 ARR", "$4.5k
- * MRR", "ARR of $54,000", "MRR: $4,500"). A tier that merely mentions ARR
- * near its price ("$1,000/month — ARR dashboards") is not one.
- */
-const REVENUE_TOTAL_RE = new RegExp(
-  String.raw`${MONEY_FIGURE}\s*(?:in\s+|of\s+)?${REVENUE_TERM}\b|\b${REVENUE_TERM}\s*(?:of|at|is|was|reaches|reaching|to|:|=)?\s*${MONEY_FIGURE}`,
-  "i",
-);
 
 type Block = { node: MdNode; text: string; list: MdNode | null };
 
@@ -731,11 +1256,9 @@ function tierNamesShown(nodes: MdNode[]): string[] {
   const names: string[] = [];
   for (const block of businessBlocks(nodes)) {
     if (block.node.type !== "listItem") continue;
-    const paragraph = block.node.children[0];
-    const [first, second] = paragraph?.type === "paragraph" ? paragraph.children : [];
-    if (first?.type === "strong" && second?.type === "text" && /^\s*\(/.test(second.value ?? "")) {
-      names.push(norm(visible(first)));
-    }
+    const paragraph = tierRowParagraph(block.node);
+    const first = paragraph?.children[0];
+    if (first) names.push(norm(visible(first)));
   }
   return names;
 }
@@ -743,14 +1266,18 @@ function tierNamesShown(nodes: MdNode[]): string[] {
 type YearOneShown = {
   base: Array<Extract<DisplayedYearOneLine, { kind: "base" }> & { block: Block }>;
   downside: Array<Extract<DisplayedYearOneLine, { kind: "downside" }> & { block: Block }>;
-  funnel: Array<Extract<DisplayedYearOneLine, { kind: "funnel" }>>;
+  funnel: Array<Extract<DisplayedYearOneLine, { kind: "funnel" }> & { block: Block }>;
 };
 
-function auditYearOne(ctx: Ctx, section: Section | undefined, record: ResearchRecordV2 | null): void {
-  if (!section) return;
+/** The Year-One list items the audit verified: base/downside lines and funnel stages. */
+type YearOneNodes = { lines: Set<MdNode>; funnel: Set<MdNode> };
+
+function auditYearOne(ctx: Ctx, section: Section | undefined, record: ResearchRecordV2 | null): YearOneNodes {
+  const found: YearOneNodes = { lines: new Set(), funnel: new Set() };
+  if (!section) return found;
   if (!section.nodes.some((n) => isBoldLabel(n, LABEL.yearOneMath))) {
     ctx.errors.push("Business Model needs **Year-One Math** (funnel → paying accounts → ARR, plus downside)");
-    return;
+    return found;
   }
   const blocks = businessBlocks(section.nodes);
   const shown: YearOneShown = { base: [], downside: [], funnel: [] };
@@ -758,19 +1285,18 @@ function auditYearOne(ctx: Ctx, section: Section | undefined, record: ResearchRe
     const parsed = block.node.type === "listItem" ? parseYearOneLine(block.text) : null;
     if (parsed?.kind === "base") shown.base.push({ ...parsed, block });
     else if (parsed?.kind === "downside") shown.downside.push({ ...parsed, block });
-    else if (REVENUE_TOTAL_RE.test(block.text)) {
-      ctx.errors.push(
-        `Business Model states another revenue total at line ${lineOf(ctx, block.node.start)} ("${clip(block.text)}"); only the Year-One Math base and downside lines may state ARR or MRR`,
-      );
-    }
   }
+  for (const line of [...shown.base, ...shown.downside]) found.lines.add(line.block.node);
   const base = shown.base[0];
   const yearOneList = base?.block.list ?? null;
   if (yearOneList) {
     for (const block of blocks) {
-      if (block.list !== yearOneList || block === base?.block) continue;
+      if (block.list !== yearOneList || found.lines.has(block.node)) continue;
       const parsed = parseYearOneLine(block.text);
-      if (parsed?.kind === "funnel") shown.funnel.push(parsed);
+      if (parsed?.kind === "funnel") {
+        shown.funnel.push({ ...parsed, block });
+        found.funnel.add(block.node);
+      }
     }
   }
   if (shown.base.length === 0) ctx.errors.push("Year-One Math is missing its computed ARR line");
@@ -783,8 +1309,9 @@ function auditYearOne(ctx: Ctx, section: Section | undefined, record: ResearchRe
   if (base && tiers.length > 0 && !tiers.includes(base.tier)) {
     ctx.errors.push(`Year-One Math lands on tier "${base.tier}", which is not a pricing tier (${tiers.join(", ")})`);
   }
-  if (!record || shown.base.length !== 1 || shown.downside.length !== 1 || !base) return;
+  if (!record || shown.base.length !== 1 || shown.downside.length !== 1 || !base) return found;
   compareYearOne(ctx, record, base, shown.downside[0], shown.funnel);
+  return found;
 }
 
 function money(cents: number, period: "month" | "year"): string {
@@ -876,6 +1403,120 @@ function compareYearOne(
   }
 }
 
+/**
+ * Without a usable record the text rules cannot run (they need its evidence),
+ * but Business Model still may not state another revenue total: the same
+ * check, on the visible text of every block but the Year-One lines.
+ */
+function auditRevenueWithoutRecord(ctx: Ctx, section: Section | undefined, yearOne: YearOneNodes): void {
+  if (!section) return;
+  for (const block of businessBlocks(section.nodes)) {
+    if (yearOne.lines.has(block.node)) continue;
+    const revenue = REVENUE_TOTAL_RE.exec(block.text);
+    if (revenue) {
+      ctx.errors.push(
+        `${section.title} states another revenue total at line ${lineOf(ctx, block.node.start)} ("${clip(revenue[0], 80)}"); only the Year-One Math base and downside lines may state ARR, MRR or revenue totals`,
+      );
+    }
+  }
+}
+
+/** Year-One list items as pieces: verified lines fully exempt, a funnel stage's count exempt. */
+function yearOnePieces(state: State, section: Section, nodes: YearOneNodes): void {
+  for (const item of nodes.lines) {
+    state.handled.add(item);
+    addPiece(state, section.title, item, [{ text: norm(visible(item)), kind: "yearOne" }]);
+  }
+  for (const item of nodes.funnel) {
+    state.handled.add(item);
+    const paragraph = item.children[0];
+    const [count, ...rest] = paragraph?.type === "paragraph" ? paragraph.children : [];
+    const segs = count?.type === "strong"
+      ? [...relabel(inlineSegs(state, count.children, item.start), "prose", "yearOne"), ...inlineSegs(state, rest, item.start)]
+      : inlineSegs(state, item.children, item.start);
+    addPiece(state, section.title, item, segs);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Labels, prompt headings, identity
+// ---------------------------------------------------------------------------
+
+function markPromptHeadings(state: State, section: Section | undefined): void {
+  if (!section) return;
+  for (const node of section.nodes) {
+    if (PROMPT_TITLES.some((_title, i) => isBoldLabel(node, promptHeadingText(i)))) state.handled.add(node);
+  }
+}
+
+function auditProposalLabels(ctx: Ctx, layout: Layout, record: ResearchRecordV2): void {
+  const labels = proposalLabels(pageProductName(record));
+  const required: Array<[string, string]> = [
+    ["The Solution", labels.howItWorks],
+    ["The Solution", labels.dontBuildYet],
+    ["Business Model", labels.pricing],
+    ["Business Model", labels.unitEconomics],
+    ["Business Model", labels.yearOne],
+    ["Business Model", labels.channels],
+    ["Recommended Tech Stack", labels.stack],
+  ];
+  for (const [title, label] of required) {
+    const section = layout.sections.find((s) => s.title === title);
+    if (!section) continue;
+    if (!section.nodes.some((n) => n.type === "paragraph" && norm(visible(n)) === norm(label))) {
+      ctx.errors.push(`${title}: the label "${label}" is missing; proposals and planning assumptions stay labelled as such`);
+    }
+  }
+}
+
+/** JSON with object keys sorted, for comparing manifest values. */
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (isRecord(value)) {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "undefined";
+}
+
+function auditIdentity(ctx: Ctx, record: ResearchRecordV2, slug: string | undefined, manifestRow: unknown): void {
+  if (slug !== undefined && record.mode === "fixture" && !isEngineDraftSlug(slug)) {
+    ctx.errors.push(
+      `research record mode is "fixture" (synthetic research) but the page slug '${slug}' is not an engine-draft-* draft; fixture output never reaches a public page (ruling R11)`,
+    );
+  }
+  if (manifestRow === undefined || manifestRow === null) return;
+  const who = `manifest row for ${slug ?? record.brief.slug}`;
+  if (!isRecord(manifestRow)) {
+    ctx.errors.push(`${who} is not an object`);
+    return;
+  }
+  const provenance = manifestRow.provenance;
+  if (isRecord(provenance) && provenance.researchMode !== undefined && provenance.researchMode !== record.mode) {
+    ctx.errors.push(
+      `${who}: provenance.researchMode ${JSON.stringify(provenance.researchMode)} does not match the record's mode "${record.mode}"`,
+    );
+  }
+  if (manifestRow.highlights === undefined) return;
+  const generated = ideaHighlights(record);
+  if (!generated) {
+    ctx.errors.push(`${who}: highlights are present but the record generates none; remove them`);
+    return;
+  }
+  const shown = manifestRow.highlights;
+  if (stableJson(shown) === stableJson(generated)) return;
+  const keys = ["problemQuote", "stats", "competitors"] as const;
+  const shownObject = isRecord(shown) ? shown : {};
+  const differing = keys.filter((key) => stableJson(shownObject[key]) !== stableJson(generated[key]));
+  const key = differing[0];
+  const detail = key
+    ? `highlights.${key} is not what the record generates (shown ${clip(stableJson(shownObject[key]), 140)}, generated ${clip(stableJson(generated[key]), 140)})`
+    : "highlights are not what the record generates (extra keys)";
+  ctx.errors.push(`${who}: ${detail}; highlights come from engine:compile, never by hand`);
+}
+
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
@@ -893,18 +1534,25 @@ export type ArtifactAudit = {
   };
 };
 
-const MDX_ONLY_NODES = new Set(["mdxJsxFlowElement", "mdxJsxTextElement", "mdxFlowExpression", "mdxTextExpression", "mdxjsEsm", "html"]);
+export type ArtifactAuditOptions = {
+  /** Added to reported line numbers (the frontmatter's lines). */
+  lineOffset?: number;
+  /** The page slug, for the fixture-mode rule (R11); omitted → not checked. */
+  slug?: string;
+  /** The page's manifest row (unknown JSON); its highlights and researchMode are checked. */
+  manifestRow?: unknown;
+};
 
 /**
  * Audit an engine page body (frontmatter removed) against its contract v2
  * record. With `record` null (missing, legacy or invalid record — reported
- * by the caller) only the record-independent Year-One structure is checked.
- * `lineOffset` is added to reported line numbers (the frontmatter's lines).
+ * by the caller) only the record-independent checks run: structure and
+ * Year-One Math's shape.
  */
 export function auditEngineArtifact(
   body: string,
   record: ResearchRecordV2 | null,
-  options: { lineOffset?: number } = {},
+  options: ArtifactAuditOptions = {},
 ): ArtifactAudit {
   const ctx: Ctx = { body, lineOffset: options.lineOffset ?? 0, errors: [], warnings: [] };
   const result: ArtifactAudit = {
@@ -918,33 +1566,40 @@ export function auditEngineArtifact(
     ctx.errors.push(`MDX does not parse, so the factual blocks cannot be checked: ${clip(parsed.error, 160)}`);
     return result;
   }
-  walk(parsed.root, (node) => {
-    if (MDX_ONLY_NODES.has(node.type)) {
-      ctx.errors.push(`${node.type} at line ${lineOf(ctx, node.start)}: engine pages render record text literally (no JSX, expressions or HTML)`);
-    }
-  });
-  const sections = sectionsOf(parsed.root);
-  const section = (title: string) => sections.find((s) => s.title === title);
-  auditYearOne(ctx, section("Business Model"), record);
-  if (!record) return result;
+  const layout = layoutOf(parsed.root);
+  const section = (title: string) => layout.sections.find((s) => s.title === title);
+  auditStructure(ctx, parsed.root, layout);
+  const business = section("Business Model");
+  const yearOne = auditYearOne(ctx, business, record);
+  if (!record) {
+    auditRevenueWithoutRecord(ctx, business, yearOne);
+    return result;
+  }
 
+  auditIdentity(ctx, record, options.slug, options.manifestRow);
   const ev = evidenceOf(record);
-  const handled = new Set<MdNode>();
-  const prose: ProsePiece[] = [];
+  const state: State = { ctx, record, ev, handled: new Set(), pieces: [], names: recordNames(record) };
+  auditLinkTargets(state, parsed.root);
   result.metrics.verifiedQuotes = auditQuotes(ctx, parsed.root, record, ev);
   const market = section("Market Research");
   if (market) {
-    result.metrics.marketRows = auditMarketRows(ctx, market, record, ev, handled, prose);
-    auditKeywordRows(ctx, market, record, handled);
+    result.metrics.marketRows = auditMarketRows(state, market);
+    auditKeywordRows(state, market);
   }
   const competitive = section("Competitive Landscape");
   if (competitive) {
-    result.metrics.competitorRows = auditCompetitorRows(ctx, competitive, record, ev, handled, prose, result.competitorLinks);
+    result.metrics.competitorRows = auditCompetitorRows(state, competitive, result.competitorLinks);
   }
-  for (const title of FIGURE_SECTIONS) {
-    const s = section(title);
-    if (s) collectProse(ctx, title, s.nodes, ev, handled, prose);
+  if (business) {
+    yearOnePieces(state, business, yearOne);
+    auditTierRows(state, business);
+    auditUnitRows(state, business);
   }
-  result.metrics.unboundFigures = auditFigures(ctx, prose, ev);
+  auditSourcesList(state, section(SOURCES_TITLE));
+  markPromptHeadings(state, section(PROMPTS_TITLE));
+  auditProposalLabels(ctx, layout, record);
+  const fenceValues = fenceValuesOf(record, ev);
+  for (const s of layout.sections) collectPieces(state, s, fenceValues);
+  result.metrics.unboundFigures = applyRules(state);
   return result;
 }
