@@ -6,6 +6,7 @@ import type { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { PlanDetail } from "../../components/platform/builds/PlanDetail";
 import { SavedIdeas } from "../../components/platform/explore/SavedIdeas";
+import { isComparable } from "../../components/platform/explore/saved-compare";
 import { NextStepCard } from "../../components/platform/home/NextStepCard";
 import { PendingSaveRunner } from "../../components/platform/shell/PendingSaveRunner";
 import { PENDING_SAVE_KEY, PENDING_SAVE_MAX_ATTEMPTS } from "../../lib/pending-save";
@@ -15,8 +16,8 @@ import { PENDING_SAVE_KEY, PENDING_SAVE_MAX_ATTEMPTS } from "../../lib/pending-s
  * page can still hold an engine draft whose research page answers 404. Each
  * view is rendered whole from the data its queries return, for a draft and
  * for an ordinary idea, so removing or inverting a draft branch changes
- * what the member sees and fails here. Saved's compare mode is the one
- * exception; see that block.
+ * what the member sees and fails here. Saved's compare mode needs a click,
+ * so its per-row rule is tested directly; see that block.
  */
 
 const convex = vi.hoisted(() => ({
@@ -226,10 +227,6 @@ describe("the Saved page", () => {
   };
 
   // Free rows are plain idea rows; Builder's Hub rows add collections and notes.
-  // Compare mode starts only from a click on the toolbar's Compare button,
-  // which a static render cannot make, so the guard that gives a draft row no
-  // compare checkbox is not covered here. The compare query drops drafts on
-  // the server either way (convex/wp46DraftRetirement.test.ts).
   test.each([
     { member: "free", entitlements: free, hubRows: false },
     { member: "Builder's Hub", entitlements: hub, hubRows: true },
@@ -250,5 +247,20 @@ describe("the Saved page", () => {
     expect(html).not.toMatch(/\/dashboard\/builds\/new\?idea=engine-draft-/);
     expect(html).toContain(ordinaryLink);
     expect(html).toContain("/dashboard/builds/new?idea=ai-code-reviewer");
+  });
+
+  // Compare mode starts only from a click on the toolbar's Compare button,
+  // which a static render cannot make, so the per-row rule SavedIdeas uses
+  // is tested directly. The compare query also drops drafts on the server
+  // (convex/wp46DraftRetirement.test.ts).
+  test("in compare mode an ordinary row gets a compare checkbox and a retired draft never does", () => {
+    expect(isComparable(ORDINARY, true)).toBe(true);
+    expect(isComparable(DRAFT, true)).toBe(false);
+    expect(isComparable("engine-draft-", true)).toBe(false);
+  });
+
+  test("outside compare mode no row gets a compare checkbox", () => {
+    expect(isComparable(ORDINARY, false)).toBe(false);
+    expect(isComparable(DRAFT, false)).toBe(false);
   });
 });
