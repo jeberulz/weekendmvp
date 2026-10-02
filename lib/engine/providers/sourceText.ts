@@ -21,9 +21,10 @@
  *   the request is destroyed at the cap; one deadline per `fetchText` call
  *   covers the DNS checks, the socket lookup, every redirect hop and the body.
  * - Compression: requests ask for `identity`, and any other Content-Encoding
- *   fails as `unsupported_encoding`. Nothing is decompressed, so a small
- *   compressed body can never expand past the cap. (node:http never decodes
- *   on its own; this is a decision, not a default.)
+ *   fails as `unsupported_encoding`, as does any Transfer-Encoding but
+ *   `chunked` (gzip, or framing Node would not decode). Nothing is
+ *   decompressed, so a small compressed body can never expand past the cap.
+ *   (node:http never decodes on its own; this is a decision, not a default.)
  * - Redirects: only GET/HEAD follow them. Once a hop changes origin only
  *   User-Agent, Accept and Accept-Language are forwarded (credentials, API
  *   keys and any other header are dropped for good), and an authenticated
@@ -725,14 +726,37 @@ export type PublicOnlyFetchOptions = {
 
 type TransportConfig = { lookup: LookupFunction; maxWireBytes: number };
 
-/** Content codings other than identity, sanitized for messages. */
-function contentCodings(value: string | undefined): string[] {
+/** The codings in a Content-Encoding or Transfer-Encoding value, lowercased. */
+function codingList(value: string | undefined): string[] {
   if (!value) return [];
   return value
     .split(",")
     .map((coding) => coding.trim().toLowerCase())
-    .filter((coding) => coding !== "" && coding !== "identity")
-    .map((coding) => coding.replace(/[^a-z0-9._+-]/g, "?").slice(0, 32));
+    .filter((coding) => coding !== "");
+}
+
+/** Codings for a message: unexpected characters masked, each and the whole capped. */
+function describeCodings(codings: string[]): string {
+  return codings
+    .map((coding) => coding.replace(/[^a-z0-9._+-]/g, "?").slice(0, 32))
+    .join(", ")
+    .slice(0, 120);
+}
+
+/** Content codings other than identity. */
+function contentCodings(value: string | undefined): string[] {
+  return codingList(value).filter((coding) => coding !== "identity");
+}
+
+/**
+ * True unless the transfer codings are `identity` at most followed by one
+ * final `chunked`. Node decodes `chunked` only as the last coding: with
+ * `chunked, identity` or `chunked;x=1` the body would still carry its chunk
+ * framing, and with `gzip` compressed bytes.
+ */
+function unsupportedTransferCoding(codings: string[]): boolean {
+  const framing = codings.at(-1) === "chunked" ? codings.slice(0, -1) : codings;
+  return framing.some((coding) => coding !== "identity");
 }
 
 /** A valid Content-Length, else null (the streamed byte count still applies). */
@@ -903,7 +927,18 @@ function transportFetch(
         fail(
           new SourceFetchError(
             "unsupported_encoding",
-            `Unsupported content-encoding "${codings.join(", ")}" from ${label}`,
+            `Unsupported content-encoding "${describeCodings(codings)}" from ${label}`,
+            status,
+          ),
+        );
+        return;
+      }
+      const transfer = codingList(incoming.headers["transfer-encoding"]);
+      if (unsupportedTransferCoding(transfer)) {
+        fail(
+          new SourceFetchError(
+            "unsupported_encoding",
+            `Unsupported transfer-encoding "${describeCodings(transfer)}" from ${label}`,
             status,
           ),
         );

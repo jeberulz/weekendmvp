@@ -244,6 +244,55 @@ describe("source transport: compression is refused, never decoded", () => {
     }
     expect(await provider().fetchText(`${server.origin("page")}/identity`)).toBe("plain text");
   });
+
+  /** One chunked-encoding chunk and the terminator. */
+  const oneChunk = (body: Buffer) =>
+    Buffer.concat([Buffer.from(`${body.length.toString(16)}\r\n`), body, Buffer.from("\r\n0\r\n\r\n")]);
+
+  it("fails any transfer-coding Node would not decode as plain chunked, without returning its bytes", async () => {
+    const gz = gzipSync("<p>Loopio costs $20,000/year</p>");
+    const hi = Buffer.from("hi");
+    // Node only decodes "chunked" as the last coding: gzip comes through as
+    // compressed bytes, and "chunked, identity" or "chunked;x=1" as raw framing.
+    const responses: Array<[string, Buffer]> = [
+      ["Transfer-Encoding: gzip, chunked", oneChunk(gz)],
+      ["Transfer-Encoding: gzip", gz],
+      ["Transfer-Encoding: chunked, gzip", gz],
+      ["Transfer-Encoding: chunked\r\nTransfer-Encoding: gzip", gz],
+      ["Transfer-Encoding: x-custom", hi],
+      ["Transfer-Encoding: chunked, chunked", oneChunk(hi)],
+      ["Transfer-Encoding: chunked;x=1", oneChunk(hi)],
+      ["Transfer-Encoding: chunked, identity", oneChunk(hi)],
+    ];
+    for (const [header, body] of responses) {
+      const server = await serveRaw((socket) =>
+        socket.end(Buffer.concat([Buffer.from(`HTTP/1.1 200 OK\r\n${header}\r\n\r\n`), body])),
+      );
+      const error = await provider()
+        .fetchText(`${server.origin("te")}/`)
+        .then(
+          () => null,
+          (e: unknown) => e,
+        );
+      expect(error, header).toMatchObject({ code: "unsupported_encoding", status: 200 });
+      expect((error as Error).message, header).toMatch(/^Unsupported transfer-encoding "/);
+    }
+  });
+
+  it("reads chunked and identity transfer-codings", async () => {
+    const hi = Buffer.from("hi");
+    for (const [header, body] of [
+      ["Transfer-Encoding: chunked", oneChunk(hi)],
+      ["Transfer-Encoding: CHUNKED", oneChunk(hi)],
+      ["Transfer-Encoding: identity, chunked", oneChunk(hi)],
+      ["Transfer-Encoding: identity", hi], // read to EOF
+    ] as const) {
+      const server = await serveRaw((socket) =>
+        socket.end(Buffer.concat([Buffer.from(`HTTP/1.1 200 OK\r\n${header}\r\n\r\n`), body])),
+      );
+      expect(await provider().fetchText(`${server.origin("te")}/`), header).toBe("hi");
+    }
+  });
 });
 
 describe("source transport: every response settles (F7)", () => {
