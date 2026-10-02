@@ -17,8 +17,10 @@
  *   re-checks the address the socket connects to (`publicOnlyLookup`), plus
  *   IP-literal hosts, which Node connects to without calling `lookup`.
  *   Loopback, private, link-local and metadata-service targets are refused.
- * - Size and time (`SOURCE_LIMITS`): body bytes are counted as they stream and
- *   the request is destroyed at the cap; one deadline per `fetchText` call
+ * - Size and time (`SOURCE_LIMITS`): body bytes are copied into one buffer
+ *   that never grows past the body cap, every byte read off the connection
+ *   (status lines, headers, chunk framing) counts against a socket cap, and
+ *   the request is destroyed at either; one deadline per `fetchText` call
  *   covers the DNS checks, the socket lookup, every redirect hop and the body.
  * - Compression: requests ask for `identity`, and any other Content-Encoding
  *   fails as `unsupported_encoding`, as does any Transfer-Encoding but
@@ -63,8 +65,13 @@ export type CreateSourceTextOptions = {
 // ---------------------------------------------------------------------------
 
 export type SourceLimits = {
-  /** Response body bytes accepted off the socket, per response. */
-  readonly maxWireBytes: number;
+  /** Message body bytes per response, after chunked framing is removed. */
+  readonly maxBodyBytes: number;
+  /**
+   * Bytes read off the connection per response: status lines (1xx
+   * included), headers, chunk sizes and extensions, trailers and body.
+   */
+  readonly maxSocketBytes: number;
   /** Body bytes handed to the text decoder, per read. */
   readonly maxDecodedBytes: number;
   /** One deadline per `fetchText` call. */
@@ -82,8 +89,13 @@ export type SourceLimits = {
 export const SOURCE_LIMITS: SourceLimits = Object.freeze({
   // A pricing page, article or forum thread is far smaller; 2 MiB still holds
   // a long Hacker News comment tree from the Algolia API.
-  maxWireBytes: 2 * 1024 * 1024,
-  // Equal to the wire cap because only identity encoding is accepted, so no
+  maxBodyBytes: 2 * 1024 * 1024,
+  // Twice the body cap. Ordinary chunking adds well under 1% (8 bytes per
+  // 16 KiB chunk) and Node caps headers at 16 KiB, so a full 2 MiB body
+  // fits; 1-byte chunks (6 wire bytes per body byte), chunk extensions and
+  // floods of 1xx responses stop here instead of costing parse work.
+  maxSocketBytes: 4 * 1024 * 1024,
+  // Equal to the body cap because only identity encoding is accepted, so no
   // decoder runs. Kept separate so adding one cannot lift the memory bound;
   // it also caps an injected fetch implementation that decompresses.
   maxDecodedBytes: 2 * 1024 * 1024,
@@ -92,8 +104,12 @@ export const SOURCE_LIMITS: SourceLimits = Object.freeze({
   deadlineMs: 15_000,
   // Unchanged from the first reader; real citations take one or two hops.
   maxRedirects: 5,
-  // With 2 MiB per read, at most 8 MiB of bodies are in memory at once, and
-  // a run stays polite to the sites it cites.
+  // Four reads at once keep a run polite to the sites it cites. Each read in
+  // flight holds one body buffer of at most `maxBodyBytes` (chunks are
+  // copied, never kept), and turning it into text makes a few short-lived
+  // copies of that size: four concurrent 2 MiB reads peaked under 40 MiB of
+  // heap and buffers in testing, where keeping a Buffer per 1-byte chunk
+  // had reached 1.6 GiB.
   concurrency: 4,
 });
 
@@ -592,6 +608,16 @@ function parseSourceUrl(url: string): URL {
  * Throw unless the URL is http(s) and its host resolves only to public IPs.
  * With `signal`, the resolution is raced against it: dns.lookup cannot be
  * cancelled, so a stalled resolver must not hold the read past its deadline.
+ *
+ * Known limit (not redesigned): the race bounds the read, not the lookup.
+ * dns.lookup runs getaddrinfo on libuv's threadpool (4 threads unless
+ * UV_THREADPOOL_SIZE says otherwise), so a resolver that never answers keeps
+ * a thread busy after the read has timed out, until the system resolver gives
+ * up; a few such lookups at once delay other threadpool work in the process
+ * (file I/O, crypto, zlib, further lookups). The socket lookup
+ * (`publicOnlyLookup`) has the same limit. dns.Resolver could be cancelled,
+ * but it skips the system's hosts file and resolver configuration, so that
+ * would be a design change rather than a fix.
  */
 export async function assertPublicUrl(
   url: string,
@@ -623,6 +649,7 @@ export async function assertPublicUrl(
  * DNS lookup for the socket itself: refuses the connection when any resolved
  * address is non-public. Because the check runs at connect time, a host that
  * re-resolves to a private address after `assertPublicUrl` is still refused.
+ * Like the pre-flight check it cannot be cancelled (see `assertPublicUrl`).
  */
 const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
   dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
@@ -721,10 +748,43 @@ export type PublicOnlyFetchOptions = {
    * production caller passes it.
    */
   lookup?: LookupFunction;
-  limits?: Partial<Pick<SourceLimits, "maxWireBytes">>;
+  limits?: Partial<Pick<SourceLimits, "maxBodyBytes" | "maxSocketBytes">>;
 };
 
-type TransportConfig = { lookup: LookupFunction; maxWireBytes: number };
+type TransportConfig = { lookup: LookupFunction; maxBodyBytes: number; maxSocketBytes: number };
+
+/**
+ * Bytes appended into one buffer that doubles as needed and never grows past
+ * `max`: no chunk is retained, however small the chunks arrive (1-byte
+ * chunked-encoding chunks used to keep a Buffer object each, over 300 MiB of
+ * heap for a 2 MiB body). Growth copies at most twice the final size.
+ */
+type ByteSink = {
+  /** False, appending nothing, when the chunk would take the total past `max`. */
+  append(chunk: Uint8Array): boolean;
+  /** A view of the bytes so far (valid until the next append). */
+  bytes(): Uint8Array<ArrayBuffer>;
+};
+
+function createByteSink(max: number): ByteSink {
+  let buffer: Uint8Array<ArrayBuffer> = new Uint8Array(0);
+  let length = 0;
+  return {
+    append(chunk) {
+      if (chunk.byteLength > max - length) return false;
+      const needed = length + chunk.byteLength;
+      if (needed > buffer.byteLength) {
+        const grown = new Uint8Array(Math.min(max, Math.max(needed, buffer.byteLength * 2, 16 * 1024)));
+        grown.set(buffer.subarray(0, length));
+        buffer = grown;
+      }
+      buffer.set(chunk, length);
+      length = needed;
+      return true;
+    },
+    bytes: () => buffer.subarray(0, length),
+  };
+}
 
 /** The codings in a Content-Encoding or Transfer-Encoding value, lowercased. */
 function codingList(value: string | undefined): string[] {
@@ -847,22 +907,24 @@ function transportFetch(
 
     let settled = false;
     let request: http.ClientRequest | undefined;
+    let socket: Socket | undefined;
     let response: http.IncomingMessage | undefined;
     let status = 0;
     let responseHeaders = new Headers();
-    let chunks: Buffer[] = [];
-    let received = 0;
+    let bodySink: ByteSink | null = null;
+    let socketBytes = 0;
 
     function finish(): boolean {
       if (settled) return false;
       settled = true;
       signal?.removeEventListener("abort", onAbort);
+      socket?.off("data", onSocketData);
       response
         ?.off("data", onData)
         .off("end", onEnd)
         .off("close", onPrematureClose)
         .off("error", onFailure);
-      chunks = [];
+      bodySink = null;
       return true;
     }
 
@@ -908,21 +970,36 @@ function transportFetch(
       fail(new SourceFetchError("network", `Connection to ${label} closed without a complete response`));
     }
 
-    function onData(chunk: Buffer): void {
+    /** Counts every byte read off the connection, before the parser sees it. */
+    function onSocket(assigned: Socket): void {
+      socket = assigned;
+      if (!settled) assigned.prependListener("data", onSocketData);
+    }
+
+    function onSocketData(chunk: Buffer): void {
       if (settled) return;
-      // Checked before retaining, so even one huge chunk is never kept.
-      if (received + chunk.length > config.maxWireBytes) {
-        fail(oversizedError(label, config.maxWireBytes));
-        return;
+      socketBytes += chunk.length;
+      if (socketBytes > config.maxSocketBytes) {
+        fail(
+          new SourceFetchError(
+            "oversized",
+            `Response from ${label} exceeds ${config.maxSocketBytes} bytes on the connection`,
+          ),
+        );
       }
-      received += chunk.length;
-      chunks.push(chunk);
+    }
+
+    function onData(chunk: Buffer): void {
+      if (settled || bodySink === null) return;
+      // Checked before copying, so even one huge chunk is never kept.
+      if (!bodySink.append(chunk)) fail(oversizedError(label, config.maxBodyBytes));
     }
 
     function onEnd(): void {
-      if (settled) return;
+      if (settled || bodySink === null) return;
       try {
-        succeed(new Response(Buffer.concat(chunks, received), { status, headers: responseHeaders }));
+        // Response copies the bytes, so the sink is released by `finish`.
+        succeed(new Response(bodySink.bytes(), { status, headers: responseHeaders }));
       } catch (error) {
         fail(new SourceFetchError("network", `Unusable response from ${label}: ${errorLabel(error)}`, status));
       }
@@ -982,10 +1059,11 @@ function transportFetch(
         return;
       }
       const declared = declaredLength(incoming.headers["content-length"]);
-      if (declared !== null && declared > config.maxWireBytes) {
-        fail(oversizedError(label, config.maxWireBytes));
+      if (declared !== null && declared > config.maxBodyBytes) {
+        fail(oversizedError(label, config.maxBodyBytes));
         return;
       }
+      bodySink = createByteSink(config.maxBodyBytes);
       incoming.on("data", onData);
       incoming.on("end", onEnd);
       incoming.on("close", onPrematureClose);
@@ -1014,6 +1092,7 @@ function transportFetch(
       return;
     }
     request.on("error", onFailure);
+    request.on("socket", onSocket);
     request.on("upgrade", onUpgrade);
     request.on("close", onRequestClose);
     request.end(body);
@@ -1021,19 +1100,28 @@ function transportFetch(
 }
 
 /**
- * A fetch over node:http(s) that only connects to public addresses, streams
- * at most `maxWireBytes` of body, refuses compressed bodies and never follows
- * redirects itself (`sendWithRedirects` checks each hop).
+ * A fetch over node:http(s) that only connects to public addresses, keeps at
+ * most `maxBodyBytes` of body and reads at most `maxSocketBytes` off the
+ * connection, refuses compressed bodies and never follows redirects itself
+ * (`sendWithRedirects` checks each hop). It has no timer of its own: a silent
+ * server or a stalled lookup holds a request until the caller's `signal`
+ * aborts (`createSourceTextProvider` always passes its deadline).
  */
 export function createPublicOnlyFetch(options: PublicOnlyFetchOptions = {}): FetchLike {
   const config: TransportConfig = {
     lookup: options.lookup ?? publicOnlyLookup,
-    maxWireBytes: positiveInteger(
-      options.limits?.maxWireBytes,
-      SOURCE_LIMITS.maxWireBytes,
-      "maxWireBytes",
+    maxBodyBytes: positiveInteger(options.limits?.maxBodyBytes, SOURCE_LIMITS.maxBodyBytes, "maxBodyBytes"),
+    maxSocketBytes: positiveInteger(
+      options.limits?.maxSocketBytes,
+      SOURCE_LIMITS.maxSocketBytes,
+      "maxSocketBytes",
     ),
   };
+  if (config.maxSocketBytes < config.maxBodyBytes) {
+    throw new RangeError(
+      `maxSocketBytes (${config.maxSocketBytes}) must be at least maxBodyBytes (${config.maxBodyBytes})`,
+    );
+  }
   return (input, init = {}) => transportFetch(input, init, config);
 }
 
@@ -1188,9 +1276,9 @@ function assertReadable(response: Response, describe: string): void {
 }
 
 /**
- * Read at most `maxBytes` of body. The real transport already capped the
- * wire bytes; this cap also holds for an injected fetch that streams or
- * decompresses.
+ * Read at most `maxBytes` of body into one buffer. The real transport already
+ * capped the body; this cap also holds for an injected fetch that streams or
+ * decompresses, and its chunks are copied, never kept.
  */
 async function readBounded(
   response: Response,
@@ -1205,28 +1293,19 @@ async function readBounded(
   }
   if (!response.body) return new Uint8Array(0);
   const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
+  const sink = createByteSink(maxBytes);
   try {
     for (;;) {
       const next = await untilAborted(reader.read(), signal);
       if (next.done) break;
-      if (total + next.value.byteLength > maxBytes) throw oversizedError(describe, maxBytes);
-      total += next.value.byteLength;
-      chunks.push(next.value);
+      if (!sink.append(next.value)) throw oversizedError(describe, maxBytes);
     }
   } catch (error) {
     // The read already failed; cancelling only releases the stream.
     reader.cancel().catch(() => undefined);
     throw error;
   }
-  const out = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return out;
+  return sink.bytes();
 }
 
 async function readText(response: Response, describe: string, signal: AbortSignal): Promise<string> {
