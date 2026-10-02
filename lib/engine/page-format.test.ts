@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { REPO_ROOT } from "./__fixtures__/auditHarness.ts";
+import type { MdNode } from "./artifact-audit.ts";
 import { GENERIC_SETUP_TABLE_NAMES } from "./compile.ts";
 import {
   arrEquation,
@@ -117,6 +118,27 @@ describe("page formats shared by the compiler and the auditor", () => {
     expect(linkUrl("https://x.example/report_(v2)?q={x}&a=1 2")).toBe("https://x.example/report_%28v2%29?q=%7Bx%7D&a=1%202");
     expect(linkUrl("https://news.ycombinator.com/item?id=27515468")).toBe("https://news.ycombinator.com/item?id=27515468");
     expect(mdLink("Report <2026> [draft]", "https://x.example/a")).toBe("[Report \\<2026\\> \\[draft\\]](https://x.example/a)");
+  });
+
+  it("percent-encodes a backslash so a URL ending in one stays one valid link (security probe-linkurl)", async () => {
+    const { canonicalSourceUrl } = await import("./evidence/citation.ts");
+    const { parseMdxBody } = await import("./artifact-audit.ts");
+    const url = canonicalSourceUrl("https://forum.example/t?q=a\\");
+    expect(url).toBe("https://forum.example/t?q=a\\");
+    if (url === null) throw new Error("canonical URL missing");
+    expect(linkUrl(url)).toBe("https://forum.example/t?q=a%5C");
+    const parsed = parseMdxBody(`- Row (${mdLink("Source title", url)}).`);
+    if (!parsed.ok) throw new Error(parsed.error);
+    const links: string[] = [];
+    const texts: string[] = [];
+    const walk = (node: MdNode) => {
+      if (node.type === "link" && node.url) links.push(node.url);
+      if (node.type === "text" && node.value) texts.push(node.value);
+      for (const child of node.children) walk(child);
+    };
+    walk(parsed.root);
+    expect(links).toEqual(["https://forum.example/t?q=a%5C"]);
+    expect(texts.join("")).toBe("Row (Source title).");
   });
 
   it("splits a trailing (via host) label", () => {

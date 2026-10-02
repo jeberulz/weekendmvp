@@ -111,11 +111,13 @@ export function tidyProse(text: string): string {
   return text.replace(/(?<!\.)\.\.(?!\.)/g, ".");
 }
 
-const LINK_UNSAFE_RE = /[()\s<>{}]/g;
+const LINK_UNSAFE_RE = /[()\s<>{}\\]/g;
 
 /**
- * Link destination as the compiler writes it: ( ) whitespace < > { }
- * percent-encoded, nothing else changed. Apply it to both sides before
+ * Link destination as the compiler writes it: ( ) whitespace < > { } and the
+ * backslash percent-encoded, nothing else changed. A raw backslash would
+ * escape the character after it in Markdown, so a URL ending in one would
+ * swallow the link's closing parenthesis. Apply it to both sides before
  * comparing a page URL with an evidence URL.
  */
 export function linkUrl(url: string): string {

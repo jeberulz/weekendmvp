@@ -130,6 +130,19 @@ describe("every link targets an evidence source the record uses (R10)", () => {
   });
 });
 
+describe("link destinations survive any canonical URL (security probe-linkurl)", () => {
+  it("keeps a source URL that ends in a backslash as one valid link, and the page passes", async () => {
+    const url = `${FIXTURE_PAGES.survey.url}?edition=a\\`;
+    const record = buildFixtureRecord(undefined, { pages: { survey: { url } } });
+    expect(EV.statAdoption.sourceUrl).not.toBe(url);
+    const stat = record.evidence.accepted.find((e) => e.kind === "market_stat" && e.sourceUrl.endsWith("\\"));
+    if (!stat) throw new Error("fixture: the backslash source was not accepted");
+    const page = compile(record);
+    expect(pageLinkUrls(page)).toContain(`${FIXTURE_PAGES.survey.url}?edition=a%5C`);
+    expect((await auditPage(page, record)).errors).toEqual([]);
+  });
+});
+
 describe("a link's text is its source's title or an evidence rendering (R10, P2-2)", () => {
   it("fails figure-free edits of an inline quote link: a negation, an appended sentence, a replacement", async () => {
     const record = recordCitingUnselectedQuote();
