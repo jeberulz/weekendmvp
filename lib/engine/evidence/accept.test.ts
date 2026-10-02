@@ -1040,10 +1040,11 @@ describe("checkEvidenceMinimums", () => {
 // ---------------------------------------------------------------------------
 
 describe("R8: community quotes are whole sentences from community sources", () => {
+  // Blocks separated by blank lines: since ruling R14 a heading without terminal punctuation runs into the next line.
   const PRICING_PAGE: Page = {
     url: "https://www.coderabbit.ai/pricing",
     roles: ["competitors"],
-    text: "Pricing\nCustomer story\nWe cut our review time in half after switching to CodeRabbit last spring.\nPro\n$24/user/month, billed annually",
+    text: "Pricing\n\nCustomer story\n\nWe cut our review time in half after switching to CodeRabbit last spring.\n\nPro\n$24/user/month, billed annually",
   };
   const TESTIMONIAL = "We cut our review time in half after switching to CodeRabbit last spring.";
 
@@ -1065,10 +1066,11 @@ describe("R8: community quotes are whole sentences from community sources", () =
   });
 
   it("refuses a span that drops the start of its sentence, with or without a leading ellipsis (review probe p3)", () => {
+    // The topic line ends in a blank line: since ruling R14 a line break without terminal punctuation starts no sentence.
     const page: Page = {
       url: "https://forum.example.net/t/questionnaires/1",
       roles: ["community"],
-      text: "Topic: questionnaires\nHonestly, I would never say that security questionnaires are the bottleneck for our team.\nWe answer them in an afternoon.",
+      text: "Topic: questionnaires\n\nHonestly, I would never say that security questionnaires are the bottleneck for our team.\nWe answer them in an afternoon.",
     };
     const result = run([page], {
       quotes: [
@@ -1308,11 +1310,12 @@ describe("R9: a price block that shows both monthly and annual billing needs the
     expect(stated.rejected).toEqual([]);
     const monthlyOnly = run([pricing("Pricing\nPro\n$24/user/month\nUnlimited reviews.")], { competitorPrices: [candidate("$24/user/month")] });
     expect(monthlyOnly.rejected).toEqual([]);
-    // Four lines above the price are outside the block.
-    const farAbove = run([pricing("Billed annually\nPlans\nFor teams\nPro\nUnlimited reviews\n$24/user/month")], {
+    // Ruling R14 made toggles and annual-billing lines page-scoped (a "Billed annually" line four lines above
+    // now counts; see the R14 tests), while a feature line that mentions "annual" never counts.
+    const featureAbove = run([pricing("Annual security reviews included\nPlans\nFor teams\nPro\nUnlimited reviews\n$24/user/month")], {
       competitorPrices: [candidate("$24/user/month", "$24/user/month")],
     });
-    expect(farAbove.rejected).toEqual([]);
+    expect(featureAbove.rejected).toEqual([]);
   });
 });
 
@@ -1395,5 +1398,429 @@ describe("P3-6: credential-bearing URLs", () => {
     const result = run([], { quotes: [quote("We answer every questionnaire by hand.", "https://user:hunter2@forum.example.net/t/1")] });
     expect(reasons(result)).toEqual(["unknown_citation"]);
     expect(JSON.stringify(result)).not.toContain("hunter2");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R14: binding follows the page's structure
+// ---------------------------------------------------------------------------
+
+describe("R14: a line break starts a sentence only after terminal punctuation or at a blank line", () => {
+  const forum = (text: string, n = 1): Page => ({ url: `https://forum.example.net/t/questionnaires/${100 + n}`, roles: ["community"], text });
+
+  it("refuses the line after a <br> inside a sentence, which drops its negation (review probe p17 2a)", () => {
+    const page = forum("    Honestly, I would never say that\nsecurity questionnaires are the bottleneck for our team.\n We answer them in an afternoon.\n\n  ");
+    const result = run([page], { quotes: [quote("security questionnaires are the bottleneck for our team.", page.url)] });
+    expect(reasons(result)).toEqual(["span_bounds"]);
+    expect(result.rejected[0]?.detail).toMatch(/sentence start/);
+  });
+
+  it("refuses the second line of a soft-wrapped sentence (review probe p17 3a)", () => {
+    const page = forum("Title: questionnaires\nI would never claim that security questionnaires are\nthe main reason we lose enterprise deals.", 2);
+    const result = run([page], { quotes: [quote("the main reason we lose enterprise deals.", page.url)] });
+    expect(reasons(result)).toEqual(["span_bounds"]);
+  });
+
+  it("refuses the first line of a sentence that continues on the next line", () => {
+    const page = forum("We answer every questionnaire by hand\nbut we would never do it again for a small deal.", 3);
+    const result = run([page], { quotes: [quote("We answer every questionnaire by hand", page.url)] });
+    expect(reasons(result)).toEqual(["span_bounds"]);
+    expect(result.rejected[0]?.detail).toMatch(/sentence end/);
+  });
+
+  it("treats a title line without terminal punctuation as part of the next line unless a blank line follows it", () => {
+    const sentence = "Honestly, I would never say that security questionnaires are the bottleneck for our team.";
+    const joined = forum(`Topic: questionnaires\n${sentence}`, 4);
+    expect(reasons(run([joined], { quotes: [quote(sentence, joined.url)] }))).toEqual(["span_bounds"]);
+    for (const [n, text] of [
+      [5, `Topic: questionnaires\n\n${sentence}`],
+      [6, `Topic: questionnaires\r\n \t\r\n${sentence}`],
+      [7, `Topic: questionnaires\n\n\n${sentence}`],
+    ] as const) {
+      const page = forum(text, n);
+      const result = run([page], { quotes: [quote(sentence, page.url)] });
+      expect(result.rejected, JSON.stringify(text)).toEqual([]);
+      expect(must(result.accepted[0]).excerpt).toBe(sentence);
+    }
+  });
+
+  it("accepts each paragraph of comments joined by blank lines, as sourceText reads HN and Reddit (review probe p17 1a)", () => {
+    const page: Page = {
+      url: "https://news.ycombinator.com/item?id=4103",
+      roles: ["community"],
+      text:
+        "Ask HN: How do small teams handle security questionnaires?\n\nWe tried three tools last year. None of them could tell us which answer legal had approved, so we went back to spreadsheets.\n\nI would never say that questionnaires are the bottleneck\nfor our team, honestly.",
+    };
+    const result = run([page], {
+      quotes: [
+        quote("None of them could tell us which answer legal had approved, so we went back to spreadsheets.", page.url),
+        quote("questionnaires are the bottleneck for our team, honestly.", page.url),
+      ],
+    });
+    expect(result.accepted.map((e) => e.excerpt)).toEqual(["None of them could tell us which answer legal had approved, so we went back to spreadsheets."]);
+    expect(reasons(result)).toEqual(["span_bounds"]);
+  });
+});
+
+describe("R14: the claimed vendor is the nearest brand-like name before its price", () => {
+  const blog = (text: string): Page => ({ url: "https://blog.example.com/rfp-pricing-notes", roles: ["competitors"], text });
+  const loopioAt = (page: Page, supportingText = page.text, priceText = "$30/month") =>
+    priceCandidate({ vendor: "Loopio", sourceUrl: page.url, supportingText, priceText });
+
+  it.each([
+    ["a rival named between the vendor and the price (review probe p4 v6b)", "Loopio customers often pick Qvidian at $30/month."],
+    ["a move to a rival (review probe p1 3b)", "Loopio customers often move to Qvidian at $30/month."],
+    ["a rival after the vendor (review probe p1 3c)", "After Loopio, we tried Qvidian at $30/month."],
+    ["a rival named right after the price", "Loopio customers pay $30/month for Qvidian."],
+  ])("refuses Loopio's price with %s", (_label, text) => {
+    const page = blog(text);
+    const result = run([page], { competitorPrices: [loopioAt(page)] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+  });
+
+  it("names the nearer brand in the rejection", () => {
+    const page = blog("Loopio customers often pick Qvidian at $30/month.");
+    const result = run([page], { competitorPrices: [loopioAt(page)] });
+    expect(result.rejected[0]?.detail).toContain('"Qvidian"');
+  });
+
+  it("refuses a rival's price on the vendor's own page without any cue (review probes p21, p1 p9b)", () => {
+    const page: Page = {
+      url: "https://loopio.example/pricing",
+      roles: ["competitors"],
+      text: "Loopio pricing\nResponsive charges $30/user/month. Loopio Essentials keeps every seat on one plan.\nEssentials\nContact sales",
+    };
+    const result = run([page], { competitorPrices: [loopioAt(page, "Responsive charges $30/user/month.", "$30/user/month")] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+    expect(result.rejected[0]?.detail).toContain('"Responsive"');
+  });
+
+  it("looks at a soft-wrapped line above the price on a vendor's own page", () => {
+    const page: Page = { url: "https://loopio.example/pricing", roles: ["competitors"], text: "Loopio pricing\nResponsive is the cheaper pick at,\n$30/user/month for small teams." };
+    const result = run([page], { competitorPrices: [loopioAt(page, "$30/user/month for small teams.", "$30/user/month")] });
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+  });
+
+  it.each([
+    ["migrated to", "Most teams migrated to Loopio and pay $30/month."],
+    ["moved to", "Teams moved to Loopio at $30/month."],
+    ["replaced by", "Spreadsheets were replaced by Loopio at $30/month."],
+    ["over a rival", "We chose Loopio over Qvidian at $30/month."],
+  ])("treats %s as a comparison cue", (cue, text) => {
+    const page = blog(text);
+    const result = run([page], { competitorPrices: [loopioAt(page)] });
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+    expect(result.rejected[0]?.detail).toContain(cue.split(" ")[0] ?? cue);
+  });
+
+  it("accepts the vendor, its plan, plan and pricing words, and after/over before ordinary words", () => {
+    for (const text of [
+      "Loopio costs $30/month for small teams.",
+      "Loopio's Essentials plan costs $30/month.",
+      "Loopio costs $30/month for its Team plan.",
+      "Loopio costs $30/month after the free trial.",
+      "Loopio costs $30/month for over ten seats.",
+      "With Loopio, every seat costs $30/month.",
+    ]) {
+      const page = blog(text);
+      const result = run([page], { competitorPrices: [loopioAt(page)] });
+      expect(result.rejected, text).toEqual([]);
+    }
+    for (const [text, priceText] of [
+      ["Loopio pricing\nPlans start at $29/month.", "from $29/month"],
+      ["Loopio pricing\nPro: $24/user/month, billed annually", "$24/user/month, billed annually"],
+      ["Loopio pricing\nStarter €49/month", "€49/month"],
+      ["Loopio pricing\nSSO and API access for $99/month", "$99/month"],
+    ] as const) {
+      const page: Page = { url: "https://loopio.example/pricing", roles: ["competitors"], text };
+      const supporting = text.split("\n")[1] ?? text;
+      const result = run([page], { competitorPrices: [loopioAt(page, supporting, priceText)] });
+      expect(result.rejected, text).toEqual([]);
+    }
+  });
+
+  it("applies the nearest-name rule in revalidation", () => {
+    const page = blog("Loopio costs $30/month for small teams.");
+    const accepted = must(run([page], { competitorPrices: [loopioAt(page)] }).accepted[0]);
+    const excerpt = "Loopio customers often pick Qvidian at $30/month.";
+    const swapped = {
+      ...accepted,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(accepted.kind, accepted.sourceUrl, excerpt, evidenceClaimKey(accepted)),
+    };
+    const result = revalidateAcceptedEvidence(swapped, acquisitions([page]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toContain("ambiguous_attribution");
+  });
+});
+
+describe("R14: billing toggles and annual-billing lines are page-scoped", () => {
+  const pricing = (text: string): Page => ({ url: "https://acme.example/pricing", roles: ["competitors"], text });
+  const acme = (plan: string, priceText: string, supportingText: string) =>
+    priceCandidate({ vendor: "Acme", sourceUrl: "https://acme.example/pricing", supportingText, plan, priceText });
+
+  it("refuses every per-month price under one Monthly/Yearly toggle (review probe p24)", () => {
+    const page = pricing(
+      [
+        "Pricing", "Simple, transparent pricing", "Monthly", "Yearly (save 20%)",
+        "Starter", "$12", "per user / month", "For small teams getting started",
+        "Pro", "$24", "per user / month", "Everything in Starter, plus:", "Unlimited projects", "Audit logs",
+        "Business", "$48", "per user / month", "Everything in Pro, plus:", "SSO",
+      ].join("\n"),
+    );
+    const result = run([page], {
+      competitorPrices: [
+        acme("Starter", "$12/user/month", "$12\nper user / month"),
+        acme("Pro", "$24/user/month", "$24\nper user / month"),
+        acme("Business", "$48/user/month", "$48\nper user / month"),
+      ],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["qualifier_dropped", "qualifier_dropped", "qualifier_dropped"]);
+  });
+
+  it.each([
+    ["a toggle five lines above (review probe p1 4c)", "Pricing\nMonthly Annually (save 20%)\nPro\nFor growing teams\nEverything you need to review code\nUnlimited private repositories\n$24/user/month\nStart trial"],
+    ["an annual-billing line far above", "All plans are billed annually.\nPlans\nFor teams\nPro\nUnlimited reviews\n$24/user/month"],
+    ["a save-with-annual-billing line far above", "Save 20% with annual billing\nPlans\nFor teams\nPro\nUnlimited reviews\n$24/user/month"],
+    ["a pay-yearly toggle", "Pay monthly | Pay yearly -20%\nPro\nUnlimited reviews\nPriority support\n$24/user/month"],
+  ])("refuses a per-month price under %s", (_label, text) => {
+    const result = run([pricing(text)], { competitorPrices: [acme("Pro", "$24/user/month", "$24/user/month")] });
+    expect(reasons(result)).toEqual(["qualifier_dropped"]);
+    expect(result.rejected[0]?.detail).toMatch(/ambiguous billing/);
+  });
+
+  it("counts another plan's billed-annually qualifier only in the price's own block", () => {
+    const page: Page = {
+      url: "https://blog.example.com/review-pricing",
+      roles: ["competitors"],
+      text: "Lite\n$12/user/month, billed annually\nPull request summaries.\nPro\n$24/user/month, billed annually\nUnlimited reviews.\nEnterprise\nCustom pricing\nGraphite charges $40/user/month for its Team plan.",
+    };
+    const far = run([page], {
+      competitorPrices: [
+        priceCandidate({ vendor: "Graphite", sourceUrl: page.url, supportingText: "Graphite charges $40/user/month for its Team plan.", priceText: "$40/user/month" }),
+      ],
+    });
+    expect(far.rejected).toEqual([]);
+    const near: Page = { ...page, text: "Lite\n$12/user/month, billed annually\nGraphite charges $40/user/month for its Team plan." };
+    const result = run([near], {
+      competitorPrices: [
+        priceCandidate({ vendor: "Graphite", sourceUrl: near.url, supportingText: "Graphite charges $40/user/month for its Team plan.", priceText: "$40/user/month" }),
+      ],
+    });
+    expect(reasons(result)).toEqual(["qualifier_dropped"]);
+  });
+
+  it("does not count feature lines that mention annual, negated cues, toggles below the price or a stated billing", () => {
+    for (const [text, priceText] of [
+      ["Pro\nIncludes an annual security review\n$24/user/month\nStart trial", "$24/user/month"],
+      ["No annual contract required.\nPro\n$24/user/month", "$24/user/month"],
+      ["Annual reports and yearly audits included.\nPro\n$24/user/month", "$24/user/month"],
+      ["Pro\n$24/user/month\nMonthly | Yearly", "$24/user/month"],
+      ["Monthly\nYearly (save 20%)\nPro\n$24/user/month, billed annually", "$24/user/month, billed annually"],
+      ["Monthly\nYearly (save 20%)\nPro\n$240/user/year", "$240/user/year"],
+    ] as const) {
+      const supporting = text.split("\n").find((line) => line.startsWith("$")) ?? text;
+      const result = run([pricing(text)], { competitorPrices: [acme("Pro", priceText, supporting)] });
+      expect(result.rejected, text).toEqual([]);
+    }
+  });
+});
+
+describe("R14: a plan named after from, upgrade from or than never binds", () => {
+  const page: Page = {
+    url: "https://www.coderabbit.ai/pricing",
+    roles: ["competitors"],
+    text: "Pro\nUpgrade from Starter: $24/user/month, billed annually.\nTeam\nMore seats than Starter. $48/user/month, billed annually.",
+  };
+  const candidate = (plan: string, supportingText: string, priceText: string) =>
+    priceCandidate({ vendor: "CodeRabbit", sourceUrl: page.url, supportingText, plan, priceText });
+
+  it("drops the plan after upgrade from (review probe p1 6b) and after than, and keeps the plan on the line above", () => {
+    const upgrade = must(
+      run([page], { competitorPrices: [candidate("Starter", "Upgrade from Starter: $24/user/month, billed annually.", "$24/user/month, billed annually")] })
+        .accepted[0],
+    );
+    expect(upgrade).not.toHaveProperty("plan");
+    const than = must(
+      run([page], { competitorPrices: [candidate("Starter", "More seats than Starter. $48/user/month, billed annually.", "$48/user/month, billed annually")] })
+        .accepted[0],
+    );
+    expect(than).not.toHaveProperty("plan");
+    const own = must(
+      run([page], { competitorPrices: [candidate("Pro", "Pro\nUpgrade from Starter: $24/user/month, billed annually.", "$24/user/month, billed annually")] })
+        .accepted[0],
+    );
+    expect(own).toMatchObject({ plan: "Pro" });
+  });
+});
+
+describe("R14: every subject word is in the stat's sentence", () => {
+  const report = (text: string): Page => ({ url: "https://research.example.com/rfp-market", roles: ["market"], text });
+  const SENTENCE = "The RFP response software market was valued at $1.9 billion in 2024.";
+
+  it.each([
+    ["US RFP response software market", "us"],
+    ["EU RFP response software market", "eu"],
+    ["no RFP response software market", "no"],
+    ["projected RFP response software market", "projected"],
+    ["only the RFP response software market", "only"],
+    ["global RFP response software market", "global"],
+  ])("refuses the subject %s (security probe-subject-qualifiers)", (subject, missing) => {
+    const page = report(SENTENCE);
+    const result = run([page], { marketStats: [stat({ sourceUrl: page.url, supportingText: SENTENCE, subject, amountText: "$1.9 billion", year: 2024 })] });
+    expect(reasons(result)).toEqual(["subject_not_in_context"]);
+    expect(result.rejected[0]?.detail).toContain(`"${missing}"`);
+  });
+
+  it("lets only a, an, the, of, for, and, in, on and to be absent, and matches word forms of longer words", () => {
+    const accepted = (supportingText: string, subject: string, amountText: string, metric: MarketStatCandidate["metric"], year: number) => {
+      const page = report(supportingText);
+      return run([page], { marketStats: [stat({ sourceUrl: page.url, supportingText, subject, amountText, metric, year })] });
+    };
+    expect(accepted(SENTENCE, "the market for RFP response software", "$1.9 billion", "market_size", 2024).rejected).toEqual([]);
+    expect(accepted(SENTENCE, "RFP response software markets", "$1.9 billion", "market_size", 2024).rejected).toEqual([]);
+    const survey = "In 2025, 62% of developers used AI code review assistants at work.";
+    expect(accepted(survey, "developers using AI code review assistants", "62%", "adoption", 2025).rejected).toEqual([]);
+    const fixtureSurvey = "In 2025, 64% of B2B SaaS sales teams used spreadsheets to answer security questionnaires.";
+    expect(accepted(fixtureSurvey, "B2B SaaS sales teams using spreadsheets for security questionnaires", "64%", "adoption", 2025).rejected).toEqual(
+      [],
+    );
+    // A short word must appear as itself: "used" is no "US".
+    expect(reasons(accepted(survey, "US developers using AI code review assistants", "62%", "adoption", 2025))).toEqual(["subject_not_in_context"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R15: untrusted text and URLs
+// ---------------------------------------------------------------------------
+
+describe("R15: citation titles are short, plain and figure-free, or the host stands in", () => {
+  const page: Page = { url: "https://research.example.com/rfp-market", roles: ["market"], text: "The RFP response software market was valued at $1.9 billion in 2024." };
+  const titled = (title: string) =>
+    acceptEvidence({
+      candidates: {
+        quotes: [],
+        marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "RFP response software market", amountText: "$1.9 billion", year: 2024 })],
+        competitorPrices: [],
+      },
+      citations: [{ url: page.url, title }],
+      sources: sourcesOf([page]),
+    });
+
+  it.each([
+    ["a figure (security probe-title)", "Survey: 87% of SaaS teams lost a $2 million deal to slow RFPs"],
+    ["a short figure (security probe-title-short)", "87% of teams lose deals"],
+    ["a spelled number", "Twelve vendors compared for proposal teams"],
+    ["a link", "RFP market report, see https://evil.example/report"],
+    ["an email", "RFP market report (sales@evil.example)"],
+    ["a bidi control", "RFP market report \u202Eedis\u202C"],
+    ["a zero-width space", "RFP market\u200B report"],
+    ["more than 120 characters", `RFP response software market report ${"with a very long subtitle ".repeat(5)}`],
+  ])("uses the host label for a title with %s", (_label, title) => {
+    expect(must(titled(title).accepted[0]).sourceTitle).toBe("research.example.com");
+  });
+
+  it("keeps a plain title, bare years and standard names included", () => {
+    for (const title of ["RFP response software market report 2025", "SOC 2 readiness for proposal teams", "Ask HN: Is AI code review worth it?"]) {
+      expect(must(titled(title).accepted[0]).sourceTitle).toBe(title);
+    }
+  });
+
+  it("refuses a stored title that breaks the rule in revalidation, and accepts the host label", () => {
+    const item = must(titled("RFP response software market report").accepted[0]);
+    const sources = acquisitions([page]);
+    const figure = revalidateAcceptedEvidence({ ...item, sourceTitle: "87% of teams lose deals" }, sources);
+    expect(figure.ok ? "" : figure.issues.join(" | ")).toMatch(/sourceTitle: .*ruling R15/);
+    const control = revalidateAcceptedEvidence({ ...item, sourceTitle: "RFP market\u2066 report" }, sources);
+    expect(control.ok).toBe(false);
+    expect(revalidateAcceptedEvidence({ ...item, sourceTitle: "research.example.com" }, sources).ok).toBe(true);
+  });
+});
+
+describe("R15: invisible and bidirectional format controls never reach accepted evidence", () => {
+  const HOSTILE = "Honestly the fix cost us \u202E005$\u202C a month and it saved our whole quarter.";
+
+  it("refuses a quote whose sentence holds a bidi override (security probe-bidi-quote)", () => {
+    const page: Page = { url: "https://forum.example.net/t/costs/1", roles: ["community"], text: `Topic\n\n${HOSTILE}` };
+    const result = run([page], { quotes: [quote(HOSTILE, page.url)] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["invalid_candidate"]);
+    expect(result.rejected[0]?.detail).toMatch(/U\+202E/);
+  });
+
+  it.each([
+    ["U+061C", "\u061C"],
+    ["U+200B", "\u200B"],
+    ["U+200F", "\u200F"],
+    ["U+202A", "\u202A"],
+    ["U+2060", "\u2060"],
+    ["U+2064", "\u2064"],
+    ["U+2066", "\u2066"],
+    ["U+2069", "\u2069"],
+    ["U+FEFF", "\uFEFF"],
+  ])("refuses %s in a quote, a stat subject, a vendor or a plan", (code, ch) => {
+    const sentence = `We answer every security questionnaire by${ch} hand each quarter.`;
+    const forum: Page = { url: "https://forum.example.net/t/controls/2", roles: ["community"], text: sentence };
+    const quoted = run([forum], { quotes: [quote(sentence, forum.url)] });
+    expect(reasons(quoted), code).toEqual(["invalid_candidate"]);
+    const report: Page = { url: "https://research.example.com/rfp", roles: ["market"], text: "The RFP response software market was valued at $1.9 billion in 2024." };
+    const subject = run([report], {
+      marketStats: [stat({ sourceUrl: report.url, supportingText: report.text, subject: `RFP response${ch} software market`, amountText: "$1.9 billion", year: 2024 })],
+    });
+    expect(reasons(subject), code).toEqual(["invalid_candidate"]);
+    const pricing: Page = { url: "https://blog.example.com/prices", roles: ["competitors"], text: "Loopio costs $30/month for small teams." };
+    const vendor = run([pricing], {
+      competitorPrices: [priceCandidate({ vendor: `Loo${ch}pio`, sourceUrl: pricing.url, supportingText: pricing.text, priceText: "$30/month" })],
+    });
+    expect(reasons(vendor), code).toEqual(["invalid_candidate"]);
+    const plan = run([pricing], {
+      // Inside the name: trimming already drops a trailing U+FEFF.
+      competitorPrices: [priceCandidate({ vendor: "Loopio", plan: `Te${ch}am`, sourceUrl: pricing.url, supportingText: pricing.text, priceText: "$30/month" })],
+    });
+    expect(reasons(plan), code).toEqual(["invalid_candidate"]);
+  });
+
+  it("stores no control character in an operator-only rejection record", () => {
+    const page: Page = { url: "https://forum.example.net/t/costs/3", roles: ["community"], text: HOSTILE };
+    const result = run([page], { quotes: [quote(`${HOSTILE} \u2066extra\u2069`, page.url)] });
+    const record = JSON.stringify(result.rejected);
+    expect(record).not.toMatch(/[\u061C\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u);
+  });
+
+  it("refuses a stored excerpt or subject with a control in revalidation", () => {
+    const page: Page = { url: "https://forum.example.net/t/plain/4", roles: ["community"], text: "We answer every questionnaire by hand, every single quarter." };
+    const item = must(run([page], { quotes: [quote(page.text, page.url)] }).accepted[0]);
+    const excerpt = "We answer every questionnaire by hand,\u202E every single quarter.";
+    const tampered = {
+      ...item,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(item.kind, item.sourceUrl, excerpt, evidenceClaimKey(item)),
+    };
+    const result = revalidateAcceptedEvidence(tampered, acquisitions([page]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toMatch(/U\+202E/);
+  });
+});
+
+describe("R14: billing cues are read once per page", () => {
+  it("accepts forty candidates against a page of sixty thousand lines in well under two seconds", () => {
+    const url = "https://acme.example/pricing";
+    const lines: string[] = [];
+    for (let i = 0; i < 60_000; i += 1) {
+      lines.push(i % 3 === 0 ? "Pro" : i % 3 === 1 ? `$${(i % 90) + 10}/user/month` : "Unlimited reviews for teams, billed per seat.");
+    }
+    lines.push("Acme Max", "$999/user/month");
+    const page: Page = { url, roles: ["competitors"], text: lines.join("\n") };
+    const candidates = Array.from({ length: 40 }, () =>
+      priceCandidate({ vendor: "Acme", sourceUrl: url, supportingText: "$999/user/month", priceText: "$999/user/month" }),
+    );
+    const started = performance.now();
+    const result = run([page], { competitorPrices: candidates });
+    expect(performance.now() - started).toBeLessThan(2_000);
+    expect(result.accepted).toHaveLength(1);
+    expect(reasons(result).every((r) => r === "duplicate")).toBe(true);
   });
 });

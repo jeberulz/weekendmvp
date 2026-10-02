@@ -11,6 +11,11 @@
  *   - `inputs`   acceptEvidence's source map (canonical URL → read result
  *                and the roles of the searches that cited it; ruling R8)
  *   - `readable` the read pages handed to the extraction step
+ *   - `vendorHints` names the competitor citations confirm (ruling R14:
+ *                a title's brand that is its own host), for acceptance
+ *   - `refused`  citations refused before any read (ruling R15: no http(s)
+ *                URL, userinfo or a credential-like path or query), by host
+ *                and reason, for the run report
  *
  * buildExtractionSources fits bounded excerpts of the readable pages into
  * the extraction step's byte budget, so the step's input check stays a true
@@ -23,8 +28,8 @@
 import { createSourceAcquirer, type SourceRead } from "./acquire.ts";
 import type { CitationInput, SourceInput } from "./evidence/accept.ts";
 import { scanAmounts, splitSentences } from "./evidence/amount.ts";
-import { canonicalSourceUrl } from "./evidence/citation.ts";
-import type { SourceAcquisition, SourceRole, SourceStatus } from "./evidence/contract.ts";
+import { canonicalSourceUrl, citationRefusal, isFirstPartyHost, registrableLabel, sourceHostLabel } from "./evidence/citation.ts";
+import { withoutFormatControls, type SourceAcquisition, type SourceRole, type SourceStatus } from "./evidence/contract.ts";
 import type { SourceTextProvider } from "./providers/sourceText.ts";
 import type { Citation } from "./providers/types.ts";
 
@@ -40,11 +45,20 @@ export type Acquisition = {
   citations: CitationInput[];
   /** Pages that were read, for the extraction prompt. */
   readable: ExtractionSource[];
+  /** Vendor names the competitor citations confirm (vendorHintsFromCitations), for acceptEvidence. */
+  vendorHints: string[];
+  /** Citations refused before any read (ruling R15), by host and reason. */
+  refusedCitations: RefusedCitation[];
 };
+
+/** Ruling R15: a citation never read or stored, as the run report names it (no path or query). */
+export type RefusedCitation = { host: string; reason: string };
 
 export type SourceLedger = {
   /** Record citations from one search and the role of that search. */
   cite(citations: ReadonlyArray<Citation>, role: SourceRole): void;
+  /** Citations refused so far (a live list: the run report reads it even when a later step fails). */
+  readonly refused: ReadonlyArray<RefusedCitation>;
   /** Start (or join) the reads of these citations; never rejects. */
   read(citations: ReadonlyArray<Citation>): Promise<Map<string, SourceRead>>;
   /** Everything read so far; await every `read` first. */
@@ -74,7 +88,8 @@ export function sliceToBytes(text: string, maxBytes: number): string {
 }
 
 function oneLine(text: string, maxChars: number): string {
-  const flat = text.replace(/\s+/g, " ").trim();
+  // Operator-only text from transports: format controls shown as U+FFFD (ruling R15).
+  const flat = withoutFormatControls(text).replace(/\s+/g, " ").trim();
   return flat.length <= maxChars ? flat : `${flat.slice(0, maxChars - 1)}…`;
 }
 
@@ -99,12 +114,25 @@ export function createSourceLedger(options: {
   const roles = new Map<string, Set<SourceRole>>();
   const titles = new Map<string, string>();
   const citations: CitationInput[] = [];
+  const refused: RefusedCitation[] = [];
+  const refusedUrls = new Set<string>();
 
   return {
+    refused,
     cite(list, role) {
       for (const citation of list) {
         const url = canonicalSourceUrl(citation.url);
-        if (!url) continue;
+        if (!url) {
+          // Ruling R15: never read, never stored; the report names the host and why.
+          if (!refusedUrls.has(citation.url)) {
+            refusedUrls.add(citation.url);
+            refused.push({
+              host: sourceHostLabel(citation.url) || "(unparseable)",
+              reason: citationRefusal(citation.url) ?? "not a citable URL",
+            });
+          }
+          continue;
+        }
         const known = roles.get(url) ?? new Set<SourceRole>();
         known.add(role);
         roles.set(url, known);
@@ -147,9 +175,70 @@ export function createSourceLedger(options: {
           inputs.set(url, { status: read.status, roles: sourceRoles });
         }
       }
-      return { sources, inputs, citations: [...citations], readable };
+      const cited = citations.map((c) => {
+        const url = canonicalSourceUrl(c.url);
+        return { ...c, roles: url ? [...(roles.get(url) ?? [])] : [] };
+      });
+      return {
+        sources,
+        inputs,
+        citations: [...citations],
+        readable,
+        vendorHints: vendorHintsFromCitations(cited),
+        refusedCitations: refused.map((r) => ({ ...r })),
+      };
     },
   };
+}
+
+/**
+ * Hosts whose pages list or discuss other vendors (review sites,
+ * marketplaces, communities and publishers): a name in their titles is never
+ * a vendor hint, so their pages never count as one vendor's own site.
+ */
+const LISTING_HOST_LABELS: ReadonlySet<string> = new Set([
+  "g2", "capterra", "getapp", "softwareadvice", "trustradius", "gartner", "forrester", "sourceforge", "producthunt",
+  "saasworthy", "crozdesk", "softwaresuggest", "financesonline", "slashdot", "alternativeto", "stackshare",
+  "trustpilot", "appsumo", "shopify", "apple", "google", "microsoft", "atlassian", "salesforce", "hubspot",
+  "zapier", "reddit", "ycombinator", "medium", "substack", "linkedin", "youtube", "twitter", "x", "facebook",
+  "wikipedia", "github", "gitlab", "forbes", "techcrunch", "quora", "stackoverflow", "dev", "hashnode",
+]);
+
+const TITLE_TOKEN_RE = /[\p{L}\p{N}][\p{L}\p{N}.&+]*/gu;
+
+/**
+ * Ruling R14: vendor names a run's competitor citations confirm — the run
+ * of one to three title words that names the citation's own host ("Loopio"
+ * in "Loopio pricing" at loopio.com, "Answer Deck" at answerdeck.example),
+ * in the title's casing, first seen first. Listing hosts
+ * (LISTING_HOST_LABELS) never count. acceptEvidence adds these to the
+ * candidate vendors, so a cited vendor's own page is never evidence for a
+ * rival's price (ruling R5) and its name in a price's clause is another
+ * vendor's.
+ */
+export function vendorHintsFromCitations(
+  citations: ReadonlyArray<{ url: string; title?: string; roles: ReadonlyArray<SourceRole> }>,
+): string[] {
+  const hints: string[] = [];
+  const seen = new Set<string>();
+  for (const citation of citations) {
+    if (!citation.roles.includes("competitors") || !citation.title) continue;
+    const label = registrableLabel(citation.url);
+    if (!label || LISTING_HOST_LABELS.has(label)) continue;
+    const words = [...citation.title.matchAll(TITLE_TOKEN_RE)].map((m) => m[0].replace(/[.&+]+$/u, ""));
+    let found: string | null = null;
+    for (let i = 0; i < words.length && !found; i += 1) {
+      for (let n = 1; n <= 3 && i + n <= words.length && !found; n += 1) {
+        const name = words.slice(i, i + n).join(" ");
+        if (isFirstPartyHost(name, citation.url)) found = name;
+      }
+    }
+    if (found && !seen.has(found.toLowerCase())) {
+      seen.add(found.toLowerCase());
+      hints.push(found);
+    }
+  }
+  return hints;
 }
 
 /** Distinct pages in a read map that were read. */

@@ -220,14 +220,14 @@ function decodeSegment(segment: string): string {
   }
 }
 
-function looksLikeCredential(segment: string): boolean {
+export function looksLikeCredential(segment: string): boolean {
   for (const run of decodeSegment(segment).match(LONG_TOKEN_RUN) ?? []) {
     if (!isWordyRun(run)) return true;
   }
   return false;
 }
 
-function isSecretSegmentName(segment: string): boolean {
+export function isSecretSegmentName(segment: string): boolean {
   return SECRET_SEGMENT_NAME.test(decodeSegment(segment).toLowerCase().replace(/[-_]/g, ""));
 }
 

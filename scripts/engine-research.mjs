@@ -16,7 +16,9 @@
  * implicit mode.
  *
  * The record is validated with parseResearchRecord before it is written,
- * and an existing record is never overwritten without --force. The run report
+ * and an existing record or run report is never overwritten without --force
+ * (checked before anything runs; the writes themselves refuse an existing
+ * file too). The run report
  * is written on success AND failure and names the code revision (ruling
  * R12: git HEAD and whether tracked files had changes; nulls when git is
  * unavailable, which never fails the run). Output never includes secrets,
@@ -47,7 +49,7 @@ Flags:
   --out path        Record JSON (default: engine/records/{slug}.json; fixture runs:
                     engine/records/fixtures/{slug}.json, never engine/records/ itself).
   --report path     Run report JSON (default: {out}.report.json). Written on success and failure.
-  --force           Overwrite an existing record.
+  --force           Overwrite an existing record and run report.
 `);
   process.exit(exit);
 }
@@ -167,9 +169,22 @@ function printSummary(report, paths) {
   (report.ok ? console.log : console.error)(lines.join("\n"));
 }
 
-function writeReport(reportPath, report) {
+/** True when anything is at `p`, a dangling symbolic link included (lstat, not stat). */
+function pathTaken(p) {
+  return fs.lstatSync(p, { throwIfNoEntry: false }) !== undefined;
+}
+
+/** Writes the run report; without --force an existing file (or one created meanwhile) is never replaced. */
+function writeReport(reportPath, report, force) {
   fs.mkdirSync(path.dirname(reportPath), { recursive: true });
-  fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  try {
+    fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, { flag: force ? "w" : "wx" });
+  } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "EEXIST") {
+      fail(`refusing to overwrite ${displayPath(reportPath)} (pass --force to replace it)`);
+    }
+    throw error;
+  }
 }
 
 async function main() {
@@ -241,8 +256,12 @@ async function main() {
   }
   const reportPath = path.resolve(args.reportPath || `${outPath}.report.json`);
   if (reportPath === outPath) fail("--report must differ from --out");
-  if (fs.existsSync(outPath) && !args.force) {
+  if (pathTaken(outPath) && !args.force) {
     fail(`refusing to overwrite ${displayPath(outPath)} (pass --force to replace it)`);
+  }
+  // Security: --report may name any path; an existing file (or link) there is never replaced without --force.
+  if (pathTaken(reportPath) && !args.force) {
+    fail(`refusing to overwrite ${displayPath(reportPath)} (pass --force to replace it)`);
   }
 
   if (mode === "live") loadLocalEnv();
@@ -256,7 +275,7 @@ async function main() {
     result = await runResearch({ brief, providers, mode, codeRevision: codeRevision() });
   } catch (error) {
     if (error instanceof PipelineError && error.report) {
-      writeReport(reportPath, error.report);
+      writeReport(reportPath, error.report, args.force);
       printSummary(error.report, { report: reportPath });
     } else {
       // Not a pipeline failure (no report exists): print the redacted message only.
@@ -276,14 +295,14 @@ async function main() {
       failedStep: "provenance_parse",
       error: redactText(`record failed validation at the CLI boundary: ${error instanceof Error ? error.message : String(error)}`, 600),
     };
-    writeReport(reportPath, report);
+    writeReport(reportPath, report, args.force);
     printSummary(report, { report: reportPath });
     process.exit(1);
   }
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, text, { flag: args.force ? "w" : "wx" });
-  writeReport(reportPath, result.report);
+  writeReport(reportPath, result.report, args.force);
   printSummary(result.report, { record: outPath, report: reportPath });
 }
 

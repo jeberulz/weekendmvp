@@ -7,7 +7,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -113,6 +113,35 @@ describe("engine:research CLI (fixture mode)", () => {
     expect(refused.stderr).toMatch(/refusing to overwrite .*record\.json \(pass --force/);
     expect(readFileSync(out, "utf8")).toBe(before);
     expect(cli(["--fixture", "rfp-assistant", "--out", out, "--force"]).status).toBe(0);
+  });
+
+  it("refuses to overwrite an existing report without --force, before running (security: a victim file)", () => {
+    const dir = tempDir();
+    const victim = path.join(dir, "victim.json");
+    writeFileSync(victim, "keep me\n");
+    const out = path.join(dir, "record.json");
+    const refused = cli(["--fixture", "rfp-assistant", "--out", out, "--report", victim]);
+    expect(refused.status).toBe(1);
+    expect(refused.stderr).toMatch(/refusing to overwrite .*victim\.json \(pass --force/);
+    expect(readFileSync(victim, "utf8")).toBe("keep me\n");
+    expect(existsSync(out)).toBe(false);
+    // The default report path ({out}.report.json) is guarded the same way.
+    const other = path.join(dir, "other.json");
+    writeFileSync(`${other}.report.json`, "keep me too\n");
+    const defaultRefused = cli(["--fixture", "rfp-assistant", "--out", other]);
+    expect(defaultRefused.status).toBe(1);
+    expect(readFileSync(`${other}.report.json`, "utf8")).toBe("keep me too\n");
+    expect(existsSync(other)).toBe(false);
+    // A link at the report path (even a dangling one) is never followed without --force.
+    const link = path.join(dir, "link.json");
+    symlinkSync(path.join(dir, "elsewhere.json"), link);
+    const linked = cli(["--fixture", "rfp-assistant", "--out", path.join(dir, "linked.json"), "--report", link]);
+    expect(linked.status).toBe(1);
+    expect(existsSync(path.join(dir, "elsewhere.json"))).toBe(false);
+    expect(lstatSync(link).isSymbolicLink()).toBe(true);
+    // With --force the report is replaced.
+    expect(cli(["--fixture", "rfp-assistant", "--out", out, "--report", victim, "--force"]).status).toBe(0);
+    expect(readJson(victim).ok).toBe(true);
   });
 
   it("refuses a fixture run for a live brief or a path outside the fixture briefs (ruling R11)", () => {

@@ -81,7 +81,8 @@ const PAGES = {
     url: "https://news.ycombinator.com/item?id=27515468",
     title: "Ask HN: AI code review",
     roles: ["community"],
-    text: "Comment\nAll these small teams need is a quiet sanity check on every pull request.\nReply: agreed, the rest is noise.",
+    // Blocks joined by blank lines, as sourceText reads an HN item (ruling R14).
+    text: "Comment\n\nAll these small teams need is a quiet sanity check on every pull request.\n\nReply: agreed, the rest is noise.",
   },
   forum: {
     url: "https://forum.example.com/t/ai-review-noise",
@@ -93,7 +94,7 @@ const PAGES = {
     url: "https://lobste.rs/s/abc123/review_noise",
     title: "Review noise",
     roles: ["community"],
-    text: "Quoting HN\nAll these small teams need is a quiet sanity check on every pull request.",
+    text: "Quoting HN\n\nAll these small teams need is a quiet sanity check on every pull request.",
   },
   // Cited by the community search but never read (no text): unreadable.
   reddit: {
@@ -957,7 +958,7 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
       );
       const quoted = fresh();
       setAt(quoted, field, `${textAt(quoted, field)} As one reviewer put it, “we read every single diff by hand.”`);
-      expectRejected(quoted, new RegExp(`^${escapeRe(field)}: double-quoted span`, "m"));
+      expectRejected(quoted, new RegExp(`^${escapeRe(field)}: quoted span`, "m"));
     },
   );
 
@@ -973,7 +974,7 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
       /^editorial\.problemNarrative: unbound figure "eight"/m,
       /^editorial\.problemNarrative: unbound figure "forty seven"/m,
       /^editorial\.problemNarrative: unbound figure "dozen"/m,
-      /^editorial\.problemNarrative: double-quoted span/m,
+      /^editorial\.problemNarrative: quoted span/m,
     );
   });
 
@@ -1403,5 +1404,90 @@ describe("parseResearchRecord: provenance.codeRevision (ruling R12)", () => {
     const input = fresh();
     setAt(input, "provenance.codeRevision", codeRevision);
     expectRejected(input, pattern);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R13: the numeric proposal slots follow the page's revenue and quotation rules
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: numeric proposal slots (ruling R13)", () => {
+  it.each([
+    [
+      "editorial.pricingTiers[1].includes",
+      "Shared library and review workflow for teams closing up to $250k in annual sales.",
+      /states a revenue total "\$250k in annual sales"/,
+    ],
+    ["editorial.unitEconomics[0].value", "$100 MRR per account", /states a revenue total "\$100 MRR"/],
+    [
+      "editorial.pricingTiers[0].includes",
+      "One seat; pays for itself at $39 MRR once a single deal closes.",
+      /states a revenue total "\$39 MRR"/,
+    ],
+    ["editorial.unitEconomics[0].value", "15 × $100/month = $1,500 a month", /holds a Year-One-style computation "15 × \$100\/month = \$1"/],
+    [
+      "editorial.pricingTiers[1].includes",
+      'Shared library with an "approved answers only" review mode and export packs.',
+      /quotes "approved answers only"/,
+    ],
+    [
+      "editorial.pricingTiers[1].includes",
+      "Shared library with an ‘approved answers only’ review mode and export packs.",
+      /quotes "approved answers only"/,
+    ],
+    [
+      "editorial.dataModel[1].columns",
+      "id, status text check (status in ('draft','needs legal review','approved')), reviewer_id uuid null",
+      /quotes "needs legal review"/,
+    ],
+  ])("rejects %s = %s at parse, so the run regenerates (review probes p16, p20b)", (field, value, pattern) => {
+    const input = fresh();
+    setAt(input, field, value);
+    expectRejected(input, new RegExp(`^${escapeRe(field)}: ${pattern.source}`, "m"));
+  });
+
+  it("accepts prices, per-period values, ARR features after a price and short SQL literals", () => {
+    const input = fresh();
+    setAt(input, "editorial.unitEconomics[0].value", "$100 per month");
+    setAt(input, "editorial.pricingTiers[0].includes", "One private repository ($12/month) — ARR dashboards included.");
+    setAt(
+      input,
+      "editorial.dataModel[1].columns",
+      "id, repository_id, deal_value_usd numeric check (deal_value_usd >= 0), status text check (status in ('draft','approved'))",
+    );
+    expect(() => parseResearchRecord(input)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R15: no record text holds an invisible or bidirectional format control
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: format controls anywhere in the record (ruling R15)", () => {
+  it.each([
+    ["editorial.problemNarrative", "\u202E"],
+    ["market.summary", "\u200B"],
+    ["competitors[0].notes", "\u2066"],
+    ["keywords[0].term", "\uFEFF"],
+    ["brief.title", "\u061C"],
+    ["brief.targetCustomer", "\u2060"],
+    ["provenance.models.synthesis", "\u200F"],
+    ["evidence.rejected[0].detail", "\u202A"],
+  ])("rejects a control in %s", (field, ch) => {
+    const input = fresh();
+    const text = textAt(input, field);
+    setAt(input, field, `${text.slice(0, 4)}${ch}${text.slice(4)}`);
+    const code = `U+${(ch.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0")}`;
+    expectRejected(input, new RegExp(`^${escapeRe(field)}: .*format control ${escapeRe(code)}`, "m"));
+  });
+
+  it("rejects a stored citation title with a figure, and accepts the host label in its place", () => {
+    const input = fresh();
+    const index = indexOfAccepted(EV.statMeasured);
+    setAt(input, `evidence.accepted[${index}].sourceTitle`, "87% of teams lose deals");
+    expectRejected(input, /sourceTitle: title holds a figure \(ruling R15\)/);
+    const host = fresh();
+    setAt(host, `evidence.accepted[${index}].sourceTitle`, "research.example.com");
+    expect(() => parseResearchRecord(host)).not.toThrow();
   });
 });

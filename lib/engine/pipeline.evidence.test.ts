@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 import { CostCapExceededError, worstCaseMicroUsd } from "./cost.ts";
 import { acceptEvidence } from "./evidence/accept.ts";
 import type { AcceptedEvidence, QuoteCandidate } from "./evidence/contract.ts";
+import { findQuotedSpans, findUnboundFigures } from "./evidence/tokens.ts";
 import {
   buildEditorialInput,
   editorialIssuesSection,
@@ -30,7 +31,7 @@ import {
   type EditorialEvidenceItem,
   type RunResearchOptions,
 } from "./pipeline.ts";
-import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, type ExtractionSource } from "./pipeline-sources.ts";
+import { buildExtractionSources, EXCERPT_GAP, utf8Bytes, vendorHintsFromCitations, type ExtractionSource } from "./pipeline-sources.ts";
 import { stepById } from "./pipeline-steps.ts";
 import {
   extractionWith,
@@ -38,6 +39,7 @@ import {
   F5_PACKS,
   F5_PAGES,
   F5_ROWS,
+  packsWith,
   REJECTED_FRAGMENTS,
 } from "./__fixtures__/scenarios.ts";
 import {
@@ -344,25 +346,28 @@ const BAD_WRITERS: Array<[string, (evidence: EditorialEvidenceItem[]) => unknown
 ];
 
 describe("F1: writer output is validated before a record exists", () => {
-  it.each(BAD_WRITERS)("refuses a writer that %s: one regeneration with the issues, then failure", async (_label, writer, issue) => {
+  it.each(BAD_WRITERS)("refuses a writer that %s: two regenerations with the issues, then failure", async (_label, writer, issue) => {
     const h = harness({ synthesis: { editorial: editorialSequence(writer) } });
     const error = await failureOf(run(h));
     expect(error.stepId).toBe("editorial_synthesis");
+    expect(error.message).toMatch(/writer output failed validation after 3 attempts/);
     expect(error.report?.ok).toBe(false);
-    expect(error.report?.attempts.editorial_synthesis).toBe(2);
-    expect(error.report?.providerCalls.filter((c) => c.operation.startsWith("editorial_synthesis/"))).toHaveLength(2);
+    expect(error.report?.attempts.editorial_synthesis).toBe(3);
+    expect(error.report?.providerCalls.filter((c) => c.operation.startsWith("editorial_synthesis/"))).toHaveLength(3);
 
-    const [first, second] = editorialRequests(h);
-    expect(editorialRequests(h)).toHaveLength(2);
-    // Never more permissive: same instructions, same input plus the issues.
-    expect(second?.instructions).toBe(first?.instructions);
+    const [first, ...regenerations] = editorialRequests(h);
+    expect(regenerations).toHaveLength(2);
     const firstInput = first?.input ?? "";
-    expect(second?.input.startsWith(`${firstInput}\n\n${EDITORIAL_ISSUES_HEADING}\n`)).toBe(true);
-    const note = (second?.input ?? "").slice(firstInput.length);
-    expect(note).toMatch(issue);
-    // Issues only: no rejected evidence text rides along.
-    expect(note).not.toContain("quietly kill our enterprise deals");
-    expect(note).not.toContain("Every RFP season");
+    for (const again of regenerations) {
+      // Never more permissive (ruling R13): the same instructions, the same input plus the issue list, each time.
+      expect(again.instructions).toBe(first?.instructions);
+      expect(again.input.startsWith(`${firstInput}\n\n${EDITORIAL_ISSUES_HEADING}\n`)).toBe(true);
+      const note = again.input.slice(firstInput.length);
+      expect(note).toMatch(issue);
+      // Issues only: no rejected evidence text rides along.
+      expect(note).not.toContain("quietly kill our enterprise deals");
+      expect(note).not.toContain("Every RFP season");
+    }
   });
 
   it("accepts a writer that paraphrases accepted evidence qualitatively", async () => {
@@ -579,7 +584,7 @@ describe("extraction attempts", () => {
   });
 });
 
-describe("provider retries and regenerations share a step's two attempts", () => {
+describe("provider retries and regenerations share a step's attempts", () => {
   /** The first request with these instructions fails with a retryable, unbilled 503. */
   function failFirst(h: Harness, instructions: string): void {
     const real = h.providers.synthesis;
@@ -597,14 +602,14 @@ describe("provider retries and regenerations share a step's two attempts", () =>
     };
   }
 
-  it("editorial: a provider retry uses up the regeneration", async () => {
+  it("editorial: a provider retry uses up one of the three attempts", async () => {
     const h = harness({ synthesis: { editorial: editorialSequence(() => "prose, not JSON") } });
     failFirst(h, EDITORIAL_INSTRUCTIONS);
     const error = await failureOf(run(h));
     expect(error.stepId).toBe("editorial_synthesis");
-    expect(error.message).toMatch(/writer output failed validation after 2 attempts/);
-    expect(error.report?.attempts.editorial_synthesis).toBe(2);
-    expect(editorialRequests(h)).toHaveLength(2);
+    expect(error.message).toMatch(/writer output failed validation after 3 attempts/);
+    expect(error.report?.attempts.editorial_synthesis).toBe(3);
+    expect(editorialRequests(h)).toHaveLength(3);
   });
 
   it("extraction: a provider retry uses up the re-ask", async () => {
@@ -806,5 +811,136 @@ describe("input budgets", () => {
         expect(source.text.includes(passage)).toBe(true);
       }
     }
+  });
+});
+
+describe("writer instructions (ruling R13)", () => {
+  it("tell the writer how to stay figure- and quotation-free, and which names are fine", () => {
+    expect(EDITORIAL_INSTRUCTIONS).toMatch(/no currency signs/);
+    expect(EDITORIAL_INSTRUCTIONS).toMatch(/write "a few", "several" or "a couple of"/);
+    expect(EDITORIAL_INSTRUCTIONS).toMatch(/standard or version names \(SOC 2, ISO 27001, Next\.js 15, OAuth 2\.0\) are fine/);
+    expect(EDITORIAL_INSTRUCTIONS).toMatch(/No quotation marks of any kind/);
+    expect(EDITORIAL_INSTRUCTIONS).toMatch(/no ARR, MRR or revenue total/);
+  });
+
+  it("names only examples the guards accept as names", () => {
+    expect(findUnboundFigures("SOC 2, ISO 27001, Next.js 15, OAuth 2.0, B2B, GPT-4o, don't, teams'")).toEqual([]);
+    expect(findQuotedSpans("Apostrophes in words such as don't and the teams' answers are fine.")).toEqual([]);
+  });
+});
+
+describe("R14: vendor hints from the competitor citations", () => {
+  it("names the brand a competitor citation's title shares with its own host, and nothing from listing sites", () => {
+    const competitors = (url: string, title: string) => ({ url, title, roles: ["competitors" as const] });
+    expect(
+      vendorHintsFromCitations([
+        competitors("https://www.coderabbit.ai/pricing", "CodeRabbit pricing"),
+        competitors("https://responsive.example/pricing", "Pricing | Responsive"),
+        competitors("https://answerdeck.example/pricing", "Answer Deck plans"),
+        competitors("https://blog.example.com/rfp-tools", "Best RFP tools this year"),
+        competitors("https://www.g2.com/products/loopio/reviews", "Loopio Reviews 2026 | G2"),
+        competitors("https://apps.shopify.com/rfp-helper", "RFP Helper - Shopify App Store"),
+        { url: "https://loopio.example/blog", title: "Loopio blog", roles: ["market" as const] },
+      ]),
+    ).toEqual(["CodeRabbit", "Responsive", "Answer Deck"]);
+  });
+
+  it("refuses a price claimed for one vendor from another cited vendor's own pricing page (ruling R5 with hints)", async () => {
+    const responsive = "https://responsive.example/pricing";
+    const h = harness({
+      pages: { ...FIXTURE_PAGES, [responsive]: "Responsive pricing\nPlans\nBidwell costs $49/user/month, billed annually." },
+      packs: packsWith({ competitors: [{ url: responsive, title: "Responsive pricing" }] }),
+      synthesis: {
+        extraction: extractionWith({
+          competitorPrices: [
+            {
+              vendor: "Bidwell",
+              sourceUrl: responsive,
+              supportingText: "Bidwell costs $49/user/month, billed annually.",
+              priceText: "$49/user/month, billed annually",
+            },
+          ],
+        }),
+      },
+    });
+    const { record } = await run(h);
+    expect(record.evidence.accepted.some((e) => e.sourceUrl === responsive)).toBe(false);
+    expect(record.evidence.rejected).toContainEqual(
+      expect.objectContaining({ kind: "competitor_price", reason: "ambiguous_attribution", sourceUrl: responsive }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R15: untrusted text and URLs
+// ---------------------------------------------------------------------------
+
+describe("R15: untrusted text and URLs in a run", () => {
+  it("lists each refused citation in the run report by host and reason, and never reads or stores it", async () => {
+    const shared = "https://app.example/share/AbCdEf0123456789XyZaBcDeF/doc";
+    const signed = "https://forum.example.net/t/questionnaires?st=abc123def456ghi789";
+    const h = harness({
+      packs: packsWith({ competitors: [{ url: shared, title: "Shared pricing doc" }], community: [{ url: signed, title: "Signed thread" }] }),
+    });
+    const { record, report } = await run(h);
+    expect(report.refusedCitations).toEqual([
+      { host: "app.example", reason: "a path segment holds a credential-like value" },
+      { host: "forum.example.net", reason: 'query parameter "st" holds a credential-like value' },
+    ]);
+    const stored = JSON.stringify({ record, report });
+    expect(stored).not.toContain("AbCdEf0123456789XyZaBcDeF");
+    expect(stored).not.toContain("abc123def456ghi789");
+  });
+
+  it("refuses a hostile quote with a bidi override and still runs on the other quotes (security probe-bidi-quote)", async () => {
+    const hostile = "Honestly the fix cost us \u202E005$\u202C a month and it saved our whole quarter.";
+    const pages = { ...FIXTURE_PAGES, [FIXTURE_URLS.hnThread]: `${FIXTURE_PAGES[FIXTURE_URLS.hnThread] ?? ""}\n\n${hostile}` };
+    const extraction = JSON.parse(JSON.stringify(FIXTURE_EXTRACTION)) as typeof FIXTURE_EXTRACTION;
+    extraction.quotes[0] = { sourceUrl: FIXTURE_URLS.hnThread, text: hostile };
+    const { record } = await run(harness({ pages, synthesis: { extraction: () => extraction } }));
+    expect(record.evidence.accepted.some((e) => e.excerpt.includes("\u202E"))).toBe(false);
+    expect(record.evidence.rejected).toContainEqual(expect.objectContaining({ kind: "community_quote", reason: "invalid_candidate" }));
+    expect(JSON.stringify(record)).not.toMatch(/[\u061C\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u);
+  });
+
+  it("shows the host label for a citation title that carries a figure (security probe-title)", async () => {
+    const title = "Survey: 87% of SaaS teams lost a $2 million deal to slow RFPs";
+    const packs = packsWith({});
+    packs.market = {
+      ...packs.market,
+      search_results: packs.market.search_results.map((r, i) => (i === 0 ? { ...r, title } : r)),
+    };
+    const { record } = await run(harness({ packs }));
+    const fromReport = record.evidence.accepted.filter((e) => e.sourceUrl === FIXTURE_URLS.marketReport);
+    expect(fromReport.length).toBeGreaterThan(0);
+    for (const item of fromReport) expect(item.sourceTitle).toBe("research.example.com");
+    expect(JSON.stringify(record)).not.toContain("87%");
+  });
+
+  it("drops provider keyword rows that hold a format control", async () => {
+    const keywordPayload = {
+      status_code: 20000,
+      status_message: "Ok.",
+      tasks: [
+        {
+          status_code: 20000,
+          result: [
+            { keyword: "rfp response software", search_volume: 2400, competition_index: 42, cpc: 18.5 },
+            { keyword: "security\u200B questionnaire automation", search_volume: 880, competition_index: 35, cpc: 12.4 },
+          ],
+        },
+      ],
+    };
+    const { record } = await run(harness({ keywordPayload }));
+    expect(record.keywords.map((k) => k.term)).toEqual(["rfp response software"]);
+  });
+
+  it("refuses an operator brief with a format control before any spend", async () => {
+    const h = harness();
+    const error = await failureOf(runResearch({ brief: { ...BRIEF, audience: `SMB SaaS\u202E sales teams` }, providers: h.providers, mode: "fixture" }));
+    expect(error.stepId).toBe("brief_normalization");
+    expect(error.message).toMatch(/brief\.audience: .*U\+202E/);
+    expect(h.synthesis).toHaveLength(0);
+    expect(h.searches).toHaveLength(0);
   });
 });

@@ -37,23 +37,41 @@
  * (no known vendor's host) may still bind several vendors, each in its own
  * clause.
  *
- * Quotes (ruling R8): only from a source the community search cited
- * (SourceInput.roles; else unknown_citation), a whole sentence (span_bounds
- * when it starts or stops inside one) on one line of the extracted text
- * (span_bounds across a line break). Re-validation can check the role and
- * the line break; sentence edges need the page text (acceptance only).
- * Two quotes are distinct only when neither contains the other.
+ * Quotes (rulings R8 and R14): only from a source the community search
+ * cited (SourceInput.roles; else unknown_citation), a whole prose sentence
+ * (span_bounds when it starts or stops inside one; a line break starts a
+ * sentence only after terminal punctuation or at a blank line) on one line
+ * of the extracted text (span_bounds across a line break). Re-validation can
+ * check the role and the line break; sentence edges need the page text
+ * (acceptance only). Two quotes are distinct only when neither contains the
+ * other.
  *
- * Binding is per claim (ruling R9): a comparison cue in a price's sentence
- * (ambiguous_attribution); a price block showing monthly and annual billing
- * with neither stated in the clause (qualifier_dropped; amount.ts
+ * Binding is per claim (rulings R9 and R14): a comparison cue in a price's
+ * sentence or the soft-wrapped line above it, including moved/migrated to,
+ * replaced by, and after/over before a name (ambiguous_attribution); a
+ * nearer brand-like name than the claimed vendor or its plan before the
+ * price, or another name right after "for" behind it (ambiguous_attribution);
+ * annual billing shown above a per-month price — a billing toggle or a
+ * price-free billing line anywhere above, a billing phrase in its block —
+ * with neither billing stated in the clause (qualifier_dropped; amount.ts
  * ambiguousBilling); a plan only on the price's own line or the line above
- * it, never after "everything in"/"all of"/"includes" (otherwise dropped at
- * acceptance, an issue at re-validation); a stat subject of plain words
- * (invalid_candidate) whose every content word is in the sentence
+ * it, never after "everything in"/"all of"/"includes"/"from"/"than"
+ * (otherwise dropped at acceptance, an issue at re-validation); a stat
+ * subject of plain words (invalid_candidate) whose every word but a, an,
+ * the, of, for, and, in, on and to is in the sentence
  * (subject_not_in_context), with a metric the sentence's words state
  * (metric_unit_mismatch). Acceptance applies the price rules to the page
  * text and to the stored excerpt; re-validation to the excerpt.
+ * `vendorHints` (the pipeline passes the names its competitor citations
+ * confirm) join the candidates' vendors for R5 and the other-vendor rule.
+ *
+ * Untrusted text (ruling R15): a citation title longer than
+ * SOURCE_TITLE_MAX_CHARS, or holding a figure, a link, an email or a
+ * format control, gives way to the source's host label (sourceTitleIssue);
+ * an excerpt, stat subject, vendor or plan holding an invisible or
+ * bidirectional format control (contract.ts FORMAT_CONTROL_RE) is
+ * invalid_candidate; operator-only rejection records show such controls as
+ * U+FFFD. Re-validation applies the same rules to stored items.
  */
 
 import { createHash } from "node:crypto";
@@ -61,20 +79,25 @@ import { createHash } from "node:crypto";
 import {
   ambiguousBilling,
   amountsEqual,
+  bindingWindowStart,
   comparePriceTerms,
   comparisonCueFor,
+  comparisonRange,
   COUNT_NOUNS,
   formatAmount,
   formatPriceTerms,
   isProjectedAmount,
   lineAbove,
   lineAround,
+  pageBillingCues,
   parseAmount,
   parsePriceTerms,
   priceExpressionsIn,
+  proseSentenceAround,
   scanAmounts,
   sentenceAround,
   splitSentences,
+  type PageBillingCues,
   type PriceExpression,
 } from "./amount.ts";
 import {
@@ -90,6 +113,9 @@ import {
   EVIDENCE_ID_PREFIX,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  formatControlIn,
+  SOURCE_TITLE_MAX_CHARS,
+  withoutFormatControls,
   type AcceptedEvidence,
   type Amount,
   type CommunityQuoteEvidence,
@@ -322,9 +348,9 @@ function itemFailure<T>(record: Record<string, unknown>, error: string, claim: s
   const sourceUrl = recordableUrl(textField(record, "sourceUrl"));
   return {
     ok: false,
-    error,
+    error: withoutFormatControls(error),
     ...(sourceUrl ? { sourceUrl } : {}),
-    ...(claim ? { candidate: clip(claim, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
+    ...(claim ? { candidate: clip(withoutFormatControls(claim), EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
   };
 }
 
@@ -489,6 +515,8 @@ type Context = {
   citations: Map<string, string>;
   sources: Map<string, SourceInput>;
   prepared: Map<string, PreparedSource>;
+  /** Each read page's billing cues, read once (amount.ts pageBillingCues). */
+  billing: Map<string, PageBillingCues>;
   vendors: string[];
 };
 
@@ -503,12 +531,42 @@ const STATUS_REASON: Record<Exclude<SourceStatus, "read">, RejectionReason> = {
   redirect_rejected: "source_unreadable",
 };
 
+/** Links, emails and domain paths a citation title or stat subject may not carry (rulings R9, R15). */
+const TEXT_LINK_RE =
+  /[a-z][a-z0-9+.-]*:\/\/|(?<![\p{L}\p{N}])www\.|mailto:|[^\s@]+@[^\s@]+\.[^\s@]+|[\p{L}\p{N}-]+\.\p{L}{2,}\/\S*/iu;
+
+/**
+ * Ruling R15: why a citation title cannot be shown, or null. A title is a
+ * hostile page's own words, and the page shows it next to evidence: at most
+ * SOURCE_TITLE_MAX_CHARS characters, no format control, no figure (the R6
+ * detector: bare years and R13 names are fine) and no link or email.
+ * Acceptance shows the source's host label instead; the record parser
+ * refuses a stored title that breaks the rule.
+ */
+export function sourceTitleIssue(title: string): string | null {
+  if (title.length > SOURCE_TITLE_MAX_CHARS) {
+    return `title has ${title.length} characters; at most ${SOURCE_TITLE_MAX_CHARS} allowed`;
+  }
+  const control = formatControlIn(title);
+  if (control) return `title holds the format control ${control}`;
+  if (findUnboundFigures(title).length > 0) return "title holds a figure";
+  if (TEXT_LINK_RE.test(title)) return "title holds a link or an email";
+  return null;
+}
+
+/** A citation title as acceptance keeps it: one line, and "" (the host label stands in) when it breaks R15. */
+function acceptableTitle(title: unknown): string {
+  if (typeof title !== "string") return "";
+  const line = title.replace(/\s+/g, " ").trim();
+  return sourceTitleIssue(line) === null ? line : "";
+}
+
 function createContext(input: AcceptEvidenceInput): Context {
   const citations = new Map<string, string>();
   for (const citation of input.citations) {
     const url = canonicalSourceUrl(citation.url);
     if (!url) continue;
-    const title = typeof citation.title === "string" ? clip(citation.title.trim(), 200) : "";
+    const title = acceptableTitle(citation.title);
     if (!citations.has(url) || (citations.get(url) === "" && title !== "")) citations.set(url, title);
   }
   const sources = new Map<string, SourceInput>();
@@ -524,7 +582,7 @@ function createContext(input: AcceptEvidenceInput): Context {
         .filter((v) => vendorKey(v).length >= 2),
     ),
   ];
-  return { citations, sources, prepared: new Map(), vendors };
+  return { citations, sources, prepared: new Map(), billing: new Map(), vendors };
 }
 
 function resolveSource(context: Context, sourceUrl: string): { ok: true; source: ReadSource } | Failure {
@@ -607,23 +665,26 @@ function quoteLineBreakIssue(excerpt: string): string | null {
 }
 
 /**
- * Ruling R8, against the source text: the span [start, end) holds no line
- * break, begins at a sentence start (only whitespace, opening quote marks,
- * brackets or a bullet before it in its sentence) and ends at a sentence
- * end (only whitespace, closing quote marks or brackets after it).
- * Sentences follow amount.ts (sentenceAround). Needs the source text, so
- * offline re-validation can check only the line-break part on the excerpt.
+ * Rulings R8 and R14, against the source text: the span [start, end) holds
+ * no line break, begins at a sentence start (only whitespace, opening quote
+ * marks, brackets or a bullet before it in its sentence) and ends at a
+ * sentence end (only whitespace, closing quote marks or brackets after it).
+ * Sentences are prose sentences (amount.ts proseSentenceAround): a line
+ * break starts one only after terminal punctuation or at a blank line, so
+ * the second line of a soft-wrapped sentence, or a line after a <br> inside
+ * one, is no whole sentence. Needs the source text, so offline
+ * re-validation can check only the line-break part on the excerpt.
  */
 function quoteShapeIssue(text: string, start: number, end: number): string | null {
   const lineBreak = quoteLineBreakIssue(text.slice(start, end));
   if (lineBreak) return lineBreak;
-  const sentenceStart = sentenceAround(text, start).start;
+  const sentenceStart = proseSentenceAround(text, start).start;
   if (sentenceStart > start || !QUOTE_OPENERS_RE.test(text.slice(sentenceStart, start))) {
-    return "the quote does not begin at a sentence start; quote whole sentences (ruling R8)";
+    return "the quote does not begin at a sentence start; quote whole sentences (rulings R8, R14)";
   }
-  const sentenceEnd = sentenceAround(text, Math.max(start, end - 1)).end;
+  const sentenceEnd = proseSentenceAround(text, Math.max(start, end - 1)).end;
   if (sentenceEnd < end || !QUOTE_CLOSERS_RE.test(text.slice(end, sentenceEnd))) {
-    return "the quote stops before its sentence end; quote whole sentences (ruling R8)";
+    return "the quote stops before its sentence end; quote whole sentences (rulings R8, R14)";
   }
   return null;
 }
@@ -634,6 +695,8 @@ function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; i
   if (!resolved.source.roles.includes("community")) return fail("unknown_citation", NOT_COMMUNITY_DETAIL);
   const span = findContiguousSpanIn(candidate.text, resolved.source.prepared);
   if (!span.ok) return fail(span.reason, spanDetail(span.reason));
+  const control = formatControlIn(span.text);
+  if (control) return fail("invalid_candidate", controlDetail("the quote", control));
   const shape = quoteShapeIssue(resolved.source.text, span.start, span.end);
   if (shape) return fail("span_bounds", shape);
   const issue = quoteBoundsIssue(span.text);
@@ -644,6 +707,11 @@ function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; i
     attribution: "community",
   };
   return { ok: true, item };
+}
+
+/** Ruling R15: the detail for text that holds an invisible or bidirectional format control. */
+function controlDetail(what: string, control: string): string {
+  return `${what} holds the invisible or bidirectional format control ${control} (ruling R15)`;
 }
 
 function spanDetail(reason: "span_not_found" | "internal_ellipsis" | "span_bounds"): string {
@@ -692,47 +760,64 @@ function tokens(text: string): string[] {
   return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
 }
 
-function stem(word: string): string {
-  if (word.length > 4 && word.endsWith("ies")) return `${word.slice(0, -3)}y`;
-  if (word.length > 3 && word.endsWith("s") && !word.endsWith("ss")) return word.slice(0, -1);
-  return word;
+/**
+ * A light stem for words of four letters or more, so word forms match:
+ * companies/company, teams/team, using/used/uses, reviewing/reviewed,
+ * questionnaires/questionnaire. Shorter words always match exactly.
+ */
+function lightStem(word: string): string {
+  let w = word;
+  if (w.length > 4 && w.endsWith("ies")) w = `${w.slice(0, -3)}y`;
+  else if (w.length > 4 && w.endsWith("ing")) w = w.slice(0, -3);
+  else if (w.length > 3 && w.endsWith("ed") && !w.endsWith("eed")) w = w.slice(0, -2);
+  else if (w.length > 3 && w.endsWith("s") && !w.endsWith("ss")) w = w.slice(0, -1);
+  if (w.length > 2 && w.endsWith("e")) w = w.slice(0, -1);
+  return w;
 }
 
 function subjectContentWords(subject: string): string[] {
   return tokens(subject).filter((w) => w.length >= 4 && /\p{L}/u.test(w) && !SUBJECT_STOPWORDS.has(w));
 }
 
+/** Ruling R14: the only subject words a stat's sentence may lack. */
+const SUBJECT_OPTIONAL_WORDS: ReadonlySet<string> = new Set(["a", "an", "the", "of", "for", "and", "in", "on", "to"]);
+
 /**
- * Ruling R9: every content word of the subject (≥4 letters, not a
- * stopword; a plural matches its singular) occurs in the amount's sentence,
- * so a broad sentence cannot stand for a narrower subject.
+ * Rulings R9 and R14: the subject names something specific (at least one
+ * content word of four letters or more that is no stopword), and every
+ * subject word but a, an, the, of, for, and, in, on and to occurs in the
+ * amount's sentence — short qualifiers such as US, EU, no or only exactly,
+ * longer words in any light-stem form — so neither a broad sentence nor an
+ * added qualifier ("projected", "global") can stand for another subject.
  */
 function subjectIssue(subject: string, sentence: string): string | null {
-  const wanted = subjectContentWords(subject);
-  if (wanted.length === 0) return `subject "${clip(subject, 60)}" has no specific content word`;
-  const present = new Set(tokens(sentence).map(stem));
-  const missing = [...new Set(wanted.filter((w) => !present.has(stem(w))))];
+  if (subjectContentWords(subject).length === 0) return `subject "${clip(subject, 60)}" has no specific content word`;
+  const sentenceWords = tokens(sentence);
+  const exact = new Set(sentenceWords);
+  const stems = new Set(sentenceWords.filter((w) => w.length >= 4).map(lightStem));
+  const present = (w: string): boolean => exact.has(w) || (w.length >= 4 && stems.has(lightStem(w)));
+  const missing = [...new Set(tokens(subject).filter((w) => !SUBJECT_OPTIONAL_WORDS.has(w) && !present(w)))];
   if (missing.length === 0) return null;
   const words = missing
     .slice(0, 4)
     .map((w) => `"${w}"`)
     .join(", ");
-  return `the sentence lacks ${words} of the subject "${clip(subject, 60)}"; every subject word must be in it (ruling R9)`;
+  return `the sentence lacks ${words} of the subject "${clip(subject, 60)}"; every subject word must be in it (rulings R9, R14)`;
 }
 
-/** Links, emails and domain paths a stat subject may not carry (ruling R9). */
-const SUBJECT_LINK_RE =
-  /[a-z][a-z0-9+.-]*:\/\/|(?<![\p{L}\p{N}])www\.|mailto:|[^\s@]+@[^\s@]+\.[^\s@]+|[\p{L}\p{N}-]+\.\p{L}{2,}\/\S*/iu;
 /** Markdown, MDX or quotation characters a stat subject may not carry (ruling R9). */
 const SUBJECT_MARKUP_RE = /[<>[\]{}*_`|#~\\"“”„«»]/u;
 
 /**
- * Ruling R9: a stat subject is plain words. It is extraction-model text that
- * the page shows next to the figure, so it may carry no figure (the R6
- * detector), no link, email or domain path, and no markup or quotation.
+ * Rulings R9 and R15: a stat subject is plain words. It is extraction-model
+ * text that the page shows next to the figure, so it may carry no figure
+ * (the R6 detector), no link, email or domain path, no markup or quotation,
+ * and no invisible or bidirectional format control.
  */
 function subjectShapeIssue(subject: string): string | null {
-  if (findUnboundFigures(subject).length === 0 && !SUBJECT_LINK_RE.test(subject) && !SUBJECT_MARKUP_RE.test(subject)) {
+  const control = formatControlIn(subject);
+  if (control) return controlDetail("the subject", control);
+  if (findUnboundFigures(subject).length === 0 && !TEXT_LINK_RE.test(subject) && !SUBJECT_MARKUP_RE.test(subject)) {
     return null;
   }
   return `subject must be plain words (no figures, links, emails or markup): "${clip(subject, 80)}" (ruling R9)`;
@@ -845,6 +930,8 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
   }
   const shape = subjectShapeIssue(claim.subject);
   if (shape) return fail("invalid_candidate", shape);
+  const control = formatControlIn(excerpt);
+  if (control) return fail("invalid_candidate", controlDetail("the supporting sentence", control));
   const laterDeclaredYear = claim.year !== undefined && claim.year > referenceYear;
   const amounts = scanAmounts(excerpt);
   let matched = false;
@@ -983,7 +1070,13 @@ function nameAliases(name: string): string[] {
   return aliases;
 }
 
-/** Character ranges where `name` (or an alias) appears as a whole word sequence. */
+/** A possessive word ("Loopio's", "Loopio’s") ends in an apostrophe and "s". */
+const POSSESSIVE_END_RE = /['’]s$/iu;
+
+/**
+ * Character ranges where `name` (or an alias) appears as a whole word
+ * sequence; the last word may be possessive ("Loopio's plan").
+ */
 function nameMentions(text: string, name: string): Mention[] {
   const form = normalizeForSourceMatch(text);
   const out: Mention[] = [];
@@ -991,13 +1084,186 @@ function nameMentions(text: string, name: string): Mention[] {
     const wanted = normalizeForSourceMatch(alias).words;
     if (wanted.length === 0) continue;
     for (let i = 0; i + wanted.length <= form.words.length; i += 1) {
-      if (!wanted.every((w, j) => form.words[i + j] === w)) continue;
+      const matches = wanted.every((w, j) => {
+        const word = form.words[i + j];
+        if (word === w) return true;
+        const at = form.map[i + j];
+        return j === wanted.length - 1 && word === `${w}s` && at !== undefined && POSSESSIVE_END_RE.test(text.slice(at.start, at.end));
+      });
+      if (!matches) continue;
       const first = form.map[i];
       const last = form.map[i + wanted.length - 1];
       if (first && last) out.push({ start: first.start, end: last.end });
     }
   }
   return out;
+}
+
+// --- Ruling R14: brand-like names around a price ------------------------------------
+
+/**
+ * Words that may stand capitalised near a price without naming a vendor
+ * (ruling R14): function words and sentence openers, pricing, plan and
+ * billing vocabulary, and the generic nouns of SaaS pricing pages.
+ * All-caps abbreviations (SSO, API, SOC, RFP) are never brand-like either.
+ */
+const COMMON_NAME_WORDS: ReadonlySet<string> = new Set([
+  // function words, pronouns, determiners and openers
+  "a", "an", "the", "this", "that", "these", "those", "our", "your", "their", "its", "his", "her", "my", "we", "you",
+  "they", "it", "he", "she", "us", "them", "all", "any", "each", "every", "some", "most", "many", "more", "much", "few",
+  "both", "either", "neither", "no", "none", "one", "other", "another", "such", "own", "same", "and", "or", "but", "nor",
+  "so", "yet", "for", "with", "without", "within", "from", "into", "at", "on", "in", "of", "to", "by", "as", "via",
+  "per", "plus", "than", "then", "there", "here", "where", "when", "while", "if", "once", "only", "just", "also",
+  "even", "still", "now", "today", "new", "up", "out", "off", "over", "under", "after", "before", "about", "around",
+  "between", "through", "during", "including", "includes", "include", "included", "except", "everything",
+  "anything", "nothing", "something", "everyone", "anyone", "yes", "please", "why", "what", "how", "who", "which",
+  "note", "notes", "ready", "looking", "introducing", "meet", "welcome", "home", "hi", "hello", "faq", "faqs",
+  // verbs that open pricing sentences
+  "is", "are", "was", "were", "be", "been", "has", "have", "had", "do", "does", "did", "can", "could", "will",
+  "would", "should", "may", "might", "must", "get", "gets", "pay", "pays", "paid", "cost", "costs", "charge",
+  "charges", "start", "starts", "starting", "begin", "begins", "try", "buy", "choose", "pick", "go", "see", "view",
+  "learn", "read", "save", "saves", "saving", "savings", "upgrade", "upgrades", "downgrade", "cancel", "contact",
+  "talk", "call", "book", "request", "schedule", "sign", "join", "subscribe", "renew", "renews", "offer", "offers",
+  "need", "needs", "want", "wants", "use", "uses", "add", "adds", "keep", "keeps", "help", "helps", "make",
+  "makes", "run", "runs", "work", "works", "unlock", "unlocks", "explore", "discover", "compare", "billed", "bill",
+  // pricing, billing and plan vocabulary
+  "pricing", "price", "prices", "priced", "plan", "plans", "tier", "tiers", "package", "packages", "bundle",
+  "bundles", "edition", "editions", "option", "options", "addon", "addons", "add", "extra", "extras", "additional",
+  "billing", "month", "months", "monthly", "year", "years", "yearly", "annual", "annually", "week", "weekly", "day",
+  "daily", "user", "users", "seat", "seats", "member", "members", "editor", "editors", "admin", "admins", "agent",
+  "agents", "license", "licenses", "licence", "licences", "workspace", "workspaces", "account", "accounts", "team",
+  "teams", "organization", "organizations", "organisation", "organisations", "org", "orgs", "company", "companies",
+  "business", "businesses", "enterprise", "enterprises", "individual", "individuals", "personal", "starter",
+  "basic", "essential", "essentials", "standard", "pro", "professional", "premium", "advanced", "growth", "scale",
+  "startup", "startups", "small", "medium", "large", "free", "freemium", "trial", "trials", "demo", "custom",
+  "unlimited", "ultimate", "elite", "lite", "light", "core", "max", "launch", "hobby", "hobbyist", "creator",
+  "creators", "studio", "solo", "duo", "agency", "agencies", "partner", "partners", "nonprofit", "nonprofits",
+  "education", "student", "students", "developer", "developers", "open", "source", "community", "platinum", "gold",
+  "silver", "bronze", "beginner", "express", "flex", "flexible", "fixed", "total", "value", "best", "top",
+  "popular", "recommended", "special", "limited", "discount", "discounts", "deal", "deals", "sale", "sales",
+  "early", "beta", "intro", "introductory", "promo", "base", "usage", "overage", "overages", "credit", "credits",
+  "token", "tokens", "minute", "minutes", "hour", "hours", "project", "projects", "repository", "repositories",
+  "repo", "repos", "review", "reviews", "feature", "features", "support", "priority", "security", "compliance",
+  "storage", "integration", "integrations", "access", "analytics", "report", "reports", "reporting", "dashboard",
+  "dashboards", "library", "libraries", "answer", "answers", "questionnaire", "questionnaires", "proposal",
+  "proposals", "response", "responses", "product", "products", "solution", "solutions", "service", "services",
+  "platform", "app", "apps", "tool", "tools", "software", "saas", "cloud", "hosted", "managed", "self",
+  // currencies and taxes
+  "usd", "eur", "gbp", "cad", "aud", "dollar", "dollars", "euro", "euros", "pound", "pounds", "excl", "incl",
+  "vat", "tax", "taxes",
+  // months and weekdays
+  "january", "february", "march", "april", "june", "july", "august", "september", "october", "november",
+  "december", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec", "monday",
+  "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+]);
+
+/** A word as it may stand for a name: letters, digits and the joiners of names such as RFP.ai, AT&T or Loopio's. */
+const NAME_TOKEN_RE = /[\p{L}\p{N}][\p{L}\p{N}.&'’+]*/gu;
+
+/** The name a token stands for: no possessive, no trailing joiner. */
+function bareName(token: string): string {
+  return token.replace(POSSESSIVE_END_RE, "").replace(/[.&'’+]+$/u, "");
+}
+
+/**
+ * Ruling R14: a capitalised token that may be a vendor or product name —
+ * a capital letter somewhere (Qvidian, iCIMS, RFPForge), not a common word
+ * (COMMON_NAME_WORDS), not an all-caps abbreviation, not a number.
+ */
+function isBrandLike(token: string): boolean {
+  const bare = bareName(token);
+  if (bare.length < 2 || !/\p{Lu}/u.test(bare) || /^\p{N}/u.test(bare)) return false;
+  if (/^[\p{Lu}\p{N}]{2,6}s?$/u.test(bare)) return false;
+  return !COMMON_NAME_WORDS.has(bare.toLowerCase());
+}
+
+type KnownMention = Mention & { claimed: boolean; name: string };
+
+/** Mentions in `text` of the claimed vendor and its plan (claimed) and of every other known vendor. */
+function knownMentions(text: string, vendor: string, plan: string | undefined, vendors: ReadonlyArray<string>): KnownMention[] {
+  const out: KnownMention[] = nameMentions(text, vendor).map((m) => ({ ...m, claimed: true, name: vendor }));
+  if (plan) out.push(...nameMentions(text, plan).map((m) => ({ ...m, claimed: true, name: plan })));
+  const claimedKey = vendorKey(vendor);
+  for (const other of vendors) {
+    if (vendorKey(other) === claimedKey) continue;
+    out.push(...nameMentions(text, other).map((m) => ({ ...m, claimed: false, name: other })));
+  }
+  return out;
+}
+
+/** What a token at [start, end) of a text names: a known mention (claimed ones first), a brand-like word, or nothing. */
+function nameAt(token: string, start: number, end: number, known: ReadonlyArray<KnownMention>): { claimed: boolean; name: string } | null {
+  const overlapping = known.filter((k) => k.start < end && start < k.end);
+  const hit = overlapping.find((k) => k.claimed) ?? overlapping[0];
+  if (hit) return { claimed: hit.claimed, name: hit.name };
+  return isBrandLike(token) ? { claimed: false, name: bareName(token) } : null;
+}
+
+/**
+ * Ruling R14: the nearest brand-like name before a price in its binding
+ * window (its clause, plus a soft-wrapped line above it: amount.ts
+ * bindingWindowStart) — the claimed vendor or its plan (claimed), another
+ * name, or null when none stands there.
+ */
+function nearestNameBefore(
+  text: string,
+  expression: PriceExpression,
+  vendor: string,
+  plan: string | undefined,
+  vendors: ReadonlyArray<string>,
+): { claimed: boolean; name: string } | null {
+  const start = bindingWindowStart(text, expression);
+  const window = text.slice(start, expression.start);
+  const known = knownMentions(window, vendor, plan, vendors);
+  const words = [...window.matchAll(new RegExp(NAME_TOKEN_RE.source, NAME_TOKEN_RE.flags))];
+  for (let i = words.length - 1; i >= 0; i -= 1) {
+    const word = words[i];
+    if (!word) continue;
+    const at = word.index ?? 0;
+    const name = nameAt(word[0], at, at + word[0].length, known);
+    if (name) return name;
+  }
+  return null;
+}
+
+/** "for" (and a determiner) right after a price, then the word it is for. */
+const FOR_AFTER_PRICE_RE =
+  /^[ \t\u00A0,]*for[ \t\u00A0]+(?:(?:the|a|an|its|their|our|your|each|every)[ \t\u00A0]+)?([\p{L}\p{N}][\p{L}\p{N}.&'’+]*)/iu;
+
+/** Ruling R14: a name other than the vendor's right after "for" behind the price ("$30/month for Qvidian"), or null. */
+function nameAfterFor(
+  text: string,
+  expression: PriceExpression,
+  vendor: string,
+  plan: string | undefined,
+  vendors: ReadonlyArray<string>,
+): string | null {
+  const tail = text.slice(expression.end, expression.clauseEnd);
+  const m = FOR_AFTER_PRICE_RE.exec(tail);
+  const token = m?.[1];
+  if (!m || !token) return null;
+  const at = m[0].length - token.length;
+  const name = nameAt(token, at, at + token.length, knownMentions(tail, vendor, plan, vendors));
+  return name && !name.claimed ? name.name : null;
+}
+
+/** "after", "over" and replace(d) count as comparison cues only before a name ("chose Loopio over Qvidian"). */
+const NAME_CUE_RE =
+  /(?<![\p{L}\p{N}])(after|over|replac(?:e|es|ed|ing))[ \t\u00A0]+(?:(?:the|a|an)[ \t\u00A0]+)?([\p{L}\p{N}][\p{L}\p{N}.&'’+]*)/giu;
+
+/** Ruling R14: the after/over/replace cue before a name in a price's comparison range, or null. */
+function nameCueFor(text: string, expression: PriceExpression, vendors: ReadonlyArray<string>): string | null {
+  const range = comparisonRange(text, expression);
+  const sentence = text.slice(range.start, range.end);
+  for (const m of sentence.matchAll(new RegExp(NAME_CUE_RE.source, NAME_CUE_RE.flags))) {
+    const cue = m[1];
+    const token = m[2];
+    if (!cue || !token) continue;
+    const at = (m.index ?? 0) + m[0].length - token.length;
+    const known = vendors.flatMap((v) => nameMentions(sentence, v)).some((k) => k.start < at + token.length && at < k.end);
+    if (known || isBrandLike(token)) return cue.toLowerCase();
+  }
+  return null;
 }
 
 type Attribution = { ok: true; attribution: "first_party" | "secondary" } | Failure;
@@ -1027,16 +1293,20 @@ function rivalSiteFailure(vendor: string, sourceUrl: string, vendors: ReadonlyAr
  * Who a price in `text` belongs to. No other known vendor may be named in
  * the price's clause. A first-party host (not a comparison page) needs no
  * name; otherwise the claimed vendor must be named before the price in its
- * clause (with no other vendor there, it is the nearest one). Callers apply
- * rivalSiteFailure (ruling R5) first.
+ * clause. On every page (ruling R14) the nearest brand-like name before the
+ * price — in its clause or a soft-wrapped line above — must be the claimed
+ * vendor or its plan, and no other name may follow the price after "for".
+ * `plan` is the plan that binds (planBinds), so acceptance and re-validation
+ * read the same names. Callers apply rivalSiteFailure (ruling R5) first.
  */
 function attributeVendor(
   text: string,
   expression: PriceExpression,
-  vendor: string,
+  claim: { vendor: string; plan?: string },
   sourceUrl: string,
   vendors: ReadonlyArray<string>,
 ): Attribution {
+  const { vendor, plan } = claim;
   const clause = text.slice(expression.clauseStart, expression.clauseEnd);
   const claimed = nameMentions(clause, vendor);
   const claimedKey = vendorKey(vendor);
@@ -1048,51 +1318,77 @@ function attributeVendor(
       return fail("ambiguous_attribution", `the price's clause also names ${clip(other, 40)}`);
     }
   }
+  const nearest = nearestNameBefore(text, expression, vendor, plan, vendors);
+  const nearer = (): Failure | null => {
+    if (nearest && !nearest.claimed) {
+      return fail(
+        "ambiguous_attribution",
+        `the nearest name before the price is "${clip(nearest.name, 40)}", not ${clip(vendor, 40)} (ruling R14)`,
+      );
+    }
+    const after = nameAfterFor(text, expression, vendor, plan, vendors);
+    return after
+      ? fail("ambiguous_attribution", `the price is "for ${clip(after, 40)}", not for ${clip(vendor, 40)} (ruling R14)`)
+      : null;
+  };
   const firstParty = isFirstPartyHost(vendor, sourceUrl);
-  if (firstParty && !isComparisonPage(sourceUrl)) return { ok: true, attribution: "first_party" };
+  if (firstParty && !isComparisonPage(sourceUrl)) return nearer() ?? { ok: true, attribution: "first_party" };
   const priceOffset = expression.start - expression.clauseStart;
   if (!claimed.some((m) => m.end <= priceOffset)) {
     return fail("vendor_not_in_context", `${clip(vendor, 40)} is not named before the price in its clause`);
   }
-  return { ok: true, attribution: firstParty ? "first_party" : "secondary" };
+  return nearer() ?? { ok: true, attribution: firstParty ? "first_party" : "secondary" };
 }
 
 type PriceClaim = { vendor: string; terms: PriceTerms };
 
 /**
- * Ruling R9, for one price expression of `text` (the source page at
- * acceptance, the excerpt at re-validation): a comparison cue in the
- * price's sentence binds no price (ambiguous_attribution), and a block that
- * shows both monthly and annual billing without the clause saying which is
- * ambiguous billing (qualifier_dropped).
+ * Rulings R9 and R14, for one price expression of `text` (the source page
+ * at acceptance, the excerpt at re-validation): a comparison cue in the
+ * price's sentence binds no price (ambiguous_attribution) — the R9 words,
+ * moved/migrated to, replaced by, and after/over before a name — and a page
+ * that shows annual billing above a per-month price without the clause
+ * saying which is ambiguous billing (qualifier_dropped).
  */
-function priceContextFailure(text: string, expression: PriceExpression): Failure | null {
-  const cue = comparisonCueFor(text, expression);
+function priceContextFailure(
+  text: string,
+  expression: PriceExpression,
+  vendors: ReadonlyArray<string>,
+  cues?: PageBillingCues,
+): Failure | null {
+  const cue = comparisonCueFor(text, expression) ?? nameCueFor(text, expression, vendors);
   if (cue) {
     return fail(
       "ambiguous_attribution",
-      `the price's sentence compares vendors ("${cue}"); a comparison binds no price (ruling R9)`,
+      `the price's sentence compares vendors ("${cue}"); a comparison binds no price (rulings R9, R14)`,
     );
   }
-  const billing = ambiguousBilling(text, expression);
+  const billing = ambiguousBilling(text, expression, cues ?? pageBillingCues(text));
   return billing ? fail("qualifier_dropped", billing) : null;
 }
 
-type PriceCheck = { ok: true; attribution: "first_party" | "secondary"; expression: PriceExpression } | Failure;
+type PriceCheck =
+  | { ok: true; attribution: "first_party" | "secondary"; expression: PriceExpression; plan: string | undefined }
+  | Failure;
 
 /**
  * The price rules applied to an excerpt (acceptance and re-validation alike):
  * not from another known vendor's own site (ruling R5), an equal price
  * expression whose sentence compares no vendors and whose billing is not
- * ambiguous (ruling R9), with a valid attribution. Returns the expression
- * it bound, for the plan rule.
+ * ambiguous (rulings R9, R14), with a valid attribution (R14 names). Returns
+ * the expression it bound and the claimed plan when it binds there
+ * (planBinds), else undefined.
  */
 function checkPriceExcerpt(
   excerpt: string,
-  claim: PriceClaim,
+  claim: PriceClaim & { plan?: string },
   sourceUrl: string,
   vendors: ReadonlyArray<string>,
 ): PriceCheck {
+  const nameControl = priceNameControl(claim);
+  if (nameControl) return nameControl;
+  const control = formatControlIn(excerpt);
+  if (control) return fail("invalid_candidate", controlDetail("the price's sentence", control));
   const rivalSite = rivalSiteFailure(claim.vendor, sourceUrl, vendors);
   if (rivalSite) return rivalSite;
   const expressions = priceExpressionsIn(excerpt);
@@ -1106,28 +1402,34 @@ function checkPriceExcerpt(
       failure = closer(failure, fail(mismatch, `source says ${formatPriceTerms(expression.terms)}`));
       continue;
     }
-    const context = priceContextFailure(excerpt, expression);
+    const context = priceContextFailure(excerpt, expression, vendors);
     if (context) {
       failure = closer(failure, context);
       continue;
     }
-    const attribution = attributeVendor(excerpt, expression, claim.vendor, sourceUrl, vendors);
-    if (attribution.ok) return { ok: true, attribution: attribution.attribution, expression };
+    const plan = claim.plan !== undefined && planBinds(claim.plan, excerpt, expression) ? claim.plan : undefined;
+    const attribution = attributeVendor(excerpt, expression, { vendor: claim.vendor, ...(plan ? { plan } : {}) }, sourceUrl, vendors);
+    if (attribution.ok) return { ok: true, attribution: attribution.attribution, expression, plan };
     failure = closer(failure, attribution);
   }
   return failure ?? fail("unparseable_amount", "excerpt has no supported price expression");
 }
 
-/** A plan mention right after these words names another plan's features, not this price's plan. */
+/**
+ * A plan mention right after these words is another plan, not this price's
+ * plan: its features ("everything in", "all of", "includes") or the plan it
+ * replaces or beats ("from", "upgrade from", "than"; ruling R14).
+ */
 const PLAN_CONTEXT_RE =
-  /(?:^|[^\p{L}])(?:(?:everything|all|anything)[ \t\u00A0]+(?:in|of|from)|includes|including|included[ \t\u00A0]+in)[ \t\u00A0]+(?:the[ \t\u00A0]+)?$/iu;
+  /(?:^|[^\p{L}])(?:(?:everything|all|anything)[ \t\u00A0]+(?:in|of|from)|includes|including|included[ \t\u00A0]+in|from|than)[ \t\u00A0]+(?:the[ \t\u00A0]+)?$/iu;
 
 /**
- * Ruling R9: a plan name binds to a price only on the price's own line or
- * the nearest non-blank line above it, and never right after "everything
- * in", "all of" or "includes" ("Pro — Everything in Starter, plus SSO.
- * $24/user/month" is the Pro price). Read on the excerpt, so acceptance and
- * re-validation agree.
+ * Rulings R9 and R14: a plan name binds to a price only on the price's own
+ * line or the nearest non-blank line above it, and never right after
+ * "everything in", "all of", "includes", "from", "upgrade from" or "than"
+ * ("Pro — Everything in Starter, plus SSO. $24/user/month" and "Upgrade
+ * from Starter: $24/user/month" are Pro prices). Read on the excerpt, so
+ * acceptance and re-validation agree.
  */
 function planBinds(plan: string, excerpt: string, expression: PriceExpression): boolean {
   const own = lineAround(excerpt, expression.start);
@@ -1151,8 +1453,18 @@ function priceExcerptRange(text: string, spanStart: number, expression: PriceExp
   return null;
 }
 
+/** Ruling R15: a vendor or plan name that holds a format control, as a failure, or null. */
+function priceNameControl(claim: { vendor: string; plan?: string }): Failure | null {
+  const vendor = formatControlIn(claim.vendor);
+  if (vendor) return fail("invalid_candidate", controlDetail("the vendor name", vendor));
+  const plan = claim.plan === undefined ? null : formatControlIn(claim.plan);
+  return plan ? fail("invalid_candidate", controlDetail("the plan name", plan)) : null;
+}
+
 function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
   const vendor = candidate.vendor;
+  const nameControl = priceNameControl({ vendor, ...(candidate.plan !== undefined ? { plan: candidate.plan } : {}) });
+  if (nameControl) return nameControl;
   if (vendorKey(vendor).length < 2) return fail("invalid_candidate", "vendor name is too short to identify");
   const terms = parsePriceTerms(candidate.priceText);
   if (!terms) return fail("unparseable_amount", `"${clip(candidate.priceText, 60)}" is not one supported price expression`);
@@ -1176,11 +1488,23 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
       failure = closer(failure, fail(mismatch, `source says ${formatPriceTerms(expression.terms)}`));
       continue;
     }
-    // Ruling R9 on the whole page first: the price's full sentence and the
-    // lines above it, which the stored excerpt may not include.
-    const sourceContext = priceContextFailure(source.text, expression);
+    // Rulings R9 and R14 on the whole page first: the price's full sentence,
+    // a soft-wrapped line above it and every line above it (billing), which
+    // the stored excerpt may not include.
+    let cues = context.billing.get(source.url);
+    if (!cues) {
+      cues = pageBillingCues(source.text);
+      context.billing.set(source.url, cues);
+    }
+    const sourceContext = priceContextFailure(source.text, expression, context.vendors, cues);
     if (sourceContext) {
       failure = closer(failure, sourceContext);
+      continue;
+    }
+    const plan = candidate.plan?.trim() || undefined;
+    const pageNames = attributeVendor(source.text, expression, { vendor, ...(plan ? { plan } : {}) }, source.url, context.vendors);
+    if (!pageNames.ok) {
+      failure = closer(failure, pageNames);
       continue;
     }
     const range = priceExcerptRange(source.text, span.start, expression);
@@ -1189,16 +1513,15 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
       continue;
     }
     const excerpt = source.text.slice(range.start, range.end);
-    const check = checkPriceExcerpt(excerpt, { vendor, terms }, source.url, context.vendors);
+    const check = checkPriceExcerpt(excerpt, { vendor, terms, ...(plan ? { plan } : {}) }, source.url, context.vendors);
     if (!check.ok) {
       failure = closer(failure, check);
       continue;
     }
-    const plan = candidate.plan?.trim();
     const typed = {
       kind: "competitor_price" as const,
       vendor,
-      ...(plan && planBinds(plan, excerpt, check.expression) ? { plan } : {}),
+      ...(check.plan ? { plan: check.plan } : {}),
       price: terms,
     };
     const item: CompetitorPriceEvidence = {
@@ -1254,12 +1577,14 @@ function rejection(
   detail: string,
 ): RejectedEvidence {
   const url = typeof sourceUrl === "string" ? (recordableUrl(sourceUrl) ?? "") : "";
+  // Operator-only text from untrusted candidates: format controls shown as U+FFFD (ruling R15).
+  const candidate = withoutFormatControls(claim.trim());
   return {
     kind,
     reason,
     ...(url ? { sourceUrl: url } : {}),
-    ...(claim.trim() ? { candidate: clip(claim.trim(), EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
-    detail: clip(detail, DETAIL_CHARS),
+    ...(candidate ? { candidate: clip(candidate, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
+    detail: clip(withoutFormatControls(detail), DETAIL_CHARS),
   };
 }
 
@@ -1485,6 +1810,8 @@ function rederivationIssues(
     if (bounds) issues.push(`excerpt: ${bounds}`);
     const lineBreak = quoteLineBreakIssue(excerpt);
     if (lineBreak) issues.push(`excerpt: ${lineBreak}`);
+    const control = formatControlIn(excerpt);
+    if (control) issues.push(`excerpt: ${controlDetail("the quote", control)}`);
     return issues;
   }
   if (claim.kind === "market_stat") {
@@ -1504,14 +1831,19 @@ function rederivationIssues(
     if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
     return samePeriod(check.period, period) ? [] : ["period: does not re-derive from the excerpt"];
   }
-  const check = checkPriceExcerpt(excerpt, { vendor: claim.vendor, terms: claim.price }, sourceUrl, vendors);
+  const check = checkPriceExcerpt(
+    excerpt,
+    { vendor: claim.vendor, terms: claim.price, ...(claim.plan !== undefined ? { plan: claim.plan } : {}) },
+    sourceUrl,
+    vendors,
+  );
   if (!check.ok) return [`claim: ${check.reason} (${check.detail})`];
   const issues: string[] = [];
   if (check.attribution !== claim.attribution) {
     issues.push(`attribution: re-derives as ${check.attribution}, stored ${claim.attribution}`);
   }
-  if (claim.plan !== undefined && !planBinds(claim.plan, excerpt, check.expression)) {
-    issues.push("plan: not named on the price's own line or the line above it (ruling R9)");
+  if (claim.plan !== undefined && check.plan === undefined) {
+    issues.push("plan: not named on the price's own line or the line above it (rulings R9, R14)");
   }
   return issues;
 }
@@ -1542,6 +1874,11 @@ export function revalidateAcceptedEvidence(
   const sourceUrl = typeof item.sourceUrl === "string" ? item.sourceUrl : "";
   if (!sourceUrl || canonicalSourceUrl(sourceUrl) !== sourceUrl) issues.push("sourceUrl: must be a canonical http(s) URL");
   if (!nonEmptyString(item.sourceTitle, 300)) issues.push("sourceTitle: required");
+  else if (item.sourceTitle !== sourceHostLabel(sourceUrl)) {
+    // Ruling R15: a stored title follows the acceptance rule, or is the host label acceptance falls back to.
+    const titleIssue = sourceTitleIssue(item.sourceTitle);
+    if (titleIssue) issues.push(`sourceTitle: ${titleIssue} (ruling R15)`);
+  }
   const maxExcerpt = kind === "community_quote" ? EVIDENCE_LIMITS.quoteMaxChars : EVIDENCE_LIMITS.excerptMaxChars;
   const excerpt = typeof item.excerpt === "string" ? item.excerpt : "";
   if (excerpt.trim() === "" || excerpt.length > maxExcerpt) issues.push(`excerpt: required, at most ${maxExcerpt} characters`);

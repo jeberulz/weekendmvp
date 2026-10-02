@@ -154,9 +154,10 @@ export const PIPELINE: readonly PipelineStep[] = [
       // for reasoning (as before WP54).
       maxOutputTokens: 10_000,
     },
-    // In total: provider retries and the one regeneration after validation
-    // failure share these two attempts.
-    maxAttempts: 2,
+    // In total (ruling R13): provider retries and up to two regenerations
+    // after validation failure share these three attempts, each with the
+    // same instructions plus the latest issue list.
+    maxAttempts: 3,
   },
   {
     position: 7,
