@@ -19,6 +19,7 @@ import {
   COMPILER,
   lastJson,
   makeTempDir,
+  REPO_ROOT,
   replaceOnce,
   runNodeScript,
   writePage,
@@ -352,6 +353,75 @@ describe("scripts/engine-compile.mjs and fixture records (R11, P2-8)", () => {
       expect(run.stderr).toMatch(/^engine:compile: unexpected error: ENOTDIR/m);
       expect(run.stderr).not.toMatch(/\n\s+at /);
       expect(`${run.stdout}${run.stderr}`).not.toContain(dir);
+    },
+    TIMEOUT,
+  );
+});
+
+describe("scripts/engine-compile.mjs writes drafts only to drafts, however a path is spelled (security)", () => {
+  const REFUSED = "refusing to write draft engine-draft-guard into content/ideas/ or ideas/manifest.json (drafts live in engine/drafts/)";
+
+  /** An incomplete record: should the guard ever let a run through, the compile still refuses before writing. */
+  function incompleteRecord(dir: string): string {
+    const recordPath = path.join(dir, "incomplete.json");
+    fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord(withEditorial({ yearOne: undefined }))));
+    return recordPath;
+  }
+
+  it(
+    "refuses a symlink to content/ideas or to ideas/manifest.json",
+    async () => {
+      const dir = makeTempDir("engine-cli-");
+      const recordPath = incompleteRecord(dir);
+      const ideasLink = path.join(dir, "ideas-link");
+      fs.symlinkSync(path.join(REPO_ROOT, "content", "ideas"), ideasLink);
+      const manifestLink = path.join(dir, "manifest-link.json");
+      fs.symlinkSync(path.join(REPO_ROOT, "ideas", "manifest.json"), manifestLink);
+      for (const flags of [
+        ["--ideas-dir", ideasLink, "--no-manifest"],
+        ["--ideas-dir", path.join(dir, "out"), "--manifest", manifestLink],
+      ]) {
+        const run = await runNodeScript(COMPILER, ["--record", recordPath, "--slug", "engine-draft-guard", ...flags, "--json"]);
+        expect(run.code, flags.join(" ")).toBe(1);
+        expect(isRecord(lastJson(run.stdout)) ? String((lastJson(run.stdout) as Record<string, unknown>).error) : "", flags.join(" ")).toBe(REFUSED);
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "refuses a case variant of content/ideas on a case-insensitive volume",
+    async () => {
+      const caseInsensitive = fs.existsSync(path.join(REPO_ROOT, "CONTENT"));
+      const dir = makeTempDir("engine-cli-");
+      const variant = path.join(REPO_ROOT, "Content", "Ideas");
+      const run = await runNodeScript(COMPILER, ["--record", incompleteRecord(dir), "--slug", "engine-draft-guard", "--ideas-dir", variant, "--no-manifest", "--json"]);
+      expect(run.code).toBe(1);
+      const error = isRecord(lastJson(run.stdout)) ? String((lastJson(run.stdout) as Record<string, unknown>).error) : "";
+      // On a case-sensitive volume "Content/Ideas" is another (missing) directory; the incomplete record is refused instead.
+      expect(error).toBe(caseInsensitive ? REFUSED : "record cannot compile into a publishable page");
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "prints repo-relative paths in --json for a destination inside the repository",
+    async () => {
+      const cache = path.join(REPO_ROOT, "node_modules", ".cache");
+      fs.mkdirSync(cache, { recursive: true });
+      const inside = fs.mkdtempSync(path.join(cache, "engine-compile-json-"));
+      try {
+        const dir = makeTempDir("engine-cli-");
+        const recordPath = path.join(dir, "record.json");
+        fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord()));
+        const run = await runNodeScript(COMPILER, ["--record", recordPath, "--slug", FIXTURE_PAGE_SLUG, "--ideas-dir", inside, "--no-manifest", "--json"]);
+        expect(run.code, run.stderr).toBe(0);
+        const result = lastJson(run.stdout);
+        expect(isRecord(result) ? result.mdxPath : null).toBe(path.relative(REPO_ROOT, path.join(inside, `${FIXTURE_PAGE_SLUG}.mdx`)));
+        expect(run.stdout).not.toContain(REPO_ROOT);
+      } finally {
+        fs.rmSync(inside, { recursive: true, force: true });
+      }
     },
     TIMEOUT,
   );

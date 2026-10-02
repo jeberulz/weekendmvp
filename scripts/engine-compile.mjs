@@ -16,14 +16,18 @@
  *
  * Slugs starting with engine-draft- are spot-check drafts: they default to
  * engine/drafts/{slug}.mdx + engine/drafts/manifest.json and are refused in
- * content/ideas/, so a draft can never reach the live site. A mode
+ * content/ideas/ and ideas/manifest.json however those are spelled (a
+ * symlink, a case variant on a case-insensitive volume, another path to the
+ * same file), so a draft can never reach the live site. A mode
  * "fixture" record (synthetic research) compiles only to an engine-draft-*
  * or _temp slug unless the test-only --allow-fixture flag is passed (ruling
  * R11).
  *
  * Refuses to overwrite existing MDX unless --force.
  * Does not seed Convex, generate OG, or push git. Output never includes a
- * stack trace; paths in messages are repo-relative or reduced to a file name.
+ * stack trace; paths in messages are repo-relative or reduced to a file name,
+ * and the --json mdxPath is repo-relative inside the repository, else the
+ * --ideas-dir the caller gave joined with the file name.
  */
 
 import fs from "node:fs";
@@ -48,7 +52,8 @@ Flags:
                       (otherwise only engine-draft-* or _temp slugs; R11)
   --json              Print one JSON result line (ok, mdxPath, slug, wordCount,
                       manifestWritten, researchMode; or ok:false with error
-                      and issues)
+                      and issues). mdxPath is repo-relative inside the
+                      repository, else as --ideas-dir was given
 Exit codes: 0 compiled, 1 refused or failed, 2 usage error.
 `;
 
@@ -62,10 +67,59 @@ function scrubPaths(text) {
   return String(text).replace(/(?:\/(?:Users|home|private|tmp|var|opt|root)\/|[A-Za-z]:\\)[^\s'"<>)]*/g, "[path]");
 }
 
+/** `p` relative to the repository root, or null when it lies outside it. */
+function repoRelative(p) {
+  const rel = path.relative(root, path.resolve(p));
+  return rel && !rel.startsWith("..") && !path.isAbsolute(rel) ? rel : null;
+}
+
 /** A path for terminal output: repo-relative inside the repo, else only the file name. */
 function displayPath(p) {
-  const rel = path.relative(root, path.resolve(p));
-  return rel && !rel.startsWith("..") && !path.isAbsolute(rel) ? rel : `…/${path.basename(p)}`;
+  return repoRelative(p) ?? `…/${path.basename(p)}`;
+}
+
+/**
+ * Where a path really leads: the part that exists resolved by the operating
+ * system (symlinks followed; on macOS and Windows also the on-disk case of
+ * each name), the part that does not exist yet appended as given.
+ */
+function realDestination(p) {
+  let existing = path.resolve(p);
+  const rest = [];
+  while (!fs.existsSync(existing)) {
+    const parent = path.dirname(existing);
+    if (parent === existing) break;
+    rest.unshift(path.basename(existing));
+    existing = parent;
+  }
+  return path.join(fs.realpathSync.native(existing), ...rest);
+}
+
+/** True when the volume holding `dir` (an existing directory) ignores the case of names. */
+function ignoresCase(dir) {
+  const name = path.basename(dir);
+  const swapped = name === name.toLowerCase() ? name.toUpperCase() : name.toLowerCase();
+  if (swapped === name) return false;
+  const variant = path.join(path.dirname(dir), swapped);
+  if (!fs.existsSync(variant)) return false;
+  const a = fs.statSync(dir);
+  const b = fs.statSync(variant);
+  return a.dev === b.dev && a.ino === b.ino;
+}
+
+/**
+ * True when `candidate` leads to `target` however it is spelled: the same
+ * real path (case folded when the volume ignores case), or, when both exist,
+ * the same file.
+ */
+function sameDestination(candidate, target, foldCase) {
+  const a = realDestination(candidate);
+  const b = realDestination(target);
+  if (a === b || (foldCase && a.toLowerCase() === b.toLowerCase())) return true;
+  if (!fs.existsSync(a) || !fs.existsSync(b)) return false;
+  const sa = fs.statSync(a);
+  const sb = fs.statSync(b);
+  return sa.dev === sb.dev && sa.ino === sb.ino;
 }
 
 function parseArgs(argv) {
@@ -73,6 +127,7 @@ function parseArgs(argv) {
     recordPath: null,
     slug: null,
     ideasDir: null,
+    ideasDirArg: null,
     manifestPath: null,
     noManifest: false,
     force: false,
@@ -92,7 +147,10 @@ function parseArgs(argv) {
     if (a === "--help" || a === "-h") usage(0);
     else if (a === "--record") out.recordPath = value(++i, a);
     else if (a === "--slug") out.slug = value(++i, a);
-    else if (a === "--ideas-dir") out.ideasDir = path.resolve(value(++i, a));
+    else if (a === "--ideas-dir") {
+      out.ideasDirArg = value(++i, a);
+      out.ideasDir = path.resolve(out.ideasDirArg);
+    }
     else if (a === "--manifest") out.manifestPath = path.resolve(value(++i, a));
     else if (a === "--no-manifest") out.noManifest = true;
     else if (a === "--force") out.force = true;
@@ -166,10 +224,11 @@ async function main() {
       ? path.join(draftsDir, "manifest.json")
       : path.join(root, "ideas", "manifest.json"));
   const publicManifest = path.join(root, "ideas", "manifest.json");
+  const foldCase = ignoresCase(root);
   if (
     isDraft &&
-    (path.resolve(ideasDir) === publicIdeasDir ||
-      (!args.noManifest && path.resolve(manifestPath) === publicManifest))
+    (sameDestination(ideasDir, publicIdeasDir, foldCase) ||
+      (!args.noManifest && sameDestination(manifestPath, publicManifest, foldCase)))
   ) {
     refuse(
       args,
@@ -199,10 +258,15 @@ async function main() {
   }
 
   if (args.json) {
+    // Inside the repository: repo-relative. Outside it: the caller's own
+    // --ideas-dir, so the output adds no local path the caller did not give.
+    const mdxPath =
+      repoRelative(result.mdxPath) ??
+      (args.ideasDirArg === null ? displayPath(result.mdxPath) : path.join(args.ideasDirArg, path.basename(result.mdxPath)));
     console.log(
       JSON.stringify({
         ok: true,
-        mdxPath: result.mdxPath,
+        mdxPath,
         slug: result.slug,
         source: result.manifestEntry.source,
         wordCount: result.manifestEntry.provenance.wordCount,
