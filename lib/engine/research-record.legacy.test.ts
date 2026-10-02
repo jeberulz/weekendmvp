@@ -147,7 +147,9 @@ describe("parseResearchRecord refuses contract v1 records (publish path)", () =>
     const read = () => parseResearchRecord(goldFixture());
     expect(read).toThrow(LegacyResearchRecordError);
     expect(read).toThrow(/Research record "ai-rfp-response-assistant" is a contract v1 \(legacy\) record/);
-    expect(read).toThrow(/Re-run `npm run engine:research -- --brief <brief\.json> --live`/);
+    expect(read).toThrow(
+      /Re-research into a new file: `npm run engine:research -- --brief <brief\.json> --live --out engine\/records\/engine-draft-ai-rfp-response-assistant\.json`/,
+    );
   });
 });
 

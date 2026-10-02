@@ -134,6 +134,6 @@ describe("engine audit on a compiled fixture", () => {
     const audit = await loadAuditor();
     const { errors } = audit(files.file, FIXTURE_PAGE_SLUG, { engine: true, recordPath: files.recordPath, otherBodies: {} });
     expect(errors.join("\n")).toMatch(/Research record "old-idea" is a contract v1 \(legacy\) record/);
-    expect(errors.join("\n")).toMatch(/Re-run `npm run engine:research/);
+    expect(errors.join("\n")).toMatch(/Re-research into a new file: `npm run engine:research -- .* --out engine\/records\/engine-draft-old-idea\.json`/);
   });
 });

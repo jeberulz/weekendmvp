@@ -1032,8 +1032,12 @@ function legacySlug(record: unknown): string | undefined {
  * parseResearchRecord was given a contract v1 (legacy) record. v1 wrote its
  * narrative before (or without) accepting evidence, so it can never be
  * compiled or pass the engine audit, and nothing upgrades it in place: the
- * operator re-runs research. A subclass of ResearchRecordParseError, so any
- * caller that refuses invalid records refuses legacy ones too.
+ * operator re-runs research. The message names a command the research CLI
+ * accepts: an explicit new `--out` (the default `--out` is this very record,
+ * which the CLI refuses to overwrite, and the slug may be a published
+ * handwritten page), with `--force` only to replace the record on purpose.
+ * A subclass of ResearchRecordParseError, so any caller that refuses invalid
+ * records refuses legacy ones too.
  */
 export class LegacyResearchRecordError extends ResearchRecordParseError {
   /** The record's brief slug, when it is a plain slug. */
@@ -1041,10 +1045,12 @@ export class LegacyResearchRecordError extends ResearchRecordParseError {
 
   constructor(record: unknown) {
     const slug = legacySlug(record);
+    const draft = `engine/records/engine-draft-${slug ?? "<slug>"}.json`;
     const message =
       `${slug ? `Research record "${slug}"` : "This research record"} is a contract v1 (legacy) record: ` +
       "its evidence was not accepted before writing. Legacy records cannot be compiled or pass the engine audit. " +
-      "Re-run `npm run engine:research -- --brief <brief.json> --live` to produce a contract v2 record.";
+      `Re-research into a new file: \`npm run engine:research -- --brief <brief.json> --live --out ${draft}\` ` +
+      "(to replace this record on purpose, drop --out and add --force).";
     super([message]);
     this.name = "LegacyResearchRecordError";
     this.message = message;
