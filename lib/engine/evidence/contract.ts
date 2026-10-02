@@ -402,7 +402,7 @@ export type ResearchMode = "live" | "fixture";
 /**
  * Ruling R12: the code that produced a run. `sha` is the git commit
  * (40 or 64 lowercase hex); `dirty` is true when the working tree had
- * changes or untracked files. Both are null when git was unavailable.
+ * changes (tracked files only; untracked outputs do not count). Both are null when git was unavailable.
  */
 export type CodeRevision = { sha: string | null; dirty: boolean | null };
 

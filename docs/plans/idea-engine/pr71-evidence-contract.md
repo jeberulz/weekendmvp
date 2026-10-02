@@ -44,10 +44,10 @@ Rules:
   Billed failures are settled. The $4.00 cap (`REPORT_COST_CAP_USD`) is
   unchanged.
 - `evidence_extraction`: at most 2 billable attempts (one provider retry).
-- `editorial_synthesis`: at most 2 billable attempts **in total**, counting
-  provider retries and one regeneration after validation failure. The
-  regeneration input repeats the same accepted bundle plus the list of
-  validation issues. It is never more permissive.
+- `editorial_synthesis`: at most 3 billable attempts **in total** (ruling
+  R13; originally 2), counting provider retries and regenerations after
+  validation failure. Each regeneration repeats the same accepted bundle plus
+  the list of validation issues. It is never more permissive.
 - Minimums apply to **accepted** evidence: ≥2 market stats, ≥3 competitors
   each with ≥1 accepted price, ≥2 distinct accepted community quotes
   (distinct = different normalized quote text). Readable-page counts remain an
@@ -221,14 +221,16 @@ export type RejectedEvidence = {
 - **Finance** (`lib/engine/finance.ts`): integer cents, safe-integer checks,
   `floor(baseAccounts / 2)` downside that may be zero, seats explicit.
 
-`FACT_BEARING_FIELDS` (no free figures): `brief.oneLiner`, `market.summary`,
-`community.summary`, `whyNow`, `competitors[].notes`,
-`goToMarket.positioning`, `goToMarket.pricingNotes`,
-`editorial.problemNarrative`, `editorial.solutionNarrative`,
-`editorial.competitiveNarrative`. Proposal fields (figures allowed, rendered
-as proposals or assumptions): `howItWorks`, `editorial.dontBuildYet`,
-`stackNotes`, `brandBrief`, `pricingTiers`, `unitEconomics`, `yearOne`,
-`dataModel`, `goToMarket.channels`.
+Writer text rules (rulings R6 and R13 supersede the original split between
+fact-bearing and proposal fields): every writer free-text field listed in
+`WRITER_TEXT_FIELDS` (`lib/engine/evidence/contract.ts`) carries no free
+figures, number words two and up, percent, currency or quoted spans; facts
+enter only through evidence tokens; standard and version names on the R13
+allowlist are names, not figures. The only numeric slots are
+`NUMERIC_PROPOSAL_FIELDS` (tier price and includes, unit-economics values,
+Year-One counts and seats, data model), and the page labels them as
+proposals or assumptions. `FACT_BEARING_FIELDS` remains as a deprecated
+alias of the same list.
 
 ## 6. Candidate extraction (model output, untrusted)
 
