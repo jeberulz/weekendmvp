@@ -117,11 +117,6 @@ const DROPDOWNS: DropdownDef[] = [
   },
 ];
 
-const TOP_LEVEL_LINKS: NavLink[] = [
-  { label: "Articles", href: "/articles" },
-  { label: "Newsletter", href: "/newsletter" },
-];
-
 type MegaNavVariant = "dark" | "cream";
 
 const TOKENS: Record<
@@ -372,21 +367,6 @@ export function MegaNav({
               </div>
             );
           })}
-
-          {TOP_LEVEL_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "transition-colors",
-                t.link,
-                isActive(link.href) && t.linkActive
-              )}
-              aria-current={isActive(link.href) ? "page" : undefined}
-            >
-              {link.label}
-            </Link>
-          ))}
         </div>
 
         <div className="flex items-center gap-2">

@@ -11,7 +11,8 @@
  * gets the `hidden` class — exactly how gate.js toggled the two sections.
  *
  * Access resolution + subscribe flow live in components/ideas/gate-access.ts
- * (shared with the idea-page EmailGate).
+ * (shared with the idea-page EmailGate). Signed-in members unlock via the
+ * WP44 session hint cookie; anonymous visitors still see the lead-capture gate.
  */
 
 import * as React from "react";

@@ -73,26 +73,35 @@ export function IdeaNav({ withSidebar = false }: { withSidebar?: boolean }) {
           </Link>
         </div>
       </div>
+      {/* Below `sm` the hamburger drawer already carries these links, so the
+          second bar is hidden there. `w-max mx-auto` centers without
+          clipping the first link when the row overflows (justify-center on
+          an overflow container pushes it out of scroll reach). */}
       <nav
-        className="flex items-center justify-center gap-3 px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap"
+        className={cn(
+          "px-4 py-2 border-t border-neutral-200/60 overflow-x-auto whitespace-nowrap",
+          withSidebar ? "hidden sm:block" : "block"
+        )}
         aria-label="Explore Weekend MVP"
       >
-        {EXPLORE_LINKS.map((link, index) => (
-          <React.Fragment key={link.href}>
-            {index > 0 && (
-              <span className="text-neutral-300 select-none" aria-hidden="true">
-                ·
-              </span>
-            )}
-            <Link
-              href={link.href}
-              className={exploreLinkClass}
-              aria-current={isActive(link.href) ? "page" : undefined}
-            >
-              {link.label}
-            </Link>
-          </React.Fragment>
-        ))}
+        <div className="flex w-max mx-auto items-center gap-3">
+          {EXPLORE_LINKS.map((link, index) => (
+            <React.Fragment key={link.href}>
+              {index > 0 && (
+                <span className="text-neutral-300 select-none" aria-hidden="true">
+                  ·
+                </span>
+              )}
+              <Link
+                href={link.href}
+                className={exploreLinkClass}
+                aria-current={isActive(link.href) ? "page" : undefined}
+              >
+                {link.label}
+              </Link>
+            </React.Fragment>
+          ))}
+        </div>
       </nav>
     </header>
   );
