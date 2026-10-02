@@ -10,6 +10,9 @@
  * The provider settles every read within its own deadline (see
  * `sourceText.ts`); the acquirer adds no second timer, because releasing a
  * slot while its fetch is still running would break the concurrency bound.
+ * One exception sits below the provider: a DNS lookup cannot be cancelled,
+ * so a read that timed out on a stalled resolver frees its slot while the
+ * lookup may still occupy a libuv thread (see `assertPublicUrl`).
  */
 
 import { createHash } from "node:crypto";
