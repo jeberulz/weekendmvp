@@ -337,7 +337,10 @@ block. Proposals and assumptions (How it works, what not to build, stack,
 channels, pricing, unit economics, Year-One) carry labels on the page.
 Compiled text is escaped once with the shared `escapeMdxText`, which also
 stops GFM autolinks. Fixture-mode records compile only to `engine-draft-*` or
-temp slugs, and the manifest stub records the research mode.
+temp slugs, and the manifest stub records the research mode. Compiled pages
+carry an `engine: true` frontmatter marker; the auditor applies the deep bar
+when that marker, an `engine:*` manifest source, an `engine-draft-` slug or
+`--record` says so (the site's loader reads only `title` and `publishedAt`).
 
 The auditor (CLI exits nonzero on any error) refuses legacy and invalid
 records and fixture records behind public slugs; parses each blockquote with
