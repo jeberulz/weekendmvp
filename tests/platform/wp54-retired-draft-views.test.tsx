@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { PlanDetail } from "../../components/platform/builds/PlanDetail";
-import { SavedIdeas } from "../../components/platform/explore/SavedIdeas";
+import { SavedIdeas, SavedRows } from "../../components/platform/explore/SavedIdeas";
 import { isComparable } from "../../components/platform/explore/saved-compare";
 import { NextStepCard } from "../../components/platform/home/NextStepCard";
 import { PendingSaveRunner } from "../../components/platform/shell/PendingSaveRunner";
@@ -96,12 +96,12 @@ function home(activePlan: Home["activePlan"]): Home {
   };
 }
 
-function savedItem(slug: string): SavedItem {
+function savedItem(slug: string, title = slug === DRAFT ? `${TITLE} (draft)` : TITLE): SavedItem {
   return {
     card: {
       ideaId: `${slug}-id` as Id<"ideas">,
       slug,
-      title: slug === DRAFT ? `${TITLE} (draft)` : TITLE,
+      title,
       description: "Pull-request review for small teams.",
       category: "developer-tools",
       buildTime: 10,
@@ -241,6 +241,8 @@ describe("the Saved page", () => {
     const html = renderToStaticMarkup(<SavedIdeas />);
     expect(html).toContain("2 saved ideas");
     expect(html.includes('title="Add a note"')).toBe(hubRows);
+    // Compare mode is off until the member turns it on.
+    expect(html).not.toContain('type="checkbox"');
     expect(html).toContain(`${TITLE} (draft)`);
     expect(html).toContain(RETIRED_LABEL);
     expect(html).not.toMatch(draftLink);
@@ -262,5 +264,51 @@ describe("the Saved page", () => {
   test("outside compare mode no row gets a compare checkbox", () => {
     expect(isComparable(ORDINARY, false)).toBe(false);
     expect(isComparable(DRAFT, false)).toBe(false);
+  });
+
+  describe("the Builder's Hub rows SavedIdeas renders in and out of compare mode", () => {
+    function renderRows({ comparing, picked = [], compareMax = 4 }: { comparing: boolean; picked?: string[]; compareMax?: number }) {
+      return renderToStaticMarkup(
+        <SavedRows
+          rows={[savedItem(DRAFT), savedItem(ORDINARY), savedItem("rfp-desk", "RFP Desk")]}
+          hub
+          comparing={comparing}
+          picked={picked}
+          compareMax={compareMax}
+          onPick={vi.fn()}
+          onUpgrade={vi.fn()}
+        />,
+      );
+    }
+
+    /** Each compare checkbox, named by its row's idea, with its state. */
+    function compareBoxes(html: string) {
+      return [...html.matchAll(/<input type="checkbox"([^>]*)>Compare<span class="sr-only"> ([^<]+)<\/span>/g)].map(
+        ([, attributes, idea]) => ({
+          idea,
+          checked: attributes.includes('checked=""'),
+          disabled: attributes.includes('disabled=""'),
+        }),
+      );
+    }
+
+    test("in compare mode every ordinary row gets a checkbox and the retired draft gets none", () => {
+      const html = renderRows({ comparing: true });
+      expect(compareBoxes(html).map((box) => box.idea)).toEqual([TITLE, "RFP Desk"]);
+      // The draft row itself is still listed, as retired.
+      expect(html).toContain(`${TITLE} (draft)`);
+      expect(html).toContain(RETIRED_LABEL);
+    });
+
+    test("outside compare mode no row gets a checkbox", () => {
+      expect(compareBoxes(renderRows({ comparing: false }))).toEqual([]);
+    });
+
+    test("at the compare limit unpicked rows lock and picked rows stay free to untick", () => {
+      expect(compareBoxes(renderRows({ comparing: true, picked: [ORDINARY], compareMax: 1 }))).toEqual([
+        { idea: TITLE, checked: true, disabled: false },
+        { idea: "RFP Desk", checked: false, disabled: true },
+      ]);
+    });
   });
 });
