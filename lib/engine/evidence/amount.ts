@@ -94,6 +94,15 @@
  *   inc., ltd., co., corp., no., mr., dr., month names) does not end one.
  *   Clauses also split at "|", tabs, ";" and before the contrast words while,
  *   whereas, but, versus, vs, compared to/with.
+ *
+ * COMPARISONS AND BILLING (ruling R9)
+ *   comparisonCueFor: unlike, than, instead, versus/vs, compare(d)/comparison,
+ *   alternative(s), competitor(s)/competing, switch(ed) from/to/away anywhere
+ *   in the sentence(s) of a price's clause. ambiguousBilling: the price's line
+ *   plus PRICE_BLOCK_LINES_ABOVE (3) non-blank lines above it show an annual
+ *   cue (annual, annually, yearly) and a monthly one (monthly, or the price
+ *   itself per month), and the clause names neither billing; a per-year or
+ *   one-time price states its own term; negated cues do not count.
  */
 
 import type {

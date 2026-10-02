@@ -36,6 +36,24 @@
  * URL can back at most one competitor's first-party prices. A neutral page
  * (no known vendor's host) may still bind several vendors, each in its own
  * clause.
+ *
+ * Quotes (ruling R8): only from a source the community search cited
+ * (SourceInput.roles; else unknown_citation), a whole sentence (span_bounds
+ * when it starts or stops inside one) on one line of the extracted text
+ * (span_bounds across a line break). Re-validation can check the role and
+ * the line break; sentence edges need the page text (acceptance only).
+ * Two quotes are distinct only when neither contains the other.
+ *
+ * Binding is per claim (ruling R9): a comparison cue in a price's sentence
+ * (ambiguous_attribution); a price block showing monthly and annual billing
+ * with neither stated in the clause (qualifier_dropped; amount.ts
+ * ambiguousBilling); a plan only on the price's own line or the line above
+ * it, never after "everything in"/"all of"/"includes" (otherwise dropped at
+ * acceptance, an issue at re-validation); a stat subject of plain words
+ * (invalid_candidate) whose every content word is in the sentence
+ * (subject_not_in_context), with a metric the sentence's words state
+ * (metric_unit_mismatch). Acceptance applies the price rules to the page
+ * text and to the stored excerpt; re-validation to the excerpt.
  */
 
 import { createHash } from "node:crypto";
