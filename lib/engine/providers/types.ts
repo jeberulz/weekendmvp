@@ -1,3 +1,5 @@
+import type { SourceTextProvider } from "./sourceText.ts";
+
 /**
  * WP26-S2. Provider-agnostic interfaces for the three engine roles.
  *
@@ -202,6 +204,12 @@ export type EngineProviders = {
   synthesis: SynthesisProvider;
   search: SearchProvider;
   keywordData: KeywordDataProvider;
+  /**
+   * Reads cited pages to confirm community quotes are verbatim. Unbilled.
+   * When absent the pipeline records quotes without a verdict, and the
+   * auditor then refuses to publish them — live mode always sets it.
+   */
+  sourceText?: SourceTextProvider;
 };
 
 /**

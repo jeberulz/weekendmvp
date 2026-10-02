@@ -185,7 +185,7 @@ describe("runResearch provenance (no invented rows)", () => {
         }),
       }),
       "provenance_parse",
-      /market stats citing a search result \(got 0\)/,
+      /market stats citing a search result \(got 0;/,
     );
   });
 

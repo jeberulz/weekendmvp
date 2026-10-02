@@ -87,7 +87,8 @@ export const PIPELINE: readonly PipelineStep[] = [
       role: "search",
       maxInputTokens: 2_000,
       maxOutputTokens: 2_000,
-      requests: 1,
+      // Primary search + optional non-Reddit supplement when pages are unreadable.
+      requests: 2,
       searchContextSize: "medium",
     },
   },
@@ -104,7 +105,9 @@ export const PIPELINE: readonly PipelineStep[] = [
     budget: {
       role: "synthesis",
       maxInputTokens: 60_000,
-      maxOutputTokens: 8_000,
+      // Editorial pass (narratives, tiers, yearOne, dataModel, brandBrief)
+      // ran ~4-5k output tokens at 8k; 10k keeps headroom for reasoning.
+      maxOutputTokens: 10_000,
     },
   },
   {

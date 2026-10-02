@@ -16,10 +16,18 @@ export const MIN_DEEP_BODY_WORDS_HARD = 2200;
 /** Minimum word count for a sentence to enter the duplicate check. */
 export const MIN_SENTENCE_WORDS = 8;
 
-/** Slugs that opt into the deep writing bar (not the whole corpus). */
-export function isDeepDraftSlug(slug) {
-  return typeof slug === "string" && slug.startsWith("engine-draft-");
+/**
+ * Idea-engine spot-check drafts. They live in engine/drafts/ and never ship.
+ * Keep in sync with lib/engine-drafts.ts.
+ */
+export const ENGINE_DRAFT_PREFIX = "engine-draft-";
+
+export function isEngineDraftSlug(slug) {
+  return typeof slug === "string" && slug.startsWith(ENGINE_DRAFT_PREFIX);
 }
+
+/** @deprecated use isEngineDraftSlug; kept for existing imports. */
+export const isDeepDraftSlug = isEngineDraftSlug;
 
 /**
  * Stock filler / boilerplate the old padParagraphs compiler emitted,
@@ -144,7 +152,9 @@ export function proseForSentences(body) {
     .replace(/^#+\s.+$/gm, " ")
     .replace(/^>\s?/gm, "")
     .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    // Link text is a page title, not prose: the same thread title legitimately
+    // appears under a quote and again in Sources.
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, " ")
     .replace(/^\s*[-*]\s+/gm, "")
     .replace(/^\s*\d+\.\s+/gm, "")
     .replace(/\*\*/g, "")
@@ -380,4 +390,68 @@ export function extractBlockquotes(body) {
     if (q.length >= 12) quotes.push(q);
   }
   return quotes;
+}
+
+/** Tables every engine Setup prompt carries; the idea's own tables are extra. */
+export const GENERIC_SETUP_TABLES = new Set([
+  "workspaces",
+  "members",
+  "usage_events",
+  "documents",
+  "jobs",
+]);
+
+/**
+ * Broken markdown links: a line holding `](http` with no opening `[`, or a
+ * line that starts with a bare URL tail like `reddit.com/r/x/)`. Both come
+ * from text surgery that cut through a link.
+ */
+export function findBrokenLinkLines(body) {
+  const hits = [];
+  const lines = String(body)
+    .replace(/```[\s\S]*?```/g, (m) => m.replace(/[^\n]/g, " "))
+    .split("\n");
+  lines.forEach((line, i) => {
+    const opens = (line.match(/\[/g) || []).length;
+    const linkTails = (line.match(/\]\(https?:\/\//g) || []).length;
+    if (linkTails > opens) {
+      hits.push({ line: i + 1, text: line.trim() });
+      return;
+    }
+    if (/^\s*[a-z0-9.-]+\.[a-z]{2,}\/\S*\)\s*$/i.test(line)) {
+      hits.push({ line: i + 1, text: line.trim() });
+    }
+  });
+  return hits;
+}
+
+/** Count case-insensitive occurrences of a phrase in prose. */
+export function countPhrase(prose, phrase) {
+  if (!phrase) return 0;
+  const needle = phrase.toLowerCase().replace(/\s+/g, " ").trim();
+  const hay = String(prose).toLowerCase().replace(/\s+/g, " ");
+  let n = 0;
+  let at = hay.indexOf(needle);
+  while (at !== -1) {
+    n += 1;
+    at = hay.indexOf(needle, at + needle.length);
+  }
+  return n;
+}
+
+/** `**N. Title**` prompt blocks → { title, words } using the text fence. */
+export function promptBlocks(promptsContent, countWords) {
+  const out = [];
+  const re = /\*\*\d+\.\s+([^*]+)\*\*\s*```text\n([\s\S]*?)```/g;
+  for (const m of promptsContent.matchAll(re)) {
+    out.push({ title: m[1].trim(), text: m[2], words: countWords(m[2]) });
+  }
+  return out;
+}
+
+/** Table names declared as `- name(` lines in a Setup prompt. */
+export function setupTableNames(setupText) {
+  return [...String(setupText).matchAll(/^\s*-\s*([a-z][a-z0-9_]*)\s*\(/gm)].map(
+    (m) => m[1],
+  );
 }

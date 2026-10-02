@@ -1,0 +1,188 @@
+---
+slug: "engine-draft-ai-code-reviewer"
+title: "AI Code Reviewer"
+---
+
+## The Problem
+
+Indie developers and engineering leads on sub-10 GitHub teams are encountering a new throughput mismatch. AI coding assistants let authors create more code, larger changes, and sophisticated implementations faster, but the team’s ability to verify that output has not expanded at the same rate. The burden falls disproportionately on senior developers, maintainers, and technical founders who already own architecture, production reliability, and mentorship.
+
+Traditional pull-request heuristics become less reliable when code is generated in large chunks. A reviewer may recognize a teammate’s habits, infer intent from commit progression, and know where that developer commonly makes mistakes. AI-generated code lacks those familiar signals. It can look polished while taking an unnecessarily general approach, introducing subtle edge cases, or following patterns that do not fit the repository. Reviewers must reconstruct the implementation story before deciding whether the change is safe.
+
+Existing AI reviewers do not automatically solve the capacity problem. Community participants describe them as linter-like: they flag potential problems, but humans still have to validate every comment. Speculative findings can send less-experienced developers into unproductive investigations, while a long list of minor observations obscures the one issue that matters. The bot then becomes another pre-review gate, adding latency before the pull request reaches a human.
+
+The operational cost is visible in growing queues and reduced senior focus. One engineer reports reviewing 47 pull requests in a week on a team of 8. Another estimates spending 60% of working time reviewing pull requests and only 25% writing code. That shift also damages mentorship. Senior developers have less time for architecture discussions and pair programming, while junior developers receive terse asynchronous corrections without learning the reasoning behind them.
+
+The buyer therefore does not primarily need more comments. A technical founder, lead engineer, or open-source maintainer needs faster confidence: a concise explanation of what changed, a prioritized view of meaningful risk, and evidence that each flagged issue fits the repository’s actual behavior. The product must reduce verification work without encouraging blind trust or pretending business context can be inferred perfectly.
+
+> "These code review tools are basically analogous in function to a linter. They flag potential issues, but you still have to check all of them."
+>
+> — [The AI Code Review Disconnect: Why Your Tools Aren't ...](https://news.ycombinator.com/item?id=43219455)
+
+> "All these teams need is a sanity check. They also generally (even without the AI code reviewers) do not have a strong code review process."
+>
+> — [The AI Code Review Disconnect: Why Your Tools Aren't ...](https://news.ycombinator.com/item?id=43219455)
+
+> "Our PR queue has basically exploded, and I’m watching talented engineers drown in review work."
+>
+> — [AI Code Review Bottleneck: Our PR Queue Grew 91% and Nobody ...](https://tianpan.co/forum/t/ai-code-review-bottleneck-our-pr-queue-grew-91-and-nobody-knows-how-to-fix-it/2001)
+
+## The Solution
+
+ReviewLoom is a precision-first GitHub reviewer built for Indie developers and sub-10 engineering teams. Its wedge is a low-noise sanity check: instead of covering a pull request with every plausible concern, it produces a semantic change brief and publishes only evidence-backed findings that cross a configurable confidence threshold.
+
+After installation, ReviewLoom builds repository memory from accepted code, tests, configuration, contribution guidance, and prior review outcomes. When a pull request opens, it maps changed files into behaviors and data paths, identifies where the implementation diverges from established patterns, and explains the likely story of the change. Candidate findings are checked against repository context and deterministic signals before appearing in GitHub. Each published finding states its severity, evidence, affected behavior, and a focused verification path.
+
+The initial product should optimize for reviewer attention rather than autonomous merging. Authors can use the brief before requesting human review, while senior developers can begin with the highest-risk areas instead of reconstructing the entire diff unaided. Confirmed and dismissed findings become repository-specific feedback, allowing ReviewLoom to learn that a pattern is intentional without applying that preference universally.
+
+The Open Source tier provides free review for eligible public repositories, generating visible examples of useful output and attracting maintainers. Indie supports private repositories for solo developers and very small teams. Crew adds shared review policies, repository-level analytics, and deeper memory for teams that need consistent standards. The promise remains intentionally narrow: fewer distractions, clearer implementation context, and more senior engineering time reserved for architectural and business decisions.
+
+**How it works:**
+
+1. **Repository Memory** — ReviewLoom installs as a GitHub App and indexes approved code, tests, configuration, contribution guidance, and recurring reviewer decisions. It builds a compact repository profile so findings reflect local conventions and architecture instead of generic programming advice.
+2. **Semantic PR Map** — For each pull request, ReviewLoom groups changed files into behaviors, dependencies, data paths, and likely intent. The resulting review brief explains what changed, where risk concentrates, and which unfamiliar patterns deserve human attention before inline comments appear.
+3. **Evidence-Gated Findings** — Candidate issues are checked against repository context, changed tests, deterministic analysis, and confidence thresholds. ReviewLoom publishes only prioritized findings labeled by severity and evidence, suppressing speculative observations that would force developers to investigate low-value possibilities.
+4. **Human Learning Loop** — Authors and reviewers can confirm, dismiss, or clarify every finding directly in GitHub. ReviewLoom records those outcomes as repository-specific decisions, improving future prioritization while preserving an audit trail that explains why recurring patterns are accepted or rejected.
+
+Do not build autonomous merge approval or a full replacement for human architectural review yet.
+
+## Market Research
+
+AI code review is a fast-growing software niche with an especially relevant opening among smaller engineering organizations. The supplied research estimates the category at $1.4 billion in 2025 and projects it to reach $10.8 billion by 2034, representing a 28.5% CAGR. Standalone platforms, repository integrations, IDE plugins, and related software represented $954.8 million in 2025, or 68.2% of the category. Small and midsize enterprises accounted for 41.6% of revenue, approximately $582.4 million, and were forecast to grow at a 29.5% CAGR. However, SME figures are only an upper-bound proxy because published research does not isolate Indie developers or sub-10 engineering teams.
+
+The sharper opportunity is not another bot that maximizes comment volume. Community evidence describes reviewers facing larger PR queues, unfamiliar AI-generated patterns, longer review cycles, and speculative findings that still require human verification. Small teams need a low-noise sanity check that explains semantic changes, identifies a few consequential risks, and preserves senior attention for architecture and business logic. Existing competitors validate willingness to pay through developer, seat, and usage-based pricing, while their open-source programs establish free public-repository review as an acquisition channel. A credible entrant should therefore compete on precision, repository-specific context, and reviewer time saved rather than promising autonomous approval. The product can enter through open-source maintainers and Indie teams, then expand as repositories add contributors and require shared policies, analytics, and stronger review controls.
+
+Why now: AI coding assistants are increasing the amount and complexity of code that humans must verify, while community reports show review queues, PR size, and senior-engineer fatigue worsening. The AI code-review category is growing quickly, but dissatisfaction with noisy, speculative output creates room for a precision-first product designed specifically around small-team review capacity.
+
+**Market signals**
+
+- **Estimated AI code-review market size**: $1.4 billion in 2025 ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Projected AI code-review market size**: $10.8 billion by 2034 ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Projected AI code-review category growth**: 28.5% CAGR ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **AI code-review software segment**: $954.8 million in 2025 ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Software share of the AI code-review market**: 68.2% ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Small and midsize enterprise revenue share**: 41.6% ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Estimated small and midsize enterprise segment**: $582.4 million ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+- **Forecast small and midsize enterprise segment growth**: 29.5% CAGR ([AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)).
+
+**Search demand** (DataForSEO, US monthly)
+
+- **ai code review** — 1300/mo, competition 60, CPC $55.73
+- **github pr review bot** — 10/mo, competition 59, CPC $18.42
+
+## Competitive Landscape
+
+CodeRabbit is the closest commercial benchmark, with contributor-based pricing, multiple capability tiers, and free open-source access. Graphite combines AI review with a broader pull-request workflow and offers seat-based plans, including unlimited AI reviews on its Team plan. Qodo uses pooled credits, which gives teams usage flexibility but introduces another quantity to forecast.
+
+ReviewLoom should not try to beat these products by generating more comments or immediately matching every workflow feature. Its differentiation is disciplined omission. It is designed for Indie developers and sub-10 teams that need a sanity check rather than an enterprise review platform. Every review begins with a semantic implementation brief, and inline findings must carry repository-specific evidence and pass confidence thresholds. Confirmations and dismissals become local review memory, helping the system suppress repeat noise. Simple per-developer pricing also avoids Qodo-style credit calculations, while the Open Source tier creates public proof that ReviewLoom can identify consequential issues without overwhelming maintainers.
+
+- **CodeRabbit** — CodeRabbit is the closest direct benchmark because it prices around contributing developers and offers open-source access. Its broad feature ladder validates demand but leaves room for a deliberately quieter reviewer optimized for tiny teams. Published pricing: Essentials: $24/developer/month, billed annually; Team: $48/developer/month, billed annually; Advanced: $72/developer/month, billed annually; Enterprise: Custom; free for open-source projects. [CodeRabbit pricing](https://www.coderabbit.ai/pricing)
+- **Graphite** — Graphite combines code-review workflow with AI capabilities, making it broader than a narrowly focused review assistant. Its seat pricing provides a useful reference for small teams, while unlimited Team reviews raise the competitive bar. Published pricing: Hobby: $0; Starter: $20/user/month, billed annually; Team: $40/user/month, billed annually; Enterprise: Custom. [Graphite pricing](https://www.graphite.com/pricing)
+- **Qodo** — Qodo differentiates through pooled usage rather than per-developer billing. That can fit uneven review demand, but credits add forecasting complexity that a simple per-developer product could avoid for Indie developers and compact engineering teams. Published pricing: Pro Team: $30/month for 2,500 credits, approximately 18 reviews/month; $60/month for 5,000 credits, approximately 36 reviews/month; $240/month for 20,000 credits, approximately 144 reviews/month; $0.012/credit; Enterprise: Custom. [Qodo pricing](https://www.qodo.ai/pricing/)
+
+**Your Opportunity**
+
+Position ReviewLoom as the quiet GitHub reviewer for Indie developers and sub-10 engineering teams: a repository-aware sanity check that surfaces a small number of consequential findings, explains the implementation story, and helps humans review faster without pretending that architectural judgment can be automated.
+
+## Business Model
+
+Use transparent per-developer pricing rather than credits so tiny teams can predict costs before enabling reviews across a repository. Open Source should be free for eligible public repositories and act as both product proof and distribution. Indie should sit below the supplied seat-based competitors while covering private repositories and core contextual review. Crew should monetize shared policies, review analytics, and stronger repository memory. Bill only contributors who open pull requests during the billing period, avoiding charges for occasional observers or non-coding collaborators.
+
+- **Open Source** (Free) — Eligible public GitHub repositories, semantic PR briefs, evidence-gated findings, community support, and fair review limits.
+- **Indie** ($12/developer/month) — Private repositories, core repository memory, prioritized findings, configurable confidence, and GitHub review feedback capture.
+- **Crew** ($20/developer/month) — Everything in Indie plus shared review policies, deeper repository memory, team analytics, priority processing, and multiple private repositories.
+
+**Unit Economics**
+
+- **$20 per developer monthly** — Crew revenue per paid developer
+- **5 paid developers per account** — Modeled Crew account size
+- **$100 per account monthly** — Modeled Crew account revenue
+- **45 paying accounts** — Year-one paying account target
+
+**Year-One Math**
+
+The model assumes an average Crew account has 5 paid developers. Conversion is supported by free public-repository proof, founder-led onboarding, and a price below the supplied seat-based competitors.
+
+- **1,200** — GitHub Marketplace and open-source outreach prospects
+- **300** — Founder-led demos and public-repository installations
+- **120** — GitHub App private-repository trials
+- **45** — Crew paying accounts
+- **45 × $100/mo = $54,000 ARR** — Crew accounts paying by month 12
+- **$26,400 ARR** — downside if the close rate halves (22 accounts)
+
+**Channels**
+
+- Free open-source installations that display useful ReviewLoom checks on public GitHub pull requests
+- GitHub Marketplace discovery focused on small repositories and compact engineering organizations
+- Founder-led outreach to maintainers and engineering leads already using AI coding assistants
+- Technical content comparing noisy review output with evidence-backed, repository-specific findings
+- Developer community launches and public evaluations using real open-source pull requests
+
+## Recommended Tech Stack
+
+Build ReviewLoom as a GitHub App receiving pull-request, review, and push webhooks through a typed API service. Use a job queue to clone only required commits, parse diffs, run language-aware static checks, and assemble bounded repository context. Store embeddings and repository decisions separately from source snapshots, with encryption and explicit retention controls for private code. A model-routing layer should separate semantic summarization from higher-cost finding verification. Post check runs and review comments through idempotent workers, and retain the evidence, confidence, model version, and user disposition behind every published finding.
+
+- **Next.js + TypeScript** — screens for Repository Memory, Semantic PR Map, Evidence-Gated Findings, Human Learning Loop
+- **Postgres (Supabase or Neon)** — repositories, pull_requests, review_runs, findings, finding_feedback, repository_decisions
+- **Auth (Clerk or Supabase Auth)** — workspace seats and roles
+- **Stripe Billing** — Open Source / Indie / Crew subscriptions
+- **Vercel** — previews and production
+
+## AI Prompts to Build This
+
+Copy these ReviewLoom build prompts into Claude, Cursor, or your AI coding tool.
+
+**1. Project Setup**
+
+```text
+Create a Next.js App Router (TypeScript, Tailwind) app named ReviewLoom for indie GitHub teams.
+Postgres tables with constraints:
+- workspaces(id uuid pk, name text, plan text check plan in ('open_source','indie','crew'), created_at timestamptz)
+- members(id, workspace_id fk, user_id, role text check role in ('owner','admin','member'))
+- repositories(id uuid pk, workspace_id uuid fk, github_repository_id bigint unique not null, full_name text not null, visibility text check (visibility in ('public','private')), default_branch text not null, review_policy_id uuid fk null, installed_at timestamptz not null)
+- pull_requests(id uuid pk, workspace_id uuid fk, repository_id uuid fk, github_pr_number integer not null, head_sha text not null, base_sha text not null, author_login text not null, state text check (state in ('open','merged','closed')), semantic_summary text, opened_at timestamptz not null, unique(repository_id, github_pr_number))
+- review_runs(id uuid pk, workspace_id uuid fk, pull_request_id uuid fk, trigger_sha text not null, status text check (status in ('queued','analyzing','published','failed')), model_version text not null, repository_context_version text not null, started_at timestamptz null, completed_at timestamptz null)
+- findings(id uuid pk, workspace_id uuid fk, review_run_id uuid fk, file_path text not null, start_line integer null, severity text check (severity in ('must_fix','worth_checking','informational')), confidence numeric(4,3) check (confidence between 0 and 1), title text not null, explanation text not null, evidence_json jsonb not null, publication_status text check (publication_status in ('suppressed','published','resolved')))
+- finding_feedback(id uuid pk, workspace_id uuid fk, finding_id uuid fk, github_actor_login text not null, disposition text check (disposition in ('confirmed','dismissed','clarified','fixed')), rationale text null, created_at timestamptz not null)
+- repository_decisions(id uuid pk, workspace_id uuid fk, repository_id uuid fk, source_finding_id uuid fk null, decision_key text not null, decision_text text not null, status text check (status in ('active','superseded','revoked')), confidence numeric(4,3) check (confidence between 0 and 1), created_at timestamptz not null)
+- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)
+Stripe catalog must match the pricing tiers exactly: Open Source at Free; Indie at $12/developer/month; Crew at $20/developer/month. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.
+Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_OPEN_SOURCE, STRIPE_PRICE_INDIE, STRIPE_PRICE_CREW, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.
+Non-goals: Do not build autonomous merge approval or a full replacement for human architectural review yet.
+```
+
+**2. Core Feature**
+
+```text
+Build ReviewLoom's core workflow as 4 screens, in order:
+1. Repository Memory: ReviewLoom installs as a GitHub App and indexes approved code, tests, configuration, contribution guidance, and recurring reviewer decisions.
+2. Semantic PR Map: For each pull request, ReviewLoom groups changed files into behaviors, dependencies, data paths, and likely intent.
+3. Evidence-Gated Findings: Candidate issues are checked against repository context, changed tests, deterministic analysis, and confidence thresholds.
+4. Human Learning Loop: Authors and reviewers can confirm, dismiss, or clarify every finding directly in GitHub.
+Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes Repository Memory → Semantic PR Map → Evidence-Gated Findings → Human Learning Loop without leaving the app, and every generated item links back to its source.
+```
+
+**3. Landing Page**
+
+```text
+One-pager for ReviewLoom. Hero: "ReviewLoom gives small GitHub teams a quiet, repository-aware sanity check for every pull request."
+Sections: the problem for indie GitHub teams; how ReviewLoom works (Repository Memory, Semantic PR Map, Evidence-Gated Findings, Human Learning Loop); competitor strip (CodeRabbit: Essentials: $24/developer/month, billed annually; Team: $48/developer/month, billed annually; Advanced: $72/developer/month, billed annually; Enterprise: Custom; free for open-source projects; Graphite: Hobby: $0; Starter: $20/user/month, billed annually; Team: $40/user/month, billed annually; Enterprise: Custom; Qodo: Pro Team: $30/month for 2,500 credits, approximately 18 reviews/month; $60/month for 5,000 credits, approximately 36 reviews/month; $240/month for 20,000 credits, approximately 144 reviews/month; $0.012/credit; Enterprise: Custom); pricing (Open Source at Free; Indie at $12/developer/month; Crew at $20/developer/month); one CTA into the first workflow step.
+```
+
+**4. Branding Package**
+
+```text
+Brand ReviewLoom for indie GitHub teams. ReviewLoom should feel like a trusted maintainer’s annotated thread, not a futuristic coding oracle. Use woven-line or interlocking-diff motifs to signal that repository context is assembled across files and decisions. Favor ink, muted indigo, and one restrained warning color, with compact typography suited to GitHub-adjacent workflows. The voice should be calm, specific, and willing to say when evidence is weak. Avoid robots, neon gradients, magical sparkles, alarm-heavy dashboards, and claims of replacing human reviewers.
+Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, three CTA lines, a pricing-page headline, and two onboarding email subject lines. Always say ReviewLoom, never "our AI platform".
+```
+
+## Sources
+
+- [AI Code Review Market Research Report 2034](https://marketintelo.com/report/ai-code-review-market)
+- [CodeRabbit](https://www.coderabbit.ai/pricing)
+- [Graphite](https://www.graphite.com/pricing)
+- [Qodo](https://www.qodo.ai/pricing/)
+- [The AI Code Review Disconnect: Why Your Tools Aren't ...](https://news.ycombinator.com/item?id=43219455)
+- [I Reviewed 47 AI-Generated PRs Last Week and My Brain ...](https://tianpan.co/forum/t/i-reviewed-47-ai-generated-prs-last-week-and-my-brain-is-fried/863)
+- [I Spend More Time Reviewing AI Code Than Writing My Own](https://tianpan.co/forum/t/i-spend-more-time-reviewing-ai-code-than-writing-my-own/1035)
+- [AI Code Review Bottleneck: Our PR Queue Grew 91% and Nobody ...](https://tianpan.co/forum/t/ai-code-review-bottleneck-our-pr-queue-grew-91-and-nobody-knows-how-to-fix-it/2001)

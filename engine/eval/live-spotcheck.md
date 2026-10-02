@@ -1,5 +1,13 @@
 # Mode A2 live spot-check — Round 3
 
+> **Round 4 status (compiler + auditor fixes, no live re-run yet).** Drafts
+> moved to `engine/drafts/` and are blocked from the site. They were
+> re-compiled from the Round 3 records with the fixed compiler (no broken
+> links, no audience-prefix templates). They now **fail** the deep audit on
+> purpose: the Round 3 records predate quote verification, `yearOne`,
+> `dataModel`, and number-first unit economics. Re-run
+> `engine:research --live` for all three briefs to clear them.
+
 Updated: 2026-09-24 (UTC). Branch: `cursor/mode-a2-live-spotcheck-1826` (PR #70).
 **Skill flip HELD** — do not change `/publish-idea` Mode A MCP. Phase 7–9 HELD.
 
@@ -62,4 +70,4 @@ All packs **≤$4**. Tiers: **Starter / Team / Scale** on every page (Business M
 
 ## Overwrite policy
 
-Only `content/ideas/engine-draft-*.mdx` + `engine/records/*.json`. Published gold MDX untouched.
+Only `engine/drafts/engine-draft-*.mdx` (+ `engine/drafts/manifest.json`) and `engine/records/*.json`. Published gold MDX untouched.
