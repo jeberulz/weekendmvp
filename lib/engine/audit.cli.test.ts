@@ -224,7 +224,17 @@ describe("scripts/engine-compile.mjs", () => {
       const recordPath = path.join(dir, "incomplete.json");
       fs.writeFileSync(recordPath, JSON.stringify(buildFixtureRecord(withEditorial({ yearOne: undefined }))));
       const out = path.join(dir, "out");
-      const run = await runNodeScript(COMPILER, ["--record", recordPath, "--ideas-dir", out, "--no-manifest", "--json"]);
+      // A draft slug: the fixture-mode record is refused for a public slug first (ruling R11).
+      const run = await runNodeScript(COMPILER, [
+        "--record",
+        recordPath,
+        "--slug",
+        "engine-draft-incomplete",
+        "--ideas-dir",
+        out,
+        "--no-manifest",
+        "--json",
+      ]);
       expect(run.code).toBe(1);
       const result = lastJson(run.stdout);
       expect(isRecord(result) ? result.error : null).toBe("record cannot compile into a publishable page");

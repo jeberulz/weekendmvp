@@ -1,24 +1,37 @@
 /**
- * ResearchRecordV2 → MDX body + manifest stub (WP46, evidence contract §9).
+ * ResearchRecordV2 → MDX body + manifest stub (WP46, evidence contract §9;
+ * rulings R10 and R11).
  *
  * Manifest source is always `engine:{slug}` — never `ideabrowser:`.
  *
- * Every factual block is rendered from the validated record, never from
- * free model prose:
- *   - quotes (community.quoteIds) as GFM blockquotes: `> "<excerpt>"`, `>`,
- *     `> — [title](url)`, every line of a multiline excerpt prefixed;
- *   - market signal rows (market.statIds): label, canonical rendering, source;
- *   - competitor rows: editorial notes, then "Published pricing:" with each
- *     accepted price rendered by formatPriceTerms (plus plan), a visible
- *     "(via <host>)" for a secondary source, and a link to the evidence;
- *   - `[[ev:<id>]]` tokens in editorial text as a link whose text is the
- *     canonical rendering (renderEvidenceInline) and whose target is the
- *     evidence source; plain rendering inside the build-prompt fences;
- *   - Year-One Math through finance.ts (exact cents, floor(base/2) downside
- *     that may be zero).
- * Pricing tiers, unit economics and year-one are labelled as proposals and
- * planning assumptions; market stats, competitor prices and quotes are the
- * only measured facts on the page.
+ * What the compiled page guarantees, and what it does not:
+ *   - Measured facts come only from accepted evidence and are printed by the
+ *     evidence module, never retyped: quote blockquotes (community.quoteIds)
+ *     `> "<excerpt>"`, `>`, `> — [source title](url)`, every line of a
+ *     multiline excerpt prefixed; market signal rows (market.statIds) with
+ *     marketSignalLabel, renderEvidenceInline and the source; competitor
+ *     rows whose "Published pricing:" items are renderEvidenceInline of each
+ *     accepted price, "(via host)" for a secondary source, and the source
+ *     link; `[[ev:<id>]]` tokens in prose as links whose text is
+ *     renderEvidenceInline(item) and whose target is the evidence source
+ *     (plain renderings inside the build-prompt fences). Every link on the
+ *     page targets an evidence source the record uses, and ## Sources lists
+ *     exactly those sources (usedEvidenceIds).
+ *   - Search demand rows are provider keyword metrics, printed as recorded.
+ *   - Proposals and planning assumptions are labelled as such on the page
+ *     (proposalLabels): How it works, what not to build yet, pricing tiers,
+ *     unit economics, Year-One Math, channels and the stack. Their figures
+ *     (tier prices and includes, unit-economics values, Year-One counts and
+ *     seats, data-model columns) are the writer's proposals, not research.
+ *   - Year-One Math totals are plain arithmetic by finance.ts (exact cents,
+ *     floor(base/2) downside that may be zero).
+ *   - Everything else is model writing: narratives, summaries, notes,
+ *     positioning, steps and briefs. The record parser and the final audit
+ *     guard it (no free figures, no quotations outside quote evidence, no
+ *     links), which is not proof that it is true. A matching source proves
+ *     the source said it when it was read, not that it is right.
+ *   - The compiler's own wording carries no figure, number word or quotation,
+ *     so every figure on the page traces to the record.
  *
  * Escaping happens exactly once, where text is inserted: escapeMdxText (the
  * one module shared with the auditor) for record text in Markdown, nothing
@@ -27,9 +40,11 @@
  * There are no publishable fallbacks: a record without the editorial fields
  * the deep audit needs (narratives, pricing tiers, unit economics, year-one,
  * an idea-specific data model, …) fails with CompileError instead of being
- * padded with generic text.
+ * padded with generic text. A mode "fixture" record compiles only to an
+ * engine-draft-* or _temp slug unless the caller passes allowFixture (tests).
  */
 
+import { ENGINE_DRAFT_PREFIX } from "../engine-drafts.ts";
 import { formatPriceTerms, parsePriceTerms } from "./evidence/amount.ts";
 import { sourceHostLabel } from "./evidence/citation.ts";
 import {
@@ -40,6 +55,7 @@ import {
   type EvidenceKind,
   type MarketStatEvidence,
   type PriceTerms,
+  type ResearchMode,
   type ResearchRecordV2,
   type YearOnePlanV2,
 } from "./evidence/contract.ts";
@@ -48,17 +64,27 @@ import { evidenceRefs, renderEvidenceInline } from "./evidence/tokens.ts";
 import { computeYearOne, yearOneTierTerms } from "./finance.ts";
 import {
   HOW_IT_WORKS_LABEL,
+  ideaHighlights,
   keywordRowMdx,
   LABEL,
+  marketSignalLabel,
   mdLink,
+  pageProductName,
+  PROMPT_TITLES,
+  promptHeadingText,
+  proposalLabels,
   PUBLISHED_PRICING,
   SEARCH_DEMAND_NOTE,
   SECTION_TITLES,
   SOURCES_TITLE,
+  tidyProse,
+  usedEvidenceIds,
   viaLabel,
   yearOneBaseLine,
   yearOneDownsideLine,
   yearOneFunnelLine,
+  type IdeaHighlights,
+  type RecordText,
 } from "./page-format.ts";
 import {
   parseResearchRecord,
@@ -90,6 +116,14 @@ export const GENERIC_SETUP_TABLE_NAMES: readonly string[] = [
 
 export const COMPILE_SLUG_PATTERN = /^_?[a-z0-9-]+$/;
 
+/**
+ * Slugs a fixture-mode record may compile to (ruling R11): engine-draft-*
+ * drafts (withheld from the site) and _temp slugs (never loaded as pages).
+ */
+export function isFixtureSafeSlug(slug: string): boolean {
+  return slug.startsWith(ENGINE_DRAFT_PREFIX) || slug.startsWith("_");
+}
+
 export type ManifestEntry = {
   slug: string;
   title: string;
@@ -112,6 +146,8 @@ export type ManifestEntry = {
     accent: string;
     status: "pending";
   };
+  /** Homepage highlights generated from selected evidence (ideaHighlights); absent when they cannot be filled. */
+  highlights?: IdeaHighlights;
   publishedAt: string;
   researchLevel: "deep";
   provenance: {
@@ -121,6 +157,8 @@ export type ManifestEntry = {
     auditPassed: boolean;
     auditRunAt: string;
     publishNotes: string;
+    /** The record's research mode; "fixture" output never publishes (ruling R11). */
+    researchMode: ResearchMode;
   };
 };
 
@@ -140,6 +178,11 @@ export type CompileOptions = {
   revenueGoal?: string;
   applicationCategory?: string;
   publishedAt?: string;
+  /**
+   * Test-only: compile a mode "fixture" record to any slug. Without it a
+   * fixture record compiles only to an engine-draft-* or _temp slug (R11).
+   */
+  allowFixture?: boolean;
 };
 
 /**
@@ -299,27 +342,26 @@ function evidenceLink(item: AcceptedEvidence): string {
   return mdLink(renderEvidenceInline(item), item.sourceUrl);
 }
 
-const MARK_OPEN = "";
-const MARK_CLOSE = "";
-const MARK_RE = /(\d+)/g;
+/** Private-use markers that stand in for evidence links while prose is escaped. */
+const MARK_OPEN = "\uE000";
+const MARK_CLOSE = "\uE001";
+const MARK_RE = /\uE000(\d+)\uE001/g;
 
 /**
  * Editorial text as MDX prose: tokens become evidence links, everything
  * else is escaped once with escapeMdxText (tokens are swapped for private-use
  * markers first, so line-start rules see the real prose). A stray ".." is
- * tidied to "." as before; evidence text is never touched.
+ * tidied to "." (tidyProse); evidence text is never touched.
  */
 function proseMdx(text: string, ctx: Ctx, path: string): string {
   if (text.includes(MARK_OPEN) || text.includes(MARK_CLOSE)) {
     throw new CompileError([`${path}: contains reserved private-use characters U+E000/U+E001`]);
   }
   const links: string[] = [];
-  const marked = text
-    .replace(/(?<!\.)\.\.(?!\.)/g, ".")
-    .replace(tokenRe(), (_token: string, id: string) => {
-      links.push(evidenceLink(evidence(ctx, id)));
-      return `${MARK_OPEN}${links.length - 1}${MARK_CLOSE}`;
-    });
+  const marked = tidyProse(text).replace(tokenRe(), (_token: string, id: string) => {
+    links.push(evidenceLink(evidence(ctx, id)));
+    return `${MARK_OPEN}${links.length - 1}${MARK_CLOSE}`;
+  });
   return escapeMdxText(marked).replace(MARK_RE, (_mark: string, index: string) => {
     const link = links[Number(index)];
     if (link === undefined) throw new CompileError([`${path}: evidence marker ${index} has no link (compiler defect)`]);
@@ -350,21 +392,9 @@ export function quoteBlock(item: CommunityQuoteEvidence): string {
   return [...quoted, ">", `> — ${mdLink(item.sourceTitle, item.sourceUrl)}`].join("\n");
 }
 
-const METRIC_LABEL: Record<MarketStatEvidence["metric"], string> = {
-  market_size: "market size",
-  growth_rate: "growth rate",
-  spend: "spend",
-  user_count: "users",
-  adoption: "adoption",
-  other: "",
-};
-
-/** `- **<Subject> (<metric>)**: <rendering> ([title](url)).` */
+/** `- **<marketSignalLabel>**: <rendering> ([title](url)).` */
 export function marketSignalRow(item: MarketStatEvidence): string {
-  const subject = item.subject.charAt(0).toUpperCase() + item.subject.slice(1);
-  const metric = METRIC_LABEL[item.metric];
-  const label = metric ? `${subject} (${metric})` : subject;
-  return `- **${escapeMdxText(label)}**: ${escapeMdxText(renderEvidenceInline(item))} (${mdLink(item.sourceTitle, item.sourceUrl)}).`;
+  return `- **${escapeMdxText(marketSignalLabel(item))}**: ${escapeMdxText(renderEvidenceInline(item))} (${mdLink(item.sourceTitle, item.sourceUrl)}).`;
 }
 
 /** One price of a competitor row: rendering, "(via host)" when secondary, evidence link. */
@@ -498,10 +528,30 @@ function requireEditorial(record: ResearchRecordV2): Editorial {
   };
 }
 
-function productName(record: ResearchRecordV2): string {
-  const ed = record.editorial?.productName?.trim();
-  if (ed) return ed;
-  return record.brief.title.replace(/\s+for\s+.+$/i, "").trim() || record.brief.title;
+/** Any evidence-token-like text, valid or malformed. */
+const TOKEN_LIKE_RE = /\[\[\s*ev\s*:/i;
+
+/**
+ * Record texts the page prints as written (names, titles, step titles,
+ * funnel stages). A token there would show as raw "[[ev:…]]" text and its
+ * evidence would be missing from ## Sources, so the compiler refuses it;
+ * evidence belongs in the prose fields (expandedRecordTexts).
+ */
+function verbatimRecordTexts(record: ResearchRecordV2, ed: Editorial): RecordText[] {
+  return [
+    { path: "brief.title", text: record.brief.title },
+    { path: "brief.oneLiner", text: record.brief.oneLiner },
+    { path: "brief.targetCustomer", text: record.brief.targetCustomer },
+    { path: "editorial.productName", text: record.editorial?.productName ?? "" },
+    { path: "editorial.audienceShort", text: record.editorial?.audienceShort ?? "" },
+    ...record.competitors.map((c, i) => ({ path: `competitors[${i}].name`, text: c.name })),
+    ...record.keywords.map((k, i) => ({ path: `keywords[${i}].term`, text: k.term })),
+    ...record.howItWorks.map((step, i) => ({ path: `howItWorks[${i}] (step title)`, text: splitNamedStep(step).title })),
+    ...ed.pricingTiers.map((t, i) => ({ path: `editorial.pricingTiers[${i}].name`, text: t.name })),
+    ...ed.dataModel.map((t, i) => ({ path: `editorial.dataModel[${i}].table`, text: t.table })),
+    { path: "editorial.yearOne.tier", text: ed.yearOne.tier },
+    ...ed.yearOne.funnel.map((f, i) => ({ path: `editorial.yearOne.funnel[${i}].stage`, text: f.stage })),
+  ];
 }
 
 /** Short audience for repeated mentions; the full brief label appears in the narrative. */
@@ -544,13 +594,24 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
   if (!COMPILE_SLUG_PATTERN.test(slug)) {
     throw new Error(`slug '${slug}' must match ${COMPILE_SLUG_PATTERN}`);
   }
+  if (record.mode === "fixture" && !options.allowFixture && !isFixtureSafeSlug(slug)) {
+    throw new CompileError([
+      `record mode is "fixture" (synthetic research): compile it only to an engine-draft-* or _temp slug, not '${slug}' (ruling R11; tests may pass --allow-fixture)`,
+    ]);
+  }
   const ed = requireEditorial(record);
+  const tokenIssues = verbatimRecordTexts(record, ed)
+    .filter(({ text }) => TOKEN_LIKE_RE.test(text))
+    .map(({ path }) => `${path}: an evidence token here would print as raw text; cite evidence only in prose fields`);
+  if (tokenIssues.length > 0) throw new CompileError(tokenIssues);
+
   const ctx: Ctx = {
     record,
     byId: new Map(record.evidence.accepted.map((item) => [item.id, item])),
     used: new Set(),
   };
-  const name = productName(record);
+  const name = pageProductName(record);
+  const labels = proposalLabels(name);
   const audienceShort = audienceShortLabel(record);
   const steps = record.howItWorks.map(splitNamedStep);
   const tiers = ed.pricingTiers;
@@ -567,15 +628,14 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
 
   // --- The Solution: narrative, How it works, what not to build -----------
   const howItWorksList = steps
-    .map(
-      (s, i) =>
-        `${i + 1}. **${escapeMdxText(fenceText(s.title, ctx))}** — ${prose(s.body, `howItWorks[${i}]`)}`,
-    )
+    .map((s, i) => `${i + 1}. **${escapeMdxText(s.title)}** — ${prose(s.body, `howItWorks[${i}]`)}`)
     .join("\n");
   const solutionBody = joinBlocks([
     prose(ed.solutionNarrative, "editorial.solutionNarrative"),
+    escapeMdxText(labels.howItWorks),
     HOW_IT_WORKS_LABEL,
     howItWorksList,
+    escapeMdxText(labels.dontBuildYet),
     prose(ed.dontBuildYet, "editorial.dontBuildYet"),
   ]);
 
@@ -628,23 +688,25 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     .join("\n");
   const businessBody = joinBlocks([
     prose(record.goToMarket.pricingNotes, "goToMarket.pricingNotes"),
-    `Proposed ${escapeMdxText(name)} pricing to test with early buyers (an assumption, not observed market data):`,
+    escapeMdxText(labels.pricing),
     tierLines,
     `**${LABEL.unitEconomics}**`,
-    "Planning estimates to verify, not measured results:",
+    escapeMdxText(labels.unitEconomics),
     unitLines,
     `**${LABEL.yearOneMath}**`,
-    `${escapeMdxText(name)}'s funnel, seat count and close rate below are planning assumptions, not measured results; the totals are plain arithmetic on them.`,
+    escapeMdxText(labels.yearOne),
     ed.yearOne.assumptions ? prose(ed.yearOne.assumptions, "editorial.yearOne.assumptions") : null,
     yearOneLines(ed.yearOne, tiers),
     `**${LABEL.channels}**`,
+    escapeMdxText(labels.channels),
     channelLines,
   ]);
 
   // --- Recommended Tech Stack ---------------------------------------------
-  const stepTitles = steps.map((s) => fenceText(s.title, ctx)).join(", ");
+  const stepTitles = steps.map((s) => s.title).join(", ");
   const tableNames = ed.dataModel.map((t) => t.table);
   const stackBody = joinBlocks([
+    escapeMdxText(labels.stack),
     prose(ed.stackNotes, "editorial.stackNotes"),
     [
       `- **Next.js + TypeScript** — screens for ${escapeMdxText(stepTitles)}`,
@@ -655,15 +717,15 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
   ]);
 
-  // --- AI Prompts (plain text inside fences) ------------------------------
+  // --- AI Prompts (plain text inside fences; no figure or quote of our own) --
   const planCheck = tierKeys.map((k) => `'${k}'`).join(",");
   const priceEnv = tierKeys.map((k) => `STRIPE_PRICE_${k.toUpperCase()}`).join(", ");
   const tierSummary = tiers.map((t) => `${t.name} at ${fenceText(t.price, ctx)}`).join("; ");
   const dontBuild = fenceText(ed.dontBuildYet, ctx);
-  const coreFeatureLines = steps.map((s, i) => {
+  const coreFeatureLines = steps.map((s) => {
     const body = fenceText(s.body, ctx);
     const firstSentence = body.split(/(?<=[.!?])\s+/)[0] ?? body;
-    return `${i + 1}. ${fenceText(s.title, ctx)}: ${trimDot(firstSentence)}.`;
+    return `- ${s.title}: ${trimDot(firstSentence)}.`;
   });
   const competitorStrip = competitorPrices
     .map((c) => `${c.name}: ${c.prices.map(priceItemPlain).join(", ")}`)
@@ -674,44 +736,43 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ...ed.dataModel.map((t) => `- ${t.table}(${fenceText(t.columns, ctx)})`),
     "- usage_events(id, workspace_id fk, tokens int, usd_micros bigint)",
   ];
-  const promptsBody = [
-    `Copy these ${escapeMdxText(name)} build prompts into Claude, Cursor, or your AI coding tool.`,
-    "",
-    "**1. Project Setup**",
-    "",
-    fence([
+  const promptFences: Record<(typeof PROMPT_TITLES)[number], string[]> = {
+    "Project Setup": [
       `Create a Next.js App Router (TypeScript, Tailwind) app named ${name} for ${audienceShort}.`,
       "Postgres tables with constraints:",
       ...setupTables,
       `Stripe catalog must match the pricing tiers exactly: ${tierSummary}. Webhook enforces plan limits and seat caps; meter usage_events before starting another job.`,
       `Env: DATABASE_URL, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ${priceEnv}, OPENAI_API_KEY or ANTHROPIC_API_KEY, NEXT_PUBLIC_APP_URL.`,
       `Non-goals: ${dontBuild}`,
-    ]),
-    "",
-    "**2. Core Feature**",
-    "",
-    fence([
-      `Build ${name}'s core workflow as ${steps.length} screens, in order:`,
+    ],
+    "Core Feature": [
+      `Build ${name}'s core workflow as one screen per step, in this order:`,
       ...coreFeatureLines,
-      `Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes ${steps.map((s) => fenceText(s.title, ctx)).join(" → ")} without leaving the app, and every generated item links back to its source.`,
-    ]),
-    "",
-    "**3. Landing Page**",
-    "",
-    fence([
-      `One-pager for ${name}. Hero: "${record.brief.oneLiner}"`,
-      `Sections: the problem for ${audienceShort}; how ${name} works (${stepTitles}); competitor strip (${competitorStrip}); pricing (${tierSummary}); one CTA into the first workflow step.`,
-    ]),
-    "",
-    "**4. Branding Package**",
-    "",
-    fence([
+      `Persist state between screens so a user can leave and resume. Acceptance: on sample data, a new workspace goes ${steps.map((s) => s.title).join(" → ")} without leaving the app, and every generated item links back to its source.`,
+    ],
+    "Landing Page": [
+      `One-pager for ${name}. Hero line: ${record.brief.oneLiner}`,
+      `Sections: the problem for ${audienceShort}; how ${name} works (${stepTitles}); competitor strip (${competitorStrip}); pricing (${tierSummary}); a single CTA into the first workflow step.`,
+    ],
+    "Branding Package": [
       `Brand ${name} for ${audienceShort}. ${fenceText(ed.brandBrief, ctx)}`,
-      `Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, three CTA lines, a pricing-page headline, and two onboarding email subject lines. Always say ${name}, never "our AI platform".`,
-    ]),
+      `Deliverables: wordmark and a small mark, hex palette with one accent, type pairing, logo clearspace rules, a short set of CTA lines, a pricing-page headline and onboarding email subject lines. Always call the product ${name}, never a generic AI platform.`,
+    ],
+  };
+  const promptsBody = [
+    `Copy these ${escapeMdxText(name)} build prompts into Claude, Cursor, or your AI coding tool.`,
+    ...PROMPT_TITLES.flatMap((title, i) => ["", `**${promptHeadingText(i)}**`, "", fence(promptFences[title])]),
   ].join("\n");
 
   // --- Sources: every evidence URL the page uses --------------------------
+  const expectedUsed = usedEvidenceIds(record);
+  const unrendered = [...expectedUsed].filter((id) => !ctx.used.has(id));
+  const unexpected = [...ctx.used].filter((id) => !expectedUsed.has(id));
+  if (unrendered.length > 0 || unexpected.length > 0) {
+    throw new CompileError([
+      `compiler defect: the page's evidence differs from usedEvidenceIds (not rendered: ${unrendered.join(", ") || "none"}; not expected: ${unexpected.join(", ") || "none"})`,
+    ]);
+  }
   const citations = sourceList(ctx);
   if (citations.length < MIN_SOURCE_LINKS) {
     throw new CompileError([
@@ -760,6 +821,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
           builder_confidence: s.builderConfidence,
         }
       : undefined;
+  const highlights = ideaHighlights(record);
 
   const manifestEntry: ManifestEntry = {
     slug,
@@ -778,6 +840,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       accent: "lime",
       status: "pending",
     },
+    ...(highlights ? { highlights } : {}),
     publishedAt: options.publishedAt ?? new Date().toISOString().slice(0, 10),
     researchLevel: "deep",
     provenance: {
@@ -787,6 +850,7 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
       auditPassed: false,
       auditRunAt: record.provenance.ranAt,
       publishNotes: `engine compile; product=${name}; costUsd=${record.provenance.costUsd.toFixed(4)}; tagging left for operator`,
+      researchMode: record.mode,
     },
   };
 
