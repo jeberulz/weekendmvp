@@ -18,12 +18,16 @@ import type {
   MarketStatCandidate,
   QuoteCandidate,
   SourceAcquisition,
+  SourceRole,
   SourceStatus,
 } from "./contract.ts";
 
 const AT = "2026-09-30T12:00:00.000Z";
 
-type Page = { url: string; text: string; status?: SourceStatus };
+/** A page; `roles` are the searches that cited it (every role unless a test says otherwise). */
+type Page = { url: string; text: string; status?: SourceStatus; roles?: SourceRole[] };
+
+const ALL_ROLES: SourceRole[] = ["market", "competitors", "community"];
 
 function must<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) throw new Error("expected a value");
@@ -34,7 +38,9 @@ function sourcesOf(pages: Page[]): Map<string, SourceInput> {
   return new Map(
     pages.map((p): [string, SourceInput] => [
       p.url,
-      p.status && p.status !== "read" ? { status: p.status } : { status: "read", text: p.text, retrievedAt: AT },
+      p.status && p.status !== "read"
+        ? { status: p.status, roles: p.roles ?? ALL_ROLES }
+        : { status: "read", text: p.text, retrievedAt: AT, roles: p.roles ?? ALL_ROLES },
     ]),
   );
 }
@@ -55,7 +61,7 @@ function run(
 function acquisitions(pages: Page[]): SourceAcquisition[] {
   return pages.map((p) => ({
     url: must(canonicalSourceUrl(p.url)),
-    roles: ["market", "competitors", "community"],
+    roles: p.roles ?? ALL_ROLES,
     status: p.status ?? "read",
     ...(p.status && p.status !== "read" ? {} : { retrievedAt: AT }),
   }));
@@ -415,15 +421,20 @@ function quote(text: string, sourceUrl = HN.url): QuoteCandidate {
 }
 
 describe("community quotes", () => {
+  // Ruling R8 made quotes whole sentences: the candidate below used to start
+  // mid-sentence ("and I'm watching …"); it now quotes the whole sentence and
+  // still checks that the excerpt keeps the source's own characters.
   it("stores the contiguous span in the source's own characters", () => {
     const source = { url: "https://forum.example.com/t/queue/2001", text: "Our PR queue has basically exploded, and I’m watching\ttalented engineers   drown in review work." };
-    const result = run([source], { quotes: [quote("\"and I'm watching talented engineers drown in review work\"", source.url)] });
+    const result = run([source], {
+      quotes: [quote("\"Our PR queue has basically exploded, and I'm watching talented engineers drown in review work\"", source.url)],
+    });
     expect(result.rejected).toEqual([]);
     expect(must(result.accepted[0])).toMatchObject({
       kind: "community_quote",
       attribution: "community",
-      excerpt: "and I’m watching\ttalented engineers   drown in review work.",
-      excerptSha256: sha256Hex("and I’m watching\ttalented engineers   drown in review work."),
+      excerpt: "Our PR queue has basically exploded, and I’m watching\ttalented engineers   drown in review work.",
+      excerptSha256: sha256Hex("Our PR queue has basically exploded, and I’m watching\ttalented engineers   drown in review work."),
     });
   });
 
@@ -439,9 +450,12 @@ describe("community quotes", () => {
     expect(reasons(result)).toEqual(["internal_ellipsis", "span_not_found", "span_bounds", "span_not_found"]);
   });
 
+  // Ruling R8: the old candidate ("…you still have to check all of them...")
+  // starts mid-sentence and is now refused (see the R8 block below); the
+  // truncation marks around a whole sentence are still stripped.
   it("strips truncation ellipses before matching", () => {
-    const result = run([HN], { quotes: [quote("…you still have to check all of them...")] });
-    expect(must(result.accepted[0]).excerpt).toBe("you still have to check all of them.");
+    const result = run([HN], { quotes: [quote("…They flag potential issues, but you still have to check all of them...")] });
+    expect(must(result.accepted[0]).excerpt).toBe("They flag potential issues, but you still have to check all of them.");
   });
 
   it("treats the same quote from the same page as a duplicate", () => {
@@ -1018,5 +1032,368 @@ describe("checkEvidenceMinimums", () => {
     const withQuote = run([HN], { quotes: [quote("They flag potential issues, but you still have to check all of them.")] });
     expect(checkEvidenceMinimums([...result.accepted, ...withQuote.accepted])).toEqual({ ok: true, shortfalls: [] });
     expect(checkEvidenceMinimums([]).shortfalls).toHaveLength(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R8: quotes are whole statements from community sources
+// ---------------------------------------------------------------------------
+
+describe("R8: community quotes are whole sentences from community sources", () => {
+  const PRICING_PAGE: Page = {
+    url: "https://www.coderabbit.ai/pricing",
+    roles: ["competitors"],
+    text: "Pricing\nCustomer story\nWe cut our review time in half after switching to CodeRabbit last spring.\nPro\n$24/user/month, billed annually",
+  };
+  const TESTIMONIAL = "We cut our review time in half after switching to CodeRabbit last spring.";
+
+  it("refuses a testimonial on a vendor pricing page the community search never cited (review probe p1 #9)", () => {
+    const result = run([PRICING_PAGE], { quotes: [quote(TESTIMONIAL, PRICING_PAGE.url)] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["unknown_citation"]);
+    expect(result.rejected[0]?.detail).toMatch(/community search/);
+    // A source input that names no roles is not a community source either.
+    const unlabelled = acceptEvidence({
+      candidates: { quotes: [quote(TESTIMONIAL, PRICING_PAGE.url)], marketStats: [], competitorPrices: [] },
+      citations: [{ url: PRICING_PAGE.url }],
+      sources: new Map([[PRICING_PAGE.url, { status: "read", text: PRICING_PAGE.text, retrievedAt: AT }]]),
+    });
+    expect(reasons(unlabelled)).toEqual(["unknown_citation"]);
+    // The same sentence on a page the community search cited is a quote.
+    const cited = run([{ ...PRICING_PAGE, roles: ["competitors", "community"] }], { quotes: [quote(TESTIMONIAL, PRICING_PAGE.url)] });
+    expect(cited.rejected).toEqual([]);
+  });
+
+  it("refuses a span that drops the start of its sentence, with or without a leading ellipsis (review probe p3)", () => {
+    const page: Page = {
+      url: "https://forum.example.net/t/questionnaires/1",
+      roles: ["community"],
+      text: "Topic: questionnaires\nHonestly, I would never say that security questionnaires are the bottleneck for our team.\nWe answer them in an afternoon.",
+    };
+    const result = run([page], {
+      quotes: [
+        quote("security questionnaires are the bottleneck for our team.", page.url),
+        quote("...security questionnaires are the bottleneck for our team.", page.url),
+      ],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["span_bounds", "span_bounds"]);
+    expect(result.rejected[0]?.detail).toMatch(/sentence start/);
+    const whole = run([page], {
+      quotes: [quote("Honestly, I would never say that security questionnaires are the bottleneck for our team.", page.url)],
+    });
+    expect(whole.rejected).toEqual([]);
+  });
+
+  it("refuses a span that stops before its sentence ends", () => {
+    const page: Page = {
+      url: "https://forum.example.net/t/questionnaires/2",
+      roles: ["community"],
+      text: "We answer every questionnaire by hand and it has never cost us a single deal.",
+    };
+    const result = run([page], { quotes: [quote("We answer every questionnaire by hand and it has", page.url)] });
+    expect(reasons(result)).toEqual(["span_bounds"]);
+    expect(result.rejected[0]?.detail).toMatch(/sentence end/);
+  });
+
+  it("refuses a span across a line break: two commenters merged into one quote (review probes p1 #10 and p2)", () => {
+    const thread: Page = {
+      url: "https://news.ycombinator.com/item?id=4101",
+      roles: ["community"],
+      text: "alice 3 hours ago\nI review pull requests all weekend\nbob 2 hours ago\nand our startup will die because of it",
+    };
+    const merged = run([thread], {
+      quotes: [quote("I review pull requests all weekend bob 2 hours ago and our startup will die because of it", thread.url)],
+    });
+    expect(reasons(merged)).toEqual(["span_bounds"]);
+    expect(merged.rejected[0]?.detail).toMatch(/line break/);
+    // sourceText's HN text: one line (or block) per comment.
+    const hn: Page = {
+      url: "https://news.ycombinator.com/item?id=4102",
+      roles: ["community"],
+      text: "Ask HN: How do small teams handle security questionnaires?\n We answer every questionnaire by hand.\n\n Honestly it has never cost us a single deal, so we ignore it.\n",
+    };
+    const joined = run([hn], { quotes: [quote("We answer every questionnaire by hand. Honestly it has never cost us a single deal", hn.url)] });
+    expect(reasons(joined)).toEqual(["span_bounds"]);
+    const own = run([hn], { quotes: [quote("Honestly it has never cost us a single deal, so we ignore it.", hn.url)] });
+    expect(own.rejected).toEqual([]);
+    expect(must(own.accepted[0]).excerpt).toBe("Honestly it has never cost us a single deal, so we ignore it.");
+  });
+
+  it("accepts whole sentences behind opening quote marks or a bullet, and before closing marks", () => {
+    const page: Page = {
+      url: "https://forum.example.net/t/questionnaires/3",
+      roles: ["community"],
+      text: "- “We retype the same approved answers into every buyer portal.” Then we wait.\n* (Nobody can tell which answer legal signed off on.)",
+    };
+    const result = run([page], {
+      quotes: [
+        quote("We retype the same approved answers into every buyer portal.", page.url),
+        quote("Nobody can tell which answer legal signed off on.", page.url),
+      ],
+    });
+    expect(result.rejected).toEqual([]);
+    expect(result.accepted.map((e) => e.excerpt)).toEqual([
+      "We retype the same approved answers into every buyer portal.",
+      "Nobody can tell which answer legal signed off on.",
+    ]);
+  });
+
+  it("applies the line-break and community-source rules in revalidation", () => {
+    const page: Page = { url: "https://forum.example.net/t/questionnaires/4", roles: ["community"], text: "We answer every questionnaire by hand, every single quarter." };
+    const item = must(run([page], { quotes: [quote(page.text, page.url)] }).accepted[0]);
+    expect(revalidateAcceptedEvidence(item, acquisitions([page]))).toEqual({ ok: true, item });
+    const notCommunity = revalidateAcceptedEvidence(item, acquisitions([{ ...page, roles: ["competitors"] }]));
+    expect(notCommunity.ok ? "" : notCommunity.issues.join(" | ")).toContain("not cited by the community search");
+    const excerpt = "We answer every questionnaire by hand,\nevery single quarter.";
+    const broken = {
+      ...item,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(item.kind, item.sourceUrl, excerpt, evidenceClaimKey(item)),
+    };
+    const crossed = revalidateAcceptedEvidence(broken, acquisitions([page]));
+    expect(crossed.ok ? "" : crossed.issues.join(" | ")).toContain("line break");
+  });
+});
+
+describe("R8: distinct quotes are quotes neither of which contains the other", () => {
+  it("counts a quote and a longer quote that contains it once", () => {
+    const short: Page = { url: "https://forum.example.net/t/a", roles: ["community"], text: "We burn weekends answering security questionnaires." };
+    const long: Page = {
+      url: "https://forum.example.net/t/b",
+      roles: ["community"],
+      text: "Honestly, we burn weekends answering security questionnaires for every deal.",
+    };
+    const contained: Page = {
+      url: "https://forum.example.net/t/c",
+      roles: ["community"],
+      text: "Every week we burn weekends answering security questionnaires.",
+    };
+    const quotes = run([short, long, contained], {
+      quotes: [quote(short.text, short.url), quote(long.text, long.url), quote(contained.text, contained.url)],
+    }).accepted;
+    expect(quotes).toHaveLength(3);
+    // "we burn weekends answering security questionnaires" sits inside the other two.
+    const [first, second, third] = quotes;
+    expect(checkEvidenceMinimums([must(first), must(third)]).shortfalls).toContain("community quotes: 1 distinct accepted, need 2");
+    expect(checkEvidenceMinimums([must(second), must(third)]).shortfalls).not.toContain("community quotes: 1 distinct accepted, need 2");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R9: binding is per claim
+// ---------------------------------------------------------------------------
+
+describe("R9: a price clause that compares vendors binds no price", () => {
+  const blog = (text: string): Page => ({ url: "https://blog.example.com/rfp-tools", roles: ["competitors"], text });
+
+  it.each([
+    ["unlike", "review probe p1 #1", "Unlike Loopio, Qvidian costs $30/month for small teams."],
+    ["than", "review probe p1 #2", "Loopio is cheaper than the $30/month alternatives most teams try first."],
+    ["instead", "review probe p1 #3", "Teams that outgrow Loopio usually pay $30/month for Qvidian instead."],
+    ["alternative", "an alternatives line", "Loopio at $30/month is the alternative most small teams pick."],
+    ["switched from", "a switch", "Many teams switched from Loopio and now pay $30/month."],
+    ["versus", "a versus clause", "Loopio costs $30/month versus the suites most teams outgrow."],
+  ])("rejects Loopio's price from a clause that says %s (%s)", (cue, _label, text) => {
+    const page = blog(text);
+    const result = run([page], { competitorPrices: [priceCandidate({ vendor: "Loopio", sourceUrl: page.url, supportingText: text, priceText: "$30/month" })] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+    expect(result.rejected[0]?.detail).toContain(`compares vendors ("${cue}")`);
+  });
+
+  it("rejects a rival's price on a vendor's own page when a comparison cue binds it (review probe p9)", () => {
+    const page: Page = {
+      url: "https://loopio.com/pricing",
+      roles: ["competitors"],
+      text: "Loopio pricing\nUnlike Responsive at $30/user/month, Loopio Essentials keeps every seat on one plan.\nEssentials\nContact sales",
+    };
+    const result = run([page], {
+      competitorPrices: [
+        priceCandidate({
+          vendor: "Loopio",
+          sourceUrl: page.url,
+          supportingText: "Unlike Responsive at $30/user/month, Loopio Essentials keeps every seat on one plan.",
+          priceText: "$30/user/month",
+        }),
+      ],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["ambiguous_attribution"]);
+  });
+
+  it("still accepts a plain price clause, and applies the cue rule in revalidation", () => {
+    const page = blog("Loopio costs $30/month for small teams.");
+    const accepted = must(
+      run([page], { competitorPrices: [priceCandidate({ vendor: "Loopio", sourceUrl: page.url, supportingText: page.text, priceText: "$30/month" })] })
+        .accepted[0],
+    );
+    expect(revalidateAcceptedEvidence(accepted, acquisitions([page]))).toEqual({ ok: true, item: accepted });
+    const excerpt = "Unlike Loopio, Qvidian costs $30/month for small teams.";
+    const swapped = {
+      ...accepted,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(accepted.kind, accepted.sourceUrl, excerpt, evidenceClaimKey(accepted)),
+    };
+    const result = revalidateAcceptedEvidence(swapped, acquisitions([page]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toContain("ambiguous_attribution");
+  });
+});
+
+describe("R9: a plan name binds only on the price's own line or the line above", () => {
+  const page: Page = {
+    url: "https://www.coderabbit.ai/pricing",
+    roles: ["competitors"],
+    text: "Plans\nStarter\n$12/user/month, billed annually\nPro\nEverything in Starter, plus SSO and audit logs. $24/user/month, billed annually.",
+  };
+  const pro = (plan: string, supportingText = "Pro\nEverything in Starter, plus SSO and audit logs. $24/user/month, billed annually.") =>
+    priceCandidate({ vendor: "CodeRabbit", sourceUrl: page.url, supportingText, plan, priceText: "$24/user/month, billed annually" });
+
+  it('drops a plan named after "Everything in" on the price line (review probe p1 #6) and keeps the line above', () => {
+    const starter = must(run([page], { competitorPrices: [pro("Starter")] }).accepted[0]);
+    expect(starter).not.toHaveProperty("plan");
+    const own = must(run([page], { competitorPrices: [pro("Pro")] }).accepted[0]);
+    expect(own).toMatchObject({ plan: "Pro" });
+  });
+
+  it("drops a plan named two lines above the price", () => {
+    const twoAbove: Page = { ...page, text: "Pro\nUnlimited reviews\n$24/user/month, billed annually" };
+    const item = must(
+      run([twoAbove], {
+        competitorPrices: [
+          priceCandidate({
+            vendor: "CodeRabbit",
+            sourceUrl: page.url,
+            supportingText: twoAbove.text,
+            plan: "Pro",
+            priceText: "$24/user/month, billed annually",
+          }),
+        ],
+      }).accepted[0],
+    );
+    expect(item).not.toHaveProperty("plan");
+  });
+
+  it("refuses a stored plan that does not bind in revalidation", () => {
+    const own = must(run([page], { competitorPrices: [pro("Pro")] }).accepted[0]);
+    const relabeled = { ...own, plan: "Starter" };
+    const withId = { ...relabeled, id: evidenceId(own.kind, own.sourceUrl, own.excerpt, evidenceClaimKey(relabeled)) };
+    const result = revalidateAcceptedEvidence(withId, acquisitions([page]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toContain("plan: not named on the price's own line or the line above it");
+  });
+});
+
+describe("R9: a price block that shows both monthly and annual billing needs the clause to say which", () => {
+  const pricing = (text: string): Page => ({ url: "https://www.coderabbit.ai/pricing", roles: ["competitors"], text });
+  const candidate = (priceText: string, supportingText = "Pro\n$24/user/month") =>
+    priceCandidate({ vendor: "CodeRabbit", sourceUrl: "https://www.coderabbit.ai/pricing", supportingText, plan: "Pro", priceText });
+
+  it.each([
+    ["an annual-billing line above the plan (review probe p1 #4)", "Pricing\nAll plans are billed annually.\nPro\n$24/user/month\nUnlimited reviews."],
+    ["a 'Billed annually' header (review probe p1 #4b)", "Billed annually\nPro\n$24/user/month\nUnlimited reviews."],
+    ["a monthly/annual toggle", "Monthly\nAnnual (save 20%)\nPro\n$24/user/month"],
+  ])("rejects the per-user monthly price under %s as qualifier_dropped", (_label, text) => {
+    const result = run([pricing(text)], { competitorPrices: [candidate("$24/user/month")] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["qualifier_dropped"]);
+    expect(result.rejected[0]?.detail).toMatch(/ambiguous billing/);
+  });
+
+  it("accepts the price when its own clause states the billing, or when only one billing is shown", () => {
+    const stated = run([pricing("Monthly\nAnnual (save 20%)\nPro\n$24/user/month, billed annually")], {
+      competitorPrices: [candidate("$24/user/month, billed annually", "Pro\n$24/user/month, billed annually")],
+    });
+    expect(stated.rejected).toEqual([]);
+    const monthlyOnly = run([pricing("Pricing\nPro\n$24/user/month\nUnlimited reviews.")], { competitorPrices: [candidate("$24/user/month")] });
+    expect(monthlyOnly.rejected).toEqual([]);
+    // Four lines above the price are outside the block.
+    const farAbove = run([pricing("Billed annually\nPlans\nFor teams\nPro\nUnlimited reviews\n$24/user/month")], {
+      competitorPrices: [candidate("$24/user/month", "$24/user/month")],
+    });
+    expect(farAbove.rejected).toEqual([]);
+  });
+});
+
+describe("R9: a stat binds only its own subject and metric", () => {
+  const report = (text: string): Page => ({ url: "https://research.example.com/devtools", roles: ["market"], text });
+
+  it("refuses a subject whose words are not all in the sentence (review probe p1 #7)", () => {
+    const page = report("The global developer tools market reached $1.4 billion in 2024.");
+    const result = run([page], {
+      marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "AI code review tools", amountText: "$1.4 billion", year: 2024 })],
+    });
+    expect(reasons(result)).toEqual(["subject_not_in_context"]);
+    expect(result.rejected[0]?.detail).toMatch(/"code"/);
+  });
+
+  it.each([
+    ["a figure", "RFP response software market, where 92% of buyers switch vendors every year", "review probe p10"],
+    ["a link and a figure", "RFP response software market, already a $9 billion buyer opportunity per https://example.invalid/report", "security probe-subject"],
+    ["an email", "RFP response software market (ask sales@example.invalid)", "contact text"],
+    ["markup", "RFP response software **market**", "Markdown"],
+    ["a spelled number", "RFP response software market with twelve vendors", "number word"],
+  ])("refuses a subject that carries %s (%s, %s)", (_label, subject) => {
+    const page = report("The RFP response software market was valued at $1.9 billion in 2024.");
+    const result = run([page], { marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject, amountText: "$1.9 billion", year: 2024 })] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["invalid_candidate"]);
+    expect(result.rejected[0]?.detail).toMatch(/subject must be plain words/);
+  });
+
+  it("refuses a metric the sentence does not state (review probe p1 #8) and accepts the one it does", () => {
+    const page = report("The AI code review market grew 12% in 2024.");
+    const adoption = run([page], {
+      marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "AI code review market", metric: "adoption", amountText: "12%", year: 2024 })],
+    });
+    expect(reasons(adoption)).toEqual(["metric_unit_mismatch"]);
+    expect(adoption.rejected[0]?.detail).toMatch(/does not state adoption/);
+    const growth = run([page], {
+      marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "AI code review market", metric: "growth_rate", amountText: "12%", year: 2024 })],
+    });
+    expect(growth.rejected).toEqual([]);
+  });
+
+  it("applies the subject and metric rules in revalidation", () => {
+    const page = report("The AI code review market grew 12% in 2024.");
+    const item = must(
+      run([page], {
+        marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "AI code review market", metric: "growth_rate", amountText: "12%", year: 2024 })],
+      }).accepted[0],
+    );
+    const sources = acquisitions([page]);
+    const renamed = revalidateAcceptedEvidence({ ...item, subject: "AI code review tools" }, sources);
+    expect(renamed.ok ? "" : renamed.issues.join(" | ")).toContain("subject_not_in_context");
+    const linked = revalidateAcceptedEvidence({ ...item, subject: "AI code review market https://example.invalid" }, sources);
+    expect(linked.ok ? "" : linked.issues.join(" | ")).toContain("subject must be plain words");
+    const relabeled = { ...item, metric: "adoption" as const };
+    const withId = { ...relabeled, id: evidenceId(item.kind, item.sourceUrl, item.excerpt, evidenceClaimKey(relabeled)) };
+    const metric = revalidateAcceptedEvidence(withId, sources);
+    expect(metric.ok ? "" : metric.issues.join(" | ")).toContain("metric_unit_mismatch");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// P3-6: signed and credential URLs are never cited or stored
+// ---------------------------------------------------------------------------
+
+describe("P3-6: credential-bearing URLs", () => {
+  it("refuses a candidate citing a signed URL and stores no query in its rejection", () => {
+    const signed = "https://bucket.s3.amazonaws.com/report.pdf?X-Amz-Signature=deadbeef&X-Amz-Expires=300";
+    const page: Page = { url: signed, roles: ["market"], text: "The AI code review market was valued at $1.4 billion in 2025." };
+    const result = run([page], {
+      marketStats: [stat({ sourceUrl: signed, supportingText: page.text, amountText: "$1.4 billion", year: 2025 })],
+    });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["unknown_citation"]);
+    expect(result.rejected[0]?.sourceUrl).toBe("https://bucket.s3.amazonaws.com/report.pdf");
+    expect(JSON.stringify(result)).not.toContain("deadbeef");
+  });
+
+  it("stores no userinfo from a rejected candidate's URL", () => {
+    const result = run([], { quotes: [quote("We answer every questionnaire by hand.", "https://user:hunter2@forum.example.net/t/1")] });
+    expect(reasons(result)).toEqual(["unknown_citation"]);
+    expect(JSON.stringify(result)).not.toContain("hunter2");
   });
 });

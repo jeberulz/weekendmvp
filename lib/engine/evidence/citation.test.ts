@@ -6,6 +6,7 @@ import {
   isFirstPartyHost,
   sameSource,
   sourceHostLabel,
+  strippedSourceUrl,
   vendorKey,
 } from "./citation.ts";
 
@@ -32,6 +33,38 @@ describe("canonicalSourceUrl", () => {
   it("rejects URLs carrying userinfo", () => {
     expect(canonicalSourceUrl("https://user:secret@example.com/page")).toBeNull();
     expect(canonicalSourceUrl("https://token@example.com/page")).toBeNull();
+  });
+
+  it("P3-6: rejects signed and credential-bearing URLs, so they can never be cited or published", () => {
+    for (const signed of [
+      "https://bucket.s3.amazonaws.com/report.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=a&X-Amz-Signature=deadbeef",
+      "https://storage.googleapis.com/b/report.pdf?X-Goog-Signature=abc&X-Goog-Expires=600",
+      "https://d111.cloudfront.net/report.pdf?Expires=1700000000&Signature=abc&Key-Pair-Id=K1",
+      "https://acct.blob.core.windows.net/c/report.pdf?sv=2022-11-02&se=2026-10-02&sig=abc",
+      "https://example.com/report?token=abc",
+      "https://example.com/report?access_token=abc",
+      "https://example.com/report?auth=abc",
+      "https://example.com/report?key=abc",
+      "https://example.com/report?api_key=abc",
+      "https://example.com/report?APIKEY=abc",
+      "https://example.com/report?password=hunter2",
+      "https://example.com/report?secret=abc",
+      "https://example.com/report?id=7&csrf_token=abc",
+      "https://example.com/report?client_secret=abc&id=7",
+      "https://example.com/report?%74oken=abc",
+    ]) {
+      expect(canonicalSourceUrl(signed), signed).toBeNull();
+    }
+    // Ordinary identity-bearing parameters stay citable.
+    expect(canonicalSourceUrl("https://news.ycombinator.com/item?id=4101")).toBe("https://news.ycombinator.com/item?id=4101");
+    expect(canonicalSourceUrl("https://example.com/search?q=token+limits&page=2")).toBe("https://example.com/search?q=token+limits&page=2");
+    expect(canonicalSourceUrl("https://example.com/report?pageToken=abc")).toBe("https://example.com/report?pageToken=abc");
+  });
+
+  it("P3-6: strips a rejected URL to origin and path for operator records", () => {
+    expect(strippedSourceUrl("https://user:pw@Example.com/report.pdf?X-Amz-Signature=abc#top")).toBe("https://example.com/report.pdf");
+    expect(strippedSourceUrl("javascript:alert(1)")).toBeNull();
+    expect(strippedSourceUrl("not a url")).toBeNull();
   });
 
   it("ignores the default port and the fragment", () => {

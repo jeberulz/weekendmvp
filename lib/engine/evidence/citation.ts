@@ -15,6 +15,32 @@
 
 const TRACKING_PARAM_RE = /^(?:utm_.*|fbclid|gclid|ref)$/i;
 
+/**
+ * Query parameters that carry a credential or a signature (review P3-6): a
+ * URL with any of them is a signed or private link, so it is never a
+ * citation and never stored. Matched case-insensitively on the decoded name:
+ * an exact name below, an `x-amz-` / `x-goog-` prefix (S3 and GCS signed
+ * URLs), or a name part (split on "_", "-", ".") that is a credential word.
+ * CloudFront's Expires+Signature(+Key-Pair-Id) and Azure SAS `sig` are
+ * covered by the exact names.
+ */
+const CREDENTIAL_PARAM_NAMES: ReadonlySet<string> = new Set([
+  "signature", "sig", "token", "access_token", "auth", "key", "api_key", "apikey", "password", "secret",
+  "passwd", "pwd", "client_secret", "refresh_token", "id_token", "auth_token", "api_token", "apitoken",
+  "accesstoken", "sessionid", "session_id", "jwt", "googleaccessid", "key-pair-id", "awsaccesskeyid",
+]);
+const CREDENTIAL_PARAM_PREFIXES = ["x-amz-", "x-goog-"] as const;
+const CREDENTIAL_NAME_PARTS: ReadonlySet<string> = new Set([
+  "token", "secret", "password", "passwd", "signature", "credential", "credentials", "apikey",
+]);
+
+function isCredentialParam(name: string): boolean {
+  const lower = name.trim().toLowerCase();
+  if (CREDENTIAL_PARAM_NAMES.has(lower)) return true;
+  if (CREDENTIAL_PARAM_PREFIXES.some((prefix) => lower.startsWith(prefix))) return true;
+  return lower.split(/[_.-]+/).some((part) => CREDENTIAL_NAME_PARTS.has(part));
+}
+
 /** Two-label public suffixes the first-party check understands. */
 const MULTI_PART_SUFFIXES = new Set([
   "co.uk", "org.uk", "ac.uk", "gov.uk", "me.uk", "ltd.uk", "plc.uk",
@@ -48,10 +74,12 @@ function decodeKey(pair: string): string {
 }
 
 /**
- * Canonical citation URL, or null: http(s) only, no userinfo, lowercase
- * host, default port and fragment dropped, tracking parameters (utm_ prefix,
- * fbclid, gclid, ref) removed, other query parameters kept verbatim and in
- * order, trailing slash removed except for the root path.
+ * Canonical citation URL, or null: http(s) only, no userinfo, no
+ * credential or signature query parameter (CREDENTIAL_PARAM_NAMES; a signed
+ * link is never a citation), lowercase host, default port and fragment
+ * dropped, tracking parameters (utm_ prefix, fbclid, gclid, ref) removed,
+ * other query parameters kept verbatim and in order, trailing slash removed
+ * except for the root path.
  */
 export function canonicalSourceUrl(url: string): string | null {
   if (typeof url !== "string" || url.trim() === "") return null;
@@ -62,12 +90,25 @@ export function canonicalSourceUrl(url: string): string | null {
   if (parsed.hostname === "") return null;
   let path = parsed.pathname;
   while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
-  const query = parsed.search
+  const pairs = parsed.search
     .replace(/^\?/, "")
     .split("&")
-    .filter((pair) => pair !== "" && !TRACKING_PARAM_RE.test(decodeKey(pair)))
-    .join("&");
+    .filter((pair) => pair !== "");
+  if (pairs.some((pair) => isCredentialParam(decodeKey(pair)))) return null;
+  const query = pairs.filter((pair) => !TRACKING_PARAM_RE.test(decodeKey(pair))).join("&");
   return `${parsed.protocol}//${parsed.host.toLowerCase()}${path}${query ? `?${query}` : ""}`;
+}
+
+/**
+ * For operator-only records of a REJECTED candidate whose URL has no
+ * canonical form: the http(s) origin and path only (no userinfo, query or
+ * fragment), or null. Never a citation: canonicalSourceUrl decides those.
+ */
+export function strippedSourceUrl(url: string): string | null {
+  if (typeof url !== "string" || url.trim() === "") return null;
+  const parsed = parseUrl(url);
+  if (!parsed || (parsed.protocol !== "http:" && parsed.protocol !== "https:") || parsed.hostname === "") return null;
+  return `${parsed.protocol}//${parsed.host.toLowerCase()}${parsed.pathname}`;
 }
 
 /** True when both URLs canonicalize to the same non-null citation. */
