@@ -28,7 +28,8 @@ import { buildFixtureRecord, EV, FIXTURE_PAGE_SLUG, withEditorial } from "./__fi
 import type { ResearchRecordV2 } from "./evidence/contract.ts";
 
 const TIMEOUT = 120_000;
-const RE_RESEARCH = "Re-run `npm run engine:research -- --brief <brief.json> --live` to produce a contract v2 record.";
+const RE_RESEARCH =
+  "Re-research into a new file: `npm run engine:research -- --brief <brief.json> --live --out engine/records/engine-draft-ai-code-reviewer.json`";
 
 let record: ResearchRecordV2;
 let page = "";

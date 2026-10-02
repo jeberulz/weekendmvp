@@ -78,7 +78,8 @@ const TIMEOUT = 180_000;
 const SLUG = "engine-draft-replay-rfp";
 const RESEARCH = path.join(REPO_ROOT, "scripts", "engine-research.mjs");
 const REPLAY_SCRIPT = path.join(REPO_ROOT, "scripts", "engine-replay.mjs");
-const RE_RESEARCH = "Re-run `npm run engine:research -- --brief <brief.json> --live` to produce a contract v2 record.";
+const RE_RESEARCH =
+  "Re-research into a new file: `npm run engine:research -- --brief <brief.json> --live --out engine/records/engine-draft-ai-rfp-response-assistant.json`";
 
 const BRIEF: BriefInput = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "engine", "briefs", "fixtures", "rfp-assistant.json"), "utf8"));
 

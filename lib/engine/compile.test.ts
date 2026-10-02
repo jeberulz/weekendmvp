@@ -342,7 +342,9 @@ describe("compileResearchRecord (contract v2)", () => {
       JSON.stringify({ contractVersion: 1, brief: { title: "Old", slug: "old-idea", oneLiner: "x", targetCustomer: "y" } }),
     );
     expect(() => compileResearchRecord({ record: legacy as ResearchRecordV2 })).toThrow(LegacyResearchRecordError);
-    expect(() => compileResearchRecord({ record: legacy as ResearchRecordV2 })).toThrow(/Re-run `npm run engine:research/);
+    expect(() => compileResearchRecord({ record: legacy as ResearchRecordV2 })).toThrow(
+      /Re-research into a new file: `npm run engine:research -- .* --out engine\/records\/engine-draft-old-idea\.json`/,
+    );
   });
 });
 

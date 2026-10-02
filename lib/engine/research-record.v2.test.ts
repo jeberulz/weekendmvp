@@ -582,7 +582,12 @@ describe("parseResearchRecord: legacy and unsupported versions", () => {
     expect(error.name).toBe("LegacyResearchRecordError");
     expect(error.message).toMatch(/contract v1 \(legacy\)/);
     expect(error.message).toMatch(/evidence was not accepted before writing/);
-    expect(error.message).toMatch(/npm run engine:research -- --brief <brief\.json> --live/);
+    // A command the research CLI accepts: an explicit new --out (the default --out is this very record,
+    // which the CLI refuses to overwrite), and --force only to replace the record on purpose.
+    expect(error.message).toContain(
+      `\`npm run engine:research -- --brief <brief.json> --live --out engine/records/engine-draft-${String(getAt(record, "brief.slug"))}.json\``,
+    );
+    expect(error.message).toMatch(/to replace this record on purpose, drop --out and add --force/);
     expect(error.message).toMatch(/cannot be compiled or pass the engine audit/);
     expect(error.issues).toEqual([error.message]);
     expect(error.slug).toBe(getAt(record, "brief.slug"));
@@ -596,7 +601,7 @@ describe("parseResearchRecord: legacy and unsupported versions", () => {
     expect(legacyError(relabeled).slug).toBe("ai-code-reviewer");
     const bare = legacyError({ contractVersion: 1 });
     expect(bare.slug).toBeUndefined();
-    expect(bare.message).toMatch(/npm run engine:research -- --brief <brief\.json> --live/);
+    expect(bare.message).toContain("--out engine/records/engine-draft-<slug>.json`");
     // A slug that is not a plain slug never reaches the message.
     expect(legacyError({ contractVersion: 1, brief: { slug: "x\n$(rm -rf ~)" } }).message).not.toMatch(/rm -rf/);
   });
