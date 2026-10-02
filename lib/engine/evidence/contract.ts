@@ -256,10 +256,15 @@ export type ExtractionCandidates = {
 export const EVIDENCE_TOKEN_RE = /\[\[ev:([qsp]_[0-9a-f]{12})\]\]/;
 
 /**
- * Record paths whose text may carry figures only through evidence tokens
- * (plus a bare year). `[]` marks an array of objects.
+ * Ruling R6: every writer free-text field of a v2 record. Each carries no
+ * figure outside evidence tokens (a bare year 1990–2039 aside) and no
+ * double-quoted span of three or more words (tokens.ts states the exact
+ * detectors). `[]` marks an array element (of objects or of strings).
+ * One list drives the record parser and the final-artifact auditor.
+ * `editorial.pricingTiers[].name` is listed because the ruling's only
+ * numeric slots (NUMERIC_PROPOSAL_FIELDS) do not include tier names.
  */
-export const FACT_BEARING_FIELDS = [
+export const WRITER_TEXT_FIELDS = [
   "brief.oneLiner",
   "market.summary",
   "community.summary",
@@ -267,10 +272,75 @@ export const FACT_BEARING_FIELDS = [
   "competitors[].notes",
   "goToMarket.positioning",
   "goToMarket.pricingNotes",
+  "goToMarket.channels[]",
+  "howItWorks[]",
+  "editorial.productName",
+  "editorial.audienceShort",
   "editorial.problemNarrative",
   "editorial.solutionNarrative",
   "editorial.competitiveNarrative",
+  "editorial.dontBuildYet",
+  "editorial.stackNotes",
+  "editorial.brandBrief",
+  "editorial.pricingTiers[].name",
+  "editorial.unitEconomics[].label",
+  "editorial.yearOne.funnel[].stage",
+  "editorial.yearOne.assumptions",
 ] as const;
+
+export type WriterTextField = (typeof WRITER_TEXT_FIELDS)[number];
+
+/**
+ * Ruling R6: the only writer slots that may hold figures. They are product
+ * proposals and planning assumptions, and the page labels them as such.
+ * They carry no evidence tokens.
+ */
+export const NUMERIC_PROPOSAL_FIELDS = [
+  "editorial.pricingTiers[].price",
+  "editorial.pricingTiers[].includes",
+  "editorial.unitEconomics[].value",
+  "editorial.yearOne.funnel[].count",
+  "editorial.yearOne.payingAccounts",
+  "editorial.yearOne.seatsPerAccount",
+  "editorial.dataModel[].columns",
+] as const;
+
+/**
+ * Ruling R7: the evidence kinds each writer text field may cite with
+ * `[[ev:<id>]]`. [] means no tokens at all; any field not listed in
+ * WRITER_TEXT_FIELDS takes no tokens either. `competitors[].notes` may
+ * cite only that competitor's own price ids (its `priceIds`).
+ */
+export const WRITER_FIELD_TOKEN_KINDS: Readonly<Record<WriterTextField, ReadonlyArray<EvidenceKind>>> = {
+  "brief.oneLiner": [],
+  "market.summary": ["market_stat"],
+  "community.summary": ["community_quote"],
+  whyNow: ["market_stat", "community_quote"],
+  "competitors[].notes": ["competitor_price"],
+  "goToMarket.positioning": [],
+  "goToMarket.pricingNotes": ["competitor_price"],
+  "goToMarket.channels[]": [],
+  "howItWorks[]": [],
+  "editorial.productName": [],
+  "editorial.audienceShort": [],
+  "editorial.problemNarrative": ["community_quote", "market_stat", "competitor_price"],
+  "editorial.solutionNarrative": [],
+  "editorial.competitiveNarrative": ["competitor_price"],
+  "editorial.dontBuildYet": [],
+  "editorial.stackNotes": [],
+  "editorial.brandBrief": [],
+  "editorial.pricingTiers[].name": [],
+  "editorial.unitEconomics[].label": [],
+  "editorial.yearOne.funnel[].stage": [],
+  "editorial.yearOne.assumptions": [],
+};
+
+/**
+ * @deprecated Same list as WRITER_TEXT_FIELDS (ruling R6 widened the old
+ * fact-bearing list to every writer text field). Kept so existing imports
+ * keep compiling; new code should import WRITER_TEXT_FIELDS.
+ */
+export const FACT_BEARING_FIELDS = WRITER_TEXT_FIELDS;
 
 // ---------------------------------------------------------------------------
 // Record v2
