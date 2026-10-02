@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Research CLI: brief → contract v2 research record JSON plus a run report
- * (WP46, evidence contract §10).
+ * (WP54, evidence contract §10).
  *
  * Usage:
  *   npm run engine:research -- --fixture rfp-assistant --out /tmp/record.json

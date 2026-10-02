@@ -1,6 +1,6 @@
 /**
  * Amounts and prices — the one grammar shared by evidence acceptance, record
- * re-validation, the compiler and the auditor (WP46, contract §5).
+ * re-validation, the compiler and the auditor (WP54, contract §5).
  *
  * This is a deliberately small, documented grammar, not a universal parser.
  * Anything outside it is "not an amount" / "not a price", so a claim that

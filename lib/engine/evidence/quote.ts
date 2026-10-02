@@ -1,7 +1,7 @@
 /**
  * Quotes: contiguous source matching, strict rendered-quote comparison and
  * the one MDX escape/unescape pair shared by the compiler and the auditor
- * (WP46, contract §5).
+ * (WP54, contract §5).
  *
  * Source matching is word-level: a word is a run of Unicode letters, marks
  * and digits (an apostrophe between letters joins a word, so "don't" and

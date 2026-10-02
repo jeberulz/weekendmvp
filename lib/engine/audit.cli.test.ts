@@ -1,5 +1,5 @@
 /**
- * The real CLIs end to end (WP46-S4; plan §8 "Run the reported mutations
+ * The real CLIs end to end (WP54-S4; plan §8 "Run the reported mutations
  * against a complete compiler-generated page and assert the CLI exits
  * nonzero"). A v2 fixture record is written to a temp dir, compiled with
  * scripts/engine-compile.mjs, and the page (plus mutations) is audited with

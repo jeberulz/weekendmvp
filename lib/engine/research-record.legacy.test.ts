@@ -1,5 +1,5 @@
 /**
- * Contract v1 (legacy) research records — history only (WP46 integration).
+ * Contract v1 (legacy) research records — history only (WP54 integration).
  *
  * parseResearchRecord, the one parser on the publish path, refuses every v1
  * record with LegacyResearchRecordError (re-research instruction). The v1

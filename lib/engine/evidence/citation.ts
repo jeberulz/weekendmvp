@@ -1,5 +1,5 @@
 /**
- * Citation identity and vendor/host matching (WP46, contract §5).
+ * Citation identity and vendor/host matching (WP54, contract §5).
  *
  * Two URLs are the same source only when their canonical forms are equal.
  * Canonicalization keeps every identity-bearing part of the URL (path and

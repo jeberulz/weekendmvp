@@ -35,7 +35,7 @@ function Category({ raw, building = false, retired = false }: { raw: string; bui
 
 /**
  * "Plan my weekend", or "Open your plan" for the idea being built. A retired
- * draft (WP46-S5) starts no new plan, so it keeps only the link to its plan.
+ * draft (WP54-S5) starts no new plan, so it keeps only the link to its plan.
  */
 function PlanAction({ idea, source, retired }: { idea: IdeaCardData; source: DashboardSource; retired: boolean }) {
   if (retired && !idea.building) return null;

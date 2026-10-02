@@ -15,7 +15,7 @@ import { SITE_RENDER_SPEC_CONTRACT_VERSION, serializeSiteRenderSpec } from "./pl
 import schema from "./schema";
 
 /**
- * WP46-S5 (review finding F3). Engine drafts seeded on 2026-09-24 stay stored
+ * WP54-S5 (review finding F3). Engine drafts seeded on 2026-09-24 stay stored
  * after a reseed without them, so retirement has to happen at read time:
  * no discovery path may return them, no new research/plan entry point may
  * start from them, and member work that references them must survive.
@@ -645,7 +645,7 @@ describe("member work that references a retired draft", () => {
 
     await expect(
       owner.mutation(api.platform.intake.startRepositoryIdea, {
-        idempotencyKey: "wp46-draft-start-0001",
+        idempotencyKey: "wp54-draft-start-0001",
         slug: LANDING_DRAFT,
       }),
     ).rejects.toThrow("RESOURCE_NOT_FOUND");
@@ -663,19 +663,19 @@ describe("member work that references a retired draft", () => {
     const { t, owner } = await memberWithDraftWork();
     const shopId = await ideaId(t, "shop-page-builder");
     const created = await owner.mutation(api.platform.intake.startRepositoryIdea, {
-      idempotencyKey: "wp46-repository-0001",
+      idempotencyKey: "wp54-repository-0001",
       slug: "shop-page-builder",
     });
     // The idea later turns out to be an engine draft (same row, draft slug).
     await t.run((ctx) => ctx.db.patch("ideas", shopId, { slug: "engine-draft-shop-page-builder" }));
     const replay = await owner.mutation(api.platform.intake.startRepositoryIdea, {
-      idempotencyKey: "wp46-repository-0001",
+      idempotencyKey: "wp54-repository-0001",
       slug: "engine-draft-shop-page-builder",
     });
     expect(replay.projectId).toBe(created.projectId);
     await expect(
       owner.mutation(api.platform.intake.startRepositoryIdea, {
-        idempotencyKey: "wp46-repository-0002",
+        idempotencyKey: "wp54-repository-0002",
         slug: "engine-draft-shop-page-builder",
       }),
     ).rejects.toThrow("RESOURCE_NOT_FOUND");
@@ -684,7 +684,7 @@ describe("member work that references a retired draft", () => {
 });
 
 describe("anonymous preview generation", () => {
-  const SECRET = "a-secure-test-only-preview-bridge-secret-wp46";
+  const SECRET = "a-secure-test-only-preview-bridge-secret-wp54";
   beforeEach(() => {
     process.env.PLATFORM_PREVIEW_BRIDGE_SECRET = SECRET;
   });

@@ -1,5 +1,5 @@
 /**
- * Source acquirer (WP46-S1, evidence contract §3): one fetch per URL per run,
+ * Source acquirer (WP54-S1, evidence contract §3): one fetch per URL per run,
  * bounded concurrency, typed statuses, and a `read` that never rejects.
  */
 

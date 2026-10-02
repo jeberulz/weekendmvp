@@ -1,5 +1,5 @@
 /**
- * Source acquisition for one research run (WP46, evidence contract §3).
+ * Source acquisition for one research run (WP54, evidence contract §3).
  *
  * A run keeps one acquirer, so a URL cited by the market, competitor and
  * community packs and by a later supplement search is fetched once. At most

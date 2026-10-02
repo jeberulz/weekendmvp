@@ -9,7 +9,7 @@
  *
  * Plain JavaScript on purpose: seed-convex.mjs imports it under plain node.
  * Quote, row and Year-One checks against the research record live in
- * lib/engine/artifact-audit.ts (WP46-S4); the loose substring quote matcher
+ * lib/engine/artifact-audit.ts (WP54-S4); the loose substring quote matcher
  * that used to live here is gone.
  */
 

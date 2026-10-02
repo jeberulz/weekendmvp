@@ -12,7 +12,7 @@ import { PendingSaveRunner } from "../../components/platform/shell/PendingSaveRu
 import { PENDING_SAVE_KEY, PENDING_SAVE_MAX_ATTEMPTS } from "../../lib/pending-save";
 
 /**
- * WP46-S5, review P3-12. A member's plan, Home card, pending save and Saved
+ * WP54-S5, review P3-12. A member's plan, Home card, pending save and Saved
  * page can still hold an engine draft whose research page answers 404. Each
  * view is rendered whole from the data its queries return, for a draft and
  * for an ordinary idea, so removing or inverting a draft branch changes
@@ -252,7 +252,7 @@ describe("the Saved page", () => {
   // Compare mode starts only from a click on the toolbar's Compare button,
   // which a static render cannot make, so the per-row rule SavedIdeas uses
   // is tested directly. The compare query also drops drafts on the server
-  // (convex/wp46DraftRetirement.test.ts).
+  // (convex/wp54DraftRetirement.test.ts).
   test("in compare mode an ordinary row gets a compare checkbox and a retired draft never does", () => {
     expect(isComparable(ORDINARY, true)).toBe(true);
     expect(isComparable(DRAFT, true)).toBe(false);

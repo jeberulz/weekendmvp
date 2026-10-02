@@ -5,7 +5,7 @@
  * - Retired ideas (WP44): publication status comes from the canonical
  *   manifest (`_retiredAt`), never a second list. They leave the member
  *   catalogue and new weekend plans; their public page still renders.
- * - Engine drafts (WP46-S5, review F3): the rule in lib/engine-drafts.ts.
+ * - Engine drafts (WP54-S5, review F3): the rule in lib/engine-drafts.ts.
  *   They leave every discovery query and count, public and member, and no
  *   new plan, project, preview or prompt export starts from one.
  *

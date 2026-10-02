@@ -1,4 +1,9 @@
-# WP46 Progress - PR #71 idea-engine remediation
+# WP54 Progress - PR #71 idea-engine remediation
+
+> Renumbered from WP46 on 2026-10-02 (see `docs/wp/RULINGS.md`): Editorial Admin
+> already holds WP46 on `main` (PR #92) and the membership program reserves
+> WP47–WP53. Entries dated before that note keep the old WP46 label and the
+> `claude/wp46-*` worker branch names; read them as WP54.
 
 Append-only progress log. Do not rely on chat history for project state.
 
@@ -119,3 +124,8 @@ Append-only progress log. Do not rely on chat history for project state.
 - Orchestrator fix: the evidence fuzz parse test gets an explicit 30 s timeout (≈1.5 s alone; overran 5 s under full parallel load). No assertion changed.
 - Gate on `3ffe538` + that test change (`e8e6c30`): typecheck 0; lint 0 (35 warnings, baseline); `npm test` 0 with **1,949** tests (og 91, links 6, redirects 38+76, auth 85, security 82+84, sitemap 11, convex 388, engine 814, home 35, platform 239); validate:idea-tags 0; engine:eval 0; build 0; check:server-traces 0; npm audit 0; `git diff --check` 0; `git diff --check origin/main...HEAD` 0; `npm run engine:replay` 0 (2,713 words, full deep bar).
 - Both independent reviewers asked to re-verify their findings on this revision before any paid live run.
+
+## 2026-10-02 - Renumbered WP46 → WP54
+
+- Discovered after `main` moved to `6f8a259`: Editorial Admin (PR #92, merged to `main`) reserved WP46 on 2026-09-27 in `docs/plans/editorial-admin/wp46-progress.md` without a registry row; the membership program's unmerged branches reserve WP47–WP53. This package is now **WP54** (ruling recorded). Renamed: `docs/wp/wp54-{stories,progress}.md`, `docs/reviews/evidence/wp54/`, `convex/wp54DraftRetirement.test.ts`, `tests/platform/wp54-retired-draft*.test.tsx`; code and doc labels relabelled; the local integration branch is now `claude/wp54-pr71-remediation` (never pushed). Commit messages and earlier progress entries keep "WP46". No behaviour change.
+- `main` also moved past PR #71's base (`7c4fdc3` → `6f8a259`: PR #91 Vercel preview skip, PR #92 Editorial Admin, PR #93 Google verified email). Per the plan, `main` is not merged into this repair; PR #71 will need its own main sync before merge.

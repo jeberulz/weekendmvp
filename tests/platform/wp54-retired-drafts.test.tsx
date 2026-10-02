@@ -14,7 +14,7 @@ import { ProjectCard } from "../../components/platform/projects/ProjectCard";
 import { ideaHref } from "../../components/platform/projects/cockpit";
 
 /**
- * WP46-S5 (review F3). Member work can still hold an engine draft whose
+ * WP54-S5 (review F3). Member work can still hold an engine draft whose
  * research page now answers 404. These views keep the idea, mark it retired
  * in text, and render no link to the withheld page and no new-plan entry.
  */

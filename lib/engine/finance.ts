@@ -1,5 +1,5 @@
 /**
- * Year-one revenue math (WP46, plan §9, contract §5 "Finance").
+ * Year-one revenue math (WP54, plan §9, contract §5 "Finance").
  *
  * One pure calculation shared by the record parser, the compiler and the
  * auditor. Money is exact integer cents (BigInt internally); account and

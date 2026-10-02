@@ -1,5 +1,5 @@
 /**
- * Research record contract v2 parser (WP46-S3, evidence contract §8).
+ * Research record contract v2 parser (WP54-S3, evidence contract §8).
  *
  * The parser is a closed schema: accepted evidence re-validates offline,
  * every selected id resolves to an accepted item of the right kind, and

@@ -2,7 +2,7 @@
  * Operator research record for the idea engine (Mode A2).
  *
  * One parser on the publish path: parseResearchRecord reads contract v2
- * (evidence accepted before writing; WP46, evidence contract §8) into a
+ * (evidence accepted before writing; WP54, evidence contract §8) into a
  * ResearchRecordV2. It is a closed schema that re-validates every accepted
  * item offline and binds the prose to it. A contract v1 record throws
  * LegacyResearchRecordError: nothing upgrades it, the operator re-researches.
@@ -842,7 +842,7 @@ export function readLegacyResearchRecordV1(input: unknown): LegacyResearchRecord
 }
 
 // ===========================================================================
-// Contract v2 (WP46, evidence contract §8)
+// Contract v2 (WP54, evidence contract §8)
 // ===========================================================================
 
 /**

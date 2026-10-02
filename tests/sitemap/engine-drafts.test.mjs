@@ -62,7 +62,7 @@ describe("engine drafts stay off the site", () => {
   });
 });
 
-// WP46-S5 (review F3): one visibility rule, readable from every runtime.
+// WP54-S5 (review F3): one visibility rule, readable from every runtime.
 const SAMPLES = [
   "",
   "engine",
@@ -83,7 +83,7 @@ const SAMPLES = [
   "zzz",
 ];
 
-describe("engine draft visibility rule (WP46-S5)", () => {
+describe("engine draft visibility rule (WP54-S5)", () => {
   it("the Convex range bound selects exactly the prefixed slugs", () => {
     assert.equal(ENGINE_DRAFT_SLUG_END, "engine-draft.");
     for (const slug of SAMPLES) {

@@ -4,12 +4,12 @@
  * page text feeds extraction only, and unreadable sources stop the run
  * before extraction spend.
  *
- * Changes from the split of quality.test.ts (WP46-S3 part 2), per test:
+ * Changes from the split of quality.test.ts (WP54-S3 part 2), per test:
  * - Kept unchanged: "rewrites Reddit and HN URLs to their data endpoints",
  *   "widens the primary community prompt beyond Reddit", "names the fix when
  *   Reddit blocks the public endpoint", "falls back to the default user agent
  *   when the env value is empty".
- * - Moved at WP46 integration: "rejects a funnel that grows or pays more
+ * - Moved at WP54 integration: "rejects a funnel that grows or pays more
  *   accounts than it has" now runs through readLegacyResearchRecordV1 in
  *   research-record.legacy.test.ts (the v1 parseYearOne helper became
  *   private to the history-only legacy reader; v2 funnel rules are in

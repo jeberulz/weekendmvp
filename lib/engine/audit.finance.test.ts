@@ -1,5 +1,5 @@
 /**
- * Final-artifact Year-One Math audit (WP46-S4, review finding F6; plan §9;
+ * Final-artifact Year-One Math audit (WP54-S4, review finding F6; plan §9;
  * ruling R10 for totals outside Business Model and the tier/unit rows).
  *
  * The auditor recomputes the plan with finance.ts from the v2 record and

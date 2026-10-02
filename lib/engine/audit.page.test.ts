@@ -1,5 +1,5 @@
 /**
- * The whole page holds only audited facts (WP46 ruling R10; final review
+ * The whole page holds only audited facts (WP54 ruling R10; final review
  * P1-1, P2-4, P2-7, P3-11; security review P2).
  *
  * The unbound-figure guard runs on every section, not only the three factual

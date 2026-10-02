@@ -37,7 +37,7 @@ figure in a factual field fails the parse. A wrong record is re-researched.
 
 ## Legacy v1 records
 
-Records written before WP46 have `contractVersion: 1`; on 2026-10-01 all three
+Records written before WP54 have `contractVersion: 1`; on 2026-10-01 all three
 committed here are v1. Their narratives were written before (or without)
 accepting evidence, so `engine:compile` and `audit:idea` refuse them with a
 re-research message and nothing upgrades them in place. Re-run

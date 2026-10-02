@@ -1,6 +1,6 @@
 /**
  * Synthetic contract v2 research record for the compiler and final-artifact
- * audit tests (WP46-S4). Built the way the pipeline builds a record:
+ * audit tests (WP54-S4). Built the way the pipeline builds a record:
  * synthetic source pages → acceptEvidence → a ResearchRecordV2 → JSON round
  * trip → parseResearchRecord. No evidence id is hard-coded (ruling R1
  * hashes the typed claim into the id), nothing touches the network or a paid

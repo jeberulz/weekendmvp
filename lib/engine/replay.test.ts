@@ -1,5 +1,5 @@
 /**
- * Deterministic replay gate (WP46-S6; remediation plan §11 "Deterministic
+ * Deterministic replay gate (WP54-S6; remediation plan §11 "Deterministic
  * checks first"; evidence contract ruling R4).
  *
  * The real CLIs run as child processes with the npm scripts' node flags, in
@@ -383,7 +383,7 @@ describe("replay: adversarial evidence never reaches the page", () => {
 // Legacy records and page mutations
 // ---------------------------------------------------------------------------
 
-/** A complete contract v1 record (the shape engine/records used before WP46). */
+/** A complete contract v1 record (the shape engine/records used before WP54). */
 const LEGACY_RECORD = {
   contractVersion: 1,
   brief: {

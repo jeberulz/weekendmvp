@@ -1,5 +1,5 @@
 /**
- * Deterministic evidence acceptance (WP46, contract §4–§6).
+ * Deterministic evidence acceptance (WP54, contract §4–§6).
  *
  * Extraction candidates are untrusted model output. Only acceptEvidence (and
  * revalidateAcceptedEvidence, which rebuilds a stored item after re-deriving

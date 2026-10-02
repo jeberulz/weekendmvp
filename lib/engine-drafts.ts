@@ -1,6 +1,6 @@
 /**
  * Idea-engine spot-check drafts (`engine-draft-*`): the one visibility rule
- * for them (WP46-S5, review finding F3). Their source lives in engine/drafts/.
+ * for them (WP54-S5, review finding F3). Their source lives in engine/drafts/.
  *
  * - Not discoverable. No archive, hub, related rail, homepage list, sitemap,
  *   dashboard catalogue, search, facet or count includes one.

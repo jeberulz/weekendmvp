@@ -1,7 +1,7 @@
-# PR #71 remediation — evidence contract and work split (WP46)
+# PR #71 remediation — evidence contract and work split (WP54)
 
-Date: 2026-10-01. Status: **frozen for WP46 implementation**. Changes need an
-orchestrator ruling recorded in `docs/wp/wp46-progress.md`.
+Date: 2026-10-01. Status: **frozen for WP54 implementation**. Changes need an
+orchestrator ruling recorded in `docs/wp/wp54-progress.md`.
 
 Inputs: [remediation plan](pr71-remediation-plan.md),
 [review](../../reviews/2026-10-01-pr71-idea-engine.md). Types in this document
@@ -55,7 +55,7 @@ Rules:
 - The editorial input never contains search answer prose, raw page text,
   rejected candidates, extraction-model prose, or prior narratives.
 
-## 3. Source acquisition (WP46-S1 delivers, WP46-S3 wires)
+## 3. Source acquisition (WP54-S1 delivers, WP54-S3 wires)
 
 `lib/engine/providers/sourceText.ts` keeps `SourceTextProvider.fetchText(url)`
 and adds typed failures:
@@ -68,7 +68,7 @@ export type SourceFetchErrorCode =
 export class SourceFetchError extends Error { readonly code: SourceFetchErrorCode; readonly status?: number }
 ```
 
-Named limits (final values recorded in WP46 progress): 2 MiB body bytes
+Named limits (final values recorded in WP54 progress): 2 MiB body bytes
 (`maxBodyBytes`, renamed from `maxWireBytes`) plus a 4 MiB connection-byte
 cap (`maxSocketBytes`: status lines, headers, chunk framing and body), 2 MiB
 decoded bytes, 15 s whole-operation deadline including DNS, redirects
@@ -479,7 +479,7 @@ source acquisition statuses, accepted counts per kind, and rejected
 - **R12 (2026-10-01, from P3-7): the run report names the code revision.**
   `ResearchRunReport.codeRevision = { sha: string | null; dirty: boolean | null }`.
 
-Phase 2 starts after S1 and S2 merge into `claude/wp46-pr71-remediation`.
-Workers use their own `.worktrees/wp46-*` checkout and branch, commit locally,
+Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
+Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The
 orchestrator merges.

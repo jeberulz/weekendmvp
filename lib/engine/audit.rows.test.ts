@@ -1,5 +1,5 @@
 /**
- * Final-artifact evidence rows and the unbound-figure guard (WP46-S4; plan
+ * Final-artifact evidence rows and the unbound-figure guard (WP54-S4; plan
  * §7.5–6 F1 defense, contract §9, ruling R10).
  *
  * Market signal and competitor rows must show their evidence's canonical

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * engine:replay — the deterministic research → compile → audit replay, for
- * operators (WP46). It runs the real CLIs on the synthetic RFP fixture
+ * operators (WP54). It runs the real CLIs on the synthetic RFP fixture
  * (engine/briefs/rfp-assistant.json) in a fresh temp dir, prints each step's
  * exit code and the audit verdict, and removes the temp dir:
  *

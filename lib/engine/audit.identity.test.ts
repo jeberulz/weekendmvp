@@ -1,5 +1,5 @@
 /**
- * What the page claims to be: research mode and manifest highlights (WP46
+ * What the page claims to be: research mode and manifest highlights (WP54
  * rulings R10 and R11; final review P2-8 and P2-9).
  *
  *   - R11: a fixture-mode record (synthetic research) backs only an

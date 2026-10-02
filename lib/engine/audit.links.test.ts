@@ -1,6 +1,6 @@
 /**
  * Links, attribution titles, ## Sources and quoted text in the final artifact
- * (WP46 ruling R10; final review P2-2, security review S-P2b).
+ * (WP54 ruling R10; final review P2-2, security review S-P2b).
  *
  * An engine page links only to the evidence sources its record uses, and a
  * link's text is that source's title or the canonical rendering of one of

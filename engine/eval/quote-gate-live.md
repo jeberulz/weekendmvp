@@ -1,6 +1,6 @@
 # Quote-gate live N=3 — PR #71 merge gate
 
-> **2026-10-01 — superseded by WP46 (history only).** The independent review
+> **2026-10-01 — superseded by WP54 (history only).** The independent review
 > of PR #71 (`docs/reviews/2026-10-01-pr71-idea-engine.md`) returned NO-GO,
 > and the quote gate and price grounding described here were removed: no more
 > search-pack merging, numeric matching of figures against pages and pack

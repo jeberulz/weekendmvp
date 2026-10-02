@@ -1,5 +1,5 @@
 /**
- * engine:research CLI (WP46-S3, contract §10): the real script in a child
+ * engine:research CLI (WP54-S3, contract §10): the real script in a child
  * process, fixture mode only, temp output paths, an environment with no
  * provider keys. Checks the run report on success and failure, the CLI
  * boundary validation, overwrite refusal and that output never shows

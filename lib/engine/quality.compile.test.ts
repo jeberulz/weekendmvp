@@ -1,8 +1,8 @@
 /**
  * Anti-slop guarantees for the idea engine, compiler side: the compiler
  * never breaks links, keeps evidence out of text surgery and computes the
- * revenue math with finance.ts (WP46-S4). The hygiene tests are unchanged
- * from the WP46-S3 split; the v1 Year-One tests are replaced by contract v2
+ * revenue math with finance.ts (WP54-S4). The hygiene tests are unchanged
+ * from the WP54-S3 split; the v1 Year-One tests are replaced by contract v2
  * equivalents (exact cents, explicit seats, floor(base/2) downside), and the
  * two engine-audit tests now compile a v2 fixture instead of a v1
  * runResearch record.

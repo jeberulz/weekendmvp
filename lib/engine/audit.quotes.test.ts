@@ -1,5 +1,5 @@
 /**
- * Final-artifact quote audit (WP46-S4, review finding F2; plan §8).
+ * Final-artifact quote audit (WP54-S4, review finding F2; plan §8).
  *
  * Every test compiles the fixture record, applies one operator-style edit to
  * the MDX and audits it with the real auditor (scripts/audit-idea-mdx.mjs,

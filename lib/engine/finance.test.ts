@@ -228,7 +228,7 @@ describe("validateYearOnePlan", () => {
     expect(issues).toEqual(["editorial.yearOne: ARR $10,798,920,000 is above the $10,000,000,000 cap"]);
   });
 
-  // WP46 integration: the v1 revenue-per-account cross-check that used to
+  // WP54 integration: the v1 revenue-per-account cross-check that used to
   // live here was unreachable (parseResearchRecord's closed schema refuses
   // editorial.yearOne.monthlyRevenuePerAccount before the finance rules run;
   // research-record.v2.test.ts "rejects the legacy monthlyRevenuePerAccount

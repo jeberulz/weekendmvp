@@ -1,5 +1,5 @@
 /**
- * Compiler tests (WP46-S4, evidence contract §9, rulings R10 and R11):
+ * Compiler tests (WP54-S4, evidence contract §9, rulings R10 and R11):
  * contract v2 records only.
  *
  * Records come from lib/engine/__fixtures__/recordV2.ts (synthetic sources →

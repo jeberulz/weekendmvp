@@ -1,5 +1,5 @@
 /**
- * ResearchRecordV2 → MDX body + manifest stub (WP46, evidence contract §9;
+ * ResearchRecordV2 → MDX body + manifest stub (WP54, evidence contract §9;
  * rulings R10 and R11).
  *
  * Manifest source is always `engine:{slug}` — never `ideabrowser:`.

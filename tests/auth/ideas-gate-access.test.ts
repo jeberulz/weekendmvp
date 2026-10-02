@@ -169,7 +169,7 @@ describe("idea email gate — signed-in members skip lead capture", () => {
     expect(weeklyPickSource).toContain("href={`/ideas/${idea.slug}`}");
     expect(weeklyPickSource).toContain("Read the research");
     // The explore card links through ResearchTitle, whose href is publicIdeaPath:
-    // the same canonical URL, withheld only for retired engine drafts (WP46-S5).
+    // the same canonical URL, withheld only for retired engine drafts (WP54-S5).
     expect(exploreCardSource).toContain("<ResearchTitle");
     expect(exploreCardSource).toContain("slug={idea.slug}");
     expect(publicIdeaPath("weekly-pick")).toBe("/ideas/weekly-pick");

@@ -1,7 +1,7 @@
 /**
  * Source fetch safety for the idea engine: entity decoding, whole-word quote
  * matching and the SSRF guards. Split mechanically from quality.test.ts
- * (WP46-S3). Part 2 changed one test: quoteAppearsIn was removed, so
+ * (WP54-S3). Part 2 changed one test: quoteAppearsIn was removed, so
  * "matches quote fragments on whole words only" became "matches quote spans
  * on whole words only and never joins fragments" on the contract matcher
  * (findContiguousSpan): whole-word matching is unchanged, and a quote with an

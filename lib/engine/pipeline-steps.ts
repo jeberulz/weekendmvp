@@ -1,5 +1,5 @@
 /**
- * Step table for PIPELINE_VERSION 2 (WP46, evidence contract §2).
+ * Step table for PIPELINE_VERSION 2 (WP54, evidence contract §2).
  *
  * Evidence is accepted before any editorial writing:
  *
@@ -151,7 +151,7 @@ export const PIPELINE: readonly PipelineStep[] = [
       // rows and (on a regeneration) the bounded issue list.
       maxInputTokens: 72_000,
       // Narratives, tiers, yearOne, dataModel and brandBrief, with headroom
-      // for reasoning (as before WP46).
+      // for reasoning (as before WP54).
       maxOutputTokens: 10_000,
     },
     // In total: provider retries and the one regeneration after validation

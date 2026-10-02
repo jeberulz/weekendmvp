@@ -2,13 +2,13 @@
 
 Back: [overview](overview.md)
 
-> **WP46 status (2026-10-01).** `.claude/skills/publish-idea/SKILL.md` was
-> rewritten in WP46 to describe the evidence-first flow: evidence accepted
+> **WP54 status (2026-10-01).** `.claude/skills/publish-idea/SKILL.md` was
+> rewritten in WP54 to describe the evidence-first flow: evidence accepted
 > before writing, the thin-evidence stop, audited factual blocks, legacy
 > record refusal, draft visibility and the human source check. In the main
 > checkout `.agents/skills/publish-idea` is a symlink to the canonical skill
 > (ignored by git), so there is no copy to keep in sync. The live gate below
-> (one live compile) is replaced by the WP46 evaluation of three
+> (one live compile) is replaced by the WP54 evaluation of three
 > representative briefs. Current rules:
 > [pr71-evidence-contract.md](pr71-evidence-contract.md).
 

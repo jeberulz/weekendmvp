@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<ProjectCardProps["status"], string> = {
 const SITE_PUBLISHING_PARKED = true;
 
 export function ProjectCard(project: ProjectCardProps) {
-  // A retired engine draft (WP46-S5) has no research page or preview builder,
+  // A retired engine draft (WP54-S5) has no research page or preview builder,
   // so its project resumes in the project itself.
   const sourceHref = ideaHref(project.sourceSlug);
   const resumeHref =

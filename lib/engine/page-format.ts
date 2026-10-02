@@ -1,5 +1,5 @@
 /**
- * Fixed vocabulary and factual-line formats of a compiled idea page (WP46,
+ * Fixed vocabulary and factual-line formats of a compiled idea page (WP54,
  * evidence contract §9, rulings R10 and R11). The compiler (compile.ts)
  * renders these lines and the final artifact audit (artifact-audit.ts) reads
  * them back, so both sides live here: a displayed figure is compared with the

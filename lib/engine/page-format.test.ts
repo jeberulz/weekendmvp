@@ -1,5 +1,5 @@
 /**
- * Shared page formats (WP46-S4): what the compiler renders, the artifact
+ * Shared page formats (WP54-S4): what the compiler renders, the artifact
  * audit reads back exactly, and the plain-JS copies the auditor script keeps
  * agree with the TypeScript ones.
  */

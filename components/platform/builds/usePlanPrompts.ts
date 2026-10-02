@@ -8,7 +8,7 @@ export type PromptsState =
   | { status: "loading" }
   | { status: "ready"; prompts: PlanPrompt[] }
   | { status: "failed" }
-  /** The idea is a retired engine draft (WP46-S5): its prompts are not published. */
+  /** The idea is a retired engine draft (WP54-S5): its prompts are not published. */
   | { status: "retired" };
 
 /** An idea's build prompts, from the members-only prompts route. */

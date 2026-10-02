@@ -1,6 +1,6 @@
 /**
  * Source acquisition and extraction excerpts for the research pipeline
- * (WP46, evidence contract §2–§3).
+ * (WP54, evidence contract §2–§3).
  *
  * One ledger per run wraps one source acquirer keyed by canonical citation
  * URL, so a URL cited by the market, competitor and community searches (and

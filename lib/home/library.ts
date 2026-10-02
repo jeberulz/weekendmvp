@@ -10,7 +10,7 @@ export const hasOgArt = (idea: ManifestIdea) => idea.og?.status === "ready";
 
 /**
  * The ideas every homepage list, pick and count reads. Retired ideas drop
- * out, and so do engine drafts (WP46-S5) even if a row slips into the
+ * out, and so do engine drafts (WP54-S5) even if a row slips into the
  * manifest: their page answers 404.
  */
 export function liveIdeas(ideas: readonly ManifestIdea[]): ManifestIdea[] {

@@ -75,7 +75,7 @@ export function PendingSaveRunner() {
             <p className="min-w-0 flex-1 break-words">
               {result.replaced ? `The pending save for “${result.save.title}” changed in another tab. This request was not sent; any newer request is kept. `
                 : result.ok ? `Saved “${result.save.title}”. ` : `We couldn’t save “${result.save.title}”. `}
-              {/* A retired draft (WP46-S5) has no page to go back to. */}
+              {/* A retired draft (WP54-S5) has no page to go back to. */}
               {publicIdeaPath(result.save.slug) === null ? (
                 "Its research was retired, so there is no page to open."
               ) : (

@@ -149,7 +149,7 @@ npm run engine:compile -- --record engine/records/{slug}.json
 ```
 
 The compiler validates the record first and refuses:
-- a **contract v1 (legacy) record** — every record committed before WP46 is one. Its evidence was not accepted before its narrative was written, so it cannot be compiled or pass the audit, and nothing upgrades it: re-run `engine:research … --live` for that brief;
+- a **contract v1 (legacy) record** — every record committed before WP54 is one. Its evidence was not accepted before its narrative was written, so it cannot be compiled or pass the audit, and nothing upgrades it: re-run `engine:research … --live` for that brief;
 - an invalid record, listing its issues;
 - a record missing the editorial fields the deep audit needs (the three narratives, what not to build yet, stack notes, brand brief, ≥2 pricing tiers, ≥2 unit-economics rows, a Year-One plan, ≥3 idea-specific tables). The compiler no longer pads with generic text.
 

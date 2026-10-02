@@ -1,10 +1,10 @@
 # Mode A2 live spot-check — Round 3
 
-> **2026-10-01 — superseded by WP46 (history only).** The pipeline, compiler
+> **2026-10-01 — superseded by WP54 (history only).** The pipeline, compiler
 > and auditor described below were replaced by the evidence-first contract v2
 > (`docs/plans/idea-engine/pr71-evidence-contract.md`). The Round 3 records
 > are contract v1, which `engine:compile` and `audit:idea` now refuse with a
-> re-research message, so the drafts listed here fail the audit until the WP46
+> re-research message, so the drafts listed here fail the audit until the WP54
 > live evaluation rebuilds them. The PASS rows below do not certify the
 > current code.
 

@@ -1,5 +1,5 @@
 /**
- * Test-only network harness for the source transport (WP46-S1): local
+ * Test-only network harness for the source transport (WP54-S1): local
  * node:http servers on 127.0.0.1, a socket lookup that maps fake public
  * hostnames (`*.source.test`) to them, and a fake TLS shim.
  *

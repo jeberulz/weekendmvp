@@ -558,7 +558,7 @@ function LivePlan({ planId }: { planId: string }) {
   const { plan, idea } = data;
   const editable = plan.status === "active";
   const count = progress(plan.doneKeys);
-  // A retired draft (WP46-S5) keeps its plan; its research page is withheld.
+  // A retired draft (WP54-S5) keeps its plan; its research page is withheld.
   const retired = isResearchWithheld(idea.slug);
 
   function stageDone(stage: StageId | null) {

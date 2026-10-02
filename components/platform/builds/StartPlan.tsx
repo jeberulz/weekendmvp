@@ -47,7 +47,7 @@ function errorData(error: unknown): { code?: string; activeTitle?: string; activ
 }
 
 /**
- * The start page when the idea cannot start a plan. A retired draft (WP46-S5)
+ * The start page when the idea cannot start a plan. A retired draft (WP54-S5)
  * says so plainly; anything else reads as not found. Exported for tests.
  */
 export function IdeaNotPlannable({ slug }: { slug: string }) {

@@ -134,7 +134,7 @@ function StartHere({
 }
 
 /**
- * Choosing (PRD 6.2). A retired draft (WP46-S5) stays in the member's list,
+ * Choosing (PRD 6.2). A retired draft (WP54-S5) stays in the member's list,
  * but it starts no new plan: no radio, no plan link. Exported for tests.
  */
 export function Shortlist({ home }: { home: HomeState }) {

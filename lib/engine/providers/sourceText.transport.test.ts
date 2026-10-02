@@ -1,5 +1,5 @@
 /**
- * Source transport regressions (WP46-S1: F4 bounded reads, F7 settlement,
+ * Source transport regressions (WP54-S1: F4 bounded reads, F7 settlement,
  * redirect credential handling). Every test drives the real node:http
  * transport against local servers. The only seam is the socket lookup
  * (`*.source.test` → 127.0.0.1) and a pretend-public pre-flight resolver;
@@ -1130,7 +1130,7 @@ describe("source reads: redirects never leak credentials", () => {
   });
 });
 
-/** The pre-WP46 regex chain, kept to prove the linear rewrite is equivalent. */
+/** The pre-WP54 regex chain, kept to prove the linear rewrite is equivalent. */
 function regexHtmlToText(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")

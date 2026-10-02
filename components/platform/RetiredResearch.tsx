@@ -4,7 +4,7 @@ import { isEngineDraftSlug, publicIdeaPath } from "@/lib/engine-drafts";
 import { cn } from "@/lib/utils";
 
 /**
- * WP46-S5 (review F3). An engine draft left the catalogue and its research
+ * WP54-S5 (review F3). An engine draft left the catalogue and its research
  * page answers 404, but a member's saves, notes, collections and plans can
  * still hold one. Those views keep the idea, say in text (not colour alone)
  * that its research was retired, and never link to the withheld page or

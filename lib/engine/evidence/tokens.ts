@@ -1,5 +1,5 @@
 /**
- * Editorial evidence tokens (WP46, contract §5 "Editorial tokens", rulings
+ * Editorial evidence tokens (WP54, contract §5 "Editorial tokens", rulings
  * R6 and R7).
  *
  * Editorial text references accepted evidence as `[[ev:<id>]]`; the compiler

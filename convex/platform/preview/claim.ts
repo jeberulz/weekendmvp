@@ -20,7 +20,7 @@ import { serializeSiteRenderSpec, type SiteRenderSpec } from "./renderSpec";
  *    many times, or how concurrently, the claim is called.
  * 3. **One generic denial.** An expired capability, an unknown token, a
  *    malformed token, a capability belonging to somebody else, and a new
- *    claim on a retired engine draft's preview (WP46-S5) all raise the same
+ *    claim on a retired engine draft's preview (WP54-S5) all raise the same
  *    `RESOURCE_NOT_FOUND` that `platform/authz.ts` uses everywhere else. A
  *    caller must not be able to tell "someone else owns this" from "this
  *    never existed".
@@ -63,7 +63,7 @@ const claimedGraphValidator = v.object({
 });
 
 /**
- * WP46-S5 (review P3-13, ruling 2026-10-01): no new repository project starts
+ * WP54-S5 (review P3-13, ruling 2026-10-01): no new repository project starts
  * from an engine draft. The bridge stopped minting draft previews at the
  * backend deploy, but a capability minted before it stays live for up to
  * 7 days, so the claim checks the source idea itself.

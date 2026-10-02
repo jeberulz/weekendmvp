@@ -1,5 +1,5 @@
 /**
- * Test harness for the final-artifact audit (WP46-S4): compile a fixture
+ * Test harness for the final-artifact audit (WP54-S4): compile a fixture
  * record, mutate the MDX like an operator's "polish" would, and audit the
  * result through the real scripts/audit-idea-mdx.mjs — in-process via its
  * exported auditIdeaFile, or as a child process with the npm script's node

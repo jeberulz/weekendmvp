@@ -2,7 +2,7 @@
 
 Back: [overview](overview.md)
 
-> **WP46 status (2026-10-01).** The compiler now takes a contract v2 record
+> **WP54 status (2026-10-01).** The compiler now takes a contract v2 record
 > (`parseResearchRecord`; v1 records are refused with a re-research message),
 > renders every factual block from accepted evidence, labels pricing tiers,
 > unit economics and Year-One Math as assumptions, and refuses a record that

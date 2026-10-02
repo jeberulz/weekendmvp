@@ -1,5 +1,5 @@
 /**
- * Evidence-first pipeline (WP46-S3; plan §6 F5 and §7 F1): what reaches the
+ * Evidence-first pipeline (WP54-S3; plan §6 F5 and §7 F1): what reaches the
  * writer, what reaches the record, retries and regenerations, the early
  * stop and spend. Every run is the complete fixture pipeline (search →
  * acquisition → extraction → acceptance → keywords → editorial → v2 parse)

@@ -1,5 +1,5 @@
 /**
- * Evidence contract for research records v2 (WP46, PR #71 remediation).
+ * Evidence contract for research records v2 (WP54, PR #71 remediation).
  *
  * Types and constants only. `docs/plans/idea-engine/pr71-evidence-contract.md`
  * explains the rules; this file is the source of truth for the shapes.

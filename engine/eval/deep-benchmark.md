@@ -16,8 +16,8 @@ Reference page in-repo: [`content/ideas/course-translation-resale-network.mdx`](
 
 ## Measurable gates (every engine page)
 
-> **2026-10-01 — partly superseded by WP46.** Items 1–6, 10 and 11 still hold.
-> Items 7–9 describe the pre-WP46 research and quote gate, which was removed:
+> **2026-10-01 — partly superseded by WP54.** Items 1–6, 10 and 11 still hold.
+> Items 7–9 describe the pre-WP54 research and quote gate, which was removed:
 > research no longer drops figures by matching numbers against search results
 > (evidence is accepted against the cited page before writing); quotes are no
 > longer marked `verified` after writing (the page audit requires each

@@ -1,5 +1,5 @@
 /**
- * Research pipeline, PIPELINE_VERSION 2 (WP46, evidence contract §2):
+ * Research pipeline, PIPELINE_VERSION 2 (WP54, evidence contract §2):
  * BriefInput → ResearchRecordV2 plus a redacted run report.
  *
  * Evidence is accepted before anything is written:

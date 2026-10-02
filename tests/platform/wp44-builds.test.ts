@@ -147,7 +147,7 @@ describe("WP44-S9 screens", () => {
   test("Plan my weekend reaches every entry point", () => {
     expect(nextStepSource).toContain('<PlanLink slug={idea.slug} title={idea.title} source="home"');
     // Card and row both render PlanAction, which wraps the one PlanLink (it
-    // leaves a retired draft without a new-plan link, WP46-S5).
+    // leaves a retired draft without a new-plan link, WP54-S5).
     expect(ideaCardSource.match(/<PlanAction /g)).toHaveLength(2);
     expect(ideaCardSource.match(/<PlanLink /g)).toHaveLength(1);
     expect(ideaCardSource.match(/<BuildingBadge \/>/g)).toHaveLength(2);
