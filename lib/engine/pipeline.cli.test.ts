@@ -149,9 +149,11 @@ describe("engine:research CLI (fixture mode)", () => {
 
   // Ruling R12, with git reachable: an absolute PATH entry that holds a git binary, if this machine has one.
   const gitDir = ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"].find((dir) => existsSync(path.join(dir, "git")));
-  it.skipIf(gitDir === undefined)("names the code revision from git: HEAD and whether tracked files changed", () => {
+  it.skipIf(gitDir === undefined)("names the code revision from git: HEAD and whether tracked files changed", (ctx) => {
     const env = { NODE_ENV: "test" as const, PATH: gitDir ?? "" };
     const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8", env });
+    // A checkout without git metadata (an exported tree) has no revision to compare.
+    if (head.status !== 0) ctx.skip();
     const dir = tempDir();
     const out = path.join(dir, "record.json");
     const run = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", script, "--fixture", "rfp-assistant", "--out", out], {
