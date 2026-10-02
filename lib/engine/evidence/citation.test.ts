@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   canonicalSourceUrl,
+  citationRefusal,
   isComparisonPage,
   isFirstPartyHost,
   sameSource,
@@ -125,5 +126,45 @@ describe("vendor keys and first-party hosts", () => {
     expect(sourceHostLabel("https://www.g2.com/products/loopio/pricing")).toBe("g2.com");
     expect(sourceHostLabel("https://news.ycombinator.com/item?id=1")).toBe("news.ycombinator.com");
     expect(sourceHostLabel("nope")).toBe("");
+  });
+});
+
+describe("R15: credential-like citation URLs are refused", () => {
+  it.each([
+    ["an opaque query value", "https://app.example/doc?st=abc123def456ghi789"],
+    ["an OAuth-style code", "https://app.example/doc?code=4/0AbCdEfGhIjKlMnOp"],
+    ["a JWT", "https://app.example/doc?s=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.sig"],
+    ["a share token in the path", "https://app.example/share/AbCdEf0123456789XyZaBcDeF/doc"],
+    ["a session matrix parameter", "https://app.example/doc;jsessionid=ABCDEF0123456789"],
+    ["a value after a secret path name", "https://app.example/token/abc123/doc"],
+    ["a long random path segment", "https://files.example.com/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"],
+  ])("refuses %s (security probe-credential-urls)", (_label, url) => {
+    expect(canonicalSourceUrl(url)).toBeNull();
+    expect(citationRefusal(url)).toMatch(/credential/);
+  });
+
+  it("keeps ordinary identity and filter parameters, slugs and numeric ids", () => {
+    for (const url of [
+      "https://acme.example/pricing?plan=team",
+      "https://forum.example/t/topic-title/88?page=2",
+      "https://news.example.com/item?id=4101",
+      "https://forum.example/t/topic-title/88?u=someone",
+      "https://www.reddit.com/r/sales/comments/abc123/rfp_weekends/",
+      "https://blog.example.com/why-we-rewrote-billing-1a2b3c4d5e6f",
+      "https://example.com/search?q=best+rfp+software+for+small+teams",
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    ]) {
+      expect(canonicalSourceUrl(url), url).not.toBeNull();
+      expect(citationRefusal(url), url).toBeNull();
+    }
+  });
+
+  it("names why a citation was refused without repeating the secret", () => {
+    const reason = citationRefusal("https://app.example/doc?st=abc123def456ghi789") ?? "";
+    expect(reason).toContain("st");
+    expect(reason).not.toContain("abc123def456ghi789");
+    expect(citationRefusal("ftp://example.com/x")).toMatch(/http/);
+    expect(citationRefusal("https://user:pw@example.com/")).toMatch(/userinfo/);
+    expect(citationRefusal("https://x.example/a?X-Amz-Signature=abc")).toMatch(/credential/);
   });
 });

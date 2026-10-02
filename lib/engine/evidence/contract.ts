@@ -256,6 +256,29 @@ export type ExtractionCandidates = {
 export const EVIDENCE_TOKEN_RE = /\[\[ev:([qsp]_[0-9a-f]{12})\]\]/;
 
 /**
+ * Ruling R15: invisible and bidirectional format controls no record text
+ * may hold — U+061C, U+200B–U+200F, U+202A–U+202E, U+2060–U+2064,
+ * U+2066–U+2069 and U+FEFF — since they can reorder or hide what a reader
+ * sees (an excerpt that renders "$500" while holding "005$").
+ */
+export const FORMAT_CONTROL_RE = /[\u061C\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u;
+
+/** The first format control in `text`, as "U+202E", or null (ruling R15). */
+export function formatControlIn(text: string): string | null {
+  const m = FORMAT_CONTROL_RE.exec(text);
+  const code = m?.[0].codePointAt(0);
+  return code === undefined ? null : `U+${code.toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
+/** `text` with each format control shown as U+FFFD, for operator-only records (ruling R15). */
+export function withoutFormatControls(text: string): string {
+  return text.replace(new RegExp(FORMAT_CONTROL_RE.source, "gu"), "\uFFFD");
+}
+
+/** Ruling R15: the longest citation title a record shows; a longer one gives way to the host label. */
+export const SOURCE_TITLE_MAX_CHARS = 120;
+
+/**
  * Ruling R6: every writer free-text field of a v2 record. Each carries no
  * figure outside evidence tokens (a bare year 1990–2039 and the R13
  * standard and version names aside) and no quoted span of three or more
@@ -440,6 +463,8 @@ export type ResearchRunReport = {
   /** Ruling R12: the code revision that ran (nulls when git was unavailable). */
   codeRevision: CodeRevision;
   sources: SourceAcquisition[];
+  /** Ruling R15: search citations never read or stored, by host and reason (no path or query). */
+  refusedCitations: Array<{ host: string; reason: string }>;
   evidence: {
     accepted: Record<EvidenceKind, number>;
     rejected: Array<Pick<RejectedEvidence, "kind" | "reason" | "sourceUrl" | "detail">>;

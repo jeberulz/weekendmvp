@@ -11,7 +11,14 @@
  * multi-part public suffixes, not the full Public Suffix List; an unknown
  * multi-part suffix makes the check answer "not first-party", which sends the
  * price through the stricter secondary-source rules (fail closed).
+ *
+ * Ruling R15: a URL whose path or query holds an opaque credential-like
+ * value is refused as a citation (citationRefusal, with the redactUrl
+ * detectors of providers/sourceText.ts), so a private or signed link is
+ * never read, stored or published.
  */
+
+import { isSecretSegmentName, looksLikeCredential } from "../providers/sourceText.ts";
 
 const TRACKING_PARAM_RE = /^(?:utm_.*|fbclid|gclid|ref)$/i;
 
@@ -73,28 +80,132 @@ function decodeKey(pair: string): string {
   }
 }
 
+/** A JSON Web Token: base64url header "eyJ…", payload and signature. */
+const JWT_RE = /^eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]*$/;
+
+function decodeValue(value: string): string {
+  try {
+    return decodeURIComponent(value.replace(/\+/g, " "));
+  } catch {
+    // A malformed escape is judged as written.
+    return value;
+  }
+}
+
+/** Words or numbers joined by - _ . (a version or a name), not a random token. */
+function isWordy(value: string): boolean {
+  return value.split(/[-_.]+/).every((part) => /^(?:[A-Za-z]+|\d+)$/.test(part));
+}
+
+/**
+ * A slug, as redactUrl's detectors read one: three or more - _ . parts, two
+ * thirds of them all letters or all digits, no mixed part over 16
+ * characters ("why-we-rewrote-billing-1a2b3c4d5e6f").
+ */
+function isSlugLike(value: string): boolean {
+  const parts = value.split(/[-_.]+/).filter((part) => part !== "");
+  if (parts.length < 3) return false;
+  let wordy = 0;
+  for (const part of parts) {
+    if (/^(?:[A-Za-z]+|\d+)$/.test(part)) wordy += 1;
+    else if (part.length > 16) return false;
+  }
+  return wordy * 3 >= parts.length * 2;
+}
+
+/**
+ * An opaque secret-looking value (ruling R15): a JWT, a long random run
+ * (looksLikeCredential), or 16+ characters of letters and digits mixed
+ * with no spaces that are not words ("abc123def456ghi789", "4/0AbCd…").
+ */
+function credentialLikeValue(raw: string): boolean {
+  const value = decodeValue(raw);
+  if (JWT_RE.test(value) || looksLikeCredential(value)) return true;
+  if (value.length < 16 || /\s/.test(value) || !/[A-Za-z]/.test(value) || !/\d/.test(value)) return false;
+  return /^[A-Za-z0-9._~+/=-]+$/.test(value) && !isWordy(value) && !isSlugLike(value);
+}
+
+/** A short code after a secret path name ("/token/abc123"): letters and digits mixed, not words. */
+function codeAfterSecretName(segment: string): boolean {
+  const value = decodeValue(segment);
+  return value.length >= 6 && /[A-Za-z]/.test(value) && /\d/.test(value) && !isWordy(value);
+}
+
+/** Ruling R15: why a path is credential-like (names only, never the value), or null. */
+function pathRefusal(pathname: string): string | null {
+  let previous = "";
+  for (const segment of pathname.split("/")) {
+    if (segment === "") continue;
+    const [base = "", ...matrix] = segment.split(";");
+    for (const parameter of matrix) {
+      const [name = "", value = ""] = parameter.split("=");
+      if (isSecretSegmentName(name) || credentialLikeValue(value)) {
+        return `path parameter "${clipName(name)}" holds a credential-like value`;
+      }
+    }
+    if (credentialLikeValue(base)) return "a path segment holds a credential-like value";
+    if (previous !== "" && isSecretSegmentName(previous) && codeAfterSecretName(base)) {
+      return `the path segment after "${clipName(previous)}" holds a credential-like value`;
+    }
+    previous = base;
+  }
+  return null;
+}
+
+function clipName(name: string): string {
+  const decoded = decodeValue(name);
+  return decoded.length > 40 ? `${decoded.slice(0, 39)}…` : decoded;
+}
+
+/**
+ * Why a URL can never be a citation (ruling R15; review P3-6), or null:
+ * not an http(s) URL; userinfo; a credential or signature query parameter
+ * (CREDENTIAL_PARAM_NAMES); a query value or path that holds an opaque
+ * credential-like value — a JWT, a long random token, a mixed letter and
+ * digit code of 16+ characters, a code after a secret path name
+ * ("/token/…"), a session or secret matrix parameter (";jsessionid=…"). The
+ * reason names parameters, never their values. Ordinary values such as
+ * `?plan=team`, `?page=2`, `item?id=4101` and slugs pass.
+ */
+export function citationRefusal(url: string): string | null {
+  if (typeof url !== "string" || url.trim() === "") return "not an http(s) URL";
+  const parsed = parseUrl(url);
+  if (!parsed || (parsed.protocol !== "http:" && parsed.protocol !== "https:") || parsed.hostname === "") {
+    return "not an http(s) URL";
+  }
+  if (parsed.username !== "" || parsed.password !== "") return "the URL carries userinfo (a credential)";
+  const pairs = parsed.search
+    .replace(/^\?/, "")
+    .split("&")
+    .filter((pair) => pair !== "");
+  for (const pair of pairs) {
+    const name = decodeKey(pair);
+    if (isCredentialParam(name)) return `query parameter "${clipName(name)}" is a credential or signature`;
+    const value = pair.includes("=") ? pair.slice(pair.indexOf("=") + 1) : "";
+    if (credentialLikeValue(value)) return `query parameter "${clipName(name)}" holds a credential-like value`;
+  }
+  return pathRefusal(parsed.pathname);
+}
+
 /**
  * Canonical citation URL, or null: http(s) only, no userinfo, no
  * credential or signature query parameter (CREDENTIAL_PARAM_NAMES; a signed
- * link is never a citation), lowercase host, default port and fragment
+ * link is never a citation) and no credential-like query value or path
+ * (citationRefusal, ruling R15), lowercase host, default port and fragment
  * dropped, tracking parameters (utm_ prefix, fbclid, gclid, ref) removed,
  * other query parameters kept verbatim and in order, trailing slash removed
  * except for the root path.
  */
 export function canonicalSourceUrl(url: string): string | null {
-  if (typeof url !== "string" || url.trim() === "") return null;
+  if (citationRefusal(url) !== null) return null;
   const parsed = parseUrl(url);
   if (!parsed) return null;
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
-  if (parsed.username !== "" || parsed.password !== "") return null;
-  if (parsed.hostname === "") return null;
   let path = parsed.pathname;
   while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
   const pairs = parsed.search
     .replace(/^\?/, "")
     .split("&")
     .filter((pair) => pair !== "");
-  if (pairs.some((pair) => isCredentialParam(decodeKey(pair)))) return null;
   const query = pairs.filter((pair) => !TRACKING_PARAM_RE.test(decodeKey(pair))).join("&");
   return `${parsed.protocol}//${parsed.host.toLowerCase()}${path}${query ? `?${query}` : ""}`;
 }

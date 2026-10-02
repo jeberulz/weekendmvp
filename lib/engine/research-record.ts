@@ -24,6 +24,7 @@ import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  formatControlIn,
   NUMERIC_PROPOSAL_FIELDS,
   PIPELINE_VERSION_V2,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
@@ -1860,6 +1861,37 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
   }
 }
 
+/** At most this many format-control issues per record (the rest repeat the point). */
+const MAX_FORMAT_CONTROL_ISSUES = 20;
+
+/**
+ * Ruling R15: every string anywhere in the record is free of invisible and
+ * bidirectional format controls (contract.ts FORMAT_CONTROL_RE), whoever
+ * wrote it — operator brief, provider keyword terms, evidence, writer text,
+ * operator-only rejection records and provenance. Walks the raw input, so
+ * the issue names the exact path.
+ */
+function formatControlIssues(value: unknown, path: string, issues: string[], found = { count: 0 }): void {
+  if (found.count >= MAX_FORMAT_CONTROL_ISSUES) return;
+  if (typeof value === "string") {
+    const control = formatControlIn(value);
+    if (control) {
+      found.count += 1;
+      issues.push(
+        `${path || "root"}: holds the invisible or bidirectional format control ${control}; record text may hold none (ruling R15)`,
+      );
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry, i) => formatControlIssues(entry, `${path}[${i}]`, issues, found));
+    return;
+  }
+  if (isPlainObject(value)) {
+    for (const [key, entry] of Object.entries(value)) formatControlIssues(entry, childPath(path, key), issues, found);
+  }
+}
+
 /**
  * The publish-path record parser: read a contract v2 research record
  * (evidence contract §8) into a fresh, normalized ResearchRecordV2
@@ -1911,6 +1943,7 @@ export function parseResearchRecord(input: unknown): ResearchRecordV2 {
 
   const ctx: V2Context = { issues: [], texts: [], competitorPriceIds: new Map() };
   rejectUnknownKeys(input, "", ROOT_KEYS, ctx);
+  formatControlIssues(input, "", ctx.issues);
   if (input.pipelineVersion !== PIPELINE_VERSION_V2) {
     ctx.issues.push(`pipelineVersion: expected ${PIPELINE_VERSION_V2} (got ${describeValue(input.pipelineVersion)})`);
   }

@@ -64,6 +64,14 @@
  * text and to the stored excerpt; re-validation to the excerpt.
  * `vendorHints` (the pipeline passes the names its competitor citations
  * confirm) join the candidates' vendors for R5 and the other-vendor rule.
+ *
+ * Untrusted text (ruling R15): a citation title longer than
+ * SOURCE_TITLE_MAX_CHARS, or holding a figure, a link, an email or a
+ * format control, gives way to the source's host label (sourceTitleIssue);
+ * an excerpt, stat subject, vendor or plan holding an invisible or
+ * bidirectional format control (contract.ts FORMAT_CONTROL_RE) is
+ * invalid_candidate; operator-only rejection records show such controls as
+ * U+FFFD. Re-validation applies the same rules to stored items.
  */
 
 import { createHash } from "node:crypto";
@@ -103,6 +111,9 @@ import {
   EVIDENCE_ID_PREFIX,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
+  formatControlIn,
+  SOURCE_TITLE_MAX_CHARS,
+  withoutFormatControls,
   type AcceptedEvidence,
   type Amount,
   type CommunityQuoteEvidence,
@@ -335,9 +346,9 @@ function itemFailure<T>(record: Record<string, unknown>, error: string, claim: s
   const sourceUrl = recordableUrl(textField(record, "sourceUrl"));
   return {
     ok: false,
-    error,
+    error: withoutFormatControls(error),
     ...(sourceUrl ? { sourceUrl } : {}),
-    ...(claim ? { candidate: clip(claim, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
+    ...(claim ? { candidate: clip(withoutFormatControls(claim), EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
   };
 }
 
@@ -516,12 +527,42 @@ const STATUS_REASON: Record<Exclude<SourceStatus, "read">, RejectionReason> = {
   redirect_rejected: "source_unreadable",
 };
 
+/** Links, emails and domain paths a citation title or stat subject may not carry (rulings R9, R15). */
+const TEXT_LINK_RE =
+  /[a-z][a-z0-9+.-]*:\/\/|(?<![\p{L}\p{N}])www\.|mailto:|[^\s@]+@[^\s@]+\.[^\s@]+|[\p{L}\p{N}-]+\.\p{L}{2,}\/\S*/iu;
+
+/**
+ * Ruling R15: why a citation title cannot be shown, or null. A title is a
+ * hostile page's own words, and the page shows it next to evidence: at most
+ * SOURCE_TITLE_MAX_CHARS characters, no format control, no figure (the R6
+ * detector: bare years and R13 names are fine) and no link or email.
+ * Acceptance shows the source's host label instead; the record parser
+ * refuses a stored title that breaks the rule.
+ */
+export function sourceTitleIssue(title: string): string | null {
+  if (title.length > SOURCE_TITLE_MAX_CHARS) {
+    return `title has ${title.length} characters; at most ${SOURCE_TITLE_MAX_CHARS} allowed`;
+  }
+  const control = formatControlIn(title);
+  if (control) return `title holds the format control ${control}`;
+  if (findUnboundFigures(title).length > 0) return "title holds a figure";
+  if (TEXT_LINK_RE.test(title)) return "title holds a link or an email";
+  return null;
+}
+
+/** A citation title as acceptance keeps it: one line, and "" (the host label stands in) when it breaks R15. */
+function acceptableTitle(title: unknown): string {
+  if (typeof title !== "string") return "";
+  const line = title.replace(/\s+/g, " ").trim();
+  return sourceTitleIssue(line) === null ? line : "";
+}
+
 function createContext(input: AcceptEvidenceInput): Context {
   const citations = new Map<string, string>();
   for (const citation of input.citations) {
     const url = canonicalSourceUrl(citation.url);
     if (!url) continue;
-    const title = typeof citation.title === "string" ? clip(citation.title.trim(), 200) : "";
+    const title = acceptableTitle(citation.title);
     if (!citations.has(url) || (citations.get(url) === "" && title !== "")) citations.set(url, title);
   }
   const sources = new Map<string, SourceInput>();
@@ -650,6 +691,8 @@ function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; i
   if (!resolved.source.roles.includes("community")) return fail("unknown_citation", NOT_COMMUNITY_DETAIL);
   const span = findContiguousSpanIn(candidate.text, resolved.source.prepared);
   if (!span.ok) return fail(span.reason, spanDetail(span.reason));
+  const control = formatControlIn(span.text);
+  if (control) return fail("invalid_candidate", controlDetail("the quote", control));
   const shape = quoteShapeIssue(resolved.source.text, span.start, span.end);
   if (shape) return fail("span_bounds", shape);
   const issue = quoteBoundsIssue(span.text);
@@ -660,6 +703,11 @@ function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; i
     attribution: "community",
   };
   return { ok: true, item };
+}
+
+/** Ruling R15: the detail for text that holds an invisible or bidirectional format control. */
+function controlDetail(what: string, control: string): string {
+  return `${what} holds the invisible or bidirectional format control ${control} (ruling R15)`;
 }
 
 function spanDetail(reason: "span_not_found" | "internal_ellipsis" | "span_bounds"): string {
@@ -753,19 +801,19 @@ function subjectIssue(subject: string, sentence: string): string | null {
   return `the sentence lacks ${words} of the subject "${clip(subject, 60)}"; every subject word must be in it (rulings R9, R14)`;
 }
 
-/** Links, emails and domain paths a stat subject may not carry (ruling R9). */
-const SUBJECT_LINK_RE =
-  /[a-z][a-z0-9+.-]*:\/\/|(?<![\p{L}\p{N}])www\.|mailto:|[^\s@]+@[^\s@]+\.[^\s@]+|[\p{L}\p{N}-]+\.\p{L}{2,}\/\S*/iu;
 /** Markdown, MDX or quotation characters a stat subject may not carry (ruling R9). */
 const SUBJECT_MARKUP_RE = /[<>[\]{}*_`|#~\\"“”„«»]/u;
 
 /**
- * Ruling R9: a stat subject is plain words. It is extraction-model text that
- * the page shows next to the figure, so it may carry no figure (the R6
- * detector), no link, email or domain path, and no markup or quotation.
+ * Rulings R9 and R15: a stat subject is plain words. It is extraction-model
+ * text that the page shows next to the figure, so it may carry no figure
+ * (the R6 detector), no link, email or domain path, no markup or quotation,
+ * and no invisible or bidirectional format control.
  */
 function subjectShapeIssue(subject: string): string | null {
-  if (findUnboundFigures(subject).length === 0 && !SUBJECT_LINK_RE.test(subject) && !SUBJECT_MARKUP_RE.test(subject)) {
+  const control = formatControlIn(subject);
+  if (control) return controlDetail("the subject", control);
+  if (findUnboundFigures(subject).length === 0 && !TEXT_LINK_RE.test(subject) && !SUBJECT_MARKUP_RE.test(subject)) {
     return null;
   }
   return `subject must be plain words (no figures, links, emails or markup): "${clip(subject, 80)}" (ruling R9)`;
@@ -878,6 +926,8 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
   }
   const shape = subjectShapeIssue(claim.subject);
   if (shape) return fail("invalid_candidate", shape);
+  const control = formatControlIn(excerpt);
+  if (control) return fail("invalid_candidate", controlDetail("the supporting sentence", control));
   const laterDeclaredYear = claim.year !== undefined && claim.year > referenceYear;
   const amounts = scanAmounts(excerpt);
   let matched = false;
@@ -1326,6 +1376,10 @@ function checkPriceExcerpt(
   sourceUrl: string,
   vendors: ReadonlyArray<string>,
 ): PriceCheck {
+  const nameControl = priceNameControl(claim);
+  if (nameControl) return nameControl;
+  const control = formatControlIn(excerpt);
+  if (control) return fail("invalid_candidate", controlDetail("the price's sentence", control));
   const rivalSite = rivalSiteFailure(claim.vendor, sourceUrl, vendors);
   if (rivalSite) return rivalSite;
   const expressions = priceExpressionsIn(excerpt);
@@ -1390,8 +1444,18 @@ function priceExcerptRange(text: string, spanStart: number, expression: PriceExp
   return null;
 }
 
+/** Ruling R15: a vendor or plan name that holds a format control, as a failure, or null. */
+function priceNameControl(claim: { vendor: string; plan?: string }): Failure | null {
+  const vendor = formatControlIn(claim.vendor);
+  if (vendor) return fail("invalid_candidate", controlDetail("the vendor name", vendor));
+  const plan = claim.plan === undefined ? null : formatControlIn(claim.plan);
+  return plan ? fail("invalid_candidate", controlDetail("the plan name", plan)) : null;
+}
+
 function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
   const vendor = candidate.vendor;
+  const nameControl = priceNameControl({ vendor, ...(candidate.plan !== undefined ? { plan: candidate.plan } : {}) });
+  if (nameControl) return nameControl;
   if (vendorKey(vendor).length < 2) return fail("invalid_candidate", "vendor name is too short to identify");
   const terms = parsePriceTerms(candidate.priceText);
   if (!terms) return fail("unparseable_amount", `"${clip(candidate.priceText, 60)}" is not one supported price expression`);
@@ -1499,12 +1563,14 @@ function rejection(
   detail: string,
 ): RejectedEvidence {
   const url = typeof sourceUrl === "string" ? (recordableUrl(sourceUrl) ?? "") : "";
+  // Operator-only text from untrusted candidates: format controls shown as U+FFFD (ruling R15).
+  const candidate = withoutFormatControls(claim.trim());
   return {
     kind,
     reason,
     ...(url ? { sourceUrl: url } : {}),
-    ...(claim.trim() ? { candidate: clip(claim.trim(), EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
-    detail: clip(detail, DETAIL_CHARS),
+    ...(candidate ? { candidate: clip(candidate, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
+    detail: clip(withoutFormatControls(detail), DETAIL_CHARS),
   };
 }
 
@@ -1730,6 +1796,8 @@ function rederivationIssues(
     if (bounds) issues.push(`excerpt: ${bounds}`);
     const lineBreak = quoteLineBreakIssue(excerpt);
     if (lineBreak) issues.push(`excerpt: ${lineBreak}`);
+    const control = formatControlIn(excerpt);
+    if (control) issues.push(`excerpt: ${controlDetail("the quote", control)}`);
     return issues;
   }
   if (claim.kind === "market_stat") {
@@ -1792,6 +1860,11 @@ export function revalidateAcceptedEvidence(
   const sourceUrl = typeof item.sourceUrl === "string" ? item.sourceUrl : "";
   if (!sourceUrl || canonicalSourceUrl(sourceUrl) !== sourceUrl) issues.push("sourceUrl: must be a canonical http(s) URL");
   if (!nonEmptyString(item.sourceTitle, 300)) issues.push("sourceTitle: required");
+  else if (item.sourceTitle !== sourceHostLabel(sourceUrl)) {
+    // Ruling R15: a stored title follows the acceptance rule, or is the host label acceptance falls back to.
+    const titleIssue = sourceTitleIssue(item.sourceTitle);
+    if (titleIssue) issues.push(`sourceTitle: ${titleIssue} (ruling R15)`);
+  }
   const maxExcerpt = kind === "community_quote" ? EVIDENCE_LIMITS.quoteMaxChars : EVIDENCE_LIMITS.excerptMaxChars;
   const excerpt = typeof item.excerpt === "string" ? item.excerpt : "";
   if (excerpt.trim() === "" || excerpt.length > maxExcerpt) issues.push(`excerpt: required, at most ${maxExcerpt} characters`);

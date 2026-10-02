@@ -35,6 +35,7 @@ import {
   unreadableSummary,
   utf8Bytes,
   type ExtractionSource,
+  type RefusedCitation,
 } from "./pipeline-sources.ts";
 import {
   assertWithinCap,
@@ -52,7 +53,9 @@ import {
 import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
+  formatControlIn,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
+  withoutFormatControls,
   type AcceptedEvidence,
   type CodeRevision,
   type EvidenceKind,
@@ -319,6 +322,8 @@ type RunState = {
   sources: SourceAcquisition[];
   accepted: AcceptedEvidence[];
   rejected: RejectedEvidence[];
+  /** Ruling R15: citations refused before any read (the ledger's live list once it exists). */
+  refusedCitations: ReadonlyArray<RefusedCitation>;
 };
 
 function settle(state: RunState, stepId: PipelineStepId, cost: ProviderCost, failed: boolean): void {
@@ -421,13 +426,14 @@ function buildReport(state: RunState, failure: PipelineError | null): ResearchRu
     briefSha256: state.briefSha256,
     startedAt: state.startedAt,
     finishedAt: state.clock().toISOString(),
-    ...(failure ? { failedStep: failure.stepId, error: redactText(failure.detail, 600) } : {}),
+    ...(failure ? { failedStep: failure.stepId, error: withoutFormatControls(redactText(failure.detail, 600)) } : {}),
     providerCalls: state.providerCalls.map((c) => ({ ...c })),
     costUsd: fromMicroUsd(state.spentMicroUsd),
     attempts: { ...state.attempts },
     models: currentModels(state),
     codeRevision: { ...state.codeRevision },
     sources: state.sources.map((s) => ({ ...s, url: redactUrl(s.url), roles: [...s.roles] })),
+    refusedCitations: state.refusedCitations.map((r) => ({ ...r })),
     evidence: {
       accepted: countByKind(state.accepted),
       rejected: boundRejected(state.rejected).map((r) => ({
@@ -457,6 +463,7 @@ function keywordList(value: unknown): string[] {
     if (typeof entry !== "string") continue;
     const keyword = entry.replace(/\s+/g, " ").trim();
     if (keyword === "" || keyword.length > MAX_SEED_KEYWORD_CHARS || LINK_LIKE_RE.test(keyword)) continue;
+    if (formatControlIn(keyword) !== null) continue;
     const key = keyword.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -470,7 +477,7 @@ function keywordList(value: unknown): string[] {
 function refinedLine(value: unknown, maxChars: number): string | null {
   if (typeof value !== "string") return null;
   const line = value.replace(/\s+/g, " ").trim();
-  return line !== "" && line.length <= maxChars && !LINK_LIKE_RE.test(line) ? line : null;
+  return line !== "" && line.length <= maxChars && !LINK_LIKE_RE.test(line) && formatControlIn(line) === null ? line : null;
 }
 
 /**
@@ -490,12 +497,29 @@ function oneLinerIssues(oneLiner: string, fromTitle: boolean): string[] {
 
 /** The operator's brief, checked and normalized before anything is billed. */
 export function normalizeBriefInput(input: BriefInput): NormalizedBrief {
+  // Ruling R15: operator text with an invisible or bidirectional format control fails before any spend.
+  const noControl = (value: string, field: string): string => {
+    const control = formatControlIn(value);
+    if (control) {
+      throw new PipelineError("brief_normalization", `brief.${field}: holds the invisible or bidirectional format control ${control}; remove it (ruling R15)`);
+    }
+    return value;
+  };
   const text = (value: unknown, field: string): string => {
     if (typeof value !== "string" || value.trim() === "") {
       throw new PipelineError("brief_normalization", `brief.${field}: required non-empty string`);
     }
-    return value.trim();
+    return noControl(value.trim(), field);
   };
+  for (const field of ["slug", "oneLiner"] as const) {
+    const value = input[field];
+    if (typeof value === "string") noControl(value, field);
+  }
+  if (Array.isArray(input.seedKeywords)) {
+    input.seedKeywords.forEach((keyword, i) => {
+      if (typeof keyword === "string") noControl(keyword, `seedKeywords[${i}]`);
+    });
+  }
   const title = text(input.title, "title");
   const audience = text(input.audience, "audience");
   const model = text(input.revenueModel, "revenueModel");
@@ -731,13 +755,16 @@ async function stepKeywords(state: RunState, seedKeywords: string[]): Promise<Ke
   const result = await attemptWithRetry(state, step, () =>
     state.providers.keywordData.lookup({ keywords, locationCode: LOCATION_CODE, languageCode: LANGUAGE_CODE }),
   );
-  return result.value.metrics.map((m) => ({
-    term: m.keyword,
-    volume: m.searchVolume,
-    competition: m.competition,
-    cpc: m.cpcUsd,
-    source: "provider" as const,
-  }));
+  // Ruling R15: a provider term with an invisible or bidirectional format control never reaches the record.
+  return result.value.metrics
+    .filter((m) => formatControlIn(m.keyword) === null)
+    .map((m) => ({
+      term: m.keyword,
+      volume: m.searchVolume,
+      competition: m.competition,
+      cpc: m.cpcUsd,
+      source: "provider" as const,
+    }));
 }
 
 // ---------------------------------------------------------------------------
@@ -1187,6 +1214,7 @@ async function research(options: RunResearchOptions, state: RunState): Promise<R
   // Searches are paid steps; reading their citations is unpaid and starts as
   // soon as each search returns (one deduplicated, bounded acquirer per run).
   const ledger = createSourceLedger({ sourceText, now: state.clock });
+  state.refusedCitations = ledger.refused;
   const market = await stepSearch(state, "market_stats", marketQuery(context));
   ledger.cite(market, "market");
   const marketReads = ledger.read(market);
@@ -1271,6 +1299,7 @@ export async function runResearch(options: RunResearchOptions): Promise<RunResea
     sources: [],
     accepted: [],
     rejected: [],
+    refusedCitations: [],
   };
   try {
     const record = await research(options, state);

@@ -1458,3 +1458,36 @@ describe("parseResearchRecord: numeric proposal slots (ruling R13)", () => {
     expect(() => parseResearchRecord(input)).not.toThrow();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Ruling R15: no record text holds an invisible or bidirectional format control
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: format controls anywhere in the record (ruling R15)", () => {
+  it.each([
+    ["editorial.problemNarrative", "\u202E"],
+    ["market.summary", "\u200B"],
+    ["competitors[0].notes", "\u2066"],
+    ["keywords[0].term", "\uFEFF"],
+    ["brief.title", "\u061C"],
+    ["brief.targetCustomer", "\u2060"],
+    ["provenance.models.synthesis", "\u200F"],
+    ["evidence.rejected[0].detail", "\u202A"],
+  ])("rejects a control in %s", (field, ch) => {
+    const input = fresh();
+    const text = textAt(input, field);
+    setAt(input, field, `${text.slice(0, 4)}${ch}${text.slice(4)}`);
+    const code = `U+${(ch.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0")}`;
+    expectRejected(input, new RegExp(`^${escapeRe(field)}: .*format control ${escapeRe(code)}`, "m"));
+  });
+
+  it("rejects a stored citation title with a figure, and accepts the host label in its place", () => {
+    const input = fresh();
+    const index = indexOfAccepted(EV.statMeasured);
+    setAt(input, `evidence.accepted[${index}].sourceTitle`, "87% of teams lose deals");
+    expectRejected(input, /sourceTitle: title holds a figure \(ruling R15\)/);
+    const host = fresh();
+    setAt(host, `evidence.accepted[${index}].sourceTitle`, "research.example.com");
+    expect(() => parseResearchRecord(host)).not.toThrow();
+  });
+});

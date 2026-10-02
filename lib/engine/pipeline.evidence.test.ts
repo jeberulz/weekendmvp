@@ -870,3 +870,77 @@ describe("R14: vendor hints from the competitor citations", () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// Ruling R15: untrusted text and URLs
+// ---------------------------------------------------------------------------
+
+describe("R15: untrusted text and URLs in a run", () => {
+  it("lists each refused citation in the run report by host and reason, and never reads or stores it", async () => {
+    const shared = "https://app.example/share/AbCdEf0123456789XyZaBcDeF/doc";
+    const signed = "https://forum.example.net/t/questionnaires?st=abc123def456ghi789";
+    const h = harness({
+      packs: packsWith({ competitors: [{ url: shared, title: "Shared pricing doc" }], community: [{ url: signed, title: "Signed thread" }] }),
+    });
+    const { record, report } = await run(h);
+    expect(report.refusedCitations).toEqual([
+      { host: "app.example", reason: "a path segment holds a credential-like value" },
+      { host: "forum.example.net", reason: 'query parameter "st" holds a credential-like value' },
+    ]);
+    const stored = JSON.stringify({ record, report });
+    expect(stored).not.toContain("AbCdEf0123456789XyZaBcDeF");
+    expect(stored).not.toContain("abc123def456ghi789");
+  });
+
+  it("refuses a hostile quote with a bidi override and still runs on the other quotes (security probe-bidi-quote)", async () => {
+    const hostile = "Honestly the fix cost us \u202E005$\u202C a month and it saved our whole quarter.";
+    const pages = { ...FIXTURE_PAGES, [FIXTURE_URLS.hnThread]: `${FIXTURE_PAGES[FIXTURE_URLS.hnThread] ?? ""}\n\n${hostile}` };
+    const extraction = JSON.parse(JSON.stringify(FIXTURE_EXTRACTION)) as typeof FIXTURE_EXTRACTION;
+    extraction.quotes[0] = { sourceUrl: FIXTURE_URLS.hnThread, text: hostile };
+    const { record } = await run(harness({ pages, synthesis: { extraction: () => extraction } }));
+    expect(record.evidence.accepted.some((e) => e.excerpt.includes("\u202E"))).toBe(false);
+    expect(record.evidence.rejected).toContainEqual(expect.objectContaining({ kind: "community_quote", reason: "invalid_candidate" }));
+    expect(JSON.stringify(record)).not.toMatch(/[\u061C\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u);
+  });
+
+  it("shows the host label for a citation title that carries a figure (security probe-title)", async () => {
+    const title = "Survey: 87% of SaaS teams lost a $2 million deal to slow RFPs";
+    const packs = packsWith({});
+    packs.market = {
+      ...packs.market,
+      search_results: packs.market.search_results.map((r, i) => (i === 0 ? { ...r, title } : r)),
+    };
+    const { record } = await run(harness({ packs }));
+    const fromReport = record.evidence.accepted.filter((e) => e.sourceUrl === FIXTURE_URLS.marketReport);
+    expect(fromReport.length).toBeGreaterThan(0);
+    for (const item of fromReport) expect(item.sourceTitle).toBe("research.example.com");
+    expect(JSON.stringify(record)).not.toContain("87%");
+  });
+
+  it("drops provider keyword rows that hold a format control", async () => {
+    const keywordPayload = {
+      status_code: 20000,
+      status_message: "Ok.",
+      tasks: [
+        {
+          status_code: 20000,
+          result: [
+            { keyword: "rfp response software", search_volume: 2400, competition_index: 42, cpc: 18.5 },
+            { keyword: "security\u200B questionnaire automation", search_volume: 880, competition_index: 35, cpc: 12.4 },
+          ],
+        },
+      ],
+    };
+    const { record } = await run(harness({ keywordPayload }));
+    expect(record.keywords.map((k) => k.term)).toEqual(["rfp response software"]);
+  });
+
+  it("refuses an operator brief with a format control before any spend", async () => {
+    const h = harness();
+    const error = await failureOf(runResearch({ brief: { ...BRIEF, audience: `SMB SaaS\u202E sales teams` }, providers: h.providers, mode: "fixture" }));
+    expect(error.stepId).toBe("brief_normalization");
+    expect(error.message).toMatch(/brief\.audience: .*U\+202E/);
+    expect(h.synthesis).toHaveLength(0);
+    expect(h.searches).toHaveLength(0);
+  });
+});

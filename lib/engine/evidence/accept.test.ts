@@ -1692,3 +1692,115 @@ describe("R14: every subject word is in the stat's sentence", () => {
     expect(reasons(accepted(survey, "US developers using AI code review assistants", "62%", "adoption", 2025))).toEqual(["subject_not_in_context"]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Ruling R15: untrusted text and URLs
+// ---------------------------------------------------------------------------
+
+describe("R15: citation titles are short, plain and figure-free, or the host stands in", () => {
+  const page: Page = { url: "https://research.example.com/rfp-market", roles: ["market"], text: "The RFP response software market was valued at $1.9 billion in 2024." };
+  const titled = (title: string) =>
+    acceptEvidence({
+      candidates: {
+        quotes: [],
+        marketStats: [stat({ sourceUrl: page.url, supportingText: page.text, subject: "RFP response software market", amountText: "$1.9 billion", year: 2024 })],
+        competitorPrices: [],
+      },
+      citations: [{ url: page.url, title }],
+      sources: sourcesOf([page]),
+    });
+
+  it.each([
+    ["a figure (security probe-title)", "Survey: 87% of SaaS teams lost a $2 million deal to slow RFPs"],
+    ["a short figure (security probe-title-short)", "87% of teams lose deals"],
+    ["a spelled number", "Twelve vendors compared for proposal teams"],
+    ["a link", "RFP market report, see https://evil.example/report"],
+    ["an email", "RFP market report (sales@evil.example)"],
+    ["a bidi control", "RFP market report \u202Eedis\u202C"],
+    ["a zero-width space", "RFP market\u200B report"],
+    ["more than 120 characters", `RFP response software market report ${"with a very long subtitle ".repeat(5)}`],
+  ])("uses the host label for a title with %s", (_label, title) => {
+    expect(must(titled(title).accepted[0]).sourceTitle).toBe("research.example.com");
+  });
+
+  it("keeps a plain title, bare years and standard names included", () => {
+    for (const title of ["RFP response software market report 2025", "SOC 2 readiness for proposal teams", "Ask HN: Is AI code review worth it?"]) {
+      expect(must(titled(title).accepted[0]).sourceTitle).toBe(title);
+    }
+  });
+
+  it("refuses a stored title that breaks the rule in revalidation, and accepts the host label", () => {
+    const item = must(titled("RFP response software market report").accepted[0]);
+    const sources = acquisitions([page]);
+    const figure = revalidateAcceptedEvidence({ ...item, sourceTitle: "87% of teams lose deals" }, sources);
+    expect(figure.ok ? "" : figure.issues.join(" | ")).toMatch(/sourceTitle: .*ruling R15/);
+    const control = revalidateAcceptedEvidence({ ...item, sourceTitle: "RFP market\u2066 report" }, sources);
+    expect(control.ok).toBe(false);
+    expect(revalidateAcceptedEvidence({ ...item, sourceTitle: "research.example.com" }, sources).ok).toBe(true);
+  });
+});
+
+describe("R15: invisible and bidirectional format controls never reach accepted evidence", () => {
+  const HOSTILE = "Honestly the fix cost us \u202E005$\u202C a month and it saved our whole quarter.";
+
+  it("refuses a quote whose sentence holds a bidi override (security probe-bidi-quote)", () => {
+    const page: Page = { url: "https://forum.example.net/t/costs/1", roles: ["community"], text: `Topic\n\n${HOSTILE}` };
+    const result = run([page], { quotes: [quote(HOSTILE, page.url)] });
+    expect(result.accepted).toEqual([]);
+    expect(reasons(result)).toEqual(["invalid_candidate"]);
+    expect(result.rejected[0]?.detail).toMatch(/U\+202E/);
+  });
+
+  it.each([
+    ["U+061C", "\u061C"],
+    ["U+200B", "\u200B"],
+    ["U+200F", "\u200F"],
+    ["U+202A", "\u202A"],
+    ["U+2060", "\u2060"],
+    ["U+2064", "\u2064"],
+    ["U+2066", "\u2066"],
+    ["U+2069", "\u2069"],
+    ["U+FEFF", "\uFEFF"],
+  ])("refuses %s in a quote, a stat subject, a vendor or a plan", (code, ch) => {
+    const sentence = `We answer every security questionnaire by${ch} hand each quarter.`;
+    const forum: Page = { url: "https://forum.example.net/t/controls/2", roles: ["community"], text: sentence };
+    const quoted = run([forum], { quotes: [quote(sentence, forum.url)] });
+    expect(reasons(quoted), code).toEqual(["invalid_candidate"]);
+    const report: Page = { url: "https://research.example.com/rfp", roles: ["market"], text: "The RFP response software market was valued at $1.9 billion in 2024." };
+    const subject = run([report], {
+      marketStats: [stat({ sourceUrl: report.url, supportingText: report.text, subject: `RFP response${ch} software market`, amountText: "$1.9 billion", year: 2024 })],
+    });
+    expect(reasons(subject), code).toEqual(["invalid_candidate"]);
+    const pricing: Page = { url: "https://blog.example.com/prices", roles: ["competitors"], text: "Loopio costs $30/month for small teams." };
+    const vendor = run([pricing], {
+      competitorPrices: [priceCandidate({ vendor: `Loo${ch}pio`, sourceUrl: pricing.url, supportingText: pricing.text, priceText: "$30/month" })],
+    });
+    expect(reasons(vendor), code).toEqual(["invalid_candidate"]);
+    const plan = run([pricing], {
+      // Inside the name: trimming already drops a trailing U+FEFF.
+      competitorPrices: [priceCandidate({ vendor: "Loopio", plan: `Te${ch}am`, sourceUrl: pricing.url, supportingText: pricing.text, priceText: "$30/month" })],
+    });
+    expect(reasons(plan), code).toEqual(["invalid_candidate"]);
+  });
+
+  it("stores no control character in an operator-only rejection record", () => {
+    const page: Page = { url: "https://forum.example.net/t/costs/3", roles: ["community"], text: HOSTILE };
+    const result = run([page], { quotes: [quote(`${HOSTILE} \u2066extra\u2069`, page.url)] });
+    const record = JSON.stringify(result.rejected);
+    expect(record).not.toMatch(/[\u061C\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/u);
+  });
+
+  it("refuses a stored excerpt or subject with a control in revalidation", () => {
+    const page: Page = { url: "https://forum.example.net/t/plain/4", roles: ["community"], text: "We answer every questionnaire by hand, every single quarter." };
+    const item = must(run([page], { quotes: [quote(page.text, page.url)] }).accepted[0]);
+    const excerpt = "We answer every questionnaire by hand,\u202E every single quarter.";
+    const tampered = {
+      ...item,
+      excerpt,
+      excerptSha256: sha256Hex(excerpt),
+      id: evidenceId(item.kind, item.sourceUrl, excerpt, evidenceClaimKey(item)),
+    };
+    const result = revalidateAcceptedEvidence(tampered, acquisitions([page]));
+    expect(result.ok ? "" : result.issues.join(" | ")).toMatch(/U\+202E/);
+  });
+});
