@@ -526,6 +526,23 @@ source acquisition statuses, accepted counts per kind, and rejected
   fallback), the MDX parser skips Year-One lines, and plain-text extraction
   unescapes compiled MDX.
 
+- **R13–R15 implementation notes (2026-10-03, accepted).** The R14
+  line-break rule applies to quote sentences only; stats and prices treat
+  each line as its own sentence so a claim never binds across table lines.
+  "after", "over" and "replace(d)" are cues only directly before a
+  capitalised brand ("$30/month after the free trial" stays valid), and a
+  different brand right after "for" behind a price rejects it. A brand-like
+  word is any capitalised word not on the common-word, plan and pricing
+  vocabulary lists and not an all-caps abbreviation; this fails closed (e.g.
+  "GitHub App: $24/month" is rejected). Price-less lines that state annual
+  billing ("All plans are billed annually.") count page-wide like toggles;
+  another plan's billing qualifier counts only within the price's own block
+  (its line and three lines above). The quoted-span rule also covers
+  data-model column text. Credential-like URL values are 16+ characters
+  mixing letters and digits that do not read as a slug, so opaque ids such
+  as Google Docs ids and UUID paths are refused too. The run report carries
+  `refusedCitations` (host and reason only).
+
 Phase 2 starts after S1 and S2 merge into `claude/wp54-pr71-remediation`.
 Workers use their own `.worktrees/wp46-*` checkout and branch (named before the WP54 renumbering), commit locally,
 never push, never merge, and never touch another worker's files. The
