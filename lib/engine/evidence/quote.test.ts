@@ -316,7 +316,9 @@ describe("escapeMdxText / unescapeMdxText", () => {
       }
     }
     expect(failures.slice(0, 10)).toEqual([]);
-  });
+    // Parses the whole corpus with the real MDX parser: ~1.5 s alone, more
+    // under a full parallel suite, so the default 5 s timeout is too tight.
+  }, 30_000);
 
   it("escapes block markers only at the start of a line", () => {
     expect(escapeMdxText("- a-b\n1. step 1.5")).toBe("\\- a-b\n1\\. step 1.5");
