@@ -68,18 +68,29 @@ export function newestRows(ideas: readonly ManifestIdea[], hasArt: (slug: string
     });
 }
 
+/** A manifest row the idea engine compiled (`source: "engine:<slug>"`). */
+export function isEngineIdea(idea: ManifestIdea): boolean {
+  return typeof idea.source === "string" && idea.source.startsWith("engine:");
+}
+
 /**
  * An idea can be featured weekly only when every tile it feeds has data:
  * art, How it works, 3+ prompts, pricing, a market number, and 3+ sources.
+ * An engine idea's problem, market, competitor and tier tiles come only from
+ * its generated highlights (ruling R15), which never carry tiers and carry
+ * competitors only when enough first-party prices fit, so those two tiles
+ * hide instead of blocking the feature; its problem and market still must
+ * be there.
  */
 export function isFeatureReady(idea: ManifestIdea, extract: IdeaExtract, hasArt: boolean): boolean {
+  const engine = isEngineIdea(idea);
   return (
     hasArt &&
     extract.problem.length > 0 &&
     extract.how.length >= 3 &&
     extract.market.length >= 1 &&
-    extract.competitors.length >= 3 &&
-    extract.tiers.length >= 1 &&
+    (engine || extract.competitors.length >= 3) &&
+    (engine || extract.tiers.length >= 1) &&
     extract.stack.length >= 3 &&
     extract.prompts.length >= 3 &&
     (idea.provenance?.citations ?? 0) >= 3

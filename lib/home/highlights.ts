@@ -5,8 +5,16 @@
  * manifest entry. `scripts/validate-idea-tags.mjs` enforces its shape at
  * publish time; this reader is lenient and drops anything malformed, so a bad
  * entry falls back to the MDX parser instead of breaking the homepage.
+ *
+ * An engine-compiled idea is different (ruling R15): `engine:compile`
+ * generates its highlights from accepted evidence, and the homepage shows
+ * those only. Parsing its page would drop billing terms from prices, lose
+ * "(via host)" labels and read Year-One lines as tiers, so a part its
+ * highlights do not provide stays empty and that tile hides.
  */
-import type { Competitor, IdeaExtract, MarketStat } from "./types";
+import { extractIdea } from "./extract";
+import { isEngineIdea } from "./library";
+import type { Competitor, IdeaExtract, ManifestIdea, MarketStat } from "./types";
 
 export type IdeaHighlights = {
   problemQuote?: string;
@@ -44,17 +52,40 @@ export function readHighlights(raw: unknown): IdeaHighlights | null {
   return Object.keys(out).length ? out : null;
 }
 
-/** Curated highlights replace the parsed values they cover. */
-export function applyHighlights(extract: IdeaExtract, highlights: IdeaHighlights | null): IdeaExtract {
-  if (!highlights) return extract;
-  const market: MarketStat[] | undefined = highlights.stats?.map((s) => ({
+function marketOf(highlights: IdeaHighlights): MarketStat[] | undefined {
+  return highlights.stats?.map((s) => ({
     value: s.value,
     text: s.source ? `${s.label}, per ${s.source}` : s.label,
   }));
+}
+
+/** Curated highlights replace the parsed values they cover. */
+export function applyHighlights(extract: IdeaExtract, highlights: IdeaHighlights | null): IdeaExtract {
+  if (!highlights) return extract;
   return {
     ...extract,
     problem: highlights.problemQuote ?? extract.problem,
-    market: market ?? extract.market,
+    market: marketOf(highlights) ?? extract.market,
     competitors: highlights.competitors ?? extract.competitors,
+  };
+}
+
+/**
+ * What the homepage shows for one manifest row and its MDX body. A
+ * handwritten idea: the parsed page with curated highlights on top. An
+ * engine idea (ruling R15): problem, market, competitors and tiers from its
+ * generated highlights only (tiers never: highlights carry none); How it
+ * works, the stack and the prompts still come from the page.
+ */
+export function ideaHomeExtract(idea: ManifestIdea, body: string): IdeaExtract {
+  const parsed = extractIdea(body);
+  const highlights = readHighlights(idea.highlights);
+  if (!isEngineIdea(idea)) return applyHighlights(parsed, highlights);
+  return {
+    ...parsed,
+    problem: highlights?.problemQuote ?? "",
+    market: (highlights && marketOf(highlights)) ?? [],
+    competitors: highlights?.competitors ?? [],
+    tiers: [],
   };
 }
