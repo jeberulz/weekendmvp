@@ -7,6 +7,7 @@ import type { Infer } from "convex/values";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { isEngineDraftSlug } from "../lib/engine-drafts";
 import { selectLibrary, type RankedCard } from "./platform/libraryResults";
 import { capabilityExpiresAt, generateCapabilityToken, hashCapabilityToken } from "./platform/preview/capabilities";
 import { normalizePreviewCustomisation, toSiteInput } from "./platform/preview/customisation";
@@ -387,6 +388,37 @@ describe("member discovery after the reseed", () => {
       slugs: [REVIEWER_DRAFT, "ai-code-reviewer", "rfp-desk"],
     });
     expect(slugsOf(rows)).toEqual(["ai-code-reviewer", "rfp-desk"]);
+  });
+});
+
+describe("the draft prefix boundary (review M34)", () => {
+  // A slug that is exactly the prefix sits on the range's lower bound.
+  const BARE_PREFIX = "engine-draft-";
+  // Just below the range, and just past its upper bound ("engine-draft.").
+  const NEIGHBOURS = ["engine-draft", "engine-drafts-x"] as const;
+
+  test("a slug that is exactly the draft prefix is a draft, in the pure rule and in the database filter", async () => {
+    expect(isEngineDraftSlug(BARE_PREFIX)).toBe(true);
+    for (const slug of NEIGHBOURS) expect(isEngineDraftSlug(slug), slug).toBe(false);
+
+    control.plan = "free";
+    const t = convexTest(schema, modules);
+    await t.mutation(internal.seed.seedIdeas, {
+      items: [
+        // Newest, so a leak would lead every list.
+        ordinary(BARE_PREFIX, { publishedAt: Date.parse("2026-09-30") }),
+        ordinary(NEIGHBOURS[0], { publishedAt: Date.parse("2026-09-20") }),
+        ordinary(NEIGHBOURS[1], { publishedAt: Date.parse("2026-09-19") }),
+      ],
+    });
+    expect(await storedSlugs(t)).toContain(BARE_PREFIX);
+
+    expect(slugsOf((await t.query(api.ideas.list, { limit: 20 })).page)).toEqual(NEIGHBOURS);
+    expect(slugsOf(await t.query(api.ideas.allForSitemap, {}))).toEqual(NEIGHBOURS);
+    expect((await t.query(api.ideas.latest, {}))?.slug).toBe(NEIGHBOURS[0]);
+    const member = asUser(t, await seedUser(t, "boundary@example.test"));
+    const library = await drainLibrary(member, { numItems: 20 });
+    expect(library.flatMap((page) => slugsOf(page.page))).toEqual(NEIGHBOURS);
   });
 });
 
