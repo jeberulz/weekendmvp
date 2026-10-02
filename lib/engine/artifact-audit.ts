@@ -387,14 +387,6 @@ function relabel(segs: Seg[], from: SegKind, to: SegKind): Seg[] {
   return segs.map((s) => (s.kind === from ? { ...s, kind: to } : s));
 }
 
-/** Quote marks findQuotedSpans pairs (fullwidth ＂ included, as its NFKC reads it). */
-const QUOTE_MARKS_AROUND_RE = /^["“”„‟«»〝〞〟＂]([\s\S]*?)["“”„‟«»〝〞〟＂]?$/u;
-
-/** The text inside a span from findQuotedSpans (its marks removed; an unclosed span has no closing mark). */
-function spanInner(span: string): string {
-  return QUOTE_MARKS_AROUND_RE.exec(span)?.[1] ?? span;
-}
-
 const MONEY = String.raw`(?:(?:US|CA|AU|C|A)?[$€£]\s?\d[\d,]*(?:\.\d+)?|(?:USD|EUR|GBP|CAD|AUD)\s?\d[\d,]*(?:\.\d+)?|\d[\d,]*(?:\.\d+)?\s?(?:USD|EUR|GBP|CAD|AUD)\b)(?:\s?(?:k|m|mn|bn|b|thousand|million|billion|trillion)\b)?`;
 const REVENUE_NOUN = String.raw`(?:ARR|MRR|revenue|run[- ]?rate|sales|income)`;
 const REVENUE_MODIFIER = String.raw`(?:annual|annualized|yearly|monthly|recurring|new|total|gross|net|projected|expected)`;
@@ -593,8 +585,7 @@ function applyRules(state: State): number {
           : `${piece.section}: unbound figure "${hit.figure}" near line ${piece.line} ("…${context}…") — not a rendering of the record's evidence (guard, not proof of truth)`,
       );
     }
-    for (const { span } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
-      const inner = spanInner(span);
+    for (const { inner } of findQuotedSpans(pieceText(piece, QUOTE_MASK))) {
       if (ev.quotes.some((q) => quoteMatchesExcerpt(inner, q.excerpt))) continue;
       ctx.errors.push(
         `${piece.section}: quoted text "${clip(inner, 120)}" near line ${piece.line} is not an accepted community quote this record uses; quotations reach the page only through quote evidence`,
