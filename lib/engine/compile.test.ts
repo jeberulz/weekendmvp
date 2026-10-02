@@ -86,6 +86,16 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(manifestEntry.description).toBe("A quiet, repository-aware sanity check for every pull request on small GitHub teams.");
   });
 
+  it("marks the page as engine output in its frontmatter, which the site's loader ignores (P3-8)", async () => {
+    const { mdx } = compileFixture();
+    expect(mdx.split("\n").slice(0, 5)).toEqual(["---", `slug: "${FIXTURE_PAGE_SLUG}"`, 'title: "AI Code Reviewer for Small Teams"', "engine: true", "---"]);
+    // lib/mdx.tsx reads pages with gray-matter and uses only `title` and the content.
+    const matter = (await import("gray-matter")).default;
+    const parsed = matter(mdx);
+    expect(parsed.data).toEqual({ slug: FIXTURE_PAGE_SLUG, title: "AI Code Reviewer for Small Teams", engine: true });
+    expect(parsed.content.trimStart().startsWith("## The Problem")).toBe(true);
+  });
+
   it("renders each selected quote as one blockquote line with its attribution (a quote is one line of its source, R8)", () => {
     const { mdx } = compileFixture();
     for (const quote of [EV.quoteHn, EV.quoteForum, EV.quoteLobsters]) {

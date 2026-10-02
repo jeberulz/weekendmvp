@@ -768,10 +768,14 @@ export function compileResearchRecord(options: CompileOptions): CompileResult {
     ].join("\n"),
   );
 
+  // `engine: true` marks the page as compiler output, so the auditor holds it
+  // to the deep bar wherever it sits (P3-8). The site reads only title and
+  // publishedAt from frontmatter; the marker is ignored there.
   const mdx = [
     "---",
     `slug: ${JSON.stringify(slug)}`,
     `title: ${JSON.stringify(record.brief.title)}`,
+    "engine: true",
     "---",
     "",
     body,
