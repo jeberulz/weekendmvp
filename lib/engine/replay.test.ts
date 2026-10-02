@@ -4,7 +4,7 @@
  *
  * The real CLIs run as child processes with the npm scripts' node flags, in
  * a temp dir, with an environment that holds no provider keys, on the
- * synthetic RFP fixture (engine/briefs/rfp-assistant.json):
+ * synthetic RFP fixture (engine/briefs/fixtures/rfp-assistant.json):
  *
  *   engine-research.mjs --fixture rfp-assistant --out <tmp>/r.json
  *   engine-compile.mjs  --record <tmp>/r.json --slug engine-draft-replay-rfp
@@ -65,7 +65,13 @@ import { evidenceClaimKey, evidenceId } from "./evidence/accept.ts";
 import { canonicalSourceUrl } from "./evidence/citation.ts";
 import type { AcceptedEvidence, ResearchRecordV2 } from "./evidence/contract.ts";
 import { runResearch, type BriefInput, type EditorialEvidenceItem } from "./pipeline.ts";
-import { createFixtureProviders, FIXTURE_PAGES, fixtureEditorialReply, type FixtureProviderOptions } from "./providers/fixtures.ts";
+import {
+  createFixtureProviders,
+  FIXTURE_BRIEF_SLUG,
+  FIXTURE_PAGES,
+  fixtureEditorialReply,
+  type FixtureProviderOptions,
+} from "./providers/fixtures.ts";
 import { LegacyResearchRecordError, parseResearchRecord, readLegacyResearchRecordV1 } from "./research-record.ts";
 
 const TIMEOUT = 180_000;
@@ -74,7 +80,7 @@ const RESEARCH = path.join(REPO_ROOT, "scripts", "engine-research.mjs");
 const REPLAY_SCRIPT = path.join(REPO_ROOT, "scripts", "engine-replay.mjs");
 const RE_RESEARCH = "Re-run `npm run engine:research -- --brief <brief.json> --live` to produce a contract v2 record.";
 
-const BRIEF: BriefInput = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "engine", "briefs", "rfp-assistant.json"), "utf8"));
+const BRIEF: BriefInput = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "engine", "briefs", "fixtures", "rfp-assistant.json"), "utf8"));
 
 type Json = Record<string, unknown>;
 
@@ -243,7 +249,7 @@ describe("replay: research → compile → audit through the real CLIs (fixture,
   it("exits 0 at every step and the page passes the full deep bar", () => {
     const { research, compile, audit, auditResult } = replay;
     expect(research.code, research.stderr).toBe(0);
-    expect(research.stdout).toMatch(/engine:research ok · mode fixture · slug ai-rfp-response-assistant/);
+    expect(research.stdout).toMatch(new RegExp(`engine:research ok · mode fixture · slug ${FIXTURE_BRIEF_SLUG}`));
     const report = readJson(`${replay.recordPath}.report.json`);
     expect(report).toMatchObject({ ok: true, mode: "fixture", pipelineVersion: 2, recordContractVersion: 2 });
 

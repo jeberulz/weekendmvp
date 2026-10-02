@@ -3,6 +3,10 @@
  * no keys, no spend.
  */
 
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -18,6 +22,7 @@ import { createProviders } from "./providers.ts";
 import {
   createFixtureProviders,
   FIXTURE_BRIEF_SLUG,
+  FIXTURE_BRIEFS_DIR,
   FIXTURE_EXTRACTION,
   FIXTURE_PAGES,
   FIXTURE_URLS,
@@ -34,7 +39,7 @@ const RFP_BRIEF: BriefInput = {
   audience: "SMB SaaS sales and solutions engineers",
   revenueModel: "Seat-based SaaS with usage caps",
   seedKeywords: ["rfp response software", "security questionnaire automation", "proposal management software"],
-  slug: "ai-rfp-response-assistant",
+  slug: FIXTURE_BRIEF_SLUG,
   oneLiner: "Grounded RFP drafts with citations for SMB sales teams.",
 };
 
@@ -316,5 +321,138 @@ describe("runResearch (fixture)", () => {
       (id) => record.evidence.accepted.find((e) => e.id === id)?.sourceUrl,
     );
     expect(quoteSources).toEqual([FIXTURE_URLS.supplementThread, FIXTURE_URLS.supplementThread]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Review P3-10: the operator's brief owns title, slug and one-liner
+// ---------------------------------------------------------------------------
+
+describe("brief normalization (review P3-10)", () => {
+  it("keeps the operator's title, slug, one-liner and audience when the model renames the idea", async () => {
+    const providers = createFixtureProviders({
+      synthesis: {
+        brief: () => ({
+          title: "Totally Different Idea",
+          slug: "totally-different-idea",
+          oneLiner: "Something else entirely.",
+          audience: "everyone",
+          model: "Usage-based API pricing for proposal teams",
+          seedKeywords: [
+            "RFP response software",
+            "rfp response software",
+            "https://evil.example/keyword",
+            "see www.example.com",
+            "x".repeat(81),
+            "security questionnaire tool",
+          ],
+        }),
+      },
+    });
+    const lookups: string[][] = [];
+    const real = providers.keywordData;
+    providers.keywordData = {
+      ...real,
+      lookup: (request) => {
+        lookups.push([...request.keywords]);
+        return real.lookup(request);
+      },
+    };
+    const { record } = await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(record.brief).toEqual({
+      title: RFP_BRIEF.title,
+      slug: FIXTURE_BRIEF_SLUG,
+      oneLiner: RFP_BRIEF.oneLiner,
+      targetCustomer: RFP_BRIEF.audience,
+    });
+    // Keywords: deduplicated case-insensitively, no links, at most 80 characters.
+    expect(lookups).toEqual([["RFP response software", "security questionnaire tool"]]);
+  });
+
+  it("keeps the operator's business model and keywords when the reply is out of bounds", async () => {
+    const providers = createFixtureProviders({
+      synthesis: { brief: () => ({ model: "See https://example.invalid/pricing", seedKeywords: ["https://a.example"] }) },
+    });
+    const lookups: string[][] = [];
+    const real = providers.keywordData;
+    providers.keywordData = {
+      ...real,
+      lookup: (request) => {
+        lookups.push([...request.keywords]);
+        return real.lookup(request);
+      },
+    };
+    await runResearch({ brief: RFP_BRIEF, providers, mode: "fixture" });
+    expect(lookups).toEqual([RFP_BRIEF.seedKeywords]);
+  });
+
+  it("refuses an operator one-liner with a figure or a quotation before any paid call (ruling R6)", async () => {
+    for (const oneLiner of ["Cut RFP time by 60% for SMB sales teams.", "Drafts that sales teams call “the answer we always wanted” every week."]) {
+      const providers = createProviders({ mode: "fixture" });
+      const requests = captureSynthesis(providers);
+      const error = await failureOf(runResearch({ brief: { ...RFP_BRIEF, oneLiner }, providers, mode: "fixture" }));
+      expect(error.stepId).toBe("brief_normalization");
+      expect(error.message).toMatch(/brief\.oneLiner: (?:figure|quotation)/);
+      expect(requests).toHaveLength(0);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R12: the code revision in the report and the record
+// ---------------------------------------------------------------------------
+
+describe("code revision (ruling R12)", () => {
+  it("copies the caller's revision into the report and the record, and reports nulls when it is unknown", async () => {
+    const codeRevision = { sha: "0123456789abcdef0123456789abcdef01234567", dirty: false };
+    const { record, report } = await runResearch({ brief: RFP_BRIEF, providers: createProviders({ mode: "fixture" }), mode: "fixture", codeRevision });
+    expect(report.codeRevision).toEqual(codeRevision);
+    expect(record.provenance.codeRevision).toEqual(codeRevision);
+    const unknown = await runResearch({ brief: RFP_BRIEF, providers: createProviders({ mode: "fixture" }), mode: "fixture" });
+    expect(unknown.report.codeRevision).toEqual({ sha: null, dirty: null });
+  });
+
+  it("names the revision in a failure report too", async () => {
+    const codeRevision = { sha: "a".repeat(40), dirty: true };
+    const error = await failureOf(
+      runResearch({ brief: RFP_BRIEF, providers: createFixtureProviders({ scenario: "thin-evidence" }), mode: "fixture", codeRevision }),
+    );
+    expect(error.report?.codeRevision).toEqual(codeRevision);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R11: fixture output stays out of publishing
+// ---------------------------------------------------------------------------
+
+describe("fixture slug (ruling R11)", () => {
+  const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+  it("matches no published idea: manifest, content, generated slugs or engine records", () => {
+    const manifest: unknown = JSON.parse(readFileSync(path.join(repo, "ideas", "manifest.json"), "utf8"));
+    const ideas = typeof manifest === "object" && manifest !== null && "ideas" in manifest && Array.isArray(manifest.ideas) ? manifest.ideas : [];
+    const slugs = ideas.flatMap((idea: unknown) =>
+      typeof idea === "object" && idea !== null && "slug" in idea && typeof idea.slug === "string" ? [idea.slug] : [],
+    );
+    expect(slugs.length).toBeGreaterThan(100);
+    expect(slugs).not.toContain(FIXTURE_BRIEF_SLUG);
+    expect(existsSync(path.join(repo, "content", "ideas", `${FIXTURE_BRIEF_SLUG}.mdx`))).toBe(false);
+    expect(readFileSync(path.join(repo, "lib", "idea-slugs.generated.ts"), "utf8")).not.toContain(FIXTURE_BRIEF_SLUG);
+    expect(existsSync(path.join(repo, "engine", "records", `${FIXTURE_BRIEF_SLUG}.json`))).toBe(false);
+  });
+
+  it("is the slug of every fixture brief, and of no live brief", () => {
+    const fixtureDir = path.join(repo, FIXTURE_BRIEFS_DIR);
+    const fixtureBriefs = readdirSync(fixtureDir).filter((f) => f.endsWith(".json"));
+    expect(fixtureBriefs.sort()).toEqual(["rfp-assistant-thin-evidence.json", "rfp-assistant.json"]);
+    for (const file of fixtureBriefs) {
+      expect(JSON.parse(readFileSync(path.join(fixtureDir, file), "utf8")).slug, file).toBe(FIXTURE_BRIEF_SLUG);
+    }
+    const liveDir = path.join(repo, "engine", "briefs");
+    for (const file of readdirSync(liveDir).filter((f) => f.endsWith(".json"))) {
+      const brief: unknown = JSON.parse(readFileSync(path.join(liveDir, file), "utf8"));
+      expect(brief, file).not.toHaveProperty("fixtureScenario");
+      expect(typeof brief === "object" && brief !== null && "slug" in brief ? brief.slug : null, file).not.toBe(FIXTURE_BRIEF_SLUG);
+    }
   });
 });

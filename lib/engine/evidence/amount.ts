@@ -94,6 +94,15 @@
  *   inc., ltd., co., corp., no., mr., dr., month names) does not end one.
  *   Clauses also split at "|", tabs, ";" and before the contrast words while,
  *   whereas, but, versus, vs, compared to/with.
+ *
+ * COMPARISONS AND BILLING (ruling R9)
+ *   comparisonCueFor: unlike, than, instead, versus/vs, compare(d)/comparison,
+ *   alternative(s), competitor(s)/competing, switch(ed) from/to/away anywhere
+ *   in the sentence(s) of a price's clause. ambiguousBilling: the price's line
+ *   plus PRICE_BLOCK_LINES_ABOVE (3) non-blank lines above it show an annual
+ *   cue (annual, annually, yearly) and a monthly one (monthly, or the price
+ *   itself per month), and the clause names neither billing; a per-year or
+ *   one-time price states its own term; negated cues do not count.
  */
 
 import type {
@@ -1040,6 +1049,98 @@ export function comparePriceTerms(candidate: PriceTerms, source: PriceTerms): Re
   if (candidate.basis !== source.basis) return "basis_mismatch";
   if (!sameQualifiers(candidate.qualifiers, source.qualifiers)) return "qualifier_dropped";
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Ruling R9: comparisons and ambiguous billing around a price
+// ---------------------------------------------------------------------------
+
+/**
+ * Words that make a sentence compare vendors (ruling R9): unlike, than,
+ * instead (of), rather than, versus/vs, compare(d)/comparison,
+ * alternative(s), competitor(s)/competing, switch(ed) from/to/away.
+ */
+const COMPARISON_CUE_RE =
+  /(?<![\p{L}\p{N}])(?:unlike|than|instead|versus|vs\.?|compar(?:e|ed|es|ing|ison|isons)|alternatives?|competitors?|competing|switch(?:es|ed|ing)?[ \t\u00A0]+(?:from|to|away))(?![\p{L}\p{N}])/iu;
+
+/**
+ * The comparison cue in the sentence(s) a price expression's clause spans,
+ * lowercased with single spaces, or null. The whole sentence counts, not
+ * only the clause: "versus" and "compared to" also split clauses, so the
+ * cue would otherwise always sit in the neighbouring clause.
+ */
+export function comparisonCueFor(text: string, expression: { clauseStart: number; clauseEnd: number }): string | null {
+  const start = sentenceAround(text, expression.clauseStart).start;
+  const end = sentenceAround(text, Math.max(expression.clauseStart, expression.clauseEnd - 1)).end;
+  const m = COMPARISON_CUE_RE.exec(text.slice(start, end));
+  return m ? m[0].toLowerCase().replace(/\s+/g, " ") : null;
+}
+
+/**
+ * The block of a price (ruling R9, ambiguous billing): its own line plus up
+ * to this many non-blank lines directly above it. A pricing toggle or an
+ * "all plans are billed annually" line usually sits there.
+ */
+export const PRICE_BLOCK_LINES_ABOVE = 3;
+
+const ANNUAL_CUE_RE = /(?<![\p{L}])(?:annual|annually|yearly)(?![\p{L}])/giu;
+const MONTHLY_CUE_RE = /(?<![\p{L}])monthly(?![\p{L}])/giu;
+
+/** [start, end) of the line holding `index` (line breaks excluded). */
+export function lineAround(text: string, index: number): { start: number; end: number } {
+  let start = Math.max(0, Math.min(index, text.length));
+  while (start > 0 && !NEWLINE_RE.test(at(text, start - 1))) start -= 1;
+  let end = Math.max(0, Math.min(index, text.length));
+  while (end < text.length && !NEWLINE_RE.test(at(text, end))) end += 1;
+  return { start, end };
+}
+
+/** The nearest non-blank line above the line starting at `lineStart`, or null. */
+export function lineAbove(text: string, lineStart: number): { start: number; end: number } | null {
+  let cursor = lineStart - 1;
+  while (cursor >= 0) {
+    while (cursor >= 0 && NEWLINE_RE.test(at(text, cursor))) cursor -= 1;
+    if (cursor < 0) return null;
+    const line = lineAround(text, cursor);
+    if (text.slice(line.start, line.end).trim() !== "") return line;
+    cursor = line.start - 1;
+  }
+  return null;
+}
+
+function hasBillingCue(re: RegExp, text: string): boolean {
+  for (const m of text.matchAll(new RegExp(re.source, re.flags))) {
+    if (!NEGATION_BEFORE_RE.test(text.slice(0, m.index ?? 0))) return true;
+  }
+  return false;
+}
+
+/**
+ * Ruling R9: why a price's billing is ambiguous, or null. When the price's
+ * block (its line and PRICE_BLOCK_LINES_ABOVE non-blank lines above) shows
+ * both an annual cue (annual, annually, yearly) and a monthly one (monthly,
+ * or the price itself being per month) and the price's clause states
+ * neither billed annually nor billed monthly, a reader cannot tell which
+ * billing the figure is. A per-year or one-time price states its own term.
+ * Negated cues ("no annual contract") do not count.
+ */
+export function ambiguousBilling(text: string, expression: PriceExpression): string | null {
+  const { qualifiers, period } = expression.terms;
+  if (qualifiers.includes("billed_annually") || qualifiers.includes("billed_monthly")) return null;
+  if (period === "year" || period === "one_time") return null;
+  const own = lineAround(text, expression.start);
+  let blockStart = own.start;
+  let line: { start: number; end: number } | null = own;
+  for (let i = 0; i < PRICE_BLOCK_LINES_ABOVE && line; i += 1) {
+    line = lineAbove(text, line.start);
+    if (line) blockStart = line.start;
+  }
+  const block = text.slice(blockStart, own.end);
+  const lines = block.split(/[\n\r\u2028\u2029]+/);
+  const annual = lines.some((l) => hasBillingCue(ANNUAL_CUE_RE, l));
+  const monthly = period === "month" || lines.some((l) => hasBillingCue(MONTHLY_CUE_RE, l));
+  if (!annual || !monthly) return null;
+  return "ambiguous billing: the price's block shows both monthly and annual billing and its clause states neither (ruling R9)";
 }
 
 const QUALIFIER_LABEL: Record<Exclude<PriceQualifier, "starting_at">, string> = {

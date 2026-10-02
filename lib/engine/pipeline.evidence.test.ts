@@ -56,7 +56,7 @@ import { parseResearchRecord, type KeywordRow } from "./research-record.ts";
 // ---------------------------------------------------------------------------
 
 const BRIEF: BriefInput = JSON.parse(
-  readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../engine/briefs/rfp-assistant.json"), "utf8"),
+  readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../engine/briefs/fixtures/rfp-assistant.json"), "utf8"),
 );
 
 type Json = Record<string, unknown>;
@@ -202,6 +202,15 @@ describe("F1: the writer sees accepted evidence only", () => {
     expect(input).toContain('"term":"rfp response software"');
   });
 
+  it("shows the writer each item's whole claim, so a re-attached token still reads as its own claim (ruling R7, probe p4 v5)", async () => {
+    const h = harness();
+    await run(h);
+    const input = editorialRequests(h)[0]?.input ?? "";
+    expect(input).toContain('"text":"64% (B2B SaaS sales teams using spreadsheets for security questionnaires, adoption, 2025)"');
+    expect(input).toContain('"text":"$1.9 billion (RFP response software market, market size, 2024)"');
+    expect(input).toContain('"text":"$49/user/month, billed annually (Bidwell Starter plan)"');
+  });
+
   it("yields a v2 record whose writer fields and accepted evidence hold none of the rejected claims", async () => {
     const { record } = await run(f1Harness());
     const reparsed = parseResearchRecord(JSON.parse(JSON.stringify(record)));
@@ -237,7 +246,9 @@ function wouldBeId(candidate: QuoteCandidate): string {
   const result = acceptEvidence({
     candidates: { quotes: [candidate], marketStats: [], competitorPrices: [] },
     citations: [{ url: candidate.sourceUrl, title: "x" }],
-    sources: new Map([[candidate.sourceUrl, { status: "read", text: candidate.text, retrievedAt: "2026-10-01T00:00:00.000Z" }]]),
+    sources: new Map([
+      [candidate.sourceUrl, { status: "read", text: candidate.text, retrievedAt: "2026-10-01T00:00:00.000Z", roles: ["community"] }],
+    ]),
   });
   const item = result.accepted[0];
   if (!item) throw new Error("oracle did not accept");
@@ -277,6 +288,59 @@ const BAD_WRITERS: Array<[string, (evidence: EditorialEvidenceItem[]) => unknown
     /^- editorial\.problemNarrative: unbound figure "47"/m,
   ],
   ["replies with prose instead of JSON", () => "Here is the record you asked for.", /^- reply: not one JSON object/m],
+  // The final review's probe p4 writers (rulings R6 and R7), through the complete pipeline.
+  [
+    "puts invented figures in proposal text (review probe p4 v1)",
+    (evidence) => {
+      const reply = defaultReply(evidence);
+      const steps = Array.isArray(reply.howItWorks) ? reply.howItWorks : [];
+      reply.howItWorks = [`${String(steps[0])} Sales teams of 8 answer 47 questionnaires a quarter.`, ...steps.slice(1)];
+      const goToMarket = isRecord(reply.goToMarket) ? reply.goToMarket : {};
+      const channels = Array.isArray(goToMarket.channels) ? goToMarket.channels : [];
+      goToMarket.channels = ["Founder-led outreach to the 30% of sales engineers who answer questionnaires weekly", ...channels.slice(1)];
+      reply.goToMarket = goToMarket;
+      const editorial = isRecord(reply.editorial) ? reply.editorial : {};
+      editorial.dontBuildYet = "Do not build CRM sync yet: 12 deals a year are lost to slow security reviews.";
+      editorial.stackNotes = `${String(editorial.stackNotes)} Proposal teams spend 40 hours per RFP today.`;
+      reply.editorial = editorial;
+      return reply;
+    },
+    /^- howItWorks\[0\]: unbound figure "8"/m,
+  ],
+  [
+    "competitor notes cite another vendor's price (review probe p4 v2)",
+    (evidence) => {
+      const reply = defaultReply(evidence);
+      const prices = evidence.filter((e) => e.kind === "competitor_price");
+      const competitors = Array.isArray(reply.competitors) ? reply.competitors.filter(isRecord) : [];
+      const second = competitors[1];
+      if (second) second.notes = `This per-seat plan costs [[ev:${prices[0]?.id ?? ""}]] for every proposal writer on a small sales team.`;
+      return reply;
+    },
+    /^- competitors\[1\]\.notes: evidence p_[0-9a-f]{12} is not one of the items this field may cite/m,
+  ],
+  [
+    "invents a quotation with spelled figures (review probe p4 v3)",
+    (evidence) => {
+      const reply = defaultReply(evidence);
+      const editorial = isRecord(reply.editorial) ? reply.editorial : {};
+      editorial.problemNarrative = `${String(editorial.problemNarrative)}\n\nAs one commenter put it, “our team of eight answers forty seven questionnaires a quarter.”`;
+      reply.editorial = editorial;
+      return reply;
+    },
+    /^- editorial\.problemNarrative: unbound figure "eight"/m,
+  ],
+  [
+    "writes fullwidth digits (review probe p4 v4)",
+    (evidence) => {
+      const reply = defaultReply(evidence);
+      const editorial = isRecord(reply.editorial) ? reply.editorial : {};
+      editorial.problemNarrative = `${String(editorial.problemNarrative)} Sales teams of ８ answer ４７ questionnaires a quarter.`;
+      reply.editorial = editorial;
+      return reply;
+    },
+    /^- editorial\.problemNarrative: unbound figure "８"/m,
+  ],
 ];
 
 describe("F1: writer output is validated before a record exists", () => {

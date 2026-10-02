@@ -18,11 +18,12 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { acceptEvidence, type SourceInput } from "./evidence/accept.ts";
+import { acceptEvidence, evidenceClaimKey, evidenceId, type SourceInput } from "./evidence/accept.ts";
 import { canonicalSourceUrl } from "./evidence/citation.ts";
 import {
   EVIDENCE_LIMITS,
   FACT_BEARING_FIELDS,
+  WRITER_TEXT_FIELDS,
   type AcceptedEvidence,
   type ExtractionCandidates,
   type ResearchRecordV2,
@@ -80,7 +81,7 @@ const PAGES = {
     url: "https://news.ycombinator.com/item?id=27515468",
     title: "Ask HN: AI code review",
     roles: ["community"],
-    text: "Comment: All these small teams need is a quiet sanity check on every pull request. Reply: agreed, the rest is noise.",
+    text: "Comment\nAll these small teams need is a quiet sanity check on every pull request.\nReply: agreed, the rest is noise.",
   },
   forum: {
     url: "https://forum.example.com/t/ai-review-noise",
@@ -92,7 +93,7 @@ const PAGES = {
     url: "https://lobste.rs/s/abc123/review_noise",
     title: "Review noise",
     roles: ["community"],
-    text: "Quoting HN: All these small teams need is a quiet sanity check on every pull request.",
+    text: "Quoting HN\nAll these small teams need is a quiet sanity check on every pull request.",
   },
   // Cited by the community search but never read (no text): unreadable.
   reddit: {
@@ -189,8 +190,8 @@ function acquisitionInput(pages: ReadonlyArray<Page>): Map<string, SourceInput> 
     pages.map((p): [string, SourceInput] => [
       p.url,
       p.text === undefined
-        ? { status: "unreadable" }
-        : { status: "read", text: p.text, retrievedAt: AT, textSha256: sha256(p.text) },
+        ? { status: "unreadable", roles: p.roles }
+        : { status: "read", text: p.text, retrievedAt: AT, textSha256: sha256(p.text), roles: p.roles },
     ]),
   );
 }
@@ -301,13 +302,13 @@ function buildRecord(): ResearchRecordV2 {
     },
     whyNow: "AI-generated code is increasing review load faster than small teams can add reviewers.",
     howItWorks: [
-      "Install — Add the GitHub App to a repository in 2 clicks.",
-      "Review — Get one short summary and at most 3 risks per pull request.",
+      "Install — Add the GitHub App to a repository and pick the branches it should watch.",
+      "Review — Get one short summary and only the risks that need a human look on each pull request.",
     ],
     scores: { opportunity: 7.5, pain: 8, timing: 8, builderConfidence: 7, execution: 7.5 },
     editorial: {
       productName: "ReviewLoom",
-      dontBuildYet: "Do not build IDE plugins or self-hosted runners in the first 30 days.",
+      dontBuildYet: "Do not build IDE plugins or self-hosted runners until paying teams ask for them.",
       problemNarrative:
         "Small GitHub teams merge more AI-assisted code than ever, and review has become the bottleneck. Maintainers describe queues of pull requests that nobody has time to read closely, and bots that bury the one useful comment under noise.",
       solutionNarrative:
@@ -331,7 +332,7 @@ function buildRecord(): ResearchRecordV2 {
         tier: "Crew",
         payingAccounts: 45,
         seatsPerAccount: 5,
-        assumptions: "Five paid developers per Crew account on average.",
+        assumptions: "The seat count per Crew account is an assumption from early interviews, not a measured average.",
       },
       dataModel: [
         { table: "repositories", columns: "id, workspace_id, github_repo_id, name" },
@@ -941,6 +942,52 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
     },
   );
 
+  it.each(WRITER_TEXT_FIELDS.map((field) => [field.replace("[]", "[0]")]))(
+    "applies the R6 rules to writer field %s: fullwidth digits, number words and quotations",
+    (field) => {
+      const fullwidth = fresh();
+      setAt(fullwidth, field, `${textAt(fullwidth, field)} Teams of ８ answer ４７ of them.`);
+      expectRejected(fullwidth, new RegExp(`^${escapeRe(field)}: unbound figure "８"`, "m"));
+      const spelled = fresh();
+      setAt(spelled, field, `${textAt(spelled, field)} Our team of eight answers forty seven of them.`);
+      expectRejected(
+        spelled,
+        new RegExp(`^${escapeRe(field)}: unbound figure "eight"`, "m"),
+        new RegExp(`^${escapeRe(field)}: unbound figure "forty seven"`, "m"),
+      );
+      const quoted = fresh();
+      setAt(quoted, field, `${textAt(quoted, field)} As one reviewer put it, “we read every single diff by hand.”`);
+      expectRejected(quoted, new RegExp(`^${escapeRe(field)}: double-quoted span`, "m"));
+    },
+  );
+
+  it("rejects an invented inline quotation with spelled figures (review probe p4 v3)", () => {
+    const input = fresh();
+    setAt(
+      input,
+      "editorial.problemNarrative",
+      `${textAt(input, "editorial.problemNarrative")}\n\nAs one Hacker News commenter put it, “our team of eight answers forty seven questionnaires a quarter and loses a dozen deals a year to slow security reviews.”`,
+    );
+    expectRejected(
+      input,
+      /^editorial\.problemNarrative: unbound figure "eight"/m,
+      /^editorial\.problemNarrative: unbound figure "forty seven"/m,
+      /^editorial\.problemNarrative: unbound figure "dozen"/m,
+      /^editorial\.problemNarrative: double-quoted span/m,
+    );
+  });
+
+  it("rejects fullwidth and mathematical digits in prose (review probe p4 v4)", () => {
+    const input = fresh();
+    setAt(input, "editorial.problemNarrative", `${textAt(input, "editorial.problemNarrative")} Sales teams of ８ answer ４７ questionnaires and spend ６０％ of their week on them.`);
+    setAt(input, "market.summary", `${textAt(input, "market.summary")} The niche already spends $𝟏𝟐 million a year on manual answering.`);
+    expectRejected(
+      input,
+      /^editorial\.problemNarrative: unbound figure "６０％"/m,
+      /^market\.summary: unbound figure "\$𝟏𝟐 million"/m,
+    );
+  });
+
   it("accepts an accepted-evidence token where a fact-bearing field needs a figure", () => {
     const input = fresh();
     setAt(input, "whyNow", `${textAt(input, "whyNow")} The category already reached ${tok(EV.statMeasured)}.`);
@@ -960,11 +1007,33 @@ describe("parseResearchRecord: fact-bearing text carries figures only through to
     expect(() => parseResearchRecord(input)).not.toThrow();
   });
 
-  it("allows figures in proposal fields", () => {
+  // Ruling R6 replaced "allows figures in proposal fields": stackNotes and
+  // channels are writer text now; only the numeric proposal slots keep figures.
+  it("allows figures only in the numeric proposal slots (ruling R6)", () => {
+    const input = fresh();
+    setAt(input, "editorial.pricingTiers[0].price", "$12/month");
+    setAt(input, "editorial.pricingTiers[0].includes", "Up to 3 private repositories and 120-word summaries.");
+    setAt(input, "editorial.unitEconomics[0].value", "$0.04 per pull request, 80% margin");
+    setAt(input, "editorial.dataModel[0].columns", "id, workspace_id, github_repo_id bigint, name varchar(255)");
+    setAt(input, "brief.targetCustomer", "Indie developers and sub-10 engineering teams");
+    expect(() => parseResearchRecord(input)).not.toThrow();
+  });
+
+  it("rejects figures in proposal prose: stackNotes, channels and how-it-works (review probe p4 v1)", () => {
     const input = fresh();
     setAt(input, "editorial.stackNotes", "Cache 30 days of review history and cap each summary at 120 words.");
     setAt(input, "goToMarket.channels[1]", "Post 2 build logs a week on X");
-    expect(() => parseResearchRecord(input)).not.toThrow();
+    setAt(input, "howItWorks[0]", "Install — Sales teams of 8 answer 47 questionnaires a quarter, so install it.");
+    setAt(input, "editorial.dontBuildYet", "Do not build CRM sync yet: 12 deals a year are lost to slow reviews.");
+    setAt(input, "editorial.yearOne.assumptions", "64% of teams already pay for a tool and trials convert at 25%.");
+    expectRejected(
+      input,
+      /^editorial\.stackNotes: unbound figure "30"/m,
+      /^goToMarket\.channels\[1\]: unbound figure "2"/m,
+      /^howItWorks\[0\]: unbound figure "8"/m,
+      /^editorial\.dontBuildYet: unbound figure "12"/m,
+      /^editorial\.yearOne\.assumptions: unbound figure "64%"/m,
+    );
   });
 
   it.each([
@@ -1026,7 +1095,7 @@ describe("parseResearchRecord: year-one plan", () => {
       tier: "Crew",
       payingAccounts: 45,
       seatsPerAccount: 5,
-      assumptions: "Five paid developers per Crew account on average.",
+      assumptions: "The seat count per Crew account is an assumption from early interviews, not a measured average.",
     });
   });
 
@@ -1215,5 +1284,124 @@ describe("parseResearchRecord: closed schema and shape", () => {
       /^editorial\.yearOne\.payingAccounts: /m,
       /^provenance\.models\.search: /m,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R7: fields cite only their own kinds; competitor notes their own prices
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: per-field evidence kinds (ruling R7)", () => {
+  it("rejects a competitor's notes citing another competitor's price (review probe p4 v2)", () => {
+    const input = fresh();
+    setAt(input, "competitors[1].notes", `Graphite's per-seat plan costs ${tok(EV.priceCodeRabbit)} for every reviewer.`);
+    expectRejected(
+      input,
+      new RegExp(`^competitors\\[1\\]\\.notes: evidence ${EV.priceCodeRabbit.id} is not one of the items this field may cite`, "m"),
+    );
+  });
+
+  it("rejects a token of the wrong kind in a summary, and any token in proposal text", () => {
+    const quoteInMarket = fresh();
+    setAt(quoteInMarket, "market.summary", `${textAt(quoteInMarket, "market.summary")} Buyers say ${tok(EV.quoteForum)}.`);
+    expectRejected(quoteInMarket, new RegExp(`^market\\.summary: evidence ${EV.quoteForum.id} is a community_quote; allowed here: market_stat`, "m"));
+    const statInCommunity = fresh();
+    setAt(statInCommunity, "community.summary", `${textAt(statInCommunity, "community.summary")} The market was ${tok(EV.statMeasured)}.`);
+    expectRejected(statInCommunity, new RegExp(`^community\\.summary: evidence ${EV.statMeasured.id} is a market_stat`, "m"));
+    const priceInSteps = fresh();
+    setAt(priceInSteps, "howItWorks[1]", `${textAt(priceInSteps, "howItWorks[1]")} Cheaper than ${tok(EV.priceQodo)}.`);
+    expectRejected(priceInSteps, new RegExp(`^howItWorks\\[1\\]: evidence ${EV.priceQodo.id} cannot be cited here`, "m"));
+    const priceInTier = fresh();
+    setAt(priceInTier, "editorial.pricingTiers[0].includes", `Below ${tok(EV.priceQodo)}.`);
+    expectRejected(priceInTier, new RegExp(`^editorial\\.pricingTiers\\[0\\]\\.includes: evidence ${EV.priceQodo.id} cannot be cited here`, "m"));
+  });
+
+  it("accepts a competitor's own price in its notes, prices in pricing notes and stats in whyNow", () => {
+    const input = fresh();
+    setAt(input, "competitors[2].notes", `Qodo's team plan is ${tok(EV.priceQodo)}.`);
+    setAt(input, "goToMarket.pricingNotes", `Price below ${tok(EV.priceQodo)} and ${tok(EV.priceGraphite)}.`);
+    setAt(input, "whyNow", `${textAt(input, "whyNow")} The category is already ${tok(EV.statMeasured)}.`);
+    expect(() => parseResearchRecord(input)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R8: community sources, whole lines, distinct quotes
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: quotes (ruling R8)", () => {
+  it("rejects two selected quotes when one contains the other", () => {
+    const text = "Honestly, all these small teams need is a quiet sanity check on every pull request they open.";
+    const page: Page = { url: "https://forum.example.com/t/sanity-check-longer", title: "Sanity checks", roles: ["community"], text };
+    const longer = must(accept([page], { quotes: [{ sourceUrl: page.url, text }] }).accepted[0], "longer quote");
+    const input = fresh();
+    arrayAt(input, "evidence.accepted").push(toJson(longer));
+    arrayAt(input, "evidence.sources").push(...arrayAt(toJson({ sources: sourceList([page]) }), "sources"));
+    setAt(input, "community.quoteIds", [EV.quoteHn.id, longer.id]);
+    expectRejected(
+      input,
+      /^community\.quoteIds\[1\]: same quote text as community\.quoteIds\[0\], or one contains the other/m,
+      /^community\.quoteIds: need ≥2 accepted community quotes with distinct text \(got 1\)/m,
+    );
+  });
+
+  it("rejects an accepted quote whose source the community search did not cite", () => {
+    const input = fresh();
+    setAt(input, `evidence.sources[${sourceIndex(PAGES.hn)}].roles`, ["competitors"]);
+    expectRejected(
+      input,
+      new RegExp(`^evidence\\.accepted\\[${indexOfAccepted(EV.quoteHn)}\\]: source: not cited by the community search`, "m"),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mutation M9 (final review): the price period re-derives from the excerpt
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: a stored price's period re-derives from its own excerpt", () => {
+  it("rejects a per-month price relabeled per-year even with its id and every reference recomputed", () => {
+    const priceIndex = indexOfAccepted(EV.priceGraphite);
+    const original = EV.priceGraphite;
+    if (original.kind !== "competitor_price") throw new Error("fixture: Graphite item is not a price");
+    const relabeled = { ...original, price: { ...original.price, period: "year" as const } };
+    const forged = evidenceId(relabeled.kind, relabeled.sourceUrl, relabeled.excerpt, evidenceClaimKey(relabeled));
+    const input = renameId(fresh(), original.id, forged);
+    setAt(input, `evidence.accepted[${priceIndex}].price.period`, "year");
+    const issues = expectRejected(
+      input,
+      new RegExp(`^evidence\\.accepted\\[${priceIndex}\\]: claim: period_mismatch \\(source says \\$40/user/month\\)`, "m"),
+    );
+    expect(issues.join("\n")).not.toMatch(/id: does not match/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ruling R12: the code revision in provenance
+// ---------------------------------------------------------------------------
+
+describe("parseResearchRecord: provenance.codeRevision (ruling R12)", () => {
+  it("accepts a commit sha with a dirty flag, nulls, or no codeRevision at all", () => {
+    for (const codeRevision of [
+      { sha: "0123456789abcdef0123456789abcdef01234567", dirty: false },
+      { sha: "a".repeat(64), dirty: true },
+      { sha: null, dirty: null },
+    ]) {
+      const input = fresh();
+      setAt(input, "provenance.codeRevision", codeRevision);
+      expect(parseResearchRecord(input).provenance.codeRevision).toEqual(codeRevision);
+    }
+    expect(parseResearchRecord(fresh()).provenance.codeRevision).toBeUndefined();
+  });
+
+  it.each([
+    ["a short sha", { sha: "abc123", dirty: false }, /^provenance\.codeRevision\.sha: expected a 40- or 64-character lowercase hex commit id or null/m],
+    ["a dirty flag that is a string", { sha: null, dirty: "yes" }, /^provenance\.codeRevision\.dirty: expected true, false or null/m],
+    ["an extra key", { sha: null, dirty: null, branch: "main" }, /^provenance\.codeRevision\.branch: unknown field/m],
+    ["a missing dirty flag", { sha: null }, /^provenance\.codeRevision\.dirty: expected true, false or null/m],
+  ])("rejects %s", (_label, codeRevision, pattern) => {
+    const input = fresh();
+    setAt(input, "provenance.codeRevision", codeRevision);
+    expectRejected(input, pattern);
   });
 });

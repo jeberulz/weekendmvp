@@ -7,7 +7,7 @@
     "security questionnaire automation",
     "proposal management software"
   ],
-  "slug": "ai-rfp-response-assistant",
+  "slug": "fixture-rfp-response-assistant",
   "oneLiner": "Grounded RFP drafts with citations for SMB sales teams.",
   "fixtureScenario": "thin-evidence"
 }

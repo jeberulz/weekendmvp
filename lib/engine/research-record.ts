@@ -24,10 +24,12 @@ import {
   EVIDENCE_CONTRACT_VERSION,
   EVIDENCE_LIMITS,
   EVIDENCE_MINIMUMS,
-  FACT_BEARING_FIELDS,
   PIPELINE_VERSION_V2,
   RESEARCH_RECORD_CONTRACT_VERSION_V2,
+  WRITER_FIELD_TOKEN_KINDS,
+  WRITER_TEXT_FIELDS,
   type AcceptedEvidence,
+  type CodeRevision,
   type EditorialFieldsV2,
   type EvidenceKind,
   type RejectedEvidence,
@@ -37,9 +39,10 @@ import {
   type SourceAcquisition,
   type SourceRole,
   type SourceStatus,
+  type WriterTextField,
   type YearOnePlanV2,
 } from "./evidence/contract.ts";
-import { normalizeExcerptForCompare } from "./evidence/quote.ts";
+import { quoteTextsOverlap } from "./evidence/quote.ts";
 import { evidenceRefs, validateEditorialText } from "./evidence/tokens.ts";
 import { validateYearOnePlan } from "./finance.ts";
 
@@ -902,7 +905,8 @@ const PUBLISHED_SCORE_KEYS = ["opportunity", "pain", "timing", "builderConfidenc
 const SCORE_KEYS = [...PUBLISHED_SCORE_KEYS, "execution"] as const;
 
 const ONE_LINER_PATH = "brief.oneLiner";
-const FACT_BEARING_PATHS: ReadonlySet<string> = new Set(FACT_BEARING_FIELDS);
+const WRITER_TEXT_PATHS: ReadonlySet<string> = new Set(WRITER_TEXT_FIELDS);
+const SHA_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 
 const ROOT_KEYS = [
   "contractVersion",
@@ -1044,6 +1048,8 @@ type V2Context = {
   issues: string[];
   /** Editorial text, checked for evidence tokens and figures once accepted ids are known. */
   texts: Array<{ path: string; text: string }>;
+  /** Each competitor's own price ids by row index (ruling R7: its notes cite only these). */
+  competitorPriceIds: Map<number, ReadonlySet<string>>;
 };
 
 /** Reports every key outside `allowed` (the schema is closed at every level). */
@@ -1458,6 +1464,7 @@ function parseCompetitorsV2(
         }
       }
     }
+    if (prices) ctx.competitorPriceIds.set(i, new Set(prices.ids));
     const notes = raw.notes === undefined ? undefined : readEditorialText(raw.notes, `${path}.notes`, ctx);
     if (name === null || !prices || notes === null) continue;
     out.push({ name, priceIds: prices.ids, ...(notes !== undefined ? { notes } : {}) });
@@ -1477,20 +1484,22 @@ function parseCommunityV2(
     max: EVIDENCE_LIMITS.maxAccepted.community_quote,
   });
   if (quotes) {
-    // Distinct = different strict quote text; one quote from two pages counts once.
-    const firstByText = new Map<string, number>();
+    // Ruling R8: distinct only when neither quote contains the other; one
+    // quote from two pages, or a quote inside a longer one, counts once.
+    const kept: Array<{ index: number; excerpt: string }> = [];
     for (const { index, item } of quotes.resolved) {
-      const text = normalizeExcerptForCompare(item.excerpt);
-      const first = firstByText.get(text);
-      if (first !== undefined) {
-        ctx.issues.push(`community.quoteIds[${index}]: same quote text as community.quoteIds[${first}]`);
+      const other = kept.find((k) => quoteTextsOverlap(k.excerpt, item.excerpt));
+      if (other) {
+        ctx.issues.push(
+          `community.quoteIds[${index}]: same quote text as community.quoteIds[${other.index}], or one contains the other (ruling R8)`,
+        );
       } else {
-        firstByText.set(text, index);
+        kept.push({ index, excerpt: item.excerpt });
       }
     }
-    if (firstByText.size < EVIDENCE_MINIMUMS.distinctQuotes) {
+    if (kept.length < EVIDENCE_MINIMUMS.distinctQuotes) {
       ctx.issues.push(
-        `community.quoteIds: need ≥${EVIDENCE_MINIMUMS.distinctQuotes} accepted community quotes with distinct text (got ${firstByText.size})`,
+        `community.quoteIds: need ≥${EVIDENCE_MINIMUMS.distinctQuotes} accepted community quotes with distinct text (got ${kept.length})`,
       );
     }
   }
@@ -1742,8 +1751,23 @@ function parseAttemptsV2(value: unknown, ctx: V2Context): Record<string, number>
   return ctx.issues.length > before ? null : attempts;
 }
 
+/** Ruling R12: { sha: 40/64 lowercase hex | null, dirty: boolean | null }, closed. */
+function parseCodeRevisionV2(value: unknown, ctx: V2Context): CodeRevision | null {
+  const path = "provenance.codeRevision";
+  const raw = readObject(value, path, ["sha", "dirty"], ctx);
+  if (!raw) return null;
+  const before = ctx.issues.length;
+  const { sha, dirty } = raw;
+  if (!(sha === null || (typeof sha === "string" && SHA_PATTERN.test(sha)))) {
+    ctx.issues.push(`${path}.sha: expected a 40- or 64-character lowercase hex commit id or null`);
+  }
+  if (!(dirty === null || typeof dirty === "boolean")) ctx.issues.push(`${path}.dirty: expected true, false or null`);
+  if (ctx.issues.length > before) return null;
+  return { sha: typeof sha === "string" ? sha : null, dirty: typeof dirty === "boolean" ? dirty : null };
+}
+
 function parseProvenanceV2(value: unknown, ctx: V2Context): ResearchProvenanceV2 | null {
-  const raw = readObject(value, "provenance", ["providerCalls", "costUsd", "ranAt", "models", "attempts"], ctx);
+  const raw = readObject(value, "provenance", ["providerCalls", "costUsd", "ranAt", "models", "attempts", "codeRevision"], ctx);
   if (!raw) return null;
   const providerCalls = parseProviderCallsV2(raw.providerCalls, ctx);
   const { costUsd, ranAt } = raw;
@@ -1751,22 +1775,32 @@ function parseProvenanceV2(value: unknown, ctx: V2Context): ResearchProvenanceV2
   if (!isIsoTime(ranAt)) ctx.issues.push("provenance.ranAt: expected an ISO 8601 time");
   const models = parseModelsV2(raw.models, ctx);
   const attempts = parseAttemptsV2(raw.attempts, ctx);
-  if (!providerCalls || !isFiniteNonNegative(costUsd) || !isIsoTime(ranAt) || !models || !attempts) return null;
-  return { providerCalls, costUsd, ranAt, models, attempts };
+  const codeRevision = raw.codeRevision === undefined ? undefined : parseCodeRevisionV2(raw.codeRevision, ctx);
+  if (!providerCalls || !isFiniteNonNegative(costUsd) || !isIsoTime(ranAt) || !models || !attempts || codeRevision === null) {
+    return null;
+  }
+  return { providerCalls, costUsd, ranAt, models, attempts, ...(codeRevision ? { codeRevision } : {}) };
 }
 
 // --- editorial text rules -------------------------------------------------------
 
-/** "competitors[2].notes" → "competitors[].notes", the FACT_BEARING_FIELDS form. */
-function isFactBearingPath(path: string): boolean {
-  return FACT_BEARING_PATHS.has(path.replace(/\[\d+\]/g, "[]"));
+/** "competitors[2].notes" → "competitors[].notes", the WRITER_TEXT_FIELDS form; null when not writer text. */
+function writerTextField(path: string): WriterTextField | null {
+  const generic = path.replace(/\[\d+\]/g, "[]");
+  return WRITER_TEXT_PATHS.has(generic) ? (generic as WriterTextField) : null;
 }
 
+const COMPETITOR_NOTES_PATH = /^competitors\[(\d+)\]\.notes$/;
+
 /**
- * Fact-bearing fields may carry figures only through tokens of accepted
- * evidence; every other field may hold figures (proposals and assumptions)
- * but any token must still resolve. brief.oneLiner becomes the manifest
- * description verbatim, so it may hold no token at all.
+ * Rulings R6 and R7 over every queued text field. Writer text
+ * (WRITER_TEXT_FIELDS) carries no figure outside tokens and no quotation,
+ * and cites only the kinds WRITER_FIELD_TOKEN_KINDS allows it;
+ * competitors[i].notes cites only that competitor's own price ids. Every
+ * other text field (operator brief text, competitor names, provider keyword
+ * terms and the numeric proposal slots) takes no evidence token at all.
+ * brief.oneLiner becomes the manifest description verbatim, so it may hold
+ * no token either (with its own message).
  */
 function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, AcceptedEvidence>): void {
   for (const { path, text } of ctx.texts) {
@@ -1775,7 +1809,19 @@ function checkEditorialTexts(ctx: V2Context, accepted: ReadonlyMap<string, Accep
         `${ONE_LINER_PATH}: evidence tokens are not allowed here; the one-liner is the manifest description, so state it without citations`,
       );
     }
-    ctx.issues.push(...validateEditorialText({ path, text, factBearing: isFactBearingPath(path), accepted }));
+    const field = writerTextField(path);
+    const notes = COMPETITOR_NOTES_PATH.exec(path);
+    const ownPrices = notes ? ctx.competitorPriceIds.get(Number(notes[1])) : undefined;
+    ctx.issues.push(
+      ...validateEditorialText({
+        path,
+        text,
+        factBearing: field !== null,
+        accepted,
+        allowedKinds: field !== null ? WRITER_FIELD_TOKEN_KINDS[field] : [],
+        ...(notes ? { allowedIds: ownPrices ?? new Set<string>() } : {}),
+      }),
+    );
   }
 }
 
@@ -1826,7 +1872,7 @@ export function parseResearchRecord(input: unknown): ResearchRecordV2 {
     ]);
   }
 
-  const ctx: V2Context = { issues: [], texts: [] };
+  const ctx: V2Context = { issues: [], texts: [], competitorPriceIds: new Map() };
   rejectUnknownKeys(input, "", ROOT_KEYS, ctx);
   if (input.pipelineVersion !== PIPELINE_VERSION_V2) {
     ctx.issues.push(`pipelineVersion: expected ${PIPELINE_VERSION_V2} (got ${describeValue(input.pipelineVersion)})`);

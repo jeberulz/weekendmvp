@@ -186,14 +186,13 @@ function visibleText(node: MdNode): string {
   return (node.children ?? []).map(visibleText).join(node.type === "root" || node.type === "blockquote" ? "\n" : "");
 }
 
-const collapse = (text: string) => text.replace(/\s+/g, " ").trim();
+/** Visible text compared without the invisible autolink breaks (U+2060) the escape inserts. */
+const collapse = (text: string) => text.replace(/\u2060/g, "").replace(/\s+/g, " ").trim();
 
-/** Links other than remark-gfm's bare-URL/email links, whose visible text is the URL itself. */
-function nonLiteralLinks(node: MdNode): string[] {
-  const text = visibleText(node);
-  const literal = /^(?:(?:https?:\/\/|www\.)\S+|[^\s@]+@[^\s@]+)$/i.test(text);
-  const own = node.type === "link" && !literal ? [text] : [];
-  return [...own, ...(node.children ?? []).flatMap(nonLiteralLinks)];
+/** Every link node, as its visible text (security S-P2b: the escape must leave none). */
+function links(node: MdNode): string[] {
+  const own = node.type === "link" ? [visibleText(node)] : [];
+  return [...own, ...(node.children ?? []).flatMap(links)];
 }
 
 describe("escapeMdxText / unescapeMdxText", () => {
@@ -218,33 +217,122 @@ describe("escapeMdxText / unescapeMdxText", () => {
     }
   });
 
-  it("renders hostile strings literally as MDX prose (only paragraph text nodes)", () => {
+  // Security S-P2b / ruling R10: the old tests tolerated remark-gfm's bare
+  // URL and email links ("literal" links). The escape now leaves no link at
+  // all, so these assert none.
+  it("renders hostile strings literally as MDX prose: paragraph text only, no link of any kind", () => {
     for (const text of HOSTILE) {
       const tree = parseMdx(escapeMdxText(text));
-      const types = [...nodeTypes(tree)].filter((t) => !["root", "paragraph", "text", "break", "link"].includes(t));
+      const types = [...nodeTypes(tree)].filter((t) => !["root", "paragraph", "text", "break"].includes(t));
       expect(types, text).toEqual([]);
-      expect(nonLiteralLinks(tree), text).toEqual([]);
+      expect(links(tree), text).toEqual([]);
       expect(collapse(visibleText(tree)), text).toBe(collapse(text));
     }
   });
 
-  it("renders hostile strings literally inside a blockquote", () => {
+  it("renders hostile strings literally inside a blockquote, with no link of any kind", () => {
     for (const text of HOSTILE) {
       const quoted = escapeMdxText(text)
         .split("\n")
         .map((line) => `> ${line}`)
         .join("\n");
       const tree = parseMdx(quoted);
-      const types = [...nodeTypes(tree)].filter((t) => !["root", "blockquote", "paragraph", "text", "break", "link"].includes(t));
+      const types = [...nodeTypes(tree)].filter((t) => !["root", "blockquote", "paragraph", "text", "break"].includes(t));
       expect(types, text).toEqual([]);
-      expect(nonLiteralLinks(tree), text).toEqual([]);
+      expect(links(tree), text).toEqual([]);
       expect(collapse(visibleText(tree)), text).toBe(collapse(text));
     }
+  });
+
+  it("S-P2b: bare URLs, www hosts and emails cannot autolink, and read exactly as written", () => {
+    const hostile = [
+      "Honestly the only fix that worked for us is at https://example.invalid/tool and it saved our quarter.",
+      "Read the full playbook at https://example.invalid/offer before you buy anything.",
+      "Visit www.example.invalid or WWW.EXAMPLE.INVALID/path, mail sales@example.invalid or mailto:a.b+c@example.invalid now.",
+      "(https://a.example) *www.b.example* _c@d.example_ ~https://e.example~ HTTPS://F.EXAMPLE/x?y=1",
+      "https://www.example.invalid/path#frag and http://user@example.invalid",
+    ];
+    for (const text of hostile) {
+      const escaped = escapeMdxText(text);
+      for (const doc of [`Lead text. ${escaped}`, `> ${escaped}`, `- **${escaped}** — row`]) {
+        const tree = parseMdx(doc);
+        expect(links(tree), doc).toEqual([]);
+      }
+      expect(collapse(visibleText(parseMdx(escaped)))).toBe(collapse(text));
+      expect(unescapeMdxText(escaped)).toBe(text);
+      expect(quoteMatchesExcerpt(escaped, text)).toBe(true);
+    }
+  });
+
+  it("does not let a line become a GFM table delimiter row", () => {
+    for (const text of ["a<export ***|<div>&amp;,\r\n:- ", "Plan\n:---:\nrow", "x\n:-:"]) {
+      const tree = parseMdx(escapeMdxText(text));
+      expect([...nodeTypes(tree)].filter((t) => !["root", "paragraph", "text", "break"].includes(t)), text).toEqual([]);
+      expect(unescapeMdxText(escapeMdxText(text))).toBe(text);
+    }
+  });
+
+  it("parses a deterministic fuzz corpus into plain text with no links, in prose, quote and label contexts", () => {
+    const alphabet = [
+      "a", "b", "x", "1", "9", " ", "  ", "\t", "\n", "\n\n", "\u00a0", "\u2003", "\u3000", "\u200b", "\\", "<", ">", "{", "}", "[", "]", "(", ")", "*", "_", "`",
+      "~", "|", "&", "#", "@", "!", ":", ";", "-", "+", "=", ".", ",", "'", '"', "/", "?", "%", "$",
+      "import ", "export ", "http://", "https://", "HTTPS://", "www.", "WWW.", "mailto:", "me@x.example", "a.b@c.d",
+      "x.example", "&amp;", "&#123;", "&lt;", "&#x2060;", "\u2060", "1. ", "1) ", "- ", "+ ", "* ", "> ", "# ", "```", "~~~",
+      "---", "===", "***", "___", ":-", ":-:", "[^1]", "[x]: http://e.example", "<div>", "{1+1}", "![a](b)", "[a](b)",
+    ];
+    let seed = 0x2545f491;
+    const next = () => {
+      seed ^= seed << 13;
+      seed >>>= 0;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      seed >>>= 0;
+      return seed;
+    };
+    const failures: string[] = [];
+    for (let n = 0; n < 3_000; n += 1) {
+      let text = "";
+      const length = 1 + (next() % 14);
+      for (let i = 0; i < length; i += 1) text += alphabet[next() % alphabet.length];
+      if (text.trim() === "") continue;
+      const escaped = escapeMdxText(text);
+      if (unescapeMdxText(escaped) !== text) failures.push(`round trip: ${JSON.stringify(text)}`);
+      const lines = escaped.split(/\r\n|\r|\n/).map((line) => line.trim());
+      const contexts: Array<[string, string, readonly string[]]> = [
+        ["prose", `Lead text. ${escaped}`, ["root", "paragraph", "text", "break"]],
+        // The compiler's quoteBlock trims every line and prefixes "> ".
+        ["quote", lines.map((line) => (line === "" ? ">" : `> ${line}`)).join("\n"), ["root", "blockquote", "paragraph", "text", "break"]],
+        ["label", `- **${lines.join(" ")}** — row`, ["root", "list", "listItem", "paragraph", "strong", "text", "break"]],
+      ];
+      for (const [context, doc, allowed] of contexts) {
+        const tree = parseMdx(doc);
+        const extra = [...nodeTypes(tree)].filter((t) => !allowed.includes(t));
+        if (extra.length > 0) failures.push(`${context}: ${extra.join(",")} from ${JSON.stringify(text)}`);
+        if (links(tree).length > 0) failures.push(`${context}: link from ${JSON.stringify(text)}`);
+      }
+      if (collapse(visibleText(parseMdx(escaped))) !== collapse(text.replace(/&#x2060;/g, "\u2060"))) {
+        // A literal "&#x2060;" in the input is escaped ("\&…"), so it shows as written.
+        if (collapse(visibleText(parseMdx(escaped))) !== collapse(text)) failures.push(`visible text: ${JSON.stringify(text)}`);
+      }
+    }
+    expect(failures.slice(0, 10)).toEqual([]);
   });
 
   it("escapes block markers only at the start of a line", () => {
     expect(escapeMdxText("- a-b\n1. step 1.5")).toBe("\\- a-b\n1\\. step 1.5");
     expect(escapeMdxText("export data\nwe export data")).toBe("&#101;xport data\nwe export data");
+    expect(escapeMdxText(":- a:b")).toBe("\\:- a:b");
+  });
+
+  it("writes an invisible word joiner reference into URL schemes, www hosts and before @", () => {
+    expect(escapeMdxText("https://a.example www.b.example me@c.example")).toBe(
+      "https&#x2060;://a.example www&#x2060;.b.example me&#x2060;\\@c.example",
+    );
+    expect(unescapeMdxText("https&#x2060;://a.example www&#x2060;.b.example me&#x2060;\\@c.example")).toBe(
+      "https://a.example www.b.example me@c.example",
+    );
+    // A literal reference in the source text is escaped, so it survives as written.
+    expect(unescapeMdxText(escapeMdxText("a &#x2060; b"))).toBe("a &#x2060; b");
   });
 
   it("leaves ordinary prose unchanged", () => {

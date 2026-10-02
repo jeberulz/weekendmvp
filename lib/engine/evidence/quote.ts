@@ -95,11 +95,11 @@ function extendStart(text: string, start: number): number {
   return before === "$" || before === "€" || before === "£" ? start - 1 : start;
 }
 
-/** Keep a glued "%" and sentence-ending punctuation after the last word. */
+/** Keep a glued "%" and sentence-ending punctuation (an ellipsis included) after the last word. */
 function extendEnd(text: string, end: number): number {
   let i = end;
   if (text[i] === "%") i += 1;
-  while (i < text.length && /[.!?]/.test(text[i] ?? "")) i += 1;
+  while (i < text.length && /[.!?…]/.test(text[i] ?? "")) i += 1;
   return i;
 }
 
@@ -169,6 +169,34 @@ export function quoteMatchesExcerpt(renderedMdx: string, excerpt: string): boole
   return rendered !== "" && rendered === normalizeExcerptForCompare(excerpt);
 }
 
+/**
+ * Ruling R8: two quotes are distinct only when neither contains the other.
+ * True when one quote's words (the source-match form: case and punctuation
+ * insensitive) occur as a contiguous run of the other's.
+ */
+export function quoteTextsOverlap(a: string, b: string): boolean {
+  const x = normalizeForSourceMatch(a).normalized;
+  const y = normalizeForSourceMatch(b).normalized;
+  if (x === "" || y === "") return false;
+  return ` ${x} `.includes(` ${y} `) || ` ${y} `.includes(` ${x} `);
+}
+
+/**
+ * How many quotes remain when every quote contained in another is dropped
+ * (ruling R8): a quote and a longer quote that contains it count once.
+ */
+export function distinctQuoteCount(texts: ReadonlyArray<string>): number {
+  const kept: string[] = [];
+  const byLength = [...texts].sort(
+    (a, b) => normalizeForSourceMatch(b).words.length - normalizeForSourceMatch(a).words.length,
+  );
+  for (const text of byLength) {
+    if (normalizeForSourceMatch(text).words.length === 0) continue;
+    if (!kept.some((other) => quoteTextsOverlap(other, text))) kept.push(text);
+  }
+  return kept.length;
+}
+
 // ---------------------------------------------------------------------------
 // MDX escaping
 // ---------------------------------------------------------------------------
@@ -188,12 +216,33 @@ const NAMED_REFERENCES: Record<string, string> = {
 
 /** Escaped wherever they appear: MDX expressions/JSX and inline Markdown syntax. */
 const ESCAPE_EVERYWHERE = new Set(["\\", "<", ">", "{", "}", "[", "]", "*", "_", "`", "~", "|", "&", "#", "@"]);
-/** Escaped at the start of a line (after optional spaces/tabs): block markers. */
-const ESCAPE_AT_LINE_START = new Set(["-", "+", "="]);
+/**
+ * Escaped at the start of a line (after optional spaces/tabs): block markers,
+ * and ":" so no line can become a GFM table delimiter row (":-", ":-:").
+ */
+const ESCAPE_AT_LINE_START = new Set(["-", "+", "=", ":"]);
 /** Every character escapeMdxText may put a backslash in front of. */
 const UNESCAPABLE = new Set([...ESCAPE_EVERYWHERE, ...ESCAPE_AT_LINE_START, ".", ")", ":"]);
 /** "http://" / "https://" (any case) that GFM would turn into a link. */
 const URL_SCHEME_RE = /^https?:\/\//i;
+
+/**
+ * The autolink break (security S-P2b): a character reference for U+2060
+ * WORD JOINER, which renders as nothing. remark-gfm links bare URLs, www
+ * hosts and emails in TWO places: micromark's tokenizer reads the raw
+ * source, and mdast-util-gfm-autolink-literal then searches the DECODED
+ * text of every text node. A backslash escape or a character reference for
+ * ":" "." or "@" only stops the first (the decoded text is the same
+ * address), so the escape puts this invisible character inside the
+ * pattern: "https&#x2060;://", "www&#x2060;.", "me&#x2060;\@example.com".
+ * Neither pass can match it, and the visible text is unchanged.
+ * unescapeMdxText drops this exact spelling (escapeMdxText escapes every
+ * "&" of the input, so the unescaped reference can only be the break).
+ */
+export const AUTOLINK_BREAK = "&#x2060;";
+
+/** The character AUTOLINK_BREAK renders as; text compared with rendered output may need it removed. */
+export const AUTOLINK_BREAK_CHAR = "\u2060";
 
 function isAsciiDigit(ch: string): boolean {
   return ch >= "0" && ch <= "9";
@@ -201,14 +250,14 @@ function isAsciiDigit(ch: string): boolean {
 
 /**
  * Escape text so it renders literally in MDX prose and inside a blockquote:
- * backslash-escapes \ < > { } [ ] * _ ` ~ | & # everywhere; - + = and
- * ordered-list markers ("1." / "1)") at the start of a line; and writes the
+ * backslash-escapes \ < > { } [ ] * _ ` ~ | & # @ everywhere; - + = : and
+ * ordered-list markers ("1." / "1)") at the start of a line; writes the
  * first letter of a line-start "import " / "export " as a numeric character
- * reference so MDX cannot read the line as ESM. "https\://", "www\." and "\@"
- * stop GFM's tokenizer-level autolink from swallowing the backslash of a
- * following escape; remark-gfm may still link a bare URL or email afterwards,
- * with identical visible text. Newlines are kept (MDX has no indented code);
- * prefix every line with "> " inside a blockquote.
+ * reference so MDX cannot read the line as ESM; and puts AUTOLINK_BREAK
+ * inside every "http(s)://", "www." and before every "@", so no bare URL,
+ * www host or email becomes a link, while the visible text stays identical.
+ * Newlines are kept (MDX has no indented code); prefix every line with "> "
+ * inside a blockquote. unescapeMdxText is its exact inverse.
  */
 export function escapeMdxText(text: string): string {
   let out = "";
@@ -220,7 +269,11 @@ export function escapeMdxText(text: string): string {
       lineStart = true;
       continue;
     }
-    if (lineStart && (ch === " " || ch === "\t")) {
+    // Any whitespace keeps the line start open, not only spaces and tabs: a
+    // caller may trim lines (the compiler's quoteBlock does, and JavaScript's
+    // trim removes NBSP and other Unicode spaces), which would otherwise bare
+    // a block marker such as "+", "-", "=" or "1." behind such a space.
+    if (lineStart && /\s/.test(ch)) {
       out += ch;
       continue;
     }
@@ -248,13 +301,17 @@ export function escapeMdxText(text: string): string {
     lineStart = false;
     if ((ch === "h" || ch === "H") && URL_SCHEME_RE.test(text.slice(i, i + 8))) {
       const scheme = text.slice(i, text.indexOf(":", i));
-      out += `${scheme}\\:`;
-      i += scheme.length;
+      out += `${scheme}${AUTOLINK_BREAK}`;
+      i += scheme.length - 1;
       continue;
     }
     if ((ch === "w" || ch === "W") && text.slice(i, i + 4).toLowerCase() === "www.") {
-      out += `${text.slice(i, i + 3)}\\.`;
-      i += 3;
+      out += `${text.slice(i, i + 3)}${AUTOLINK_BREAK}`;
+      i += 2;
+      continue;
+    }
+    if (ch === "@") {
+      out += `${AUTOLINK_BREAK}\\@`;
       continue;
     }
     out += ESCAPE_EVERYWHERE.has(ch) ? `\\${ch}` : ch;
@@ -271,7 +328,8 @@ function decodeReference(match: RegExpExecArray): string | null {
 
 /**
  * Exact inverse of escapeMdxText: unescapeMdxText(escapeMdxText(x)) === x.
- * Also decodes character references whose "&" is not escaped (numeric, and
+ * Drops AUTOLINK_BREAK (that exact spelling) and decodes other character
+ * references whose "&" is not escaped (numeric, and
  * amp/lt/gt/quot/apos/nbsp), which is what MDX renders for them.
  */
 export function unescapeMdxText(text: string): string {
@@ -282,6 +340,10 @@ export function unescapeMdxText(text: string): string {
     if (ch === "\\" && UNESCAPABLE.has(next)) {
       out += next;
       i += 1;
+      continue;
+    }
+    if (ch === "&" && text.startsWith(AUTOLINK_BREAK, i)) {
+      i += AUTOLINK_BREAK.length - 1;
       continue;
     }
     if (ch === "&") {

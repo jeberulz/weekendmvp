@@ -36,16 +36,39 @@
  * URL can back at most one competitor's first-party prices. A neutral page
  * (no known vendor's host) may still bind several vendors, each in its own
  * clause.
+ *
+ * Quotes (ruling R8): only from a source the community search cited
+ * (SourceInput.roles; else unknown_citation), a whole sentence (span_bounds
+ * when it starts or stops inside one) on one line of the extracted text
+ * (span_bounds across a line break). Re-validation can check the role and
+ * the line break; sentence edges need the page text (acceptance only).
+ * Two quotes are distinct only when neither contains the other.
+ *
+ * Binding is per claim (ruling R9): a comparison cue in a price's sentence
+ * (ambiguous_attribution); a price block showing monthly and annual billing
+ * with neither stated in the clause (qualifier_dropped; amount.ts
+ * ambiguousBilling); a plan only on the price's own line or the line above
+ * it, never after "everything in"/"all of"/"includes" (otherwise dropped at
+ * acceptance, an issue at re-validation); a stat subject of plain words
+ * (invalid_candidate) whose every content word is in the sentence
+ * (subject_not_in_context), with a metric the sentence's words state
+ * (metric_unit_mismatch). Acceptance applies the price rules to the page
+ * text and to the stored excerpt; re-validation to the excerpt.
  */
 
 import { createHash } from "node:crypto";
 
 import {
+  ambiguousBilling,
   amountsEqual,
   comparePriceTerms,
+  comparisonCueFor,
+  COUNT_NOUNS,
   formatAmount,
   formatPriceTerms,
   isProjectedAmount,
+  lineAbove,
+  lineAround,
   parseAmount,
   parsePriceTerms,
   priceExpressionsIn,
@@ -60,6 +83,7 @@ import {
   isFirstPartyHost,
   sameSource,
   sourceHostLabel,
+  strippedSourceUrl,
   vendorKey,
 } from "./citation.ts";
 import {
@@ -82,16 +106,18 @@ import {
   type RejectedEvidence,
   type RejectionReason,
   type SourceAcquisition,
+  type SourceRole,
   type SourceStatus,
 } from "./contract.ts";
 import {
+  distinctQuoteCount,
   findContiguousSpanIn,
-  normalizeExcerptForCompare,
   normalizeForSourceMatch,
   prepareSourceForMatch,
   wordCount,
   type PreparedSource,
 } from "./quote.ts";
+import { findUnboundFigures } from "./tokens.ts";
 
 // ---------------------------------------------------------------------------
 // Public types and limits
@@ -100,12 +126,17 @@ import {
 /** A URL a search step returned; candidates may cite only these. */
 export type CitationInput = { url: string; title?: string };
 
-/** One acquired source, keyed by canonical URL in acceptEvidence's `sources` map. */
+/**
+ * One acquired source, keyed by canonical URL in acceptEvidence's `sources`
+ * map. `roles` are the searches that cited it (ruling R8: only a source the
+ * community search cited can supply a community quote; no roles, no quotes).
+ */
 export type SourceInput = {
   status: SourceStatus;
   text?: string;
   retrievedAt?: string;
   textSha256?: string;
+  roles?: ReadonlyArray<SourceRole>;
 };
 
 /** Input to acceptEvidence. `vendorHints` names other vendors seen in research. */
@@ -276,12 +307,23 @@ function textField(record: Record<string, unknown>, key: string): string {
 
 type ItemRead<T> = { ok: true; value: T } | { ok: false; error: string; sourceUrl?: string; candidate?: string };
 
+/**
+ * A rejected candidate's URL as operator records may keep it: canonical, or
+ * stripped to origin and path when it has no canonical form (credentials,
+ * signatures, userinfo), or nothing (review P3-6: a secret never lands in a
+ * record or report). Never cut short: a record drops an over-long URL
+ * instead of storing a wrong one.
+ */
+function recordableUrl(url: string): string | undefined {
+  return canonicalSourceUrl(url) ?? strippedSourceUrl(url) ?? undefined;
+}
+
 function itemFailure<T>(record: Record<string, unknown>, error: string, claim: string): ItemRead<T> {
-  const sourceUrl = textField(record, "sourceUrl");
+  const sourceUrl = recordableUrl(textField(record, "sourceUrl"));
   return {
     ok: false,
     error,
-    ...(sourceUrl ? { sourceUrl: clip(sourceUrl, 300) } : {}),
+    ...(sourceUrl ? { sourceUrl } : {}),
     ...(claim ? { candidate: clip(claim, EVIDENCE_LIMITS.rejectedCandidateChars) } : {}),
   };
 }
@@ -440,6 +482,7 @@ type ReadSource = {
   retrievedAt: string;
   referenceYear: number;
   prepared: PreparedSource;
+  roles: ReadonlyArray<SourceRole>;
 };
 
 type Context = {
@@ -517,6 +560,7 @@ function resolveSource(context: Context, sourceUrl: string): { ok: true; source:
       retrievedAt: source.retrievedAt,
       referenceYear: yearOf(source.retrievedAt),
       prepared,
+      roles: Array.isArray(source.roles) ? source.roles : [],
     },
   };
 }
@@ -547,11 +591,51 @@ function quoteBoundsIssue(excerpt: string): string | null {
   return null;
 }
 
+/** Line breaks of extracted source text (comments and blocks end at one). */
+const LINE_BREAK_RE = /[\n\r\v\f\u0085\u2028\u2029]/;
+/** What may stand between a sentence start and a quote: whitespace, opening quote marks, brackets, bullets. */
+const QUOTE_OPENERS_RE = /^[\s"'“”‘’„‚«‹([{*•·‣>\-–—]*$/u;
+/** What may stand between a quote and its sentence end: whitespace, closing quote marks and brackets. */
+const QUOTE_CLOSERS_RE = /^[\s"'“”‘’»›)\]}*]*$/u;
+
+const NOT_COMMUNITY_DETAIL =
+  "not cited by the community search; community quotes come only from pages the community search cited (ruling R8)";
+const LINE_BREAK_DETAIL = "the quote crosses a line break of the source text; each comment or block is its own statement (ruling R8)";
+
+function quoteLineBreakIssue(excerpt: string): string | null {
+  return LINE_BREAK_RE.test(excerpt) ? LINE_BREAK_DETAIL : null;
+}
+
+/**
+ * Ruling R8, against the source text: the span [start, end) holds no line
+ * break, begins at a sentence start (only whitespace, opening quote marks,
+ * brackets or a bullet before it in its sentence) and ends at a sentence
+ * end (only whitespace, closing quote marks or brackets after it).
+ * Sentences follow amount.ts (sentenceAround). Needs the source text, so
+ * offline re-validation can check only the line-break part on the excerpt.
+ */
+function quoteShapeIssue(text: string, start: number, end: number): string | null {
+  const lineBreak = quoteLineBreakIssue(text.slice(start, end));
+  if (lineBreak) return lineBreak;
+  const sentenceStart = sentenceAround(text, start).start;
+  if (sentenceStart > start || !QUOTE_OPENERS_RE.test(text.slice(sentenceStart, start))) {
+    return "the quote does not begin at a sentence start; quote whole sentences (ruling R8)";
+  }
+  const sentenceEnd = sentenceAround(text, Math.max(start, end - 1)).end;
+  if (sentenceEnd < end || !QUOTE_CLOSERS_RE.test(text.slice(end, sentenceEnd))) {
+    return "the quote stops before its sentence end; quote whole sentences (ruling R8)";
+  }
+  return null;
+}
+
 function acceptQuote(candidate: QuoteCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
   const resolved = resolveSource(context, candidate.sourceUrl);
   if (!resolved.ok) return resolved;
+  if (!resolved.source.roles.includes("community")) return fail("unknown_citation", NOT_COMMUNITY_DETAIL);
   const span = findContiguousSpanIn(candidate.text, resolved.source.prepared);
   if (!span.ok) return fail(span.reason, spanDetail(span.reason));
+  const shape = quoteShapeIssue(resolved.source.text, span.start, span.end);
+  if (shape) return fail("span_bounds", shape);
   const issue = quoteBoundsIssue(span.text);
   if (issue) return fail("span_bounds", issue);
   const item: CommunityQuoteEvidence = {
@@ -618,11 +702,64 @@ function subjectContentWords(subject: string): string[] {
   return tokens(subject).filter((w) => w.length >= 4 && /\p{L}/u.test(w) && !SUBJECT_STOPWORDS.has(w));
 }
 
+/**
+ * Ruling R9: every content word of the subject (≥4 letters, not a
+ * stopword; a plural matches its singular) occurs in the amount's sentence,
+ * so a broad sentence cannot stand for a narrower subject.
+ */
 function subjectIssue(subject: string, sentence: string): string | null {
   const wanted = subjectContentWords(subject);
   if (wanted.length === 0) return `subject "${clip(subject, 60)}" has no specific content word`;
   const present = new Set(tokens(sentence).map(stem));
-  return wanted.some((w) => present.has(stem(w))) ? null : `no word of the subject "${clip(subject, 60)}" is in the sentence`;
+  const missing = [...new Set(wanted.filter((w) => !present.has(stem(w))))];
+  if (missing.length === 0) return null;
+  const words = missing
+    .slice(0, 4)
+    .map((w) => `"${w}"`)
+    .join(", ");
+  return `the sentence lacks ${words} of the subject "${clip(subject, 60)}"; every subject word must be in it (ruling R9)`;
+}
+
+/** Links, emails and domain paths a stat subject may not carry (ruling R9). */
+const SUBJECT_LINK_RE =
+  /[a-z][a-z0-9+.-]*:\/\/|(?<![\p{L}\p{N}])www\.|mailto:|[^\s@]+@[^\s@]+\.[^\s@]+|[\p{L}\p{N}-]+\.\p{L}{2,}\/\S*/iu;
+/** Markdown, MDX or quotation characters a stat subject may not carry (ruling R9). */
+const SUBJECT_MARKUP_RE = /[<>[\]{}*_`|#~\\"“”„«»]/u;
+
+/**
+ * Ruling R9: a stat subject is plain words. It is extraction-model text that
+ * the page shows next to the figure, so it may carry no figure (the R6
+ * detector), no link, email or domain path, and no markup or quotation.
+ */
+function subjectShapeIssue(subject: string): string | null {
+  if (findUnboundFigures(subject).length === 0 && !SUBJECT_LINK_RE.test(subject) && !SUBJECT_MARKUP_RE.test(subject)) {
+    return null;
+  }
+  return `subject must be plain words (no figures, links, emails or markup): "${clip(subject, 80)}" (ruling R9)`;
+}
+
+const COUNT_NOUN_RE = new RegExp(`(?<![\\p{L}\\p{N}])(?:${COUNT_NOUNS.join("|")})(?![\\p{L}\\p{N}])`, "iu");
+
+/** Ruling R9: the words a sentence must use for each metric (null: no requirement). */
+const METRIC_CUES: Record<MarketStatMetric, { label: string; re: RegExp } | null> = {
+  market_size: {
+    label: "market size (market, valued, worth, size or revenue)",
+    re: /(?<![\p{L}])(?:markets?|valued|valuation|worth|size|sized|sizes|revenues?)(?![\p{L}])/iu,
+  },
+  growth_rate: { label: "growth rate (CAGR, grow, grew or growth)", re: /(?<![\p{L}])(?:cagr|grow|grows|growing|grown|grew|growth)(?![\p{L}])/iu },
+  spend: { label: "spend (spend, spending, spent or budget)", re: /(?<![\p{L}])(?:spend|spends|spending|spent|budgets?)(?![\p{L}])/iu },
+  adoption: {
+    label: "adoption (adopt, use, using or share)",
+    re: /(?<![\p{L}])(?:adopt|adopts|adopted|adopting|adoption|use|uses|used|using|share|shares)(?![\p{L}])/iu,
+  },
+  user_count: { label: "user count (a counted noun such as users or teams)", re: COUNT_NOUN_RE },
+  other: null,
+};
+
+/** Ruling R9: why the sentence does not state the claimed metric, or null. */
+function metricIssue(metric: MarketStatMetric, sentence: string): string | null {
+  const cue = METRIC_CUES[metric];
+  return cue && !cue.re.test(sentence) ? `the sentence does not state ${cue.label} (ruling R9)` : null;
 }
 
 const MAGNITUDE_AFTER_YEAR_RE = /^[ \u00A0]?(?:thousand|million|billion|trillion|bn|mn|tn|[kKmMbBtT](?![\p{L}\p{N}]))/iu;
@@ -706,6 +843,8 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
   if (!metricAllowsUnit(claim.metric, claim.amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${claim.amount.unit} amount`);
   }
+  const shape = subjectShapeIssue(claim.subject);
+  if (shape) return fail("invalid_candidate", shape);
   const laterDeclaredYear = claim.year !== undefined && claim.year > referenceYear;
   const amounts = scanAmounts(excerpt);
   let matched = false;
@@ -716,6 +855,11 @@ function checkStatExcerpt(excerpt: string, claim: StatClaim, referenceYear: numb
     for (const [index, found] of inSentence.entries()) {
       if (!amountsEqual(found.amount, claim.amount)) continue;
       matched = true;
+      const metric = metricIssue(claim.metric, sentence.text);
+      if (metric) {
+        failure ??= fail("metric_unit_mismatch", metric);
+        continue;
+      }
       const span = spans[index] ?? { start: 0, end: 0 };
       const projected = laterDeclaredYear || isProjectedAmount(sentence.text, span, referenceYear);
       if (claim.periodKind === "measured" && projected) {
@@ -780,6 +924,8 @@ function acceptStat(candidate: MarketStatCandidate, context: Context): { ok: tru
   if (!metricAllowsUnit(claim.metric, amount.unit)) {
     return fail("metric_unit_mismatch", `${claim.metric} cannot be a ${amount.unit} amount`);
   }
+  const shape = subjectShapeIssue(claim.subject);
+  if (shape) return fail("invalid_candidate", shape);
   const resolved = resolveSource(context, candidate.sourceUrl);
   if (!resolved.ok) return resolved;
   const source = resolved.source;
@@ -914,16 +1060,39 @@ function attributeVendor(
 type PriceClaim = { vendor: string; terms: PriceTerms };
 
 /**
+ * Ruling R9, for one price expression of `text` (the source page at
+ * acceptance, the excerpt at re-validation): a comparison cue in the
+ * price's sentence binds no price (ambiguous_attribution), and a block that
+ * shows both monthly and annual billing without the clause saying which is
+ * ambiguous billing (qualifier_dropped).
+ */
+function priceContextFailure(text: string, expression: PriceExpression): Failure | null {
+  const cue = comparisonCueFor(text, expression);
+  if (cue) {
+    return fail(
+      "ambiguous_attribution",
+      `the price's sentence compares vendors ("${cue}"); a comparison binds no price (ruling R9)`,
+    );
+  }
+  const billing = ambiguousBilling(text, expression);
+  return billing ? fail("qualifier_dropped", billing) : null;
+}
+
+type PriceCheck = { ok: true; attribution: "first_party" | "secondary"; expression: PriceExpression } | Failure;
+
+/**
  * The price rules applied to an excerpt (acceptance and re-validation alike):
- * not from another known vendor's own site (ruling R5), and an equal price
- * expression with a valid attribution.
+ * not from another known vendor's own site (ruling R5), an equal price
+ * expression whose sentence compares no vendors and whose billing is not
+ * ambiguous (ruling R9), with a valid attribution. Returns the expression
+ * it bound, for the plan rule.
  */
 function checkPriceExcerpt(
   excerpt: string,
   claim: PriceClaim,
   sourceUrl: string,
   vendors: ReadonlyArray<string>,
-): Attribution {
+): PriceCheck {
   const rivalSite = rivalSiteFailure(claim.vendor, sourceUrl, vendors);
   if (rivalSite) return rivalSite;
   const expressions = priceExpressionsIn(excerpt);
@@ -937,11 +1106,39 @@ function checkPriceExcerpt(
       failure = closer(failure, fail(mismatch, `source says ${formatPriceTerms(expression.terms)}`));
       continue;
     }
+    const context = priceContextFailure(excerpt, expression);
+    if (context) {
+      failure = closer(failure, context);
+      continue;
+    }
     const attribution = attributeVendor(excerpt, expression, claim.vendor, sourceUrl, vendors);
-    if (attribution.ok) return attribution;
+    if (attribution.ok) return { ok: true, attribution: attribution.attribution, expression };
     failure = closer(failure, attribution);
   }
   return failure ?? fail("unparseable_amount", "excerpt has no supported price expression");
+}
+
+/** A plan mention right after these words names another plan's features, not this price's plan. */
+const PLAN_CONTEXT_RE =
+  /(?:^|[^\p{L}])(?:(?:everything|all|anything)[ \t\u00A0]+(?:in|of|from)|includes|including|included[ \t\u00A0]+in)[ \t\u00A0]+(?:the[ \t\u00A0]+)?$/iu;
+
+/**
+ * Ruling R9: a plan name binds to a price only on the price's own line or
+ * the nearest non-blank line above it, and never right after "everything
+ * in", "all of" or "includes" ("Pro — Everything in Starter, plus SSO.
+ * $24/user/month" is the Pro price). Read on the excerpt, so acceptance and
+ * re-validation agree.
+ */
+function planBinds(plan: string, excerpt: string, expression: PriceExpression): boolean {
+  const own = lineAround(excerpt, expression.start);
+  const lines = [own, lineAbove(excerpt, own.start)].filter((l): l is { start: number; end: number } => l !== null);
+  for (const line of lines) {
+    const text = excerpt.slice(line.start, line.end);
+    for (const mention of nameMentions(text, plan)) {
+      if (!PLAN_CONTEXT_RE.test(text.slice(0, mention.start))) return true;
+    }
+  }
+  return false;
 }
 
 /** Excerpt range for a price: span's sentence start through the price's clause end. */
@@ -952,10 +1149,6 @@ function priceExcerptRange(text: string, spanStart: number, expression: PriceExp
   if (end - start <= EVIDENCE_LIMITS.excerptMaxChars) return { start, end };
   if (end - expression.clauseStart <= EVIDENCE_LIMITS.excerptMaxChars) return { start: expression.clauseStart, end };
   return null;
-}
-
-function planMentioned(plan: string, excerpt: string): boolean {
-  return nameMentions(excerpt, plan).length > 0;
 }
 
 function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { ok: true; item: AcceptedEvidence } | Failure {
@@ -983,6 +1176,13 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
       failure = closer(failure, fail(mismatch, `source says ${formatPriceTerms(expression.terms)}`));
       continue;
     }
+    // Ruling R9 on the whole page first: the price's full sentence and the
+    // lines above it, which the stored excerpt may not include.
+    const sourceContext = priceContextFailure(source.text, expression);
+    if (sourceContext) {
+      failure = closer(failure, sourceContext);
+      continue;
+    }
     const range = priceExcerptRange(source.text, span.start, expression);
     if (!range) {
       failure = closer(failure, fail("span_bounds", `price clause exceeds ${EVIDENCE_LIMITS.excerptMaxChars} characters`));
@@ -998,7 +1198,7 @@ function acceptPrice(candidate: CompetitorPriceCandidate, context: Context): { o
     const typed = {
       kind: "competitor_price" as const,
       vendor,
-      ...(plan && planMentioned(plan, excerpt) ? { plan } : {}),
+      ...(plan && planBinds(plan, excerpt, check.expression) ? { plan } : {}),
       price: terms,
     };
     const item: CompetitorPriceEvidence = {
@@ -1053,7 +1253,7 @@ function rejection(
   claim: string,
   detail: string,
 ): RejectedEvidence {
-  const url = typeof sourceUrl === "string" ? (canonicalSourceUrl(sourceUrl) ?? clip(sourceUrl.trim(), 300)) : "";
+  const url = typeof sourceUrl === "string" ? (recordableUrl(sourceUrl) ?? "") : "";
   return {
     kind,
     reason,
@@ -1280,8 +1480,12 @@ function rederivationIssues(
   vendors: ReadonlyArray<string>,
 ): string[] {
   if (claim.kind === "community_quote") {
+    const issues: string[] = [];
     const bounds = quoteBoundsIssue(excerpt);
-    return bounds ? [`excerpt: ${bounds}`] : [];
+    if (bounds) issues.push(`excerpt: ${bounds}`);
+    const lineBreak = quoteLineBreakIssue(excerpt);
+    if (lineBreak) issues.push(`excerpt: ${lineBreak}`);
+    return issues;
   }
   if (claim.kind === "market_stat") {
     const { period } = claim;
@@ -1306,7 +1510,9 @@ function rederivationIssues(
   if (check.attribution !== claim.attribution) {
     issues.push(`attribution: re-derives as ${check.attribution}, stored ${claim.attribution}`);
   }
-  if (claim.plan !== undefined && !planMentioned(claim.plan, excerpt)) issues.push("plan: not named in the excerpt");
+  if (claim.plan !== undefined && !planBinds(claim.plan, excerpt, check.expression)) {
+    issues.push("plan: not named on the price's own line or the line above it (ruling R9)");
+  }
   return issues;
 }
 
@@ -1348,6 +1554,9 @@ export function revalidateAcceptedEvidence(
   if (listed.length === 0) issues.push("source: not listed in evidence.sources");
   else if (!read) issues.push(`source: listed as ${listed[0]?.status ?? "unknown"}, not read`);
   else if (read.retrievedAt !== retrievedAt) issues.push("source: retrievedAt differs from the source read");
+  if (kind === "community_quote" && read && !read.roles.includes("community")) {
+    issues.push(`source: ${NOT_COMMUNITY_DETAIL}`);
+  }
 
   const claim = readStoredClaim(kind, item, issues);
   if (!claim) return { ok: false, issues };
@@ -1377,7 +1586,9 @@ export function revalidateAcceptedEvidence(
 
 /**
  * EVIDENCE_MINIMUMS over accepted items: ≥2 stats, ≥3 distinct vendors (by
- * vendorKey) with an accepted price, ≥2 distinct quotes (strict excerpt form).
+ * vendorKey) with an accepted price, ≥2 distinct quotes, where two quotes
+ * are distinct only when neither contains the other (ruling R8,
+ * distinctQuoteCount).
  */
 export function checkEvidenceMinimums(accepted: ReadonlyArray<AcceptedEvidence>): {
   ok: boolean;
@@ -1387,9 +1598,7 @@ export function checkEvidenceMinimums(accepted: ReadonlyArray<AcceptedEvidence>)
   const vendors = new Set(
     accepted.flatMap((e) => (e.kind === "competitor_price" ? [vendorKey(e.vendor)] : [])).filter(Boolean),
   );
-  const quotes = new Set(
-    accepted.flatMap((e) => (e.kind === "community_quote" ? [normalizeExcerptForCompare(e.excerpt)] : [])),
-  );
+  const quotes = distinctQuoteCount(accepted.flatMap((e) => (e.kind === "community_quote" ? [e.excerpt] : [])));
   const shortfalls: string[] = [];
   if (stats < EVIDENCE_MINIMUMS.marketStats) {
     shortfalls.push(`market stats: ${stats} accepted, need ${EVIDENCE_MINIMUMS.marketStats}`);
@@ -1397,8 +1606,8 @@ export function checkEvidenceMinimums(accepted: ReadonlyArray<AcceptedEvidence>)
   if (vendors.size < EVIDENCE_MINIMUMS.pricedCompetitors) {
     shortfalls.push(`priced competitors: ${vendors.size} vendors with an accepted price, need ${EVIDENCE_MINIMUMS.pricedCompetitors}`);
   }
-  if (quotes.size < EVIDENCE_MINIMUMS.distinctQuotes) {
-    shortfalls.push(`community quotes: ${quotes.size} distinct accepted, need ${EVIDENCE_MINIMUMS.distinctQuotes}`);
+  if (quotes < EVIDENCE_MINIMUMS.distinctQuotes) {
+    shortfalls.push(`community quotes: ${quotes} distinct accepted, need ${EVIDENCE_MINIMUMS.distinctQuotes}`);
   }
   return { ok: shortfalls.length === 0, shortfalls };
 }

@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
+import { FIXTURE_BRIEF_SLUG } from "./providers/fixtures.ts";
 import { parseResearchRecord } from "./research-record.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -30,13 +31,13 @@ function tempDir(): string {
   return dir;
 }
 
-function cli(args: string[]) {
+function cli(args: string[], extraEnv: Record<string, string> = {}) {
   const result = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", script, ...args], {
     cwd: root,
     encoding: "utf8",
     // No provider keys: fixture mode must not need any. The child runs the
     // current node binary directly, so it needs no PATH either.
-    env: { NODE_ENV: "test" },
+    env: { NODE_ENV: "test", ...extraEnv },
     timeout: 120_000,
   });
   return { status: result.status, stdout: result.stdout, stderr: result.stderr, output: `${result.stdout}\n${result.stderr}` };
@@ -71,7 +72,9 @@ describe("engine:research CLI (fixture mode)", () => {
     expect(report.failedStep).toBeUndefined();
     expect(report.briefSlug).toBe(record.brief.slug);
 
-    expect(run.stdout).toMatch(/engine:research ok · mode fixture · slug ai-rfp-response-assistant/);
+    expect(run.stdout).toMatch(new RegExp(`engine:research ok · mode fixture · slug ${FIXTURE_BRIEF_SLUG}`));
+    // Ruling R12: the report and the record name the same code revision.
+    expect(record.provenance.codeRevision).toEqual(report.codeRevision);
     expect(run.stdout).toMatch(/accepted: community_quote 3, market_stat 3, competitor_price 3/);
     expect(run.stdout).toMatch(/rejected: source_unreadable 1, span_not_found 1/);
     expectNoLocalPaths(run.output, dir);
@@ -112,14 +115,59 @@ describe("engine:research CLI (fixture mode)", () => {
     expect(cli(["--fixture", "rfp-assistant", "--out", out, "--force"]).status).toBe(0);
   });
 
-  it("refuses a fixture run for a brief the fixture does not describe", () => {
+  it("refuses a fixture run for a live brief or a path outside the fixture briefs (ruling R11)", () => {
     const dir = tempDir();
     const out = path.join(dir, "cr.json");
-    const run = cli(["--fixture", "code-reviewer", "--out", out]);
-    expect(run.status).toBe(1);
-    expect(run.stderr).toMatch(/fixture data describes ai-rfp-response-assistant only/);
+    const live = cli(["--fixture", "code-reviewer", "--out", out]);
+    expect(live.status).toBe(1);
+    expect(live.stderr).toMatch(/brief not found: engine\/briefs\/fixtures\/code-reviewer\.json/);
+    const escape = cli(["--fixture", "../code-reviewer", "--out", out]);
+    expect(escape.status).toBe(1);
+    expect(escape.stderr).toMatch(/letters, digits and dashes only/);
     expect(existsSync(out)).toBe(false);
     expect(existsSync(`${out}.report.json`)).toBe(false);
+  });
+
+  it("never writes a fixture record into engine/records/, where published records live (ruling R11)", () => {
+    const out = path.join(root, "engine", "records", `${FIXTURE_BRIEF_SLUG}.json`);
+    const run = cli(["--fixture", "rfp-assistant", "--out", out]);
+    expect(run.status).toBe(1);
+    expect(run.stderr).toMatch(/a fixture record never goes to engine\/records\//);
+    expect(existsSync(out)).toBe(false);
+    expect(existsSync(`${out}.report.json`)).toBe(false);
+  });
+
+  it("records an unknown code revision, and still succeeds, when git cannot answer (ruling R12)", () => {
+    const dir = tempDir();
+    const out = path.join(dir, "record.json");
+    // GIT_DIR at an empty directory: every git command fails, as without git.
+    const run = cli(["--fixture", "rfp-assistant", "--out", out], { GIT_DIR: path.join(dir, "not-a-repository") });
+    expect(run.status, run.stderr).toBe(0);
+    expect(readJson(`${out}.report.json`).codeRevision).toEqual({ sha: null, dirty: null });
+    expect(parseResearchRecord(readJson(out)).provenance.codeRevision).toEqual({ sha: null, dirty: null });
+  });
+
+  // Ruling R12, with git reachable: an absolute PATH entry that holds a git binary, if this machine has one.
+  const gitDir = ["/usr/bin", "/usr/local/bin", "/opt/homebrew/bin"].find((dir) => existsSync(path.join(dir, "git")));
+  it.skipIf(gitDir === undefined)("names the code revision from git: HEAD and whether tracked files changed", (ctx) => {
+    const env = { NODE_ENV: "test" as const, PATH: gitDir ?? "" };
+    const head = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8", env });
+    // A checkout without git metadata (an exported tree) has no revision to compare.
+    if (head.status !== 0) ctx.skip();
+    const dir = tempDir();
+    const out = path.join(dir, "record.json");
+    const run = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", script, "--fixture", "rfp-assistant", "--out", out], {
+      cwd: root,
+      encoding: "utf8",
+      env,
+      timeout: 120_000,
+    });
+    expect(run.status, run.stderr).toBe(0);
+    const report = readJson(`${out}.report.json`);
+    const revision = report.codeRevision;
+    expect(revision).toMatchObject({ sha: head.stdout.trim() });
+    expect(typeof (revision as { dirty?: unknown }).dirty).toBe("boolean");
+    expect(parseResearchRecord(readJson(out)).provenance.codeRevision).toEqual(revision);
   });
 
   it("keeps --fixture and --live mutually exclusive", () => {

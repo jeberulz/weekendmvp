@@ -6,7 +6,8 @@
  * estimation run exactly as in live mode; only the transport is replaced.
  * Nothing here touches the network or needs a key.
  *
- * The research fixture (brief engine/briefs/rfp-assistant.json) is
+ * The research fixture (briefs in engine/briefs/fixtures/, slug
+ * FIXTURE_BRIEF_SLUG) is
  * SYNTHETIC: fictional vendors on reserved `.example` hosts, a synthetic
  * market report and survey, and HN-style and forum threads written for this
  * file. No third-party text is copied, so a fixture record never puts words
@@ -63,8 +64,15 @@ function requestBody(init: RequestInit | undefined): Record<string, unknown> {
 // The research fixture: brief, URLs and synthetic pages
 // ---------------------------------------------------------------------------
 
-/** The only brief the fixture data describes (engine/briefs/rfp-assistant.json). */
-export const FIXTURE_BRIEF_SLUG = "ai-rfp-response-assistant";
+/**
+ * The only brief the fixture data describes (engine/briefs/fixtures/*.json).
+ * Ruling R11: no published idea has this slug, so fixture output can never
+ * land on a published idea's record or page path (a test checks).
+ */
+export const FIXTURE_BRIEF_SLUG = "fixture-rfp-response-assistant";
+
+/** Where fixture briefs live; `engine:research --fixture <name>` reads `<name>.json` here. */
+export const FIXTURE_BRIEFS_DIR = "engine/briefs/fixtures";
 
 export const FIXTURE_URLS = {
   marketReport: "https://research.example.com/rfp-response-software-market-2025",
@@ -92,7 +100,7 @@ export const FIXTURE_PAGES: Readonly<Record<string, string>> = {
   ].join("\n"),
   [FIXTURE_URLS.workloadSurvey]: [
     "Survey of B2B SaaS sales teams",
-    "In 2025, 64% of B2B SaaS sales teams answered at least one security questionnaire per month.",
+    "In 2025, 64% of B2B SaaS sales teams used spreadsheets to answer security questionnaires.",
     "Respondents named spreadsheets as their main tool for reusing answers.",
   ].join("\n"),
   [FIXTURE_URLS.bidwell]: [
@@ -124,11 +132,12 @@ export const FIXTURE_PAGES: Readonly<Record<string, string>> = {
     "$25/user/month",
     "Shared library and review workflow.",
   ].join("\n"),
+  // One comment per line, each starting with a space, as sourceText reads an HN item.
   [FIXTURE_URLS.hnThread]: [
     "Ask: how do small sales teams handle RFPs and security questionnaires?",
-    "reply: We burn weekends answering the same security questionnaire for every enterprise deal.",
-    "reply: Our answers live in five spreadsheets and nobody knows which version legal approved.",
-    "reply: The big proposal tools assume you have a proposal team, and we are three sales engineers.",
+    " We burn weekends answering the same security questionnaire for every enterprise deal.",
+    " Our answers live in five spreadsheets and nobody knows which version legal approved.",
+    " The big proposal tools assume you have a proposal team, and we are three sales engineers.",
   ].join("\n"),
   [FIXTURE_URLS.forumThread]: [
     "Topic: Security questionnaires every quarter",
@@ -254,8 +263,8 @@ export const FIXTURE_EXTRACTION: ExtractionCandidates = {
     },
     {
       sourceUrl: FIXTURE_URLS.workloadSurvey,
-      supportingText: "In 2025, 64% of B2B SaaS sales teams answered at least one security questionnaire per month.",
-      subject: "B2B SaaS sales teams answering security questionnaires",
+      supportingText: "In 2025, 64% of B2B SaaS sales teams used spreadsheets to answer security questionnaires.",
+      subject: "B2B SaaS sales teams using spreadsheets for security questionnaires",
       metric: "adoption",
       amountText: "64%",
       year: 2025,
@@ -303,7 +312,6 @@ export const FIXTURE_EXTRACTION: ExtractionCandidates = {
  * fact-bearing fields outside evidence tokens.
  */
 export const FIXTURE_EDITORIAL_TEMPLATE = {
-  oneLiner: "Cited first drafts of RFPs and security questionnaires for SaaS sales teams without a proposal team.",
   marketSummary: [
     "Response software for RFPs and security questionnaires is a measurable niche rather than a slice of the whole SaaS market. The category was valued at {{tok:stat:0}}, and analysts project it to reach {{tok:stat:1}}. Both figures describe the category as a whole and neither is split by company size, so they show that buyers already pay for this work, not how many small teams a new product can reach.",
     "The established suites are built around a dedicated proposal function: a content owner who curates the library, reviewers assigned by section and a renewal negotiated by procurement. The opening is the small team that answers the same questions every quarter without a proposal manager, a buyer the enterprise suites price out. Those teams meet questionnaires as soon as they sell upmarket, and the job lands on whoever knows the product best, usually a sales or solutions engineer. They do not need a broader library. They need approved answers they can trust, with the source attached, in the format of the buyer's own portal.",
@@ -355,7 +363,7 @@ export const FIXTURE_EDITORIAL_TEMPLATE = {
   editorial: {
     productName: "CiteDraft",
     dontBuildYet:
-      "Do not build a full content library, an SSO portal or CRM sync before ten paying teams finish one questionnaire end to end.",
+      "Do not build a full content library, an SSO portal or CRM sync before a handful of paying teams have each finished a real questionnaire end to end.",
     problemNarrative: [
       "Sales engineers at small SaaS companies are the people who answer RFPs and security questionnaires, usually on top of their quota. Every enterprise deal brings a new portal, a new spreadsheet and the same questions about access control, encryption and incident response. The answers already exist, but they are scattered across old questionnaires, policy documents and chat threads, and nobody can tell which version legal approved. Generic chat assistants make the problem worse because they invent controls the company does not have, so legal rejects the draft and the deadline slips. The enterprise response suites solve this for companies with a proposal team, but their pricing and setup assume a dedicated owner the small team does not have. The work that hurts is not typing; it is finding approved language, proving where it came from and getting it past legal before the deal stalls.",
       "The buyer is specific. SMB SaaS sales and solutions engineers own the technical side of a deal, from the first demo to the security review, and they inherit the questionnaire because nobody else can answer it. When a portal asks how backups are encrypted or how access is revoked when an employee leaves, the engineer has to find the latest policy, check that it still matches what the company actually does and phrase it so legal will sign off. Each answer is quick on its own. A long questionnaire is not, and it gets finished in the evenings around customer calls.",
@@ -394,7 +402,7 @@ export const FIXTURE_EDITORIAL_TEMPLATE = {
       payingAccounts: 15,
       seatsPerAccount: 4,
       assumptions:
-        "Assumes a 15% trial rate from warm outreach and a 25% trial-to-paid rate once a team exports one cited questionnaire.",
+        "Assumes warm outreach turns a small share of the engineers it reaches into trials, and that a team pays once it has exported a cited questionnaire for a live deal. Neither rate is measured yet.",
     },
     dataModel: [
       { table: "library_documents", columns: "id, workspace_id fk, title text, body text, approved_by uuid, approved_at timestamptz" },
@@ -441,6 +449,8 @@ export type FixtureSynthesisOptions = {
   /** Fixed payload for every request (adapter tests). */
   payload?: unknown;
   status?: number;
+  /** Brief-normalization reply from the request input (default SYNTHESIS_BRIEF_FIXTURE's text). */
+  brief?: (input: string) => FixtureReply;
   /** Extraction reply from the request input (default FIXTURE_EXTRACTION). */
   extraction?: (input: string) => FixtureReply;
   /** Editorial reply from the accepted bundle in the request. */
@@ -460,7 +470,8 @@ export function fixtureSynthesisFetch(overrides: FixtureSynthesisOptions = {}): 
     const instructions = typeof body.instructions === "string" ? body.instructions : "";
     const input = typeof body.input === "string" ? body.input : "";
     if (instructions === BRIEF_INSTRUCTIONS || /normalize/i.test(instructions)) {
-      return jsonResponse(SYNTHESIS_BRIEF_FIXTURE);
+      if (!overrides.brief) return jsonResponse(SYNTHESIS_BRIEF_FIXTURE);
+      return jsonResponse({ output_text: replyText(overrides.brief(input)), usage: SYNTHESIS_BRIEF_FIXTURE.usage });
     }
     if (instructions === EXTRACTION_INSTRUCTIONS) {
       const reply = overrides.extraction ? overrides.extraction(input) : FIXTURE_EXTRACTION;
