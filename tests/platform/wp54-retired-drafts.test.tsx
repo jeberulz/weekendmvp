@@ -149,6 +149,16 @@ describe("Home", () => {
     expect(html.match(/\/dashboard\/builds\/new\?idea=rfp-desk/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
+  test("a draft's shortlist row is labelled as retired and an ordinary row is not", () => {
+    const html = renderToStaticMarkup(<Shortlist home={home([savedRow(DRAFT), savedRow("rfp-desk")])} />);
+    const body = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
+    const [draftRow, ordinaryRow] = body.split("<tr").slice(1);
+    expect(draftRow).toContain("AI Code Reviewer (draft)");
+    expect(draftRow).toContain("Research retired");
+    expect(ordinaryRow).toContain("Idea rfp-desk");
+    expect(ordinaryRow).not.toContain("Research retired");
+  });
+
   test("a shortlist of drafts only says why nothing can start", () => {
     const html = renderToStaticMarkup(<Shortlist home={home([savedRow(DRAFT)])} />);
     expect(html).not.toContain('type="radio"');
