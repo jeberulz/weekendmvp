@@ -21,7 +21,9 @@
  *   that never grows past the body cap, every byte read off the connection
  *   (status lines, headers, chunk framing) counts against a socket cap, and
  *   the request is destroyed at either; one deadline per `fetchText` call
- *   covers the DNS checks, the socket lookup, every redirect hop and the body.
+ *   covers the DNS checks, the socket lookup, every redirect hop and the body
+ *   (the read settles by then; a lookup itself cannot be cancelled, see
+ *   `assertPublicUrl`).
  * - Compression: requests ask for `identity`, and any other Content-Encoding
  *   fails as `unsupported_encoding`, as does any Transfer-Encoding but
  *   `chunked` (gzip, or framing Node would not decode). Nothing is
@@ -32,7 +34,8 @@
  *   keys and any other header are dropped for good), and an authenticated
  *   HTTPS→HTTP hop is refused. URL userinfo is never sent.
  * - Failures reject with `SourceFetchError`. Messages never carry header
- *   values; URLs in them lose userinfo and non-identifying query values.
+ *   values; URLs in them lose userinfo, non-identifying query values and
+ *   credential-like path segments.
  */
 
 import { lookup as dnsLookup } from "node:dns";
