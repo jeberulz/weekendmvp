@@ -17,10 +17,19 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildFixtureRecord, EV, FIXTURE_PAGES, FIXTURE_PAGE_SLUG, REJECTED_QUOTE, tok, withEditorial } from "./__fixtures__/recordV2.ts";
+import {
+  buildFixtureRecord,
+  EV,
+  FIXTURE_PAGES,
+  FIXTURE_PAGE_SLUG,
+  FIXTURE_RETRIEVED_AT,
+  REJECTED_QUOTE,
+  tok,
+  withEditorial,
+} from "./__fixtures__/recordV2.ts";
 import { CompileError, compileResearchRecord, GENERIC_SETUP_TABLE_NAMES, quoteBlock } from "./compile.ts";
 import { writeCompiledIdea } from "./compile-write.ts";
-import { acceptEvidence } from "./evidence/accept.ts";
+import { acceptEvidence, sha256Hex } from "./evidence/accept.ts";
 import { canonicalSourceUrl, sourceHostLabel } from "./evidence/citation.ts";
 import type { AcceptedEvidence, CompetitorPriceEvidence, EditorialFieldsV2, ResearchRecordV2 } from "./evidence/contract.ts";
 import { escapeMdxText } from "./evidence/quote.ts";
@@ -77,22 +86,33 @@ describe("compileResearchRecord (contract v2)", () => {
     expect(manifestEntry.description).toBe("A quiet, repository-aware sanity check for every pull request on small GitHub teams.");
   });
 
-  it("renders each selected quote as one blockquote with its attribution, multiline excerpts line by line", () => {
+  it("renders each selected quote as one blockquote line with its attribution (a quote is one line of its source, R8)", () => {
     const { mdx } = compileFixture();
-    expect(mdx).toContain(
-      [
-        '> "Our bot leaves forty comments per PR',
-        '> and nobody reads any of them anymore."',
-        ">",
-        "> — [AI review noise](https://forum.example.com/t/ai-review-noise)",
-      ].join("\n"),
-    );
-    expect(mdx).toContain(
-      '> "Our CI posts \\*three\\* bot reviews per change and each one says the C\\# code looks fine, which helps nobody."\n>\n> — [Review noise](https://lobste.rs/s/abc123/review_noise)',
-    );
-    expect(quoteBlock(EV.quoteHn)).toBe(
-      '> "We review 12 pull requests a day and the bot comments on every single one of them."\n>\n> — [Ask HN: Is AI code review worth it?](https://news.ycombinator.com/item?id=27515468)',
-    );
+    for (const quote of [EV.quoteHn, EV.quoteForum, EV.quoteLobsters]) {
+      expect(quote.excerpt).not.toMatch(/\n/);
+      const block = quoteBlock(quote);
+      expect(block).toBe(`> "${escapeMdxText(quote.excerpt)}"\n>\n> — ${mdLink(quote.sourceTitle, quote.sourceUrl)}`);
+      expect(mdx).toContain(block);
+    }
+    expect(quoteBlock(EV.quoteLobsters)).toContain("\\*three\\* bot reviews per change and each one says the C\\# code looks fine");
+  });
+
+  it("never gets a quote that spans a line break of its source: acceptance refuses it, so no record can hold it (R8)", () => {
+    const text = "Our bot leaves forty comments per PR\nand nobody reads any of them anymore.";
+    const url = FIXTURE_PAGES.forum.url;
+    const result = acceptEvidence({
+      candidates: {
+        quotes: [{ sourceUrl: url, text: "Our bot leaves forty comments per PR and nobody reads any of them anymore." }],
+        marketStats: [],
+        competitorPrices: [],
+      },
+      citations: [{ url, title: FIXTURE_PAGES.forum.title }],
+      sources: new Map([[url, { status: "read", text, retrievedAt: FIXTURE_RETRIEVED_AT, textSha256: sha256Hex(text), roles: ["community"] }]]),
+    });
+    expect(result.accepted).toEqual([]);
+    expect(result.rejected).toEqual([expect.objectContaining({ kind: "community_quote", reason: "span_bounds" })]);
+    // Every quote the fixture page renders is a single source line.
+    for (const quote of [EV.quoteHn, EV.quoteForum, EV.quoteLobsters]) expect(compileFixture().mdx).toContain(`> "${escapeMdxText(quote.excerpt)}"\n>`);
   });
 
   it("renders market signal rows from the accepted stats and their sources", () => {
@@ -291,7 +311,7 @@ describe("compileResearchRecord (contract v2)", () => {
   });
 
   it("refuses record text that would break a build-prompt code fence", () => {
-    const record = buildFixtureRecord(withEditorial({ brandBrief: "Calm and precise. ```js\nalert(1)\n``` No mascots at all." }));
+    const record = buildFixtureRecord(withEditorial({ brandBrief: "Calm and precise. ```js\nalert()\n``` No mascots at all." }));
     expect(compileIssues(record).join("\n")).toMatch(/would break its code fence/);
   });
 
@@ -459,7 +479,9 @@ describe("compile manifest stub", () => {
         })),
       },
       citations: [{ url, title }],
-      sources: new Map([[url, { status: "read", text, retrievedAt: "2026-09-30T12:00:00.000Z" }]]),
+      sources: new Map([
+        [url, { status: "read", text, retrievedAt: "2026-09-30T12:00:00.000Z", roles: ["market", "competitors", "community"] }],
+      ]),
       vendorHints: vendors,
     }).accepted;
     expect(accepted).toHaveLength(7);
@@ -480,7 +502,7 @@ describe("compile manifest stub", () => {
       r.competitors = vendors.map((name, i) => ({ name, priceIds: [byKind("competitor_price")[i] ?? ""] }));
       r.community = { summary: "Reviewers describe noise.", quoteIds: byKind("community_quote") };
       r.goToMarket.pricingNotes = "Price below the per-seat incumbents.";
-      if (r.editorial) r.editorial.competitiveNarrative = "Three per-seat products compete for the same small teams.";
+      if (r.editorial) r.editorial.competitiveNarrative = "Several per-seat products compete for the same small teams.";
     });
     expect(compileIssues(record).join("\n")).toMatch(/record cites 1 distinct source\(s\); the auditor needs ≥2/);
   });
