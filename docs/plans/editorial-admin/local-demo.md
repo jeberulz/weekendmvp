@@ -41,7 +41,7 @@ A full run on the flagship: in Compare, see that v3 edited a verified claim; res
 npx vitest run tests/editorial
 ```
 
-The editorial suite is not yet part of `npm test` (that script lives in `package.json`, a shared file). It covers the Editorial DTO v1 validators, state machines, domain rules, the reusable repository contract (run against the fixture adapter), seeded scenarios, the workspace gate, server-rendered UI markup and static boundary guards.
+`tests/editorial` is not yet part of `npm test` (that script lives in `package.json`, a shared file). It covers the Editorial DTO v1 validators, state machines, domain rules, the reusable repository contract (run against the fixture adapter and an in-memory partitioned store), seeded scenarios, the workspace gate, server-rendered UI markup and static boundary guards. The Convex side (`convex/admin`, `convex/editorial`: the contract against Convex tables, the functions and the denial matrix) runs in `npm test` through `test:convex`, and the middleware gate and redirect tests through `test:auth`.
 
 ## Production gate (fixture mode must be impossible, outsiders get a real 404)
 
@@ -60,11 +60,29 @@ npx next start -p 3247                                      # second shell
 node tests/editorial/scripts/verify-production-build.mjs --probe http://localhost:3247
 ```
 
-The first check scans `.next/` for fixture code and fictional-data sentinels. The probe requests every editorial path twice — with attempts to enable fixture mode through query strings and cookies, and with a forged Convex Auth session cookie — and requires HTTP 404, `noindex`, `private, no-store` and `no-referrer`, with no editorial copy or fixture text in the body. It then calls every editorial server action directly, with the action IDs from the build's server-reference manifest, and requires a refusal or `WORKSPACE_UNAVAILABLE`.
+The first check scans `.next/` for fixture code and fictional-data sentinels. The probe requests every editorial path three times — with attempts to enable fixture mode through query strings and cookies, with a forged Convex Auth session cookie, and as an RSC prefetch — and requires HTTP 404, `noindex`, `private, no-store`, `no-referrer`, `X-Frame-Options: DENY` and `frame-ancestors 'none'`, with no editorial copy or fixture text in the body. The paths include `/admin`, idea paths ending in `.js` or `.css`, and Next.js segment-prefetch paths (`/admin/editorial.segments/_tree.segment.rsc`), which once skipped middleware. Every denied HTML body is compared byte for byte with an unknown path's; Next.js rewrite markers in the headers are reported as a note (a documented limitation). It then calls every editorial server action directly, with the action IDs from the build's server-reference manifest, both on the action's own page and on `/` (Next.js forwards it), and requires a refusal or `WORKSPACE_UNAVAILABLE`.
 
 Since WP46-E4e, middleware answers every editorial request it cannot confirm as the super-admin's with the site's own 404 page: the body is byte-identical to an unknown path's. Only the operator headers differ, and every `/admin/*` path carries them, so they do not reveal whether the workspace exists. Server actions are refused by the same gate before they run.
 
 As a positive control, the development bundle in `.next/dev/` does contain the fixture sentinels; the production bundle does not.
+
+## Convex function bundle (offline)
+
+```bash
+node --experimental-vm-modules tests/editorial/scripts/verify-convex-bundle.mjs
+```
+
+Bundles every default-runtime Convex module with the Convex CLI's esbuild settings, loads each in a sandbox with web-style globals only, exports every function's validators and the schema, and requires the editorial surface to be exactly 9 public queries, 22 public mutations and internal functions elsewhere. Its controls prove the sandbox refuses a module that touches `document` on load. No network and no deployment; a real push is the authoritative check (below).
+
+## Live build against a disposable local backend (WP46-E4f)
+
+Done once by hand in E4f with scratch scripts outside the repository; automating it belongs to E7's staging journeys. Nothing here touches a cloud deployment, the owner's Convex account or real email.
+
+1. Run the Convex local backend binary already cached by the CLI (`~/.cache/convex/binaries/<version>/convex-local-backend`; pin a cached version so nothing is downloaded) with `--interface 127.0.0.1 --port 3250 --site-proxy-port 3251 --disable-beacon --redact-logs-to-client`, a fresh instance name and random instance secret, and a data directory outside the repository. `convex-local-backend keygen admin-key` gives its admin key.
+2. Set its environment through the admin API (`/api/update_environment_variables`): freshly generated `JWT_PRIVATE_KEY` and `JWKS`, `SITE_URL`, `SUPER_ADMIN_BOOTSTRAP_EMAIL=owner@example.test`, and a random `PLATFORM_BILLING_BRIDGE_SECRET`. No Google or Resend keys.
+3. Push with `npx convex dev --once --typecheck disable --env-file <file with CONVEX_SELF_HOSTED_URL and CONVEX_SELF_HOSTED_ADMIN_KEY>`. The CLI writes the backend's public URLs to `.env.local`; delete that file before a build that must have no Convex URL.
+4. With the admin key, create test accounts through Convex Auth's verification-code path (`auth:store` `createVerificationCode`, then `auth:signIn` with the code). No email is sent. Then run `admin/superAdmin:bootstrapOwner` and import ideas with `editorial/service:importSubmission` (`mode: "live"`).
+5. `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3250 npx next build`, `npx next start -p 3247`, run the probe above, and request the pages and one server action with the owner's and a customer's session cookies.
 
 ## Accessibility scan
 
@@ -74,4 +92,4 @@ With the fixture dev server running, serve the locally installed axe-core on loo
 python3 -m http.server 3248 --bind 127.0.0.1 --directory node_modules/axe-core
 ```
 
-Then, in the browser on an editorial page, inject `http://127.0.0.1:3248/axe.min.js` and run `tests/editorial/scripts/axe-run.js` (WCAG 2.0/2.1 A and AA tags). gstack `browse eval` can run that file once its Playwright browser is installed (`npx playwright install`, not done in this session because it downloads browser binaries).
+Then, in the browser on an editorial page, inject `http://127.0.0.1:3248/axe.min.js` and run `tests/editorial/scripts/axe-run.js` (WCAG 2.0/2.1 A and AA tags). gstack `browse eval` can run that file once its Playwright browser is installed (`npx playwright install`, not done because it downloads browser binaries); E4f used the desktop app's built-in browser instead, and scanned the live screens against the disposable backend at desktop width and 375 px.

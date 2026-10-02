@@ -20,6 +20,26 @@ export function isOperatorPath(pathname: string): boolean {
   return underPrefix(pathname, "/admin");
 }
 
+function operatorPrefix(pathname: string): boolean {
+  return pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/admin.");
+}
+
+/**
+ * Any request for the operator area as middleware sees it, including Next.js
+ * transport forms such as `/admin/editorial.segments/_tree.segment` (a
+ * prerendered segment payload) that the path rules above do not match, and
+ * percent-encoded spellings such as `/%61dmin/editorial` in case a router
+ * decodes before matching. Middleware gates and marks every one of them.
+ */
+export function isOperatorRequestPath(pathname: string): boolean {
+  if (operatorPrefix(pathname)) return true;
+  try {
+    return operatorPrefix(decodeURIComponent(pathname));
+  } catch {
+    return false;
+  }
+}
+
 /** The editorial workspace, open only to the bound super-admin. */
 export function isEditorialPath(pathname: string): boolean {
   return underPrefix(pathname, "/admin/editorial");

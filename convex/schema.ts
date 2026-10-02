@@ -665,8 +665,9 @@ export default defineSchema({
     revokedAt: v.optional(v.number()),
     revokedReason: v.optional(v.string()),
   })
-    .index("by_userId", ["userId"])
-    .index("by_role", ["role"]),
+    // Active bindings are the rows without `revokedAt`; history never hides them.
+    .index("by_userId_and_revokedAt", ["userId", "revokedAt"])
+    .index("by_role_and_revokedAt", ["role", "revokedAt"]),
 
   /**
    * WP46-E4a, additive. Append-only editorial activity: commands, refusals,

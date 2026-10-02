@@ -139,6 +139,53 @@ describe("live environment refusals", () => {
     expect(view.issues.some((issue) => issue.id === "checks:stale")).toBe(true);
   });
 
+  test("receipt-backed checks cannot make a revision approvable while no check runner is connected", async () => {
+    const w = world();
+    const envelope = await buildFixtureEnvelope(receiptSplitter, {
+      submissionId: "live-sub-placeholder",
+      nowMs: START,
+      // Checks stamped with the placeholder policy version look current to the derivation.
+      policyVersion: LIVE_POLICY_VERSION_UNSET,
+      producer: "engine",
+      mode: "live",
+    });
+    const { ideaId, revisionId } = value(await w.service().importTrusted(w.engine, envelope, "engine_receipt"));
+    const editor = w.as(w.admin);
+    value(await editor.setCandidateDecision(ideaId, 1, { decision: "accepted", rationale: "Worth editing" }));
+    let view = value(await editor.getRevision(ideaId, revisionId));
+    for (const item of view.reviewItems) {
+      if (item.status !== "reviewed") value(await editor.markReviewed(revisionId, item.id, item.dependencyHash, null));
+    }
+    view = value(await editor.getRevision(ideaId, revisionId));
+    for (const issue of view.issues) {
+      if (issue.severity === "warning" && issue.resolvable && !issue.resolution) {
+        value(await editor.resolveIssue(revisionId, issue.id, issue.dependencyHash, "Acceptable for this test."));
+      }
+    }
+    view = value(await editor.getRevision(ideaId, revisionId));
+    // Everything a reviewer can do is done; only the missing check runner blocks.
+    expect(view.eligibility.blockers.map((blocker) => blocker.code)).toEqual(["CHECKS_NOT_RUN"]);
+    expect(view.eligibility.blockers[0].message).toMatch(/not connected/);
+    const approval = await editor.approveRevision(revisionId, view.hashes.artifact, { attest: true, note: null });
+    expect(code(approval)).toBe("APPROVAL_BLOCKED");
+  });
+
+  test("past the per-idea storage budget no new revision is created", async () => {
+    const w = world();
+    const { ideaId, revisionId } = value(await w.service().importTrusted(w.engine, await liveEnvelope(), "none"));
+    const first = w.state.revisions.get(revisionId);
+    if (!first) throw new Error("imported revision missing");
+    // History that already fills the budget, written directly: one save caps a body far lower.
+    for (let number = 2; number <= 9; number += 1) {
+      const id = `rev_bulk_${number}`;
+      w.state.revisions.set(id, { ...first, id, number, kind: "approved_snapshot", markdown: "x".repeat(1_100_000) });
+    }
+    const refused = await w.as(w.admin).createRevision(ideaId, revisionId, "budget-key-0001");
+    expect(code(refused)).toBe("PRECONDITION_FAILED");
+    expect(refused.ok ? "" : refused.error.message).toMatch(/storage one idea can hold/);
+    expect(w.state.revisions.size).toBe(9);
+  });
+
   test("release intents are refused before anything is recorded", async () => {
     const w = world();
     const envelope = await buildFixtureEnvelope(menuCostCalculator, {

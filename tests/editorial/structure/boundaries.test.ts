@@ -101,8 +101,9 @@ describe("fixture isolation", () => {
   });
 
   test("nothing Convex loads reaches the Markdown parser, React or Next.js (WP46-E4c)", () => {
-    // Convex bundles for a browser-like isolate: micromark's entity decoder
-    // then resolves to a build that touches `document` when it loads.
+    // None of them belongs in a Convex bundle. The parser only loads there
+    // because one dependency maps the `convex` export condition to its plain
+    // build; under the bare `browser` condition it touches `document` on load.
     const resolve = (from: string, specifier: string) => {
       const base = path.normalize(path.join(path.dirname(from), specifier));
       return [`${base}.ts`, `${base}.tsx`, path.join(base, "index.ts")].find((candidate) =>
@@ -190,12 +191,25 @@ describe("private route metadata", () => {
 
   test("middleware refuses the editorial workspace to anyone the backend does not confirm (WP46-E4e)", () => {
     const middleware = read("middleware.ts");
-    // The gate runs before the auth-managed routes and fails closed.
-    expect(middleware.indexOf("if (isEditorialPath(pathname))")).toBeGreaterThan(-1);
-    expect(middleware.indexOf("if (isEditorialPath(pathname))")).toBeLessThan(middleware.indexOf("if (!isAuthManagedPath(pathname))"));
+    // The gate covers every request under /admin, runs before the auth-managed routes and fails closed.
+    expect(middleware.indexOf("if (isOperatorRequestPath(pathname))")).toBeGreaterThan(-1);
+    expect(middleware.indexOf("if (isOperatorRequestPath(pathname))")).toBeLessThan(
+      middleware.indexOf("if (!isAuthManagedPath(pathname))"),
+    );
     expect(middleware).toMatch(/catch \{\s*return false;\s*\}/);
+    // The matcher sends the operator area through middleware whatever its final segment looks like.
+    expect(middleware).toMatch(/"\/admin",\s*"\/admin\/:path\*",/);
     // The local-demo skip is compiled out of production builds.
     expect(middleware).toMatch(/process\.env\.NODE_ENV !== "production" && process\.env\.EDITORIAL_FIXTURE_MODE === "local-demo"/);
+  });
+
+  test("live settings never describe the demo's simulations (WP46-E4f)", () => {
+    const settings = read("app/admin/editorial/settings/page.tsx");
+    const branch = settings.indexOf('view.mode === "fixture" ? (');
+    expect(branch).toBeGreaterThan(-1);
+    for (const demoCopy of ["What is simulated in local demo mode", "development server&apos;s memory"]) {
+      expect(settings.indexOf(demoCopy)).toBeGreaterThan(branch);
+    }
   });
 
   test("the editorial layout is noindex, no-referrer and guarded in both metadata and render", () => {

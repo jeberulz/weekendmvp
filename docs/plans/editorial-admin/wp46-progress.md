@@ -139,18 +139,18 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
 - Additive schema: `editorial_settings`, `editorial_ideas` (`by_key`, `by_lifecycle`), `editorial_revisions` (`by_key`, `by_ideaId_and_number`), `editorial_attestations`, `editorial_flags`, `editorial_resolutions`, `editorial_notes`, `editorial_approvals` (each `by_ideaId`), `editorial_releases` (`by_key`, `by_ideaId`, `by_state`), `editorial_idempotency`, `editorial_submissions`, `editorial_slugs`, `editorial_idea_summaries`. Records are typed Convex validators with compile-time `Same`/`Storable` checks against the core's record types (`convex/editorial/validators.ts`); the publishing taxonomy is stored as strings so a later taxonomy change cannot invalidate stored drafts. List summaries and request-key results are JSON (derived caches, like `preview_capabilities.renderSpec`).
 - `ConvexWorkingSetStore` (`convex/editorial/store.ts`): loads one idea's documents, maps them to core records, commits change sets with `insert`/`replace`, keeps summaries current, pages activity on `_creationTime` (short cursors, no count), and fails loudly past its bounds (40 revisions per idea — now also refused by the core when creating one — 5,000 child rows per idea, 2,500 ideas, 4,000 releases, 900 KB per document with a clear "too large" error).
 - Public functions: 9 queries (`convex/editorial/reads.ts`, including `session`, which reveals the capability only to its holder and returns its sign-in method for re-authentication) and 22 mutations (`commands.ts`), one per repository command, with argument validators checked against the repository types (`args.ts`). Every one resolves the caller from the verified session (`session.ts`); strong authentication is the session's creation time. Anonymous calls write nothing; an account without the capability has its refusals recorded up to 20 an hour (rate-limiter component); the capability holder's refusals are always recorded. Internal seams (`service.ts`): `importSubmission` (E5), `workerQueue`/`workerAdvance` (E6), `setKillSwitch` (operator). Production behaviour until E5/E6: checks and publishing say "not connected".
-- Found while checking the Convex runtime: Convex bundles for a browser-like isolate, where micromark's entity decoder resolves to a build that calls `document` when it loads; every editorial function would have failed to load. Display counts (words, reading time, prompts, code blocks) became an environment seam: the demo measures with the parser, the live adapter will measure on the Next.js side, and nothing Convex loads imports the parser. A new guard walks the import graph from every Convex module and fails if it reaches the parser, React or Next.js (it caught a deliberately re-added import). Read-only repositories use deterministic ids, so no query draws randomness; mutations use `crypto.getRandomValues`, as `generateFromBridge` already does in production.
+- Display counts (words, reading time, prompts, code blocks) became an environment seam: the demo measures with the parser, the live adapter measures on the Next.js side, and nothing Convex loads imports the parser. A new guard walks the import graph from every Convex module and fails if it reaches the parser, React or Next.js (it caught a deliberately re-added import). **Correction (E4f):** this entry first said Convex would load micromark's DOM entity decoder and every editorial function would fail to load. That was wrong: `decode-named-character-reference` 1.3.0 maps the `convex` export condition to its plain build, and the E4f offline bundle check loads the parser under Convex's settings. The DOM build is only picked when the `convex` condition is missing, which the first check left out. The seam and guard stay because they keep a large dependency tree out of Convex functions, but they did not fix a live bug. Read-only repositories use deterministic ids, so no query draws randomness; mutations use `crypto.getRandomValues`, as `generateFromBridge` already does in production.
 - Checks run:
   - `convex/editorial/contract.test.ts`: the repository contract (32 cases) against the Convex tables in convex-test, one transaction per call (principals, checks, receipts and worker outcomes simulated by the harness; not proof of authentication, concurrency or deployment).
   - `convex/editorial/functions.test.ts` (9): session check for anonymous, customer and owner; every read refused without data; anonymous commands write nothing; customer refusals recorded and capped at 20; forged identity; revocation at the next request; argument validation; an 11-minute-old session needs a new sign-in before trash and a new session passes; the live journey (queue, decision, fork, save, conflict, review, checks and publishing refused with their reasons, activity paging without a total, settings); fixture envelopes and malformed JSON refused; kill switch and worker seam.
   - Mutation checks: letting anonymous calls write and taking strong authentication from the clock each turned a functions test red; restored (`cmp`), green.
   - Structure guards (4 new): internal-only service module; every public command and read resolves the session; no identity, role or capability arguments; only editorial modules name the editorial tables; the import-graph guard above.
   - `npx vitest run convex tests/editorial`: 660 tests passed. `npx tsc --noEmit` (root and `convex/`): pass. ESLint: clean.
-- Not verified here: Convex's real bundler and isolate (no deployment is attached, and starting a local backend may download a new backend binary, which needs your permission). The static import-graph and package checks above cover the hazard found; a disposable local push is part of E4f.
+- Not verified here: Convex's real bundler and isolate (no deployment is attached, and starting a local backend may download a new backend binary, which needs your permission). A disposable local push was planned for E4f; see that entry for the offline check that ran instead.
 
 ## 2026-10-01 - WP46-E4d live adapter and routes
 
-- `ConvexEditorialRepository` (`lib/editorial/adapters/live/repository.ts`, server-only): every method calls the public editorial Convex function with the signed-in user's own token (`fetchQuery`/`fetchMutation`), so Convex resolves and re-checks the caller on every call. Revisions come back with display counts measured here (the parser cannot load in Convex). A thrown Convex "too large" or invalid-input error becomes `INVALID_INPUT`; any other failure becomes `WORKSPACE_UNAVAILABLE` and is never shown as saved. `importSubmission` is not a workspace action and is refused.
+- `ConvexEditorialRepository` (`lib/editorial/adapters/live/repository.ts`, server-only): every method calls the public editorial Convex function with the signed-in user's own token (`fetchQuery`/`fetchMutation`), so Convex resolves and re-checks the caller on every call. Revisions come back with display counts measured here (Convex functions do not load the parser). A thrown Convex "too large" or invalid-input error becomes `INVALID_INPUT`; any other failure becomes `WORKSPACE_UNAVAILABLE` and is never shown as saved. `importSubmission` is not a workspace action and is refused.
 - Workspace gate (`lib/editorial/runtime/workspace.ts`): the fixture branch is unchanged (development, exact opt-in, compiled out of production); otherwise the live workspace, only when a backend is configured, the request carries a session token and Convex's `session` check confirms the capability. Unavailable reasons: not configured, not signed in, no capability, backend unavailable (fails closed). Server actions accept either workspace; demo controls use a fixture-only wrapper and are unavailable in live mode.
 - UI: the shell shows a "Live" badge, the private-store connection and the editor's name in live mode, and the "Local demo" banner only in fixture mode; the simulated worker ticker only appears for simulated releases. Production pages still answer 404 until E4e adds the middleware gate and the live sign-in confirmation.
 - Checks run:
@@ -169,3 +169,87 @@ Append-only. Treat entries as claims backed by the commands recorded beside them
   - `npm run build` (no Convex URL) and `NEXT_PUBLIC_CONVEX_URL=https://editorial-probe.invalid npx next build` (live mode; the `.invalid` host is never reachable): both pass; in the second the editorial routes are partial-prerendered. Probe against each on port 3247: 4,189 and 4,183 build files free of fixture sentinels; all 13 editorial paths, each with a fixture-switch attempt and a forged session cookie, return 404 with `noindex`, `private, no-store` and `no-referrer`; all 31 server actions refused. An editorial 404 is byte-identical to an unknown path's (the old "error shell" note no longer appears); only the operator headers differ, and every `/admin/*` path has them.
   - Accessibility, by checklist: the new step uses native buttons with text, `aria-disabled` while busy, a labelled group, `role="status"` for "link sent" and `role="alert"` for failures; the "Live" badge is text. The fixture UI's markup is unchanged.
 - Not verified here: the live screens in a browser (they need a Convex backend; see E4f), and the Google round trip itself.
+
+## 2026-10-02 - WP46-E4f denial matrix, production probe and review
+
+- Denial matrix (`convex/editorial/denials.test.ts`, committed with the gate tests): all 9 public queries and 22 public mutations refuse anonymous, forged, customer, expired-session and revoked callers. Anonymous calls write nothing, and customer refusals are recorded up to the limit.
+- `npm test` was red since E0: the environment-documentation guard flagged `NODE_ENV`, which the fixture gate reads. `.env.example` now names it as provided by Next.js. Next 16.3.6 sets it before loading env files (`bin/next` preAction), and `@next/env` never overrides a key already set, so an env-file value cannot change it.
+- Independent security review by two read-only reviewers, one for the Convex backend and one for the Next.js edge. No critical or high findings.
+  - **Medium:**
+    - Refusal records stored caller-chosen id strings of any size, so one free account could break the Activity log.
+    - Some URL forms skipped the middleware gate: an asset-like last segment (`…/x.js`), Next.js segment-prefetch paths (`/admin/editorial.segments/…`).
+  - **Low:**
+    - Binding queries read only the 50 oldest rows (revocation could fail, and a second holder could be bound).
+    - Approval was reachable before checks were connected, through a receipt-backed import.
+    - Google-only accounts can never be bound, and the runbook said they could.
+    - One idea's working set could outgrow a transaction.
+    - The gate could fail open on an unexpected session shape.
+    - Analytics history listeners.
+    - Framing.
+    - Canonical redirects lacked operator headers.
+    - Denials are distinguishable by rewrite markers.
+  - **Info:** the email step-up carried revision ids; probe gaps.
+- Fixed:
+  - **Refusal records (core `deny()`):** keeps only well-formed ids. A deployment-wide cap of 200 an hour sits on top of the per-account 20 an hour (`editorialDeniedRecordsAll`).
+  - **Binding queries:** `super_admins` indexes include `revokedAt`, and active bindings are queried directly. Bootstrap and status throw past 10. Emergency revoke has its own batch query and never stops at that bound.
+  - **Approval before E5:** a `CHECKS_NOT_RUN` blocker applies whenever no check runner is connected.
+  - **Working-set size:** new revisions are refused past 8 MiB of stored revisions per idea.
+  - **Middleware gate:**
+    - The matcher adds `/admin` and `/admin/:path*`.
+    - The gate and headers cover every `/admin` request path, including transport forms and percent-encoded spellings (`isOperatorRequestPath`).
+    - Only an explicit `{ signedIn: true, editor: {…} }` passes, and the `session` query has a `returns` validator.
+    - A 3-second timeout denies.
+    - The rewrite target is the neutral `/__not-found`.
+  - **Headers:** `X-Frame-Options: DENY` and `frame-ancestors 'none'` on every operator response, including canonical redirects.
+  - **Step-up email:** the link carries the page path only.
+  - **Probe:** RSC, suffix, segment-prefetch and encoded variants; anti-framing headers; body identity; actions posted to `/` too.
+- Both reviewers re-checked the fixes: every fixed finding is closed and nothing broke. Their two residuals (the revoke bound, the encoded spelling) are fixed. Finding 8's suggested static test already exists (`boundaries.test.ts`: every exported action returns `withWorkspace`/`withFixtureWorkspace` and nothing else is exported).
+- Found in the live browser pass and fixed:
+  - Settings in live mode showed the demo's "What is simulated in local demo mode" block. It now renders only in fixture mode, with a structure guard.
+  - Wide tables in Settings, Trash and the safe preview were scrollable regions keyboard users could not reach. A focusable, labelled `ScrollRegion` primitive fixes Settings and Trash; preview tables get the same attributes, labelled by their header row.
+- Correction recorded in the E4c entry: the "parser crashes in Convex" claim was wrong. `decode-named-character-reference` maps the `convex` condition to its plain build. The new offline check (`tests/editorial/scripts/verify-convex-bundle.mjs`) loads every Convex module the way the CLI bundles it, and controls prove its sandbox would catch a DOM build. The code comments that repeated the claim are corrected.
+- Real Convex runtime, verified for the first time:
+  - **Backend:** a disposable local backend from the CLI's cached binary (pinned version, no download), bound to 127.0.0.1:3250/3251, beacon off, client logs redacted, data and keys in the session scratchpad.
+  - **Push:** schema (56 tables, 15 editorial), all functions and the rate-limiter component. Real codegen produced files identical to the hand-written `_generated` ones, before and after the index change.
+  - **Flows:**
+    - Sign-in through Convex Auth's verification-code path (no email sent).
+    - `bootstrapOwner` bound, then reported `already_bound`.
+    - Live imports.
+    - Through the real isolate, the owner reads the queue, a customer gets `FORBIDDEN`, and anonymous gets `UNAUTHENTICATED`.
+- Live screens in the desktop app's built-in browser. gstack `browse` needs a Playwright build that is not installed, and installing it downloads browser binaries. axe-core was served from `node_modules` on loopback.
+  - **Pages scanned:** at 375 px, the queue, the idea's preview, evidence and review views, releases (empty state), trash (empty state), settings, activity (real audit entries) and the trash dialog's live "Confirm it's you" step; at desktop width, the queue, the idea preview and settings.
+  - **Result:** 0 WCAG 2.1 A/AA violations after the fixes. Not covered live: the Write tab on its own (the demo's Write tab passed at 1440 px in E2), and Trash with rows, so its new scroll region was exercised only on Settings. The E2/E3 scans ran at 1440 px, where the Settings table fits, which is why its narrow-screen problem surfaced only now.
+  - **Real-backend actions:** a new revision and an autosave (`saveDraftAction`) against the real backend.
+  - **Keyboard:** Tab focus ring on the scroll region and arrow-key scrolling; the dialog takes focus, Escape closes it and focus returns to "More actions".
+  - The stale session showed "Needed before publishing" and offered the email link. It was not sent.
+- Harness note, not a finding: a lost browser session was traced to re-injecting refresh tokens the app had already rotated (Convex Auth's reuse detection). It did not reproduce with a clean single sign-in. The Convex Auth client refreshes its token on each full page load (library behaviour).
+- Checks run on the final code:
+  - `npm test`: exit 0. og 91, links 6, redirects 38 + 76, auth 133, security 82 + 84, sitemap 4, convex 429, engine 62, home 34, platform 209.
+  - `npx vitest run tests/editorial`: 22 files, 253 tests.
+  - `npx tsc --noEmit` (root and `convex/`): pass.
+  - `npx eslint .`: 0 errors. The 35 warnings are all in files this branch does not touch.
+  - Mutation checks, each restored with `cmp`:
+    - Removing the `CHECKS_NOT_RUN` blocker turned the receipt-backed approval test red.
+    - Storing raw refusal ids turned the refusal-id test red.
+    - Disabling the per-idea storage budget turned its test red.
+  - **Production build A** (no Convex URL; served with `EDITORIAL_FIXTURE_MODE=local-demo` set on purpose):
+    - 4,189 build files free of fixture sentinels.
+    - 57/57 page checks: 19 paths × fixture switch, forged session and RSC prefetch.
+    - 62/62 action checks: 31 actions, each on its own page and on `/`.
+    - 38/38 denied HTML bodies byte-identical to an unknown path's.
+  - **Production build B** (`NEXT_PUBLIC_CONVEX_URL` = the disposable backend):
+    - The same probe: 57/57, 62/62, 38/38.
+    - With real sessions, anonymous and customer get 404 with the site's 404 body on all six pages; the owner gets 200 on all six.
+    - All 18 responses carry `private, no-store`, `noindex`, `no-referrer` and the anti-framing headers.
+    - The customer's RSC navigation and server action are refused. The owner's RSC navigation (Next's 307 cache-busting redirect, then 200) and `getRevisionAction` (200, `ok: true`) work.
+  - `node --experimental-vm-modules tests/editorial/scripts/verify-convex-bundle.mjs`: PASS. 67 modules, 147 functions; the editorial surface is 9 public queries, 22 public mutations and 7 internal functions.
+- Not fixed, recorded:
+  - **Analytics history:** history-based analytics events can still fire on an `/admin` URL after a soft navigation from a public page and Back. Changing it alters public analytics behaviour, so it is the owner's decision.
+  - **Google accounts:** making them bindable means mapping Google's verified-email flag in the shared sign-in code; owner decision.
+  - **Child-row growth:** child rows per idea can grow past a transaction (5,000 per table, then the load fails loudly); paging or compaction is E7.
+  - **Rewrite markers:** they distinguish a denial from an unknown path by headers (documented).
+  - **Token refresh:** Convex Auth's middleware token refresh has no timeout (library, every path).
+  - **Cookie banner:** the site's cookie banner appears on `/admin` (root layout; analytics never load there).
+  - **Public 404 page:** its footer fails color contrast (pre-existing, public page).
+  - **CI coverage:** `tests/editorial` is still not part of `npm test` (`package.json`).
+- Not done here: no deployment, bootstrap, seed or push to any real Convex deployment or Vercel, and nothing pushed to git. The branch is 6 commits behind `main`; a dry merge shows one conflict, `.env.example`, where both sides appended lines at the end (keep both).

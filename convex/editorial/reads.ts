@@ -26,8 +26,18 @@ const page = { cursor: nullableString, pageSize: v.number() };
  * identity again. Returns no editorial data, and nothing about the workspace
  * to anyone else.
  */
+const sessionEditor = v.object({
+  displayName: v.string(),
+  strongAuthAt: v.union(v.string(), v.null()),
+  strongAuthFresh: v.boolean(),
+  signInMethod: v.union(v.literal("google"), v.literal("email"), v.null()),
+  email: v.union(v.string(), v.null()),
+});
+
 export const session = query({
   args: at,
+  // Callers grant access only on this exact shape (middleware and the workspace gate).
+  returns: v.object({ signedIn: v.boolean(), editor: v.union(sessionEditor, v.null()) }),
   handler: async (ctx, args) => {
     const nowMs = requestTime(args.nowMs);
     const current = await editorialSession(ctx);

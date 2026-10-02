@@ -57,8 +57,9 @@ async function resolveLiveWorkspace(): Promise<EditorialWorkspace> {
   const nowMs = Date.now();
   const session = await readLiveSession(token, nowMs);
   if (session === null) return { status: "unavailable", reason: "backend_unavailable" };
-  if (session.editor === null) {
-    return { status: "unavailable", reason: session.signedIn ? "no_capability" : "not_signed_in" };
+  // Only an explicit grant opens the workspace; any other shape is a refusal.
+  if (session.signedIn !== true || typeof session.editor !== "object" || session.editor === null) {
+    return { status: "unavailable", reason: session.signedIn === true ? "no_capability" : "not_signed_in" };
   }
   return { status: "live", repository: new ConvexEditorialRepository(token), nowMs, editor: session.editor };
 }

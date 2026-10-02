@@ -177,4 +177,44 @@ describe("authorization uses the bound user ID and the live session", () => {
     expect((await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).outcome).toBe("bound");
     expect(await t.run(async (ctx) => (await ctx.db.query("super_admins").take(5)).length)).toBe(2);
   });
+
+  test("a long revoked history neither hides the active binding nor lets a second one in", async () => {
+    const { t, owner, customer } = await boundWorld();
+    await t.run(async (ctx) => {
+      for (let index = 0; index < 60; index += 1) {
+        await ctx.db.insert("super_admins", {
+          userId: customer.userId,
+          role: "super_admin",
+          boundAt: index,
+          boundVia: "deployment_bootstrap",
+          revokedAt: index + 1,
+          revokedReason: "History",
+        });
+      }
+    });
+    expect((await t.query(internal.admin.superAdmin.bindingStatus, {})).activeBindings).toBe(1);
+    vi.stubEnv("SUPER_ADMIN_BOOTSTRAP_EMAIL", "customer@example.test");
+    expect(await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).toEqual({
+      outcome: "refused",
+      reason: "another_account_bound",
+    });
+    expect(await t.mutation(internal.admin.superAdmin.revokeSuperAdmin, { reason: "Rotating the owner account" })).toEqual({
+      revoked: 1,
+    });
+    expect(await as(t, owner).run(async (ctx) => (await currentAccount(ctx))?.binding ?? null)).toBeNull();
+  });
+
+  test("revocation still ends every binding when the data breaks the one-holder invariant", async () => {
+    const { t, customer } = await boundWorld();
+    await t.run(async (ctx) => {
+      for (let index = 0; index < 11; index += 1) {
+        await ctx.db.insert("super_admins", { userId: customer.userId, role: "super_admin", boundAt: index, boundVia: "deployment_bootstrap" });
+      }
+    });
+    await expect(t.query(internal.admin.superAdmin.bindingStatus, {})).rejects.toThrow(/INVARIANT|Too many/);
+    expect(await t.mutation(internal.admin.superAdmin.revokeSuperAdmin, { reason: "Emergency revocation" })).toEqual({
+      revoked: 12,
+    });
+    expect((await t.query(internal.admin.superAdmin.bindingStatus, {})).activeBindings).toBe(0);
+  });
 });

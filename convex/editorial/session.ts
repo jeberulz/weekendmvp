@@ -70,6 +70,8 @@ const limiter = new RateLimiter(components.rateLimiter, {
   // A signed-in account without the capability gets its refusals recorded up
   // to this rate; beyond it they are still refused, just not written again.
   editorialDeniedRecords: { kind: "fixed window", rate: 20, period: HOUR },
+  // Sign-up is open, so many accounts together are capped too.
+  editorialDeniedRecordsAll: { kind: "fixed window", rate: 200, period: HOUR },
 });
 
 type RepositoryOptions = { nowMs: number; recordDenials?: boolean };
@@ -103,8 +105,8 @@ export async function commandRepository(ctx: MutationCtx): Promise<PartitionedEd
   const session = await editorialSession(ctx, nowMs);
   let recordDenials = true;
   if (session.principal && session.principal.capability === null) {
-    const { ok } = await limiter.limit(ctx, "editorialDeniedRecords", { key: session.principal.id });
-    recordDenials = ok;
+    const perAccount = await limiter.limit(ctx, "editorialDeniedRecords", { key: session.principal.id });
+    recordDenials = perAccount.ok && (await limiter.limit(ctx, "editorialDeniedRecordsAll")).ok;
   }
   return repository(ctx.db, ctx.db, session, { nowMs, recordDenials });
 }

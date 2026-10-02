@@ -21,7 +21,7 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("convex/nextjs", () => ({ fetchQuery: state.query, fetchAction: state.action }));
 
-import { EDITORIAL_NOT_FOUND_PATH, middleware } from "@/middleware";
+import { EDITORIAL_GATE_TIMEOUT_MS, EDITORIAL_NOT_FOUND_PATH, middleware } from "@/middleware";
 
 const event = { waitUntil() {}, passThroughOnException() {} } as unknown as NextFetchEvent;
 
@@ -100,6 +100,40 @@ describe("editorial gate", () => {
     expect(rewrittenTo(rsc)).toBe(EDITORIAL_NOT_FOUND_PATH);
   });
 
+  test.each([
+    "/admin/editorial/ideas/x.js",
+    "/admin/editorial.segments/_tree.segment",
+    "/admin/editorial/ideas/idea_x.segments/$c$children.segment",
+    "/admin",
+    "/admin/anything-else",
+    "/%61dmin/editorial",
+  ])("%s meets the gate too", async (path) => {
+    sessionAnswers(false);
+    expect(rewrittenTo(await visit(path, { signedIn: true }))).toBe(EDITORIAL_NOT_FOUND_PATH);
+  });
+
+  test.each([
+    ["a missing editor", { signedIn: true }],
+    ["an unexpected editor", { signedIn: true, editor: "yes" }],
+    ["no signed-in flag", { editor: { displayName: "Owner" } }],
+    ["no answer at all", null],
+  ])("an answer with %s is a refusal", async (_label, answer) => {
+    state.query.mockResolvedValue(answer);
+    expect(rewrittenTo(await visit("/admin/editorial", { signedIn: true }))).toBe(EDITORIAL_NOT_FOUND_PATH);
+  });
+
+  test("a backend that does not answer in time is a refusal", async () => {
+    vi.useFakeTimers();
+    try {
+      state.query.mockReturnValue(new Promise(() => {}));
+      const pending = visit("/admin/editorial", { signedIn: true });
+      await vi.advanceTimersByTimeAsync(EDITORIAL_GATE_TIMEOUT_MS + 1);
+      expect(rewrittenTo(await pending)).toBe(EDITORIAL_NOT_FOUND_PATH);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test("the bound super-admin passes through", async () => {
     sessionAnswers(true);
     const response = await visit("/admin/editorial/releases", { signedIn: true });
@@ -117,10 +151,22 @@ describe("editorial gate", () => {
 });
 
 describe("operator responses", () => {
-  test.each(["/admin/editorial", "/admin"])("%s is private, uncached, unindexed and sends no referrer", async (path) => {
-    const response = await visit(path);
+  test.each(["/admin/editorial", "/admin", "/admin/editorial.segments/_tree.segment"])(
+    "%s is private, uncached, unindexed, unframeable and sends no referrer",
+    async (path) => {
+      const response = await visit(path);
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+      expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+      expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(response.headers.get("x-frame-options")).toBe("DENY");
+      expect(response.headers.get("content-security-policy")).toBe("frame-ancestors 'none'");
+    },
+  );
+
+  test("a canonical redirect under /admin carries the operator headers", async () => {
+    const response = await visit("/admin/editorial/");
+    expect(response.status).toBe(308);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
   });
 

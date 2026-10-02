@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/app/admin/editorial/_actions/demo", () => ({ demoConfirmStrongAuthAction: vi.fn() }));
 
 import { StepUpProvider, type StepUp } from "@/components/admin/editorial/common/StepUpContext";
-import { StrongAuthStep } from "@/components/admin/editorial/common/StrongAuthStep";
+import { StrongAuthStep, stepUpReturnTarget } from "@/components/admin/editorial/common/StrongAuthStep";
 
 /*
  * WP46-E4e. The live step starts a fresh sign-in with the account's own
@@ -38,6 +38,12 @@ describe("Confirm it's you", () => {
 
   test("a recent sign-in is shown as confirmed", () => {
     expect(render({ method: "google", email: null }, true)).toContain("Confirmed within the last 10 minutes.");
+  });
+
+  test("an email link returns to the page only; Google returns to the page as it is", () => {
+    const location = { pathname: "/admin/editorial/ideas/idea_1", search: "?revision=rev_1&tab=review" };
+    expect(stepUpReturnTarget("email", location)).toBe("/admin/editorial/ideas/idea_1");
+    expect(stepUpReturnTarget("google", location)).toBe("/admin/editorial/ideas/idea_1?revision=rev_1&tab=review");
   });
 
   test("only the local demo simulates it, and never asks for a secret", () => {

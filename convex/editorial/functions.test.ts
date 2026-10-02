@@ -35,9 +35,18 @@ function value<T>(result: CommandResult<T>): T {
   return result.value;
 }
 
-async function member(t: TestConvex<typeof schema>, email: string, provider = "google"): Promise<Member> {
+/**
+ * An account as Convex Auth leaves it. Only email-link sign-in records a
+ * verified email; the site's Google sign-in does not keep Google's flag, so a
+ * Google-only account is never verified (and can never be bound).
+ */
+async function member(t: TestConvex<typeof schema>, email: string, provider = "email"): Promise<Member> {
   return await t.run(async (ctx) => {
-    const userId = await ctx.db.insert("users", { email, emailVerificationTime: 1, name: "Owner Name" });
+    const userId = await ctx.db.insert("users", {
+      email,
+      ...(provider === "email" ? { emailVerificationTime: 1 } : {}),
+      name: "Owner Name",
+    });
     await ctx.db.insert("authAccounts", { userId, provider, providerAccountId: `${provider}-${email}` });
     const sessionId = await ctx.db.insert("authSessions", { userId, expirationTime: START + 30 * 24 * 60 * MINUTE });
     return { userId, sessionId };
@@ -103,7 +112,7 @@ describe("who may use the workspace", () => {
     const mine = await as(t, owner).query(api.editorial.reads.session, { nowMs });
     expect(mine.editor).toMatchObject({
       displayName: "Owner Name",
-      signInMethod: "google",
+      signInMethod: "email",
       email: OWNER_EMAIL,
       strongAuthFresh: true,
     });
@@ -177,6 +186,42 @@ describe("who may use the workspace", () => {
     );
     expect(idea?.candidate.state).toBe("new");
     expect(idea?.title).toBe(receiptSplitter.title);
+  });
+
+  test("a refusal keeps a caller's ids only when they are well-formed", async () => {
+    const { t, customer, ideaId } = await world();
+    const oversized = "r".repeat(100_000);
+    const refused = await as(t, customer).mutation(api.editorial.commands.markReviewed, {
+      revisionId: oversized,
+      reviewItemId: "section:problem",
+      dependencyHash: "0".repeat(64),
+      note: null,
+    });
+    expect(code(refused)).toBe("FORBIDDEN");
+    expect(code(await as(t, customer).mutation(api.editorial.commands.trashIdea, { ideaId, expectedVersion: 1, reason: "Forged" }))).toBe(
+      "FORBIDDEN",
+    );
+    const denied = await t.run(async (ctx) =>
+      ctx.db
+        .query("editorial_audit")
+        .withIndex("by_outcome", (q) => q.eq("outcome", "denied"))
+        .take(10),
+    );
+    expect(denied).toHaveLength(2);
+    expect(denied[0].revisionId).toBeNull();
+    expect(JSON.stringify(denied)).not.toContain("r".repeat(100));
+    expect(denied[1].ideaId).toBe(ideaId);
+  });
+
+  test("a Google-only account is never verified, so bootstrap refuses it", async () => {
+    vi.stubEnv("SUPER_ADMIN_BOOTSTRAP_EMAIL", "google-owner@example.test");
+    const t = convexTest(schema, modules);
+    registerRateLimiter(t);
+    await member(t, "google-owner@example.test", "google");
+    expect(await t.mutation(internal.admin.superAdmin.bootstrapOwner, {})).toEqual({
+      outcome: "refused",
+      reason: "no_verified_account",
+    });
   });
 
   test("forged identities are anonymous, and revocation ends access at the next request", async () => {

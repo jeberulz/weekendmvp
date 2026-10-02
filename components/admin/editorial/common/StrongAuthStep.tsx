@@ -38,9 +38,14 @@ function Frame({ children }: { children: ReactNode }) {
   );
 }
 
-/** Where the sign-in comes back to: this editorial page, as it is now. */
-function currentPage(): string {
-  return `${window.location.pathname}${window.location.search}`;
+/**
+ * Where the sign-in comes back to. A Google return target stays inside the
+ * auth backend, so it keeps the page as it is now. An email link sits in a
+ * mailbox and passes through the mail provider, so it carries the page only,
+ * without revision ids or view state.
+ */
+export function stepUpReturnTarget(method: "google" | "email", location: Pick<Location, "pathname" | "search">): string {
+  return method === "google" ? `${location.pathname}${location.search}` : location.pathname;
 }
 
 function LiveStrongAuthStep({ fresh, mechanism, stepUp, onConfirmed }: StepProps & { stepUp: StepUp }) {
@@ -63,9 +68,9 @@ function LiveStrongAuthStep({ fresh, mechanism, stepUp, onConfirmed }: StepProps
     try {
       if (stepUp.method === "google") {
         // Leaves the page for Google and comes back through the callback.
-        await signIn("google", { redirectTo: authCallbackTarget(currentPage()) });
+        await signIn("google", { redirectTo: authCallbackTarget(stepUpReturnTarget("google", window.location)) });
       } else if (stepUp.method === "email" && stepUp.email) {
-        await signIn("email", { email: stepUp.email, redirectTo: currentPage() });
+        await signIn("email", { email: stepUp.email, redirectTo: stepUpReturnTarget("email", window.location) });
         setPhase("sent");
       }
     } catch {

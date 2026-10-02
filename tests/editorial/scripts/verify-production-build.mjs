@@ -19,6 +19,11 @@
  * Works for both kinds of build: without a Convex URL every editorial path is
  * a static 404; with one (WP46-E4e) middleware refuses anyone the backend does
  * not confirm as the super-admin.
+ *
+ * WP46-E4f adds the URL forms that once skipped middleware (a final segment
+ * that looks like an asset, Next.js segment-prefetch paths), RSC requests,
+ * the anti-framing headers, a body comparison with an unknown path, and the
+ * same server actions posted to the home page (Next.js forwards them).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -88,6 +93,15 @@ const PATHS = [
   "/admin/editorial?fixture=local-demo",
   "/admin/editorial?EDITORIAL_FIXTURE_MODE=local-demo",
   "/admin/editorial/library?mode=fixture",
+  "/admin",
+  // Once outside the middleware matcher: a final segment that looks like an asset.
+  "/admin/editorial/ideas/idea_0318.js",
+  "/admin/editorial/ideas/idea_0318.css",
+  // Next.js transport forms (prerendered segment payloads).
+  "/admin/editorial.segments/_tree.segment.rsc",
+  "/admin/editorial/library.segments/_tree.segment.rsc",
+  // A percent-encoded spelling, in case a router decodes before it matches.
+  "/%61dmin/editorial",
 ];
 
 /** Editorial copy that must never appear in a denied response. */
@@ -113,16 +127,25 @@ function forgedSessionCookie() {
 }
 
 const ATTEMPTS = [
-  { label: "fixture switch", cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture" },
-  { label: "forged session", cookie: forgedSessionCookie() },
+  { label: "fixture switch", headers: { cookie: "EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture" } },
+  { label: "forged session", headers: { cookie: forgedSessionCookie() } },
+  // A client-side navigation or prefetch asks for the RSC payload, not HTML.
+  { label: "RSC request", rsc: true, headers: { cookie: forgedSessionCookie(), RSC: "1", "Next-Router-Prefetch": "1" } },
 ];
 
 function privateHeaders(response) {
   return (
     /noindex/.test(response.headers.get("x-robots-tag") ?? "") &&
     /no-store/.test(response.headers.get("cache-control") ?? "") &&
-    response.headers.get("referrer-policy") === "no-referrer"
+    response.headers.get("referrer-policy") === "no-referrer" &&
+    response.headers.get("x-frame-options") === "DENY" &&
+    /frame-ancestors 'none'/.test(response.headers.get("content-security-policy") ?? "")
   );
+}
+
+/** Rewrite markers Next.js may add; the body is identical, these are not (documented). */
+function rewriteMarkers(response) {
+  return ["x-middleware-rewrite", "x-nextjs-rewritten-path"].filter((name) => response.headers.has(name));
 }
 
 function headSignature(html) {
@@ -132,20 +155,30 @@ function headSignature(html) {
 
 async function probe(base) {
   const residual = new Set();
+  const markers = new Set();
+  let differentBodies = 0;
+  let htmlAttempts = 0;
   const control = await fetch(new URL("/__wp46-control-missing-page", base), { redirect: "manual" });
-  const controlHead = headSignature(await control.text());
+  const controlBody = await control.text();
+  const controlHead = headSignature(controlBody);
   let ok = control.status === 404;
   console.log(`${ok ? "PASS" : "FAIL"} ${control.status} control 404 for comparison`);
   for (const route of PATHS) {
     for (const attempt of ATTEMPTS) {
-      const response = await fetch(new URL(route, base), { redirect: "manual", headers: { cookie: attempt.cookie } });
+      const response = await fetch(new URL(route, base), { redirect: "manual", headers: attempt.headers });
       const body = await response.text();
       const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
-      const noindex = /<meta name="robots" content="noindex/.test(body);
+      // An RSC payload carries no HTML head; its headers still have to be private.
+      const noindex = attempt.rsc || /<meta name="robots" content="noindex/.test(body);
       const headers = privateHeaders(response);
       const passed = response.status === 404 && leaked.length === 0 && noindex && headers;
       ok &&= passed;
-      if (headSignature(body) !== controlHead) residual.add(route);
+      for (const marker of rewriteMarkers(response)) markers.add(marker);
+      if (!attempt.rsc) {
+        htmlAttempts += 1;
+        if (body !== controlBody) differentBodies += 1;
+        if (headSignature(body) !== controlHead) residual.add(route);
+      }
       console.log(
         `${passed ? "PASS" : "FAIL"} ${response.status} ${route} (${attempt.label})` +
           `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}` +
@@ -153,6 +186,12 @@ async function probe(base) {
           `${headers ? "" : " missing private headers"}`,
       );
     }
+  }
+  console.log(
+    `${differentBodies === 0 ? "PASS" : "NOTE"} ${htmlAttempts - differentBodies}/${htmlAttempts} denied HTML bodies are byte-identical to an unknown path's.`,
+  );
+  if (markers.size > 0) {
+    console.log(`NOTE denied responses carry Next.js rewrite markers (${[...markers].join(", ")}); an unknown path does not.`);
   }
   if (residual.size > 0) {
     // Known limitation, reported rather than hidden: a statically prerendered
@@ -257,32 +296,35 @@ async function probeActions(base) {
     }
     const origin = new URL(base).origin;
     // Post to a page that bundles the action (its first worker), e.g.
-    // "app/admin/editorial/ideas/[ideaId]/page" -> "/admin/editorial/ideas/idea_0318".
+    // "app/admin/editorial/ideas/[ideaId]/page" -> "/admin/editorial/ideas/idea_0318",
+    // and to the home page, which Next.js forwards to the action's own page.
     const worker = Object.keys(entry.workers ?? {})[0] ?? "app/admin/editorial/page";
-    const route = worker.replace(/^app/, "").replace(/\/page$/, "").replace("[ideaId]", "idea_0318") || "/";
-    const response = await fetch(new URL(route, base), {
-      method: "POST",
-      redirect: "manual",
-      headers: {
-        "Next-Action": id,
-        Accept: "text/x-component",
-        "Content-Type": "text/plain;charset=UTF-8",
-        Origin: origin,
-        cookie: `EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture; ${forgedSessionCookie()}`,
-      },
-      body: JSON.stringify([input]),
-    });
-    const body = await response.text();
-    const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
-    const unavailable = body.includes("WORKSPACE_UNAVAILABLE");
-    const refused = response.status >= 400;
-    const passed = leaked.length === 0 && (unavailable || refused);
-    ok &&= passed;
-    console.log(
-      `${passed ? "PASS" : "FAIL"} ${response.status} action ${entry.exportedName} via ${route}` +
-        `${unavailable ? " → WORKSPACE_UNAVAILABLE" : refused ? " → refused" : " → ran without refusing"}` +
-        `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}`,
-    );
+    const own = worker.replace(/^app/, "").replace(/\/page$/, "").replace("[ideaId]", "idea_0318") || "/";
+    for (const route of [own, "/"]) {
+      const response = await fetch(new URL(route, base), {
+        method: "POST",
+        redirect: "manual",
+        headers: {
+          "Next-Action": id,
+          Accept: "text/x-component",
+          "Content-Type": "text/plain;charset=UTF-8",
+          Origin: origin,
+          cookie: `EDITORIAL_FIXTURE_MODE=local-demo; editorial_mode=fixture; ${forgedSessionCookie()}`,
+        },
+        body: JSON.stringify([input]),
+      });
+      const body = await response.text();
+      const leaked = [...SENTINELS, ...UI_PHRASES].filter((phrase) => body.includes(phrase));
+      const unavailable = body.includes("WORKSPACE_UNAVAILABLE");
+      const refused = response.status >= 400;
+      const passed = leaked.length === 0 && (unavailable || refused);
+      ok &&= passed;
+      console.log(
+        `${passed ? "PASS" : "FAIL"} ${response.status} action ${entry.exportedName} via ${route}` +
+          `${unavailable ? " → WORKSPACE_UNAVAILABLE" : refused ? " → refused" : " → ran without refusing"}` +
+          `${leaked.length ? ` leaked: ${leaked.join(", ")}` : ""}`,
+      );
+    }
   }
   if (actions.length === 0) console.log("NOTE no editorial server actions in the build.");
   return ok;

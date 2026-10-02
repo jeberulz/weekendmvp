@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { GatedPageHeader } from "@/components/admin/editorial/common/GatedPageHeader";
 import { ListSkeleton } from "@/components/admin/editorial/common/ListSkeleton";
-import { EmptyState, ErrorState, PageBody, Pagination, Time, linkClass } from "@/components/admin/editorial/common/primitives";
+import { EmptyState, ErrorState, PageBody, Pagination, ScrollRegion, Time, linkClass } from "@/components/admin/editorial/common/primitives";
 import { EDITORIAL_BASE } from "@/components/admin/editorial/shell/nav-items";
 import { RestoreButton } from "@/components/admin/editorial/trash/RestoreButton";
 import { CANDIDATE_LABELS, PUBLICATION_LABELS } from "@/lib/editorial/contracts/states";
@@ -57,7 +57,7 @@ async function TrashContent({ searchParams }: { searchParams: Promise<SearchPara
   }
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-(--ed-border) bg-(--ed-surface)">
+      <ScrollRegion label="Ideas in Trash" className="rounded-lg border border-(--ed-border) bg-(--ed-surface)">
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">Ideas in Trash</caption>
           <thead>
@@ -95,7 +95,7 @@ async function TrashContent({ searchParams }: { searchParams: Promise<SearchPara
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
       <Pagination
         label="Trash"
         total={page.value.total}

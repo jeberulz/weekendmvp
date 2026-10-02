@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { safeAuthRedirect } from "@/convex/auth";
 import { createResendMagicLinkEmail } from "@/convex/resendMagicLink";
 import { authCallbackTarget, safePlatformReturn } from "@/lib/auth-return";
-import { isEditorialPath, isOperatorPath, isPrivateReturnPath } from "@/lib/private-paths";
+import { isEditorialPath, isOperatorPath, isOperatorRequestPath, isPrivateReturnPath } from "@/lib/private-paths";
 
 /*
  * WP46-E4e. "Confirm it's you" signs in again and must come back to the
@@ -46,6 +46,24 @@ describe("private path rules", () => {
     expect(isEditorialPath("/admin/editorial")).toBe(true);
     expect(isEditorialPath("/admin/editorial-old")).toBe(false);
     expect(isEditorialPath("/admin")).toBe(false);
+  });
+
+  test.each([
+    ["/admin", true],
+    ["/admin/editorial", true],
+    ["/admin/editorial/ideas/x.js", true],
+    // Next.js transport forms of prerendered segments.
+    ["/admin/editorial.segments/_tree.segment", true],
+    ["/admin.segments/_tree.segment", true],
+    // Percent-encoded spellings, in case a router decodes before it matches.
+    ["/%61dmin/editorial", true],
+    ["/admin/%65ditorial", true],
+    ["/%E0%A4%A", false],
+    ["/administrator", false],
+    ["/dashboard", false],
+    ["/", false],
+  ])("middleware treats %s as an operator request: %s", (pathname, expected) => {
+    expect(isOperatorRequestPath(pathname)).toBe(expected);
   });
 });
 

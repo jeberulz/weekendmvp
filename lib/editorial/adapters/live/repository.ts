@@ -80,7 +80,7 @@ async function guarded<T>(run: () => Promise<CommandResult<T>>): Promise<Command
 
 /**
  * Word counts, reading time, prompts and code blocks need the Markdown
- * parser, which the Convex runtime cannot load; they are measured here.
+ * parser, which Convex functions do not load; they are measured here.
  */
 export function withMeasuredCounts(view: RevisionView): RevisionView {
   const sections = sectionsByKey(splitSections(view.markdown));

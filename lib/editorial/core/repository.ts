@@ -34,6 +34,7 @@ import {
   type IngestionPrincipal,
 } from "../contracts/principal";
 import { EDITORIAL_LIMITS } from "../contracts/limits";
+import { editorialIdSchema } from "../contracts/primitives";
 import type { EditorialRepository } from "../contracts/repository";
 import {
   APPROVABLE_CANDIDATE_STATES,
@@ -103,6 +104,23 @@ import {
 type Denied = { ok: false; error: { code: "UNAUTHENTICATED" | "FORBIDDEN" | "SERVICE_NOT_PERMITTED"; message: string } };
 
 const GENERIC_DENIAL = "You do not have access to the editorial workspace.";
+
+/**
+ * One idea's revisions are loaded together in one transaction, so their stored
+ * size is capped well below a transaction's read limit. New revisions are
+ * refused past it; the working draft may still grow by one document.
+ */
+const REVISION_BYTES_PER_IDEA = 8 * 1024 * 1024;
+const byteEncoder = new TextEncoder();
+
+function storedBytes(record: RevisionRecord): number {
+  return byteEncoder.encode(JSON.stringify(record)).length;
+}
+
+/** A caller-supplied id worth keeping on a refusal record: well-formed and bounded, or nothing. */
+function recordableId(value: string | null | undefined): string | null {
+  return typeof value === "string" && editorialIdSchema.safeParse(value).success ? value : null;
+}
 
 /** Request-key scopes. A key is unique per principal and scope. */
 export const IDEMPOTENCY_SCOPES = {
@@ -184,8 +202,10 @@ export abstract class EditorialCore implements EditorialRepository {
       actor: this.actor(),
       action: "access.denied",
       outcome: "denied",
-      ideaId: target.ideaId ?? null,
-      revisionId: target.revisionId ?? null,
+      // Refusals are recorded before any input is validated, so caller-supplied
+      // ids are kept only when well-formed (an outsider cannot store large strings).
+      ideaId: recordableId(target.ideaId),
+      revisionId: recordableId(target.revisionId),
       releaseId: null,
       reason: null,
       detail: `Attempted ${action}`,
@@ -789,6 +809,17 @@ export abstract class EditorialCore implements EditorialRepository {
           fail<{ revisionId: string; number: number }>(
             "PRECONDITION_FAILED",
             `This idea already has ${EDITORIAL_LIMITS.revisionsPerIdea} revisions, the most one idea can hold.`,
+          ),
+          { ideaId },
+        );
+      }
+      const storedSoFar = existing.reduce((total, record) => total + storedBytes(record), 0);
+      if (storedSoFar + storedBytes(from) > REVISION_BYTES_PER_IDEA) {
+        return this.refuse(
+          "revision.created",
+          fail<{ revisionId: string; number: number }>(
+            "PRECONDITION_FAILED",
+            "This idea's revisions have reached the storage one idea can hold, so no new revision can be created.",
           ),
           { ideaId },
         );

@@ -169,8 +169,16 @@ function render(node: Nodes, ctx: Context, depth: number): ReactNode {
       const align = node.align ?? [];
       const cellClass = (index: number) =>
         align[index] === "center" ? "text-center" : align[index] === "right" ? "text-right" : undefined;
+      const columns = head ? head.children.map((cell) => nodeText(cell).trim()).filter(Boolean).join(", ") : "";
+      // Wide tables scroll sideways; the region is focusable so the keyboard can scroll it too.
       return (
-        <div key={key(ctx)} className="overflow-x-auto">
+        <div
+          key={key(ctx)}
+          role="region"
+          aria-label={columns ? `Table: ${columns.slice(0, 120)}` : "Table"}
+          tabIndex={0}
+          className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-(--ed-focus)"
+        >
           <table>
             {head ? (
               <thead>

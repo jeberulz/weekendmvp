@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { GatedPageHeader } from "@/components/admin/editorial/common/GatedPageHeader";
 import { ListSkeleton } from "@/components/admin/editorial/common/ListSkeleton";
-import { ErrorState, PageBody, StatusBadge } from "@/components/admin/editorial/common/primitives";
+import { ErrorState, PageBody, ScrollRegion, StatusBadge } from "@/components/admin/editorial/common/primitives";
 import { formatAbsolute } from "@/lib/editorial/presentation/format";
 import { assertEditorialRoutesEnabled } from "@/lib/editorial/runtime/route-guard";
 import { requireEditorialWorkspace } from "@/lib/editorial/runtime/workspace";
@@ -46,17 +46,19 @@ async function SettingsContent() {
   const view = settings.value;
   return (
     <>
-      <section aria-labelledby="settings-simulated" className="rounded-lg border border-(--ed-demo) bg-(--ed-demo-bg) p-4 text-(--ed-demo)">
-        <h2 id="settings-simulated" className="text-base font-semibold">
-          What is simulated in local demo mode
-        </h2>
-        <ul className="mt-2 list-disc pl-5 text-sm">
-          <li>All ideas, sources, quotes and numbers are fictional and use reserved example domains.</li>
-          <li>Checks are a simplified simulation, not the idea engine&apos;s verification (WP45).</li>
-          <li>Approvals, re-authentication and releases are simulated. Nothing is deployed, cached or published.</li>
-          <li>Data lives in this development server&apos;s memory and resets when it restarts.</li>
-        </ul>
-      </section>
+      {view.mode === "fixture" ? (
+        <section aria-labelledby="settings-simulated" className="rounded-lg border border-(--ed-demo) bg-(--ed-demo-bg) p-4 text-(--ed-demo)">
+          <h2 id="settings-simulated" className="text-base font-semibold">
+            What is simulated in local demo mode
+          </h2>
+          <ul className="mt-2 list-disc pl-5 text-sm">
+            <li>All ideas, sources, quotes and numbers are fictional and use reserved example domains.</li>
+            <li>Checks are a simplified simulation, not the idea engine&apos;s verification (WP45).</li>
+            <li>Approvals, re-authentication and releases are simulated. Nothing is deployed, cached or published.</li>
+            <li>Data lives in this development server&apos;s memory and resets when it restarts.</li>
+          </ul>
+        </section>
+      ) : null}
 
       <section aria-labelledby="settings-access" className="flex flex-col gap-3 rounded-lg border border-(--ed-border) bg-(--ed-surface) p-4">
         <h2 id="settings-access" className="text-base font-semibold">
@@ -88,7 +90,7 @@ async function SettingsContent() {
         <h2 id="settings-integrations" className="text-base font-semibold">
           Integrations
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-(--ed-border) bg-(--ed-surface)">
+        <ScrollRegion label="Integration status" className="rounded-lg border border-(--ed-border) bg-(--ed-surface)">
           <table className="w-full border-collapse text-sm">
             <caption className="sr-only">Integration status</caption>
             <thead>
@@ -120,7 +122,7 @@ async function SettingsContent() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       </section>
 
       <section aria-labelledby="settings-policy" className="flex flex-col gap-3 rounded-lg border border-(--ed-border) bg-(--ed-surface) p-4">

@@ -40,8 +40,8 @@ export const LIVE_WORKER_ACTOR: ActorRef = { id: "release-worker", kind: "servic
 export const LIVE_POLICY_VERSION_UNSET = "not-connected";
 
 /**
- * Display counts are not measured here: the Markdown parser cannot load in
- * the Convex runtime, so the Next.js adapter measures returned revisions.
+ * Display counts are not measured here: Convex functions stay free of the
+ * Markdown parser, so the Next.js adapter measures returned revisions.
  */
 export function liveEnvironment(
   seams: Partial<Pick<CoreEnvironment, "checks" | "releases" | "measure">> = {},

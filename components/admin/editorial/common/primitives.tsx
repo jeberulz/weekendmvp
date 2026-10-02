@@ -67,6 +67,26 @@ export function PageBody({ children, className }: { children: ReactNode; classNa
   return <div className={cn("mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8", className)}>{children}</div>;
 }
 
+/**
+ * A region that scrolls sideways (wide tables on narrow screens). Focusable and
+ * labelled, so keyboard users can scroll it too (WCAG 2.1.1).
+ */
+export function ScrollRegion({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+  return (
+    <div
+      role="region"
+      aria-label={label}
+      tabIndex={0}
+      className={cn(
+        "overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-(--ed-focus)",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-start gap-2 rounded-lg border border-dashed border-(--ed-border-strong) bg-(--ed-surface) px-5 py-8">

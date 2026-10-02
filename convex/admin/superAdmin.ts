@@ -28,22 +28,35 @@ export type Account = {
   binding: Doc<"super_admins"> | null;
 };
 
-const MAX_BINDING_ROWS = 50;
+/** Bootstrap keeps this at one; anything past the bound is investigated, not truncated. */
+const MAX_ACTIVE_BINDINGS = 10;
 
 async function activeBindingFor(ctx: ReadCtx, userId: Id<"users">): Promise<Doc<"super_admins"> | null> {
-  const rows = await ctx.db
+  return await ctx.db
     .query("super_admins")
-    .withIndex("by_userId", (q) => q.eq("userId", userId))
-    .take(MAX_BINDING_ROWS);
-  return rows.find((row) => row.revokedAt === undefined) ?? null;
+    .withIndex("by_userId_and_revokedAt", (q) => q.eq("userId", userId).eq("revokedAt", undefined))
+    .first();
 }
 
 async function activeBindings(ctx: ReadCtx): Promise<Doc<"super_admins">[]> {
   const rows = await ctx.db
     .query("super_admins")
-    .withIndex("by_role", (q) => q.eq("role", "super_admin"))
-    .take(MAX_BINDING_ROWS);
-  return rows.filter((row) => row.revokedAt === undefined);
+    .withIndex("by_role_and_revokedAt", (q) => q.eq("role", "super_admin").eq("revokedAt", undefined))
+    .take(MAX_ACTIVE_BINDINGS + 1);
+  if (rows.length > MAX_ACTIVE_BINDINGS) {
+    throw new ConvexError({ code: "INVARIANT", message: "Too many active super-admin bindings; investigate before changing them." });
+  }
+  return rows;
+}
+
+/** Revocation is the emergency control, so it never stops at the bound above. Run it again if it ends this many. */
+const REVOKE_BATCH = 1_000;
+
+async function activeBindingsToRevoke(ctx: ReadCtx): Promise<Doc<"super_admins">[]> {
+  return await ctx.db
+    .query("super_admins")
+    .withIndex("by_role_and_revokedAt", (q) => q.eq("role", "super_admin").eq("revokedAt", undefined))
+    .take(REVOKE_BATCH);
 }
 
 /**
@@ -193,7 +206,7 @@ export const revokeSuperAdmin = internalMutation({
       throw new ConvexError({ code: "INVALID_INPUT", message: "Give a reason of 3 to 500 characters." });
     }
     const now = Date.now();
-    const active = await activeBindings(ctx);
+    const active = await activeBindingsToRevoke(ctx);
     for (const binding of active) {
       await ctx.db.patch("super_admins", binding._id, { revokedAt: now, revokedReason: reason });
     }

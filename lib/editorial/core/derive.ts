@@ -304,6 +304,15 @@ export async function deriveRevision(state: EditorialState, revisionId: string):
     issues,
     reviewItems: itemViews,
   });
+  // No check runner connected (live mode before WP46-E5): nothing is approvable,
+  // whatever checks a submission carried.
+  if (state.env.checks.run === null) {
+    blockers.unshift({
+      code: "CHECKS_NOT_RUN",
+      message: state.env.checks.unavailableReason,
+      target: { kind: "artifact", id: "checks" },
+    });
+  }
 
   const sectionViews: SectionView[] = SECTION_DEFINITIONS.map((definition, order) => {
     const block = sections.get(definition.key);
